@@ -708,14 +708,20 @@ def test_automl_allowed_component_graphs_no_component_graphs(
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_automl_component_graphs_specified_component_graphs_binary(
-    mock_fit, mock_score, dummy_classifier_estimator_class, dummy_binary_pipeline_class, X_y_binary
+    mock_fit,
+    mock_score,
+    dummy_classifier_estimator_class,
+    dummy_binary_pipeline_class,
+    X_y_binary,
 ):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type="binary",
-        allowed_component_graphs=[{"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class] }],
+        allowed_component_graphs=[
+            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
+        ],
         allowed_model_families=None,
     )
     expected_pipeline = dummy_binary_pipeline_class({})
@@ -740,14 +746,24 @@ def test_automl_component_graphs_specified_component_graphs_binary(
 @patch("evalml.pipelines.MulticlassClassificationPipeline.score")
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 def test_automl_component_graphs_specified_component_graphs_multi(
-    mock_fit, mock_score, dummy_classifier_estimator_class, dummy_multiclass_pipeline_class, X_y_multi
+    mock_fit,
+    mock_score,
+    dummy_classifier_estimator_class,
+    dummy_multiclass_pipeline_class,
+    X_y_multi,
 ):
     X, y = X_y_multi
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type="multiclass",
-        allowed_component_graphs=[{"Mock Multiclass Classification Pipeline": [dummy_classifier_estimator_class] }],
+        allowed_component_graphs=[
+            {
+                "Mock Multiclass Classification Pipeline": [
+                    dummy_classifier_estimator_class
+                ]
+            }
+        ],
         allowed_model_families=None,
     )
     expected_pipeline = dummy_multiclass_pipeline_class({})
@@ -944,7 +960,9 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
         X_train=X,
         y_train=y,
         problem_type="binary",
-        allowed_component_graphs=[{"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class] }],
+        allowed_component_graphs=[
+            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
+        ],
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
     )
     mock_score.return_value = {automl.objective.name: 1.0}
@@ -981,7 +999,13 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
         X_train=X,
         y_train=y,
         problem_type="multiclass",
-        allowed_component_graphs=[{"Mock Multiclass Classification Pipeline": [dummy_classifier_estimator_class] }],
+        allowed_component_graphs=[
+            {
+                "Mock Multiclass Classification Pipeline": [
+                    dummy_classifier_estimator_class
+                ]
+            }
+        ],
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
     )
     mock_score.return_value = {automl.objective.name: 1.0}
@@ -1059,11 +1083,13 @@ def test_automl_component_graphs_search(
     for i in range(1, 5):
         if problem_type == "binary":
             assert isinstance(
-                start_iteration_callback.call_args_list[i][0][0], BinaryClassificationPipeline
+                start_iteration_callback.call_args_list[i][0][0],
+                BinaryClassificationPipeline,
             )
         elif problem_type == "multiclass":
             assert isinstance(
-                start_iteration_callback.call_args_list[i][0][0], MulticlassClassificationPipeline
+                start_iteration_callback.call_args_list[i][0][0],
+                MulticlassClassificationPipeline,
             )
 
 

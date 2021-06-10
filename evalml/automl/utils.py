@@ -5,9 +5,15 @@ import pandas as pd
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
-from evalml.pipelines import ComponentGraph, BinaryClassificationPipeline, MulticlassClassificationPipeline, \
-    RegressionPipeline, TimeSeriesBinaryClassificationPipeline, TimeSeriesMulticlassClassificationPipeline, \
-    TimeSeriesRegressionPipeline
+from evalml.pipelines import (
+    ComponentGraph,
+    BinaryClassificationPipeline,
+    MulticlassClassificationPipeline,
+    RegressionPipeline,
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline,
+    TimeSeriesRegressionPipeline,
+)
 from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit,
@@ -223,7 +229,9 @@ def get_hyperparameter_ranges(component_graph, custom_hyperparameters):
     return hyperparameter_ranges
 
 
-def get_pipelines_from_component_graphs(component_graphs_list, problem_type, parameters=None):
+def get_pipelines_from_component_graphs(
+    component_graphs_list, problem_type, parameters=None
+):
     """
     Returns created pipelines from passed component graphs based on the specified problem type.
 
@@ -241,7 +249,7 @@ def get_pipelines_from_component_graphs(component_graphs_list, problem_type, par
         ProblemTypes.REGRESSION: RegressionPipeline,
         ProblemTypes.TIME_SERIES_BINARY: TimeSeriesBinaryClassificationPipeline,
         ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesMulticlassClassificationPipeline,
-        ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesRegressionPipeline
+        ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesRegressionPipeline,
     }[handle_problem_types(problem_type)]
     created_pipelines = []
     for component_graph in component_graphs_list:
@@ -250,5 +258,12 @@ def get_pipelines_from_component_graphs(component_graphs_list, problem_type, par
             comp_seed = component_graph.pop("random_seed")
         comp_name = next(iter(component_graph))
         comp_graph = component_graph[comp_name]
-        created_pipelines.append(pipeline_class(component_graph=comp_graph, parameters=parameters, custom_name=comp_name, random_seed=comp_seed))
+        created_pipelines.append(
+            pipeline_class(
+                component_graph=comp_graph,
+                parameters=parameters,
+                custom_name=comp_name,
+                random_seed=comp_seed,
+            )
+        )
     return created_pipelines

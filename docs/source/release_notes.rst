@@ -4,12 +4,14 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Replaced `allowed_pipelines` with `allowed_component_graphs` :pr:`2364`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * `AutoMLSearch` will accept `allowed_component_graphs` instead of `allowed_pipelines` :pr:`2364`
 
 
 **v0.26.0 Jun. 08, 2021**

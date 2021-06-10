@@ -172,13 +172,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             pipeline = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline.name].propose()
-                print(
-                    f"iterativealgorothm - next_batch - proposed_parameters: {proposed_parameters}"
-                )
                 parameters = self._combine_parameters(pipeline, proposed_parameters)
-                print(
-                    f"iterativealgorothm - next_batch - parameters: {parameters}"
-                )
                 next_batch.append(
                     pipeline.new(parameters=parameters, random_seed=self.random_seed)
                 )
@@ -188,12 +182,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
     def _combine_parameters(self, pipeline, proposed_parameters):
         """Helper function for logic to transform proposed parameters."""
-        print(f"iterative algorithm - _combine_parameters - proposed_parameters: {proposed_parameters}")
-        print(f"iterative algorithm - _combine_parameters - pipeline: {pipeline.parameters}")
-        print("----------------------------")
-        return {
-            **self._transform_parameters(pipeline, proposed_parameters)
-        }
+        return {**self._transform_parameters(pipeline, proposed_parameters)}
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
         """Register results from evaluating a pipeline
@@ -252,15 +241,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         for name, component_class in pipeline.linearized_component_graph:
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
-            print(
-                f"iterativealgorothm - _transform_parameters - init_params: {init_params}"
-            )
             # For first batch, pass the pipeline params to the components that need them
             if name in self._custom_hyperparameters and self._batch_number == 0:
                 for param_name, value in self._custom_hyperparameters[name].items():
-                    print(
-                        f"iterativealgorothm - _transform_parameters - hyperparameter name/param_name/value: {name}/{param_name}/{value}"
-                    )
                     if isinstance(value, (Integer, Real)):
                         # get a random value in the space
                         component_parameters[param_name] = value.rvs(
@@ -274,9 +257,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value
             if name in self._pipeline_params and self._batch_number == 0:
                 for param_name, value in self._pipeline_params[name].items():
-                    print(
-                        f"iterativealgorothm - _transform_parameters - pipeline name/param_name/value: {name}/{param_name}/{value}"
-                    )
                     if isinstance(value, (Integer, Real, Categorical)):
                         raise ValueError(
                             "Pipeline parameters should not contain skopt.Space variables, please pass them "
@@ -300,5 +280,4 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     if param_name in init_params:
                         component_parameters[param_name] = value
             parameters[name] = component_parameters
-        print(f"iterative algorithm - transform parameters - parameters: {parameters}")
         return parameters

@@ -230,7 +230,11 @@ def test_automl_component_graphs_no_allowed_component_graphs(X_y_regression):
 @patch("evalml.pipelines.RegressionPipeline.score")
 @patch("evalml.pipelines.RegressionPipeline.fit")
 def test_automl_allowed_component_graphs_specified_component_graphs(
-    mock_fit, mock_score, dummy_regressor_estimator_class, dummy_regression_pipeline_class, X_y_regression
+    mock_fit,
+    mock_score,
+    dummy_regressor_estimator_class,
+    dummy_regression_pipeline_class,
+    X_y_regression,
 ):
     X, y = X_y_regression
 
@@ -238,7 +242,9 @@ def test_automl_allowed_component_graphs_specified_component_graphs(
         X_train=X,
         y_train=y,
         problem_type="regression",
-        allowed_component_graphs=[{"Mock Regression Pipeline": [dummy_regressor_estimator_class] }],
+        allowed_component_graphs=[
+            {"Mock Regression Pipeline": [dummy_regressor_estimator_class]}
+        ],
         allowed_model_families=None,
     )
     mock_score.return_value = {automl.objective.name: 1.0}
@@ -351,7 +357,9 @@ def test_automl_allowed_component_graphs_init_allowed_both_specified(
         X_train=X,
         y_train=y,
         problem_type="regression",
-        allowed_component_graphs=[{"Mock Regression Pipeline": [dummy_regressor_estimator_class]}],
+        allowed_component_graphs=[
+            {"Mock Regression Pipeline": [dummy_regressor_estimator_class]}
+        ],
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
     )
     mock_score.return_value = {automl.objective.name: 1.0}
@@ -396,8 +404,12 @@ def test_automl_allowed_component_graphs_search(
     automl.search()
 
     assert start_iteration_callback.call_count == 2
-    assert isinstance(start_iteration_callback.call_args_list[0][0][0], RegressionPipeline)
-    assert isinstance(start_iteration_callback.call_args_list[1][0][0], RegressionPipeline)
+    assert isinstance(
+        start_iteration_callback.call_args_list[0][0][0], RegressionPipeline
+    )
+    assert isinstance(
+        start_iteration_callback.call_args_list[1][0][0], RegressionPipeline
+    )
 
 
 @patch("evalml.pipelines.TimeSeriesRegressionPipeline.score", return_value={"R2": 0.3})

@@ -8,7 +8,6 @@ from evalml.automl import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.engine import DaskEngine, SequentialEngine
-from evalml.automl.utils import get_pipelines_from_component_graphs
 from evalml.tests.automl_tests.dask_test_utils import (
     TestPipelineFast,
     TestPipelineSlow,

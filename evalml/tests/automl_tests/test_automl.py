@@ -22,7 +22,8 @@ from evalml.automl.callbacks import (
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
-    get_default_primary_search_objective, get_pipelines_from_component_graphs,
+    get_default_primary_search_objective,
+    get_pipelines_from_component_graphs,
 )
 from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
@@ -513,8 +514,12 @@ def test_automl_feature_selection(mock_fit, mock_score, X_y_binary):
         max_iterations=2,
         start_iteration_callback=start_iteration_callback,
         allowed_component_graphs=[
-            {"Name": ["RF Classifier Select From Model",
-                      "Logistic Regression Classifier"]},
+            {
+                "Name": [
+                    "RF Classifier Select From Model",
+                    "Logistic Regression Classifier",
+                ]
+            },
         ],
     )
     automl.search()
@@ -572,12 +577,17 @@ def test_automl_algorithm(mock_fit, mock_score, mock_algo_next_batch, X_y_binary
 
 @patch("evalml.automl.automl_algorithm.IterativeAlgorithm.__init__")
 def test_automl_allowed_component_graphs_algorithm(
-    mock_algo_init, dummy_classifier_estimator_class, dummy_binary_pipeline_class, X_y_binary
+    mock_algo_init,
+    dummy_classifier_estimator_class,
+    dummy_binary_pipeline_class,
+    X_y_binary,
 ):
     mock_algo_init.side_effect = Exception("mock algo init")
     X, y = X_y_binary
 
-    allowed_component_graphs = [{"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}]
+    allowed_component_graphs = [
+        {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
+    ]
     with pytest.raises(Exception, match="mock algo init"):
         AutoMLSearch(
             X_train=X,
@@ -589,7 +599,9 @@ def test_automl_allowed_component_graphs_algorithm(
     assert mock_algo_init.call_count == 1
     _, kwargs = mock_algo_init.call_args
     assert kwargs["max_iterations"] == 10
-    assert kwargs["allowed_pipelines"] == get_pipelines_from_component_graphs(allowed_component_graphs, "binary")
+    assert kwargs["allowed_pipelines"] == get_pipelines_from_component_graphs(
+        allowed_component_graphs, "binary"
+    )
 
     allowed_model_families = [ModelFamily.RANDOM_FOREST]
     with pytest.raises(Exception, match="mock algo init"):
@@ -894,8 +906,31 @@ def test_component_graph_with_incorrect_problem_type(
             X_train=X,
             y_train=y,
             problem_type="regression",
-            allowed_component_graphs=[{"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}],
+            allowed_component_graphs=[
+                {
+                    "Mock Binary Classification Pipeline": [
+                        dummy_classifier_estimator_class
+                    ]
+                }
+            ],
         )
+
+
+def test_component_graph_with_nonunique_names(X_y_binary, dummy_classifier_estimator_class):
+    X, y = X_y_binary
+
+    with pytest.raises(ValueError, match="Every name of allowed_component_graphs must be unique!"):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            allowed_component_graphs=[
+                {"Name_0": [dummy_classifier_estimator_class]},
+                {"Name_1": [dummy_classifier_estimator_class]},
+                {"Name_0": [dummy_classifier_estimator_class]}
+            ],
+        )
+
 
 
 def test_main_objective_problem_type_mismatch(X_y_binary):
@@ -995,7 +1030,13 @@ def test_default_objective(X_y_binary):
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
-def test_add_to_rankings(mock_fit, mock_score, dummy_classifier_linear_component_graph, dummy_binary_pipeline_class, X_y_binary):
+def test_add_to_rankings(
+    mock_fit,
+    mock_score,
+    dummy_classifier_linear_component_graph,
+    dummy_binary_pipeline_class,
+    X_y_binary,
+):
     X, y = X_y_binary
     mock_score.return_value = {"Log Loss Binary": 1.0}
 
@@ -1004,7 +1045,7 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_classifier_linear_component
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs=[dummy_classifier_linear_component_graph]
+        allowed_component_graphs=[dummy_classifier_linear_component_graph],
     )
     automl.search()
     assert len(automl.rankings) == 1
@@ -1040,7 +1081,11 @@ def test_add_to_rankings(mock_fit, mock_score, dummy_classifier_linear_component
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_add_to_rankings_no_search(
-    mock_fit, mock_score, dummy_classifier_linear_component_graph, dummy_binary_pipeline_class, X_y_binary
+    mock_fit,
+    mock_score,
+    dummy_classifier_linear_component_graph,
+    dummy_binary_pipeline_class,
+    X_y_binary,
 ):
     X, y = X_y_binary
     automl = AutoMLSearch(
@@ -1072,7 +1117,9 @@ def test_add_to_rankings_no_search(
 
 
 @patch("evalml.pipelines.RegressionPipeline.score")
-def test_add_to_rankings_regression_large(mock_score, dummy_regressor_linear_component_graph, dummy_regression_pipeline_class):
+def test_add_to_rankings_regression_large(
+    mock_score, dummy_regressor_linear_component_graph, dummy_regression_pipeline_class
+):
     X = pd.DataFrame({"col_0": [i for i in range(101000)]})
     y = pd.Series([i for i in range(101000)])
 
@@ -1112,7 +1159,10 @@ def test_add_to_rankings_new_pipeline(dummy_regression_pipeline_class):
 
 @patch("evalml.pipelines.RegressionPipeline.score")
 def test_add_to_rankings_regression(
-    mock_score, dummy_regressor_linear_component_graph, dummy_regression_pipeline_class, X_y_regression
+    mock_score,
+    dummy_regressor_linear_component_graph,
+    dummy_regression_pipeline_class,
+    X_y_regression,
 ):
     X, y = X_y_regression
 
@@ -1136,7 +1186,11 @@ def test_add_to_rankings_regression(
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_add_to_rankings_duplicate(
-    mock_fit, mock_score, dummy_classifier_linear_component_graph, dummy_binary_pipeline_class, X_y_binary
+    mock_fit,
+    mock_score,
+    dummy_classifier_linear_component_graph,
+    dummy_binary_pipeline_class,
+    X_y_binary,
 ):
     X, y = X_y_binary
     mock_score.return_value = {"Log Loss Binary": 0.1234}
@@ -1161,7 +1215,11 @@ def test_add_to_rankings_duplicate(
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_add_to_rankings_trained(
-    mock_fit, mock_score, dummy_classifier_estimator_class, dummy_binary_pipeline_class, X_y_binary
+    mock_fit,
+    mock_score,
+    dummy_classifier_estimator_class,
+    dummy_binary_pipeline_class,
+    X_y_binary,
 ):
     X, y = X_y_binary
     mock_score.return_value = {"Log Loss Binary": 1.0}
@@ -1176,7 +1234,8 @@ def test_add_to_rankings_trained(
         max_iterations=1,
         allowed_component_graphs=[
             {"Cool Binary Classification Pipeline": [dummy_classifier_estimator_class]},
-            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}],
+            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]},
+        ],
     )
     automl.search()
     assert len(automl.rankings) == 1
@@ -1868,7 +1927,6 @@ def test_percent_better_than_baseline_in_rankings(
         ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline",
     }[problem_type_value]
 
-
     class DummyPipeline(pipeline_class):
         problem_type = problem_type_value
 
@@ -1895,7 +1953,11 @@ def test_percent_better_than_baseline_in_rankings(
     Pipeline1.score = mock_score_1
     Pipeline2.score = mock_score_2
 
-    pipeline_parameters = {"pipeline": {"date_index": None, "gap": 0, "max_delay": 0}} if problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION else {}
+    pipeline_parameters = (
+        {"pipeline": {"date_index": None, "gap": 0, "max_delay": 0}}
+        if problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION
+        else {}
+    )
     allowed_pipelines = [Pipeline1(pipeline_parameters), Pipeline2(pipeline_parameters)]
 
     if objective.name.lower() == "cost benefit matrix":
@@ -2134,7 +2196,7 @@ def test_time_series_regression_with_parameters(ts_data):
         allowed_component_graphs=[{"Name_0": ["Imputer", "ARIMA Regressor"]}],
         objective="auto",
         problem_configuration=problem_configuration,
-        max_batches=3
+        max_batches=3,
     )
     automl.search()
     assert automl.allowed_pipelines[0].parameters["pipeline"] == problem_configuration
@@ -2443,10 +2505,14 @@ def test_automl_one_allowed_component_graph_ensembling_disabled(
 
     caplog.clear()
     max_iterations = _get_first_stacked_classifier_no([ModelFamily.LINEAR_MODEL]) + 1
-    allowed_component_graph = {"Logistic Regression Binary Pipeline": ["Imputer",
-                                                                       "One Hot Encoder",
-                                                                       "Standard Scaler",
-                                                                       "Logistic Regression Classifier",]}
+    allowed_component_graph = {
+        "Logistic Regression Binary Pipeline": [
+            "Imputer",
+            "One Hot Encoder",
+            "Standard Scaler",
+            "Logistic Regression Classifier",
+        ]
+    }
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -2710,7 +2776,7 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors
     estimators = get_estimators("multiclass", [ModelFamily.EXTRA_TREES])
 
     component_graphs = [
-        {f'CG_{ind}': [estimator]} for ind, estimator in enumerate(estimators)
+        {f"CG_{ind}": [estimator]} for ind, estimator in enumerate(estimators)
     ]
     automl = AutoMLSearch(
         X_train=X,
@@ -2728,9 +2794,7 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors
     assert "Default parameters for components" not in str(error.value)
 
 
-@pytest.mark.parametrize(
-    "component_graphs", [True, False]
-)
+@pytest.mark.parametrize("component_graphs", [True, False])
 @pytest.mark.parametrize("automl_parameters", [True, False])
 @pytest.mark.parametrize("custom_hyperparameters", [True, False])
 @patch(
@@ -2755,9 +2819,14 @@ def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(
 
     if component_graphs:
         component_graph_ = [
-            {"Name_0": ["Drop Columns Transformer",
-                        "Imputer",
-                        "Random Forest Classifier",]}]
+            {
+                "Name_0": [
+                    "Drop Columns Transformer",
+                    "Imputer",
+                    "Random Forest Classifier",
+                ]
+            }
+        ]
 
     if automl_parameters:
         automl_parameters_ = {
@@ -2843,7 +2912,11 @@ def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(
 )
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_iterative_algorithm_passes_njobs_to_pipelines(
-    mock_fit, mock_score, dummy_classifier_estimator_class, dummy_binary_pipeline_class, X_y_binary
+    mock_fit,
+    mock_score,
+    dummy_classifier_estimator_class,
+    dummy_binary_pipeline_class,
+    X_y_binary,
 ):
     X, y = X_y_binary
 
@@ -2869,7 +2942,7 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(
         allowed_component_graphs=[
             {"Pipeline 1": [MockEstimatorWithNJobs]},
             {"Pipeline 2": [MockEstimatorWithNJobs]},
-            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
+            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]},
         ],
     )
     automl.search()
@@ -3064,8 +3137,9 @@ def test_automl_respects_random_seed(
         X_train=X,
         y_train=y,
         problem_type="binary",
-        allowed_component_graphs=[{"Name_0": [dummy_classifier_estimator_class],
-                                   "random_seed": 0}],
+        allowed_component_graphs=[
+            {"Name_0": [dummy_classifier_estimator_class], "random_seed": 0}
+        ],
         random_seed=42,
         max_iterations=10,
     )
@@ -3551,17 +3625,16 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
         "Imputer_1": ["Imputer", "Imputer"],
         "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"],
     }
-    pipeline_dict = BinaryClassificationPipeline(
-        component_graph_dict, custom_name="Pipeline from dict"
-    )
-
     component_graph_linear = ["Imputer", "Imputer", "Random Forest Classifier"]
+
     automl = AutoMLSearch(
         X,
         y,
         problem_type="binary",
-        allowed_component_graphs=[{"Pipeline from dict": component_graph_dict},
-                                  {"Pipeline from linear": ["Imputer", "Imputer", "Random Forest Classifier"]}],
+        allowed_component_graphs=[
+            {"Pipeline from dict": component_graph_dict},
+            {"Pipeline from linear": component_graph_linear},
+        ],
         pipeline_parameters={
             "Imputer": {"numeric_impute_strategy": "most_frequent"},
             "Imputer_1": {"numeric_impute_strategy": "median"},
@@ -3588,8 +3661,10 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
         X,
         y,
         problem_type="binary",
-        allowed_component_graphs=[{"Pipeline from dict": component_graph_dict},
-                                  {"Pipeline from linear": component_graph_linear}],
+        allowed_component_graphs=[
+            {"Pipeline from dict": component_graph_dict},
+            {"Pipeline from linear": component_graph_linear},
+        ],
         pipeline_parameters={
             "One Hot Encoder": {"top_n": 15},
             "One Hot Encoder_1": {"top_n": 25},
@@ -3621,7 +3696,9 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
             },
             "Random Forest Classifier": {"n_estimators": Categorical([100, 125])},
         }
-        component_graph = {"Name_linear": ["Imputer", "Imputer", "Random Forest Classifier"]}
+        component_graph = {
+            "Name_linear": ["Imputer", "Imputer", "Random Forest Classifier"]
+        }
     else:
         custom_hyperparameters = {
             "Imputer": {
@@ -3630,11 +3707,13 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
             "Imputer_1": {"numeric_impute_strategy": Categorical(["median", "mean"])},
             "Random Forest Classifier": {"n_estimators": Categorical([50, 100])},
         }
-        component_graph = {"Name_dict": {
-            "Imputer": ["Imputer"],
-            "Imputer_1": ["Imputer", "Imputer"],
-            "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"],
-        }}
+        component_graph = {
+            "Name_dict": {
+                "Imputer": ["Imputer"],
+                "Imputer_1": ["Imputer", "Imputer"],
+                "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"],
+            }
+        }
 
     automl = AutoMLSearch(
         X,
@@ -3645,6 +3724,7 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
         max_batches=5,
     )
     from pprint import pp
+
     automl.search()
     for i, row in automl.full_rankings.iterrows():
         if "Mode Baseline Binary" in row["pipeline_name"]:
@@ -3686,20 +3766,40 @@ def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(
 ):
     X, y = X_y_binary
 
-    component_graph_0 = {"Pipe Line One": {
-        "Imputer": ["Imputer"],
-        "Imputer_1": ["Imputer", "Imputer"],
-        "One Hot Encoder": ["One Hot Encoder", "Imputer_1"],
-        "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder"],
-    }}
-    component_graph_1 = {"Pipe Line Two": ["Imputer", "Imputer", "One Hot Encoder", "Random Forest Classifier"]}
-    component_graph_2 = {"Pipe Line Three": ["Imputer", "Imputer", "One Hot Encoder", "Random Forest Classifier"]}
+    component_graph_0 = {
+        "Pipe Line One": {
+            "Imputer": ["Imputer"],
+            "Imputer_1": ["Imputer", "Imputer"],
+            "One Hot Encoder": ["One Hot Encoder", "Imputer_1"],
+            "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder"],
+        }
+    }
+    component_graph_1 = {
+        "Pipe Line Two": [
+            "Imputer",
+            "Imputer",
+            "One Hot Encoder",
+            "Random Forest Classifier",
+        ]
+    }
+    component_graph_2 = {
+        "Pipe Line Three": [
+            "Imputer",
+            "Imputer",
+            "One Hot Encoder",
+            "Random Forest Classifier",
+        ]
+    }
 
     automl = AutoMLSearch(
         X,
         y,
         problem_type="binary",
-        allowed_component_graphs=[component_graph_0, component_graph_1, component_graph_2],
+        allowed_component_graphs=[
+            component_graph_0,
+            component_graph_1,
+            component_graph_2,
+        ],
         pipeline_parameters={"Imputer": {"numeric_impute_strategy": "most_frequent"}},
         custom_hyperparameters={
             "One Hot Encoder": {"top_n": Categorical([12, 10])},
@@ -3831,7 +3931,9 @@ def test_automl_raises_error_with_duplicate_pipeline_names(X_y_binary):
     X, y = X_y_binary
 
     component_graph_0 = {"Custom Pipeline": ["Imputer", "Random Forest Classifier"]}
-    component_graph_1 = {"Custom Pipeline": ["Imputer", "Logistic Regression Classifier"]}
+    component_graph_1 = {
+        "Custom Pipeline": ["Imputer", "Logistic Regression Classifier"]
+    }
     component_graph_2 = {"My Pipeline 3": ["Logistic Regression Classifier"]}
     component_graph_3 = {"My Pipeline 3": ["Random Forest Classifier"]}
 
@@ -3843,7 +3945,11 @@ def test_automl_raises_error_with_duplicate_pipeline_names(X_y_binary):
             X,
             y,
             problem_type="binary",
-            allowed_component_graphs=[component_graph_0, component_graph_1, component_graph_2],
+            allowed_component_graphs=[
+                component_graph_0,
+                component_graph_1,
+                component_graph_2,
+            ],
         )
 
     with pytest.raises(
@@ -3854,7 +3960,12 @@ def test_automl_raises_error_with_duplicate_pipeline_names(X_y_binary):
             X,
             y,
             problem_type="binary",
-            allowed_component_graphs=[component_graph_0, component_graph_1, component_graph_2, component_graph_3],
+            allowed_component_graphs=[
+                component_graph_0,
+                component_graph_1,
+                component_graph_2,
+                component_graph_3,
+            ],
         )
 
 
@@ -4095,7 +4206,9 @@ def test_score_batch_works(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs=[{"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}],
+        allowed_component_graphs=[
+            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
+        ],
     )
 
     def make_pipeline_name(index):
@@ -4160,7 +4273,9 @@ def test_train_pipelines_score_pipelines_raise_exception_with_duplicate_names(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs=[{"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}],
+        allowed_component_graphs=[
+            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
+        ],
     )
 
     with pytest.raises(
@@ -4186,7 +4301,9 @@ def test_score_batch_before_fitting_yields_error_nan_scores(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs=[{"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}],
+        allowed_component_graphs=[
+            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
+        ],
     )
 
     scored_pipelines = automl.score_pipelines(
@@ -4334,10 +4451,18 @@ def test_automl_validates_data_passed_in_to_allowed_component_graphs(
     X, y = X_y_binary
 
     with pytest.raises(
-        ValueError, match="Parameter allowed_component_graphs must be either None or a list!"
+        ValueError,
+        match="Parameter allowed_component_graphs must be either None or a list!",
     ):
         AutoMLSearch(
-            X, y, problem_type="binary", allowed_component_graphs={"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
+            X,
+            y,
+            problem_type="binary",
+            allowed_component_graphs={
+                "Mock Binary Classification Pipeline": [
+                    dummy_classifier_estimator_class
+                ]
+            },
         )
 
     with pytest.raises(
@@ -4350,7 +4475,11 @@ def test_automl_validates_data_passed_in_to_allowed_component_graphs(
             problem_type="binary",
             allowed_component_graphs=[
                 "Mock Binary Classification Pipeline",
-                {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]},
+                {
+                    "Mock Binary Classification Pipeline": [
+                        dummy_classifier_estimator_class
+                    ]
+                },
             ],
         )
 

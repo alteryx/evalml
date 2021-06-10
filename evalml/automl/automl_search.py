@@ -20,7 +20,8 @@ from evalml.automl.utils import (
     check_all_pipeline_names_unique,
     get_best_sampler_for_data,
     get_default_primary_search_objective,
-    make_data_splitter, get_pipelines_from_component_graphs,
+    make_data_splitter,
+    get_pipelines_from_component_graphs,
 )
 from evalml.data_checks import DefaultDataChecks
 from evalml.exceptions import (
@@ -391,6 +392,13 @@ class AutoMLSearch:
                     raise ValueError(
                         "Every component graph passed must be of type dictionary!"
                     )
+            unique_names = set()
+            for graph in allowed_component_graphs:
+                unique_names.add(list(graph.keys())[0])
+            if len(unique_names) < len(allowed_component_graphs):
+                raise ValueError(
+                    "Every name of allowed_component_graphs must be unique!"
+                )
         self.allowed_component_graphs = allowed_component_graphs
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
@@ -466,9 +474,7 @@ class AutoMLSearch:
             )
             index_columns = list(self.X_train.ww.select("index").columns)
             if len(index_columns) > 0 and drop_columns is None:
-                parameters["Drop Columns Transformer"] = {
-                    "columns": index_columns
-                }
+                parameters["Drop Columns Transformer"] = {"columns": index_columns}
             self.allowed_pipelines = [
                 make_pipeline(
                     self.X_train,
@@ -481,9 +487,9 @@ class AutoMLSearch:
                 for estimator in allowed_estimators
             ]
         else:
-            self.allowed_pipelines = get_pipelines_from_component_graphs(self.allowed_component_graphs,
-                                                                         self.problem_type,
-                                                                         parameters)
+            self.allowed_pipelines = get_pipelines_from_component_graphs(
+                self.allowed_component_graphs, self.problem_type, parameters
+            )
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
