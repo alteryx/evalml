@@ -494,7 +494,6 @@ class AutoMLSearch:
             raise ValueError("No allowed pipelines to search")
 
         logger.info(f"{len(self.allowed_pipelines)} pipelines ready for search.")
-        check_all_pipeline_names_unique(self.allowed_pipelines)
 
         run_ensembling = self.ensembling
         text_in_ensembling = len(self.X_train.ww.select("natural_language").columns) > 0

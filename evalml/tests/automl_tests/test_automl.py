@@ -3726,15 +3726,12 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
         custom_hyperparameters=custom_hyperparameters,
         max_batches=5,
     )
-    from pprint import pp
 
     automl.search()
     for i, row in automl.full_rankings.iterrows():
         if "Mode Baseline Binary" in row["pipeline_name"]:
             continue
         if row["pipeline_name"] == "Name_linear":
-            print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&")
-            pp(row.parameters)
             assert row["parameters"]["Imputer"]["numeric_impute_strategy"] == "mean"
             assert row["parameters"]["Imputer_1"]["numeric_impute_strategy"] in {
                 "most_frequent",
@@ -3930,15 +3927,17 @@ def test_automl_check_high_variance_logs_warning(mock_fit_binary, X_y_binary, ca
         assert "High coefficient of variation" in out
 
 
-def test_automl_raises_error_with_duplicate_pipeline_names(X_y_binary):
+def test_automl_raises_error_with_duplicate_pipeline_names(dummy_classifier_estimator_class,
+                                                           X_y_binary):
     X, y = X_y_binary
 
-    component_graph_0 = {"Custom Pipeline": ["Imputer", "Random Forest Classifier"]}
-    component_graph_1 = {
-        "Custom Pipeline": ["Imputer", "Logistic Regression Classifier"]
-    }
-    component_graph_2 = {"My Pipeline 3": ["Logistic Regression Classifier"]}
-    component_graph_3 = {"My Pipeline 3": ["Random Forest Classifier"]}
+    class MyPipeline(BinaryClassificationPipeline):
+        estimator = dummy_classifier_estimator_class
+
+    pipeline_0 = MyPipeline(custom_name="Custom Pipeline", component_graph=[dummy_classifier_estimator_class])
+    pipeline_1 = MyPipeline(custom_name="Custom Pipeline", component_graph=[dummy_classifier_estimator_class])
+    pipeline_2 = MyPipeline(custom_name="My Pipeline 3", component_graph=[dummy_classifier_estimator_class])
+    pipeline_3 = MyPipeline(custom_name="My Pipeline 3", component_graph=[dummy_classifier_estimator_class])
 
     with pytest.raises(
         ValueError,
@@ -3948,12 +3947,11 @@ def test_automl_raises_error_with_duplicate_pipeline_names(X_y_binary):
             X,
             y,
             problem_type="binary",
-            allowed_component_graphs=[
-                component_graph_0,
-                component_graph_1,
-                component_graph_2,
-            ],
-        )
+        ).train_pipelines([
+                pipeline_0,
+                pipeline_1,
+                pipeline_2,
+            ],)
 
     with pytest.raises(
         ValueError,
@@ -3963,13 +3961,27 @@ def test_automl_raises_error_with_duplicate_pipeline_names(X_y_binary):
             X,
             y,
             problem_type="binary",
-            allowed_component_graphs=[
-                component_graph_0,
-                component_graph_1,
-                component_graph_2,
-                component_graph_3,
-            ],
-        )
+        ).train_pipelines([
+            pipeline_0,
+            pipeline_1,
+            pipeline_2,
+            pipeline_3,
+        ], )
+
+    with pytest.raises(
+        ValueError,
+        match="All pipeline names must be unique. The names 'Custom Pipeline', 'My Pipeline 3' were repeated.",
+    ):
+        AutoMLSearch(
+            X,
+            y,
+            problem_type="binary",
+        ).score_pipelines([
+            pipeline_0,
+            pipeline_1,
+            pipeline_2,
+            pipeline_3,
+        ], pd.DataFrame(), pd.Series(), None)
 
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
