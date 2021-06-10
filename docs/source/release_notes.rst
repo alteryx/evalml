@@ -16,7 +16,7 @@ Release Notes
     * Enhancements
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
         * Added support for nonlinear pipelines for ``generate_pipeline_code`` :pr:`2332`
-        * Added ``inverse_transform`` method to pipelines :pr:`2256``
+        * Added ``inverse_transform`` method to pipelines :pr:`2256`
     * Fixes
         * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
