@@ -9,11 +9,12 @@ on:
 
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} unit tests, Core Dependencies (${{ matrix.core_dependencies }}), Codecov (${{ matrix.codecov }})
+    name: ${{ matrix.python_version }} unit ${{matrix.dir}} tests, Core Dependencies (${{ matrix.core_dependencies }}), Codecov (${{ matrix.codecov }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
       matrix:
+        dir: ["automl", "model understanding", "all other"]
         include:
           - python_version: "3.7"
             core_dependencies: false
@@ -70,12 +71,12 @@ jobs:
         name: Run unit tests with minimal dependencies
         run: |
           source test_python/bin/activate
-          make git-test-minimal-deps-no-dask
+          pytest $TEST_DIR -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
       - if: ${{ !matrix.core_dependencies }}
         name: Run unit tests
         run: |
           source test_python/bin/activate
-          make git-test-no-dask
+          pytest $TEST_DIR -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
       - if: ${{ matrix.codecov }}
         name: install coverage
         run: pip install coverage
