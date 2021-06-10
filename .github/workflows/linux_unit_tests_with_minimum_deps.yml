@@ -26,13 +26,13 @@ jobs:
             command: 'git-test-other'
           - python_version: "3.7"
             core_dependencies: true
-            command: 'git-test-automl'
+            command: 'git-test-automl-core'
           - python_version: "3.7"
             core_dependencies: true
-            command: 'git-test-modelunderstanding'
+            command: 'git-test-modelunderstanding-core'
           - python_version: "3.7"
             core_dependencies: true
-            command: 'git-test-other'
+            command: 'git-test-other-core'
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
