@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        dir: ["automl", "model understanding", "all other"]
+        dir: ['automl', 'model understanding', 'all other']
         include:
           - python_version: "3.7"
             core_dependencies: false
