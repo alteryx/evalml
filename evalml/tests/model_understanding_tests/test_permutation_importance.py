@@ -220,11 +220,7 @@ test_cases = [
     ),
     (
         LinearPipelineWithTextFeatures,
-        {
-            "Select Columns Transformer": {
-                "columns": ["provider", "amount", "currency"]
-            }
-        },
+        {"Select Columns Transformer": {"columns": ["provider", "amount", "currency"]}},
     ),
     (
         LinearPipelineWithTextFeaturizerNoTextFeatures,
