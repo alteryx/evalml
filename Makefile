@@ -63,27 +63,27 @@ git-test-minimal-deps-nocov:
 
 .PHONY: git-test-automl-core
 git-test-automl-core:
-	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
+	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --durations 100 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
 
 .PHONY: git-test-automl
 git-test-automl:
-	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --durations 100 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: git-test-modelunderstanding-core
 git-test-modelunderstanding-core:
-	pytest evalml/tests/model_understanding_tests -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
+	pytest evalml/tests/model_understanding_tests -n 2 --durations 100 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
 
 .PHONY: git-test-modelunderstanding
 git-test-modelunderstanding:
-	pytest evalml/tests/model_understanding_tests -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+	pytest evalml/tests/model_understanding_tests -n 2 --durations 100 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: git-test-other-core
 git-test-other-core:
-	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
+	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ -n 2 --durations 100 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies
 
 .PHONY: git-test-other
 git-test-other:
-	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ -n 2 --durations 100 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ -n 2 --durations 100 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure
 
 .PHONY: installdeps
 installdeps:
