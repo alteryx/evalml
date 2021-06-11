@@ -3,6 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Added change for ``k_neighbors`` parameter in SMOTE Oversamplers to automatically handle small samples :pr:``
     * Changes
     * Documentation Changes
     * Testing Changes
