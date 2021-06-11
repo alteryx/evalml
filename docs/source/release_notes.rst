@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Made woodwork version less restrictive :pr:`2373`
     * Documentation Changes
     * Testing Changes
 
