@@ -3,6 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Fixed partial dependence graph method failing on multiclass problems when the class labels are numeric :pr:`2372`
     * Changes
     * Documentation Changes
     * Testing Changes
