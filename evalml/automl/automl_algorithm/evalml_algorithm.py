@@ -5,9 +5,13 @@ import numpy as np
 from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
-
 from evalml.model_family import ModelFamily
-from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
+from evalml.pipelines.utils import (
+    make_pipeline,
+    _make_stacked_ensemble_pipeline,
+)
+from evalml.pipelines.components.utils import handle_component_class
+from evalml.problem_types import is_regression
 
 
 class EvalMLAlgorithm(AutoMLAlgorithm):
@@ -58,6 +62,10 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
 
     def __init__(
         self,
+        X,
+        y,
+        problem_type,
+        _sampler_name,
         tuner_class=None,
         random_seed=0,
         pipeline_params=None,
@@ -75,6 +83,12 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             tuner_class=None,
             random_seed=random_seed,
         )
+
+
+        self.X = X
+        self.y = y
+        self.problem_type = problem_type
+        self._sampler_name = _sampler_name
 
         self.n_jobs = n_jobs
         self.number_features = number_features
@@ -104,6 +118,33 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                         " and Real!"
                     )
 
+    def _create_naive_pipelines(self):
+        # don't need to add baseline as it is added as part of AutoMLSearch TODO: what to do here
+        if is_regression(self.problem_type):
+            naive_estimators = [
+                "Linear Regressor",
+                "Random Forest Regressor",
+            ]
+            estimators = [handle_component_class(estimator) for estimator in naive_estimators]
+        else:
+            naive_estimators = [
+                "Logistic Regression Classifier",
+                "Random Forest Classifier",
+            ]
+            estimators = [handle_component_class(estimator) for estimator in naive_estimators]
+
+        return [
+            make_pipeline(
+                self.X,
+                self.y,
+                estimator,
+                self.problem_type,
+                parameters=self._frozen_pipeline_parameters,
+                sampler_name=self._sampler_name,
+            )
+            for estimator in estimators
+        ]
+
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
 
@@ -111,4 +152,9 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
 
-        pass
+        if self._batch_number == 0:
+            next_batch = self._create_naive_pipelines()
+
+        self._pipeline_number += len(next_batch)
+        self._batch_number += 1
+        return next_batch
