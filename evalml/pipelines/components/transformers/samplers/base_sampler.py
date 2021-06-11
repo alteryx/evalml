@@ -195,7 +195,7 @@ class BaseOverSampler(BaseSampler):
                 neighbors = min_counts - 1
             else:
                 raise ValueError(
-                    f"Minority class needs more than 1 sample to use SMOTE!, recieved {min_counts} sample"
+                    f"Minority class needs more than 1 sample to use SMOTE!, received {min_counts} sample"
                 )
         sampler_params["k_neighbors"] = neighbors
         sampler = sampler_class(**sampler_params, random_state=self.random_seed)
