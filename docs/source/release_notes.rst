@@ -8,6 +8,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Add ``pytest-timeout``. All tests that run longer than 6 minutes will fail. :pr:`2374`
+        * Separated the dask tests out into separate github action jobs to isolate dask failures. :pr:`2376`
         * Refactored dask tests :pr:`2377`
 
 .. warning::
