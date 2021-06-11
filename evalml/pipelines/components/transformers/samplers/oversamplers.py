@@ -11,7 +11,12 @@ class SMOTESampler(BaseOverSampler):
     hyperparameter_ranges = {}
 
     def __init__(
-        self, sampling_ratio=0.25, k_neighbors_default=5, n_jobs=-1, random_seed=0, **kwargs
+        self,
+        sampling_ratio=0.25,
+        k_neighbors_default=5,
+        n_jobs=-1,
+        random_seed=0,
+        **kwargs
     ):
         super().__init__(
             "SMOTE",
@@ -31,7 +36,12 @@ class SMOTENCSampler(BaseOverSampler):
     hyperparameter_ranges = {}
 
     def __init__(
-        self, sampling_ratio=0.25, k_neighbors_default=5, n_jobs=-1, random_seed=0, **kwargs
+        self,
+        sampling_ratio=0.25,
+        k_neighbors_default=5,
+        n_jobs=-1,
+        random_seed=0,
+        **kwargs
     ):
         self.categorical_features = None
         super().__init__(
@@ -66,7 +76,12 @@ class SMOTENSampler(BaseOverSampler):
     hyperparameter_ranges = {}
 
     def __init__(
-        self, sampling_ratio=0.25, k_neighbors_default=5, n_jobs=-1, random_seed=0, **kwargs
+        self,
+        sampling_ratio=0.25,
+        k_neighbors_default=5,
+        n_jobs=-1,
+        random_seed=0,
+        **kwargs
     ):
         super().__init__(
             "SMOTEN",

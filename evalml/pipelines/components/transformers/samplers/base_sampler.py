@@ -121,7 +121,7 @@ class BaseOverSampler(BaseSampler):
         k_neighbors_default=5,
         n_jobs=-1,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         """Initializes the oversampler component.
 
@@ -194,7 +194,9 @@ class BaseOverSampler(BaseSampler):
             if min_counts > 1:
                 neighbors = min_counts - 1
             else:
-                raise ValueError(f"Minority class needs more than 1 sample to use SMOTE!, recieved {min_counts} sample")
+                raise ValueError(
+                    f"Minority class needs more than 1 sample to use SMOTE!, recieved {min_counts} sample"
+                )
         sampler_params["k_neighbors"] = neighbors
         sampler = sampler_class(**sampler_params, random_state=self.random_seed)
         self._component_obj = sampler

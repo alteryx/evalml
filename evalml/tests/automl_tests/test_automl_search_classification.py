@@ -1524,8 +1524,12 @@ def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependenci
         assert seen_under
 
 
-@pytest.mark.parametrize("parameters", [None, {"SMOTENC Oversampler": {"k_neighbors_default": 5}}])
-def test_automl_search_sampler_k_neighbors_no_error(parameters, has_minimal_dependencies, fraud_100):
+@pytest.mark.parametrize(
+    "parameters", [None, {"SMOTENC Oversampler": {"k_neighbors_default": 5}}]
+)
+def test_automl_search_sampler_k_neighbors_no_error(
+    parameters, has_minimal_dependencies, fraud_100
+):
     # automatically uses SMOTE
     if has_minimal_dependencies:
         pytest.skip("Skipping tests since imblearn isn't installed")
@@ -1536,7 +1540,7 @@ def test_automl_search_sampler_k_neighbors_no_error(parameters, has_minimal_depe
         y_train=y,
         problem_type="binary",
         max_iterations=2,
-        pipeline_parameters=parameters
+        pipeline_parameters=parameters,
     )
     # check that the calling this doesn't fail
     automl.search()

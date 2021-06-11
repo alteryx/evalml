@@ -344,10 +344,10 @@ def test_oversampler_sampling_dict_strings(oversampler):
 
 
 @pytest.mark.parametrize("oversampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
-@pytest.mark.parametrize("minority,expected,fails", [(1, 0, True),
-                                                     (2, 1, False),
-                                                     (5, 4, False),
-                                                     (10, 5, False)])
+@pytest.mark.parametrize(
+    "minority,expected,fails",
+    [(1, 0, True), (2, 1, False), (5, 4, False), (10, 5, False)],
+)
 def test_oversampler_sampling_k_neighbors(minority, expected, fails, oversampler):
     X = np.array(
         [
@@ -360,7 +360,9 @@ def test_oversampler_sampling_k_neighbors(minority, expected, fails, oversampler
     y = np.array(["minority"] * minority + ["majority"] * (1000 - minority))
     overs = oversampler(k_neighbors_default=5)
     if fails:
-        with pytest.raises(ValueError, match="Minority class needs more than 1 sample to use SMOTE"):
+        with pytest.raises(
+            ValueError, match="Minority class needs more than 1 sample to use SMOTE"
+        ):
             overs.fit_transform(X_ww, y)
         return
     _, _ = overs.fit_transform(X_ww, y)
