@@ -6,7 +6,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-        * Add ``pytest-timeout``. All tests that run longer than 5 minutes will fail. :pr:`2374`
+        * Add ``pytest-timeout``. All tests that run longer than 6 minutes will fail. :pr:`2374`
 
 .. warning::
 
