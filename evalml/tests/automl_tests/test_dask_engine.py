@@ -1,8 +1,8 @@
-
 import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from dask.distributed import Client, LocalCluster
 
 from evalml.automl.engine.dask_engine import DaskComputation, DaskEngine
 from evalml.automl.engine.engine_base import (
@@ -19,12 +19,13 @@ from evalml.tests.automl_tests.dask_test_utils import (
     TestSchemaCheckPipeline,
     automl_data,
 )
-from dask.distributed import LocalCluster, Client
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def cluster():
-    dask_cluster = LocalCluster(n_workers=1, threads_per_worker=1, dashboard_address=None)
+    dask_cluster = LocalCluster(
+        n_workers=1, threads_per_worker=1, dashboard_address=None
+    )
     yield dask_cluster
     dask_cluster.close()
 

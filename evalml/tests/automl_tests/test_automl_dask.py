@@ -1,6 +1,6 @@
-
 import numpy as np
 import pytest
+from dask.distributed import Client, LocalCluster
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.callbacks import raise_error_callback
@@ -11,7 +11,6 @@ from evalml.tests.automl_tests.dask_test_utils import (
     TestPipelineWithFitError,
     TestPipelineWithScoreError,
 )
-from dask.distributed import LocalCluster, Client
 
 
 @pytest.fixture
@@ -19,9 +18,11 @@ def sequential_engine():
     return SequentialEngine()
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def cluster():
-    dask_cluster = LocalCluster(n_workers=1, threads_per_worker=2, dashboard_address=None)
+    dask_cluster = LocalCluster(
+        n_workers=1, threads_per_worker=2, dashboard_address=None
+    )
     yield dask_cluster
     dask_cluster.close()
 
@@ -67,7 +68,6 @@ def test_automl_max_iterations(X_y_binary_cls, cluster, sequential_engine):
     X, y = X_y_binary_cls
     with Client(cluster) as client:
         parallel_engine = DaskEngine(client)
-
 
         max_iterations = 4
         par_automl = AutoMLSearch(
