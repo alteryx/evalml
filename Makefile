@@ -23,7 +23,7 @@ test:
 
 .PHONY: test-dask
 test:
-	pytest evalml/tests/automl_tests/dask_tests/ --doctest-modules --doctest-continue-on-failure
+	pytest evalml/tests/automl_tests/dask_tests/ --doctest-modules --doctest-continue-on-failure  --timeout 360
 
 .PHONY: git-test
 git-test:
@@ -31,7 +31,7 @@ git-test:
 
 .PHONY: git-test-dask
 git-test-dask:
-	pytest evalml/tests/automl_tests/dask_tests/ -n 1 --doctest-modules --cov=evalml/tests/automl_tests/dask_tests/ --junitxml=test-reports/junit.xml --doctest-continue-on-failure
+	pytest evalml/tests/automl_tests/dask_tests/ -n 1 --doctest-modules --cov=evalml/tests/automl_tests/dask_tests/ --junitxml=test-reports/junit.xml --doctest-continue-on-failure  --timeout 360
 
 .PHONY: git-test-nocov
 git-test-nocov:
