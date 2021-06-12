@@ -873,9 +873,7 @@ def graph_partial_dependence(
         class_labels_mapping = {
             class_label: str(class_label) for class_label in class_labels
         }
-        class_labels_strs = [
-            class_labels_mapping[class_label] for class_label in class_labels
-        ]
+        class_labels_strs = [str(class_label) for class_label in class_labels]
         # Don't specify share_xaxis and share_yaxis so that we get tickmarks in each subplot
         fig = _subplots.make_subplots(
             rows=rows, cols=cols, subplot_titles=class_labels_strs
@@ -904,7 +902,7 @@ def graph_partial_dependence(
                     trace = _go.Bar(x=x, y=y, name=label)
                 else:
                     trace = _go.Scatter(
-                        x=x, y=y, line=dict(width=3), name=class_labels_strs[label]
+                        x=x, y=y, line=dict(width=3), name=class_labels_mapping[label]
                     )
                 fig.add_trace(trace, row=row, col=col)
 
