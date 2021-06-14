@@ -13,9 +13,7 @@ from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
-from evalml.automl.automl_algorithm import (
-    IterativeAlgorithm
-)
+from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import (
     log_error_callback,
     raise_error_callback,
@@ -36,9 +34,9 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
+    F1,
     BinaryClassificationObjective,
     CostBenefitMatrix,
-    F1,
     FraudCost,
     RegressionObjective,
 )
@@ -49,8 +47,8 @@ from evalml.objectives.utils import (
     get_objective,
 )
 from evalml.pipelines import (
-    ComponentGraph,
     BinaryClassificationPipeline,
+    ComponentGraph,
     Estimator,
     MulticlassClassificationPipeline,
     PipelineBase,
