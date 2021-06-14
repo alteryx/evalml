@@ -299,7 +299,7 @@ def test_partial_dependence_multiclass_numeric_labels(
     pipeline.fit(X, y)
 
     num_classes = y.nunique()
-    grid_resolution = 20
+    grid_resolution = 5
 
     one_way_part_dep = partial_dependence(
         pipeline=pipeline, X=X, features=1, grid_resolution=grid_resolution
