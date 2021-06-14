@@ -1,4 +1,4 @@
-name: Linux Unit Tests with Latest Dependencies (Dask Only)
+name: Linux Unit Tests (Dask Only)
 
 on:
   pull_request:
