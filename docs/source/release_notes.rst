@@ -6,6 +6,7 @@ Release Notes
         * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
     * Changes
     * Documentation Changes
+        * Fixed lead scoring weights in the demos documentation :pr:`2315`
     * Testing Changes
         * Add ``pytest-timeout``. All tests that run longer than 6 minutes will fail. :pr:`2374`
         * Refactored dask tests :pr:`2377`
@@ -27,7 +28,6 @@ Release Notes
         * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
         * Separated `custom_hyperparameters` from pipelines and added them as an argument to ``AutoMLSearch`` :pr:`2317`
     * Documentation Changes
-        * Fixed lead scoring weights in the demos documentation :pr:`2315`
     * Testing Changes
         * Update minimum unit tests to run on all pull requests :pr:`2314`
         * Pass token to authorize uploading of codecov reports :pr:`2344`
