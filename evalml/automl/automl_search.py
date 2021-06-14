@@ -469,7 +469,9 @@ class AutoMLSearch:
                 if "Drop Columns Transformer" in self.pipeline_parameters
                 else None
             )
-            index_columns = list(self.X_train.ww.select("index", return_schema=True).columns)
+            index_columns = list(
+                self.X_train.ww.select("index", return_schema=True).columns
+            )
             if len(index_columns) > 0 and drop_columns is None:
                 self._frozen_pipeline_parameters["Drop Columns Transformer"] = {
                     "columns": index_columns
@@ -493,7 +495,10 @@ class AutoMLSearch:
         check_all_pipeline_names_unique(self.allowed_pipelines)
 
         run_ensembling = self.ensembling
-        text_in_ensembling = len(self.X_train.ww.select("natural_language", return_schema=True).columns) > 0
+        text_in_ensembling = (
+            len(self.X_train.ww.select("natural_language", return_schema=True).columns)
+            > 0
+        )
         if run_ensembling and len(self.allowed_pipelines) == 1:
             logger.warning(
                 "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
