@@ -47,6 +47,7 @@ from evalml.objectives.utils import (
     get_objective,
 )
 from evalml.pipelines import (
+    ComponentGraph,
     BinaryClassificationPipeline,
     Estimator,
     MulticlassClassificationPipeline,
@@ -2202,6 +2203,37 @@ def test_time_series_regression_with_parameters(ts_data):
         max_batches=3,
     )
     assert automl.allowed_pipelines[0].parameters["pipeline"] == problem_configuration
+
+
+@pytest.mark.parametrize("graph_type", ["linear", "dict"])
+def test_automl_accepts_component_graphs(
+    graph_type, dummy_classifier_estimator_class, X_y_binary
+):
+    X, y = X_y_binary
+    if graph_type == "linear":
+        component_graph = ComponentGraph().from_list(
+            ["Imputer", "Logistic Regression Classifier"]
+        )
+    else:
+        component_dict = {
+            "imputer": ["Imputer"],
+            "ohe": ["One Hot Encoder", "imputer.x"],
+            "estimator_1": ["Random Forest Classifier", "ohe.x"],
+            "estimator_2": ["Decision Tree Classifier", "ohe.x"],
+            "final": ["Logistic Regression Classifier", "estimator_1", "estimator_2"],
+        }
+        component_graph = ComponentGraph(component_dict)
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        allowed_component_graphs=[{"Dummy_Name": component_graph}],
+        objective="auto",
+        max_batches=3,
+    )
+    for pipeline_ in automl.allowed_pipelines:
+        assert isinstance(pipeline_, BinaryClassificationPipeline)
+        assert pipeline_.component_graph == component_graph
 
 
 @pytest.mark.parametrize("fold_scores", [[2, 4, 6], [np.nan, 4, 6]])
@@ -4489,7 +4521,7 @@ def test_automl_validates_data_passed_in_to_allowed_component_graphs(
 
     with pytest.raises(
         ValueError,
-        match="Every component graph passed must be of type dictionary!",
+        match="Every component graph passed must be of type dictionary or ComponentGraph!",
     ):
         AutoMLSearch(
             X,

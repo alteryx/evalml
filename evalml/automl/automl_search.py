@@ -36,6 +36,7 @@ from evalml.objectives import (
     get_objective,
 )
 from evalml.pipelines import (
+    ComponentGraph,
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
@@ -188,7 +189,7 @@ class AutoMLSearch:
             tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
                 Only applicable if patience is not None. Defaults to None.
 
-            allowed_component_graphs (list): A list of dictionaries indicating the component graphs allowed in the search.
+            allowed_component_graphs (list): A list of dictionaries or ComponentGraphs indicating the component graphs allowed in the search.
                 The format should follow [ {Name_of_graph: [list_of_components],
                                             random_seed: 42} ].
                 The default of None indicates all pipeline component graphs for this problem type are allowed. Setting this field will cause
@@ -388,9 +389,9 @@ class AutoMLSearch:
                     "Parameter allowed_component_graphs must be either None or a list!"
                 )
             for graph in allowed_component_graphs:
-                if not isinstance(graph, dict):
+                if not isinstance(graph, (dict, ComponentGraph)):
                     raise ValueError(
-                        "Every component graph passed must be of type dictionary!"
+                        "Every component graph passed must be of type dictionary or ComponentGraph!"
                     )
             unique_names = set()
             for graph in allowed_component_graphs:
