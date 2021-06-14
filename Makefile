@@ -23,23 +23,23 @@ test:
 
 .PHONY: test-dask
 test:
-	pytest evalml/tests/automl_tests/dask_tests/ --doctest-modules --doctest-continue-on-failure  --timeout 360
+	pytest evalml/tests/automl_tests/dask_tests/ --doctest-modules --doctest-continue-on-failure  --timeout 240
 
 .PHONY: git-test
 git-test:
-	pytest evalml/ -n 2 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure  --ignore=evalml/tests/automl_tests/dask_tests --timeout 360
+	pytest evalml/ -n 2 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure  --ignore=evalml/tests/automl_tests/dask_tests --timeout 240
 
 .PHONY: git-test-dask
 git-test-dask:
-	pytest evalml/tests/automl_tests/dask_tests/ -n 1 --doctest-modules --cov=evalml/tests/automl_tests/dask_tests/ --junitxml=test-reports/junit.xml --doctest-continue-on-failure  --timeout 360
+	pytest evalml/tests/automl_tests/dask_tests/ -n 1 --doctest-modules --cov=evalml/tests/automl_tests/dask_tests/ --junitxml=test-reports/junit.xml --doctest-continue-on-failure  --timeout 240
 
 .PHONY: git-test-nocov
 git-test-nocov:
-	pytest evalml/ -n 2 --doctest-modules --doctest-continue-on-failure  --ignore=evalml/tests/automl_tests/dask_tests --timeout 360
+	pytest evalml/ -n 2 --doctest-modules --doctest-continue-on-failure  --ignore=evalml/tests/automl_tests/dask_tests --timeout 240
 
 .PHONY: git-test-minimal-deps
 git-test-minimal-deps:
-	pytest evalml/ -n 2 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies  --ignore=evalml/tests/automl_tests/dask_tests --timeout 360
+	pytest evalml/ -n 2 --doctest-modules --cov=evalml --junitxml=test-reports/junit.xml --doctest-continue-on-failure --has-minimal-dependencies  --ignore=evalml/tests/automl_tests/dask_tests --timeout 240
 
 .PHONY: git-test-minimal-deps-dask
 git-test-minimal-deps-dask:
@@ -47,7 +47,7 @@ git-test-minimal-deps-dask:
 
 .PHONY: git-test-minimal-deps-nocov
 git-test-minimal-deps-nocov:
-	pytest evalml/ -n 2 --doctest-modules --doctest-continue-on-failure --has-minimal-dependencies  --ignore=evalml/tests/automl_tests/dask_tests --timeout 360
+	pytest evalml/ -n 2 --doctest-modules --doctest-continue-on-failure --has-minimal-dependencies  --ignore=evalml/tests/automl_tests/dask_tests --timeout 240
 
 .PHONY: installdeps
 installdeps:
