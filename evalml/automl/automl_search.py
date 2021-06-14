@@ -189,7 +189,8 @@ class AutoMLSearch:
                 Only applicable if patience is not None. Defaults to None.
 
             allowed_component_graphs (list): A list of dictionaries indicating the component graphs allowed in the search.
-                The format should follow [ {Name_of_graph: [list_of_components]} ].
+                The format should follow [ {Name_of_graph: [list_of_components],
+                                            random_seed: 42} ].
                 The default of None indicates all pipeline component graphs for this problem type are allowed. Setting this field will cause
                 allowed_model_families to be ignored.
 

@@ -133,7 +133,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self._batch_number == 0:
             next_batch = [
                 pipeline.new(
-                    parameters=self._combine_parameters(pipeline, {}),
+                    parameters={**self._transform_parameters(pipeline, {})},
                     random_seed=self.random_seed,
                 )
                 for pipeline in self.allowed_pipelines
@@ -149,7 +149,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             for pipeline_dict in self._best_pipeline_info.values():
                 pipeline = pipeline_dict["pipeline"]
                 pipeline_params = pipeline_dict["parameters"]
-                parameters = self._combine_parameters(pipeline, pipeline_params)
+                parameters = {**self._transform_parameters(pipeline, pipeline_params)}
                 input_pipelines.append(
                     pipeline.new(parameters=parameters, random_seed=self.random_seed)
                 )
@@ -172,17 +172,13 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             pipeline = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline.name].propose()
-                parameters = self._combine_parameters(pipeline, proposed_parameters)
+                parameters = {**self._transform_parameters(pipeline, proposed_parameters)}
                 next_batch.append(
                     pipeline.new(parameters=parameters, random_seed=self.random_seed)
                 )
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
-
-    def _combine_parameters(self, pipeline, proposed_parameters):
-        """Helper function for logic to transform proposed parameters."""
-        return {**self._transform_parameters(pipeline, proposed_parameters)}
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
         """Register results from evaluating a pipeline

@@ -2201,7 +2201,6 @@ def test_time_series_regression_with_parameters(ts_data):
         problem_configuration=problem_configuration,
         max_batches=3,
     )
-    automl.search()
     assert automl.allowed_pipelines[0].parameters["pipeline"] == problem_configuration
 
 
