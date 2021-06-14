@@ -68,7 +68,7 @@ class DaskEngine(EngineBase):
             if not (X_future.cancelled() or y_future.cancelled()):
                 return X_future, y_future
         self._data_futures_cache[data_hash] = self.client.scatter(
-            [X, y], broadcast=False
+            [X, y], broadcast=True
         )
         return self._data_futures_cache[data_hash]
 
