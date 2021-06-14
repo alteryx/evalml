@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Upgrade woodwork version to v0.4.1 :pr:`2379`
     * Fixes
     * Changes
     * Documentation Changes
