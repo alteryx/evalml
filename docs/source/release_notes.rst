@@ -7,6 +7,8 @@ Release Notes
         * Made woodwork version less restrictive :pr:`2373`
     * Documentation Changes
     * Testing Changes
+        * Add ``pytest-timeout``. All tests that run longer than 6 minutes will fail. :pr:`2374`
+        * Refactored dask tests :pr:`2377`
 
 .. warning::
 
