@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Added change for ``k_neighbors`` parameter in SMOTE Oversamplers to automatically handle small samples :pr:`2375`
+        * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
     * Changes
     * Documentation Changes
     * Testing Changes

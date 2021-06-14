@@ -61,11 +61,7 @@ def test_submit_training_job_single(X_y_binary_cls, cluster):
 
         # Verify parallelization has no effect on output of function
         original_pipeline_fitted = train_pipeline(
-            pipeline,
-            X,
-            y,
-            optimize_thresholds=automl_data.optimize_thresholds,
-            objective=automl_data.objective,
+            pipeline, X, y, automl_config=automl_data
         )
         assert dask_pipeline_fitted == original_pipeline_fitted
         pd.testing.assert_series_equal(
@@ -340,6 +336,7 @@ def test_dask_sends_woodwork_schema(X_y_binary_cls, cluster):
             data_splitter=automl_data.data_splitter,
             problem_type=automl_data.problem_type,
             objective=automl_data.objective,
+            alternate_thresholding_objective=automl_data.alternate_thresholding_objective,
             additional_objectives=automl_data.additional_objectives,
             optimize_thresholds=automl_data.optimize_thresholds,
             error_callback=automl_data.error_callback,
