@@ -110,14 +110,7 @@ class DaskEngine(EngineBase):
         """
         X, y = self.send_data_to_cluster(X, y)
         dask_future = self.client.submit(
-            train_pipeline,
-            pipeline=pipeline,
-            X=X,
-            y=y,
-            optimize_thresholds=automl_config.optimize_thresholds,
-            objective=automl_config.objective,
-            X_schema=automl_config.X_schema,
-            y_schema=automl_config.y_schema,
+            train_pipeline, pipeline=pipeline, X=X, y=y, automl_config=automl_config
         )
         return DaskComputation(dask_future)
 
