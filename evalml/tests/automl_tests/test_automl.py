@@ -34,9 +34,9 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
-    F1,
     BinaryClassificationObjective,
     CostBenefitMatrix,
+    F1,
     FraudCost,
     RegressionObjective,
 )
