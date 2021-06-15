@@ -11,7 +11,7 @@ class ElasticNetRegressor(Estimator):
 
     name = "Elastic Net Regressor"
     hyperparameter_ranges = {
-        "alpha": Real(0, 1),
+        "alpha": Real(0.05, 1),
         "l1_ratio": Real(0, 1),
     }
     model_family = ModelFamily.LINEAR_MODEL
@@ -22,8 +22,8 @@ class ElasticNetRegressor(Estimator):
 
     def __init__(
         self,
-        alpha=0.0001,
-        l1_ratio=0.15,
+        alpha=1,
+        l1_ratio=0.5,
         max_iter=1000,
         normalize=False,
         random_seed=0,

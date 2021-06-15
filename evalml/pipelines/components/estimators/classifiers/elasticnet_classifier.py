@@ -14,7 +14,7 @@ class ElasticNetClassifier(Estimator):
 
     name = "Elastic Net Classifier"
     hyperparameter_ranges = {
-        "alpha": Real(0, 1),
+        "alpha": Real(0.05, 1),
         "l1_ratio": Real(0, 1),
     }
     model_family = ModelFamily.LINEAR_MODEL
@@ -27,7 +27,7 @@ class ElasticNetClassifier(Estimator):
 
     def __init__(
         self,
-        alpha=0.5,
+        alpha=1,
         l1_ratio=0.5,
         n_jobs=-1,
         max_iter=1000,
