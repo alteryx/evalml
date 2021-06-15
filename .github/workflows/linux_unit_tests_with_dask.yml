@@ -1,4 +1,4 @@
-name: Linux Unit Tests with Latest Dependencies
+name: Linux Unit Tests (Dask Only)
 
 on:
   pull_request:
@@ -9,10 +9,10 @@ on:
 
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} unit tests, Core Dependencies (${{ matrix.core_dependencies }}), Codecov (${{ matrix.codecov }})
+    name: ${{ matrix.python_version }} Unit Tests, Core Dependencies (${{ matrix.core_dependencies }}), Codecov (${{ matrix.codecov }}), Dask Only
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - python_version: "3.7"
@@ -67,15 +67,15 @@ jobs:
           source test_python/bin/activate
           coverage erase
       - if: ${{ matrix.core_dependencies }}
-        name: Run unit tests with minimal dependencies
+        name: Run dask unit tests with minimal dependencies
         run: |
           source test_python/bin/activate
-          make git-test-minimal-deps-no-dask
+          make git-test-minimal-deps-dask
       - if: ${{ !matrix.core_dependencies }}
         name: Run unit tests
         run: |
           source test_python/bin/activate
-          make git-test-no-dask
+          make git-test-dask
       - if: ${{ matrix.codecov }}
         name: install coverage
         run: pip install coverage
