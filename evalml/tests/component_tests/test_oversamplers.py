@@ -367,3 +367,4 @@ def test_oversampler_sampling_k_neighbors(minority, expected, fails, oversampler
         return
     _, _ = overs.fit_transform(X_ww, y)
     assert overs._component_obj.k_neighbors == expected
+    assert overs.parameters["k_neighbors"] == expected

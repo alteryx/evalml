@@ -174,7 +174,7 @@ class BaseOverSampler(BaseSampler):
         _, y_pd = self._prepare_data(X, y)
         sampler_params = {
             k: v
-            for k, v in copy.copy(self.parameters).items()
+            for k, v in self.parameters.items()
             if k not in ["sampling_ratio", "sampling_ratio_dict", "k_neighbors_default"]
         }
         if self.parameters["sampling_ratio_dict"] is not None:
@@ -197,6 +197,7 @@ class BaseOverSampler(BaseSampler):
             neighbors = min_counts - 1
 
         sampler_params["k_neighbors"] = neighbors
+        self._parameters["k_neighbors"] = neighbors
         sampler = sampler_class(**sampler_params, random_state=self.random_seed)
         self._component_obj = sampler
 
