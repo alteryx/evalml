@@ -8,6 +8,7 @@ Release Notes
     * Changes
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
     * Documentation Changes
+        * Fixed start page code and description dataset naming discrepancy :pr:`2370`
     * Testing Changes
         * Add ``pytest-timeout``. All tests that run longer than 6 minutes will fail. :pr:`2374`
         * Separated the dask tests out into separate github action jobs to isolate dask failures. :pr:`2376`
