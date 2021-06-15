@@ -70,12 +70,12 @@ jobs:
         name: Run unit tests with minimal dependencies
         run: |
           source test_python/bin/activate
-          make git-test-minimal-deps
+          make git-test-minimal-deps-no-dask
       - if: ${{ !matrix.core_dependencies }}
         name: Run unit tests
         run: |
           source test_python/bin/activate
-          make git-test
+          make git-test-no-dask
       - if: ${{ matrix.codecov }}
         name: install coverage
         run: pip install coverage
