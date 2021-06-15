@@ -16,6 +16,7 @@ class ElasticNetClassifier(Estimator):
     name = "Logistic Regression EN Classifier"
     hyperparameter_ranges = {
         "C": Real(0.01, 10),
+        "l1_ratio": Real(0, 1)
     }
     model_family = ModelFamily.LINEAR_MODEL
     supported_problem_types = [
@@ -29,7 +30,7 @@ class ElasticNetClassifier(Estimator):
         self,
         penalty="elasticnet",
         C=1.0,
-        l1_ratio=0.15,
+        l1_ratio=0.5,
         n_jobs=-1,
         multi_class="auto",
         solver="saga",
