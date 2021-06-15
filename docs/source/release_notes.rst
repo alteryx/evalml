@@ -6,6 +6,7 @@ Release Notes
         * Fixed partial dependence graph method failing on multiclass problems when the class labels are numeric :pr:`2372`
         * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
     * Changes
+        * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
     * Documentation Changes
         * Fixed start page code and description dataset naming discrepancy :pr:`2370`
     * Testing Changes
