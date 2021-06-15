@@ -25,6 +25,9 @@ jobs:
             core_dependencies: false
             command: 'git-test-other'
           - python_version: "3.7"
+            core_dependencies: false
+            command: 'git-test-dask'
+          - python_version: "3.7"
             core_dependencies: true
             command: 'git-test-automl-core'
           - python_version: "3.7"
@@ -33,6 +36,9 @@ jobs:
           - python_version: "3.7"
             core_dependencies: true
             command: 'git-test-other-core'
+          - python_version: "3.7"
+            core_dependencies: true
+            command: 'git-test-minimal-deps-dask'
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2

@@ -27,6 +27,10 @@ jobs:
             core_dependencies: false
             codecov: false
             dir: 'git-test-other'
+          - python_version: "3.7"
+            core_dependencies: false
+            codecov: false
+            dir: 'git-test-dask'
           - python_version: "3.8"
             core_dependencies: false
             codecov: true
@@ -39,6 +43,10 @@ jobs:
             core_dependencies: false
             codecov: true
             dir: 'git-test-other'
+          - python_version: "3.8"
+            core_dependencies: false
+            codecov: true
+            dir: 'git-test-dask'
           - python_version: "3.8"
             core_dependencies: true
             codecov: true
@@ -51,6 +59,10 @@ jobs:
             core_dependencies: true
             codecov: true
             dir: 'git-test-other-core'
+          - python_version: "3.8"
+            core_dependencies: true
+            codecov: true
+            dir: 'git-test-minimal-deps-dask'
           - python_version: "3.9"
             core_dependencies: false
             codecov: false
@@ -63,6 +75,10 @@ jobs:
             core_dependencies: false
             codecov: false
             dir: 'git-test-other'
+          - python_version: "3.9"
+            core_dependencies: false
+            codecov: false
+            dir: 'git-test-dask'
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
