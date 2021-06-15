@@ -8,6 +8,7 @@ Release Notes
         * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
     * Changes
     * Documentation Changes
+        * Fixed start page code and description dataset naming discrepancy :pr:`2370`
     * Testing Changes
         * Add ``pytest-timeout``. All tests that run longer than 6 minutes will fail. :pr:`2374`
         * Separated the dask tests out into separate github action jobs to isolate dask failures. :pr:`2376`
