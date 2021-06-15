@@ -1,7 +1,8 @@
-import warnings
+# import warnings
 
 import numpy as np
-from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
+# from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
+from sklearn.linear_model import LogisticRegression
 from skopt.space import Real
 
 from evalml.model_family import ModelFamily
@@ -12,10 +13,9 @@ from evalml.problem_types import ProblemTypes
 class ElasticNetClassifier(Estimator):
     """Elastic Net Classifier."""
 
-    name = "Elastic Net Classifier"
+    name = "Logistic Regression EN Classifier"
     hyperparameter_ranges = {
-        "alpha": Real(0.05, 1),
-        "l1_ratio": Real(0, 1),
+        "C": Real(0.01, 10),
     }
     model_family = ModelFamily.LINEAR_MODEL
     supported_problem_types = [
@@ -27,31 +27,28 @@ class ElasticNetClassifier(Estimator):
 
     def __init__(
         self,
-        alpha=1,
-        l1_ratio=0.5,
-        n_jobs=-1,
-        max_iter=1000,
-        random_seed=0,
         penalty="elasticnet",
-        **kwargs,
+        C=1.0,
+        l1_ratio=0.15,
+        n_jobs=-1,
+        multi_class="auto",
+        solver="saga",
+        random_seed=0,
+        **kwargs
     ):
         parameters = {
-            "alpha": alpha,
+            "penalty": penalty,
+            "C": C,
             "l1_ratio": l1_ratio,
             "n_jobs": n_jobs,
-            "max_iter": max_iter,
-            "penalty": penalty,
+            "multi_class": multi_class,
+            "solver": solver,
+            "max_iter": 1000
         }
-        if kwargs.get("loss", "log") != "log":
-            warnings.warn(
-                "Parameter loss is being set to 'log' so that ElasticNetClassifier can predict probabilities"
-                f". Originally received '{kwargs['loss']}'."
-            )
-        kwargs["loss"] = "log"
         parameters.update(kwargs)
-        en_classifier = SKElasticNetClassifier(random_state=random_seed, **parameters)
+        lr_classifier = LogisticRegression(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=en_classifier, random_seed=random_seed
+            parameters=parameters, component_obj=lr_classifier, random_seed=random_seed
         )
 
     @property
@@ -59,7 +56,58 @@ class ElasticNetClassifier(Estimator):
         coef_ = self._component_obj.coef_
         # binary classification case
         if len(coef_) <= 2:
-            return coef_.flatten()
+            return coef_[0]
         else:
             # multiclass classification case
             return np.linalg.norm(coef_, axis=0, ord=2)
+    # name = "Elastic Net Classifier"
+    # hyperparameter_ranges = {
+    #     "alpha": Real(0.05, 1),
+    #     "l1_ratio": Real(0, 1),
+    # }
+    # model_family = ModelFamily.LINEAR_MODEL
+    # supported_problem_types = [
+    #     ProblemTypes.BINARY,
+    #     ProblemTypes.MULTICLASS,
+    #     ProblemTypes.TIME_SERIES_BINARY,
+    #     ProblemTypes.TIME_SERIES_MULTICLASS,
+    # ]
+
+    # def __init__(
+    #     self,
+    #     alpha=1,
+    #     l1_ratio=0.5,
+    #     n_jobs=-1,
+    #     max_iter=1000,
+    #     random_seed=0,
+    #     penalty="elasticnet",
+    #     **kwargs,
+    # ):
+    #     parameters = {
+    #         "alpha": alpha,
+    #         "l1_ratio": l1_ratio,
+    #         "n_jobs": n_jobs,
+    #         "max_iter": max_iter,
+    #         "penalty": penalty,
+    #     }
+    #     if kwargs.get("loss", "log") != "log":
+    #         warnings.warn(
+    #             "Parameter loss is being set to 'log' so that ElasticNetClassifier can predict probabilities"
+    #             f". Originally received '{kwargs['loss']}'."
+    #         )
+    #     kwargs["loss"] = "log"
+    #     parameters.update(kwargs)
+    #     en_classifier = SKElasticNetClassifier(random_state=random_seed, **parameters)
+    #     super().__init__(
+    #         parameters=parameters, component_obj=en_classifier, random_seed=random_seed
+    #     )
+
+    # @property
+    # def feature_importance(self):
+    #     coef_ = self._component_obj.coef_
+    #     # binary classification case
+    #     if len(coef_) <= 2:
+    #         return coef_.flatten()
+    #     else:
+    #         # multiclass classification case
+    #         return np.linalg.norm(coef_, axis=0, ord=2)
