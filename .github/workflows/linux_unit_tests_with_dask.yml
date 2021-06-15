@@ -9,7 +9,7 @@ on:
 
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} unit tests, Core Dependencies (${{ matrix.core_dependencies }}), Codecov (${{ matrix.codecov }})
+    name: ${{ matrix.python_version }} Unit Tests, Core Dependencies (${{ matrix.core_dependencies }}), Codecov (${{ matrix.codecov }}), Dask Only
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
