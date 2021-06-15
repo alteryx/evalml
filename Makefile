@@ -19,7 +19,11 @@ lint-fix:
 
 .PHONY: test
 test:
-	pytest evalml/ --doctest-modules --doctest-continue-on-failure --ignore=evalml/tests/automl_tests/dask_tests
+	pytest evalml/ --doctest-modules --doctest-continue-on-failure  --timeout 300
+
+.PHONY: test-no-dask
+test-no-dask:
+	pytest evalml/ --doctest-modules --doctest-continue-on-failure --ignore=evalml/tests/automl_tests/dask_tests  --timeout 300
 
 .PHONY: test-dask
 test:
