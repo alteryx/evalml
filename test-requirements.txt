@@ -4,7 +4,6 @@ pytest==6.0.1
 pytest-xdist==2.1.0
 pytest-timeout
 pytest-cov==2.10.1
-pytest-timeout
 nbval==0.9.3
 IPython>=5.0.0
 codecov==2.1.11
