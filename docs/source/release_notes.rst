@@ -3,10 +3,15 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Fixed partial dependence graph method failing on multiclass problems when the class labels are numeric :pr:`2372`
+        * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
     * Changes
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
     * Documentation Changes
     * Testing Changes
+        * Add ``pytest-timeout``. All tests that run longer than 6 minutes will fail. :pr:`2374`
+        * Separated the dask tests out into separate github action jobs to isolate dask failures. :pr:`2376`
+        * Refactored dask tests :pr:`2377`
 
 .. warning::
 
@@ -17,7 +22,7 @@ Release Notes
     * Enhancements
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
         * Added support for nonlinear pipelines for ``generate_pipeline_code`` :pr:`2332`
-        * Added ``inverse_transform`` method to pipelines :pr:`2256``
+        * Added ``inverse_transform`` method to pipelines :pr:`2256`
     * Fixes
         * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
