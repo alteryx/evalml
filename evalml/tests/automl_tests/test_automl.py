@@ -1664,7 +1664,7 @@ def test_targets_pandas_data_types_classification(
         )
 
     if automl_type == ProblemTypes.BINARY:
-        X, y = load_breast_cancer()
+        X, y = load_breast_cancer(use_local=True)
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif automl_type == ProblemTypes.MULTICLASS:
@@ -1672,7 +1672,7 @@ def test_targets_pandas_data_types_classification(
             pytest.skip(
                 "Skipping test where problem type is multiclass but target type is boolean"
             )
-        X, y = load_wine()
+        X, y = load_wine(use_local=True)
     unique_vals = y.unique()
     # Update target types as necessary
     if target_type in ["category", "object"]:

@@ -1,9 +1,10 @@
 import os
 
+import evalml
 from evalml.preprocessing import load_data
 
 
-def load_fraud(n_rows=None, verbose=True):
+def load_fraud(n_rows=None, verbose=True, use_local=False):
     """Load credit card fraud dataset.
         The fraud dataset can be used for binary classification problems.
 
@@ -14,10 +15,21 @@ def load_fraud(n_rows=None, verbose=True):
     Returns:
         (pd.Dataframe, pd.Series): X and y
     """
-    currdir_path = os.path.dirname(os.path.abspath(__file__))
-    data_folder_path = os.path.join(currdir_path, "data")
-    fraud_data_path = os.path.join(data_folder_path, "fraud_transactions.csv.gz")
+    if use_local:
+        currdir_path = os.path.dirname(os.path.abspath(__file__))
+        data_folder_path = os.path.join(currdir_path, "data")
+        fraud_data_path = os.path.join(data_folder_path, "fraud_transactions.csv.gz")
+    else:
+        fraud_data_path = (
+            "https://api.featurelabs.com/datasets/fraud_transactions.csv.gz?library=evalml&version="
+            + evalml.__version__
+        )
 
     return load_data(
-        path=fraud_data_path, index="id", target="fraud", n_rows=n_rows, verbose=verbose
+        path=fraud_data_path,
+        index="id",
+        target="fraud",
+        compression="gzip",
+        n_rows=n_rows,
+        verbose=verbose,
     )

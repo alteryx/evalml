@@ -969,7 +969,7 @@ def make_data_type():
 
 @pytest.fixture
 def fraud_100():
-    X, y = load_fraud(n_rows=100)
+    X, y = load_fraud(n_rows=100, use_local=True)
     X.ww.set_types(logical_types={"provider": "Categorical", "region": "Categorical"})
     return X, y
 

@@ -2,17 +2,29 @@ import pandas as pd
 import woodwork as ww
 from sklearn.datasets import load_breast_cancer as load_breast_cancer_sk
 
+import evalml
+from evalml.preprocessing import load_data
 
-def load_breast_cancer():
+
+def load_breast_cancer(use_local=False):
     """Load breast cancer dataset. Binary classification problem.
 
     Returns:
         (pd.Dataframe, pd.Series): X and y
     """
-    data = load_breast_cancer_sk()
-    X = pd.DataFrame(data.data, columns=data.feature_names)
-    y = pd.Series(data.target)
-    y = y.map(lambda x: data["target_names"][x])
+    if use_local:
+        data = load_breast_cancer_sk()
+        X = pd.DataFrame(data.data, columns=data.feature_names)
+        y = pd.Series(data.target)
+        y = y.map(lambda x: data["target_names"][x])
+
+    else:
+        filepath = (
+            "https://api.featurelabs.com/datasets/breast_cancer.csv?library=evalml&version="
+            + evalml.__version__
+        )
+        X, y = load_data(filepath, index=None, target="target")
+        y.name = None
 
     X.ww.init()
     y = ww.init_series(y)

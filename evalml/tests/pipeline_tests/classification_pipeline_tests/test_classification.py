@@ -42,7 +42,7 @@ def test_pipeline_has_classes_property(
     use_ints,
 ):
     if problem_type == "binary":
-        X, y = load_breast_cancer()
+        X, y = load_breast_cancer(use_local=True)
         pipeline = logistic_regression_binary_pipeline_class(
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
         )
@@ -52,7 +52,7 @@ def test_pipeline_has_classes_property(
         else:
             answer = ["benign", "malignant"]
     elif problem_type == "multi":
-        X, y = load_wine()
+        X, y = load_wine(use_local=True)
         pipeline = logistic_regression_multiclass_pipeline_class(
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
         )
@@ -72,7 +72,7 @@ def test_pipeline_has_classes_property(
 
 
 def test_woodwork_classification_pipeline(logistic_regression_binary_pipeline_class):
-    X, y = load_breast_cancer()
+    X, y = load_breast_cancer(use_local=True)
     mock_pipeline = logistic_regression_binary_pipeline_class(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )

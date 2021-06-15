@@ -1278,7 +1278,7 @@ def test_targets_data_types_classification_pipelines(
     if problem_type == ProblemTypes.BINARY:
         objective = "Log Loss Binary"
         pipeline_classes = all_binary_pipeline_classes
-        X, y = load_breast_cancer()
+        X, y = load_breast_cancer(use_local=True)
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif problem_type == ProblemTypes.MULTICLASS:
@@ -1288,7 +1288,7 @@ def test_targets_data_types_classification_pipelines(
             )
         objective = "Log Loss Multiclass"
         pipeline_classes = all_multiclass_pipeline_classes
-        X, y = load_wine()
+        X, y = load_wine(use_local=True)
 
     # Update target types as necessary
     unique_vals = y.unique()

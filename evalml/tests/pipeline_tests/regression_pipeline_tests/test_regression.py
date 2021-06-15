@@ -62,11 +62,11 @@ def test_regression_init():
 def test_invalid_targets_regression_pipeline(
     target_type, dummy_regression_pipeline_class
 ):
-    X, y = load_wine()
+    X, y = load_wine(use_local=True)
     if target_type == "category":
         y = pd.Series(y).astype("category")
     if target_type == "bool":
-        X, y = load_breast_cancer()
+        X, y = load_breast_cancer(use_local=True)
         y = y.map({"malignant": False, "benign": True})
     mock_regression_pipeline = dummy_regression_pipeline_class(parameters={})
     with pytest.raises(
@@ -76,7 +76,7 @@ def test_invalid_targets_regression_pipeline(
 
 
 def test_woodwork_regression_pipeline(linear_regression_pipeline_class):
-    X, y = load_diabetes()
+    X, y = load_diabetes(use_local=True)
     regression_pipeline = linear_regression_pipeline_class(
         parameters={"Linear Regressor": {"n_jobs": 1}}
     )

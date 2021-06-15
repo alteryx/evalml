@@ -103,7 +103,7 @@ def test_partial_dependence_problem_types(
 def test_partial_dependence_string_feature_name(
     logistic_regression_binary_pipeline_class,
 ):
-    X, y = load_breast_cancer()
+    X, y = load_breast_cancer(use_local=True)
     pipeline = logistic_regression_binary_pipeline_class(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )
@@ -253,7 +253,7 @@ def test_partial_dependence_xgboost_feature_names(
 
 
 def test_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_class):
-    X, y = load_wine()
+    X, y = load_wine(use_local=True)
     pipeline = logistic_regression_multiclass_pipeline_class(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )
@@ -394,7 +394,8 @@ def test_partial_dependence_more_categories_than_grid_resolution(
             dictionary_rounded[round(key, places)] = dictionary[key]
         return dictionary_rounded
 
-    X, y = load_fraud(100)
+
+    X, y = load_fraud(1000, use_local=True)
     X = X.drop(columns=["datetime", "expiration_date", "country", "region", "provider"])
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
@@ -440,7 +441,7 @@ def test_partial_dependence_more_categories_than_grid_resolution(
 
 
 def test_graph_partial_dependence(test_pipeline):
-    X, y = load_breast_cancer()
+    X, y = load_breast_cancer(use_local=True)
 
     go = pytest.importorskip(
         "plotly.graph_objects",
@@ -465,7 +466,7 @@ def test_graph_partial_dependence(test_pipeline):
 
 
 def test_graph_two_way_partial_dependence(test_pipeline):
-    X, y = load_breast_cancer()
+    X, y = load_breast_cancer(use_local=True)
 
     go = pytest.importorskip(
         "plotly.graph_objects",
@@ -501,7 +502,7 @@ def test_graph_partial_dependence_multiclass(
         "plotly.graph_objects",
         reason="Skipping plotting test because plotly not installed",
     )
-    X, y = load_wine()
+    X, y = load_wine(use_local=True)
     pipeline = logistic_regression_multiclass_pipeline_class(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )
@@ -749,7 +750,7 @@ def test_partial_dependence_multiclass_categorical(
         reason="Skipping plotting test because plotly not installed",
     )
 
-    X, y = load_wine()
+    X, y = load_wine(use_local=True)
     X.ww["categorical_column"] = ww.init_series(
         pd.Series([i % 3 for i in range(X.shape[0])]).astype(str),
         logical_type="Categorical",
