@@ -1,17 +1,36 @@
 Release Notes
 -------------
-**Future Releases**
+**Future Release**
+    * Enhancements
+    * Fixes
+        * Fixed partial dependence graph method failing on multiclass problems when the class labels are numeric :pr:`2372`
+        * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
+    * Changes
+    * Documentation Changes
+        * Fixed start page code and description dataset naming discrepancy :pr:`2370`
+    * Testing Changes
+        * Add ``pytest-timeout``. All tests that run longer than 6 minutes will fail. :pr:`2374`
+        * Separated the dask tests out into separate github action jobs to isolate dask failures. :pr:`2376`
+        * Refactored dask tests :pr:`2377`
+        * Added the combined dask/non-dask unit tests back and renamed the dask only unit tests. :pr:`2382`
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.26.0 Jun. 08, 2021**
     * Enhancements
         * Adds force plots for prediction explanations :pr:`2157`
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
         * Added support for nonlinear pipelines for ``generate_pipeline_code`` :pr:`2332`
-        * Added ``inverse_transform`` method to pipelines :pr:`2256``
+        * Added ``inverse_transform`` method to pipelines :pr:`2256`
     * Fixes
         * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes
         * Cleaned up ``PipelineBase``'s ``component_graph`` and ``_component_graph`` attributes. Updated ``PipelineBase`` ``__repr__`` and added ``__eq__`` for ``ComponentGraph`` :pr:`2332`
         * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
-    * Separated `custom_hyperparameters` from pipelines and added them as an argument to ``AutoMLSearch`` :pr:`2317`
+        * Separated `custom_hyperparameters` from pipelines and added them as an argument to ``AutoMLSearch`` :pr:`2317`
     * Documentation Changes
     * Testing Changes
         * Update minimum unit tests to run on all pull requests :pr:`2314`
