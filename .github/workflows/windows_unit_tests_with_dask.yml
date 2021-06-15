@@ -9,7 +9,7 @@ on:
 
 jobs:
   win_unit_tests:
-    name: ${{ matrix.python_version }} windows unit tests
+    name: ${{ matrix.python_version }} Windows Unit Tests, Dask Only
     runs-on: windows-latest
     strategy:
       fail-fast: true
