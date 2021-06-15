@@ -287,6 +287,45 @@ def test_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_c
     assert len(two_way_part_dep.columns) == grid_resolution + 1
 
 
+def test_partial_dependence_multiclass_numeric_labels(
+    logistic_regression_multiclass_pipeline_class, X_y_multi
+):
+    X, y = X_y_multi
+    X = pd.DataFrame(X)
+    y = pd.Series(y, dtype="int64")
+    pipeline = logistic_regression_multiclass_pipeline_class(
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
+    )
+    pipeline.fit(X, y)
+
+    num_classes = y.nunique()
+    grid_resolution = 5
+
+    one_way_part_dep = partial_dependence(
+        pipeline=pipeline, X=X, features=1, grid_resolution=grid_resolution
+    )
+    assert "class_label" in one_way_part_dep.columns
+    assert one_way_part_dep["class_label"].nunique() == num_classes
+    assert len(one_way_part_dep.index) == num_classes * grid_resolution
+    assert list(one_way_part_dep.columns) == [
+        "feature_values",
+        "partial_dependence",
+        "class_label",
+    ]
+
+    two_way_part_dep = partial_dependence(
+        pipeline=pipeline,
+        X=X,
+        features=(1, 2),
+        grid_resolution=grid_resolution,
+    )
+
+    assert "class_label" in two_way_part_dep.columns
+    assert two_way_part_dep["class_label"].nunique() == num_classes
+    assert len(two_way_part_dep.index) == num_classes * grid_resolution
+    assert len(two_way_part_dep.columns) == grid_resolution + 1
+
+
 def test_partial_dependence_not_fitted(
     X_y_binary, logistic_regression_binary_pipeline_class
 ):
