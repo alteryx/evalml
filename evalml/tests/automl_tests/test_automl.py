@@ -620,7 +620,7 @@ def test_automl_tuner_exception(
         problem_type="binary",
         tuner_class=RandomSearchTuner,
         max_iterations=10,
-        optimize_thresholds=False
+        optimize_thresholds=False,
     )
     automl._SLEEP_TIME = 0.00001
     with pytest.raises(NoParamsException, match=error_text):
