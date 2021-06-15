@@ -186,17 +186,16 @@ class BaseOverSampler(BaseSampler):
             dic = make_balancing_dictionary(y_pd, sampling_ratio)
         sampler_params["sampling_strategy"] = dic
 
-        # k_neighbors_default_default fix
+        # check for k_neighbors value
         neighbors = self.parameters["k_neighbors_default"]
         min_counts = y_pd.value_counts().values[-1]
+        if min_counts <= 1:
+            raise ValueError(
+                f"Minority class needs more than 1 sample to use SMOTE!, received {min_counts} sample"
+            )
         if min_counts <= neighbors:
-            # update the sampler params
-            if min_counts > 1:
-                neighbors = min_counts - 1
-            else:
-                raise ValueError(
-                    f"Minority class needs more than 1 sample to use SMOTE!, received {min_counts} sample"
-                )
+            neighbors = min_counts - 1
+
         sampler_params["k_neighbors"] = neighbors
         sampler = sampler_class(**sampler_params, random_state=self.random_seed)
         self._component_obj = sampler
