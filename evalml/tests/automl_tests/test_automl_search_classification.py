@@ -114,12 +114,13 @@ def test_data_splitter(X_y_binary):
     assert len(automl.results["pipeline_results"][0]["cv_data"]) == cv_folds
 
 
+@patch("evalml.automl.engine.engine_base.tune_binary_threshold")
 @patch(
     "evalml.pipelines.BinaryClassificationPipeline.score",
     return_value={"Log Loss Binary": 0.8},
 )
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
-def test_max_iterations(mock_binary_fit, mock_binary_score, X_y_binary):
+def test_max_iterations(mock_tune, mock_binary_fit, mock_binary_score, X_y_binary):
     X, y = X_y_binary
     max_iterations = 5
     automl = AutoMLSearch(

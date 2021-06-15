@@ -12,7 +12,7 @@ jobs:
     name: ${{ matrix.python_version }} min dep ${{ matrix.command }}, core deps (${{ matrix.core_dependencies }})
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - python_version: "3.7"

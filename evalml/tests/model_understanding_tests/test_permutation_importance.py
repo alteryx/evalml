@@ -152,12 +152,12 @@ class DagTwoEncoders(BinaryClassificationPipeline):
 class DagReuseFeatures(BinaryClassificationPipeline):
     component_graph = {
         "Imputer": ["Imputer"],
-        "SelectNumeric": ["Select Columns Transformer", "Imputer"],
+        "SelectDate": ["Select Columns Transformer", "Imputer"],
         "SelectCategorical1": ["Select Columns Transformer", "Imputer"],
         "SelectCategorical2": ["Select Columns Transformer", "Imputer"],
         "OHE_1": ["One Hot Encoder", "SelectCategorical1"],
         "OHE_2": ["One Hot Encoder", "SelectCategorical2"],
-        "DT": ["DateTime Featurization Component", "SelectNumeric"],
+        "DT": ["DateTime Featurization Component", "SelectDate"],
         "OHE_3": ["One Hot Encoder", "DT"],
         "Estimator": ["Random Forest Classifier", "OHE_3", "OHE_1", "OHE_2"],
     }
@@ -256,10 +256,8 @@ test_cases = [
     (
         DagReuseFeatures,
         {
-            "SelectNumeric": {
+            "SelectDate": {
                 "columns": [
-                    "card_id",
-                    "store_id",
                     "datetime",
                 ]
             },
@@ -327,7 +325,13 @@ def test_fast_permutation_importance_matches_slow_output(
     slow_scores = calculate_permutation_importance(
         pipeline, X, y, objective="Log Loss Binary", random_seed=0
     )
-    pd.testing.assert_frame_equal(fast_scores, slow_scores)
+
+    # The row order is not guaranteed to be equal in the case of ties
+    # so converting to a dict after rounding to use dict equality over
+    # assert_frame_equal
+    fast_scores = dict(zip(fast_scores.feature, fast_scores.importance.round(5)))
+    slow_scores = dict(zip(slow_scores.feature, slow_scores.importance.round(5)))
+    assert slow_scores == fast_scores
 
     precomputed_features = pipeline.compute_estimator_features(X, y)
     # Run one column of each logical type

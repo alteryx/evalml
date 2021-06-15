@@ -12,7 +12,7 @@ jobs:
     name: ${{ matrix.python_version }} windows ${{ matrix.command}}
     runs-on: windows-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         python_version: [ "3.7", "3.8" ]
         command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
