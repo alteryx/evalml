@@ -68,6 +68,7 @@ def _get_preprocessing_components(
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
+
     input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
     types_imputer_handles = {
         logical_types.Boolean,
@@ -75,6 +76,7 @@ def _get_preprocessing_components(
         logical_types.Double,
         logical_types.Integer,
     }
+
     if len(input_logical_types.intersection(types_imputer_handles)) > 0:
         pp_components.append(Imputer)
 
