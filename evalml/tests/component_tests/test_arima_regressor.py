@@ -88,7 +88,7 @@ def test_feature_importance(ts_data):
     clf = ARIMARegressor()
     with patch.object(clf, "_component_obj"):
         clf.fit(X, y)
-        clf.feature_importance == np.zeros(1)
+        assert clf.feature_importance == np.zeros(1)
 
 
 def test_fit_predict_ts_with_datetime_in_X_column(ts_data_seasonal):
