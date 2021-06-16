@@ -1509,7 +1509,6 @@ def test_automl_search_sampler_k_neighbors_no_error(
     # automatically uses SMOTE
     if has_minimal_dependencies:
         pytest.skip("Skipping tests since imblearn isn't installed")
-    # split this from the undersampler since the dictionaries are formatted differently
     X, y = fraud_100
     automl = AutoMLSearch(
         X_train=X,

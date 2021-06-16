@@ -129,8 +129,8 @@ class BaseOverSampler(BaseSampler):
             sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
                 of the minority to majority class after oversampling. We will create the a sampling dictionary using this ratio, with the keys corresponding to the class
                 and the values responding to the number of samples. Defaults to 0.25.
-            k_neighbors_default (int): The number of nearest neighbors to used to construct synthetic samples. This value will become smaller when there are less samples
-                in the minority class. Defaults to 5.
+            k_neighbors_default (int): The number of nearest neighbors used to construct synthetic samples. This is the default value used, but the actual k_neighbors value might be smaller
+                if there are less samples. Defaults to 5.
             n_jobs (int): The number of CPU cores to use. Defaults to -1.
         """
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
@@ -189,7 +189,7 @@ class BaseOverSampler(BaseSampler):
         # check for k_neighbors value
         neighbors = self.parameters["k_neighbors_default"]
         min_counts = y_pd.value_counts().values[-1]
-        if min_counts <= 1:
+        if min_counts == 1:
             raise ValueError(
                 f"Minority class needs more than 1 sample to use SMOTE!, received {min_counts} sample"
             )
