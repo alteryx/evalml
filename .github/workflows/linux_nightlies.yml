@@ -1,21 +1,21 @@
-name: Linux Unit Tests with Minimum Dependencies
+name: Nightly Linux Unit Tests
 
 on:
+  schedule:
+      - cron: '0 3 * * *'
   pull_request:
     types: [opened, synchronize]
-  push:
-    branches:
-      - main
 
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} min dep ${{ matrix.command }}, core deps (${{ matrix.core_dependencies }})
+    name: Nightly ${{ matrix.python_version }} ${{matrix.dir}} with minimum dep versions ${{ matrix.minimum_dependency_versions}}
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
-        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
-        python_version: ['3.8']
+        python_version: ['3.7', '3.9']
+        dir: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
+        minimum_dependency_versions: [True, False]
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          repository: ${{ github.repository }}
           fetch-depth: 2
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
@@ -35,14 +35,23 @@ jobs:
           virtualenv test_python -q
           source test_python/bin/activate
           python -m pip install --upgrade pip -q
-      - name: install evalml with test dependencies, core dependencies, & optional requirements
+      - if: ${{ !matrix.minimum_dependency_versions }}
+      - name: Installing Latest Dependency Versions
+        run: |
+          source test_python/bin/activate
+          make installdeps
+          make installdeps-test
+          pip freeze
+      - if: ${{ matrix.minimum_dependency_versions }}
+        name: Installing Minimum Dependency Versions
         run: |
           source test_python/bin/activate
           pip install -e . --no-dependencies
           pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
           pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
           pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
-      - name: run tests
+          pip freeze
+      - name: Run unit tests
         run: |
           source test_python/bin/activate
-          make ${{ matrix.command }}
+          make ${{matrix.dir}}
