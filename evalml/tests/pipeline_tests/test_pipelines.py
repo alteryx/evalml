@@ -295,8 +295,8 @@ def test_describe_pipeline(
                 "Elastic Net Classifier": {
                     "name": "Elastic Net Classifier",
                     "parameters": {
-                        "alpha": 0.0001,
-                        "l1_ratio": 0.15,
+                        "alpha": 1,
+                        "l1_ratio": 0.5,
                         "n_jobs": -1,
                         "max_iter": 1000,
                         "penalty": "elasticnet",
@@ -465,8 +465,8 @@ def test_parameters_nonlinear(nonlinear_binary_pipeline_class):
         },
         "Random Forest": {"max_depth": 6, "n_estimators": 100, "n_jobs": -1},
         "Elastic Net": {
-            "alpha": 0.0001,
-            "l1_ratio": 0.15,
+            "alpha": 1,
+            "l1_ratio": 0.5,
             "loss": "log",
             "max_iter": 1000,
             "n_jobs": -1,

@@ -1659,8 +1659,8 @@ def test_describe_component_graph(return_dict, example_graph, caplog):
         "Elastic Net Classifier": {
             "name": "Elastic Net Classifier",
             "parameters": {
-                "alpha": 0.0001,
-                "l1_ratio": 0.15,
+                "alpha": 1,
+                "l1_ratio": 0.5,
                 "n_jobs": -1,
                 "max_iter": 1000,
                 "penalty": "elasticnet",

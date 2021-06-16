@@ -76,6 +76,7 @@ def test_binary_classification_estimators_predict_proba_col_order(helper_functio
             expected = np.concatenate(
                 [(1 - data).reshape(-1, 1), data.reshape(-1, 1)], axis=1
             )
+            print(estimator_class, predicted_proba)
             np.testing.assert_allclose(expected, np.round(predicted_proba).values)
 
 
