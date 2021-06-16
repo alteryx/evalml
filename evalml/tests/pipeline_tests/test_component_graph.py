@@ -2028,3 +2028,31 @@ def test_from_list_with_target_transformers(component_list, answer):
     assert (
         ComponentGraph.from_list(component_list).component_dict == answer.component_dict
     )
+
+
+def test_final_component_features_does_not_have_target():
+    X = pd.DataFrame(
+        {
+            "column_1": ["a", "b", "c", "d", "a", "a", "b", "c", "b"],
+            "column_2": [1, 2, 3, 4, 5, 6, 5, 4, 3],
+        }
+    )
+    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
+
+    cg = ComponentGraph(
+        {
+            "Imputer": ["Imputer"],
+            "OneHot": ["One Hot Encoder", "Imputer.x"],
+            "TargetImputer": ["Target Imputer", "OneHot.x", "OneHot.y"],
+            "Logistic Regression": [
+                "Logistic Regression Classifier",
+                "TargetImputer.x",
+                "TargetImputer.y",
+            ],
+        }
+    )
+    cg.instantiate({})
+    cg.fit(X, y)
+
+    final_features = cg.compute_final_component_features(X, y)
+    assert "TargetImputer.y" not in final_features.columns
