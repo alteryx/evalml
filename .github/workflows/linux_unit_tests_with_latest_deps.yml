@@ -14,7 +14,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        - include:
+        include:
           - python_version: "3.8"
             core_dependencies: false
             dir: 'git-test-automl'
