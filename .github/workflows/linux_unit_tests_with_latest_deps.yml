@@ -52,7 +52,7 @@ jobs:
           fetch-depth: 2
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
-      - if: ${{ matrix.core_dependencies == 'true'}}
+      - if: ${{ matrix.core_dependencies }}
         name: Installing Core Dependencies
         run: |
           pip install virtualenv
@@ -65,7 +65,7 @@ jobs:
           # "!" negates return code. exit nonzero if any of these deps are found
           ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
           exit $?
-      - if: ${{ matrix.core_dependencies == 'false'}}
+      - if: ${{ !matrix.core_dependencies }}
         name: Installing Dependencies
         run: |
           pip install virtualenv
@@ -78,12 +78,12 @@ jobs:
         run: |
           source test_python/bin/activate
           coverage erase
-      - if: ${{ matrix.core_dependencies == 'true'}}
-        name: Run unit tests with minimal dependencies
+      - if: ${{ matrix.core_dependencies }}
+        name: Run unit tests with core dependencies
         run: |
           source test_python/bin/activate
           make ${{matrix.dir}}
-      - if: ${{ matrix.core_dependencies == 'false' }}
+      - if: ${{ !matrix.core_dependencies }}
         name: Run unit tests
         run: |
           source test_python/bin/activate
