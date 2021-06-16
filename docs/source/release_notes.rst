@@ -12,7 +12,7 @@ Release Notes
     * Documentation Changes
         * Fixed start page code and description dataset naming discrepancy :pr:`2370`
     * Testing Changes
-        * Add pytest-timeout. All tests that run longer than 6 minutes will fail. :pr:`2374`
+        * Add ``pytest-timeout``. All tests that run longer than 6 minutes will fail. :pr:`2374`
         * Separated the dask tests out into separate github action jobs to isolate dask failures. :pr:`2376`
         * Refactored dask tests :pr:`2377`
         * Added the combined dask/non-dask unit tests back and renamed the dask only unit tests. :pr:`2382`
