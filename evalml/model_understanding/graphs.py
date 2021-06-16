@@ -1,5 +1,4 @@
 import copy
-from math import log
 import os
 import warnings
 from collections import OrderedDict
@@ -1009,7 +1008,6 @@ def graph_partial_dependence(
         if "class_label" in part_dep.columns:
             part_dep.drop(columns=["class_label"], inplace=True)
         if mode == "two-way":
-            
             _update_fig_with_two_way_partial_dependence(
                 _go,
                 fig,
