@@ -1,4 +1,5 @@
 import copy
+from math import log
 import os
 import warnings
 from collections import OrderedDict
@@ -552,7 +553,7 @@ def _raise_value_error_if_mostly_one_value(df, percentile):
 
 
 def partial_dependence(
-    pipeline, X, features, percentiles=(0.05, 0.95), grid_resolution=100
+    pipeline, X, features, percentiles=(0.05, 0.95), grid_resolution=100, kind="average"
 ):
     """Calculates one or two-way partial dependence.  If a single integer or
     string is given for features, one-way partial dependence is calculated. If
@@ -573,10 +574,21 @@ def partial_dependence(
         grid_resolution (int): Number of samples of feature(s) for partial dependence plot.  If this value
             is less than the maximum number of categories present in categorical data within X, it will be
             set to the max number of categories + 1. Defaults to 100.
+        kind {'average', 'individual', 'both'}: The type of predictions to return. 'individual' will return the predictions for
+            all of the points in the grid for each sample in X. 'average' will return the predictions for all of the points in
+            the grid but averaged over all of the samples in X.
 
     Returns:
-        pd.DataFrame: DataFrame with averaged predictions for all points in the grid averaged
+        pd.DataFrame, list(pd.DataFrame), or tuple(pd.DataFrame, list(pd.DataFrame)):
+            When `kind='average'`: DataFrame with averaged predictions for all points in the grid averaged
             over all samples of X and the values used to calculate those predictions.
+
+            When `kind='individual'`: DataFrame with individual predictions for all points in the grid for each sample
+            of X and the values used to calculate those predictions. If a two-way partial dependence is calculated, then
+            the result is a list of DataFrames with each DataFrame representing one sample's predictions.
+
+            When `kind='both'`: A tuple consisting of the averaged predictions (in a DataFrame) over all samples of X and the individual
+            predictions (in a list of DataFrames) for each sample of X.
 
             In the one-way case: The dataframe will contain two columns, "feature_values" (grid points at which the
             partial dependence was calculated) and "partial_dependence" (the partial dependence at that feature value).
@@ -679,35 +691,79 @@ def partial_dependence(
 
     _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
-    avg_pred, values = sk_partial_dependence(
+    preds = sk_partial_dependence(
         wrapped,
         X=X,
         features=features,
         percentiles=percentiles,
         grid_resolution=grid_resolution,
+        kind=kind,
     )
 
-    classes = None
-    if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
-        classes = [pipeline.classes_[1]]
-    elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
-        classes = pipeline.classes_
+    values = preds["values"]
+    if kind != "individual":
+        avg_pred = preds["average"]
+        classes = None
+        if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
+            classes = [pipeline.classes_[1]]
+        elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
+            classes = pipeline.classes_
 
-    if isinstance(features, (int, str)):
-        data = pd.DataFrame(
-            {
-                "feature_values": np.tile(values[0], avg_pred.shape[0]),
-                "partial_dependence": np.concatenate([pred for pred in avg_pred]),
-            }
-        )
-    elif isinstance(features, (list, tuple)):
-        data = pd.DataFrame(avg_pred.reshape((-1, avg_pred.shape[-1])))
-        data.columns = values[1]
-        data.index = np.tile(values[0], avg_pred.shape[0])
+        if isinstance(features, (int, str)):
+            avg_data = pd.DataFrame(
+                {
+                    "feature_values": np.tile(values[0], avg_pred.shape[0]),
+                    "partial_dependence": np.concatenate([pred for pred in avg_pred]),
+                }
+            )
+        elif isinstance(features, (list, tuple)):
+            avg_data = pd.DataFrame(avg_pred.reshape((-1, avg_pred.shape[-1])))
+            avg_data.columns = values[1]
+            avg_data.index = np.tile(values[0], avg_pred.shape[0])
 
-    if classes is not None:
-        data["class_label"] = np.repeat(classes, len(values[0]))
-    return data
+        if classes is not None:
+            avg_data["class_label"] = np.repeat(classes, len(values[0]))
+
+        if kind != "both":
+            return avg_data
+
+    if kind != "average":
+        ind_preds = preds["individual"][0]
+        classes = None
+        if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
+            classes = [pipeline.classes_[1]]
+        elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
+            classes = pipeline.classes_
+
+        if isinstance(features, (int, str)):
+            ind_data = pd.DataFrame(
+                {
+                    "feature_values": values[0],
+                }
+            )
+            for i, sample in enumerate(ind_preds):
+                name = "Sample " + str(i)
+                ind_data[name] = sample
+
+            if classes is not None:
+                ind_data["class_label"] = np.repeat(classes, len(values[0]))
+
+        elif isinstance(features, (list, tuple)):
+            ind_data = list()
+            for sample in ind_preds:
+                ind_df = pd.DataFrame(sample.reshape((-1, sample.shape[-1])))
+                ind_df.columns = values[1]
+                ind_df.index = values[0]
+
+                if classes is not None:
+                    ind_df["class_label"] = np.repeat(classes, len(values[0]))
+
+                ind_data.append(ind_df)
+
+        if kind != "both":
+            return ind_data
+
+        return (avg_data, ind_data)
 
 
 def _update_fig_with_two_way_partial_dependence(
@@ -782,7 +838,7 @@ def _update_fig_with_two_way_partial_dependence(
 
 
 def graph_partial_dependence(
-    pipeline, X, features, class_label=None, grid_resolution=100
+    pipeline, X, features, class_label=None, grid_resolution=100, kind="average"
 ):
     """Create an one-way or two-way partial dependence plot.  Passing a single integer or
     string as features will create a one-way partial dependence plot with the feature values
@@ -803,6 +859,9 @@ def graph_partial_dependence(
             classification pipelines. For binary classification, the partial dependence for the positive label will
             always be displayed. Defaults to None.
         grid_resolution (int): Number of samples of feature(s) for partial dependence plot
+        kind {'average', 'individual', 'both'}: Type of partial dependence to plot. 'average' creates a regular partial dependence
+             (PD) graph, 'individual' creates an individual conditional expectation (ICE) plot, and 'both' creates a
+             single-figure PD and ICE plot. ICE plots can only be shown for one-way partial dependence plots.
 
     Returns:
         plotly.graph_objects.Figure: figure object containing the partial dependence data for plotting
@@ -818,6 +877,10 @@ def graph_partial_dependence(
         ]
         if any(is_categorical):
             features = _put_categorical_feature_first(features, is_categorical[0])
+        if kind == "individual" or kind == "both":
+            raise ValueError(
+                "Individual conditional expectation plot can only be created with a one-way partial dependence plot"
+            )
     elif isinstance(features, (int, str)):
         mode = "one-way"
         is_categorical = _is_feature_of_type(features, X, ww.logical_types.Categorical)
@@ -836,8 +899,15 @@ def graph_partial_dependence(
             raise ValueError(msg)
 
     part_dep = partial_dependence(
-        pipeline, X, features=features, grid_resolution=grid_resolution
+        pipeline, X, features=features, grid_resolution=grid_resolution, kind=kind
     )
+
+    ice_data = None
+    if kind == "both":
+        part_dep, ice_data = part_dep
+    elif kind == "individual":
+        ice_data = part_dep
+        part_dep = None
 
     if mode == "two-way":
         title = f"Partial Dependence of '{features[0]}' vs. '{features[1]}'"
@@ -845,18 +915,28 @@ def graph_partial_dependence(
             title={"text": title},
             xaxis={"title": f"{features[1]}"},
             yaxis={"title": f"{features[0]}"},
-            showlegend=False,
+            showlegend=True,
         )
     elif mode == "one-way":
         feature_name = str(features)
-        title = f"Partial Dependence of '{feature_name}'"
+        if kind == "individual":
+            title = f"Individual conditional expectation of '{feature_name}'"
+        elif kind == "average":
+            title = f"Partial Dependence of '{feature_name}'"
+        else:
+            title = f"Partial Dependence of '{feature_name}' <br><sub>Including Individual Conditional Expectation Plot</sub>"
         layout = _go.Layout(
             title={"text": title},
             xaxis={"title": f"{feature_name}"},
             yaxis={"title": "Partial Dependence"},
-            showlegend=False,
+            showlegend=True,
         )
-    if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
+
+    fig = _go.Figure(layout=layout)
+    if ice_data is not None and not is_categorical:
+        fig = _add_ice_plot(_go, fig, ice_data)
+
+    if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline) and part_dep is not None:
         class_labels = [class_label] if class_label is not None else pipeline.classes_
         _subplots = import_or_raise(
             "plotly.subplots", error_msg="Cannot find dependency plotly.graph_objects"
@@ -895,11 +975,18 @@ def graph_partial_dependence(
             elif mode == "one-way":
                 x = label_df["feature_values"]
                 y = label_df["partial_dependence"]
+                if ice_data is not None and not is_categorical:
+                    fig = _add_ice_plot(_go, fig, ice_data)
                 if is_categorical:
                     trace = _go.Bar(x=x, y=y, name=label)
                 else:
+                    if ice_data is not None and not is_categorical:
+                        fig = _add_ice_plot(_go, fig, ice_data)
                     trace = _go.Scatter(
-                        x=x, y=y, line=dict(width=3), name=class_labels_mapping[label]
+                        x=x,
+                        y=y,
+                        line=dict(width=3, color="rgb(99,110,250)"),
+                        name=class_labels_mapping[label],
                     )
                 fig.add_trace(trace, row=row, col=col)
 
@@ -917,12 +1004,12 @@ def graph_partial_dependence(
             yrange = _calculate_axis_range(part_dep["partial_dependence"])
             fig.update_xaxes(title=title, range=xrange)
             fig.update_yaxes(range=yrange)
-        return fig
-    else:
+
+    elif part_dep is not None:
         if "class_label" in part_dep.columns:
             part_dep.drop(columns=["class_label"], inplace=True)
         if mode == "two-way":
-            fig = _go.Figure(layout=layout)
+            
             _update_fig_with_two_way_partial_dependence(
                 _go,
                 fig,
@@ -934,7 +1021,6 @@ def graph_partial_dependence(
                 row=None,
                 col=None,
             )
-            return fig
         elif mode == "one-way":
             if is_categorical:
                 trace = _go.Bar(
@@ -947,9 +1033,26 @@ def graph_partial_dependence(
                     x=part_dep["feature_values"],
                     y=part_dep["partial_dependence"],
                     name="Partial Dependence",
-                    line=dict(width=3),
+                    line=dict(width=3, color="rgb(99,110,250)"),
                 )
-            return _go.Figure(layout=layout, data=[trace])
+            fig.add_trace(trace)
+    return fig
+
+
+def _add_ice_plot(_go, fig, ice_data):
+    x = ice_data["feature_values"]
+    for i, sample in enumerate(ice_data):
+        fig.add_trace(
+            _go.Scatter(
+                x=x,
+                y=ice_data[sample],
+                line=dict(width=0.5, color="gray"),
+                name="Individual Conditional Expectation",
+                legendgroup="ICE",
+                showlegend=True if i == 0 else False,
+            )
+        )
+    return fig
 
 
 def _calculate_axis_range(arr):
