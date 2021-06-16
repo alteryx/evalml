@@ -935,7 +935,10 @@ def graph_partial_dependence(
     if ice_data is not None and not is_categorical:
         fig = _add_ice_plot(_go, fig, ice_data)
 
-    if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline) and part_dep is not None:
+    if (
+        isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline)
+        and part_dep is not None
+    ):
         class_labels = [class_label] if class_label is not None else pipeline.classes_
         _subplots = import_or_raise(
             "plotly.subplots", error_msg="Cannot find dependency plotly.graph_objects"
