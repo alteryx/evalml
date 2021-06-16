@@ -71,4 +71,4 @@ jobs:
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
-          make git-test
+          make git-test-no-dask

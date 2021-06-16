@@ -1272,8 +1272,7 @@ class AutoMLSearch:
         ascending = True
         if self.objective.greater_is_better:
             ascending = False
-
-        full_rankings_cols = [
+        pipeline_results_cols = [
             "id",
             "pipeline_name",
             "mean_cv_score",
@@ -1283,11 +1282,21 @@ class AutoMLSearch:
             "high_variance_cv",
             "parameters",
         ]
+
         if not self._results["pipeline_results"]:
+            full_rankings_cols = (
+                pipeline_results_cols[0:2]
+                + ["search_order"]
+                + pipeline_results_cols[2:]
+            )  # place search_order after pipeline_name
+
             return pd.DataFrame(columns=full_rankings_cols)
 
         rankings_df = pd.DataFrame(self._results["pipeline_results"].values())
-        rankings_df = rankings_df[full_rankings_cols]
+        rankings_df = rankings_df[pipeline_results_cols]
+        rankings_df.insert(
+            2, "search_order", pd.Series(self._results["search_order"])
+        )  # place search_order after pipeline_name
         rankings_df.sort_values("mean_cv_score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
