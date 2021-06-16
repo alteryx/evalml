@@ -282,7 +282,7 @@ def test_describe_component():
             "parameters": {
                 "sampling_ratio": 0.25,
                 "sampling_ratio_dict": None,
-                "k_neighbors": 5,
+                "k_neighbors_default": 5,
                 "n_jobs": -1,
             },
         }
@@ -292,7 +292,7 @@ def test_describe_component():
             "parameters": {
                 "sampling_ratio": 0.25,
                 "sampling_ratio_dict": None,
-                "k_neighbors": 5,
+                "k_neighbors_default": 5,
                 "n_jobs": -1,
             },
         }
@@ -302,7 +302,7 @@ def test_describe_component():
             "parameters": {
                 "sampling_ratio": 0.25,
                 "sampling_ratio_dict": None,
-                "k_neighbors": 5,
+                "k_neighbors_default": 5,
                 "n_jobs": -1,
             },
         }

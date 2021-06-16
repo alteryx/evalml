@@ -1483,7 +1483,7 @@ def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependenci
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
     y = pd.Series(["majority"] * 900 + ["minority"] * 300)
-    pipeline_parameters = {sampler: {"k_neighbors": 2}}
+    pipeline_parameters = {sampler: {"k_neighbors_default": 2}}
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -1495,6 +1495,27 @@ def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependenci
         seen_under = False
         for comp in pipeline.component_graph:
             if comp.name == sampler:
-                assert comp.parameters["k_neighbors"] == 2
+                assert comp.parameters["k_neighbors_default"] == 2
                 seen_under = True
         assert seen_under
+
+
+@pytest.mark.parametrize(
+    "parameters", [None, {"SMOTENC Oversampler": {"k_neighbors_default": 5}}]
+)
+def test_automl_search_sampler_k_neighbors_no_error(
+    parameters, has_minimal_dependencies, fraud_100
+):
+    # automatically uses SMOTE
+    if has_minimal_dependencies:
+        pytest.skip("Skipping tests since imblearn isn't installed")
+    X, y = fraud_100
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=2,
+        pipeline_parameters=parameters,
+    )
+    # check that the calling this doesn't fail
+    automl.search()
