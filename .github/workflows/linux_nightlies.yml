@@ -34,7 +34,7 @@ jobs:
           source test_python/bin/activate
           python -m pip install --upgrade pip -q
       - if: ${{ matrix.minimum_dependency_versions == 'false' }}
-      - name: Installing Latest Dependency Versions
+        name: Installing Latest Dependency Versions
         run: |
           source test_python/bin/activate
           make installdeps

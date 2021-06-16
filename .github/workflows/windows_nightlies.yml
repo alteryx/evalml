@@ -6,7 +6,7 @@ on:
 
 jobs:
   win_unit_tests:
-    name: ${{ matrix.python_version }} windows ${{ matrix.command}}
+    name: Nightly ${{ matrix.python_version }} windows ${{ matrix.command}}
     runs-on: windows-latest
     strategy:
       fail-fast: false

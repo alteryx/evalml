@@ -39,6 +39,7 @@ jobs:
           - python_version: "3.8"
             core_dependencies: true
             dir: 'git-test-minimal-deps-dask'
+    steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
         with:
