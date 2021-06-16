@@ -48,6 +48,7 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
+    is_binary,
     is_classification,
     is_time_series,
 )
@@ -142,6 +143,7 @@ class AutoMLSearch:
         add_result_callback=None,
         error_callback=None,
         additional_objectives=None,
+        alternate_thresholding_objective="F1",
         random_seed=0,
         n_jobs=-1,
         tuner_class=None,
@@ -217,6 +219,9 @@ class AutoMLSearch:
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
 
+            alternate_thresholding_objective (str): The objective to use for thresholding binary classification pipelines if the main objective provided isn't tuneable.
+                Defaults to F1.
+
             random_seed (int): Seed for the random number generator. Defaults to 0.
 
             n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
@@ -290,6 +295,22 @@ class AutoMLSearch:
             objective = get_default_primary_search_objective(self.problem_type.value)
         objective = get_objective(objective, return_instance=False)
         self.objective = self._validate_objective(objective)
+        self.alternate_thresholding_objective = None
+        if (
+            is_binary(self.problem_type)
+            and self.optimize_thresholds
+            and self.objective.score_needs_proba
+        ):
+            self.alternate_thresholding_objective = get_objective(
+                alternate_thresholding_objective, return_instance=True
+            )
+        if (
+            self.alternate_thresholding_objective is not None
+            and self.alternate_thresholding_objective.score_needs_proba
+        ):
+            raise ValueError(
+                "Alternate thresholding objective must be a tuneable objective and cannot need probabilities!"
+            )
         if self.data_splitter is not None and not issubclass(
             self.data_splitter.__class__, BaseCrossValidator
         ):
@@ -557,13 +578,13 @@ class AutoMLSearch:
             self.problem_type,
             self.objective,
             self.additional_objectives,
+            self.alternate_thresholding_objective,
             self.optimize_thresholds,
             self.error_callback,
             self.random_seed,
             self.X_train.ww.schema,
             self.y_train.ww.schema,
         )
-
         self.allowed_model_families = list(
             set([p.model_family for p in (self.allowed_pipelines)])
         )
@@ -1251,8 +1272,7 @@ class AutoMLSearch:
         ascending = True
         if self.objective.greater_is_better:
             ascending = False
-
-        full_rankings_cols = [
+        pipeline_results_cols = [
             "id",
             "pipeline_name",
             "mean_cv_score",
@@ -1262,11 +1282,21 @@ class AutoMLSearch:
             "high_variance_cv",
             "parameters",
         ]
+
         if not self._results["pipeline_results"]:
+            full_rankings_cols = (
+                pipeline_results_cols[0:2]
+                + ["search_order"]
+                + pipeline_results_cols[2:]
+            )  # place search_order after pipeline_name
+
             return pd.DataFrame(columns=full_rankings_cols)
 
         rankings_df = pd.DataFrame(self._results["pipeline_results"].values())
-        rankings_df = rankings_df[full_rankings_cols]
+        rankings_df = rankings_df[pipeline_results_cols]
+        rankings_df.insert(
+            2, "search_order", pd.Series(self._results["search_order"])
+        )  # place search_order after pipeline_name
         rankings_df.sort_values("mean_cv_score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df

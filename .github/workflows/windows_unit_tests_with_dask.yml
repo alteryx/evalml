@@ -1,4 +1,4 @@
-name: Windows Unit Tests
+name: Windows Unit Tests (Dask Only)
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
 
 jobs:
   win_unit_tests:
-    name: ${{ matrix.python_version }} windows unit tests
+    name: ${{ matrix.python_version }} Windows Unit Tests, Dask Only
     runs-on: windows-latest
     strategy:
       fail-fast: true
@@ -71,4 +71,4 @@ jobs:
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
-          make git-test-no-dask
+          make git-test-dask
