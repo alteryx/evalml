@@ -9,13 +9,13 @@ on:
 
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} min dep ${{ matrix.command }}, core deps (${{ matrix.core_dependencies }})
+    name: ${{ matrix.python_version }} min dep ${{ matrix.command }}
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
-        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
         python_version: ['3.8']
+        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2

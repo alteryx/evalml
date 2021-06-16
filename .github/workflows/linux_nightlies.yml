@@ -15,7 +15,7 @@ jobs:
       matrix:
         python_version: ['3.7', '3.9']
         dir: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
-        minimum_dependency_versions: [True, False]
+        minimum_dependency_versions: ['true', 'false']
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -35,14 +35,14 @@ jobs:
           virtualenv test_python -q
           source test_python/bin/activate
           python -m pip install --upgrade pip -q
-      - if: ${{ !matrix.minimum_dependency_versions }}
+      - if: ${{ matrix.minimum_dependency_versions == 'false' }}
       - name: Installing Latest Dependency Versions
         run: |
           source test_python/bin/activate
           make installdeps
           make installdeps-test
           pip freeze
-      - if: ${{ matrix.minimum_dependency_versions }}
+      - if: ${{ matrix.minimum_dependency_versions == 'true'}}
         name: Installing Minimum Dependency Versions
         run: |
           source test_python/bin/activate

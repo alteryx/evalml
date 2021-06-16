@@ -14,9 +14,30 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ['3.8']
-        dir: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
-        core_dependencies: [true, false]
+          - python_version: "3.8"
+            core_dependencies: false
+            dir: 'git-test-automl'
+          - python_version: "3.8"
+            core_dependencies: false
+            dir: 'git-test-modelunderstanding'
+          - python_version: "3.8"
+            core_dependencies: false
+            dir: 'git-test-other'
+          - python_version: "3.8"
+            core_dependencies: false
+            dir: 'git-test-dask'
+          - python_version: "3.8"
+            core_dependencies: true
+            dir: 'git-test-automl-core'
+          - python_version: "3.8"
+            core_dependencies: true
+            dir: 'git-test-modelunderstanding-core'
+          - python_version: "3.8"
+            core_dependencies: true
+            dir: 'git-test-other-core'
+          - python_version: "3.8"
+            core_dependencies: true
+            dir: 'git-test-minimal-deps-dask'
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
         with:
@@ -29,7 +50,7 @@ jobs:
           fetch-depth: 2
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
-      - if: ${{ matrix.core_dependencies }}
+      - if: ${{ matrix.core_dependencies == 'true'}}
         name: Installing Core Dependencies
         run: |
           pip install virtualenv
@@ -42,7 +63,7 @@ jobs:
           # "!" negates return code. exit nonzero if any of these deps are found
           ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
           exit $?
-      - if: ${{ !matrix.core_dependencies }}
+      - if: ${{ matrix.core_dependencies == 'false'}}
         name: Installing Dependencies
         run: |
           pip install virtualenv
@@ -55,12 +76,12 @@ jobs:
         run: |
           source test_python/bin/activate
           coverage erase
-      - if: ${{ matrix.core_dependencies }}
+      - if: ${{ matrix.core_dependencies == 'true'}}
         name: Run unit tests with minimal dependencies
         run: |
           source test_python/bin/activate
           make ${{matrix.dir}}
-      - if: ${{ !matrix.core_dependencies }}
+      - if: ${{ matrix.core_dependencies == 'false' }}
         name: Run unit tests
         run: |
           source test_python/bin/activate
