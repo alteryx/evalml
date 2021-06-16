@@ -2,9 +2,7 @@ name: Nightly Windows Unit Tests
 
 on:
   schedule:
-      - cron: '0 3 * * *'
-  pull_request:
-    types: [opened, synchronize]
+      - cron: '10 * * * *'
 
 jobs:
   win_unit_tests:
@@ -39,8 +37,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          repository: ${{ github.repository }}
+          ref: 1815-speed-up-unit-tests
       - name: Install make
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1

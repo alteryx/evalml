@@ -2,9 +2,7 @@ name: Nightly Linux Unit Tests
 
 on:
   schedule:
-      - cron: '0 3 * * *'
-  pull_request:
-    types: [opened, synchronize]
+      - cron: '10 * * * *'
 
 jobs:
   unit_tests:
@@ -24,8 +22,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
           repository: ${{ github.repository }}
+          ref: 1815-speed-up-unit-tests
           fetch-depth: 2
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz

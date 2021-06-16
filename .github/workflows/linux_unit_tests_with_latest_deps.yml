@@ -12,8 +12,9 @@ jobs:
     name: ${{ matrix.python_version }} unit ${{matrix.dir}} tests, Core Dependencies (${{ matrix.core_dependencies }}), Codecov (${{ matrix.codecov }})
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: false
+      fail-fast: true
       matrix:
+        - include:
           - python_version: "3.8"
             core_dependencies: false
             dir: 'git-test-automl'
