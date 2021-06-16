@@ -154,6 +154,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
             [
                 np.dtype("int64"),
                 np.dtype("O"),
+                np.dtype("int64"),
                 np.dtype("float64"),
                 np.dtype("float64"),
                 np.dtype("float64"),
@@ -164,6 +165,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
             index=[
                 "id",
                 "pipeline_name",
+                "search_order",
                 "mean_cv_score",
                 "standard_deviation_cv_score",
                 "validation_score",
@@ -179,6 +181,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
             [
                 np.dtype("int64"),
                 np.dtype("O"),
+                np.dtype("int64"),
                 np.dtype("float64"),
                 np.dtype("float64"),
                 np.dtype("float64"),
@@ -189,6 +192,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
             index=[
                 "id",
                 "pipeline_name",
+                "search_order",
                 "mean_cv_score",
                 "standard_deviation_cv_score",
                 "validation_score",
@@ -1324,6 +1328,7 @@ def test_no_search(X_y_binary):
     df_columns = [
         "id",
         "pipeline_name",
+        "search_order",
         "mean_cv_score",
         "standard_deviation_cv_score",
         "validation_score",
