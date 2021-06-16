@@ -7,6 +7,7 @@ Release Notes
         * Fixed partial dependence graph method failing on multiclass problems when the class labels are numeric :pr:`2372`
         * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
     * Changes
+        * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
     * Documentation Changes
         * Fixed start page code and description dataset naming discrepancy :pr:`2370`
     * Testing Changes
@@ -24,7 +25,8 @@ Release Notes
     * Enhancements
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
         * Added support for nonlinear pipelines for ``generate_pipeline_code`` :pr:`2332`
-        * Added ``inverse_transform`` method to pipelines :pr:`2256`
+        * Added ``inverse_transform`` method to pipelines :pr:`2256``
+        * Added ``search_order`` to ``AutoMLSearch``'s ``rankings`` and ``full_rankings`` tables :pr:`2345`
     * Fixes
         * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
     * Changes

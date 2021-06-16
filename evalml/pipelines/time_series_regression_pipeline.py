@@ -69,7 +69,9 @@ class TimeSeriesRegressionPipeline(
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        X_t = self._compute_features_during_fit(X, y)
+
+        self.input_target_name = y.name
+        X_t = self.component_graph.fit_features(X, y)
 
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
