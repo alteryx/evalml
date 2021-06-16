@@ -223,12 +223,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         X_t = self.component_graph.compute_final_component_features(X, y=y)
         return X_t
 
-    def _compute_features_during_fit(self, X, y):
-        self.input_target_name = y.name
-        X_t = self.component_graph.fit_features(X, y)
-        self.input_feature_names = self.component_graph.input_feature_names
-        return X_t
-
     def _fit(self, X, y):
         self.input_target_name = y.name
         self.component_graph.fit(X, y)
