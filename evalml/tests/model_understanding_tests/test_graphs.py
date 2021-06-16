@@ -1313,9 +1313,7 @@ def test_linear_coefficients_output(estimator):
     output_ = get_linear_coefficients(
         est_, features=["First", "Second", "Third", "Fourth"]
     )
-    assert (
-        output_.index == ["Intercept", "Second", "Fourth", "First", "Third"]
-    ).all()
+    assert (output_.index == ["Intercept", "Second", "Fourth", "First", "Third"]).all()
     assert output_.shape[0] == X.shape[1] + 1
     assert (
         pd.Series(est_._component_obj.intercept_, index=["Intercept"]).append(
