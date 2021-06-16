@@ -22,7 +22,7 @@ class ElasticNetRegressor(Estimator):
 
     def __init__(
         self,
-        alpha=1,
+        alpha=0.05,
         l1_ratio=0.5,
         max_iter=1000,
         normalize=False,

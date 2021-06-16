@@ -342,7 +342,7 @@ def test_describe_component():
     assert en_classifier.describe(return_dict=True) == {
         "name": "Elastic Net Classifier",
         "parameters": {
-            "alpha": 1,
+            "alpha": 0.05,
             "l1_ratio": 0.5,
             "n_jobs": -1,
             "max_iter": 1000,
@@ -353,7 +353,7 @@ def test_describe_component():
     assert en_regressor.describe(return_dict=True) == {
         "name": "Elastic Net Regressor",
         "parameters": {
-            "alpha": 1,
+            "alpha": 0.05,
             "l1_ratio": 0.5,
             "max_iter": 1000,
             "normalize": False,

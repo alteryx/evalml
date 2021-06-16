@@ -28,7 +28,7 @@ def test_fit_predict_binary(X_y_binary):
     sk_clf = SKElasticNetClassifier(
         loss="log",
         penalty="elasticnet",
-        alpha=1,
+        alpha=0.05,
         l1_ratio=0.5,
         n_jobs=-1,
         random_state=0,
@@ -52,7 +52,7 @@ def test_fit_predict_multi(X_y_multi):
     sk_clf = SKElasticNetClassifier(
         loss="log",
         penalty="elasticnet",
-        alpha=1,
+        alpha=0.05,
         l1_ratio=0.5,
         n_jobs=-1,
         random_state=0,
@@ -78,7 +78,7 @@ def test_feature_importance(X_y_binary):
     sk_clf = SKElasticNetClassifier(
         loss="log",
         penalty="elasticnet",
-        alpha=1,
+        alpha=0.05,
         l1_ratio=0.5,
         n_jobs=1,
         random_state=0,
@@ -99,7 +99,7 @@ def test_feature_importance_multi(X_y_multi):
     sk_clf = SKElasticNetClassifier(
         loss="log",
         penalty="elasticnet",
-        alpha=1,
+        alpha=0.05,
         l1_ratio=0.5,
         n_jobs=1,
         random_state=0,

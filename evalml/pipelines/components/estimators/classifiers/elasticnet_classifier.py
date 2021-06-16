@@ -27,7 +27,7 @@ class ElasticNetClassifier(Estimator):
 
     def __init__(
         self,
-        alpha=0.5,
+        alpha=0.05,
         l1_ratio=0.5,
         n_jobs=-1,
         max_iter=1000,
