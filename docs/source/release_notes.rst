@@ -6,6 +6,7 @@ Release Notes
         * Fixed ``ComponentGraph`` appending target to ``final_component_features`` if there is a component that returns both X and y :pr:`2358`
         * Fixed partial dependence graph method failing on multiclass problems when the class labels are numeric :pr:`2372`
         * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
+        * Added change for ``k_neighbors`` parameter in SMOTE Oversamplers to automatically handle small samples :pr:`2375`
     * Changes
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
     * Documentation Changes
