@@ -9,7 +9,7 @@ on:
 
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} unit ${{matrix.dir}} tests, Core Dependencies (${{ matrix.core_dependencies }})
+    name: ${{ matrix.python_version }} unit ${{matrix.command}} tests, Core Dependencies (${{ matrix.core_dependencies }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: true
@@ -17,28 +17,28 @@ jobs:
         include:
           - python_version: "3.8"
             core_dependencies: false
-            dir: 'git-test-automl'
+            command: 'git-test-automl'
           - python_version: "3.8"
             core_dependencies: false
-            dir: 'git-test-modelunderstanding'
+            command: 'git-test-modelunderstanding'
           - python_version: "3.8"
             core_dependencies: false
-            dir: 'git-test-other'
+            command: 'git-test-other'
           - python_version: "3.8"
             core_dependencies: false
-            dir: 'git-test-dask'
+            command: 'git-test-dask'
           - python_version: "3.8"
             core_dependencies: true
-            dir: 'git-test-automl-core'
+            command: 'git-test-automl-core'
           - python_version: "3.8"
             core_dependencies: true
-            dir: 'git-test-modelunderstanding-core'
+            command: 'git-test-modelunderstanding-core'
           - python_version: "3.8"
             core_dependencies: true
-            dir: 'git-test-other-core'
+            command: 'git-test-other-core'
           - python_version: "3.8"
             core_dependencies: true
-            dir: 'git-test-minimal-deps-dask'
+            command: 'git-test-minimal-deps-dask'
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -78,16 +78,10 @@ jobs:
         run: |
           source test_python/bin/activate
           coverage erase
-      - if: ${{ matrix.core_dependencies }}
-        name: Run unit tests with core dependencies
+      - name: Run unit tests
         run: |
           source test_python/bin/activate
-          make ${{matrix.dir}}
-      - if: ${{ !matrix.core_dependencies }}
-        name: Run unit tests
-        run: |
-          source test_python/bin/activate
-          make ${{matrix.dir}}
+          make ${{matrix.command}}
       - name: install coverage
         run: pip install coverage
       - name: Upload coverage to Codecov
