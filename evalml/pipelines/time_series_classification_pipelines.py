@@ -78,7 +78,10 @@ class TimeSeriesClassificationPipeline(
         X, y = self._convert_to_woodwork(X, y)
         self._encoder.fit(y)
         y = self._encode_targets(y)
-        X_t = self._compute_features_during_fit(X, y)
+
+        self.input_target_name = y.name
+        X_t = self.component_graph.fit_features(X, y)
+
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
