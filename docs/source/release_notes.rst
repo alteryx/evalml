@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
-        * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr`2386`
+        * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
     * Fixes
     * Changes
     * Documentation Changes
