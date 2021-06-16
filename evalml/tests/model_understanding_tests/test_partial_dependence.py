@@ -444,6 +444,58 @@ def test_partial_dependence_more_categories_than_grid_resolution(
     assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
 
 
+def test_partial_dependence_ice_plot(logistic_regression_binary_pipeline_class):
+    X = pd.DataFrame({"a": [1, 2, None, 2, 2], "b": [1, 1, 2, 2, 1]})
+    y = pd.Series([0, 1, 0, 1, 0])
+    pipeline = logistic_regression_binary_pipeline_class(
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
+    )
+    pipeline.fit(X, y)
+
+    avg_pred, ind_preds = partial_dependence(pipeline, X, features="a", kind="both")
+    assert isinstance(avg_pred, pd.DataFrame)
+    assert isinstance(ind_preds, pd.DataFrame)
+
+    assert avg_pred.shape == (3, 3)
+    assert ind_preds.shape == (3, 7)
+
+    ind_preds = partial_dependence(pipeline, X, features="b", kind="individual")
+    assert isinstance(ind_preds, pd.DataFrame)
+
+    assert ind_preds.shape == (2, 7)
+
+
+def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline_class):
+    X = pd.DataFrame({"a": [1, 2, None, 2, 2], "b": [1, 1, 2, 2, 1]})
+    y = pd.Series([0, 1, 0, 1, 0])
+    pipeline = logistic_regression_binary_pipeline_class(
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
+    )
+    pipeline.fit(X, y)
+
+    avg_pred, ind_preds = partial_dependence(
+        pipeline, X, features=["a", "b"], grid_resolution=20, kind="both"
+    )
+    assert isinstance(avg_pred, pd.DataFrame)
+    assert isinstance(ind_preds, list)
+    assert isinstance(ind_preds[0], pd.DataFrame)
+
+    assert avg_pred.shape == (3, 3)
+    assert len(ind_preds) == 5
+    for ind_df in ind_preds:
+        assert ind_df.shape == (3, 3)
+
+    ind_preds = partial_dependence(
+        pipeline, X, features=["a", "b"], grid_resolution=20, kind="individual"
+    )
+    assert isinstance(ind_preds, list)
+    assert isinstance(ind_preds[0], pd.DataFrame)
+
+    assert len(ind_preds) == 5
+    for ind_df in ind_preds:
+        assert ind_df.shape == (3, 3)
+
+
 def test_graph_partial_dependence(breast_cancer_local, test_pipeline):
     X, y = breast_cancer_local
 
@@ -1030,3 +1082,91 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
     dep = partial_dependence(pl, X, features="provider", grid_resolution=20)
     assert dep.shape[0] == X["provider"].nunique()
     assert dep.shape[0] != max(X.ww.select("categorical").describe().loc["unique"]) + 1
+
+
+def test_graph_partial_dependence_ice_plot(test_pipeline):
+    X, y = load_breast_cancer()
+
+    go = pytest.importorskip(
+        "plotly.graph_objects",
+        reason="Skipping plotting test because plotly not installed",
+    )
+    clf = test_pipeline
+    clf.fit(X, y)
+    fig = graph_partial_dependence(
+        clf, X, features="mean radius", grid_resolution=20, kind="both"
+    )
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert (
+        fig_dict["layout"]["title"]["text"]
+        == "Partial Dependence of 'mean radius' <br><sub>Including Individual Conditional Expectation Plot</sub>"
+    )
+    assert len(fig_dict["data"]) == len(X) + 1
+    assert fig_dict["data"][0]["name"] == "Individual Conditional Expectation"
+    assert fig_dict["data"][-1]["name"] == "Partial Dependence"
+
+    avg_dep_data, ind_dep_data = partial_dependence(
+        clf, X, features="mean radius", grid_resolution=20, kind="both"
+    )
+    assert np.array_equal(fig_dict["data"][-1]["x"], avg_dep_data["feature_values"])
+    assert np.array_equal(
+        fig_dict["data"][-1]["y"], avg_dep_data["partial_dependence"].values
+    )
+
+    for i in range(len(X)):
+        assert np.array_equal(fig_dict["data"][i]["x"], ind_dep_data["feature_values"])
+        assert np.array_equal(
+            fig_dict["data"][i]["y"], ind_dep_data[f"Sample {i}"].values
+        )
+
+    fig = graph_partial_dependence(
+        clf, X, features="mean radius", grid_resolution=20, kind="individual"
+    )
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert (
+        fig_dict["layout"]["title"]["text"]
+        == "Individual Conditional Expectation of 'mean radius'"
+    )
+    assert len(fig_dict["data"]) == len(X)
+    assert fig_dict["data"][0]["name"] == "Individual Conditional Expectation"
+
+    ind_dep_data = partial_dependence(
+        clf, X, features="mean radius", grid_resolution=20, kind="individual"
+    )
+
+    for i in range(len(X)):
+        assert np.array_equal(fig_dict["data"][i]["x"], ind_dep_data["feature_values"])
+        assert np.array_equal(
+            fig_dict["data"][i]["y"], ind_dep_data[f"Sample {i}"].values
+        )
+
+
+def test_graph_partial_dependence_ice_plot_two_way_error(test_pipeline):
+    X, y = load_breast_cancer()
+    clf = test_pipeline
+    clf.fit(X, y)
+    with pytest.raises(
+        ValueError,
+        match="Individual conditional expectation plot can only be created with a one-way partial dependence plot",
+    ):
+        graph_partial_dependence(
+            clf,
+            X,
+            features=["mean radius", "mean area"],
+            grid_resolution=20,
+            kind="both",
+        )
+
+    with pytest.raises(
+        ValueError,
+        match="Individual conditional expectation plot can only be created with a one-way partial dependence plot",
+    ):
+        graph_partial_dependence(
+            clf,
+            X,
+            features=["mean radius", "mean area"],
+            grid_resolution=20,
+            kind="individual",
+        )

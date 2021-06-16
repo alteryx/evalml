@@ -919,7 +919,7 @@ def graph_partial_dependence(
     elif mode == "one-way":
         feature_name = str(features)
         if kind == "individual":
-            title = f"Individual conditional expectation of '{feature_name}'"
+            title = f"Individual Conditional Expectation of '{feature_name}'"
         elif kind == "average":
             title = f"Partial Dependence of '{feature_name}'"
         else:
@@ -1042,6 +1042,9 @@ def graph_partial_dependence(
 
 def _add_ice_plot(_go, fig, ice_data):
     x = ice_data["feature_values"]
+    if "class_label" in ice_data.columns:
+        ice_data.drop(columns=["class_label"], inplace=True)
+    ice_data.drop(columns=["feature_values"], inplace=True)
     for i, sample in enumerate(ice_data):
         fig.add_trace(
             _go.Scatter(
