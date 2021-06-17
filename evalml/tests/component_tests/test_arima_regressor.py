@@ -91,8 +91,9 @@ def test_feature_importance(ts_data):
         assert clf.feature_importance == np.zeros(1)
 
 
-def test_fit_predict_ts_with_datetime_in_X_column(ts_data_seasonal_train,
-                                                  ts_data_seasonal_test):
+def test_fit_predict_ts_with_datetime_in_X_column(
+    ts_data_seasonal_train, ts_data_seasonal_test
+):
     X, y = ts_data_seasonal_train
     X_test, _ = ts_data_seasonal_test
     assert isinstance(X.index, pd.DatetimeIndex)
@@ -112,8 +113,9 @@ def test_fit_predict_ts_with_datetime_in_X_column(ts_data_seasonal_train,
     pd.testing.assert_series_equal(y_pred, y_pred_dt)
 
 
-def test_fit_predict_ts_with_only_datetime_column_in_X(ts_data_seasonal_train,
-                                                       ts_data_seasonal_test):
+def test_fit_predict_ts_with_only_datetime_column_in_X(
+    ts_data_seasonal_train, ts_data_seasonal_test
+):
     X, y = ts_data_seasonal_train
     X_test, y_test = ts_data_seasonal_test
     assert isinstance(X.index, pd.DatetimeIndex)
@@ -134,8 +136,9 @@ def test_fit_predict_ts_with_only_datetime_column_in_X(ts_data_seasonal_train,
     assert (y_pred_sk.to_period("D") == y_pred).all()
 
 
-def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal_train,
-                                                         ts_data_seasonal_test):
+def test_fit_predict_ts_with_X_and_y_index_out_of_sample(
+    ts_data_seasonal_train, ts_data_seasonal_test
+):
     X, y = ts_data_seasonal_train
     X_test, y_test = ts_data_seasonal_test
     assert isinstance(X.index, pd.DatetimeIndex)
@@ -161,7 +164,9 @@ def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal_train,
     "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates"
 )
 def test_fit_predict_ts_with_X_and_y_index(
-    mock_get_dates, mock_format_dates, ts_data_seasonal_train,
+    mock_get_dates,
+    mock_format_dates,
+    ts_data_seasonal_train,
 ):
     X, y = ts_data_seasonal_train
     assert isinstance(X.index, pd.DatetimeIndex)
@@ -310,7 +315,9 @@ def test_fit_ts_without_y(ts_data):
         clf.fit(X=X)
 
 
-def test_fit_predict_ts_no_X_out_of_sample(ts_data_seasonal_train, ts_data_seasonal_test):
+def test_fit_predict_ts_no_X_out_of_sample(
+    ts_data_seasonal_train, ts_data_seasonal_test
+):
     X, y = ts_data_seasonal_train
     X_test, y_test = ts_data_seasonal_test
 
@@ -328,8 +335,9 @@ def test_fit_predict_ts_no_X_out_of_sample(ts_data_seasonal_train, ts_data_seaso
 
 
 @pytest.mark.parametrize("X_none", [True, False])
-def test_fit_predict_date_index_named_out_of_sample(X_none, ts_data_seasonal_train,
-                                                    ts_data_seasonal_test):
+def test_fit_predict_date_index_named_out_of_sample(
+    X_none, ts_data_seasonal_train, ts_data_seasonal_test
+):
     X, y = ts_data_seasonal_train
     X_test, y_test = ts_data_seasonal_test
 
