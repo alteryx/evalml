@@ -593,12 +593,9 @@ def test_automl_feature_selection(
 
 
 @patch("evalml.tuners.random_search_tuner.RandomSearchTuner.is_search_space_exhausted")
-@patch("evalml.pipelines.BinaryClassificationPipeline.score")
-@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_automl_tuner_exception(
-    mock_fit, mock_score, mock_is_search_space_exhausted, X_y_binary
+    mock_is_search_space_exhausted, AutoMLTestEnv, X_y_binary
 ):
-    mock_score.return_value = {"Log Loss Binary": 1.0}
     X, y = X_y_binary
     error_text = "Cannot create a unique set of unexplored parameters. Try expanding the search space."
     mock_is_search_space_exhausted.side_effect = NoParamsException(error_text)
@@ -610,9 +607,9 @@ def test_automl_tuner_exception(
         max_iterations=10,
         optimize_thresholds=False,
     )
-    automl._SLEEP_TIME = 0.00001
     with pytest.raises(NoParamsException, match=error_text):
-        automl.search()
+        env = AutoMLTestEnv(automl, score_return_value={"Log Loss Binary": 0.2})
+        env.run()
 
 
 @patch("evalml.objectives.BinaryClassificationObjective.optimize_threshold")
@@ -1527,12 +1524,9 @@ def test_describe_pipeline(mock_fit, mock_score, return_dict, caplog, X_y_binary
         assert automl_dict is None
 
 
-@patch("evalml.pipelines.BinaryClassificationPipeline.score")
-@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
-@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 @pytest.mark.parametrize("return_dict", [True, False])
 def test_describe_pipeline_with_ensembling(
-    mock_opt_tell, mock_pipeline_fit, mock_score, return_dict, X_y_binary, caplog
+    return_dict, X_y_binary, AutoMLTestEnv, caplog
 ):
     X, y = X_y_binary
 
@@ -1548,14 +1542,15 @@ def test_describe_pipeline_with_ensembling(
         error_callback=raise_error_callback,
     )
 
-    mock_score.side_effect = [
+    score_side_effect = [
         {"Log Loss Binary": score}
         for score in np.arange(
             0, -1 * automl.max_iterations * automl.data_splitter.get_n_splits(), -0.1
         )
     ]  # Dcreases with each call
-    automl._SLEEP_TIME = 0.0001
-    automl.search()
+
+    test_env = AutoMLTestEnv(automl, mock_score_side_effect=score_side_effect)
+    test_env.run()
     pipeline_names = automl.rankings["pipeline_name"]
     assert pipeline_names.str.contains("Ensemble").any()
 

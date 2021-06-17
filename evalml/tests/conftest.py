@@ -7,6 +7,8 @@ import pytest
 import woodwork as ww
 from sklearn import datasets
 from skopt.space import Integer, Real
+from unittest.mock import patch
+import contextlib
 
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import (
@@ -1088,3 +1090,35 @@ def mock_imbalanced_data_X_y():
         return X, y
 
     return _imbalanced_data_X_y
+
+
+class _AutoMLTestEnv:
+
+    def __init__(self, automl, score_return_value=None, mock_fit=None, mock_score_side_effect=None):
+        self.automl = automl
+        self.score_return_value = score_return_value
+        self.mock_fit = mock_fit
+        self.mock_score_side_effect = mock_score_side_effect
+
+    @property
+    def _pipeline_class(self):
+        return {ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
+                ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
+                ProblemTypes.MULTICLASS: "evalml.pipelines.MulticlassClassificationPipeline"}[self.automl.problem_type]
+
+    def run(self):
+        if self.mock_fit is None:
+            mock_fit = patch(self._pipeline_class + ".fit")
+        if self.mock_score_side_effect is not None:
+            mock_score = patch(self._pipeline_class + ".score", side_effect=self.mock_score_side_effect)
+        elif self.score_return_value is not None:
+            mock_score = patch(self._pipeline_class + ".score", return_value=self.score_return_value)
+        mock_tell = patch("evalml.tuners.skopt_tuner.Optimizer.tell")
+        with mock_fit, mock_score, mock_tell:
+            self.automl._SLEEP_TIME = 0.00001
+            self.automl.search()
+
+
+@pytest.fixture
+def AutoMLTestEnv():
+    return _AutoMLTestEnv
