@@ -164,7 +164,9 @@ def test_plot_iterations_max_iterations(X_y_regression):
     assert len(y) == 3
 
 
-def test_plot_iterations_max_time(X_y_regression):
+@patch("evalml.pipelines.RegressionPipeline.fit")
+@patch("evalml.pipelines.RegressionPipeline.score", return_value={"R2": 0.3})
+def test_plot_iterations_max_time(mock_score, mock_fit, X_y_regression):
     go = pytest.importorskip(
         "plotly.graph_objects",
         reason="Skipping plotting test because plotly not installed",
@@ -175,7 +177,7 @@ def test_plot_iterations_max_time(X_y_regression):
         X_train=X,
         y_train=y,
         problem_type="regression",
-        max_time=10,
+        max_time=2,
         random_seed=1,
         n_jobs=1,
     )
