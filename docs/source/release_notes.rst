@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Updated demos to pull data from S3 instead of including demo data in package :pr:`2387`
     * Fixes
         * Fixed ``ComponentGraph`` appending target to ``final_component_features`` if there is a component that returns both X and y :pr:`2358`
         * Fixed partial dependence graph method failing on multiclass problems when the class labels are numeric :pr:`2372`
