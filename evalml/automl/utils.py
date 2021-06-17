@@ -231,15 +231,16 @@ def get_hyperparameter_ranges(component_graph, custom_hyperparameters):
 
 
 def get_pipelines_from_component_graphs(
-    component_graphs_list, problem_type, parameters=None
+    component_graphs_dict, problem_type, parameters=None, random_seed=0
 ):
     """
     Returns created pipelines from passed component graphs based on the specified problem type.
 
     Arguments:
-        component_graphs_list (list): The list of component graphs.
+        component_graphs_dict (dict): The dict of component graphs.
         problem_type (str or ProblemType): The problem type for which pipelines will be created.
         parameters (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.
+        random_seed (int): Random seed.
 
     Returns:
         list: List of pipelines made from the passed component graphs.
@@ -253,18 +254,13 @@ def get_pipelines_from_component_graphs(
         ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesRegressionPipeline,
     }[handle_problem_types(problem_type)]
     created_pipelines = []
-    for component_graph in component_graphs_list:
-        comp_seed = 0
-        if "random_seed" in component_graph.keys():
-            comp_seed = component_graph.pop("random_seed")
-        comp_name = next(iter(component_graph))
-        comp_graph = component_graph[comp_name]
+    for graph_name, component_graph in component_graphs_dict.items():
         created_pipelines.append(
             pipeline_class(
-                component_graph=comp_graph,
+                component_graph=component_graph,
                 parameters=parameters,
-                custom_name=comp_name,
-                random_seed=comp_seed,
+                custom_name=graph_name,
+                random_seed=random_seed,
             )
         )
     return created_pipelines

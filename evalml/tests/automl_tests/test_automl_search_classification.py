@@ -1045,10 +1045,8 @@ def test_automl_component_graphs_search(
     mock_multi_score,
     is_linear,
     problem_type,
-    dummy_binary_linear_component_graph,
-    dummy_binary_dict_component_graph,
-    dummy_multiclass_linear_component_graph,
-    dummy_multiclass_dict_component_graph,
+    dummy_classifier_linear_component_graph,
+    dummy_classifier_dict_component_graph,
     X_y_binary,
     X_y_multi,
 ):
@@ -1057,18 +1055,18 @@ def test_automl_component_graphs_search(
         mock_binary_score.return_value = {"Log Loss Binary": 1.0}
         expected_mock_class = BinaryClassificationPipeline
         component_graph = (
-            dummy_binary_linear_component_graph
+            dummy_classifier_linear_component_graph
             if is_linear
-            else dummy_binary_dict_component_graph
+            else dummy_classifier_dict_component_graph
         )
     else:
         X, y = X_y_multi
         mock_multi_score.return_value = {"Log Loss Multiclass": 1.0}
         expected_mock_class = MulticlassClassificationPipeline
         component_graph = (
-            dummy_multiclass_linear_component_graph
+            dummy_classifier_linear_component_graph
             if is_linear
-            else dummy_multiclass_dict_component_graph
+            else dummy_classifier_dict_component_graph
         )
 
     start_iteration_callback = MagicMock()

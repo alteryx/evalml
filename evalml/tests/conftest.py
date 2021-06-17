@@ -394,22 +394,6 @@ def dummy_classifier_linear_component_graph(dummy_classifier_estimator_class):
 
 
 @pytest.fixture
-def dummy_binary_linear_component_graph(dummy_binary_estimator_class):
-    component_graph_linear = {
-        "Name": ["Imputer", "One Hot Encoder", dummy_binary_estimator_class]
-    }
-    return component_graph_linear
-
-
-@pytest.fixture
-def dummy_multiclass_linear_component_graph(dummy_multiclass_estimator_class):
-    component_graph_linear = {
-        "Name": ["Imputer", "One Hot Encoder", dummy_multiclass_estimator_class]
-    }
-    return component_graph_linear
-
-
-@pytest.fixture
 def dummy_regressor_linear_component_graph(dummy_regressor_estimator_class):
     component_graph_linear = {
         "Name": ["Imputer", "One Hot Encoder", dummy_regressor_estimator_class]
@@ -418,24 +402,12 @@ def dummy_regressor_linear_component_graph(dummy_regressor_estimator_class):
 
 
 @pytest.fixture
-def dummy_binary_dict_component_graph(dummy_binary_estimator_class):
+def dummy_classifier_dict_component_graph(dummy_classifier_estimator_class):
     component_graph_dict = {
         "Name": {
             "Imputer": ["Imputer"],
             "Imputer_1": ["Imputer", "Imputer"],
-            "Random Forest Classifier": [dummy_binary_estimator_class, "Imputer_1"],
-        }
-    }
-    return component_graph_dict
-
-
-@pytest.fixture
-def dummy_multiclass_dict_component_graph(dummy_multiclass_estimator_class):
-    component_graph_dict = {
-        "Name": {
-            "Imputer": ["Imputer"],
-            "Imputer_1": ["Imputer", "Imputer"],
-            "Random Forest Classifier": [dummy_multiclass_estimator_class, "Imputer_1"],
+            "Random Forest Classifier": [dummy_classifier_estimator_class, "Imputer_1"],
         }
     }
     return component_graph_dict

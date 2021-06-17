@@ -191,13 +191,14 @@ class AutoMLSearch:
             tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
                 Only applicable if patience is not None. Defaults to None.
 
-            allowed_component_graphs (list): A list of dictionaries or ComponentGraphs indicating the component graphs allowed in the search.
-                The format should follow [ {Name_of_graph: [list_of_components],
-                                            random_seed: 42} ].
+            allowed_component_graphs (dict): A dictionary of lists or ComponentGraphs indicating the component graphs allowed in the search.
+                The format should follow { "Name_0": [list_of_components],
+                                           "Name_1": [ComponentGraph(...)] }
+
                 The default of None indicates all pipeline component graphs for this problem type are allowed. Setting this field will cause
                 allowed_model_families to be ignored.
 
-                e.g. allowed_component_graphs = [ {"Name": ["Imputer", "One Hot Encoder", dummy_classifier_estimator_class]} ]
+                e.g. allowed_component_graphs = { "My_Graph": ["Imputer", "One Hot Encoder", "Random Forest Classifier"] }
 
             allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
                 model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
@@ -405,22 +406,15 @@ class AutoMLSearch:
                 "Unable to import plotly; skipping pipeline search plotting\n"
             )
         if allowed_component_graphs is not None:
-            if not isinstance(allowed_component_graphs, list):
+            if not isinstance(allowed_component_graphs, dict):
                 raise ValueError(
-                    "Parameter allowed_component_graphs must be either None or a list!"
+                    "Parameter allowed_component_graphs must be either None or a dictionary!"
                 )
-            for graph in allowed_component_graphs:
-                if not isinstance(graph, (dict, ComponentGraph)):
+            for graph_name, graph in allowed_component_graphs.items():
+                if not isinstance(graph, (list, dict, ComponentGraph)):
                     raise ValueError(
-                        "Every component graph passed must be of type dictionary or ComponentGraph!"
+                        "Every component graph passed must be of type list, dictionary, or ComponentGraph!"
                     )
-            unique_names = set()
-            for graph in allowed_component_graphs:
-                unique_names.add(list(graph.keys())[0])
-            if len(unique_names) < len(allowed_component_graphs):
-                raise ValueError(
-                    "Every name of allowed_component_graphs must be unique!"
-                )
         self.allowed_component_graphs = allowed_component_graphs
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
@@ -510,7 +504,7 @@ class AutoMLSearch:
             ]
         else:
             self.allowed_pipelines = get_pipelines_from_component_graphs(
-                self.allowed_component_graphs, self.problem_type, parameters
+                self.allowed_component_graphs, self.problem_type, parameters, self.random_seed
             )
 
         if self.allowed_pipelines == []:
