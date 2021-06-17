@@ -1,6 +1,8 @@
 on:
   pull_request:
     types: [opened, synchronize]
+    paths:
+      - 'evalml/utils/update_checker.py'
   push:
     branches:
       - main
@@ -30,4 +32,5 @@ jobs:
         run: |
           python -c "import alteryx_open_src_update_checker"
         env:
+          # Disables API requests which is not needed for testing.
           ALTERYX_OPEN_SRC_UPDATE_CHECKER: False
