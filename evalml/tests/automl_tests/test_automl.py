@@ -556,13 +556,12 @@ def test_automl_feature_selection(
         problem_type="binary",
         max_iterations=2,
         start_iteration_callback=start_iteration_callback,
-        allowed_component_graphs=
-            {
-                "Name": [
-                    "RF Classifier Select From Model",
-                    "Logistic Regression Classifier",
-                ]
-            },
+        allowed_component_graphs={
+            "Name": [
+                "RF Classifier Select From Model",
+                "Logistic Regression Classifier",
+            ]
+        },
     )
     automl.search()
 
@@ -643,7 +642,9 @@ def test_automl_allowed_component_graphs_algorithm(
     mock_algo_init.side_effect = Exception("mock algo init")
     X, y = X_y_binary
 
-    allowed_component_graphs = {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
+    allowed_component_graphs = {
+        "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+    }
     with pytest.raises(Exception, match="mock algo init"):
         AutoMLSearch(
             X_train=X,
@@ -963,12 +964,11 @@ def test_component_graph_with_incorrect_problem_type(
             X_train=X,
             y_train=y,
             problem_type="regression",
-            allowed_component_graphs=
-                {
-                    "Mock Binary Classification Pipeline": [
-                        dummy_classifier_estimator_class
-                    ]
-                },
+            allowed_component_graphs={
+                "Mock Binary Classification Pipeline": [
+                    dummy_classifier_estimator_class
+                ]
+            },
         )
 
 
@@ -2992,12 +2992,12 @@ def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(
 
     if component_graphs:
         component_graph_ = {
-                "Name_0": [
-                    "Drop Columns Transformer",
-                    "Imputer",
-                    "Random Forest Classifier",
-                ]
-            }
+            "Name_0": [
+                "Drop Columns Transformer",
+                "Imputer",
+                "Random Forest Classifier",
+            ]
+        }
 
     if automl_parameters:
         automl_parameters_ = {
@@ -3962,18 +3962,18 @@ def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(
     X, y = X_y_binary
 
     component_graph_1 = {
-            "Imputer": ["Imputer"],
-            "Imputer_1": ["Imputer", "Imputer"],
-            "One Hot Encoder": ["One Hot Encoder", "Imputer_1"],
-            "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder"],
-        }
+        "Imputer": ["Imputer"],
+        "Imputer_1": ["Imputer", "Imputer"],
+        "One Hot Encoder": ["One Hot Encoder", "Imputer_1"],
+        "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder"],
+    }
 
     component_graph_2 = [
-            "Imputer",
-            "Imputer",
-            "One Hot Encoder",
-            "Random Forest Classifier",
-        ]
+        "Imputer",
+        "Imputer",
+        "One Hot Encoder",
+        "Random Forest Classifier",
+    ]
 
     component_graph_3 = [
         "Imputer",
@@ -4434,7 +4434,9 @@ def test_score_batch_works(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs={"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]},
+        allowed_component_graphs={
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+        },
         optimize_thresholds=False,
     )
 
@@ -4500,7 +4502,9 @@ def test_train_pipelines_score_pipelines_raise_exception_with_duplicate_names(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs={"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]},
+        allowed_component_graphs={
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+        },
     )
 
     with pytest.raises(
@@ -4526,7 +4530,9 @@ def test_score_batch_before_fitting_yields_error_nan_scores(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs= {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]},
+        allowed_component_graphs={
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+        },
     )
 
     scored_pipelines = automl.score_pipelines(
@@ -4693,9 +4699,11 @@ def test_automl_validates_data_passed_in_to_allowed_component_graphs(
             y,
             problem_type="binary",
             allowed_component_graphs=[
-                {"Mock Binary Classification Pipeline": [
-                    dummy_classifier_estimator_class
-                ]}
+                {
+                    "Mock Binary Classification Pipeline": [
+                        dummy_classifier_estimator_class
+                    ]
+                }
             ],
         )
 
@@ -4707,10 +4715,9 @@ def test_automl_validates_data_passed_in_to_allowed_component_graphs(
             X,
             y,
             problem_type="binary",
-            allowed_component_graphs=
-                {
-                    "Mock Binary Classification Pipeline": dummy_classifier_estimator_class
-                },
+            allowed_component_graphs={
+                "Mock Binary Classification Pipeline": dummy_classifier_estimator_class
+            },
         )
 
 

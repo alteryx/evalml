@@ -110,19 +110,8 @@ def test_automl_train_dask_error_callback(X_y_binary_cls, cluster, caplog):
             engine=parallel_engine,
             max_iterations=2,
         )
-        automl._automl_algorithm = IterativeAlgorithm(
-            max_iterations=2,
-            allowed_pipelines=pipelines,
-            tuner_class=SKOptTuner,
-            random_seed=0,
-            n_jobs=-1,
-            number_features=X.shape[1],
-            pipelines_per_batch=5,
-            ensembling=False,
-            text_in_ensembling=False,
-            pipeline_params={},
-            custom_hyperparameters=None,
-        )
+        automl.allowed_pipelines = pipelines
+
         automl.train_pipelines(pipelines)
         assert "Train error for PipelineWithError: Yikes" in caplog.text
 
@@ -142,19 +131,8 @@ def test_automl_score_dask_error_callback(X_y_binary_cls, cluster, caplog):
             engine=parallel_engine,
             max_iterations=2,
         )
-        automl._automl_algorithm = IterativeAlgorithm(
-            max_iterations=2,
-            allowed_pipelines=pipelines,
-            tuner_class=SKOptTuner,
-            random_seed=0,
-            n_jobs=-1,
-            number_features=X.shape[1],
-            pipelines_per_batch=5,
-            ensembling=False,
-            text_in_ensembling=False,
-            pipeline_params={},
-            custom_hyperparameters=None,
-        )
+        automl.allowed_pipelines = pipelines
+
         automl.score_pipelines(
             pipelines, X, y, objectives=["Log Loss Binary", "F1", "AUC"]
         )

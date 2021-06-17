@@ -504,7 +504,10 @@ class AutoMLSearch:
             ]
         else:
             self.allowed_pipelines = get_pipelines_from_component_graphs(
-                self.allowed_component_graphs, self.problem_type, parameters, self.random_seed
+                self.allowed_component_graphs,
+                self.problem_type,
+                parameters,
+                self.random_seed,
             )
 
         if self.allowed_pipelines == []:
