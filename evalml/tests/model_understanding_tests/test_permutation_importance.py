@@ -466,7 +466,7 @@ def test_get_permutation_importance_binary(
     X_y_binary,
     data_type,
     logistic_regression_binary_pipeline_class,
-    binary_core_objectives,
+    binary_test_objectives,
     make_data_type,
 ):
     X, y = X_y_binary
@@ -477,7 +477,7 @@ def test_get_permutation_importance_binary(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42
     )
     pipeline.fit(X, y)
-    for objective in ["Log Loss Binary", "AUC"]:
+    for objective in binary_test_objectives:
         permutation_importance = calculate_permutation_importance(
             pipeline, X, y, objective
         )
@@ -501,7 +501,7 @@ def test_get_permutation_importance_binary(
 
 
 def test_get_permutation_importance_multiclass(
-    X_y_multi, logistic_regression_multiclass_pipeline_class, multiclass_core_objectives
+    X_y_multi, logistic_regression_multiclass_pipeline_class, multiclass_test_objectives
 ):
     X, y = X_y_multi
     X = pd.DataFrame(X)
@@ -509,7 +509,7 @@ def test_get_permutation_importance_multiclass(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42
     )
     pipeline.fit(X, y)
-    for objective in ["Log Loss Multiclass", "AUC Micro"]:
+    for objective in multiclass_test_objectives:
         permutation_importance = calculate_permutation_importance(
             pipeline, X, y, objective
         )
@@ -532,7 +532,7 @@ def test_get_permutation_importance_multiclass(
 
 
 def test_get_permutation_importance_regression(
-    linear_regression_pipeline_class, regression_core_objectives
+    linear_regression_pipeline_class, regression_test_objectives
 ):
     X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
@@ -541,7 +541,7 @@ def test_get_permutation_importance_regression(
     )
     pipeline.fit(X, y)
 
-    for objective in regression_core_objectives:
+    for objective in regression_test_objectives:
         permutation_importance = calculate_permutation_importance(
             pipeline, X, y, objective
         )

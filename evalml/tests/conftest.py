@@ -764,18 +764,18 @@ def nonlinear_regression_pipeline_class():
 
 
 @pytest.fixture
-def binary_core_objectives():
-    return get_core_objectives(ProblemTypes.BINARY)
+def binary_test_objectives():
+    return [o for o in get_core_objectives(ProblemTypes.BINARY) if o.name in {"Log Loss Binary", "F1", "AUC"}]
 
 
 @pytest.fixture
-def multiclass_core_objectives():
-    return get_core_objectives(ProblemTypes.MULTICLASS)
+def multiclass_test_objectives():
+    return [o for o in get_core_objectives(ProblemTypes.MULTICLASS) if o.name in {"Log Loss Multiclass", "AUC Micro", "F1 Micro"}]
 
 
 @pytest.fixture
-def regression_core_objectives():
-    return get_core_objectives(ProblemTypes.REGRESSION)
+def regression_test_objectives():
+    return [o for o in get_core_objectives(ProblemTypes.REGRESSION) if o.name in {"R2", "Root Mean Squared Error", "MAE"}]
 
 
 @pytest.fixture

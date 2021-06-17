@@ -16,6 +16,7 @@ from evalml.objectives import (
     PrecisionMicro,
     Recall,
     get_objective,
+    get_core_objectives
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -181,7 +182,8 @@ def test_binary_auto(X_y_binary):
     assert len(np.unique(y_pred)) == 2
 
 
-def test_multi_auto(X_y_multi, multiclass_core_objectives):
+def test_multi_auto(X_y_multi):
+    multiclass_objectives = get_core_objectives("multiclass")
     X, y = X_y_multi
     objective = PrecisionMicro()
     automl = AutoMLSearch(
@@ -199,12 +201,12 @@ def test_multi_auto(X_y_multi, multiclass_core_objectives):
     assert len(np.unique(y_pred)) == 3
 
     objective_in_additional_objectives = next(
-        (obj for obj in multiclass_core_objectives if obj.name == objective.name), None
+        (obj for obj in multiclass_objectives if obj.name == objective.name), None
     )
-    multiclass_core_objectives.remove(objective_in_additional_objectives)
+    multiclass_objectives.remove(objective_in_additional_objectives)
 
     for expected, additional in zip(
-        multiclass_core_objectives, automl.additional_objectives
+        multiclass_objectives, automl.additional_objectives
     ):
         assert type(additional) is type(expected)
 
