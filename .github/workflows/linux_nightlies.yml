@@ -2,9 +2,7 @@ name: Nightly Linux Unit Tests
 
 on:
   schedule:
-      - cron: '10 * * * *'
-  pull_request:
-    types: [opened, synchronize]
+      - cron: '0 3 * * *'
 
 jobs:
   unit_tests:
@@ -24,8 +22,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{ github.repository }}
-          ref: 1815-speed-up-unit-tests
-          fetch-depth: 2
+          ref: main
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
       - name: Create virtual environment, upgrade pip

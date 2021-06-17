@@ -281,11 +281,20 @@ def ts_data():
 
 
 @pytest.fixture
-def ts_data_seasonal():
-    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 50)
-    X, y = pd.DataFrame({"features": range(50)}), pd.Series(sine_)
-    y.index = pd.date_range(start="1/1/2018", periods=50)
-    X.index = pd.date_range(start="1/1/2018", periods=50)
+def ts_data_seasonal_train():
+    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 25)
+    X, y = pd.DataFrame({"features": range(25)}), pd.Series(sine_)
+    y.index = pd.date_range(start="1/1/2018", periods=25)
+    X.index = pd.date_range(start="1/1/2018", periods=25)
+    return X, y
+
+
+@pytest.fixture
+def ts_data_seasonal_test():
+    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 25)
+    X, y = pd.DataFrame({"features": range(25)}), pd.Series(sine_)
+    y.index = pd.date_range(start="1/26/2018", periods=25)
+    X.index = pd.date_range(start="1/26/2018", periods=25)
     return X, y
 
 

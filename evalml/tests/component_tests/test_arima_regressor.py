@@ -91,59 +91,65 @@ def test_feature_importance(ts_data):
         assert clf.feature_importance == np.zeros(1)
 
 
-def test_fit_predict_ts_with_datetime_in_X_column(ts_data_seasonal):
-    X, y = ts_data_seasonal
+def test_fit_predict_ts_with_datetime_in_X_column(ts_data_seasonal_train,
+                                                  ts_data_seasonal_test):
+    X, y = ts_data_seasonal_train
+    X_test, _ = ts_data_seasonal_test
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
 
     m_clf = ARIMARegressor(d=None)
-    m_clf.fit(X=X[:25], y=y[:25])
-    y_pred = m_clf.predict(X=X[25:])
+    m_clf.fit(X=X, y=y)
+    y_pred = m_clf.predict(X=X_test)
 
-    X["Sample"] = pd.date_range(start="1/1/2016", periods=50)
+    X["Sample"] = pd.date_range(start="1/1/2016", periods=25)
 
     dt_clf = ARIMARegressor(d=None)
-    dt_clf.fit(X=X[:25], y=y[:25])
-    y_pred_dt = dt_clf.predict(X=X[25:])
+    dt_clf.fit(X=X, y=y)
+    y_pred_dt = dt_clf.predict(X=X_test)
 
     assert isinstance(y_pred_dt, pd.Series)
     pd.testing.assert_series_equal(y_pred, y_pred_dt)
 
 
-def test_fit_predict_ts_with_only_datetime_column_in_X(ts_data_seasonal):
-    X, y = ts_data_seasonal
+def test_fit_predict_ts_with_only_datetime_column_in_X(ts_data_seasonal_train,
+                                                       ts_data_seasonal_test):
+    X, y = ts_data_seasonal_train
+    X_test, y_test = ts_data_seasonal_test
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
 
-    fh_ = forecasting.ForecastingHorizon(y[25:].index, is_relative=False)
+    fh_ = forecasting.ForecastingHorizon(y_test.index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
-    clf = a_clf.fit(y=y[:25])
+    clf = a_clf.fit(y=y)
     y_pred_sk = clf.predict(fh=fh_)
 
     X = X.drop(["features"], axis=1)
 
     m_clf = ARIMARegressor(d=None)
-    m_clf.fit(X=X[:25], y=y[:25])
-    y_pred = m_clf.predict(X=X[25:])
+    m_clf.fit(X=X, y=y)
+    y_pred = m_clf.predict(X=X_test)
 
     assert (y_pred_sk.to_period("D") == y_pred).all()
 
 
-def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal):
-    X, y = ts_data_seasonal
+def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal_train,
+                                                         ts_data_seasonal_test):
+    X, y = ts_data_seasonal_train
+    X_test, y_test = ts_data_seasonal_test
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
 
-    fh_ = forecasting.ForecastingHorizon(y[25:].index, is_relative=False)
+    fh_ = forecasting.ForecastingHorizon(y_test.index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
-    clf = a_clf.fit(X=X[:25], y=y[:25])
-    y_pred_sk = clf.predict(fh=fh_, X=X[25:])
+    clf = a_clf.fit(X=X, y=y)
+    y_pred_sk = clf.predict(fh=fh_, X=X_test)
 
     m_clf = ARIMARegressor(d=None)
-    m_clf.fit(X=X[:25], y=y[:25])
-    y_pred = m_clf.predict(X=X[25:])
+    m_clf.fit(X=X, y=y)
+    y_pred = m_clf.predict(X=X_test)
 
     assert (y_pred_sk.to_period("D") == y_pred).all()
 
@@ -155,9 +161,9 @@ def test_fit_predict_ts_with_X_and_y_index_out_of_sample(ts_data_seasonal):
     "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates"
 )
 def test_fit_predict_ts_with_X_and_y_index(
-    mock_get_dates, mock_format_dates, ts_data_seasonal
+    mock_get_dates, mock_format_dates, ts_data_seasonal_train,
 ):
-    X, y = ts_data_seasonal
+    X, y = ts_data_seasonal_train
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
 
@@ -185,9 +191,9 @@ def test_fit_predict_ts_with_X_and_y_index(
     "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates"
 )
 def test_fit_predict_ts_with_X_not_y_index(
-    mock_get_dates, mock_format_dates, ts_data_seasonal
+    mock_get_dates, mock_format_dates, ts_data_seasonal_train
 ):
-    X, y = ts_data_seasonal
+    X, y = ts_data_seasonal_train
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
 
@@ -218,9 +224,9 @@ def test_fit_predict_ts_with_X_not_y_index(
     "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates"
 )
 def test_fit_predict_ts_with_y_not_X_index(
-    mock_get_dates, mock_format_dates, ts_data_seasonal
+    mock_get_dates, mock_format_dates, ts_data_seasonal_train
 ):
-    X, y = ts_data_seasonal
+    X, y = ts_data_seasonal_train
 
     mock_get_dates.return_value = (y.index, X)
     mock_format_dates.return_value = (X, y, None)
@@ -304,44 +310,47 @@ def test_fit_ts_without_y(ts_data):
         clf.fit(X=X)
 
 
-def test_fit_predict_ts_no_X_out_of_sample(ts_data_seasonal):
-    X, y = ts_data_seasonal
+def test_fit_predict_ts_no_X_out_of_sample(ts_data_seasonal_train, ts_data_seasonal_test):
+    X, y = ts_data_seasonal_train
+    X_test, y_test = ts_data_seasonal_test
 
-    fh_ = forecasting.ForecastingHorizon(y[25:].index, is_relative=False)
+    fh_ = forecasting.ForecastingHorizon(y_test.index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
-    a_clf.fit(y=y[:25])
+    a_clf.fit(y=y)
     y_pred_sk = a_clf.predict(fh=fh_)
 
     m_clf = ARIMARegressor(d=None)
-    m_clf.fit(X=None, y=y[:25])
-    y_pred = m_clf.predict(X=None, y=y[25:])
+    m_clf.fit(X=None, y=y)
+    y_pred = m_clf.predict(X=None, y=y_test)
 
     assert (y_pred_sk.to_period("D") == y_pred).all()
 
 
 @pytest.mark.parametrize("X_none", [True, False])
-def test_fit_predict_date_index_named_out_of_sample(X_none, ts_data_seasonal):
-    X, y = ts_data_seasonal
+def test_fit_predict_date_index_named_out_of_sample(X_none, ts_data_seasonal_train,
+                                                    ts_data_seasonal_test):
+    X, y = ts_data_seasonal_train
+    X_test, y_test = ts_data_seasonal_test
 
-    fh_ = forecasting.ForecastingHorizon(y[25:].index, is_relative=False)
+    fh_ = forecasting.ForecastingHorizon(y_test.index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
     if X_none:
-        clf = a_clf.fit(y=y[:25])
+        clf = a_clf.fit(y=y)
         y_pred_sk = clf.predict(fh=fh_)
     else:
-        clf = a_clf.fit(X=X[:25], y=y[:25])
-        y_pred_sk = clf.predict(fh=fh_, X=X[25:])
+        clf = a_clf.fit(X=X, y=y)
+        y_pred_sk = clf.predict(fh=fh_, X=X_test)
 
     X = X.reset_index()
     assert not isinstance(X.index, pd.DatetimeIndex)
     m_clf = ARIMARegressor(date_index="index", d=None)
     if X_none:
-        m_clf.fit(X=None, y=y[:25])
-        y_pred = m_clf.predict(X=None, y=y[25:])
+        m_clf.fit(X=None, y=y)
+        y_pred = m_clf.predict(X=None, y=y_test)
     else:
-        m_clf.fit(X=X[:25], y=y[:25])
-        y_pred = m_clf.predict(X=X[25:], y=y[25:])
+        m_clf.fit(X=X, y=y)
+        y_pred = m_clf.predict(X=X_test, y=y_test)
 
     assert (y_pred_sk.to_period("D") == y_pred).all()
