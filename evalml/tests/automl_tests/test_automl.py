@@ -840,8 +840,7 @@ def test_large_dataset_multiclass(mock_score):
         )
 
 
-@patch("evalml.pipelines.RegressionPipeline.score")
-def test_large_dataset_regression(mock_score):
+def test_large_dataset_regression(AutoMLTestEnv):
     X = pd.DataFrame({"col_0": [i for i in range(101000)]})
     y = pd.Series([i for i in range(101000)])
 
@@ -853,8 +852,8 @@ def test_large_dataset_regression(mock_score):
         max_iterations=1,
         n_jobs=1,
     )
-    mock_score.return_value = {automl.objective.name: 1.234}
-    automl.search()
+    env = AutoMLTestEnv(automl, score_return_value={automl.objective.name: 1.234})
+    env.run()
     assert isinstance(automl.data_splitter, TrainingValidationSplit)
     assert automl.data_splitter.get_n_splits() == 1
 
