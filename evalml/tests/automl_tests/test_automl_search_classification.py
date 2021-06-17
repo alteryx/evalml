@@ -15,8 +15,8 @@ from evalml.objectives import (
     Precision,
     PrecisionMicro,
     Recall,
+    get_core_objectives,
     get_objective,
-    get_core_objectives
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,

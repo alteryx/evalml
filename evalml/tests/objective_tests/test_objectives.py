@@ -125,7 +125,9 @@ def test_objective_outputs(
     )
 
     all_objectives = (
-        get_core_objectives("binary") + get_core_objectives("multiclass") + get_core_objectives("regression")
+        get_core_objectives("binary")
+        + get_core_objectives("multiclass")
+        + get_core_objectives("regression")
     )
 
     for objective in all_objectives:
