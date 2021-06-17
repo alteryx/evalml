@@ -1,4 +1,4 @@
-name: Latest Dependency Checker
+name: Dependency update checker
 on:
   schedule:
       - cron: '0 * * * *'
