@@ -1,4 +1,4 @@
-name: Linux Unit Tests with Minimum Dependencies
+name: Unit tests, linux, min dependencies
 
 on:
   pull_request:

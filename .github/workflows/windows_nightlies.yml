@@ -1,8 +1,8 @@
-name: Nightly Windows Unit Tests
+name: Nightly unit tests, windows
 
 on:
   schedule:
-      - cron: '0 7 * * *'
+      - cron: '0 3 * * *'
 
 jobs:
   win_unit_tests:
