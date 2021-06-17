@@ -410,7 +410,7 @@ def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df):
         tf.fit(X)
         transformed = tf.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
-        assert transformed.ww.logical_types == {
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             0: logical_type,
             "LSA(text col)[0]": Double,
             "LSA(text col)[1]": Double,
