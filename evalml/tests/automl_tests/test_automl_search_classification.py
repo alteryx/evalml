@@ -722,6 +722,7 @@ def test_automl_component_graphs_specified_component_graphs_binary(
         allowed_component_graphs=[
             {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
         ],
+        optimize_thresholds=False,
         allowed_model_families=None,
     )
     expected_pipeline = dummy_binary_pipeline_class({})
@@ -797,6 +798,7 @@ def test_automl_component_graphs_specified_allowed_model_families_binary(
         problem_type="binary",
         allowed_component_graphs=None,
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
+        optimize_thresholds=False,
     )
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [
@@ -821,6 +823,7 @@ def test_automl_component_graphs_specified_allowed_model_families_binary(
         problem_type="binary",
         allowed_component_graphs=None,
         allowed_model_families=["random_forest"],
+        optimize_thresholds=False,
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.BINARY)
@@ -899,6 +902,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_binary(
         problem_type="binary",
         allowed_component_graphs=None,
         allowed_model_families=None,
+        optimize_thresholds=False,
     )
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipelines = [
@@ -964,6 +968,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
             {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
         ],
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
+        optimize_thresholds=False,
     )
     mock_score.return_value = {automl.objective.name: 1.0}
     expected_pipeline = dummy_binary_pipeline_class({})
@@ -1074,6 +1079,7 @@ def test_automl_component_graphs_search(
         max_iterations=5,
         start_iteration_callback=start_iteration_callback,
         allowed_component_graphs=[component_graph],
+        optimize_thresholds=False,
     )
     automl.search()
 
@@ -1153,6 +1159,7 @@ def test_automl_supports_time_series_classification(
         X_train=X,
         y_train=y,
         problem_type=problem_type,
+        optimize_thresholds=False,
         problem_configuration=configuration,
         max_batches=2,
     )
@@ -1216,51 +1223,17 @@ def test_automl_time_series_classification_threshold(
     )
     automl.search()
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
-    if objective == "Log Loss Binary":
-        mock_optimize_threshold.assert_not_called()
-        assert automl.best_pipeline.threshold is None
-        mock_split_data.assert_not_called()
-    elif optimize and objective == "F1":
+    if optimize:
         mock_optimize_threshold.assert_called()
         assert automl.best_pipeline.threshold == 0.62
         mock_split_data.assert_called()
-        assert str(mock_split_data.call_args[0][2]) == problem_type
-    elif not optimize and objective == "F1":
-        mock_optimize_threshold.assert_not_called()
-        assert automl.best_pipeline.threshold == 0.5
-        mock_split_data.assert_not_called()
-
-
-@pytest.mark.parametrize("objective", ["F1", "Log Loss Binary", "AUC"])
-@patch("evalml.objectives.BinaryClassificationObjective.optimize_threshold")
-@patch(
-    "evalml.pipelines.BinaryClassificationPipeline._encode_targets",
-    side_effect=lambda y: y,
-)
-@patch("evalml.pipelines.BinaryClassificationPipeline.score")
-@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
-@patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
-def test_tuning_threshold_objective(
-    mock_predict,
-    mock_fit,
-    mock_score,
-    mock_encode_targets,
-    mock_optimize_threshold,
-    objective,
-    X_y_binary,
-):
-    mock_optimize_threshold.return_value = 0.6
-    X, y = X_y_binary
-    mock_score.return_value = {objective: 0.5}
-    automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", objective=objective
-    )
-    automl.search()
-
-    if objective != "F1":
-        assert automl.best_pipeline.threshold is None
     else:
-        assert automl.best_pipeline.threshold == 0.6
+        mock_optimize_threshold.assert_not_called()
+        mock_split_data.assert_not_called()
+        if objective == "Log Loss Binary":
+            assert automl.best_pipeline.threshold is None
+        else:
+            assert automl.best_pipeline.threshold == 0.5
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
@@ -1434,6 +1407,7 @@ def test_automl_search_dictionary_undersampler(
         X_train=X,
         y_train=y,
         problem_type=problem_type,
+        optimize_thresholds=False,
         sampler_method="Undersampler",
         pipeline_parameters=pipeline_parameters,
     )
@@ -1495,6 +1469,7 @@ def test_automl_search_dictionary_oversampler(
         y_train=y,
         problem_type=problem_type,
         sampler_method="SMOTE Oversampler",
+        optimize_thresholds=False,
         pipeline_parameters=pipeline_parameters,
     )
     # check that the sampling dict got set properly
@@ -1541,6 +1516,7 @@ def test_automl_search_sampler_dictionary_keys(
         problem_type="binary",
         error_callback=raise_error_callback,
         sampler_method=sampler,
+        optimize_thresholds=False,
         pipeline_parameters=pipeline_parameters,
     )
     if errors:
@@ -1559,7 +1535,7 @@ def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependenci
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
     y = pd.Series(["majority"] * 900 + ["minority"] * 300)
-    pipeline_parameters = {sampler: {"k_neighbors": 2}}
+    pipeline_parameters = {sampler: {"k_neighbors_default": 2}}
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -1571,6 +1547,27 @@ def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependenci
         seen_under = False
         for comp in pipeline.component_graph:
             if comp.name == sampler:
-                assert comp.parameters["k_neighbors"] == 2
+                assert comp.parameters["k_neighbors_default"] == 2
                 seen_under = True
         assert seen_under
+
+
+@pytest.mark.parametrize(
+    "parameters", [None, {"SMOTENC Oversampler": {"k_neighbors_default": 5}}]
+)
+def test_automl_search_sampler_k_neighbors_no_error(
+    parameters, has_minimal_dependencies, fraud_100
+):
+    # automatically uses SMOTE
+    if has_minimal_dependencies:
+        pytest.skip("Skipping tests since imblearn isn't installed")
+    X, y = fraud_100
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=2,
+        pipeline_parameters=parameters,
+    )
+    # check that the calling this doesn't fail
+    automl.search()
