@@ -17,7 +17,7 @@ Release Notes
         * Refactored dask tests :pr:`2377`
         * Added the combined dask/non-dask unit tests back and renamed the dask only unit tests. :pr:`2382`
         * Sped up unit tests and split into separate jobs :pr:`2365`
-        * Change CI job names, run lint for python 3.9, run nightlies on python 3.8 at 3am EST :pr:`2395`
+        * Change CI job names, run lint for python 3.9, run nightlies on python 3.8 at 3am EST :pr:`2395` :pr:`2398`
 
 .. warning::
 
