@@ -111,9 +111,6 @@ def test_get_time_series_objectives_types(time_series_objectives):
 def test_objective_outputs(
     X_y_binary,
     X_y_multi,
-    binary_core_objectives,
-    multiclass_core_objectives,
-    regression_core_objectives,
 ):
     _, y_binary_np = X_y_binary
     assert isinstance(y_binary_np, np.ndarray)
@@ -128,7 +125,9 @@ def test_objective_outputs(
     )
 
     all_objectives = (
-        binary_core_objectives + regression_core_objectives + multiclass_core_objectives
+        get_core_objectives("binary")
+        + get_core_objectives("multiclass")
+        + get_core_objectives("regression")
     )
 
     for objective in all_objectives:

@@ -117,8 +117,9 @@ def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
 @patch(
     "evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class"
 )
+@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_results(
-    mock_stack, ensembling_value, dummy_binary_pipeline_classes
+    mock_opt_tell, mock_stack, ensembling_value, dummy_binary_pipeline_classes
 ):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(
@@ -207,8 +208,9 @@ def test_iterative_algorithm_results(
 @patch(
     "evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class"
 )
+@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_passes_pipeline_params(
-    mock_stack, ensembling_value, dummy_binary_pipeline_classes
+    mock_opt_tell, mock_stack, ensembling_value, dummy_binary_pipeline_classes
 ):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(
@@ -253,7 +255,8 @@ def test_iterative_algorithm_passes_pipeline_params(
             )
 
 
-def test_iterative_algorithm_passes_njobs(dummy_binary_pipeline_classes):
+@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
+def test_iterative_algorithm_passes_njobs(mock_opt_tell, dummy_binary_pipeline_classes):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(
         allowed_pipelines=dummy_binary_pipeline_classes, n_jobs=2, ensembling=False
