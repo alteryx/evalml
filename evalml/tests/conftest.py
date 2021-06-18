@@ -1,5 +1,7 @@
+import contextlib
 import os
 import sys
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -7,8 +9,6 @@ import pytest
 import woodwork as ww
 from sklearn import datasets
 from skopt.space import Integer, Real
-from unittest.mock import patch
-import contextlib
 
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import (
@@ -1093,30 +1093,100 @@ def mock_imbalanced_data_X_y():
 
 
 class _AutoMLTestEnv:
-
-    def __init__(self, automl, score_return_value=None, mock_fit=None, mock_score_side_effect=None):
-        self.automl = automl
-        self.score_return_value = score_return_value
-        self.mock_fit = mock_fit
-        self.mock_score_side_effect = mock_score_side_effect
+    def __init__(self, problem_type):
+        self.problem_type = handle_problem_types(problem_type)
 
     @property
     def _pipeline_class(self):
-        return {ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
-                ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
-                ProblemTypes.MULTICLASS: "evalml.pipelines.MulticlassClassificationPipeline"}[self.automl.problem_type]
+        return {
+            ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
+            ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
+            ProblemTypes.MULTICLASS: "evalml.pipelines.MulticlassClassificationPipeline",
+            ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline",
+        }[self.problem_type]
 
-    def run(self):
-        if self.mock_fit is None:
+    @contextlib.contextmanager
+    def test_context(
+        self,
+        score_return_value=None,
+        mock_score_side_effect=None,
+        mock_fit_side_effect=None,
+        mock_fit_return_value=None,
+        predict_proba_return_value=None,
+        optimize_threshold_return_value=0.2,
+    ):
+        if mock_fit_side_effect is not None:
+            mock_fit = patch(
+                self._pipeline_class + ".fit", side_effect=mock_fit_side_effect
+            )
+        elif mock_fit_return_value is not None:
+            mock_fit = patch(
+                self._pipeline_class + ".fit", return_value=mock_fit_return_value
+            )
+        else:
             mock_fit = patch(self._pipeline_class + ".fit")
-        if self.mock_score_side_effect is not None:
-            mock_score = patch(self._pipeline_class + ".score", side_effect=self.mock_score_side_effect)
-        elif self.score_return_value is not None:
-            mock_score = patch(self._pipeline_class + ".score", return_value=self.score_return_value)
+        if mock_score_side_effect is not None:
+            mock_score = patch(
+                self._pipeline_class + ".score", side_effect=mock_score_side_effect
+            )
+        elif score_return_value is not None:
+            mock_score = patch(
+                self._pipeline_class + ".score", return_value=score_return_value
+            )
+        else:
+            mock_score = patch(
+                self._pipeline_class + ".score", return_value=score_return_value
+            )
+
+        mock_encode_targets = patch(
+            "evalml.pipelines.BinaryClassificationPipeline._encode_targets",
+            side_effect=lambda y: y,
+        )
+        if predict_proba_return_value is not None:
+            mock_predict_proba = patch(
+                "evalml.pipelines.BinaryClassificationPipeline" + ".predict_proba",
+                return_value=predict_proba_return_value,
+            )
+        else:
+            mock_predict_proba = patch(
+                "evalml.pipelines.BinaryClassificationPipeline" + ".predict_proba"
+            )
+
+        mock_optimize = patch(
+            "evalml.pipelines.BinaryClassificationPipeline" + ".optimize_threshold",
+            return_value=optimize_threshold_return_value,
+        )
+
         mock_tell = patch("evalml.tuners.skopt_tuner.Optimizer.tell")
-        with mock_fit, mock_score, mock_tell:
-            self.automl._SLEEP_TIME = 0.00001
-            self.automl.search()
+        with mock_fit as fit, mock_score as score, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
+            yield
+            self.mock_fit = fit
+            self.mock_tell = tell
+            self.mock_score = score
+            self.mock_encode_targets = encode
+            self.mock_predict_proba = proba
+            self.mock_optimize_threshold = optimize
+
+    def run_search(
+        self,
+        automl,
+        score_return_value=None,
+        mock_score_side_effect=None,
+        mock_fit_side_effect=None,
+        mock_fit_return_value=None,
+        predict_proba_return_value=None,
+        optimize_threshold_return_value=None,
+    ):
+        with self.test_context(
+            score_return_value=score_return_value,
+            mock_score_side_effect=mock_score_side_effect,
+            mock_fit_side_effect=mock_fit_side_effect,
+            mock_fit_return_value=mock_fit_return_value,
+            predict_proba_return_value=predict_proba_return_value,
+            optimize_threshold_return_value=optimize_threshold_return_value,
+        ):
+            automl._SLEEP_TIME = 0.0000001
+            automl.search()
 
 
 @pytest.fixture
