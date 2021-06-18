@@ -283,7 +283,7 @@ class AutoMLSearch:
                 "Time series support in evalml is still in beta, which means we are still actively building "
                 "its core features. Please be mindful of that when running search()."
             )
-
+        self._SLEEP_TIME = 0.1
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
@@ -813,7 +813,7 @@ class AutoMLSearch:
                     current_computation_index = (current_computation_index + 1) % max(
                         len(computations), 1
                     )
-                    time.sleep(0.1)
+                    time.sleep(self._SLEEP_TIME)
                 loop_interrupted = False
             except KeyboardInterrupt:
                 loop_interrupted = True
@@ -1272,8 +1272,7 @@ class AutoMLSearch:
         ascending = True
         if self.objective.greater_is_better:
             ascending = False
-
-        full_rankings_cols = [
+        pipeline_results_cols = [
             "id",
             "pipeline_name",
             "mean_cv_score",
@@ -1283,11 +1282,21 @@ class AutoMLSearch:
             "high_variance_cv",
             "parameters",
         ]
+
         if not self._results["pipeline_results"]:
+            full_rankings_cols = (
+                pipeline_results_cols[0:2]
+                + ["search_order"]
+                + pipeline_results_cols[2:]
+            )  # place search_order after pipeline_name
+
             return pd.DataFrame(columns=full_rankings_cols)
 
         rankings_df = pd.DataFrame(self._results["pipeline_results"].values())
-        rankings_df = rankings_df[full_rankings_cols]
+        rankings_df = rankings_df[pipeline_results_cols]
+        rankings_df.insert(
+            2, "search_order", pd.Series(self._results["search_order"])
+        )  # place search_order after pipeline_name
         rankings_df.sort_values("mean_cv_score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df

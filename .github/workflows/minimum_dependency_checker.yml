@@ -1,4 +1,4 @@
-name: Minimum Dependency Checker
+name: Minimum dependency checker
 on:
   push:
     branches:

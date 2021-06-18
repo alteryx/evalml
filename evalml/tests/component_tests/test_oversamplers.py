@@ -20,7 +20,7 @@ im = pytest.importorskip(
 def test_init(sampler):
     parameters = {
         "sampling_ratio": 0.5,
-        "k_neighbors": 2,
+        "k_neighbors_default": 2,
         "n_jobs": -1,
         "sampling_ratio_dict": None,
     }
@@ -44,7 +44,7 @@ def test_none_y(sampler):
         oversampler.fit(X, None)
     with pytest.raises(ValueError, match="y cannot be none"):
         oversampler.fit_transform(X, None)
-    oversampler.fit(X, pd.Series([0] * 4 + [1]))
+    oversampler.fit(X, pd.Series([0] * 3 + [1] * 2))
     oversampler.transform(X, None)
 
 
@@ -341,3 +341,30 @@ def test_oversampler_sampling_dict_strings(oversampler):
 
     assert len(new_X) == sum(expected_result.values())
     assert new_y.value_counts().to_dict() == expected_result
+
+
+@pytest.mark.parametrize("oversampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
+@pytest.mark.parametrize(
+    "minority,expected,fails",
+    [(1, 0, True), (2, 1, False), (5, 4, False), (10, 5, False)],
+)
+def test_oversampler_sampling_k_neighbors(minority, expected, fails, oversampler):
+    X = np.array(
+        [
+            [i for i in range(1000)],
+            [i % 7 for i in range(1000)],
+            [0.3 * (i % 3) for i in range(1000)],
+        ]
+    ).T
+    X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
+    y = np.array(["minority"] * minority + ["majority"] * (1000 - minority))
+    overs = oversampler(k_neighbors_default=5)
+    if fails:
+        with pytest.raises(
+            ValueError, match="Minority class needs more than 1 sample to use SMOTE"
+        ):
+            overs.fit_transform(X_ww, y)
+        return
+    overs.fit_transform(X_ww, y)
+    assert overs._component_obj.k_neighbors == expected
+    assert overs.parameters["k_neighbors"] == expected
