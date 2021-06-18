@@ -755,13 +755,10 @@ def partial_dependence(
                     ind_df.columns = values[1]
                     ind_df.index = values[0]
 
-                    if classes is not None:
-                        ind_df["class_label"] = np.repeat(classes, len(values[0]))
-
                     if n == 0:
                         ind_data.append(ind_df)
                     else:
-                        ind_data[i].concat(ind_df)
+                        ind_data[i] = pd.concat([ind_data[i], ind_df])
 
             for sample in ind_data:
                 sample["class_label"] = np.repeat(classes, len(values[0]))

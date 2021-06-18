@@ -288,6 +288,26 @@ def test_partial_dependence_multiclass(
     assert len(two_way_part_dep.index) == num_classes * grid_resolution
     assert len(two_way_part_dep.columns) == grid_resolution + 1
 
+    two_way_part_dep, two_way_ice_data = partial_dependence(
+        pipeline=pipeline,
+        X=X,
+        features=("magnesium", "alcohol"),
+        grid_resolution=grid_resolution,
+        kind="both",
+    )
+
+    assert "class_label" in two_way_part_dep.columns
+    assert two_way_part_dep["class_label"].nunique() == num_classes
+    assert len(two_way_part_dep.index) == num_classes * grid_resolution
+    assert len(two_way_part_dep.columns) == grid_resolution + 1
+
+    assert len(two_way_ice_data) == len(X)
+    for ind_data in two_way_ice_data:
+        assert "class_label" in ind_data.columns
+        assert two_way_part_dep["class_label"].nunique() == num_classes
+        assert len(two_way_part_dep.index) == num_classes * grid_resolution
+        assert len(two_way_part_dep.columns) == grid_resolution + 1
+
 
 def test_partial_dependence_multiclass_numeric_labels(
     logistic_regression_multiclass_pipeline_class, X_y_multi
