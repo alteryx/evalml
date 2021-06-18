@@ -80,14 +80,14 @@ class InvalidTargetDataCheck(DataCheck):
             return results
 
         y = infer_feature_types(y)
-        is_supported_type = y.ww.logical_type in numeric_and_boolean_ww + [
+        is_supported_type = type(y.ww.logical_type) in numeric_and_boolean_ww + [
             ww.logical_types.Categorical
         ]
         if not is_supported_type:
             results["errors"].append(
                 DataCheckError(
                     message="Target is unsupported {} type. Valid Woodwork logical types include: {}".format(
-                        y.ww.logical_type,
+                        type(y.ww.logical_type),
                         ", ".join(
                             [ltype.type_string for ltype in numeric_and_boolean_ww]
                         ),
@@ -211,7 +211,7 @@ class InvalidTargetDataCheck(DataCheck):
 
         any_neg = (
             not (y > 0).all()
-            if y.ww.logical_type in [ww.logical_types.Integer, ww.logical_types.Double]
+            if type(y.ww.logical_type) in [ww.logical_types.Integer, ww.logical_types.Double]
             else None
         )
         if any_neg and self.objective.positive_only:
