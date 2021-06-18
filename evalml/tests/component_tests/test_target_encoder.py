@@ -278,7 +278,7 @@ def test_target_encoder_woodwork_custom_overrides_returned_by_components(X_df):
         try:
             X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
-        except ww.exceptions.TypeConversionError:
+        except (ww.exceptions.TypeConversionError, ValueError, TypeError):
             continue
 
         encoder = TargetEncoder()
