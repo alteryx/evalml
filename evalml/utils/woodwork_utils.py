@@ -3,6 +3,7 @@ import pandas as pd
 import woodwork as ww
 
 from evalml.utils.gen_utils import is_all_numeric
+import inspect
 
 numeric_and_boolean_ww = [
     ww.logical_types.Integer,
@@ -101,6 +102,9 @@ def _retain_custom_types_and_initalize_woodwork(
         return ww.init_series(new_dataframe, old_logical_types)
     if ltypes_to_ignore is None:
         ltypes_to_ignore = []
+    old_logical_types = {
+        k: v if inspect.isclass(v) else type(v) for k, v in old_logical_types.items()
+    }
     col_intersection = set(old_logical_types.keys()).intersection(
         set(new_dataframe.columns)
     )
