@@ -1,4 +1,4 @@
-name: Release Notes Updated
+name: Release notes updated
 
 on:
   pull_request:

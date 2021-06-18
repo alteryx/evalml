@@ -1,4 +1,4 @@
-name: Windows Unit Tests
+name: Unit tests, windows
 
 on:
   pull_request:
