@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-
 from dask.distributed import Client, LocalCluster
 
 from evalml.automl.engine.dask_engine import DaskComputation, DaskEngine

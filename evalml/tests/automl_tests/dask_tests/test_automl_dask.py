@@ -1,6 +1,5 @@
 import numpy as np
 import pytest
-
 from dask.distributed import Client, LocalCluster
 
 from evalml.automl import AutoMLSearch
