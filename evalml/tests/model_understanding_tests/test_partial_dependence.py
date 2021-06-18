@@ -575,7 +575,7 @@ def test_graph_partial_dependence_multiclass(
     for data, label in zip(fig_dict["data"], pipeline.classes_):
         assert len(data["x"]) == 5
         assert len(data["y"]) == 5
-        assert data["name"] == label
+        assert data["name"] == "Partial Dependence: " + label
 
     # Check that all the subplots axes have the same range
     for suplot_1_axis, suplot_2_axis in [
@@ -598,7 +598,7 @@ def test_graph_partial_dependence_multiclass(
     assert len(fig_dict["data"]) == 1
     assert len(fig_dict["data"][0]["x"]) == 5
     assert len(fig_dict["data"][0]["y"]) == 5
-    assert fig_dict["data"][0]["name"] == "class_1"
+    assert fig_dict["data"][0]["name"] == "Partial Dependence: class_1"
 
     msg = "Class wine is not one of the classes the pipeline was fit on: class_0, class_1, class_2"
     with pytest.raises(ValueError, match=msg):
@@ -1085,7 +1085,9 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_graph_partial_dependence_ice_plot(problem_type, test_pipeline, logistic_regression_multiclass_pipeline_class):
+def test_graph_partial_dependence_ice_plot(
+    problem_type, test_pipeline, logistic_regression_multiclass_pipeline_class
+):
     go = pytest.importorskip(
         "plotly.graph_objects",
         reason="Skipping plotting test because plotly not installed",
@@ -1112,42 +1114,54 @@ def test_graph_partial_dependence_ice_plot(problem_type, test_pipeline, logistic
         fig_dict["layout"]["title"]["text"]
         == f"Partial Dependence of '{feature}' <br><sub>Including Individual Conditional Expectation Plot</sub>"
     )
-    n_classes = (len(y.unique()) if problem_type == ProblemTypes.MULTICLASS else 1)
+    n_classes = len(y.unique()) if problem_type == ProblemTypes.MULTICLASS else 1
     assert len(fig_dict["data"]) == len(X) * n_classes + n_classes
-    expected_label = "Individual Conditional Expectation" if problem_type == ProblemTypes.BINARY else "Individual Conditional Expectation: class_0"
+    expected_label = (
+        "Individual Conditional Expectation"
+        if problem_type == ProblemTypes.BINARY
+        else "Individual Conditional Expectation: class_0"
+    )
     assert fig_dict["data"][0]["name"] == expected_label
-    assert fig_dict["data"][-1]["name"] == "Partial Dependence" if problem_type == ProblemTypes.BINARY else "Partial Dependence: class_2"
+    assert (
+        fig_dict["data"][-1]["name"] == "Partial Dependence"
+        if problem_type == ProblemTypes.BINARY
+        else "Partial Dependence: class_2"
+    )
 
     avg_dep_data, ind_dep_data = partial_dependence(
         clf, X, features=feature, grid_resolution=20, kind="both"
     )
-    assert np.array_equal(fig_dict["data"][-1]["x"], avg_dep_data["feature_values"][:len(fig_dict["data"][-1]["x"])].values)
+    assert np.array_equal(
+        fig_dict["data"][-1]["x"],
+        avg_dep_data["feature_values"][: len(fig_dict["data"][-1]["x"])].values,
+    )
 
     if problem_type == ProblemTypes.BINARY:
         assert np.array_equal(
             fig_dict["data"][-1]["y"], avg_dep_data["partial_dependence"].values
         )
     else:
-        class_2_data = avg_dep_data[avg_dep_data['class_label'] == 'class_2']["partial_dependence"].values
-        assert np.array_equal(
-            fig_dict["data"][-1]["y"], class_2_data
-        )
+        class_2_data = avg_dep_data[avg_dep_data["class_label"] == "class_2"][
+            "partial_dependence"
+        ].values
+        assert np.array_equal(fig_dict["data"][-1]["y"], class_2_data)
 
-    for n in range(n_classes):
-        for i in range(len(X)):
-            assert np.array_equal(fig_dict["data"][i]["x"], ind_dep_data["feature_values"])
-            if problem_type == ProblemTypes.MULTICLASS:
-                window_length = len(ind_dep_data[f"Sample {i}"].values)
-                data = np.concatenate([fig_dict["data"][n * i]["y"][:window_length],
-                                       fig_dict["data"][n * (i + 60)]["y"][:window_length],
-                                       fig_dict["data"][n * (i + 120)]["y"][:window_length]])
-                assert np.array_equal(
-                    data, ind_dep_data[f"Sample {i}"].values
-                )
-            else:
-                assert np.array_equal(
-                    fig_dict["data"][i]["y"], ind_dep_data[f"Sample {i}"].values
-                )
+    for i in range(len(X)):
+        assert np.array_equal(fig_dict["data"][i]["x"], ind_dep_data["feature_values"])
+        if problem_type == ProblemTypes.MULTICLASS:
+            window_length = len(ind_dep_data[f"Sample {i}"].values)
+            data = np.concatenate(
+                [
+                    fig_dict["data"][i]["y"][:window_length],
+                    fig_dict["data"][i + len(X) + 1]["y"][:window_length],
+                    fig_dict["data"][i + 2 * len(X) + 2]["y"][:window_length],
+                ]
+            )
+            assert np.array_equal(data, ind_dep_data[f"Sample {i}"].values)
+        else:
+            assert np.array_equal(
+                fig_dict["data"][i]["y"], ind_dep_data[f"Sample {i}"].values
+            )
 
     fig = graph_partial_dependence(
         clf, X, features=feature, grid_resolution=20, kind="individual"
@@ -1158,8 +1172,14 @@ def test_graph_partial_dependence_ice_plot(problem_type, test_pipeline, logistic
         fig_dict["layout"]["title"]["text"]
         == f"Individual Conditional Expectation of '{feature}'"
     )
-    assert len(fig_dict["data"]) == len(X) * (len(y.unique()) if problem_type == ProblemTypes.MULTICLASS else 1)
-    expected_label = "Individual Conditional Expectation" if problem_type == ProblemTypes.BINARY else "Individual Conditional Expectation: class_0"
+    assert len(fig_dict["data"]) == len(X) * (
+        len(y.unique()) if problem_type == ProblemTypes.MULTICLASS else 1
+    )
+    expected_label = (
+        "Individual Conditional Expectation"
+        if problem_type == ProblemTypes.BINARY
+        else "Individual Conditional Expectation: class_0"
+    )
     assert fig_dict["data"][0]["name"] == expected_label
 
     ind_dep_data = partial_dependence(
@@ -1168,9 +1188,20 @@ def test_graph_partial_dependence_ice_plot(problem_type, test_pipeline, logistic
 
     for i in range(len(X)):
         assert np.array_equal(fig_dict["data"][i]["x"], ind_dep_data["feature_values"])
-        assert np.array_equal(
-            fig_dict["data"][i]["y"], ind_dep_data[f"Sample {i}"].values
-        )
+        if problem_type == ProblemTypes.MULTICLASS:
+            window_length = len(ind_dep_data[f"Sample {i}"].values)
+            data = np.concatenate(
+                [
+                    fig_dict["data"][i]["y"][:window_length],
+                    fig_dict["data"][i + len(X)]["y"][:window_length],
+                    fig_dict["data"][i + 2 * len(X)]["y"][:window_length],
+                ]
+            )
+            assert np.array_equal(data, ind_dep_data[f"Sample {i}"].values)
+        else:
+            assert np.array_equal(
+                fig_dict["data"][i]["y"], ind_dep_data[f"Sample {i}"].values
+            )
 
 
 def test_graph_partial_dependence_ice_plot_two_way_error(test_pipeline):

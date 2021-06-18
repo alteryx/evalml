@@ -762,7 +762,7 @@ def partial_dependence(
                         ind_data.append(ind_df)
                     else:
                         ind_data[i].concat(ind_df)
-            
+
             for sample in ind_data:
                 sample["class_label"] = np.repeat(classes, len(values[0]))
 
@@ -939,7 +939,7 @@ def graph_partial_dependence(
         )
 
     fig = _go.Figure(layout=layout)
-    if (isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline)):
+    if isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
         class_labels = [class_label] if class_label is not None else pipeline.classes_
         _subplots = import_or_raise(
             "plotly.subplots", error_msg="Cannot find dependency plotly.graph_objects"
@@ -959,10 +959,14 @@ def graph_partial_dependence(
         # Don't specify share_xaxis and share_yaxis so that we get tickmarks in each subplot
         fig = _subplots.make_subplots(rows=rows, cols=cols, subplot_titles=class_labels)
         for i, label in enumerate(class_labels):
-            label_df = part_dep.loc[part_dep.class_label == label] if part_dep is not None else ice_data.loc[ice_data.class_label == label]
+            label_df = (
+                part_dep.loc[part_dep.class_label == label]
+                if part_dep is not None
+                else ice_data.loc[ice_data.class_label == label]
+            )
             row = (i + 2) // 2
             col = (i % 2) + 1
-            if ice_data is not None and kind == 'individual':
+            if ice_data is not None and kind == "individual":
                 fig = _add_ice_plot(_go, fig, ice_data, row=row, col=col, label=label)
             else:
                 label_df.drop(columns=["class_label"], inplace=True)
@@ -985,12 +989,14 @@ def graph_partial_dependence(
                         trace = _go.Bar(x=x, y=y, name=label)
                     else:
                         if ice_data is not None:
-                            fig = _add_ice_plot(_go, fig, ice_data, row=row, col=col, label=label)
+                            fig = _add_ice_plot(
+                                _go, fig, ice_data, row=row, col=col, label=label
+                            )
                         trace = _go.Scatter(
                             x=x,
                             y=y,
                             line=dict(width=3, color="rgb(99,110,250)"),
-                            name='Partial Dependence: ' + class_labels_mapping[label],
+                            name="Partial Dependence: " + class_labels_mapping[label],
                         )
                     fig.add_trace(trace, row=row, col=col)
 
@@ -1000,18 +1006,20 @@ def graph_partial_dependence(
             fig.update_layout(coloraxis=dict(colorscale="Bluered_r"), showlegend=False)
         elif mode == "one-way":
             title = f"{feature_name}"
-            x_scale_df = part_dep["feature_values"] if part_dep is not None else ice_data["feature_values"]
-            xrange = (
-                _calculate_axis_range(x_scale_df)
-                if not is_categorical
-                else None
+            x_scale_df = (
+                part_dep["feature_values"]
+                if part_dep is not None
+                else ice_data["feature_values"]
             )
-            yrange = _calculate_axis_range(ice_data.drop("class_label", axis=1)
-                                           if ice_data is not None
-                                           else part_dep["partial_dependence"])
+            xrange = _calculate_axis_range(x_scale_df) if not is_categorical else None
+            yrange = _calculate_axis_range(
+                ice_data.drop("class_label", axis=1)
+                if ice_data is not None
+                else part_dep["partial_dependence"]
+            )
             fig.update_xaxes(title=title, range=xrange)
             fig.update_yaxes(range=yrange)
-    elif kind == 'individual' and ice_data is not None:
+    elif kind == "individual" and ice_data is not None:
         fig = _add_ice_plot(_go, fig, ice_data)
     elif part_dep is not None:
         if ice_data is not None and not is_categorical:
