@@ -211,7 +211,8 @@ class InvalidTargetDataCheck(DataCheck):
 
         any_neg = (
             not (y > 0).all()
-            if type(y.ww.logical_type) in [ww.logical_types.Integer, ww.logical_types.Double]
+            if type(y.ww.logical_type)
+            in [ww.logical_types.Integer, ww.logical_types.Double]
             else None
         )
         if any_neg and self.objective.positive_only:
