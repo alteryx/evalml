@@ -735,7 +735,7 @@ def test_ohe_woodwork_custom_overrides_returned_by_components(X_df):
         try:
             X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
-        except TypeConversionError:
+        except (TypeConversionError, ValueError, TypeError):
             continue
 
         ohe = OneHotEncoder()
