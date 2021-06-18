@@ -1078,10 +1078,10 @@ def test_default_objective(X_y_binary):
 def test_add_to_rankings(
     mock_fit,
     mock_score,
-    dummy_classifier_linear_component_graph,
     mock_predict_proba,
     mock_encode,
     mock_threshold,
+    dummy_classifier_linear_component_graph,
     dummy_binary_pipeline_class,
     X_y_binary,
 ):
@@ -1139,10 +1139,10 @@ def test_add_to_rankings(
 def test_add_to_rankings_no_search(
     mock_fit,
     mock_score,
-    dummy_classifier_linear_component_graph,
     mock_predict_proba,
     mock_encode,
     mock_threshold,
+    dummy_classifier_linear_component_graph,
     dummy_binary_pipeline_class,
     X_y_binary,
 ):
