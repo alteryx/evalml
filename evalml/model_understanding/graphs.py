@@ -727,7 +727,8 @@ def partial_dependence(
             return avg_data
 
     if kind != "average":
-        ind_preds = preds["individual"][0]
+        ind_preds = preds["individual"]
+
         classes = None
         if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
             classes = [pipeline.classes_[1]]
@@ -735,29 +736,35 @@ def partial_dependence(
             classes = pipeline.classes_
 
         if isinstance(features, (int, str)):
-            ind_data = pd.DataFrame(
-                {
-                    "feature_values": values[0],
-                }
-            )
-            for i, sample in enumerate(ind_preds):
-                name = "Sample " + str(i)
-                ind_data[name] = sample
+            ind_data = list()
+            for label in ind_preds:
+                ind_data.append(pd.DataFrame(label).T)
+
+            ind_data = pd.concat(ind_data)
+            ind_data.columns = [f"Sample {i}" for i in range(len(ind_preds[0]))]
 
             if classes is not None:
                 ind_data["class_label"] = np.repeat(classes, len(values[0]))
+            ind_data.insert(0, "feature_values", np.tile(values[0], ind_preds.shape[0]))
 
         elif isinstance(features, (list, tuple)):
             ind_data = list()
-            for sample in ind_preds:
-                ind_df = pd.DataFrame(sample.reshape((-1, sample.shape[-1])))
-                ind_df.columns = values[1]
-                ind_df.index = values[0]
+            for n, label in enumerate(ind_preds):
+                for i, sample in enumerate(label):
+                    ind_df = pd.DataFrame(sample.reshape((-1, sample.shape[-1])))
+                    ind_df.columns = values[1]
+                    ind_df.index = values[0]
 
-                if classes is not None:
-                    ind_df["class_label"] = np.repeat(classes, len(values[0]))
+                    if classes is not None:
+                        ind_df["class_label"] = np.repeat(classes, len(values[0]))
 
-                ind_data.append(ind_df)
+                    if n == 0:
+                        ind_data.append(ind_df)
+                    else:
+                        ind_data[i].concat(ind_df)
+            
+            for sample in ind_data:
+                sample["class_label"] = np.repeat(classes, len(values[0]))
 
         if kind != "both":
             return ind_data
@@ -932,13 +939,7 @@ def graph_partial_dependence(
         )
 
     fig = _go.Figure(layout=layout)
-    if ice_data is not None and not is_categorical:
-        fig = _add_ice_plot(_go, fig, ice_data)
-
-    if (
-        isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline)
-        and part_dep is not None
-    ):
+    if (isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline)):
         class_labels = [class_label] if class_label is not None else pipeline.classes_
         _subplots = import_or_raise(
             "plotly.subplots", error_msg="Cannot find dependency plotly.graph_objects"
@@ -958,39 +959,40 @@ def graph_partial_dependence(
         # Don't specify share_xaxis and share_yaxis so that we get tickmarks in each subplot
         fig = _subplots.make_subplots(rows=rows, cols=cols, subplot_titles=class_labels)
         for i, label in enumerate(class_labels):
-            label_df = part_dep.loc[part_dep.class_label == label]
+            label_df = part_dep.loc[part_dep.class_label == label] if part_dep is not None else ice_data.loc[ice_data.class_label == label]
             row = (i + 2) // 2
             col = (i % 2) + 1
-            label_df.drop(columns=["class_label"], inplace=True)
-            if mode == "two-way":
-                _update_fig_with_two_way_partial_dependence(
-                    _go,
-                    fig,
-                    label_df,
-                    part_dep,
-                    features,
-                    is_categorical,
-                    label,
-                    row,
-                    col,
-                )
-            elif mode == "one-way":
-                x = label_df["feature_values"]
-                y = label_df["partial_dependence"]
-                if ice_data is not None and not is_categorical:
-                    fig = _add_ice_plot(_go, fig, ice_data)
-                if is_categorical:
-                    trace = _go.Bar(x=x, y=y, name=label)
-                else:
-                    if ice_data is not None and not is_categorical:
-                        fig = _add_ice_plot(_go, fig, ice_data)
-                    trace = _go.Scatter(
-                        x=x,
-                        y=y,
-                        line=dict(width=3, color="rgb(99,110,250)"),
-                        name=class_labels_mapping[label],
+            if ice_data is not None and kind == 'individual':
+                fig = _add_ice_plot(_go, fig, ice_data, row=row, col=col, label=label)
+            else:
+                label_df.drop(columns=["class_label"], inplace=True)
+                if mode == "two-way":
+                    _update_fig_with_two_way_partial_dependence(
+                        _go,
+                        fig,
+                        label_df,
+                        part_dep,
+                        features,
+                        is_categorical,
+                        label,
+                        row,
+                        col,
                     )
-                fig.add_trace(trace, row=row, col=col)
+                elif mode == "one-way":
+                    x = label_df["feature_values"]
+                    y = label_df["partial_dependence"]
+                    if is_categorical:
+                        trace = _go.Bar(x=x, y=y, name=label)
+                    else:
+                        if ice_data is not None:
+                            fig = _add_ice_plot(_go, fig, ice_data, row=row, col=col, label=label)
+                        trace = _go.Scatter(
+                            x=x,
+                            y=y,
+                            line=dict(width=3, color="rgb(99,110,250)"),
+                            name='Partial Dependence: ' + class_labels_mapping[label],
+                        )
+                    fig.add_trace(trace, row=row, col=col)
 
         fig.update_layout(layout)
 
@@ -998,16 +1000,22 @@ def graph_partial_dependence(
             fig.update_layout(coloraxis=dict(colorscale="Bluered_r"), showlegend=False)
         elif mode == "one-way":
             title = f"{feature_name}"
+            x_scale_df = part_dep["feature_values"] if part_dep is not None else ice_data["feature_values"]
             xrange = (
-                _calculate_axis_range(part_dep["feature_values"])
+                _calculate_axis_range(x_scale_df)
                 if not is_categorical
                 else None
             )
-            yrange = _calculate_axis_range(part_dep["partial_dependence"])
+            yrange = _calculate_axis_range(ice_data.drop("class_label", axis=1)
+                                           if ice_data is not None
+                                           else part_dep["partial_dependence"])
             fig.update_xaxes(title=title, range=xrange)
             fig.update_yaxes(range=yrange)
-
+    elif kind == 'individual' and ice_data is not None:
+        fig = _add_ice_plot(_go, fig, ice_data)
     elif part_dep is not None:
+        if ice_data is not None and not is_categorical:
+            fig = _add_ice_plot(_go, fig, ice_data)
         if "class_label" in part_dep.columns:
             part_dep.drop(columns=["class_label"], inplace=True)
         if mode == "two-way":
@@ -1040,21 +1048,26 @@ def graph_partial_dependence(
     return fig
 
 
-def _add_ice_plot(_go, fig, ice_data):
+def _add_ice_plot(_go, fig, ice_data, label=None, row=None, col=None):
     x = ice_data["feature_values"]
+    y = ice_data
     if "class_label" in ice_data.columns:
-        ice_data.drop(columns=["class_label"], inplace=True)
-    ice_data.drop(columns=["feature_values"], inplace=True)
-    for i, sample in enumerate(ice_data):
+        if label:
+            y = y[y["class_label"] == label]
+        y.drop(columns=["class_label"], inplace=True)
+    y = y.drop(columns=["feature_values"])
+    for i, sample in enumerate(y):
         fig.add_trace(
             _go.Scatter(
                 x=x,
-                y=ice_data[sample],
+                y=y[sample],
                 line=dict(width=0.5, color="gray"),
-                name="Individual Conditional Expectation",
-                legendgroup="ICE",
+                name=f"Individual Conditional Expectation{': ' + label if label else ''}",
+                legendgroup="ICE" + label if label else "ICE",
                 showlegend=True if i == 0 else False,
-            )
+            ),
+            row=row,
+            col=col,
         )
     return fig
 
