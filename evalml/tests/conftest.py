@@ -357,44 +357,6 @@ def dummy_classifier_estimator_class():
 
 
 @pytest.fixture
-def dummy_binary_estimator_class():
-    class MockEstimator(Estimator):
-        name = "Mock Binary Classifier"
-        model_family = ModelFamily.NONE
-        supported_problem_types = [
-            ProblemTypes.BINARY,
-            ProblemTypes.TIME_SERIES_BINARY,
-        ]
-        hyperparameter_ranges = {"a": Integer(0, 10), "b": Real(0, 10)}
-
-        def __init__(self, a=1, b=0, random_seed=0):
-            super().__init__(
-                parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed
-            )
-
-    return MockEstimator
-
-
-@pytest.fixture
-def dummy_multiclass_estimator_class():
-    class MockEstimator(Estimator):
-        name = "Mock Multiclass Classifier"
-        model_family = ModelFamily.NONE
-        supported_problem_types = [
-            ProblemTypes.MULTICLASS,
-            ProblemTypes.TIME_SERIES_MULTICLASS,
-        ]
-        hyperparameter_ranges = {"a": Integer(0, 10), "b": Real(0, 10)}
-
-        def __init__(self, a=1, b=0, random_seed=0):
-            super().__init__(
-                parameters={"a": a, "b": b}, component_obj=None, random_seed=random_seed
-            )
-
-    return MockEstimator
-
-
-@pytest.fixture
 def dummy_classifier_linear_component_graph(dummy_classifier_estimator_class):
     component_graph_linear = {
         "Name": ["Imputer", "One Hot Encoder", dummy_classifier_estimator_class]
