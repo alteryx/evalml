@@ -1,4 +1,4 @@
-name: Detect Dependencies Changes
+name: Detect dependency changes
 
 on:
   pull_request:
