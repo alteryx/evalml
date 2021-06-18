@@ -15,7 +15,11 @@ from evalml.utils import get_logger
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_train_and_score_pipelines(
-    mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary
+    mock_fit,
+    mock_score,
+    dummy_classifier_estimator_class,
+    dummy_binary_pipeline_class,
+    X_y_binary,
 ):
     X, y = X_y_binary
     mock_score.return_value = {"Log Loss Binary": 0.42}
@@ -25,8 +29,10 @@ def test_train_and_score_pipelines(
         problem_type="binary",
         max_time=1,
         max_batches=1,
+        allowed_component_graphs={
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+        },
         optimize_thresholds=False,
-        allowed_pipelines=[dummy_binary_pipeline_class({})],
     )
     pipeline = dummy_binary_pipeline_class({})
     evaluation_result = evaluate_pipeline(
@@ -53,7 +59,12 @@ def test_train_and_score_pipelines(
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_train_and_score_pipelines_error(
-    mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary, caplog
+    mock_fit,
+    mock_score,
+    dummy_classifier_estimator_class,
+    dummy_binary_pipeline_class,
+    X_y_binary,
+    caplog,
 ):
     X, y = X_y_binary
     mock_score.side_effect = Exception("yeet")
@@ -63,8 +74,10 @@ def test_train_and_score_pipelines_error(
         problem_type="binary",
         max_time=1,
         max_batches=1,
+        allowed_component_graphs={
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+        },
         optimize_thresholds=False,
-        allowed_pipelines=[dummy_binary_pipeline_class({})],
     )
     pipeline = dummy_binary_pipeline_class({})
 
