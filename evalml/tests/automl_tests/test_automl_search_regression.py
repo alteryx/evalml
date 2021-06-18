@@ -164,9 +164,7 @@ def test_plot_iterations_max_iterations(X_y_regression):
     assert len(y) == 3
 
 
-@patch("evalml.pipelines.RegressionPipeline.fit")
-@patch("evalml.pipelines.RegressionPipeline.score", return_value={"R2": 0.3})
-def test_plot_iterations_max_time(mock_score, mock_fit, X_y_regression):
+def test_plot_iterations_max_time(AutoMLTestEnv, X_y_regression):
     go = pytest.importorskip(
         "plotly.graph_objects",
         reason="Skipping plotting test because plotly not installed",
@@ -181,7 +179,8 @@ def test_plot_iterations_max_time(mock_score, mock_fit, X_y_regression):
         random_seed=1,
         n_jobs=1,
     )
-    automl.search(show_iteration_plot=False)
+    env = AutoMLTestEnv("regression")
+    env.run_search(automl, score_return_value={automl.objective.name: 0.2})
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
     x = pd.Series(plot_data["x"])

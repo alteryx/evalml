@@ -36,7 +36,12 @@ from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
 )
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.preprocessing import load_data
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_binary,
+    is_time_series,
+)
 
 
 def pytest_configure(config):
@@ -1103,6 +1108,8 @@ class _AutoMLTestEnv:
             ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
             ProblemTypes.MULTICLASS: "evalml.pipelines.MulticlassClassificationPipeline",
             ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline",
+            ProblemTypes.TIME_SERIES_MULTICLASS: "evalml.pipelines.TimeSeriesMulticlassClassificationPipeline",
+            ProblemTypes.TIME_SERIES_BINARY: "evalml.pipelines.TimeSeriesBinaryClassificationPipeline",
         }[self.problem_type]
 
     @contextlib.contextmanager
@@ -1138,22 +1145,24 @@ class _AutoMLTestEnv:
                 self._pipeline_class + ".score", return_value=score_return_value
             )
 
+        pipeline_to_mock = "evalml.pipelines.BinaryClassificationPipeline"
+        if is_time_series(self.problem_type) and is_binary(self.problem_type):
+            pipeline_to_mock = self._pipeline_class
+
         mock_encode_targets = patch(
-            "evalml.pipelines.BinaryClassificationPipeline._encode_targets",
+            pipeline_to_mock + "._encode_targets",
             side_effect=lambda y: y,
         )
         if predict_proba_return_value is not None:
             mock_predict_proba = patch(
-                "evalml.pipelines.BinaryClassificationPipeline" + ".predict_proba",
+                pipeline_to_mock + ".predict_proba",
                 return_value=predict_proba_return_value,
             )
         else:
-            mock_predict_proba = patch(
-                "evalml.pipelines.BinaryClassificationPipeline" + ".predict_proba"
-            )
+            mock_predict_proba = patch(pipeline_to_mock + ".predict_proba")
 
         mock_optimize = patch(
-            "evalml.pipelines.BinaryClassificationPipeline" + ".optimize_threshold",
+            "evalml.objectives.BinaryClassificationObjective.optimize_threshold",
             return_value=optimize_threshold_return_value,
         )
 

@@ -469,7 +469,6 @@ def test_automl_str_search(
         automl,
         score_return_value={automl.objective.name: 1.0},
         predict_proba_return_value=pd.DataFrame([[1.0, 0.0], [0.0, 1.0]]),
-        optimize_threshold_return_value=0.62,
     )
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
@@ -539,8 +538,7 @@ def test_automl_feature_selection(AutoMLTestEnv, X_y_binary):
     env.run_search(
         automl,
         score_return_value={"Log Loss Binary": 1.0, "F1": 0.5},
-        predict_proba_return_value=pd.DataFrame([[1.0, 0.0] for i in range(len(X))]),
-        optimize_threshold_return_value=0.5,
+        predict_proba_return_value=pd.DataFrame([[1.0, 0.0] for _ in range(len(X))]),
     )
 
     assert start_iteration_callback.call_count == 2
