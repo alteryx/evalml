@@ -1,9 +1,10 @@
+import inspect
+
 import numpy as np
 import pandas as pd
 import woodwork as ww
 
 from evalml.utils.gen_utils import is_all_numeric
-import inspect
 
 numeric_and_boolean_ww = [
     ww.logical_types.Integer,
