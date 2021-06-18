@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.linear_model import LogisticRegression as LogisticRegression
+from sklearn.linear_model import LogisticRegression as SKLogisticRegression
 from skopt.space import Real
 
 from evalml.model_family import ModelFamily
@@ -43,7 +43,7 @@ class LogisticRegressionClassifier(Estimator):
             "solver": solver,
         }
         parameters.update(kwargs)
-        lr_classifier = LogisticRegression(random_state=random_seed, **parameters)
+        lr_classifier = SKLogisticRegression(random_state=random_seed, **parameters)
         super().__init__(
             parameters=parameters, component_obj=lr_classifier, random_seed=random_seed
         )
