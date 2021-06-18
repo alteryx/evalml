@@ -8,6 +8,7 @@ Release Notes
         * Fixed partial dependence graph method failing on multiclass problems when the class labels are numeric :pr:`2372`
         * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
         * Added change for ``k_neighbors`` parameter in SMOTE Oversamplers to automatically handle small samples :pr:`2375`
+        * Changed naming for ``Logistic Regression Classifier`` file :pr:`2399`
     * Changes
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
     * Documentation Changes

@@ -1472,7 +1472,7 @@ def test_generate_code_errors():
 
 def test_generate_code():
     expected_code = (
-        "from evalml.pipelines.components.estimators.classifiers.logistic_regression import LogisticRegressionClassifier"
+        "from evalml.pipelines.components.estimators.classifiers.logistic_regression_classifier import LogisticRegressionClassifier"
         "\n\nlogisticRegressionClassifier = LogisticRegressionClassifier(**{'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'})"
     )
     component_code = generate_component_code(LogisticRegressionClassifier())
