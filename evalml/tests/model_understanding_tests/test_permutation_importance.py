@@ -73,6 +73,7 @@ class LinearPipelineWithImputer(BinaryClassificationPipeline):
 
 class LinearPipelineSameFeatureUsedByTwoComponents(BinaryClassificationPipeline):
     component_graph = [
+        "Select Columns Transformer",
         "Imputer",
         DateTimeFeaturizer,
         OneHotEncoder,
@@ -82,6 +83,7 @@ class LinearPipelineSameFeatureUsedByTwoComponents(BinaryClassificationPipeline)
 
 class LinearPipelineTwoEncoders(BinaryClassificationPipeline):
     component_graph = [
+        "Select Columns Transformer",
         "Imputer",
         DateTimeFeaturizer,
         OneHotEncoder,
@@ -92,8 +94,8 @@ class LinearPipelineTwoEncoders(BinaryClassificationPipeline):
 
 class LinearPipelineWithTextFeatures(BinaryClassificationPipeline):
     component_graph = [
+        "Select Columns Transformer",
         "Imputer",
-        "Drop Columns Transformer",
         TextFeaturizer,
         OneHotEncoder,
         "Random Forest Classifier",
@@ -116,6 +118,7 @@ class LinearPipelineWithDoubling(BinaryClassificationPipeline):
 
 class LinearPipelineWithTargetEncoderAndOHE(BinaryClassificationPipeline):
     component_graph = [
+        "Select Columns Transformer",
         "Imputer",
         DateTimeFeaturizer,
         OneHotEncoder,
@@ -149,12 +152,12 @@ class DagTwoEncoders(BinaryClassificationPipeline):
 class DagReuseFeatures(BinaryClassificationPipeline):
     component_graph = {
         "Imputer": ["Imputer"],
-        "SelectNumeric": ["Select Columns Transformer", "Imputer"],
+        "SelectDate": ["Select Columns Transformer", "Imputer"],
         "SelectCategorical1": ["Select Columns Transformer", "Imputer"],
         "SelectCategorical2": ["Select Columns Transformer", "Imputer"],
         "OHE_1": ["One Hot Encoder", "SelectCategorical1"],
         "OHE_2": ["One Hot Encoder", "SelectCategorical2"],
-        "DT": ["DateTime Featurization Component", "SelectNumeric"],
+        "DT": ["DateTime Featurization Component", "SelectDate"],
         "OHE_3": ["One Hot Encoder", "DT"],
         "Estimator": ["Random Forest Classifier", "OHE_3", "OHE_1", "OHE_2"],
     }
@@ -163,29 +166,65 @@ class DagReuseFeatures(BinaryClassificationPipeline):
 test_cases = [
     (
         LinearPipelineWithDropCols,
-        {"Drop Columns Transformer": {"columns": ["country"]}},
+        {
+            "Drop Columns Transformer": {
+                "columns": [
+                    "country",
+                    "customer_present",
+                    "provider",
+                    "region",
+                    "expiration_date",
+                    "lat",
+                    "card_id",
+                ]
+            }
+        },
     ),
-    (LinearPipelineWithImputer, {}),
+    (
+        LinearPipelineWithImputer,
+        {
+            "Select Columns Transformer": {
+                "columns": ["provider", "lng", "datetime", "card_id", "country"]
+            }
+        },
+    ),
     (
         LinearPipelineSameFeatureUsedByTwoComponents,
-        {"DateTime Featurization Component": {"encode_as_categories": True}},
+        {
+            "Select Columns Transformer": {
+                "columns": ["expiration_date", "datetime", "amount"]
+            },
+            "DateTime Featurization Component": {"encode_as_categories": True},
+        },
     ),
     (
         LinearPipelineTwoEncoders,
         {
+            "Select Columns Transformer": {
+                "columns": [
+                    "currency",
+                    "expiration_date",
+                    "region",
+                    "country",
+                    "amount",
+                ]
+            },
             "One Hot Encoder": {
-                "features_to_encode": ["currency", "expiration_date", "provider"]
+                "features_to_encode": [
+                    "currency",
+                    "expiration_date",
+                ]
             },
             "One Hot Encoder_2": {"features_to_encode": ["region", "country"]},
         },
     ),
     (
         LinearPipelineWithTextFeatures,
-        {"Drop Columns Transformer": {"columns": ["datetime"]}},
+        {"Select Columns Transformer": {"columns": ["provider", "amount", "currency"]}},
     ),
     (
         LinearPipelineWithTextFeaturizerNoTextFeatures,
-        {"Drop Columns Transformer": {"columns": ["datetime"]}},
+        {"Select Columns Transformer": {"columns": ["amount", "currency"]}},
     ),
     (
         LinearPipelineWithDoubling,
@@ -206,53 +245,36 @@ test_cases = [
                     "card_id",
                     "store_id",
                     "datetime",
-                    "amount",
-                    "customer_present",
-                    "lat",
-                    "lng",
                 ]
             },
-            "SelectCategorical1": {
-                "columns": ["currency", "expiration_date", "provider"]
-            },
+            "SelectCategorical1": {"columns": ["currency", "provider"]},
             "SelectCategorical2": {"columns": ["region", "country"]},
-            "OHE_1": {
-                "features_to_encode": ["currency", "expiration_date", "provider"]
-            },
+            "OHE_1": {"features_to_encode": ["currency", "provider"]},
             "OHE_2": {"features_to_encode": ["region", "country"]},
         },
     ),
     (
         DagReuseFeatures,
         {
-            "SelectNumeric": {
+            "SelectDate": {
                 "columns": [
-                    "card_id",
-                    "store_id",
                     "datetime",
-                    "amount",
-                    "customer_present",
-                    "lat",
-                    "lng",
                 ]
             },
-            "SelectCategorical1": {
-                "columns": ["currency", "expiration_date", "provider"]
-            },
-            "SelectCategorical2": {"columns": ["region", "country"]},
-            "OHE_1": {
-                "features_to_encode": ["currency", "expiration_date", "provider"]
-            },
-            "OHE_2": {"features_to_encode": ["region", "country"]},
+            "SelectCategorical1": {"columns": ["currency", "provider"]},
+            "SelectCategorical2": {"columns": ["region"]},
+            "OHE_1": {"features_to_encode": ["currency", "provider"]},
+            "OHE_2": {"features_to_encode": ["region"]},
             "DT": {"encode_as_categories": True},
         },
     ),
     (
         LinearPipelineWithTargetEncoderAndOHE,
         {
-            "One Hot Encoder": {
-                "features_to_encode": ["currency", "expiration_date", "provider"]
+            "Select Columns Transformer": {
+                "columns": ["currency", "provider", "region", "country"]
             },
+            "One Hot Encoder": {"features_to_encode": ["currency", "provider"]},
             "Target Encoder": {"cols": ["region", "country"]},
         },
     ),
@@ -303,10 +325,24 @@ def test_fast_permutation_importance_matches_slow_output(
     slow_scores = calculate_permutation_importance(
         pipeline, X, y, objective="Log Loss Binary", random_seed=0
     )
-    pd.testing.assert_frame_equal(fast_scores, slow_scores)
+
+    # The row order is not guaranteed to be equal in the case of ties
+    # so converting to a dict after rounding to use dict equality over
+    # assert_frame_equal
+    fast_scores = dict(zip(fast_scores.feature, fast_scores.importance.round(5)))
+    slow_scores = dict(zip(slow_scores.feature, slow_scores.importance.round(5)))
+    assert slow_scores == fast_scores
 
     precomputed_features = pipeline.compute_estimator_features(X, y)
-    for col in X.columns:
+    # Run one column of each logical type
+    for col in [
+        "card_id",
+        "datetime",
+        "currency",
+        "customer_present",
+        "region",
+        "amount",
+    ]:
         mock_supports_fast_importance.return_value = True
         permutation_importance_one_col_fast = (
             calculate_permutation_importance_one_column(
@@ -430,7 +466,7 @@ def test_get_permutation_importance_binary(
     X_y_binary,
     data_type,
     logistic_regression_binary_pipeline_class,
-    binary_core_objectives,
+    binary_test_objectives,
     make_data_type,
 ):
     X, y = X_y_binary
@@ -441,7 +477,7 @@ def test_get_permutation_importance_binary(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42
     )
     pipeline.fit(X, y)
-    for objective in binary_core_objectives:
+    for objective in binary_test_objectives:
         permutation_importance = calculate_permutation_importance(
             pipeline, X, y, objective
         )
@@ -452,7 +488,7 @@ def test_get_permutation_importance_binary(
             "feature", ascending=True
         ).reset_index(drop=True)
         X = pd.DataFrame(X)
-        for col in X.columns:
+        for col in X.columns[:3]:
             permutation_importance_one_col = (
                 calculate_permutation_importance_one_column(
                     pipeline, X, y, col, objective, fast=False
@@ -465,7 +501,7 @@ def test_get_permutation_importance_binary(
 
 
 def test_get_permutation_importance_multiclass(
-    X_y_multi, logistic_regression_multiclass_pipeline_class, multiclass_core_objectives
+    X_y_multi, logistic_regression_multiclass_pipeline_class, multiclass_test_objectives
 ):
     X, y = X_y_multi
     X = pd.DataFrame(X)
@@ -473,7 +509,7 @@ def test_get_permutation_importance_multiclass(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42
     )
     pipeline.fit(X, y)
-    for objective in multiclass_core_objectives:
+    for objective in multiclass_test_objectives:
         permutation_importance = calculate_permutation_importance(
             pipeline, X, y, objective
         )
@@ -483,7 +519,7 @@ def test_get_permutation_importance_multiclass(
         permutation_importance_sorted = permutation_importance.sort_values(
             "feature", ascending=True
         ).reset_index(drop=True)
-        for col in X.columns:
+        for col in X.columns[:3]:
             permutation_importance_one_col = (
                 calculate_permutation_importance_one_column(
                     pipeline, X, y, col, objective, fast=False
@@ -496,7 +532,7 @@ def test_get_permutation_importance_multiclass(
 
 
 def test_get_permutation_importance_regression(
-    linear_regression_pipeline_class, regression_core_objectives
+    linear_regression_pipeline_class, regression_test_objectives
 ):
     X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
@@ -505,7 +541,7 @@ def test_get_permutation_importance_regression(
     )
     pipeline.fit(X, y)
 
-    for objective in regression_core_objectives:
+    for objective in regression_test_objectives:
         permutation_importance = calculate_permutation_importance(
             pipeline, X, y, objective
         )
