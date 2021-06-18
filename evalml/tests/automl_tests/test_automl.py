@@ -1114,7 +1114,9 @@ def test_add_to_rankings_no_search(
 
 
 def test_add_to_rankings_regression_large(
-    AutoMLTestEnv, dummy_regression_pipeline_class, dummy_regressor_linear_component_graph
+    AutoMLTestEnv,
+    dummy_regression_pipeline_class,
+    dummy_regressor_linear_component_graph,
 ):
     X = pd.DataFrame({"col_0": [i for i in range(101000)]})
     y = pd.Series([i for i in range(101000)])
@@ -1181,7 +1183,9 @@ def test_add_to_rankings_regression(
 
 def test_add_to_rankings_duplicate(
     dummy_classifier_linear_component_graph,
-    AutoMLTestEnv, dummy_binary_pipeline_class, X_y_binary
+    AutoMLTestEnv,
+    dummy_binary_pipeline_class,
+    X_y_binary,
 ):
     X, y = X_y_binary
 
