@@ -10,6 +10,7 @@ Release Notes
         * Added change for ``k_neighbors`` parameter in SMOTE Oversamplers to automatically handle small samples :pr:`2375`
         * Changed naming for ``Logistic Regression Classifier`` file :pr:`2399`
     * Changes
+        * Replaced `allowed_pipelines` with `allowed_component_graphs` :pr:`2364`
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
     * Documentation Changes
         * Fixed start page code and description dataset naming discrepancy :pr:`2370`
@@ -24,6 +25,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * `AutoMLSearch` will accept `allowed_component_graphs` instead of `allowed_pipelines` :pr:`2364`
 
 
 **v0.26.0 Jun. 08, 2021**

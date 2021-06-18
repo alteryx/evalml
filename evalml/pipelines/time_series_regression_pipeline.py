@@ -38,7 +38,7 @@ class TimeSeriesRegressionPipeline(
                  Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        if "pipeline" not in parameters:
+        if not parameters or "pipeline" not in parameters:
             raise ValueError(
                 "date_index, gap, and max_delay parameters cannot be omitted from the parameters dict. "
                 "Please specify them as a dictionary with the key 'pipeline'."
