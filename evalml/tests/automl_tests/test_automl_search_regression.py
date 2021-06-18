@@ -242,9 +242,9 @@ def test_automl_allowed_component_graphs_specified_component_graphs(
         X_train=X,
         y_train=y,
         problem_type="regression",
-        allowed_component_graphs=[
-            {"Mock Regression Pipeline": [dummy_regressor_estimator_class]}
-        ],
+        allowed_component_graphs={
+            "Mock Regression Pipeline": [dummy_regressor_estimator_class]
+        },
         allowed_model_families=None,
     )
     mock_score.return_value = {automl.objective.name: 1.0}
@@ -357,9 +357,9 @@ def test_automl_allowed_component_graphs_init_allowed_both_specified(
         X_train=X,
         y_train=y,
         problem_type="regression",
-        allowed_component_graphs=[
-            {"Mock Regression Pipeline": [dummy_regressor_estimator_class]}
-        ],
+        allowed_component_graphs={
+            "Mock Regression Pipeline": [dummy_regressor_estimator_class]
+        },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
     )
     mock_score.return_value = {automl.objective.name: 1.0}
@@ -399,7 +399,7 @@ def test_automl_allowed_component_graphs_search(
         problem_type="regression",
         max_iterations=2,
         start_iteration_callback=start_iteration_callback,
-        allowed_component_graphs=[component_graph],
+        allowed_component_graphs=component_graph,
     )
     automl.search()
 

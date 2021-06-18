@@ -29,9 +29,9 @@ def test_train_and_score_pipelines(
         problem_type="binary",
         max_time=1,
         max_batches=1,
-        allowed_component_graphs=[
-            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
-        ],
+        allowed_component_graphs={
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+        },
         optimize_thresholds=False,
     )
     pipeline = dummy_binary_pipeline_class({})
@@ -74,9 +74,9 @@ def test_train_and_score_pipelines_error(
         problem_type="binary",
         max_time=1,
         max_batches=1,
-        allowed_component_graphs=[
-            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
-        ],
+        allowed_component_graphs={
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+        },
         optimize_thresholds=False,
     )
     pipeline = dummy_binary_pipeline_class({})

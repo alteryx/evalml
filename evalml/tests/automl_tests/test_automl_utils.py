@@ -333,16 +333,14 @@ def test_get_hyperparameter_ranges():
     ],
 )
 def test_get_pipelines_from_component_graphs(problem_type, estimator):
-    component_graphs = [
-        {"Name_0": ["Imputer", estimator], "random_seed": 42},
-        {
-            "Name_1": {
-                "Imputer": ["Imputer"],
-                "Imputer_1": ["Imputer", "Imputer"],
-                estimator: [estimator, "Imputer_1"],
-            }
+    component_graphs = {
+        "Name_0": ["Imputer", estimator],
+        "Name_1": {
+            "Imputer": ["Imputer"],
+            "Imputer_1": ["Imputer", "Imputer"],
+            estimator: [estimator, "Imputer_1"],
         },
-    ]
+    }
     if problem_type == "time series regression":
         with pytest.raises(ValueError, match="date_index, gap, and max_delay"):
             get_pipelines_from_component_graphs(component_graphs, problem_type)
@@ -350,7 +348,7 @@ def test_get_pipelines_from_component_graphs(problem_type, estimator):
         returned_pipelines = get_pipelines_from_component_graphs(
             component_graphs, problem_type
         )
-        assert returned_pipelines[0].random_seed == 42
+        assert returned_pipelines[0].random_seed == 0
         assert returned_pipelines[1].random_seed == 0
         if problem_type == "binary":
             assert all(

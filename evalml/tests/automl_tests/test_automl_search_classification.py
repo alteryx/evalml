@@ -719,9 +719,9 @@ def test_automl_component_graphs_specified_component_graphs_binary(
         X_train=X,
         y_train=y,
         problem_type="binary",
-        allowed_component_graphs=[
-            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
-        ],
+        allowed_component_graphs={
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+        },
         optimize_thresholds=False,
         allowed_model_families=None,
     )
@@ -758,13 +758,11 @@ def test_automl_component_graphs_specified_component_graphs_multi(
         X_train=X,
         y_train=y,
         problem_type="multiclass",
-        allowed_component_graphs=[
-            {
-                "Mock Multiclass Classification Pipeline": [
-                    dummy_classifier_estimator_class
-                ]
-            }
-        ],
+        allowed_component_graphs={
+            "Mock Multiclass Classification Pipeline": [
+                dummy_classifier_estimator_class
+            ]
+        },
         allowed_model_families=None,
     )
     expected_pipeline = dummy_multiclass_pipeline_class({})
@@ -964,9 +962,9 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
         X_train=X,
         y_train=y,
         problem_type="binary",
-        allowed_component_graphs=[
-            {"Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]}
-        ],
+        allowed_component_graphs={
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+        },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         optimize_thresholds=False,
     )
@@ -1004,13 +1002,11 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
         X_train=X,
         y_train=y,
         problem_type="multiclass",
-        allowed_component_graphs=[
-            {
-                "Mock Multiclass Classification Pipeline": [
-                    dummy_classifier_estimator_class
-                ]
-            }
-        ],
+        allowed_component_graphs={
+            "Mock Multiclass Classification Pipeline": [
+                dummy_classifier_estimator_class
+            ]
+        },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
     )
     mock_score.return_value = {automl.objective.name: 1.0}
@@ -1076,7 +1072,7 @@ def test_automl_component_graphs_search(
         problem_type=problem_type,
         max_iterations=5,
         start_iteration_callback=start_iteration_callback,
-        allowed_component_graphs=[component_graph],
+        allowed_component_graphs=component_graph,
         optimize_thresholds=False,
     )
     automl.search()
