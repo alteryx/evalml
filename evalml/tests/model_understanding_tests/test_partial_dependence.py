@@ -260,7 +260,7 @@ def test_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_c
     pipeline.fit(X, y)
 
     num_classes = y.nunique()
-    grid_resolution = 20
+    grid_resolution = 5
 
     one_way_part_dep = partial_dependence(
         pipeline=pipeline, X=X, features="magnesium", grid_resolution=grid_resolution
@@ -394,25 +394,25 @@ def test_partial_dependence_more_categories_than_grid_resolution(
             dictionary_rounded[round(key, places)] = dictionary[key]
         return dictionary_rounded
 
-    X, y = load_fraud(1000)
+    X, y = load_fraud(100)
     X = X.drop(columns=["datetime", "expiration_date", "country", "region", "provider"])
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
     num_cat_features = len(set(X["currency"]))
-    assert num_cat_features == 164
+    assert num_cat_features == 73
 
     part_dep_ans = {
-        0.1432616813857269: 154,
-        0.1502346349971562: 1,
-        0.14487916687594762: 1,
-        0.1573183451314127: 1,
-        0.11695462432136654: 1,
-        0.07950579532536253: 1,
-        0.006794444792966759: 1,
-        0.17745270478939879: 1,
-        0.1666874487986626: 1,
-        0.13357573073236878: 1,
-        0.06778096366056789: 1,
+        0.05824028901694482: 63,
+        0.1349235160940143: 1,
+        0.6353030372157324: 1,
+        0.031171284274810262: 1,
+        0.009093086236362272: 1,
+        0.33547688991040336: 1,
+        0.01746660818843149: 1,
+        0.018205973481273202: 1,
+        0.2876661156872482: 1,
+        0.015320197702897345: 1,
+        0.2821023107719306: 1,
     }
 
     part_dep_ans_rounded = round_dict_keys(part_dep_ans)
@@ -509,14 +509,14 @@ def test_graph_partial_dependence_multiclass(
 
     # Test one-way without class labels
     fig_one_way_no_class_labels = graph_partial_dependence(
-        pipeline, X, features="magnesium", grid_resolution=20
+        pipeline, X, features="magnesium", grid_resolution=5
     )
     assert isinstance(fig_one_way_no_class_labels, go.Figure)
     fig_dict = fig_one_way_no_class_labels.to_dict()
     assert len(fig_dict["data"]) == len(pipeline.classes_)
     for data, label in zip(fig_dict["data"], pipeline.classes_):
-        assert len(data["x"]) == 20
-        assert len(data["y"]) == 20
+        assert len(data["x"]) == 5
+        assert len(data["y"]) == 5
         assert data["name"] == label
 
     # Check that all the subplots axes have the same range
@@ -533,13 +533,13 @@ def test_graph_partial_dependence_multiclass(
 
     # Test one-way with class labels
     fig_one_way_class_labels = graph_partial_dependence(
-        pipeline, X, features="magnesium", class_label="class_1", grid_resolution=20
+        pipeline, X, features="magnesium", class_label="class_1", grid_resolution=5
     )
     assert isinstance(fig_one_way_class_labels, go.Figure)
     fig_dict = fig_one_way_class_labels.to_dict()
     assert len(fig_dict["data"]) == 1
-    assert len(fig_dict["data"][0]["x"]) == 20
-    assert len(fig_dict["data"][0]["y"]) == 20
+    assert len(fig_dict["data"][0]["x"]) == 5
+    assert len(fig_dict["data"][0]["y"]) == 5
     assert fig_dict["data"][0]["name"] == "class_1"
 
     msg = "Class wine is not one of the classes the pipeline was fit on: class_0, class_1, class_2"
@@ -548,15 +548,15 @@ def test_graph_partial_dependence_multiclass(
 
     # Test two-way without class labels
     fig_two_way_no_class_labels = graph_partial_dependence(
-        pipeline, X, features=("magnesium", "alcohol"), grid_resolution=20
+        pipeline, X, features=("magnesium", "alcohol"), grid_resolution=5
     )
     assert isinstance(fig_two_way_no_class_labels, go.Figure)
     fig_dict = fig_two_way_no_class_labels.to_dict()
     assert (
         len(fig_dict["data"]) == 3
     ), "Figure does not have partial dependence data for each class."
-    assert all([len(fig_dict["data"][i]["x"]) == 20 for i in range(3)])
-    assert all([len(fig_dict["data"][i]["y"]) == 20 for i in range(3)])
+    assert all([len(fig_dict["data"][i]["x"]) == 5 for i in range(3)])
+    assert all([len(fig_dict["data"][i]["y"]) == 5 for i in range(3)])
     assert [fig_dict["data"][i]["name"] for i in range(3)] == [
         "class_0",
         "class_1",
@@ -581,13 +581,13 @@ def test_graph_partial_dependence_multiclass(
         X,
         features=("magnesium", "alcohol"),
         class_label="class_1",
-        grid_resolution=20,
+        grid_resolution=5,
     )
     assert isinstance(fig_two_way_class_labels, go.Figure)
     fig_dict = fig_two_way_class_labels.to_dict()
     assert len(fig_dict["data"]) == 1
-    assert len(fig_dict["data"][0]["x"]) == 20
-    assert len(fig_dict["data"][0]["y"]) == 20
+    assert len(fig_dict["data"][0]["x"]) == 5
+    assert len(fig_dict["data"][0]["y"]) == 5
     assert fig_dict["data"][0]["name"] == "class_1"
 
     msg = "Class wine is not one of the classes the pipeline was fit on: class_0, class_1, class_2"
@@ -887,25 +887,28 @@ def test_partial_dependence_datetime(
 
     X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
     y = pd.Series(y)
-    X["dt_column"] = pd.Series(pd.date_range("20200101", periods=X.shape[0]))
-
+    random_dates = pd.Series(pd.date_range("20200101", periods=10)).sample(
+        replace=True, random_state=0, n=100
+    )
+    random_dates.index = X.index
+    X["dt_column"] = random_dates
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, features="dt_column")
     if problem_type == "multiclass":
-        assert len(part_dep["partial_dependence"]) == 300  # 100 rows * 3 classes
-        assert len(part_dep["feature_values"]) == 300
+        assert len(part_dep["partial_dependence"]) == 30  # 10 rows * 3 classes
+        assert len(part_dep["feature_values"]) == 30
     else:
-        assert len(part_dep["partial_dependence"]) == 100
-        assert len(part_dep["feature_values"]) == 100
+        assert len(part_dep["partial_dependence"]) == 10
+        assert len(part_dep["feature_values"]) == 10
     assert not part_dep.isnull().any(axis=None)
 
     part_dep = partial_dependence(pipeline, X, features=20)
     if problem_type == "multiclass":
-        assert len(part_dep["partial_dependence"]) == 300  # 100 rows * 3 classes
-        assert len(part_dep["feature_values"]) == 300
+        assert len(part_dep["partial_dependence"]) == 30  # 10 rows * 3 classes
+        assert len(part_dep["feature_values"]) == 30
     else:
-        assert len(part_dep["partial_dependence"]) == 100
-        assert len(part_dep["feature_values"]) == 100
+        assert len(part_dep["partial_dependence"]) == 10
+        assert len(part_dep["feature_values"]) == 10
     assert not part_dep.isnull().any(axis=None)
 
     with pytest.raises(
@@ -955,7 +958,10 @@ def test_graph_partial_dependence_regression_and_binary_datetime(
     X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
     y = pd.Series(y)
     X["dt_column"] = pd.to_datetime(
-        pd.Series(pd.date_range("20200101", periods=X.shape[0])), errors="coerce"
+        pd.Series(pd.date_range("20200101", periods=5))
+        .sample(n=X.shape[0], replace=True, random_state=0)
+        .reset_index(drop=True),
+        errors="coerce",
     )
 
     pipeline.fit(X, y)
@@ -963,9 +969,7 @@ def test_graph_partial_dependence_regression_and_binary_datetime(
     fig = graph_partial_dependence(pipeline, X, features="dt_column", grid_resolution=5)
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "scatter"
-    assert plot_data["x"].tolist() == list(
-        pd.date_range("20200101", periods=X.shape[0])
-    )
+    assert plot_data["x"].tolist() == list(pd.date_range("20200101", periods=5))
 
 
 def test_graph_partial_dependence_regression_date_order(X_y_binary):
@@ -987,7 +991,8 @@ def test_graph_partial_dependence_regression_date_order(X_y_binary):
     X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
     y = pd.Series(y)
     dt_series = (
-        pd.Series(pd.date_range("20200101", periods=X.shape[0]))
+        pd.Series(pd.date_range("20200101", periods=5))
+        .sample(replace=True, n=X.shape[0])
         .sample(frac=1)
         .reset_index(drop=True)
     )
@@ -998,9 +1003,7 @@ def test_graph_partial_dependence_regression_date_order(X_y_binary):
     fig = graph_partial_dependence(pipeline, X, features="dt_column", grid_resolution=5)
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "scatter"
-    assert plot_data["x"].tolist() == list(
-        pd.date_range("20200101", periods=X.shape[0])
-    )
+    assert plot_data["x"].tolist() == list(pd.date_range("20200101", periods=5))
 
 
 def test_partial_dependence_respect_grid_resolution(fraud_100):
