@@ -271,8 +271,7 @@ def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(
             X.ww.init(logical_types={0: logical_type})
         except ww.exceptions.TypeConversionError:
             continue
-        print(logical_type)
-        print(X)
+
         imputer = PerColumnImputer()
         imputer.fit(X, y)
         transformed = imputer.transform(X, y)
