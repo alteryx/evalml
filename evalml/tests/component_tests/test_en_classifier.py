@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
+from sklearn.linear_model import SGDClassifier as SGDClassifier
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators.classifiers import (
@@ -25,7 +25,7 @@ def test_problem_types():
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
-    sk_clf = SKElasticNetClassifier(
+    sk_clf = SGDClassifier(
         loss="log",
         penalty="elasticnet",
         alpha=0.05,
@@ -49,7 +49,7 @@ def test_fit_predict_binary(X_y_binary):
 def test_fit_predict_multi(X_y_multi):
     X, y = X_y_multi
 
-    sk_clf = SKElasticNetClassifier(
+    sk_clf = SGDClassifier(
         loss="log",
         penalty="elasticnet",
         alpha=0.05,
@@ -75,7 +75,7 @@ def test_fit_predict_multi(X_y_multi):
 def test_feature_importance(X_y_binary):
     X, y = X_y_binary
 
-    sk_clf = SKElasticNetClassifier(
+    sk_clf = SGDClassifier(
         loss="log",
         penalty="elasticnet",
         alpha=0.05,
@@ -96,7 +96,7 @@ def test_feature_importance(X_y_binary):
 def test_feature_importance_multi(X_y_multi):
     X, y = X_y_multi
 
-    sk_clf = SKElasticNetClassifier(
+    sk_clf = SGDClassifier(
         loss="log",
         penalty="elasticnet",
         alpha=0.05,

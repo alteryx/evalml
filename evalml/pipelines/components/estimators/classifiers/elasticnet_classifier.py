@@ -1,7 +1,7 @@
 import warnings
 
 import numpy as np
-from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
+from sklearn.linear_model import SGDClassifier
 from skopt.space import Real
 
 from evalml.model_family import ModelFamily
@@ -49,7 +49,7 @@ class ElasticNetClassifier(Estimator):
             )
         kwargs["loss"] = "log"
         parameters.update(kwargs)
-        en_classifier = SKElasticNetClassifier(random_state=random_seed, **parameters)
+        en_classifier = SGDClassifier(random_state=random_seed, **parameters)
         super().__init__(
             parameters=parameters, component_obj=en_classifier, random_seed=random_seed
         )

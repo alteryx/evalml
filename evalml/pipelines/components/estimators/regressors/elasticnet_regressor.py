@@ -1,4 +1,4 @@
-from sklearn.linear_model import ElasticNet as SKElasticNet
+from sklearn.linear_model import ElasticNet
 from skopt.space import Real
 
 from evalml.model_family import ModelFamily
@@ -36,7 +36,7 @@ class ElasticNetRegressor(Estimator):
             "normalize": normalize,
         }
         parameters.update(kwargs)
-        en_regressor = SKElasticNet(random_state=random_seed, **parameters)
+        en_regressor = ElasticNet(random_state=random_seed, **parameters)
         super().__init__(
             parameters=parameters, component_obj=en_regressor, random_seed=random_seed
         )

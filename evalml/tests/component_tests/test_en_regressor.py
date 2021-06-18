@@ -1,5 +1,5 @@
 import numpy as np
-from sklearn.linear_model import ElasticNet as SKElasticNetRegressor
+from sklearn.linear_model import ElasticNet as SKElasticNet
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators.regressors import (
@@ -33,7 +33,7 @@ def test_problem_types():
 def test_fit_predict(X_y_regression):
     X, y = X_y_regression
 
-    sk_clf = SKElasticNetRegressor(
+    sk_clf = SKElasticNet(
         alpha=0.05, l1_ratio=0.5, random_state=0, normalize=False, max_iter=1000
     )
     sk_clf.fit(X, y)
@@ -50,7 +50,7 @@ def test_fit_predict(X_y_regression):
 def test_feature_importance(X_y_regression):
     X, y = X_y_regression
 
-    sk_clf = SKElasticNetRegressor(
+    sk_clf = SKElasticNet(
         alpha=0.05, l1_ratio=0.5, random_state=0, normalize=False, max_iter=1000
     )
     sk_clf.fit(X, y)
