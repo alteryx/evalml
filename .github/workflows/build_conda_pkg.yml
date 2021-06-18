@@ -1,4 +1,4 @@
-name: Build Conda Package
+name: Build conda package
 
 on:
   pull_request:

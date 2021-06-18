@@ -120,7 +120,7 @@ def test_all_estimators_check_fit_input_type_regression(
         component.predict(X)
 
 
-def test_estimator_predict_output_type(X_y_binary, ts_data, helper_functions):
+def test_estimator_predict_output_type(X_y_binary, helper_functions):
     X_np, y_np = X_y_binary
     assert isinstance(X_np, np.ndarray)
     assert isinstance(y_np, np.ndarray)

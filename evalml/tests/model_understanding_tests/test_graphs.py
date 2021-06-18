@@ -737,9 +737,9 @@ def test_cost_benefit_matrix_vs_threshold(
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     original_pipeline_threshold = pipeline.threshold
-    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm)
+    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm, steps=5)
     assert list(cost_benefit_df.columns) == ["threshold", "score"]
-    assert cost_benefit_df.shape == (101, 2)
+    assert cost_benefit_df.shape == (6, 2)
     assert not cost_benefit_df.isnull().all().all()
     assert pipeline.threshold == original_pipeline_threshold
 
@@ -766,9 +766,9 @@ def test_binary_objective_vs_threshold(
         binary_objective_vs_threshold(pipeline, X, y, "f1 micro")
 
     # test objective with score_needs_proba == False
-    results_df = binary_objective_vs_threshold(pipeline, X, y, "f1")
+    results_df = binary_objective_vs_threshold(pipeline, X, y, "f1", steps=5)
     assert list(results_df.columns) == ["threshold", "score"]
-    assert results_df.shape == (101, 2)
+    assert results_df.shape == (6, 2)
     assert not results_df.isnull().all().all()
 
 
@@ -834,6 +834,8 @@ def test_jupyter_graph_check(
         reason="Skipping plotting test because plotly not installed",
     )
     X, y = X_y_binary
+    X = X[:20, :5]
+    y = y[:20]
     clf = test_pipeline
     clf.fit(X, y)
     cbm = CostBenefitMatrix(
@@ -849,11 +851,11 @@ def test_jupyter_graph_check(
 
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
-        graph_partial_dependence(clf, X, features=0, grid_resolution=20)
+        graph_partial_dependence(clf, X, features=0, grid_resolution=5)
         assert len(graph_valid) == 1
         import_check.assert_called_with("ipywidgets", warning=True)
     with pytest.warns(None) as graph_valid:
-        graph_binary_objective_vs_threshold(test_pipeline, X, y, cbm)
+        graph_binary_objective_vs_threshold(test_pipeline, X, y, cbm, steps=5)
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
     with pytest.warns(None) as graph_valid:
