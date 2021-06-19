@@ -31,6 +31,7 @@ Release Notes
 
 **v0.26.0 Jun. 08, 2021**
     * Enhancements
+        * Adds force plots for prediction explanations :pr:`2157`
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
         * Added support for nonlinear pipelines for ``generate_pipeline_code`` :pr:`2332`
         * Added ``inverse_transform`` method to pipelines :pr:`2256`

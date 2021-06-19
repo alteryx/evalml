@@ -40,6 +40,7 @@ def explain_predictions(
     indices_to_explain,
     top_k_features=3,
     include_shap_values=False,
+    include_expected_value=False,
     output_format="text",
 ):
     """Creates a report summarizing the top contributing features for each data point in the input features.
@@ -54,6 +55,7 @@ def explain_predictions(
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.  Default is 3.
         include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
+        include_expected_value (bool): Whether the expected value should be included in the table. Default is False.
         output_format (str): Either "text", "dict", or "dataframe". Default is "text".
 
     Returns:
@@ -100,6 +102,7 @@ def explain_predictions(
         output_format=output_format,
         top_k_features=top_k_features,
         include_shap_values=include_shap_values,
+        include_expected_value=include_expected_value,
     )
     return report_creator(data)
 
@@ -256,10 +259,10 @@ def explain_predictions_best_worst(
         top_k_features=top_k_features,
         include_shap_values=include_shap_values,
         num_to_explain=num_to_explain,
+        include_expected_value=True,
     )
 
     _update_progress(start_time, timer(), ExplainPredictionsStage.DONE, callback)
-
     return report_creator(data)
 
 
