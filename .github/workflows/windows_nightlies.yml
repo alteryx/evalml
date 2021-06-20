@@ -1,20 +1,18 @@
-name: Windows Unit Tests (Dask Only)
+name: Nightly unit tests, windows
 
 on:
-  pull_request:
-    types: [opened, synchronize]
-  push:
-    branches:
-      - main
+  schedule:
+      - cron: '0 3 * * *'
 
 jobs:
   win_unit_tests:
-    name: ${{ matrix.python_version }} Windows Unit Tests, Dask Only
+    name: Nightly ${{ matrix.python_version }} windows ${{ matrix.command}}
     runs-on: windows-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        python_version: [ "3.7", "3.8" ]
+        python_version: ['3.7', '3.8', '3.9']
+        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
     steps:
       - name: Download Miniconda
         shell: pwsh
@@ -39,8 +37,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          repository: ${{ github.repository }}
+          ref: main
       - name: Install make
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
@@ -71,4 +69,4 @@ jobs:
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
-          make git-test-dask
+          make ${{matrix.command}}

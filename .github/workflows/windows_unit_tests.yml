@@ -1,4 +1,4 @@
-name: Windows Unit Tests
+name: Unit tests, windows
 
 on:
   pull_request:
@@ -9,12 +9,13 @@ on:
 
 jobs:
   win_unit_tests:
-    name: ${{ matrix.python_version }} windows unit tests
+    name: ${{ matrix.python_version }} windows ${{ matrix.command}}
     runs-on: windows-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        python_version: [ "3.7", "3.8" ]
+        python_version: ['3.8']
+        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
     steps:
       - name: Download Miniconda
         shell: pwsh
@@ -71,4 +72,4 @@ jobs:
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
-          make git-test-no-dask
+          make ${{matrix.command}}
