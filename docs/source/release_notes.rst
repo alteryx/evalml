@@ -8,6 +8,7 @@ Release Notes
         * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
     * Changes
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
+        * Updated ``compute_order`` in ``ComponentGraph`` to be a read-only property :pr:`2408`
     * Documentation Changes
         * Fixed start page code and description dataset naming discrepancy :pr:`2370`
     * Testing Changes
