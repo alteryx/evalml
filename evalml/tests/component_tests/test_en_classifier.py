@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from sklearn.linear_model import SGDClassifier as SGDClassifier
+from sklearn.linear_model import SGDClassifier
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators.classifiers import (
