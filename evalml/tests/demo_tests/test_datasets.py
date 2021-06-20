@@ -13,9 +13,9 @@ def set_testing_headers():
     urllib.request.install_opener(opener)
 
 
-def test_fraud():
+def test_fraud(fraud_local):
     X, y = demos.load_fraud()
-    X_local, y_local = demos.load_fraud(use_local=True)
+    X_local, y_local = fraud_local
     pd.testing.assert_frame_equal(X, X_local)
     pd.testing.assert_series_equal(y, y_local)
     assert X.shape == (99992, 12)
@@ -25,21 +25,10 @@ def test_fraud():
     assert X.ww.schema is not None
     assert y.ww.schema is not None
 
-    X, y = demos.load_fraud(1000)
-    X_local, y_local = demos.load_fraud(1000, use_local=True)
-    pd.testing.assert_frame_equal(X, X_local)
-    pd.testing.assert_series_equal(y, y_local)
-    assert X.shape == (1000, 12)
-    assert y.shape == (1000,)
-    assert isinstance(X, pd.DataFrame)
-    assert isinstance(y, pd.Series)
-    assert X.ww.schema is not None
-    assert y.ww.schema is not None
 
-
-def test_wine():
+def test_wine(wine_local):
     X, y = demos.load_wine()
-    X_local, y_local = demos.load_wine(use_local=True)
+    X_local, y_local = wine_local
     pd.testing.assert_frame_equal(X, X_local)
     pd.testing.assert_series_equal(y, y_local)
     assert X.shape == (178, 13)
@@ -50,9 +39,9 @@ def test_wine():
     assert y.ww.schema is not None
 
 
-def test_breast_cancer():
+def test_breast_cancer(breast_cancer_local):
     X, y = demos.load_breast_cancer()
-    X_local, y_local = demos.load_breast_cancer(use_local=True)
+    X_local, y_local = breast_cancer_local
     pd.testing.assert_frame_equal(X, X_local)
     pd.testing.assert_series_equal(y, y_local)
     assert X.shape == (569, 30)
@@ -63,9 +52,9 @@ def test_breast_cancer():
     assert y.ww.schema is not None
 
 
-def test_diabetes():
+def test_diabetes(diabetes_local):
     X, y = demos.load_diabetes()
-    X_local, y_local = demos.load_diabetes(use_local=True)
+    X_local, y_local = diabetes_local
     pd.testing.assert_frame_equal(X, X_local)
     pd.testing.assert_series_equal(y, y_local)
     assert X.shape == (442, 10)
@@ -76,9 +65,9 @@ def test_diabetes():
     assert y.ww.schema is not None
 
 
-def test_churn():
+def test_churn(churn_local):
     X, y = demos.load_churn()
-    X_local, y_local = demos.load_churn(use_local=True)
+    X_local, y_local = churn_local
     pd.testing.assert_frame_equal(X, X_local)
     pd.testing.assert_series_equal(y, y_local)
     assert X.shape == (7043, 19)

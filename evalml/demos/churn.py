@@ -1,10 +1,8 @@
-import os
-
 import evalml
 from evalml.preprocessing import load_data
 
 
-def load_churn(n_rows=None, verbose=True, use_local=False):
+def load_churn(n_rows=None, verbose=True):
     """Load credit card fraud dataset.
         The fraud dataset can be used for binary classification problems.
 
@@ -15,15 +13,10 @@ def load_churn(n_rows=None, verbose=True, use_local=False):
     Returns:
         (pd.Dataframe, pd.Series): X and y
     """
-    if use_local:
-        currdir_path = os.path.dirname(os.path.abspath(__file__))
-        data_folder_path = os.path.join(currdir_path, "data")
-        churn_data_path = os.path.join(data_folder_path, "churn.csv")
-    else:
-        churn_data_path = (
-            "https://api.featurelabs.com/datasets/churn.csv?library=evalml&version="
-            + evalml.__version__
-        )
+    churn_data_path = (
+        "https://api.featurelabs.com/datasets/churn.csv?library=evalml&version="
+        + evalml.__version__
+    )
 
     return load_data(
         path=churn_data_path,
