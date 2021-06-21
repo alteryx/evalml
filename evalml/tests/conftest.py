@@ -1112,11 +1112,11 @@ class _AutoMLTestEnv:
     Example:
         >>> env = _AutoMLTestEnv(problem_type="binary")
         >>> # run_search is short-hand for creating the context manager and then running search
-        >>> env.run_search(automl, score_return_value={automl.objective.name: 1.0})
-        >>> with env.test_context(score_return_value={automl.objective.name: 1.0}):
-        >>>     automl.search()
-        >>> env.mock_fit.assert_called_once()
-        >>> env.mock_score.assert_called_once()
+        >>> # env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+        >>> # with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        >>> #    automl.search()
+        >>> # env.mock_fit.assert_called_once()
+        >>> # env.mock_score.assert_called_once()
     """
 
     def __init__(self, problem_type):
