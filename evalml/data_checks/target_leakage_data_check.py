@@ -41,7 +41,7 @@ class TargetLeakageDataCheck(DataCheck):
         highly_corr_cols = []
         X_num = X.ww.select(include=numeric_and_boolean_ww)
         if (
-            type(y.ww.logical_type) not in numeric_and_boolean_ww
+            not isinstance(y.ww.logical_type, tuple(numeric_and_boolean_ww))
             or len(X_num.columns) == 0
         ):
             return highly_corr_cols
