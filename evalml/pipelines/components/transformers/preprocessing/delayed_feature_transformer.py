@@ -77,7 +77,7 @@ class DelayedFeatureTransformer(Transformer):
         return [
             name
             for name, column in X.ww.columns.items()
-            if type(column.logical_type) == logical_types.Categorical
+            if isinstance(column.logical_type, logical_types.Categorical)
         ]
 
     @staticmethod

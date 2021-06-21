@@ -92,7 +92,7 @@ class SimpleImputer(Transformer):
             {
                 col: "Categorical"
                 for col, ltype in X.ww.logical_types.items()
-                if type(ltype) == NaturalLanguage
+                if isinstance(ltype, NaturalLanguage)
             }
         )
 

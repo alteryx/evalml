@@ -353,4 +353,4 @@ def test_datetime_featurizer_woodwork_custom_overrides_returned_by_components(
                 item in logical_types.items() for item in col_transformed.items()
             )
         else:
-            assert type(transformed.ww.logical_types[0]) == logical_type
+            assert isinstance(transformed.ww.logical_types[0], logical_type)
