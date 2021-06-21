@@ -40,11 +40,12 @@ class ComponentGraph:
         self.input_feature_names = {}
         self._feature_provenance = {}
         self._i = 0
+        self._compute_order = self.generate_order(self.component_dict)
 
     @property
     def compute_order(self):
         """The order that components will be computed or called in."""
-        return self.generate_order(self.component_dict)
+        return self._compute_order
 
     @property
     def default_parameters(self):
