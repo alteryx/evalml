@@ -1,4 +1,4 @@
-plotly==4.14.0
+plotly==5.0.0
 kaleido==0.1.0
 ipywidgets==7.5
 xgboost==1.1.0
