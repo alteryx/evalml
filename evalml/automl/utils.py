@@ -30,6 +30,9 @@ _LARGE_DATA_ROW_THRESHOLD = int(1e5)
 _SAMPLER_THRESHOLD = 20000
 _LARGE_DATA_PERCENT_VALIDATION = 0.75
 
+_SMALL_DATA_ROW_THRESHOLD = 100
+_SMALL_DATA_CV_FOLDS = 10
+
 
 def get_default_primary_search_objective(problem_type):
     """Get the default primary search objective for a problem type.
@@ -57,7 +60,7 @@ def make_data_splitter(
     y,
     problem_type,
     problem_configuration=None,
-    n_splits=3,
+    n_splits=None,
     shuffle=True,
     random_seed=0,
 ):
@@ -77,6 +80,11 @@ def make_data_splitter(
         sklearn.model_selection.BaseCrossValidator: Data splitting method.
     """
     random_seed = random_seed
+    if n_splits is None:
+        if X.shape[0] < _SMALL_DATA_ROW_THRESHOLD and not is_time_series(problem_type):
+            n_splits = _SMALL_DATA_CV_FOLDS
+        else:
+            n_splits = 3
     problem_type = handle_problem_types(problem_type)
     if is_time_series(problem_type):
         if not problem_configuration:

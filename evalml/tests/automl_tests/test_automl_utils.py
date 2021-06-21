@@ -8,6 +8,8 @@ from skopt.space import Categorical, Integer
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
+    _SMALL_DATA_CV_FOLDS,
+    _SMALL_DATA_ROW_THRESHOLD,
     get_best_sampler_for_data,
     get_default_primary_search_objective,
     get_hyperparameter_ranges,
@@ -21,10 +23,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
-from evalml.preprocessing.data_splitters import (
-    TimeSeriesSplit,
-    TrainingValidationSplit,
-)
+from evalml.preprocessing.data_splitters import TimeSeriesSplit, TrainingValidationSplit
 from evalml.problem_types import ProblemTypes
 from evalml.utils.woodwork_utils import infer_feature_types
 
@@ -62,11 +61,14 @@ def test_get_default_primary_search_objective():
 
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-@pytest.mark.parametrize("large_data", [False, True])
-def test_make_data_splitter_default(problem_type, large_data):
-    n = 10
-    if large_data:
+@pytest.mark.parametrize("data_size", ["small", "regular", "large"])
+def test_make_data_splitter_default(problem_type, data_size):
+    if data_size == "large":
         n = _LARGE_DATA_ROW_THRESHOLD + 1
+    elif data_size == "small":
+        n = _SMALL_DATA_ROW_THRESHOLD - 1
+    else:
+        n = 200
     X = pd.DataFrame({"col_0": list(range(n)), "target": list(range(n))})
     y = X.pop("target")
 
@@ -81,7 +83,7 @@ def test_make_data_splitter_default(problem_type, large_data):
     data_splitter = make_data_splitter(
         X, y, problem_type, problem_configuration=problem_configuration
     )
-    if large_data and problem_type in [
+    if data_size == "large" and problem_type in [
         ProblemTypes.REGRESSION,
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,
@@ -91,6 +93,20 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.random_seed == 0
         assert data_splitter.shuffle
         assert data_splitter.test_size == _LARGE_DATA_PERCENT_VALIDATION
+        return
+
+    if data_size == "small" and problem_type in [
+        ProblemTypes.REGRESSION,
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+    ]:
+        assert isinstance(
+            data_splitter,
+            KFold if problem_type == ProblemTypes.REGRESSION else StratifiedKFold,
+        )
+        assert data_splitter.n_splits == 10
+        assert data_splitter.shuffle
+        assert data_splitter.random_state == 0
         return
 
     if problem_type == ProblemTypes.REGRESSION:
