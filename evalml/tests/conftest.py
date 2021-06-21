@@ -281,11 +281,20 @@ def ts_data():
 
 
 @pytest.fixture
-def ts_data_seasonal():
-    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 500)
-    X, y = pd.DataFrame({"features": range(500)}), pd.Series(sine_)
-    y.index = pd.date_range(start="1/1/2018", periods=500)
-    X.index = pd.date_range(start="1/1/2018", periods=500)
+def ts_data_seasonal_train():
+    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 25)
+    X, y = pd.DataFrame({"features": range(25)}), pd.Series(sine_)
+    y.index = pd.date_range(start="1/1/2018", periods=25)
+    X.index = pd.date_range(start="1/1/2018", periods=25)
+    return X, y
+
+
+@pytest.fixture
+def ts_data_seasonal_test():
+    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 25)
+    X, y = pd.DataFrame({"features": range(25)}), pd.Series(sine_)
+    y.index = pd.date_range(start="1/26/2018", periods=25)
+    X.index = pd.date_range(start="1/26/2018", periods=25)
     return X, y
 
 
@@ -348,6 +357,46 @@ def dummy_classifier_estimator_class():
 
 
 @pytest.fixture
+def dummy_classifier_linear_component_graph(dummy_classifier_estimator_class):
+    component_graph_linear = {
+        "Name": ["Imputer", "One Hot Encoder", dummy_classifier_estimator_class]
+    }
+    return component_graph_linear
+
+
+@pytest.fixture
+def dummy_regressor_linear_component_graph(dummy_regressor_estimator_class):
+    component_graph_linear = {
+        "Name": ["Imputer", "One Hot Encoder", dummy_regressor_estimator_class]
+    }
+    return component_graph_linear
+
+
+@pytest.fixture
+def dummy_classifier_dict_component_graph(dummy_classifier_estimator_class):
+    component_graph_dict = {
+        "Name": {
+            "Imputer": ["Imputer"],
+            "Imputer_1": ["Imputer", "Imputer"],
+            "Random Forest Classifier": [dummy_classifier_estimator_class, "Imputer_1"],
+        }
+    }
+    return component_graph_dict
+
+
+@pytest.fixture
+def dummy_regressor_dict_component_graph(dummy_regressor_estimator_class):
+    component_graph_dict = {
+        "Name": {
+            "Imputer": ["Imputer"],
+            "Imputer_1": ["Imputer", "Imputer"],
+            "Random Forest Classifier": [dummy_regressor_estimator_class, "Imputer_1"],
+        }
+    }
+    return component_graph_dict
+
+
+@pytest.fixture
 def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
     MockEstimator = dummy_classifier_estimator_class
 
@@ -380,7 +429,7 @@ def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
     class MockMulticlassClassificationPipeline(MulticlassClassificationPipeline):
         estimator = MockEstimator
         component_graph = [MockEstimator]
-        custom_name = None
+        custom_name = "Mock Multiclass Classification Pipeline"
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
@@ -755,18 +804,30 @@ def nonlinear_regression_pipeline_class():
 
 
 @pytest.fixture
-def binary_core_objectives():
-    return get_core_objectives(ProblemTypes.BINARY)
+def binary_test_objectives():
+    return [
+        o
+        for o in get_core_objectives(ProblemTypes.BINARY)
+        if o.name in {"Log Loss Binary", "F1", "AUC"}
+    ]
 
 
 @pytest.fixture
-def multiclass_core_objectives():
-    return get_core_objectives(ProblemTypes.MULTICLASS)
+def multiclass_test_objectives():
+    return [
+        o
+        for o in get_core_objectives(ProblemTypes.MULTICLASS)
+        if o.name in {"Log Loss Multiclass", "AUC Micro", "F1 Micro"}
+    ]
 
 
 @pytest.fixture
-def regression_core_objectives():
-    return get_core_objectives(ProblemTypes.REGRESSION)
+def regression_test_objectives():
+    return [
+        o
+        for o in get_core_objectives(ProblemTypes.REGRESSION)
+        if o.name in {"R2", "Root Mean Squared Error", "MAE"}
+    ]
 
 
 @pytest.fixture

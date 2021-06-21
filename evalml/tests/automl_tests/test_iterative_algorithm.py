@@ -117,8 +117,9 @@ def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
 @patch(
     "evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class"
 )
+@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_results(
-    mock_stack, ensembling_value, dummy_binary_pipeline_classes
+    mock_opt_tell, mock_stack, ensembling_value, dummy_binary_pipeline_classes
 ):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(
@@ -207,8 +208,9 @@ def test_iterative_algorithm_results(
 @patch(
     "evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class"
 )
+@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_passes_pipeline_params(
-    mock_stack, ensembling_value, dummy_binary_pipeline_classes
+    mock_opt_tell, mock_stack, ensembling_value, dummy_binary_pipeline_classes
 ):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(
@@ -253,7 +255,8 @@ def test_iterative_algorithm_passes_pipeline_params(
             )
 
 
-def test_iterative_algorithm_passes_njobs(dummy_binary_pipeline_classes):
+@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
+def test_iterative_algorithm_passes_njobs(mock_opt_tell, dummy_binary_pipeline_classes):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(
         allowed_pipelines=dummy_binary_pipeline_classes, n_jobs=2, ensembling=False
@@ -413,8 +416,12 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
     "parameters",
     [1, "hello", 1.3, -1.0006, Categorical([1, 3, 4]), Integer(2, 4), Real(2, 6)],
 )
-def test_iterative_algorithm_pipeline_params(parameters, dummy_binary_pipeline_classes):
+def test_iterative_algorithm_pipeline_params(
+    parameters,
+    dummy_binary_pipeline_classes,
+):
     dummy_binary_pipeline_classes = dummy_binary_pipeline_classes(parameters)
+
     if isinstance(parameters, (Categorical, Integer, Real)):
         with pytest.raises(
             ValueError,
@@ -540,94 +547,6 @@ def test_iterative_algorithm_custom_hyperparameters(
                 ]
             )
         assert all_dummies == {1, 3, 4} if parameters == 1 else all_dummies == {2, 3, 4}
-
-
-def test_iterative_algorithm_frozen_parameters():
-    class MockEstimator(Estimator):
-        name = "Mock Classifier"
-        model_family = ModelFamily.RANDOM_FOREST
-        supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
-        hyperparameter_ranges = {
-            "dummy_int_parameter": Integer(1, 10),
-            "dummy_categorical_parameter": Categorical(["random", "dummy", "test"]),
-            "dummy_real_parameter": Real(0, 1),
-        }
-
-        def __init__(
-            self,
-            dummy_int_parameter=0,
-            dummy_categorical_parameter="dummy",
-            dummy_real_parameter=1.0,
-            n_jobs=-1,
-            random_seed=0,
-            **kwargs
-        ):
-            super().__init__(
-                parameters={
-                    "dummy_int_parameter": dummy_int_parameter,
-                    "dummy_categorical_parameter": dummy_categorical_parameter,
-                    "dummy_real_parameter": dummy_real_parameter,
-                    **kwargs,
-                    "n_jobs": n_jobs,
-                },
-                component_obj=None,
-                random_seed=random_seed,
-            )
-
-    pipeline = BinaryClassificationPipeline([MockEstimator])
-    algo = IterativeAlgorithm(
-        allowed_pipelines=[pipeline, pipeline, pipeline],
-        pipeline_params={"pipeline": {"date_index": "Date", "gap": 2, "max_delay": 10}},
-        random_seed=0,
-        _frozen_pipeline_parameters={
-            "Mock Classifier": {
-                "dummy_int_parameter": 6,
-                "dummy_categorical_parameter": "random",
-                "dummy_real_parameter": 0.1,
-            }
-        },
-    )
-
-    next_batch = algo.next_batch()
-    assert all(
-        [
-            p.parameters["pipeline"]
-            == {"date_index": "Date", "gap": 2, "max_delay": 10}
-            for p in next_batch
-        ]
-    )
-    assert all(
-        [
-            p.parameters["Mock Classifier"]
-            == {
-                "dummy_int_parameter": 6,
-                "dummy_categorical_parameter": "random",
-                "dummy_real_parameter": 0.1,
-                "n_jobs": -1,
-            }
-            for p in next_batch
-        ]
-    )
-
-    scores = np.arange(0, len(next_batch))
-    for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
-
-    # make sure that future batches remain in the hyperparam range
-    for i in range(1, 5):
-        next_batch = algo.next_batch()
-        assert all(
-            [
-                p.parameters["Mock Classifier"]
-                == {
-                    "dummy_int_parameter": 6,
-                    "dummy_categorical_parameter": "random",
-                    "dummy_real_parameter": 0.1,
-                    "n_jobs": -1,
-                }
-                for p in next_batch
-            ]
-        )
 
 
 def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classes):
@@ -812,13 +731,12 @@ def test_iterative_algorithm_sampling_params(
     algo = IterativeAlgorithm(
         allowed_pipelines=pipelines,
         random_seed=0,
-        _frozen_pipeline_parameters={sampler: {"sampling_ratio": 0.5}},
     )
     next_batch = algo.next_batch()
     for p in next_batch:
         for component in p.component_graph:
             if "sampler" in component.name:
-                assert component.parameters["sampling_ratio"] == 0.5
+                assert component.parameters["sampling_ratio"] == 0.25
 
     scores = np.arange(0, len(next_batch))
     for score, pipeline in zip(scores, next_batch):
@@ -830,4 +748,4 @@ def test_iterative_algorithm_sampling_params(
         for p in next_batch:
             for component in p.component_graph:
                 if "sampler" in component.name:
-                    assert component.parameters["sampling_ratio"] == 0.5
+                    assert component.parameters["sampling_ratio"] == 0.25

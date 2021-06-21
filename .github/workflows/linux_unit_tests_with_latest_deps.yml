@@ -1,4 +1,4 @@
-name: Linux Unit Tests with Latest Dependencies
+name: Unit tests, linux, latest dependencies
 
 on:
   pull_request:
@@ -9,24 +9,36 @@ on:
 
 jobs:
   unit_tests:
-    name: ${{ matrix.python_version }} unit tests, Core Dependencies (${{ matrix.core_dependencies }}), Codecov (${{ matrix.codecov }})
+    name: ${{ matrix.python_version }} unit ${{matrix.command}} tests, Core Dependencies (${{ matrix.core_dependencies }})
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
-          - python_version: "3.7"
-            core_dependencies: false
-            codecov: false
           - python_version: "3.8"
             core_dependencies: false
-            codecov: true
+            command: 'git-test-automl'
+          - python_version: "3.8"
+            core_dependencies: false
+            command: 'git-test-modelunderstanding'
+          - python_version: "3.8"
+            core_dependencies: false
+            command: 'git-test-other'
+          - python_version: "3.8"
+            core_dependencies: false
+            command: 'git-test-dask'
           - python_version: "3.8"
             core_dependencies: true
-            codecov: true
-          - python_version: "3.9"
-            core_dependencies: false
-            codecov: false
+            command: 'git-test-automl-core'
+          - python_version: "3.8"
+            core_dependencies: true
+            command: 'git-test-modelunderstanding-core'
+          - python_version: "3.8"
+            core_dependencies: true
+            command: 'git-test-other-core'
+          - python_version: "3.8"
+            core_dependencies: true
+            command: 'git-test-minimal-deps-dask'
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -66,21 +78,13 @@ jobs:
         run: |
           source test_python/bin/activate
           coverage erase
-      - if: ${{ matrix.core_dependencies }}
-        name: Run unit tests with minimal dependencies
+      - name: Run unit tests
         run: |
           source test_python/bin/activate
-          make git-test-minimal-deps-no-dask
-      - if: ${{ !matrix.core_dependencies }}
-        name: Run unit tests
-        run: |
-          source test_python/bin/activate
-          make git-test-no-dask
-      - if: ${{ matrix.codecov }}
-        name: install coverage
+          make ${{matrix.command}}
+      - name: install coverage
         run: pip install coverage
-      - if: ${{ matrix.codecov }}
-        name: Upload coverage to Codecov
+      - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

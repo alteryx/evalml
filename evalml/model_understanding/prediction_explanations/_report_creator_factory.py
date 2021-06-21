@@ -22,6 +22,7 @@ def _report_creator_factory(
     output_format,
     top_k_features,
     include_shap_values,
+    include_expected_value,
     num_to_explain=None,
 ):
     """Get and initialize the report creator class given the ReportData and parameters passed in by the user.
@@ -32,6 +33,7 @@ def _report_creator_factory(
         output_format (str): Either "text" or "dict" - passed in by user.
         top_k_features (int): How many best/worst features to include in each SHAP table - passed in by user.
         include_shap_values (bool): Whether to include the SHAP values in each SHAP table - passed in by user.
+        include_expected_value (bool): Whether the expected value should be included in the table - passed in by user.
         num_to_explain (int): How many rows to include in the entire report - passed in by user.
 
     Returns:

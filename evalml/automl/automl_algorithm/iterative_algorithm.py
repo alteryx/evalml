@@ -37,7 +37,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         text_in_ensembling=False,
         pipeline_params=None,
         custom_hyperparameters=None,
-        _frozen_pipeline_parameters=None,
         _estimator_family_order=None,
     ):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
@@ -54,7 +53,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk.
             pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.
             custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over.
-            _frozen_pipeline_parameters (dict or None): Pipeline-level parameters are frozen and used in the proposed pipelines.
             _estimator_family_order (list(ModelFamily) or None): specify the sort order for the first batch. Defaults to _ESTIMATOR_FAMILY_ORDER.
         """
         self._estimator_family_order = (
@@ -95,7 +93,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.text_in_ensembling = text_in_ensembling
         self._pipeline_params = pipeline_params or {}
         self._custom_hyperparameters = custom_hyperparameters or {}
-        self._frozen_pipeline_parameters = _frozen_pipeline_parameters or {}
 
         if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
             raise ValueError(
@@ -136,7 +133,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self._batch_number == 0:
             next_batch = [
                 pipeline.new(
-                    parameters=self._combine_parameters(pipeline, {}),
+                    parameters=self._transform_parameters(pipeline, {}),
                     random_seed=self.random_seed,
                 )
                 for pipeline in self.allowed_pipelines
@@ -152,7 +149,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             for pipeline_dict in self._best_pipeline_info.values():
                 pipeline = pipeline_dict["pipeline"]
                 pipeline_params = pipeline_dict["parameters"]
-                parameters = self._combine_parameters(pipeline, pipeline_params)
+                parameters = self._transform_parameters(pipeline, pipeline_params)
                 input_pipelines.append(
                     pipeline.new(parameters=parameters, random_seed=self.random_seed)
                 )
@@ -175,20 +172,13 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             pipeline = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline.name].propose()
-                parameters = self._combine_parameters(pipeline, proposed_parameters)
+                parameters = self._transform_parameters(pipeline, proposed_parameters)
                 next_batch.append(
                     pipeline.new(parameters=parameters, random_seed=self.random_seed)
                 )
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
-
-    def _combine_parameters(self, pipeline, proposed_parameters):
-        """Helper function for logic to transform proposed parameters and frozen parameters."""
-        return {
-            **self._transform_parameters(pipeline, proposed_parameters),
-            **self._frozen_pipeline_parameters,
-        }
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
         """Register results from evaluating a pipeline

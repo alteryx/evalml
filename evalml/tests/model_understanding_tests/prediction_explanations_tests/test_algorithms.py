@@ -129,9 +129,10 @@ def calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain):
     """Helper function to compute the SHAP values for n_points_to_explain for a given pipeline."""
     points_to_explain = training_data[:n_points_to_explain]
     pipeline.fit(training_data, y)
-    return _compute_shap_values(
+    shap_values, expected_value = _compute_shap_values(
         pipeline, pd.DataFrame(points_to_explain), training_data
     )
+    return shap_values
 
 
 interpretable_estimators = [
