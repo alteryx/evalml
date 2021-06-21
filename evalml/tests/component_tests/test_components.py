@@ -353,8 +353,8 @@ def test_describe_component():
     assert en_regressor.describe(return_dict=True) == {
         "name": "Elastic Net Regressor",
         "parameters": {
-            "alpha": 0.05,
-            "l1_ratio": 0.5,
+            "alpha": 0.0001,
+            "l1_ratio": 0.15,
             "max_iter": 1000,
             "normalize": False,
         },
