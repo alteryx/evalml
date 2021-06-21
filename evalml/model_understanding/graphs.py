@@ -699,15 +699,15 @@ def partial_dependence(
         kind=kind,
     )
 
-    values = preds["values"]
-    if kind != "individual":
-        avg_pred = preds["average"]
-        classes = None
-        if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
-            classes = [pipeline.classes_[1]]
-        elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
-            classes = pipeline.classes_
+    classes = None
+    if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
+        classes = [pipeline.classes_[1]]
+    elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
+        classes = pipeline.classes_
 
+    values = preds["values"]
+    if kind in ["average", "both"]:
+        avg_pred = preds["average"]
         if isinstance(features, (int, str)):
             avg_data = pd.DataFrame(
                 {
@@ -723,18 +723,8 @@ def partial_dependence(
         if classes is not None:
             avg_data["class_label"] = np.repeat(classes, len(values[0]))
 
-        if kind != "both":
-            return avg_data
-
-    if kind != "average":
+    if kind in ["individual", "both"]:
         ind_preds = preds["individual"]
-
-        classes = None
-        if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
-            classes = [pipeline.classes_[1]]
-        elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
-            classes = pipeline.classes_
-
         if isinstance(features, (int, str)):
             ind_data = list()
             for label in ind_preds:
@@ -763,10 +753,12 @@ def partial_dependence(
             for sample in ind_data:
                 sample["class_label"] = np.repeat(classes, len(values[0]))
 
-        if kind != "both":
-            return ind_data
-
+    if kind == "both":
         return (avg_data, ind_data)
+    elif kind == "individual":
+        return ind_data
+    elif kind == "average":
+        return avg_data
 
 
 def _update_fig_with_two_way_partial_dependence(

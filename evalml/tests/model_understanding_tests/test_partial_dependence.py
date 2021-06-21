@@ -41,7 +41,7 @@ def test_pipeline():
     return TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
 
-def check_partial_dependence_dataframe(pipeline, part_dep, grid_size=20):
+def check_partial_dependence_dataframe(pipeline, part_dep, grid_size=5):
     columns = ["feature_values", "partial_dependence"]
     if isinstance(pipeline, ClassificationPipeline):
         columns.append("class_label")
@@ -94,7 +94,7 @@ def test_partial_dependence_problem_types(
 
     X = make_data_type(data_type, X)
     pipeline.fit(X, y)
-    part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=20)
+    part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().any(axis=None)
 
@@ -109,15 +109,15 @@ def test_partial_dependence_string_feature_name(
     )
     pipeline.fit(X, y)
     part_dep = partial_dependence(
-        pipeline, X, features="mean radius", grid_resolution=20
+        pipeline, X, features="mean radius", grid_resolution=5
     )
     assert list(part_dep.columns) == [
         "feature_values",
         "partial_dependence",
         "class_label",
     ]
-    assert len(part_dep["partial_dependence"]) == 20
-    assert len(part_dep["feature_values"]) == 20
+    assert len(part_dep["partial_dependence"]) == 5
+    assert len(part_dep["feature_values"]) == 5
     assert not part_dep.isnull().any(axis=None)
 
 
@@ -166,7 +166,7 @@ def test_partial_dependence_baseline():
         ValueError,
         match="Partial dependence plots are not supported for Baseline pipelines",
     ):
-        partial_dependence(pipeline, X, features=0, grid_resolution=20)
+        partial_dependence(pipeline, X, features=0, grid_resolution=5)
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -189,7 +189,7 @@ def test_partial_dependence_catboost(
             parameters={"CatBoost Classifier": {"thread_count": 1}},
         )
         pipeline.fit(X, y)
-        part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=20)
+        part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
         check_partial_dependence_dataframe(pipeline, part_dep)
         assert not part_dep.isnull().all().all()
 
@@ -243,11 +243,11 @@ def test_partial_dependence_xgboost_feature_names(
     X = pd.DataFrame(X)
     X = X.rename(columns={0: "<[0]"})
     pipeline.fit(X, y)
-    part_dep = partial_dependence(pipeline, X, features="<[0]", grid_resolution=20)
+    part_dep = partial_dependence(pipeline, X, features="<[0]", grid_resolution=5)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().all().all()
 
-    part_dep = partial_dependence(pipeline, X, features=1, grid_resolution=20)
+    part_dep = partial_dependence(pipeline, X, features=1, grid_resolution=5)
     check_partial_dependence_dataframe(pipeline, part_dep)
     assert not part_dep.isnull().all().all()
 
@@ -358,7 +358,7 @@ def test_partial_dependence_not_fitted(
     with pytest.raises(
         ValueError, match="Pipeline to calculate partial dependence for must be fitted"
     ):
-        partial_dependence(pipeline, X, features=0, grid_resolution=20)
+        partial_dependence(pipeline, X, features=0, grid_resolution=5)
 
 
 def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
@@ -372,17 +372,17 @@ def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
         NullsInColumnWarning,
         match="There are null values in the features, which will cause NaN values in the partial dependence output",
     ):
-        partial_dependence(pipeline, X, features=0, grid_resolution=20)
+        partial_dependence(pipeline, X, features=0, grid_resolution=5)
     with pytest.warns(
         NullsInColumnWarning,
         match="There are null values in the features, which will cause NaN values in the partial dependence output",
     ):
-        partial_dependence(pipeline, X, features=("a", "b"), grid_resolution=20)
+        partial_dependence(pipeline, X, features=("a", "b"), grid_resolution=5)
     with pytest.warns(
         NullsInColumnWarning,
         match="There are null values in the features, which will cause NaN values in the partial dependence output",
     ):
-        partial_dependence(pipeline, X, features="a", grid_resolution=20)
+        partial_dependence(pipeline, X, features="a", grid_resolution=5)
 
 
 def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
@@ -397,7 +397,7 @@ def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
         ValueError,
         match="Too many features given to graph_partial_dependence.  Only one or two-way partial dependence is supported.",
     ):
-        partial_dependence(pipeline, X, features=("a", "b", "c"), grid_resolution=20)
+        partial_dependence(pipeline, X, features=("a", "b", "c"), grid_resolution=5)
 
     with pytest.raises(
         ValueError,
@@ -494,7 +494,7 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
     pipeline.fit(X, y)
 
     avg_pred, ind_preds = partial_dependence(
-        pipeline, X, features=["a", "b"], grid_resolution=20, kind="both"
+        pipeline, X, features=["a", "b"], grid_resolution=5, kind="both"
     )
     assert isinstance(avg_pred, pd.DataFrame)
     assert isinstance(ind_preds, list)
@@ -506,7 +506,7 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
         assert ind_df.shape == (3, 3)
 
     ind_preds = partial_dependence(
-        pipeline, X, features=["a", "b"], grid_resolution=20, kind="individual"
+        pipeline, X, features=["a", "b"], grid_resolution=5, kind="individual"
     )
     assert isinstance(ind_preds, list)
     assert isinstance(ind_preds[0], pd.DataFrame)
@@ -525,7 +525,7 @@ def test_graph_partial_dependence(breast_cancer_local, test_pipeline):
     )
     clf = test_pipeline
     clf.fit(X, y)
-    fig = graph_partial_dependence(clf, X, features="mean radius", grid_resolution=20)
+    fig = graph_partial_dependence(clf, X, features="mean radius", grid_resolution=5)
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert fig_dict["layout"]["title"]["text"] == "Partial Dependence of 'mean radius'"
@@ -533,7 +533,7 @@ def test_graph_partial_dependence(breast_cancer_local, test_pipeline):
     assert fig_dict["data"][0]["name"] == "Partial Dependence"
 
     part_dep_data = partial_dependence(
-        clf, X, features="mean radius", grid_resolution=20
+        clf, X, features="mean radius", grid_resolution=5
     )
     assert np.array_equal(fig_dict["data"][0]["x"], part_dep_data["feature_values"])
     assert np.array_equal(
@@ -694,7 +694,7 @@ def test_partial_dependence_percentile_errors(
         ValueError,
         match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be",
     ):
-        partial_dependence(pipeline, X, features="random_col", grid_resolution=20)
+        partial_dependence(pipeline, X, features="random_col", grid_resolution=5)
     with pytest.raises(
         ValueError,
         match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be",
@@ -704,14 +704,14 @@ def test_partial_dependence_percentile_errors(
             X,
             features="random_col",
             percentiles=(0.01, 0.955),
-            grid_resolution=20,
+            grid_resolution=5,
         )
     with pytest.raises(
         ValueError,
         match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be",
     ):
         partial_dependence(
-            pipeline, X, features=2, percentiles=(0.01, 0.955), grid_resolution=20
+            pipeline, X, features=2, percentiles=(0.01, 0.955), grid_resolution=5
         )
     with pytest.raises(
         ValueError,
@@ -722,7 +722,7 @@ def test_partial_dependence_percentile_errors(
             X,
             features=("A", "random_col"),
             percentiles=(0.01, 0.955),
-            grid_resolution=20,
+            grid_resolution=5,
         )
     with pytest.raises(
         ValueError,
@@ -733,11 +733,11 @@ def test_partial_dependence_percentile_errors(
             X,
             features=("random_col", "random_col_2"),
             percentiles=(0.01, 0.955),
-            grid_resolution=20,
+            grid_resolution=5,
         )
 
     part_dep = partial_dependence(
-        pipeline, X, features="random_col", percentiles=(0.01, 0.96), grid_resolution=20
+        pipeline, X, features="random_col", percentiles=(0.01, 0.96), grid_resolution=5
     )
     assert list(part_dep.columns) == [
         "feature_values",
@@ -1094,12 +1094,12 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
         ]
     )
     pl.fit(X, y)
-    dep = partial_dependence(pl, X, features="amount", grid_resolution=20)
+    dep = partial_dependence(pl, X, features="amount", grid_resolution=5)
 
-    assert dep.shape[0] == 20
+    assert dep.shape[0] == 5
     assert dep.shape[0] != max(X.ww.select("categorical").describe().loc["unique"]) + 1
 
-    dep = partial_dependence(pl, X, features="provider", grid_resolution=20)
+    dep = partial_dependence(pl, X, features="provider", grid_resolution=5)
     assert dep.shape[0] == X["provider"].nunique()
     assert dep.shape[0] != max(X.ww.select("categorical").describe().loc["unique"]) + 1
 
@@ -1126,7 +1126,7 @@ def test_graph_partial_dependence_ice_plot(
     clf.fit(X, y)
 
     fig = graph_partial_dependence(
-        clf, X, features=feature, grid_resolution=20, kind="both"
+        clf, X, features=feature, grid_resolution=5, kind="both"
     )
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
@@ -1149,7 +1149,7 @@ def test_graph_partial_dependence_ice_plot(
     )
 
     avg_dep_data, ind_dep_data = partial_dependence(
-        clf, X, features=feature, grid_resolution=20, kind="both"
+        clf, X, features=feature, grid_resolution=5, kind="both"
     )
     assert np.array_equal(
         fig_dict["data"][-1]["x"],
@@ -1184,7 +1184,7 @@ def test_graph_partial_dependence_ice_plot(
             )
 
     fig = graph_partial_dependence(
-        clf, X, features=feature, grid_resolution=20, kind="individual"
+        clf, X, features=feature, grid_resolution=5, kind="individual"
     )
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
@@ -1203,7 +1203,7 @@ def test_graph_partial_dependence_ice_plot(
     assert fig_dict["data"][0]["name"] == expected_label
 
     ind_dep_data = partial_dependence(
-        clf, X, features=feature, grid_resolution=20, kind="individual"
+        clf, X, features=feature, grid_resolution=5, kind="individual"
     )
 
     for i in range(len(X)):
@@ -1236,7 +1236,7 @@ def test_graph_partial_dependence_ice_plot_two_way_error(test_pipeline):
             clf,
             X,
             features=["mean radius", "mean area"],
-            grid_resolution=20,
+            grid_resolution=5,
             kind="both",
         )
 
@@ -1248,6 +1248,6 @@ def test_graph_partial_dependence_ice_plot_two_way_error(test_pipeline):
             clf,
             X,
             features=["mean radius", "mean area"],
-            grid_resolution=20,
+            grid_resolution=5,
             kind="individual",
         )
