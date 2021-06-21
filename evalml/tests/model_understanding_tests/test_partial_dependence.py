@@ -709,7 +709,7 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
     )
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "bar"
-    assert plot_data["x"].tolist() == ["0", "1", "2"]
+    assert plot_data["x"] == ["0", "1", "2"]
 
     fig = graph_partial_dependence(
         pipeline, X, features=("0", "categorical_column"), grid_resolution=5
@@ -775,7 +775,7 @@ def test_partial_dependence_multiclass_categorical(
 
     for i, plot_data in enumerate(fig.to_dict()["data"]):
         assert plot_data["type"] == "bar"
-        assert plot_data["x"].tolist() == ["0", "1", "2"]
+        assert plot_data["x"] == ["0", "1", "2"]
         if class_label is None:
             assert plot_data["name"] == f"class_{i}"
         else:
@@ -969,7 +969,7 @@ def test_graph_partial_dependence_regression_and_binary_datetime(
     fig = graph_partial_dependence(pipeline, X, features="dt_column", grid_resolution=5)
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "scatter"
-    assert plot_data["x"].tolist() == list(pd.date_range("20200101", periods=5))
+    assert plot_data["x"] == list(pd.date_range("20200101", periods=5))
 
 
 def test_graph_partial_dependence_regression_date_order(X_y_binary):
@@ -1003,7 +1003,7 @@ def test_graph_partial_dependence_regression_date_order(X_y_binary):
     fig = graph_partial_dependence(pipeline, X, features="dt_column", grid_resolution=5)
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "scatter"
-    assert plot_data["x"].tolist() == list(pd.date_range("20200101", periods=5))
+    assert plot_data["x"] == list(pd.date_range("20200101", periods=5))
 
 
 def test_partial_dependence_respect_grid_resolution(fraud_100):
