@@ -3,6 +3,10 @@ from setuptools import find_packages, setup
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+extras_require = {
+    'update_checker': ['alteryx-open-src-update-checker >= 2.0.0'],
+}
+
 setup(
     name='evalml',
     version='0.26.0',
@@ -13,6 +17,7 @@ setup(
     long_description_content_type="text/markdown",
     url='https://github.com/alteryx/evalml/',
     install_requires=open('core-requirements.txt').readlines() + open('requirements.txt').readlines()[1:],
+    extras_require=extras_require,
     tests_require=open('test-requirements.txt').readlines(),
     packages=find_packages(),
     include_package_data=True,

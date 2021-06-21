@@ -12,6 +12,8 @@ Release Notes
     * Changes
         * Replaced `allowed_pipelines` with `allowed_component_graphs` :pr:`2364`
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
+        * Unpinned PyZMQ version in requirements.txt :pr:`2389` 
+        * Uncapping LightGBM version in requirements.txt :pr:`2405` 
     * Documentation Changes
         * Fixed start page code and description dataset naming discrepancy :pr:`2370`
     * Testing Changes
@@ -21,6 +23,7 @@ Release Notes
         * Added the combined dask/non-dask unit tests back and renamed the dask only unit tests. :pr:`2382`
         * Sped up unit tests and split into separate jobs :pr:`2365`
         * Change CI job names, run lint for python 3.9, run nightlies on python 3.8 at 3am EST :pr:`2395` :pr:`2398`
+        * Set fail-fast to false for CI jobs that run for PRs :pr:`2402`
 
 .. warning::
 
@@ -30,9 +33,11 @@ Release Notes
 
 **v0.26.0 Jun. 08, 2021**
     * Enhancements
+        * Adds force plots for prediction explanations :pr:`2157`
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
         * Added support for nonlinear pipelines for ``generate_pipeline_code`` :pr:`2332`
         * Added ``inverse_transform`` method to pipelines :pr:`2256`
+        * Add optional automatic update checker :pr:`2350`
         * Added ``search_order`` to ``AutoMLSearch``'s ``rankings`` and ``full_rankings`` tables :pr:`2345`
     * Fixes
         * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
