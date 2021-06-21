@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Updated threshold optimization method for binary classification :pr:`2315`
     * Fixes
         * Fixed ``ComponentGraph`` appending target to ``final_component_features`` if there is a component that returns both X and y :pr:`2358`
         * Fixed partial dependence graph method failing on multiclass problems when the class labels are numeric :pr:`2372`
