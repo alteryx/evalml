@@ -37,6 +37,7 @@ class CatBoostRegressor(Estimator):
         silent=False,
         allow_writing_files=False,
         random_seed=0,
+        n_jobs=-1,
         **kwargs
     ):
         parameters = {
@@ -57,9 +58,11 @@ class CatBoostRegressor(Estimator):
         cb_parameters = copy.copy(parameters)
         if bootstrap_type is None:
             cb_parameters.pop("bootstrap_type")
+        cb_parameters["thread_count"] = n_jobs
         cb_regressor = catboost.CatBoostRegressor(
             **cb_parameters, random_seed=random_seed
         )
+        parameters["n_jobs"] = n_jobs
         super().__init__(
             parameters=parameters, component_obj=cb_regressor, random_seed=random_seed
         )

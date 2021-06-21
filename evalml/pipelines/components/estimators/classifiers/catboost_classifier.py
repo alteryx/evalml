@@ -42,8 +42,11 @@ class CatBoostClassifier(Estimator):
         silent=True,
         allow_writing_files=False,
         random_seed=0,
+        n_jobs=-1,
         **kwargs
     ):
+        """TODO: mention n_jobs as thread_count
+        """
         parameters = {
             "n_estimators": n_estimators,
             "eta": eta,
@@ -51,6 +54,7 @@ class CatBoostClassifier(Estimator):
             "bootstrap_type": bootstrap_type,
             "silent": silent,
             "allow_writing_files": allow_writing_files,
+            "thread_count": n_jobs
         }
         parameters.update(kwargs)
 
@@ -63,9 +67,11 @@ class CatBoostClassifier(Estimator):
         cb_parameters = copy.copy(parameters)
         if bootstrap_type is None:
             cb_parameters.pop("bootstrap_type")
+        cb_parameters["thread_count"] = n_jobs
         cb_classifier = catboost.CatBoostClassifier(
             **cb_parameters, random_seed=random_seed
         )
+        parameters["n_jobs"] = n_jobs
         super().__init__(
             parameters=parameters, component_obj=cb_classifier, random_seed=random_seed
         )
