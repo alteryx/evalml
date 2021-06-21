@@ -8,7 +8,6 @@ import woodwork as ww
 from sklearn import datasets
 from skopt.space import Integer, Real
 
-from evalml.demos import load_fraud
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import (
     get_core_objectives,
@@ -36,6 +35,12 @@ from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.preprocessing import load_data
 from evalml.problem_types import ProblemTypes, handle_problem_types
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers", "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)"
+    )
 
 
 def create_mock_pipeline(estimator, problem_type):
@@ -968,19 +973,16 @@ def make_data_type():
     return _make_data_type
 
 
-@pytest.fixture
-def fraud_100():
-    X, y = load_fraud(n_rows=100)
-    X.ww.set_types(logical_types={"provider": "Categorical", "region": "Categorical"})
-    return X, y
-
-
-def load_fraud_local():
+def load_fraud_local(n_rows=None):
     currdir_path = os.path.dirname(os.path.abspath(__file__))
     data_folder_path = os.path.join(currdir_path, "data")
     fraud_data_path = os.path.join(data_folder_path, "fraud_transactions.csv.gz")
     X, y = load_data(
-        path=fraud_data_path, index="id", target="fraud", compression="gzip"
+        path=fraud_data_path,
+        index="id",
+        target="fraud",
+        compression="gzip",
+        n_rows=n_rows,
     )
     return X, y
 
@@ -988,6 +990,13 @@ def load_fraud_local():
 @pytest.fixture
 def fraud_local():
     X, y = load_fraud_local()
+    X.ww.set_types(logical_types={"provider": "Categorical", "region": "Categorical"})
+    return X, y
+
+
+@pytest.fixture
+def fraud_100():
+    X, y = load_fraud_local(n_rows=100)
     X.ww.set_types(logical_types={"provider": "Categorical", "region": "Categorical"})
     return X, y
 
