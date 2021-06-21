@@ -1118,6 +1118,7 @@ class _AutoMLTestEnv:
         >>> env.mock_fit.assert_called_once()
         >>> env.mock_score.assert_called_once()
     """
+
     def __init__(self, problem_type):
         """Create a test environment.
 
@@ -1162,9 +1163,9 @@ class _AutoMLTestEnv:
         if pipeline_class_str is None:
             pipeline_class_str = self._pipeline_class
         if side_effect is not None:
-            kwargs = {'side_effect': side_effect}
+            kwargs = {"side_effect": side_effect}
         elif return_value is not None:
-            kwargs = {'return_value': return_value}
+            kwargs = {"return_value": return_value}
         return patch(pipeline_class_str + "." + method, **kwargs)
 
     @contextlib.contextmanager
@@ -1188,10 +1189,13 @@ class _AutoMLTestEnv:
             mock_fit_return_value: Passed as the return_value argument of the pipeline.fit patch.
             predict_proba_return_value: Passed as the return_value argument of the pipeline.predict_proba patch.
             optimize_threshold_return_value: Passed as the return value of BinaryClassificationObjective.optimize_threshold patch.
-            """
-        mock_fit = self._patch_method("fit", side_effect=mock_fit_side_effect,
-                                      return_value=mock_fit_return_value)
-        mock_score = self._patch_method("score", side_effect=mock_score_side_effect, return_value=score_return_value)
+        """
+        mock_fit = self._patch_method(
+            "fit", side_effect=mock_fit_side_effect, return_value=mock_fit_return_value
+        )
+        mock_score = self._patch_method(
+            "score", side_effect=mock_score_side_effect, return_value=score_return_value
+        )
 
         # For simplicity, we will always mock predict_proba and _encode_targets even if the problem is not a binary
         # problem. For time series problems, we will mock these methods in the time series class (self._pipeline_class)
@@ -1200,12 +1204,18 @@ class _AutoMLTestEnv:
         if is_time_series(self.problem_type) and is_binary(self.problem_type):
             pipeline_to_mock = self._pipeline_class
 
-        mock_encode_targets = self._patch_method("_encode_targets", side_effect=lambda y: y,
-                                                 return_value=None,
-                                                 pipeline_class_str=pipeline_to_mock)
-        mock_predict_proba = self._patch_method("predict_proba", side_effect=None,
-                                                return_value=predict_proba_return_value,
-                                                pipeline_class_str=pipeline_to_mock)
+        mock_encode_targets = self._patch_method(
+            "_encode_targets",
+            side_effect=lambda y: y,
+            return_value=None,
+            pipeline_class_str=pipeline_to_mock,
+        )
+        mock_predict_proba = self._patch_method(
+            "predict_proba",
+            side_effect=None,
+            return_value=predict_proba_return_value,
+            pipeline_class_str=pipeline_to_mock,
+        )
 
         mock_optimize = patch(
             "evalml.objectives.BinaryClassificationObjective.optimize_threshold",

@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
@@ -325,7 +325,7 @@ def test_automl_allowed_component_graphs_init_allowed_both_not_specified(
     assert set(automl.allowed_model_families) == set(
         [p.model_family for p in expected_pipelines]
     )
-    env = AutoMLTestEnv('regression')
+    env = AutoMLTestEnv("regression")
     env.run_search(automl, score_return_value={automl.objective.name: 1.0})
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
