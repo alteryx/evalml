@@ -26,7 +26,7 @@ pip install evalml
 **Update checker** <br>
 Receive automatic notifications of new EvalML releases
 ```
-python -m pip install evalml[update_checker]
+pip install evalml[update_checker]
 ```
 
 ## Start
