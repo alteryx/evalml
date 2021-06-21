@@ -39,7 +39,8 @@ from evalml.problem_types import ProblemTypes, handle_problem_types
 
 def pytest_configure(config):
     config.addinivalue_line(
-        "markers", "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)"
+        "markers",
+        "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)",
     )
 
 
