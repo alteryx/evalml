@@ -188,6 +188,7 @@ regression_dict = {
             "quantitative_explanation": [None, None, None],
             "drill_down": {},
             "class_name": None,
+            "expected_value": [0],
         }
     ]
 }
@@ -201,6 +202,7 @@ regression_dict_shap = {
             "quantitative_explanation": [6.50, 1.77, -1.91],
             "drill_down": {},
             "class_name": None,
+            "expected_value": [0],
         }
     ]
 }
@@ -269,6 +271,7 @@ binary_dict = {
             "quantitative_explanation": [None, None, None],
             "drill_down": {},
             "class_name": "1",
+            "expected_value": [0],
         }
     ]
 }
@@ -282,6 +285,7 @@ binary_dict_shap = {
             "quantitative_explanation": [1.180, 1.120, -2.60],
             "drill_down": {},
             "class_name": "1",
+            "expected_value": [0],
         }
     ]
 }
@@ -407,6 +411,7 @@ multiclass_dict = {
             "quantitative_explanation": [None, None, None],
             "drill_down": {},
             "class_name": "0",
+            "expected_value": 0,
         },
         {
             "feature_names": ["d", "e", "f"],
@@ -415,6 +420,7 @@ multiclass_dict = {
             "quantitative_explanation": [None, None, None],
             "drill_down": {},
             "class_name": "1",
+            "expected_value": 1,
         },
         {
             "feature_names": ["e", "d", "f"],
@@ -423,6 +429,7 @@ multiclass_dict = {
             "quantitative_explanation": [None, None, None],
             "drill_down": {},
             "class_name": "2",
+            "expected_value": 2,
         },
     ]
 }
@@ -436,6 +443,7 @@ multiclass_dict_shap = {
             "quantitative_explanation": [0.18, 0.11, -1],
             "drill_down": {},
             "class_name": "0",
+            "expected_value": 0,
         },
         {
             "feature_names": ["d", "e", "f"],
@@ -444,6 +452,7 @@ multiclass_dict_shap = {
             "quantitative_explanation": [-2.56, -2.8, -2.9],
             "drill_down": {},
             "class_name": "1",
+            "expected_value": 1,
         },
         {
             "feature_names": ["e", "d", "f"],
@@ -452,13 +461,14 @@ multiclass_dict_shap = {
             "quantitative_explanation": [-1.84, -2.04, -2.68],
             "drill_down": {},
             "class_name": "2",
+            "expected_value": 2,
         },
     ]
 }
 
 
 @pytest.mark.parametrize(
-    "values,normalized_values,pipeline_features,original_features,include_shap,output_format,answer",
+    "values,normalized_values,pipeline_features,original_features,include_shap,expected_values, output_format,answer",
     [
         (
             regression,
@@ -466,6 +476,7 @@ multiclass_dict_shap = {
             regression_pipeline_features,
             regression_original_features,
             False,
+            [0],
             "text",
             regression_table,
         ),
@@ -475,6 +486,7 @@ multiclass_dict_shap = {
             regression_pipeline_features,
             regression_original_features,
             True,
+            [0],
             "text",
             regression_table_shap,
         ),
@@ -484,6 +496,7 @@ multiclass_dict_shap = {
             regression_pipeline_features,
             regression_original_features,
             False,
+            [0],
             "dict",
             regression_dict,
         ),
@@ -493,6 +506,7 @@ multiclass_dict_shap = {
             regression_pipeline_features,
             regression_original_features,
             True,
+            [0],
             "dict",
             regression_dict_shap,
         ),
@@ -502,6 +516,7 @@ multiclass_dict_shap = {
             binary_pipeline_features,
             binary_original_features,
             False,
+            [0],
             "text",
             binary_table,
         ),
@@ -511,6 +526,7 @@ multiclass_dict_shap = {
             binary_pipeline_features,
             binary_original_features,
             True,
+            [0],
             "text",
             binary_table_shap,
         ),
@@ -520,6 +536,7 @@ multiclass_dict_shap = {
             binary_pipeline_features,
             binary_original_features,
             False,
+            [0],
             "dict",
             binary_dict,
         ),
@@ -529,6 +546,7 @@ multiclass_dict_shap = {
             binary_pipeline_features,
             binary_original_features,
             True,
+            [0],
             "dict",
             binary_dict_shap,
         ),
@@ -538,6 +556,7 @@ multiclass_dict_shap = {
             multiclass_pipeline_features,
             multiclass_original_features,
             False,
+            [0, 1, 2],
             "text",
             multiclass_table,
         ),
@@ -547,6 +566,7 @@ multiclass_dict_shap = {
             multiclass_pipeline_features,
             multiclass_original_features,
             True,
+            [0, 1, 2],
             "text",
             multiclass_table_shap,
         ),
@@ -556,6 +576,7 @@ multiclass_dict_shap = {
             multiclass_pipeline_features,
             multiclass_original_features,
             False,
+            [0, 1, 2],
             "dict",
             multiclass_dict,
         ),
@@ -565,6 +586,7 @@ multiclass_dict_shap = {
             multiclass_pipeline_features,
             multiclass_original_features,
             True,
+            [0, 1, 2],
             "dict",
             multiclass_dict_shap,
         ),
@@ -576,6 +598,7 @@ def test_make_single_prediction_table(
     pipeline_features,
     original_features,
     include_shap,
+    expected_values,
     output_format,
     answer,
 ):
@@ -587,6 +610,7 @@ def test_make_single_prediction_table(
             table_maker = _MultiClassSHAPTable(
                 top_k=3,
                 include_shap_values=include_shap,
+                include_expected_value=False,
                 class_names=class_names,
                 provenance={},
             )
@@ -595,11 +619,15 @@ def test_make_single_prediction_table(
                 class_names=class_names,
                 top_k=3,
                 include_shap_values=include_shap,
+                include_expected_value=False,
                 provenance={},
             )
     else:
         table_maker = _RegressionSHAPTable(
-            top_k=3, include_shap_values=include_shap, provenance={}
+            top_k=3,
+            include_shap_values=include_shap,
+            include_expected_value=False,
+            provenance={},
         )
 
     table_maker = (
@@ -613,6 +641,7 @@ def test_make_single_prediction_table(
         normalized_values=normalized_values,
         pipeline_features=pipeline_features,
         original_features=pipeline_features,
+        expected_value=expected_values,
     )
 
     # Making sure the content is the same, regardless of formatting.
