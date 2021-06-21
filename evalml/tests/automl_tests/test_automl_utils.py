@@ -104,7 +104,7 @@ def test_make_data_splitter_default(problem_type, data_size):
             data_splitter,
             KFold if problem_type == ProblemTypes.REGRESSION else StratifiedKFold,
         )
-        assert data_splitter.n_splits == 10
+        assert data_splitter.n_splits == _SMALL_DATA_CV_FOLDS
         assert data_splitter.shuffle
         assert data_splitter.random_state == 0
         return
