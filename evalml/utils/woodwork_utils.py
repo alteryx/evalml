@@ -5,9 +5,9 @@ import woodwork as ww
 from evalml.utils.gen_utils import is_all_numeric
 
 numeric_and_boolean_ww = [
-    ww.logical_types.Integer,
-    ww.logical_types.Double,
-    ww.logical_types.Boolean,
+    ww.logical_types.Integer.type_string,
+    ww.logical_types.Double.type_string,
+    ww.logical_types.Boolean.type_string,
 ]
 
 
