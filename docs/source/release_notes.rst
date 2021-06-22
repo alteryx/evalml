@@ -11,6 +11,7 @@ Release Notes
         * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
         * Added change for ``k_neighbors`` parameter in SMOTE Oversamplers to automatically handle small samples :pr:`2375`
         * Changed naming for ``Logistic Regression Classifier`` file :pr:`2399`
+        * Pinned pytest-timeout to fix minimum dependence checker :pr:`2425`
         * Replaced ``Elastic Net Classifier`` base class with ``Logistsic Regression`` to avoid ``NaN`` outputs :pr:`2420`
     * Changes
         * Replaced `allowed_pipelines` with `allowed_component_graphs` :pr:`2364`
