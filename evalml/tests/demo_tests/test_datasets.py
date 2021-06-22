@@ -13,7 +13,7 @@ def set_testing_headers():
     urllib.request.install_opener(opener)
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 def skip_offline(request, set_testing_headers):
     if request.node.get_closest_marker("skip_offline"):
         try:
