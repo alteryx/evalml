@@ -24,7 +24,7 @@ def check_online(set_testing_headers):
 
 @pytest.fixture(autouse=True)
 def skip_offline(request, check_online):
-    if request.node.get_closest_marker("skip_offline") and not check_online:
+    if request.node.get_closest_marker("skip_offline") and not check_online:  # pragma: no cover
         pytest.skip("Cannot reach update server, skipping online tests")
 
 
