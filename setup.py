@@ -26,5 +26,8 @@ setup(
           'evalml = evalml.__main__:cli'
         ]
     },
-    data_files=[('evalml/tests/data', ['evalml/tests/data/tips.csv', 'evalml/tests/data/titanic.csv'])],
+    data_files=[('evalml/tests/data', ['evalml/tests/data/tips.csv',
+                                       'evalml/tests/data/titanic.csv',
+                                       'evalml/tests/data/churn.csv',
+                                       'evalml/tests/data/fraud_transactions.csv.gz'])],
 )
