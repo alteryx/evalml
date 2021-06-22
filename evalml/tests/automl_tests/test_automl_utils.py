@@ -71,7 +71,7 @@ def test_make_data_splitter_default(problem_type, data_size):
     elif data_size == "small":
         n = _SMALL_DATA_ROW_THRESHOLD - 1
     else:
-        n = 200
+        n = _SMALL_DATA_ROW_THRESHOLD + 1
     X = pd.DataFrame({"col_0": list(range(n)), "target": list(range(n))})
     y = X.pop("target")
 
