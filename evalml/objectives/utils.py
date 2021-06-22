@@ -26,6 +26,7 @@ def get_non_core_objectives():
         objectives.MAPE,
         objectives.MeanSquaredLogError,
         objectives.RootMeanSquaredLogError,
+        objectives.SensitivityLowAlert,
     ]
 
 
