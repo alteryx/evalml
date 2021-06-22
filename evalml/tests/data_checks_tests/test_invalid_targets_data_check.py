@@ -145,7 +145,7 @@ def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
             DataCheckError(
                 message="Target is unsupported {} type. Valid Woodwork logical types include: {}".format(
                     "Datetime",
-                    ", ".join([ltype.type_string for ltype in numeric_and_boolean_ww]),
+                    ", ".join([ltype for ltype in numeric_and_boolean_ww]),
                 ),
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,

@@ -33,7 +33,9 @@ def test_featurizer_only_text(text_df):
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
-    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
+    assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
+        ww.logical_types.Double
+    }
 
 
 def test_featurizer_with_nontext(text_df):
@@ -60,7 +62,9 @@ def test_featurizer_with_nontext(text_df):
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 11
-    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
+    assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
+        ww.logical_types.Double
+    }
 
 
 def test_featurizer_no_text():
@@ -92,7 +96,9 @@ def test_some_missing_col_names(text_df, caplog):
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
-    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
+    assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
+        ww.logical_types.Double
+    }
 
 
 def test_empty_text_column():
@@ -184,7 +190,9 @@ def test_index_col_names():
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
-    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
+    assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
+        ww.logical_types.Double
+    }
 
 
 def test_float_col_names():
@@ -221,7 +229,9 @@ def test_float_col_names():
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 10
-    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
+    assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
+        ww.logical_types.Double
+    }
 
 
 def test_output_null():
@@ -314,7 +324,9 @@ def test_featurizer_custom_types(text_df):
         "LSA(col_1)[0]": Double,
         "LSA(col_1)[1]": Double,
     }
-    assert X_t.ww.logical_types == expected_logical_types
+    assert {
+        k: type(v) for k, v in X_t.ww.logical_types.items()
+    } == expected_logical_types
 
 
 def test_mean_characters_primitive_output():
@@ -410,7 +422,7 @@ def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df):
         tf.fit(X)
         transformed = tf.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
-        assert transformed.ww.logical_types == {
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             0: logical_type,
             "LSA(text col)[0]": Double,
             "LSA(text col)[1]": Double,

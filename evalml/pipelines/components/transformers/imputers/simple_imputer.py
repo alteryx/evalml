@@ -52,7 +52,9 @@ class SimpleImputer(Transformer):
 
         # Not using select because we just need column names, not a new dataframe
         natural_language_columns = [
-            col for col, ltype in X.ww.logical_types.items() if ltype == NaturalLanguage
+            col
+            for col, ltype in X.ww.logical_types.items()
+            if type(ltype) == NaturalLanguage
         ]
         if natural_language_columns:
             X = X.ww.copy()
@@ -90,7 +92,7 @@ class SimpleImputer(Transformer):
             {
                 col: "Categorical"
                 for col, ltype in X.ww.logical_types.items()
-                if ltype == NaturalLanguage
+                if isinstance(ltype, NaturalLanguage)
             }
         )
 
