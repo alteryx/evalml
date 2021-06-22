@@ -10,6 +10,7 @@ Release Notes
         * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
         * Added change for ``k_neighbors`` parameter in SMOTE Oversamplers to automatically handle small samples :pr:`2375`
         * Changed naming for ``Logistic Regression Classifier`` file :pr:`2399`
+        * Pinned pytest-timeout to fix minimum dependence checker :pr:`2425`
     * Changes
         * Replaced `allowed_pipelines` with `allowed_component_graphs` :pr:`2364`
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
