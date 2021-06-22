@@ -14,11 +14,11 @@ def set_testing_headers():
 
 
 @pytest.fixture(autouse=True, scope="session")
-def skip_offline(request, set_testing_headers):
+def skip_offline(request, set_testing_headers):  # pragma: no cover
     if request.node.get_closest_marker("skip_offline"):
         try:
             urllib.request.urlopen("https://api.featurelabs.com/update_check/")
-        except urllib.error.URLError:  # pragma: no cover
+        except urllib.error.URLError:
             pytest.skip("Cannot reach update server, skipping online tests")
 
 
