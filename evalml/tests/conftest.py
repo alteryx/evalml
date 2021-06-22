@@ -39,8 +39,7 @@ from evalml.preprocessing import load_data
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
-    is_binary,
-    is_time_series,
+    is_regression,
 )
 
 
@@ -1102,11 +1101,11 @@ class _AutoMLTestEnv:
 
     This class provides a context manager that will automatically patch pipeline fit/score/predict_proba methods,
     as well as _encode_targets, BinaryClassificationObjective.optimize_threshold, and skopt.Optimizer.tell. These are
-    the most time consuming operationsi during search, so your test will run as fast as possible.
+    the most time consuming operations during search, so your test will run as fast as possible.
 
     This class is ideal for tests that verify some behavior of AutoMLSearch that can be controlled via the side_effect
-    or return_value parameters exposed to the patched methods but it may not be suitable for all tests.
-    For example, tests that patch Estimator.fit instead of Pipeline.fit or tests that only want to patch a selective
+    or return_value parameters exposed to the patched methods but it may not be suitable for all tests, such as
+    tests that patch Estimator.fit instead of Pipeline.fit or tests that only want to patch a selective
     subset of the methods listed above.
 
     Example:
@@ -1197,12 +1196,12 @@ class _AutoMLTestEnv:
             "score", side_effect=mock_score_side_effect, return_value=score_return_value
         )
 
-        # For simplicity, we will always mock predict_proba and _encode_targets even if the problem is not a binary
-        # problem. For time series problems, we will mock these methods in the time series class (self._pipeline_class)
-        # and for non-time-series problems we will use BinaryClassificationPipeline
-        pipeline_to_mock = "evalml.pipelines.BinaryClassificationPipeline"
-        if is_time_series(self.problem_type) and is_binary(self.problem_type):
-            pipeline_to_mock = self._pipeline_class
+        # For simplicity, we will always mock predict_proba and _encode_targets even if the problem is not a
+        # classification problem. For regression problems, we'll mock BinaryClassificationPipeline but it doesn't
+        # matter which one we mock since those methods won't be called for regression.
+        pipeline_to_mock = self._pipeline_class
+        if is_regression(self.problem_type):
+            pipeline_to_mock = "evalml.pipelines.BinaryClassificationPipeline"
 
         mock_encode_targets = self._patch_method(
             "_encode_targets",
