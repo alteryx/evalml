@@ -14,7 +14,7 @@ def set_testing_headers():
 
 
 @pytest.fixture(autouse=True)
-def skip_if_offline(request, set_testing_headers):
+def skip_offline(request, set_testing_headers):
     if request.node.get_closest_marker("skip_offline"):
         try:
             urllib.request.urlopen("https://api.featurelabs.com/update_check/")
