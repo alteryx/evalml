@@ -276,4 +276,6 @@ def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(
         imputer.fit(X, y)
         transformed = imputer.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
-        assert transformed.ww.logical_types == {0: logical_type}
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+            0: logical_type
+        }

@@ -2,7 +2,7 @@ catboost==0.26
 click==8.0.1
 cloudpickle==1.6.0
 colorama==0.4.4
-dask==2021.6.1
+dask==2021.6.2
 featuretools==0.25.0
 graphviz==0.16
 imbalanced-learn==0.8.0
@@ -28,5 +28,5 @@ shap==0.39.0
 sktime==0.6.1
 statsmodels==0.12.2
 texttable==1.6.3
-woodwork==0.3.1
+woodwork==0.4.1
 xgboost==1.2.1

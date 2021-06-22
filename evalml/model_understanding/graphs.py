@@ -489,9 +489,9 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 def _is_feature_of_type(feature, X, ltype):
     """Determine whether the feature the user passed in to partial dependence is a Woodwork logical type."""
     if isinstance(feature, int):
-        is_type = X.ww.logical_types[X.columns[feature]] == ltype
+        is_type = isinstance(X.ww.logical_types[X.columns[feature]], ltype)
     else:
-        is_type = X.ww.logical_types[feature] == ltype
+        is_type = isinstance(X.ww.logical_types[feature], ltype)
     return is_type
 
 

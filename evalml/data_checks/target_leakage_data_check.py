@@ -40,7 +40,10 @@ class TargetLeakageDataCheck(DataCheck):
     def _calculate_pearson(self, X, y):
         highly_corr_cols = []
         X_num = X.ww.select(include=numeric_and_boolean_ww)
-        if y.ww.logical_type not in numeric_and_boolean_ww or len(X_num.columns) == 0:
+        if (
+            y.ww.logical_type.type_string not in numeric_and_boolean_ww
+            or len(X_num.columns) == 0
+        ):
             return highly_corr_cols
         highly_corr_cols = [
             label
