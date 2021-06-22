@@ -18,7 +18,7 @@ def skip_if_offline(request, set_testing_headers):
     if request.node.get_closest_marker("skip_offline"):
         try:
             urllib.request.urlopen("https://api.featurelabs.com/update_check/")
-        except urllib.error.URLError:
+        except urllib.error.URLError:  # pragma: no cover
             pytest.skip("Cannot reach update server, skipping online tests")
 
 
