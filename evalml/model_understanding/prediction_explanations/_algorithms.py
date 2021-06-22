@@ -6,7 +6,7 @@ import shap
 from sklearn.utils import check_array
 
 from evalml.model_family.model_family import ModelFamily
-from evalml.problem_types import is_binary, is_regression
+from evalml.problem_types import is_binary, is_multiclass, is_regression
 from evalml.utils import get_logger
 
 logger = get_logger(__file__)
@@ -43,6 +43,7 @@ def _compute_shap_values(pipeline, features, training_data=None):
     Returns:
         dict or list(dict): For regression problems, a dictionary mapping a feature name to a list of SHAP values.
             For classification problems, returns a list of dictionaries. One for each class.
+        float: the expected value if return_expected_value is True.
     """
     estimator = pipeline.estimator
     if estimator.model_family == ModelFamily.BASELINE:
@@ -106,15 +107,26 @@ def _compute_shap_values(pipeline, features, training_data=None):
         if ws:
             logger.debug(f"_compute_shap_values KernelExplainer: {ws[0].message}")
 
+    if is_multiclass(pipeline.problem_type) or is_regression(pipeline.problem_type):
+        expected_value = explainer.expected_value
+    elif is_binary(pipeline.problem_type):
+        try:
+            # Accounts for CatBoost and XGBoost returning expected_value as float
+            # for positive class
+            expected_value = explainer.expected_value[1]
+        except IndexError:
+            expected_value = explainer.expected_value
+
     # classification problem
     if isinstance(shap_values, list):
         mappings = []
         for class_shap_values in shap_values:
             mappings.append(_create_dictionary(class_shap_values, feature_names))
-        return mappings
+        return (mappings, expected_value)
     # regression problem
     elif isinstance(shap_values, np.ndarray):
-        return _create_dictionary(shap_values, feature_names)
+        dic = _create_dictionary(shap_values, feature_names)
+        return (dic, expected_value)
     else:
         raise ValueError(f"Unknown shap_values datatype {str(type(shap_values))}!")
 

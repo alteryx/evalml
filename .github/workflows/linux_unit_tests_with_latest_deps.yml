@@ -12,7 +12,7 @@ jobs:
     name: ${{ matrix.python_version }} unit ${{matrix.command}} tests, Core Dependencies (${{ matrix.core_dependencies }})
     runs-on: ubuntu-latest
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - python_version: "3.8"
