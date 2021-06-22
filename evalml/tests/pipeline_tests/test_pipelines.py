@@ -465,9 +465,9 @@ def test_parameters_nonlinear(nonlinear_binary_pipeline_class):
         },
         "Random Forest": {"max_depth": 6, "n_estimators": 100, "n_jobs": -1},
         "Elastic Net": {
-            "C": 1,
+            "C": 1.0,
             "l1_ratio": 0.15,
-            "multi_ckass": "auto",
+            "multi_class": "auto",
             "solver": "saga",
             "n_jobs": -1,
             "penalty": "elasticnet",
