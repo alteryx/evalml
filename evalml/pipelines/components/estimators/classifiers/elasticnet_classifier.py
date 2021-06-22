@@ -1,5 +1,6 @@
+import warnings
+
 import numpy as np
-# from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
 from sklearn.linear_model import LogisticRegression
 from skopt.space import Real
 
@@ -10,13 +11,11 @@ from evalml.problem_types import ProblemTypes
 
 class ElasticNetClassifier(Estimator):
     """
-    Logistic Regression EN Classifier.
+    Elastic Net Classifier. Uses Logistic Regression with elasticnet penalty as the base estimator.
     """
 
-    name = "Logistic Regression EN Classifier"
-    hyperparameter_ranges = {
-        "C": Real(0.01, 10),
-    }
+    name = "Elastic Net Classifier"
+    hyperparameter_ranges = {"C": Real(0.01, 10), "l1_ratio": Real(0, 1)}
     model_family = ModelFamily.LINEAR_MODEL
     supported_problem_types = [
         ProblemTypes.BINARY,
@@ -49,6 +48,10 @@ class ElasticNetClassifier(Estimator):
         super().__init__(
             parameters=parameters, component_obj=lr_classifier, random_seed=random_seed
         )
+
+    def fit(self, X, y):
+        warnings.filterwarnings("ignore", message="The max_iter was reached")
+        return super().fit(X, y)
 
     @property
     def feature_importance(self):

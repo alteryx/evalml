@@ -3767,7 +3767,7 @@ def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
     params = {
         "Imputer": {"numeric_impute_strategy": "most_frequent"},
         "Logistic Regression Classifier": {"C": 10, "penalty": "l2"},
-        "Elastic Net Classifier": {"alpha": 0.75, "l1_ratio": 0.2},
+        "Elastic Net Classifier": {"l1_ratio": 0.2},
     }
     automl = AutoMLSearch(
         X_train=X,
@@ -3790,7 +3790,6 @@ def test_automl_pipeline_params_simple(mock_fit, mock_score, X_y_binary):
                 row["parameters"]["Logistic Regression Classifier"]["penalty"] == "l2"
             )
         if "Elastic Net Classifier" in row["parameters"]:
-            assert row["parameters"]["Elastic Net Classifier"]["alpha"] == 0.75
             assert row["parameters"]["Elastic Net Classifier"]["l1_ratio"] == 0.2
 
 
