@@ -16,6 +16,7 @@ Release Notes
         * Unpinned PyZMQ version in requirements.txt :pr:`2389` 
         * Uncapping LightGBM version in requirements.txt :pr:`2405`
         * Updated minimum version of plotly :pr:`2415`
+        * Removed ``SensitivityLowAlert`` objective from core objectives :pr:`2418`
     * Documentation Changes
         * Fixed lead scoring weights in the demos documentation :pr:`2315`
         * Fixed start page code and description dataset naming discrepancy :pr:`2370`
