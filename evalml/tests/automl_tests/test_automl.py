@@ -25,7 +25,6 @@ from evalml.automl.utils import (
     get_default_primary_search_objective,
     get_pipelines_from_component_graphs,
 )
-from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
     AutoMLSearchException,
     PipelineNotFoundError,
@@ -1656,7 +1655,7 @@ def test_results_getter(mock_fit, mock_score, X_y_binary):
     ],
 )
 def test_targets_pandas_data_types_classification(
-    data_type, automl_type, target_type, make_data_type
+    breast_cancer_local, wine_local, data_type, automl_type, target_type, make_data_type
 ):
     if data_type == "np" and target_type in ["Int64", "boolean"]:
         pytest.skip(
@@ -1664,7 +1663,7 @@ def test_targets_pandas_data_types_classification(
         )
 
     if automl_type == ProblemTypes.BINARY:
-        X, y = load_breast_cancer()
+        X, y = breast_cancer_local
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif automl_type == ProblemTypes.MULTICLASS:
@@ -1672,7 +1671,7 @@ def test_targets_pandas_data_types_classification(
             pytest.skip(
                 "Skipping test where problem type is multiclass but target type is boolean"
             )
-        X, y = load_wine()
+        X, y = wine_local
     unique_vals = y.unique()
     # Update target types as necessary
     if target_type in ["category", "object"]:
