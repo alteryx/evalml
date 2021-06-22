@@ -77,7 +77,7 @@ class DelayedFeatureTransformer(Transformer):
         return [
             name
             for name, column in X.ww.columns.items()
-            if column.logical_type == logical_types.Categorical
+            if isinstance(column.logical_type, logical_types.Categorical)
         ]
 
     @staticmethod
@@ -124,11 +124,10 @@ class DelayedFeatureTransformer(Transformer):
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
             y = infer_feature_types(y)
-            if y.ww.logical_type == logical_types.Categorical:
+            if type(y.ww.logical_type) == logical_types.Categorical:
                 y = self._encode_y_while_preserving_index(y)
             for t in range(self.start_delay_for_target, self.max_delay + 1):
                 X_ww.ww[f"target_delay_{t}"] = y.shift(t)
-
         return X_ww
 
     def fit_transform(self, X, y):
