@@ -3485,20 +3485,28 @@ def test_automl_woodwork_user_types_preserved(
         assert isinstance(arg, (pd.DataFrame, pd.Series))
         if isinstance(arg, pd.DataFrame):
             assert arg.ww.semantic_tags["cat col"] == {"category"}
-            assert arg.ww.logical_types["cat col"] == ww.logical_types.Categorical
+            assert isinstance(
+                arg.ww.logical_types["cat col"], ww.logical_types.Categorical
+            )
             assert arg.ww.semantic_tags["num col"] == {"numeric"}
-            assert arg.ww.logical_types["num col"] == ww.logical_types.Integer
+            assert isinstance(arg.ww.logical_types["num col"], ww.logical_types.Integer)
             assert arg.ww.semantic_tags["text col"] == set()
-            assert arg.ww.logical_types["text col"] == ww.logical_types.NaturalLanguage
+            assert isinstance(
+                arg.ww.logical_types["text col"], ww.logical_types.NaturalLanguage
+            )
     for arg in mock_score.call_args[0]:
         assert isinstance(arg, (pd.DataFrame, pd.Series))
         if isinstance(arg, pd.DataFrame):
             assert arg.ww.semantic_tags["cat col"] == {"category"}
-            assert arg.ww.logical_types["cat col"] == ww.logical_types.Categorical
+            assert isinstance(
+                arg.ww.logical_types["cat col"], ww.logical_types.Categorical
+            )
             assert arg.ww.semantic_tags["num col"] == {"numeric"}
-            assert arg.ww.logical_types["num col"] == ww.logical_types.Integer
+            assert isinstance(arg.ww.logical_types["num col"], ww.logical_types.Integer)
             assert arg.ww.semantic_tags["text col"] == set()
-            assert arg.ww.logical_types["text col"] == ww.logical_types.NaturalLanguage
+            assert isinstance(
+                arg.ww.logical_types["text col"], ww.logical_types.NaturalLanguage
+            )
 
 
 def test_automl_validates_problem_configuration(X_y_binary):
