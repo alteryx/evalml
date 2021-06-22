@@ -4,8 +4,6 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_series_equal
 
-from evalml.demos import load_breast_cancer, load_wine
-
 
 @pytest.mark.parametrize("problem_type", ["binary", "multi"])
 def test_new_unique_targets_in_score(
@@ -36,13 +34,15 @@ def test_new_unique_targets_in_score(
     "problem_type,use_ints", product(["binary", "multi"], [True, False])
 )
 def test_pipeline_has_classes_property(
+    breast_cancer_local,
+    wine_local,
     logistic_regression_binary_pipeline_class,
     logistic_regression_multiclass_pipeline_class,
     problem_type,
     use_ints,
 ):
     if problem_type == "binary":
-        X, y = load_breast_cancer()
+        X, y = breast_cancer_local
         pipeline = logistic_regression_binary_pipeline_class(
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
         )
@@ -52,7 +52,7 @@ def test_pipeline_has_classes_property(
         else:
             answer = ["benign", "malignant"]
     elif problem_type == "multi":
-        X, y = load_wine()
+        X, y = wine_local
         pipeline = logistic_regression_multiclass_pipeline_class(
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
         )
@@ -71,8 +71,10 @@ def test_pipeline_has_classes_property(
     assert_series_equal(pd.Series(pipeline.classes_), pd.Series(answer))
 
 
-def test_woodwork_classification_pipeline(logistic_regression_binary_pipeline_class):
-    X, y = load_breast_cancer()
+def test_woodwork_classification_pipeline(
+    breast_cancer_local, logistic_regression_binary_pipeline_class
+):
+    X, y = breast_cancer_local
     mock_pipeline = logistic_regression_binary_pipeline_class(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )
