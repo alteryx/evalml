@@ -14,6 +14,7 @@ Release Notes
     * Changes
         * Replaced `allowed_pipelines` with `allowed_component_graphs` :pr:`2364`
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
+        * Updated ``compute_order`` in ``ComponentGraph`` to be a read-only property :pr:`2408`
         * Unpinned PyZMQ version in requirements.txt :pr:`2389` 
         * Uncapping LightGBM version in requirements.txt :pr:`2405`
         * Updated minimum version of plotly :pr:`2415`
