@@ -219,4 +219,6 @@ def test_drop_null_transformer_woodwork_custom_overrides_returned_by_components(
         drop_null_transformer.fit(X)
         transformed = drop_null_transformer.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
-        assert transformed.ww.logical_types == {0: logical_type}
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+            0: logical_type
+        }

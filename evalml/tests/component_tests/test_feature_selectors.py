@@ -125,7 +125,7 @@ def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df
         rf_classifier.fit(X, y)
         transformed = rf_classifier.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
-        assert transformed.ww.logical_types == {
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             0: logical_type,
             "another column": Double,
         }
@@ -133,7 +133,7 @@ def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df
         rf_regressor.fit(X, y)
         transformed = rf_regressor.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
-        assert transformed.ww.logical_types == {
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             0: logical_type,
             "another column": Double,
         }
