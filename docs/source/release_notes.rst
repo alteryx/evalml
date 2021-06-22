@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Updated threshold optimization method for binary classification :pr:`2315`
     * Fixes
         * Fixed ``ComponentGraph`` appending target to ``final_component_features`` if there is a component that returns both X and y :pr:`2358`
         * Fixed partial dependence graph method failing on multiclass problems when the class labels are numeric :pr:`2372`
@@ -15,6 +16,7 @@ Release Notes
         * Uncapping LightGBM version in requirements.txt :pr:`2405`
         * Updated minimum version of plotly :pr:`2415`
     * Documentation Changes
+        * Fixed lead scoring weights in the demos documentation :pr:`2315`
         * Fixed start page code and description dataset naming discrepancy :pr:`2370`
     * Testing Changes
         * Add ``pytest-timeout``. All tests that run longer than 6 minutes will fail. :pr:`2374`
