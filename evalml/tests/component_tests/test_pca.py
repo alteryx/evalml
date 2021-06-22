@@ -158,4 +158,6 @@ def test_pca_woodwork_custom_overrides_returned_by_components(X_df):
         pca.fit(X_df)
         transformed = pca.transform(X_df, y)
         assert isinstance(transformed, pd.DataFrame)
-        assert transformed.ww.logical_types == {"component_0": ww.logical_types.Double}
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+            "component_0": ww.logical_types.Double
+        }

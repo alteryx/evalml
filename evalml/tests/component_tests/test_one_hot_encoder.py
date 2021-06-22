@@ -735,7 +735,7 @@ def test_ohe_woodwork_custom_overrides_returned_by_components(X_df):
         try:
             X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
-        except TypeConversionError:
+        except (TypeConversionError, ValueError, TypeError):
             continue
 
         ohe = OneHotEncoder()
@@ -743,7 +743,9 @@ def test_ohe_woodwork_custom_overrides_returned_by_components(X_df):
         transformed = ohe.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
         if logical_type != Categorical:
-            assert transformed.ww.logical_types == {0: logical_type}
+            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+                0: logical_type
+            }
 
 
 def test_ohe_output_bools():

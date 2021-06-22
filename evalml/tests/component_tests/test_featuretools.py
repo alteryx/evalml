@@ -135,7 +135,7 @@ def test_ft_woodwork_custom_overrides_returned_by_components(X_df):
         try:
             X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
-        except ww.exceptions.TypeConversionError:
+        except (ww.exceptions.TypeConversionError, ValueError):
             continue
 
         dft = DFSTransformer()
@@ -143,14 +143,16 @@ def test_ft_woodwork_custom_overrides_returned_by_components(X_df):
         transformed = dft.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
         if logical_type == Datetime:
-            assert transformed.ww.logical_types == {
+            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
                 "DAY(0)": Integer,
                 "MONTH(0)": Integer,
                 "WEEKDAY(0)": Integer,
                 "YEAR(0)": Integer,
             }
         else:
-            assert transformed.ww.logical_types == {"0": logical_type}
+            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+                "0": logical_type
+            }
 
 
 @patch("evalml.pipelines.components.transformers.preprocessing.featuretools.dfs")

@@ -278,7 +278,7 @@ def test_target_encoder_woodwork_custom_overrides_returned_by_components(X_df):
         try:
             X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
-        except ww.exceptions.TypeConversionError:
+        except (ww.exceptions.TypeConversionError, ValueError, TypeError):
             continue
 
         encoder = TargetEncoder()
@@ -287,6 +287,10 @@ def test_target_encoder_woodwork_custom_overrides_returned_by_components(X_df):
         assert isinstance(transformed, pd.DataFrame)
 
         if logical_type == Categorical:
-            assert transformed.ww.logical_types == {0: Double}
+            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+                0: Double
+            }
         else:
-            assert transformed.ww.logical_types == {0: logical_type}
+            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+                0: logical_type
+            }

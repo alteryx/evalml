@@ -86,6 +86,7 @@ def test_delayed_feature_extractor_maxdelay3_gap1(
         answer["feature"] = X.feature.astype("int64")
     if not encode_y_as_str:
         answer["target_delay_0"] = y_answer.astype("int64")
+
     assert_frame_equal(
         answer, DelayedFeatureTransformer(max_delay=3, gap=1).fit_transform(X=X, y=y)
     )
@@ -459,7 +460,7 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
         try:
             X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
-        except ww.exceptions.TypeConversionError:
+        except (ww.exceptions.TypeConversionError, ValueError):
             continue
         dft = DelayedFeatureTransformer(max_delay=1, gap=11)
         if fit_transform:
@@ -468,22 +469,25 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
             dft.fit(X, y)
             transformed = dft.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
+        transformed_logical_types = {
+            k: type(v) for k, v in transformed.ww.logical_types.items()
+        }
         if logical_type in [Integer, Double, Categorical]:
-            assert transformed.ww.logical_types == {
+            assert transformed_logical_types == {
                 0: logical_type,
                 "0_delay_1": Double,
                 "target_delay_0": Integer,
                 "target_delay_1": Double,
             }
         elif logical_type == Boolean:
-            assert transformed.ww.logical_types == {
+            assert transformed_logical_types == {
                 0: logical_type,
                 "0_delay_1": Categorical,
                 "target_delay_0": Integer,
                 "target_delay_1": Double,
             }
         else:
-            assert transformed.ww.logical_types == {
+            assert transformed_logical_types == {
                 0: logical_type,
                 "0_delay_1": logical_type,
                 "target_delay_0": Integer,
