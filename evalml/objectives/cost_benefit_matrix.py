@@ -35,7 +35,7 @@ class CostBenefitMatrix(BinaryClassificationObjective):
         self.false_positive = false_positive
         self.false_negative = false_negative
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Calculates cost-benefit of the using the predicted and true values.
 
         Arguments:

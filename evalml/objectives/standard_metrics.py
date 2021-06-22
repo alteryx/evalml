@@ -23,8 +23,8 @@ class AccuracyBinary(BinaryClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.accuracy_score(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.accuracy_score(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class AccuracyMulticlass(MulticlassClassificationObjective):
@@ -36,8 +36,8 @@ class AccuracyMulticlass(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.accuracy_score(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.accuracy_score(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class BalancedAccuracyBinary(BinaryClassificationObjective):
@@ -49,8 +49,8 @@ class BalancedAccuracyBinary(BinaryClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.balanced_accuracy_score(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.balanced_accuracy_score(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class BalancedAccuracyMulticlass(MulticlassClassificationObjective):
@@ -62,8 +62,8 @@ class BalancedAccuracyMulticlass(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.balanced_accuracy_score(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.balanced_accuracy_score(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class F1(BinaryClassificationObjective):
@@ -75,7 +75,7 @@ class F1(BinaryClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.f1_score(y_true, y_predicted, zero_division=0.0)
 
 
@@ -88,7 +88,7 @@ class F1Micro(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.f1_score(y_true, y_predicted, average="micro", zero_division=0.0)
 
 
@@ -101,7 +101,7 @@ class F1Macro(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.f1_score(y_true, y_predicted, average="macro", zero_division=0.0)
 
 
@@ -114,7 +114,7 @@ class F1Weighted(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.f1_score(
             y_true, y_predicted, average="weighted", zero_division=0.0
         )
@@ -129,7 +129,7 @@ class Precision(BinaryClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.precision_score(y_true, y_predicted, zero_division=0.0)
 
 
@@ -142,7 +142,7 @@ class PrecisionMicro(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.precision_score(
             y_true, y_predicted, average="micro", zero_division=0.0
         )
@@ -157,7 +157,7 @@ class PrecisionMacro(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.precision_score(
             y_true, y_predicted, average="macro", zero_division=0.0
         )
@@ -172,7 +172,7 @@ class PrecisionWeighted(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.precision_score(
             y_true, y_predicted, average="weighted", zero_division=0.0
         )
@@ -187,7 +187,7 @@ class Recall(BinaryClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.recall_score(y_true, y_predicted, zero_division=0.0)
 
 
@@ -200,7 +200,7 @@ class RecallMicro(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.recall_score(
             y_true, y_predicted, average="micro", zero_division=0.0
         )
@@ -215,7 +215,7 @@ class RecallMacro(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.recall_score(
             y_true, y_predicted, average="macro", zero_division=0.0
         )
@@ -230,7 +230,7 @@ class RecallWeighted(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.recall_score(
             y_true, y_predicted, average="weighted", zero_division=0.0
         )
@@ -245,8 +245,8 @@ class AUC(BinaryClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.roc_auc_score(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.roc_auc_score(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class AUCMicro(MulticlassClassificationObjective):
@@ -258,9 +258,9 @@ class AUCMicro(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
-        return metrics.roc_auc_score(y_true, y_predicted, average="micro")
+        return metrics.roc_auc_score(y_true, y_predicted, average="micro", sample_weight=sample_weight)
 
 
 class AUCMacro(MulticlassClassificationObjective):
@@ -272,9 +272,9 @@ class AUCMacro(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
-        return metrics.roc_auc_score(y_true, y_predicted, average="macro")
+        return metrics.roc_auc_score(y_true, y_predicted, average="macro", sample_weight=sample_weight)
 
 
 class AUCWeighted(MulticlassClassificationObjective):
@@ -286,9 +286,9 @@ class AUCWeighted(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = True
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         y_true, y_predicted = _handle_predictions(y_true, y_predicted)
-        return metrics.roc_auc_score(y_true, y_predicted, average="weighted")
+        return metrics.roc_auc_score(y_true, y_predicted, average="weighted", sample_weight=sample_weight)
 
 
 class LogLossBinary(BinaryClassificationObjective):
@@ -300,8 +300,8 @@ class LogLossBinary(BinaryClassificationObjective):
     perfect_score = 0.0
     is_bounded_like_percentage = False  # Range [0, Inf)
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.log_loss(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.log_loss(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class LogLossMulticlass(MulticlassClassificationObjective):
@@ -313,8 +313,8 @@ class LogLossMulticlass(MulticlassClassificationObjective):
     perfect_score = 0.0
     is_bounded_like_percentage = False  # Range [0, Inf)
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.log_loss(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.log_loss(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class MCCBinary(BinaryClassificationObjective):
@@ -326,11 +326,11 @@ class MCCBinary(BinaryClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = False  # Range [-1, 1]1
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         with warnings.catch_warnings():
             # catches runtime warning when dividing by 0.0
             warnings.simplefilter("ignore", RuntimeWarning)
-            return metrics.matthews_corrcoef(y_true, y_predicted)
+            return metrics.matthews_corrcoef(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class MCCMulticlass(MulticlassClassificationObjective):
@@ -342,11 +342,11 @@ class MCCMulticlass(MulticlassClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = False  # Range [-1, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         with warnings.catch_warnings():
             # catches runtime warning when dividing by 0.0
             warnings.simplefilter("ignore", RuntimeWarning)
-            return metrics.matthews_corrcoef(y_true, y_predicted)
+            return metrics.matthews_corrcoef(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class RootMeanSquaredError(RegressionObjective):
@@ -358,8 +358,8 @@ class RootMeanSquaredError(RegressionObjective):
     perfect_score = 0.0
     is_bounded_like_percentage = False  # Range [0, Inf)
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.mean_squared_error(y_true, y_predicted, squared=False)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.mean_squared_error(y_true, y_predicted, squared=False, sample_weight=sample_weight)
 
 
 class RootMeanSquaredLogError(RegressionObjective):
@@ -374,8 +374,8 @@ class RootMeanSquaredLogError(RegressionObjective):
     perfect_score = 0.0
     is_bounded_like_percentage = False  # Range [0, Inf)
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return np.sqrt(metrics.mean_squared_log_error(y_true, y_predicted))
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return np.sqrt(metrics.mean_squared_log_error(y_true, y_predicted, sample_weight=sample_weight))
 
     @classproperty
     def positive_only(self):
@@ -395,8 +395,8 @@ class MeanSquaredLogError(RegressionObjective):
     perfect_score = 0.0
     is_bounded_like_percentage = False  # Range [0, Inf)
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.mean_squared_log_error(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.mean_squared_log_error(y_true, y_predicted, sample_weight=sample_weight)
 
     @classproperty
     def positive_only(self):
@@ -413,8 +413,8 @@ class R2(RegressionObjective):
     perfect_score = 1
     is_bounded_like_percentage = False  # Range (-Inf, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.r2_score(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.r2_score(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class MAE(RegressionObjective):
@@ -426,8 +426,8 @@ class MAE(RegressionObjective):
     perfect_score = 0.0
     is_bounded_like_percentage = True  # Range [0, Inf)
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.mean_absolute_error(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.mean_absolute_error(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class MAPE(TimeSeriesRegressionObjective):
@@ -442,7 +442,7 @@ class MAPE(TimeSeriesRegressionObjective):
     perfect_score = 0.0
     is_bounded_like_percentage = False  # Range [0, Inf)
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         if (y_true == 0).any():
             raise ValueError(
                 "Mean Absolute Percentage Error cannot be used when "
@@ -470,8 +470,8 @@ class MSE(RegressionObjective):
     perfect_score = 0.0
     is_bounded_like_percentage = False  # Range [0, Inf)
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.mean_squared_error(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.mean_squared_error(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class MedianAE(RegressionObjective):
@@ -483,8 +483,8 @@ class MedianAE(RegressionObjective):
     perfect_score = 0.0
     is_bounded_like_percentage = False  # Range [0, Inf)
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.median_absolute_error(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.median_absolute_error(y_true, y_predicted, sample_weight=sample_weight)
 
 
 class MaxError(RegressionObjective):
@@ -496,7 +496,7 @@ class MaxError(RegressionObjective):
     perfect_score = 0.0
     is_bounded_like_percentage = False  # Range [0, Inf)
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         return metrics.max_error(y_true, y_predicted)
 
 
@@ -509,8 +509,8 @@ class ExpVariance(RegressionObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = False  # Range (-Inf, 1]
 
-    def objective_function(self, y_true, y_predicted, X=None):
-        return metrics.explained_variance_score(y_true, y_predicted)
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        return metrics.explained_variance_score(y_true, y_predicted, sample_weight=sample_weight)
 
 
 def _handle_predictions(y_true, y_pred):

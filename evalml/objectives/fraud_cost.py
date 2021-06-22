@@ -53,7 +53,7 @@ class FraudCost(BinaryClassificationObjective):
         transformed_probs = ypred_proba.values * X[self.amount_col]
         return transformed_probs > threshold
 
-    def objective_function(self, y_true, y_predicted, X):
+    def objective_function(self, y_true, y_predicted, X, sample_weight=None):
         """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount.
 
         Arguments:
