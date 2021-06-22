@@ -14,12 +14,18 @@ def set_testing_headers():
 
 
 @pytest.fixture(autouse=True, scope="session")
-def skip_offline(request, set_testing_headers):  # pragma: no cover
-    if request.node.get_closest_marker("skip_offline"):
-        try:
-            urllib.request.urlopen("https://api.featurelabs.com/update_check/")
-        except urllib.error.URLError:
-            pytest.skip("Cannot reach update server, skipping online tests")
+def check_online(set_testing_headers):
+    try:
+        urllib.request.urlopen("https://api.featurelabs.com/update_check/")
+        return True
+    except urllib.error.URLError:  # pragma: no cover
+        return False
+
+
+@pytest.fixture(autouse=True)
+def skip_offline(request, check_online):
+    if request.node.get_closest_marker("skip_offline") and not check_online:
+        pytest.skip("Cannot reach update server, skipping online tests")
 
 
 def test_fraud(fraud_local):
