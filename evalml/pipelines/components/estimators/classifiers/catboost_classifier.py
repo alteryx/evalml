@@ -45,8 +45,7 @@ class CatBoostClassifier(Estimator):
         n_jobs=-1,
         **kwargs
     ):
-        """TODO: mention n_jobs as thread_count
-        """
+        """TODO: mention n_jobs as thread_count"""
         parameters = {
             "n_estimators": n_estimators,
             "eta": eta,
@@ -54,7 +53,6 @@ class CatBoostClassifier(Estimator):
             "bootstrap_type": bootstrap_type,
             "silent": silent,
             "allow_writing_files": allow_writing_files,
-            "thread_count": n_jobs
         }
         parameters.update(kwargs)
 
