@@ -101,6 +101,8 @@ html_theme = "pydata_sphinx_theme"
 html_theme_options = {
     "github_url": "https://github.com/alteryx/evalml",
     "twitter_url": "https://twitter.com/AlteryxOSS",
+    "collapse_navigation": True,
+    "navigation_depth": 2,
 }
 
 # The name of an image file (relative to this directory) to place at the top
@@ -270,6 +272,7 @@ def setup(app):
     p.mkdir(parents=True, exist_ok=True)
     shutil.copy("disable-warnings.py", "/home/docs/.ipython/profile_default/startup/")
     shutil.copy("set-headers.py", "/home/docs/.ipython/profile_default/startup")
+    shutil.copy("ipython_config.py", "/home/docs/.ipython/profile_default")
     app.add_javascript(
         "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
     )
