@@ -6,7 +6,7 @@ import pytest
 from evalml import demos
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(autouse=True, scope="session")
 def set_testing_headers():
     opener = urllib.request.build_opener()
     opener.addheaders = [("Testing", "True")]
