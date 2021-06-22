@@ -43,7 +43,7 @@ class BinaryClassificationObjective(ObjectiveBase):
             cost = self.objective_function(y_true, y_predicted, X=X)
             return -cost if self.greater_is_better else cost
 
-        optimal = minimize_scalar(cost, method="Golden", options={"maxiter": 100})
+        optimal = minimize_scalar(cost, bounds=(0, 1), method="Bounded")
         return optimal.x
 
     def decision_function(self, ypred_proba, threshold=0.5, X=None):
