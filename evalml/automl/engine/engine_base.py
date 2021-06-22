@@ -225,6 +225,7 @@ def train_and_score_pipeline(
                     exception=e,
                     traceback=traceback.format_tb(sys.exc_info()[2]),
                     automl=automl_config,
+                    logger=logger,
                     fold_num=i,
                     pipeline=pipeline,
                 )
