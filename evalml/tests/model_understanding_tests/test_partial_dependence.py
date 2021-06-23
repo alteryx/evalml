@@ -1106,7 +1106,11 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_graph_partial_dependence_ice_plot(
-    problem_type, wine_local, breast_cancer_local, test_pipeline, logistic_regression_multiclass_pipeline_class
+    problem_type,
+    wine_local,
+    breast_cancer_local,
+    test_pipeline,
+    logistic_regression_multiclass_pipeline_class,
 ):
     go = pytest.importorskip(
         "plotly.graph_objects",
@@ -1224,7 +1228,9 @@ def test_graph_partial_dependence_ice_plot(
             )
 
 
-def test_graph_partial_dependence_ice_plot_two_way_error(local_breast_cancer, test_pipeline):
+def test_graph_partial_dependence_ice_plot_two_way_error(
+    local_breast_cancer, test_pipeline
+):
     X, y = local_breast_cancer
     clf = test_pipeline
     clf.fit(X, y)
