@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 import shap
 
-from evalml.demos import load_breast_cancer, load_wine
 from evalml.model_understanding.force_plots import force_plot, graph_force_plot
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -41,13 +40,18 @@ def test_exceptions():
     "rows_to_explain, just_data", product([[0], [0, 1, 2, 3, 4]], [False, True])
 )
 def test_force_plot_binary(
-    initjs, jupyter_check, rows_to_explain, just_data, has_minimal_dependencies
+    initjs,
+    jupyter_check,
+    rows_to_explain,
+    just_data,
+    has_minimal_dependencies,
+    breast_cancer_local,
 ):
 
     if has_minimal_dependencies:
         pytest.skip("Skipping because plotly not installed for minimal dependencies")
 
-    X, y = load_breast_cancer()
+    X, y = breast_cancer_local
 
     pipeline = BinaryClassificationPipeline(
         component_graph=["Simple Imputer", "Random Forest Classifier"]
@@ -113,11 +117,13 @@ def test_force_plot_binary(
 @pytest.mark.parametrize(
     "rows_to_explain, just_data", product([[0], [0, 1, 2, 3, 4]], [False, True])
 )
-def test_force_plot_multiclass(rows_to_explain, just_data, has_minimal_dependencies):
+def test_force_plot_multiclass(
+    rows_to_explain, just_data, has_minimal_dependencies, wine_local
+):
     if has_minimal_dependencies:
         pytest.skip("Skipping because plotly not installed for minimal dependencies")
 
-    X, y = load_wine()
+    X, y = wine_local
 
     pipeline = MulticlassClassificationPipeline(
         component_graph=["Simple Imputer", "Random Forest Classifier"]

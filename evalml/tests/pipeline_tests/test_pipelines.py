@@ -8,7 +8,6 @@ import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
 
-from evalml.demos import load_breast_cancer, load_wine
 from evalml.exceptions import (
     MissingComponentError,
     ObjectiveCreationError,
@@ -295,12 +294,12 @@ def test_describe_pipeline(
                 "Elastic Net Classifier": {
                     "name": "Elastic Net Classifier",
                     "parameters": {
-                        "alpha": 0.0001,
+                        "C": 1,
                         "l1_ratio": 0.15,
                         "n_jobs": -1,
-                        "max_iter": 1000,
+                        "solver": "saga",
                         "penalty": "elasticnet",
-                        "loss": "log",
+                        "multi_class": "auto",
                     },
                 },
                 "Random Forest Classifier": {
@@ -465,10 +464,10 @@ def test_parameters_nonlinear(nonlinear_binary_pipeline_class):
         },
         "Random Forest": {"max_depth": 6, "n_estimators": 100, "n_jobs": -1},
         "Elastic Net": {
-            "alpha": 0.0001,
+            "C": 1.0,
             "l1_ratio": 0.15,
-            "loss": "log",
-            "max_iter": 1000,
+            "multi_class": "auto",
+            "solver": "saga",
             "n_jobs": -1,
             "penalty": "elasticnet",
         },
@@ -1262,6 +1261,8 @@ def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     ],
 )
 def test_targets_data_types_classification_pipelines(
+    breast_cancer_local,
+    wine_local,
     data_type,
     problem_type,
     target_type,
@@ -1278,7 +1279,7 @@ def test_targets_data_types_classification_pipelines(
     if problem_type == ProblemTypes.BINARY:
         objective = "Log Loss Binary"
         pipeline_classes = all_binary_pipeline_classes
-        X, y = load_breast_cancer()
+        X, y = breast_cancer_local
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
     elif problem_type == ProblemTypes.MULTICLASS:
@@ -1288,7 +1289,7 @@ def test_targets_data_types_classification_pipelines(
             )
         objective = "Log Loss Multiclass"
         pipeline_classes = all_multiclass_pipeline_classes
-        X, y = load_wine()
+        X, y = wine_local
 
     # Update target types as necessary
     unique_vals = y.unique()

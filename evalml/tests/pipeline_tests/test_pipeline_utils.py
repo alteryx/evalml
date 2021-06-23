@@ -943,7 +943,7 @@ def test_generate_code_nonlinear_pipeline():
         "'OneHot_RandomForest':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OneHot_ElasticNet':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'Random Forest':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}, "
-        "'Elastic Net':{'alpha': 0.0001, 'l1_ratio': 0.15, 'n_jobs': -1, 'max_iter': 1000, 'penalty': 'elasticnet', 'loss': 'log'}, "
+        "'Elastic Net':{'penalty': 'elasticnet', 'C': 1.0, 'l1_ratio': 0.15, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'saga'}, "
         "'Logistic Regression':{'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}, "
         "custom_name='Non Linear Binary Pipeline', random_seed=0)"
     )
