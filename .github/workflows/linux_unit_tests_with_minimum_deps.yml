@@ -57,7 +57,7 @@ jobs:
           github_base_url: https://github.com/alteryx/evalml
           status: ${{ job.status }}
           fields: repo,message,action,eventName,ref,workflow,job,took
-          text: 'Unit tests linux min deps. Make sure this works!'
+          text: 'Unit tests linux min deps. Make sure this works to set up nightlies!'
           mention: 'here'
           if_mention: 'failure,cancelled'
         if: always()
