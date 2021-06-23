@@ -26,7 +26,9 @@ def test_lsa_only_text(text_df):
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
-    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
+    assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
+        ww.logical_types.Double
+    }
 
 
 def test_lsa_with_nontext(text_df):
@@ -41,7 +43,9 @@ def test_lsa_with_nontext(text_df):
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 5
-    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
+    assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
+        ww.logical_types.Double
+    }
 
 
 def test_lsa_no_text():
@@ -62,7 +66,9 @@ def test_some_missing_col_names(text_df, caplog):
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
-    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
+    assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
+        ww.logical_types.Double
+    }
 
 
 def test_lsa_empty_text_column():
@@ -120,7 +126,9 @@ def test_index_col_names():
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
-    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
+    assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
+        ww.logical_types.Double
+    }
 
 
 def test_float_col_names():
@@ -146,7 +154,9 @@ def test_float_col_names():
     X_t = lsa.transform(X)
     assert set(X_t.columns) == expected_col_names
     assert len(X_t.columns) == 4
-    assert set(X_t.ww.logical_types.values()) == {ww.logical_types.Double}
+    assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
+        ww.logical_types.Double
+    }
 
 
 def test_lsa_output():
@@ -216,14 +226,14 @@ def test_lsa_woodwork_custom_overrides_returned_by_components(X_df):
         transformed = lsa.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
         if logical_type == NaturalLanguage:
-            assert transformed.ww.logical_types == {
+            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
                 "LSA(0)[0]": Double,
                 "LSA(0)[1]": Double,
                 "LSA(text col)[0]": Double,
                 "LSA(text col)[1]": Double,
             }
         else:
-            assert transformed.ww.logical_types == {
+            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
                 0: logical_type,
                 "LSA(text col)[0]": Double,
                 "LSA(text col)[1]": Double,

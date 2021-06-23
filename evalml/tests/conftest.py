@@ -8,7 +8,6 @@ import woodwork as ww
 from sklearn import datasets
 from skopt.space import Integer, Real
 
-from evalml.demos import load_fraud
 from evalml.model_family import ModelFamily
 from evalml.objectives.utils import (
     get_core_objectives,
@@ -34,7 +33,15 @@ from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
     _nonstackable_model_families,
 )
 from evalml.pipelines.components.utils import _all_estimators
+from evalml.preprocessing import load_data
 from evalml.problem_types import ProblemTypes, handle_problem_types
+
+
+def pytest_configure(config):
+    config.addinivalue_line(
+        "markers",
+        "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)",
+    )
 
 
 def create_mock_pipeline(estimator, problem_type):
@@ -201,12 +208,12 @@ def X_y_binary():
     return X, y
 
 
-@pytest.fixture(scope="class")
-def X_y_binary_cls(request):
+@pytest.fixture
+def X_y_binary_cls():
     X, y = datasets.make_classification(
         n_samples=100, n_features=20, n_informative=2, n_redundant=2, random_state=0
     )
-    request.cls.X_y_binary = pd.DataFrame(X), pd.Series(y)
+    return pd.DataFrame(X), pd.Series(y)
 
 
 @pytest.fixture
@@ -281,11 +288,20 @@ def ts_data():
 
 
 @pytest.fixture
-def ts_data_seasonal():
-    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 500)
-    X, y = pd.DataFrame({"features": range(500)}), pd.Series(sine_)
-    y.index = pd.date_range(start="1/1/2018", periods=500)
-    X.index = pd.date_range(start="1/1/2018", periods=500)
+def ts_data_seasonal_train():
+    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 25)
+    X, y = pd.DataFrame({"features": range(25)}), pd.Series(sine_)
+    y.index = pd.date_range(start="1/1/2018", periods=25)
+    X.index = pd.date_range(start="1/1/2018", periods=25)
+    return X, y
+
+
+@pytest.fixture
+def ts_data_seasonal_test():
+    sine_ = np.linspace(-np.pi * 5, np.pi * 5, 25)
+    X, y = pd.DataFrame({"features": range(25)}), pd.Series(sine_)
+    y.index = pd.date_range(start="1/26/2018", periods=25)
+    X.index = pd.date_range(start="1/26/2018", periods=25)
     return X, y
 
 
@@ -348,6 +364,46 @@ def dummy_classifier_estimator_class():
 
 
 @pytest.fixture
+def dummy_classifier_linear_component_graph(dummy_classifier_estimator_class):
+    component_graph_linear = {
+        "Name": ["Imputer", "One Hot Encoder", dummy_classifier_estimator_class]
+    }
+    return component_graph_linear
+
+
+@pytest.fixture
+def dummy_regressor_linear_component_graph(dummy_regressor_estimator_class):
+    component_graph_linear = {
+        "Name": ["Imputer", "One Hot Encoder", dummy_regressor_estimator_class]
+    }
+    return component_graph_linear
+
+
+@pytest.fixture
+def dummy_classifier_dict_component_graph(dummy_classifier_estimator_class):
+    component_graph_dict = {
+        "Name": {
+            "Imputer": ["Imputer"],
+            "Imputer_1": ["Imputer", "Imputer"],
+            "Random Forest Classifier": [dummy_classifier_estimator_class, "Imputer_1"],
+        }
+    }
+    return component_graph_dict
+
+
+@pytest.fixture
+def dummy_regressor_dict_component_graph(dummy_regressor_estimator_class):
+    component_graph_dict = {
+        "Name": {
+            "Imputer": ["Imputer"],
+            "Imputer_1": ["Imputer", "Imputer"],
+            "Random Forest Classifier": [dummy_regressor_estimator_class, "Imputer_1"],
+        }
+    }
+    return component_graph_dict
+
+
+@pytest.fixture
 def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
     MockEstimator = dummy_classifier_estimator_class
 
@@ -380,7 +436,7 @@ def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
     class MockMulticlassClassificationPipeline(MulticlassClassificationPipeline):
         estimator = MockEstimator
         component_graph = [MockEstimator]
-        custom_name = None
+        custom_name = "Mock Multiclass Classification Pipeline"
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
@@ -755,18 +811,30 @@ def nonlinear_regression_pipeline_class():
 
 
 @pytest.fixture
-def binary_core_objectives():
-    return get_core_objectives(ProblemTypes.BINARY)
+def binary_test_objectives():
+    return [
+        o
+        for o in get_core_objectives(ProblemTypes.BINARY)
+        if o.name in {"Log Loss Binary", "F1", "AUC"}
+    ]
 
 
 @pytest.fixture
-def multiclass_core_objectives():
-    return get_core_objectives(ProblemTypes.MULTICLASS)
+def multiclass_test_objectives():
+    return [
+        o
+        for o in get_core_objectives(ProblemTypes.MULTICLASS)
+        if o.name in {"Log Loss Multiclass", "AUC Micro", "F1 Micro"}
+    ]
 
 
 @pytest.fixture
-def regression_core_objectives():
-    return get_core_objectives(ProblemTypes.REGRESSION)
+def regression_test_objectives():
+    return [
+        o
+        for o in get_core_objectives(ProblemTypes.REGRESSION)
+        if o.name in {"R2", "Root Mean Squared Error", "MAE"}
+    ]
 
 
 @pytest.fixture
@@ -906,11 +974,76 @@ def make_data_type():
     return _make_data_type
 
 
+def load_fraud_local(n_rows=None):
+    currdir_path = os.path.dirname(os.path.abspath(__file__))
+    data_folder_path = os.path.join(currdir_path, "data")
+    fraud_data_path = os.path.join(data_folder_path, "fraud_transactions.csv.gz")
+    X, y = load_data(
+        path=fraud_data_path,
+        index="id",
+        target="fraud",
+        compression="gzip",
+        n_rows=n_rows,
+    )
+    return X, y
+
+
 @pytest.fixture
-def fraud_100():
-    X, y = load_fraud(n_rows=100)
+def fraud_local():
+    X, y = load_fraud_local()
     X.ww.set_types(logical_types={"provider": "Categorical", "region": "Categorical"})
     return X, y
+
+
+@pytest.fixture
+def fraud_100():
+    X, y = load_fraud_local(n_rows=100)
+    X.ww.set_types(logical_types={"provider": "Categorical", "region": "Categorical"})
+    return X, y
+
+
+@pytest.fixture
+def breast_cancer_local():
+    data = datasets.load_breast_cancer()
+    X = pd.DataFrame(data.data, columns=data.feature_names)
+    y = pd.Series(data.target)
+    y = y.map(lambda x: data["target_names"][x])
+    X.ww.init()
+    y = ww.init_series(y)
+    return X, y
+
+
+@pytest.fixture
+def wine_local():
+    data = datasets.load_wine()
+    X = pd.DataFrame(data.data, columns=data.feature_names)
+    y = pd.Series(data.target)
+    y = y.map(lambda x: data["target_names"][x])
+    X.ww.init()
+    y = ww.init_series(y)
+    return X, y
+
+
+@pytest.fixture
+def diabetes_local():
+    data = datasets.load_diabetes()
+    X = pd.DataFrame(data.data, columns=data.feature_names)
+    y = pd.Series(data.target)
+    X.ww.init()
+    y = ww.init_series(y)
+    return X, y
+
+
+@pytest.fixture
+def churn_local():
+    currdir_path = os.path.dirname(os.path.abspath(__file__))
+    data_folder_path = os.path.join(currdir_path, "data")
+    churn_data_path = os.path.join(data_folder_path, "churn.csv")
+    return load_data(
+        path=churn_data_path,
+        index="customerID",
+        target="Churn",
+    )
 
 
 @pytest.fixture

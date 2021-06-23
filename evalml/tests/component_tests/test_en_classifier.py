@@ -1,6 +1,7 @@
+import warnings
+
 import numpy as np
-import pytest
-from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
+from sklearn.linear_model import LogisticRegression
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators.classifiers import (
@@ -25,12 +26,13 @@ def test_problem_types():
 def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
-    sk_clf = SKElasticNetClassifier(
-        loss="log",
+    sk_clf = LogisticRegression(
+        C=1.0,
         penalty="elasticnet",
-        alpha=0.0001,
         l1_ratio=0.15,
         n_jobs=-1,
+        multi_class="auto",
+        solver="saga",
         random_state=0,
     )
     sk_clf.fit(X, y)
@@ -49,12 +51,13 @@ def test_fit_predict_binary(X_y_binary):
 def test_fit_predict_multi(X_y_multi):
     X, y = X_y_multi
 
-    sk_clf = SKElasticNetClassifier(
-        loss="log",
+    sk_clf = LogisticRegression(
+        C=1.0,
         penalty="elasticnet",
-        alpha=0.0001,
         l1_ratio=0.15,
         n_jobs=-1,
+        multi_class="auto",
+        solver="saga",
         random_state=0,
     )
     sk_clf.fit(X, y)
@@ -75,12 +78,13 @@ def test_fit_predict_multi(X_y_multi):
 def test_feature_importance(X_y_binary):
     X, y = X_y_binary
 
-    sk_clf = SKElasticNetClassifier(
-        loss="log",
+    sk_clf = LogisticRegression(
+        C=1.0,
         penalty="elasticnet",
-        alpha=0.0001,
         l1_ratio=0.15,
         n_jobs=1,
+        multi_class="auto",
+        solver="saga",
         random_state=0,
     )
     sk_clf.fit(X, y)
@@ -96,34 +100,24 @@ def test_feature_importance(X_y_binary):
 def test_feature_importance_multi(X_y_multi):
     X, y = X_y_multi
 
-    sk_clf = SKElasticNetClassifier(
-        loss="log",
+    sk_clf = LogisticRegression(
+        C=1.0,
         penalty="elasticnet",
-        alpha=0.0001,
         l1_ratio=0.15,
         n_jobs=1,
+        multi_class="auto",
+        solver="saga",
         random_state=0,
     )
-    sk_clf.fit(X, y)
+    with warnings.catch_warnings(record=True) as w1:
+        sk_clf.fit(X, y)
+    assert len(w1) > 0
 
-    clf = ElasticNetClassifier(n_jobs=1)
-    clf.fit(X, y)
+    with warnings.catch_warnings(record=True) as w2:
+        clf = ElasticNetClassifier(n_jobs=1)
+        clf.fit(X, y)
+    assert len(w2) == 0
 
     sk_features = np.linalg.norm(sk_clf.coef_, axis=0, ord=2)
 
     np.testing.assert_almost_equal(sk_features, clf.feature_importance, decimal=5)
-
-
-def test_overwrite_loss_parameter_in_kwargs():
-
-    with pytest.warns(expected_warning=UserWarning) as warnings:
-        en = ElasticNetClassifier(loss="hinge")
-
-    assert len(warnings) == 1
-    # check that the message matches
-    assert warnings[0].message.args[0] == (
-        "Parameter loss is being set to 'log' so that ElasticNetClassifier can predict probabilities"
-        ". Originally received 'hinge'."
-    )
-
-    assert en.parameters["loss"] == "log"

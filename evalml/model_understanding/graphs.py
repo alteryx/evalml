@@ -489,9 +489,9 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 def _is_feature_of_type(feature, X, ltype):
     """Determine whether the feature the user passed in to partial dependence is a Woodwork logical type."""
     if isinstance(feature, int):
-        is_type = X.ww.logical_types[X.columns[feature]] == ltype
+        is_type = isinstance(X.ww.logical_types[X.columns[feature]], ltype)
     else:
-        is_type = X.ww.logical_types[feature] == ltype
+        is_type = isinstance(X.ww.logical_types[feature], ltype)
     return is_type
 
 
@@ -870,6 +870,9 @@ def graph_partial_dependence(
             else (1, len(class_labels))
         )
 
+        class_labels_mapping = {
+            class_label: str(class_label) for class_label in class_labels
+        }
         # Don't specify share_xaxis and share_yaxis so that we get tickmarks in each subplot
         fig = _subplots.make_subplots(rows=rows, cols=cols, subplot_titles=class_labels)
         for i, label in enumerate(class_labels):
@@ -895,7 +898,9 @@ def graph_partial_dependence(
                 if is_categorical:
                     trace = _go.Bar(x=x, y=y, name=label)
                 else:
-                    trace = _go.Scatter(x=x, y=y, line=dict(width=3), name=label)
+                    trace = _go.Scatter(
+                        x=x, y=y, line=dict(width=3), name=class_labels_mapping[label]
+                    )
                 fig.add_trace(trace, row=row, col=col)
 
         fig.update_layout(layout)

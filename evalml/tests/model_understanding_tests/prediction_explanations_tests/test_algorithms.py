@@ -129,9 +129,10 @@ def calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain):
     """Helper function to compute the SHAP values for n_points_to_explain for a given pipeline."""
     points_to_explain = training_data[:n_points_to_explain]
     pipeline.fit(training_data, y)
-    return _compute_shap_values(
+    shap_values, expected_value = _compute_shap_values(
         pipeline, pd.DataFrame(points_to_explain), training_data
     )
+    return shap_values
 
 
 interpretable_estimators = [
@@ -168,13 +169,8 @@ def test_shap(
         is_binary = False
     else:
         training_data, y = X_y_regression
-    # TODO: Figure out why we need to change the params in order for shap to pass. Filed as issue 2281
-    if "Elastic Net" in estimator.name:
-        parameters = {
-            "Elastic Net Classifier": {"alpha": 0.5, "l1_ratio": 0.5, "n_jobs": 1}
-        }
-    else:
-        parameters = {estimator.name: {"n_jobs": 1}}
+
+    parameters = {estimator.name: {"n_jobs": 1}}
     try:
         pipeline = make_pipeline(
             training_data, y, estimator, problem_type, parameters=parameters

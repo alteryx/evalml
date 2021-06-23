@@ -6,6 +6,7 @@ import pandas as pd
 from evalml.automl.automl_search import AutoMLSearch
 from evalml.automl.engine import evaluate_pipeline, train_pipeline
 from evalml.automl.engine.engine_base import JobLogger
+from evalml.automl.utils import AutoMLConfig
 from evalml.objectives import F1, LogLossBinary
 from evalml.preprocessing import split_data
 from evalml.utils import get_logger
@@ -14,7 +15,11 @@ from evalml.utils import get_logger
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_train_and_score_pipelines(
-    mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary
+    mock_fit,
+    mock_score,
+    dummy_classifier_estimator_class,
+    dummy_binary_pipeline_class,
+    X_y_binary,
 ):
     X, y = X_y_binary
     mock_score.return_value = {"Log Loss Binary": 0.42}
@@ -24,7 +29,10 @@ def test_train_and_score_pipelines(
         problem_type="binary",
         max_time=1,
         max_batches=1,
-        allowed_pipelines=[dummy_binary_pipeline_class({})],
+        allowed_component_graphs={
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+        },
+        optimize_thresholds=False,
     )
     pipeline = dummy_binary_pipeline_class({})
     evaluation_result = evaluate_pipeline(
@@ -51,7 +59,12 @@ def test_train_and_score_pipelines(
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_train_and_score_pipelines_error(
-    mock_fit, mock_score, dummy_binary_pipeline_class, X_y_binary, caplog
+    mock_fit,
+    mock_score,
+    dummy_classifier_estimator_class,
+    dummy_binary_pipeline_class,
+    X_y_binary,
+    caplog,
 ):
     X, y = X_y_binary
     mock_score.side_effect = Exception("yeet")
@@ -61,7 +74,10 @@ def test_train_and_score_pipelines_error(
         problem_type="binary",
         max_time=1,
         max_batches=1,
-        allowed_pipelines=[dummy_binary_pipeline_class({})],
+        allowed_component_graphs={
+            "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+        },
+        optimize_thresholds=False,
     )
     pipeline = dummy_binary_pipeline_class({})
 
@@ -108,13 +124,11 @@ def test_train_pipeline_trains_and_tunes_threshold(
     mock_split_data.return_value = split_data(
         X, y, "binary", test_size=0.2, random_seed=0
     )
-
+    automl_config = AutoMLConfig(
+        None, "binary", LogLossBinary(), [], None, True, None, 0, None, None
+    )
     _ = train_pipeline(
-        dummy_binary_pipeline_class({}),
-        X,
-        y,
-        optimize_thresholds=True,
-        objective=LogLossBinary(),
+        dummy_binary_pipeline_class({}), X, y, automl_config=automl_config
     )
 
     mock_pipeline_fit.assert_called_once()
@@ -125,8 +139,11 @@ def test_train_pipeline_trains_and_tunes_threshold(
     mock_optimize.reset_mock()
     mock_split_data.reset_mock()
 
+    automl_config = AutoMLConfig(
+        None, "binary", LogLossBinary(), [], F1(), True, None, 0, None, None
+    )
     _ = train_pipeline(
-        dummy_binary_pipeline_class({}), X, y, optimize_thresholds=True, objective=F1()
+        dummy_binary_pipeline_class({}), X, y, automl_config=automl_config
     )
     mock_pipeline_fit.assert_called_once()
     mock_optimize.assert_called_once()

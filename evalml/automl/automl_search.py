@@ -20,6 +20,7 @@ from evalml.automl.utils import (
     check_all_pipeline_names_unique,
     get_best_sampler_for_data,
     get_default_primary_search_objective,
+    get_pipelines_from_component_graphs,
     make_data_splitter,
 )
 from evalml.data_checks import DefaultDataChecks
@@ -36,8 +37,8 @@ from evalml.objectives import (
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
+    ComponentGraph,
     MulticlassClassificationPipeline,
-    PipelineBase,
     RegressionPipeline,
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
@@ -48,6 +49,7 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
+    is_binary,
     is_classification,
     is_time_series,
 )
@@ -136,12 +138,13 @@ class AutoMLSearch:
         patience=None,
         tolerance=None,
         data_splitter=None,
-        allowed_pipelines=None,
+        allowed_component_graphs=None,
         allowed_model_families=None,
         start_iteration_callback=None,
         add_result_callback=None,
         error_callback=None,
         additional_objectives=None,
+        alternate_thresholding_objective="F1",
         random_seed=0,
         n_jobs=-1,
         tuner_class=None,
@@ -188,9 +191,13 @@ class AutoMLSearch:
             tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
                 Only applicable if patience is not None. Defaults to None.
 
-            allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search.
-                The default of None indicates all pipelines for this problem type are allowed. Setting this field will cause
+            allowed_component_graphs (dict): A dictionary of lists or ComponentGraphs indicating the component graphs allowed in the search.
+                The format should follow { "Name_0": [list_of_components], "Name_1": [ComponentGraph(...)] }
+
+                The default of None indicates all pipeline component graphs for this problem type are allowed. Setting this field will cause
                 allowed_model_families to be ignored.
+
+                e.g. allowed_component_graphs = { "My_Graph": ["Imputer", "One Hot Encoder", "Random Forest Classifier"] }
 
             allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
                 model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
@@ -216,6 +223,9 @@ class AutoMLSearch:
 
             additional_objectives (list): Custom set of objectives to score on.
                 Will override default objectives for problem type if not empty.
+
+            alternate_thresholding_objective (str): The objective to use for thresholding binary classification pipelines if the main objective provided isn't tuneable.
+                Defaults to F1.
 
             random_seed (int): Seed for the random number generator. Defaults to 0.
 
@@ -278,7 +288,7 @@ class AutoMLSearch:
                 "Time series support in evalml is still in beta, which means we are still actively building "
                 "its core features. Please be mindful of that when running search()."
             )
-
+        self._SLEEP_TIME = 0.1
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
@@ -290,6 +300,22 @@ class AutoMLSearch:
             objective = get_default_primary_search_objective(self.problem_type.value)
         objective = get_objective(objective, return_instance=False)
         self.objective = self._validate_objective(objective)
+        self.alternate_thresholding_objective = None
+        if (
+            is_binary(self.problem_type)
+            and self.optimize_thresholds
+            and self.objective.score_needs_proba
+        ):
+            self.alternate_thresholding_objective = get_objective(
+                alternate_thresholding_objective, return_instance=True
+            )
+        if (
+            self.alternate_thresholding_objective is not None
+            and self.alternate_thresholding_objective.score_needs_proba
+        ):
+            raise ValueError(
+                "Alternate thresholding objective must be a tuneable objective and cannot need probabilities!"
+            )
         if self.data_splitter is not None and not issubclass(
             self.data_splitter.__class__, BaseCrossValidator
         ):
@@ -378,18 +404,17 @@ class AutoMLSearch:
             logger.warning(
                 "Unable to import plotly; skipping pipeline search plotting\n"
             )
-
-        if allowed_pipelines is not None and not isinstance(allowed_pipelines, list):
-            raise ValueError(
-                "Parameter allowed_pipelines must be either None or a list!"
-            )
-        if allowed_pipelines is not None and not all(
-            isinstance(p, PipelineBase) for p in allowed_pipelines
-        ):
-            raise ValueError(
-                "Every element of allowed_pipelines must an instance of PipelineBase!"
-            )
-        self.allowed_pipelines = allowed_pipelines
+        if allowed_component_graphs is not None:
+            if not isinstance(allowed_component_graphs, dict):
+                raise ValueError(
+                    "Parameter allowed_component_graphs must be either None or a dictionary!"
+                )
+            for graph_name, graph in allowed_component_graphs.items():
+                if not isinstance(graph, (list, dict, ComponentGraph)):
+                    raise ValueError(
+                        "Every component graph passed must be of type list, dictionary, or ComponentGraph!"
+                    )
+        self.allowed_component_graphs = allowed_component_graphs
         self.allowed_model_families = allowed_model_families
         self._automl_algorithm = None
         self._start = 0.0
@@ -421,15 +446,11 @@ class AutoMLSearch:
         self.custom_hyperparameters = custom_hyperparameters or {}
         self.search_iteration_plot = None
         self._interrupted = False
-        self._frozen_pipeline_parameters = {}
 
         parameters = copy.copy(self.pipeline_parameters)
 
         if self.problem_configuration:
             parameters.update({"pipeline": self.problem_configuration})
-            self._frozen_pipeline_parameters.update(
-                {"pipeline": self.problem_configuration}
-            )
 
         self.sampler_method = sampler_method
         self.sampler_balanced_ratio = sampler_balanced_ratio
@@ -452,11 +473,8 @@ class AutoMLSearch:
                 parameters[self._sampler_name].update(
                     {"sampling_ratio": self.sampler_balanced_ratio}
                 )
-            self._frozen_pipeline_parameters[self._sampler_name] = parameters[
-                self._sampler_name
-            ]
 
-        if self.allowed_pipelines is None:
+        if self.allowed_component_graphs is None:
             logger.info("Generating pipelines to search over...")
             allowed_estimators = get_estimators(
                 self.problem_type, self.allowed_model_families
@@ -471,26 +489,30 @@ class AutoMLSearch:
             )
             index_columns = list(self.X_train.ww.select("index").columns)
             if len(index_columns) > 0 and drop_columns is None:
-                self._frozen_pipeline_parameters["Drop Columns Transformer"] = {
-                    "columns": index_columns
-                }
+                parameters["Drop Columns Transformer"] = {"columns": index_columns}
             self.allowed_pipelines = [
                 make_pipeline(
                     self.X_train,
                     self.y_train,
                     estimator,
                     self.problem_type,
-                    parameters=self._frozen_pipeline_parameters,
+                    parameters=parameters,
                     sampler_name=self._sampler_name,
                 )
                 for estimator in allowed_estimators
             ]
+        else:
+            self.allowed_pipelines = get_pipelines_from_component_graphs(
+                self.allowed_component_graphs,
+                self.problem_type,
+                parameters,
+                self.random_seed,
+            )
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
 
         logger.info(f"{len(self.allowed_pipelines)} pipelines ready for search.")
-        check_all_pipeline_names_unique(self.allowed_pipelines)
 
         run_ensembling = self.ensembling
         text_in_ensembling = len(self.X_train.ww.select("natural_language").columns) > 0
@@ -557,13 +579,13 @@ class AutoMLSearch:
             self.problem_type,
             self.objective,
             self.additional_objectives,
+            self.alternate_thresholding_objective,
             self.optimize_thresholds,
             self.error_callback,
             self.random_seed,
             self.X_train.ww.schema,
             self.y_train.ww.schema,
         )
-
         self.allowed_model_families = list(
             set([p.model_family for p in (self.allowed_pipelines)])
         )
@@ -584,8 +606,7 @@ class AutoMLSearch:
             ensembling=run_ensembling,
             text_in_ensembling=text_in_ensembling,
             pipeline_params=parameters,
-            custom_hyperparameters=self.custom_hyperparameters,
-            _frozen_pipeline_parameters=self._frozen_pipeline_parameters,
+            custom_hyperparameters=custom_hyperparameters,
         )
 
     def _get_batch_number(self):
@@ -792,7 +813,7 @@ class AutoMLSearch:
                     current_computation_index = (current_computation_index + 1) % max(
                         len(computations), 1
                     )
-                    time.sleep(0.1)
+                    time.sleep(self._SLEEP_TIME)
                 loop_interrupted = False
             except KeyboardInterrupt:
                 loop_interrupted = True
@@ -913,14 +934,6 @@ class AutoMLSearch:
                 raise ValueError(
                     "Additional objective {} is not compatible with a {} problem.".format(
                         obj.name, self.problem_type.value
-                    )
-                )
-
-        for pipeline in self.allowed_pipelines or []:
-            if pipeline.problem_type != self.problem_type:
-                raise ValueError(
-                    "Given pipeline {} is not compatible with problem_type {}.".format(
-                        pipeline.name, self.problem_type.value
                     )
                 )
 
@@ -1251,8 +1264,7 @@ class AutoMLSearch:
         ascending = True
         if self.objective.greater_is_better:
             ascending = False
-
-        full_rankings_cols = [
+        pipeline_results_cols = [
             "id",
             "pipeline_name",
             "mean_cv_score",
@@ -1262,11 +1274,21 @@ class AutoMLSearch:
             "high_variance_cv",
             "parameters",
         ]
+
         if not self._results["pipeline_results"]:
+            full_rankings_cols = (
+                pipeline_results_cols[0:2]
+                + ["search_order"]
+                + pipeline_results_cols[2:]
+            )  # place search_order after pipeline_name
+
             return pd.DataFrame(columns=full_rankings_cols)
 
         rankings_df = pd.DataFrame(self._results["pipeline_results"].values())
-        rankings_df = rankings_df[full_rankings_cols]
+        rankings_df = rankings_df[pipeline_results_cols]
+        rankings_df.insert(
+            2, "search_order", pd.Series(self._results["search_order"])
+        )  # place search_order after pipeline_name
         rankings_df.sort_values("mean_cv_score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df

@@ -99,7 +99,7 @@ def test_can_get_only_core_and_all_objective_names():
 
 def test_get_core_objectives_types():
     assert len(get_core_objectives(ProblemTypes.MULTICLASS)) == 13
-    assert len(get_core_objectives(ProblemTypes.BINARY)) == 8
+    assert len(get_core_objectives(ProblemTypes.BINARY)) == 7
     assert len(get_core_objectives(ProblemTypes.REGRESSION)) == 7
     assert len(get_core_objectives(ProblemTypes.TIME_SERIES_REGRESSION)) == 7
 
@@ -111,9 +111,6 @@ def test_get_time_series_objectives_types(time_series_objectives):
 def test_objective_outputs(
     X_y_binary,
     X_y_multi,
-    binary_core_objectives,
-    multiclass_core_objectives,
-    regression_core_objectives,
 ):
     _, y_binary_np = X_y_binary
     assert isinstance(y_binary_np, np.ndarray)
@@ -128,7 +125,9 @@ def test_objective_outputs(
     )
 
     all_objectives = (
-        binary_core_objectives + regression_core_objectives + multiclass_core_objectives
+        get_core_objectives("binary")
+        + get_core_objectives("multiclass")
+        + get_core_objectives("regression")
     )
 
     for objective in all_objectives:

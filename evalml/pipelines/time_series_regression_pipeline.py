@@ -38,7 +38,7 @@ class TimeSeriesRegressionPipeline(
                  Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
             random_seed (int): Seed for the random number generator. Defaults to 0.
         """
-        if "pipeline" not in parameters:
+        if not parameters or "pipeline" not in parameters:
             raise ValueError(
                 "date_index, gap, and max_delay parameters cannot be omitted from the parameters dict. "
                 "Please specify them as a dictionary with the key 'pipeline'."
@@ -69,7 +69,9 @@ class TimeSeriesRegressionPipeline(
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        X_t = self._compute_features_during_fit(X, y)
+
+        self.input_target_name = y.name
+        X_t = self.component_graph.fit_features(X, y)
 
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)

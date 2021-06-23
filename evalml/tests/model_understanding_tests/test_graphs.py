@@ -450,7 +450,10 @@ def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type):
     roc_curve_data = roc_curve(y_true, y_pred_proba)[0]
     assert np.array_equal(fig_dict["data"][0]["x"], roc_curve_data["fpr_rates"])
     assert np.array_equal(fig_dict["data"][0]["y"], roc_curve_data["tpr_rates"])
-    assert np.array_equal(fig_dict["data"][0]["text"], roc_curve_data["thresholds"])
+    assert np.allclose(
+        np.array(fig_dict["data"][0]["text"]).astype(float),
+        np.array(roc_curve_data["thresholds"]).astype(float),
+    )
     assert fig_dict["data"][0]["name"] == "Class 1 (AUC {:06f})".format(
         roc_curve_data["auc_score"]
     )
@@ -497,7 +500,10 @@ def test_graph_roc_curve_multiclass(binarized_ys):
         roc_curve_data = roc_curve(y_tr[:, i], y_pred_proba[:, i])[0]
         assert np.array_equal(fig_dict["data"][i]["x"], roc_curve_data["fpr_rates"])
         assert np.array_equal(fig_dict["data"][i]["y"], roc_curve_data["tpr_rates"])
-        assert np.array_equal(fig_dict["data"][i]["text"], roc_curve_data["thresholds"])
+        assert np.allclose(
+            np.array(fig_dict["data"][i]["text"]).astype(float),
+            np.array(roc_curve_data["thresholds"]).astype(float),
+        )
         assert fig_dict["data"][i]["name"] == "Class {name} (AUC {:06f})".format(
             roc_curve_data["auc_score"], name=i + 1
         )
@@ -737,9 +743,9 @@ def test_cost_benefit_matrix_vs_threshold(
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
     original_pipeline_threshold = pipeline.threshold
-    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm)
+    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm, steps=5)
     assert list(cost_benefit_df.columns) == ["threshold", "score"]
-    assert cost_benefit_df.shape == (101, 2)
+    assert cost_benefit_df.shape == (6, 2)
     assert not cost_benefit_df.isnull().all().all()
     assert pipeline.threshold == original_pipeline_threshold
 
@@ -766,9 +772,9 @@ def test_binary_objective_vs_threshold(
         binary_objective_vs_threshold(pipeline, X, y, "f1 micro")
 
     # test objective with score_needs_proba == False
-    results_df = binary_objective_vs_threshold(pipeline, X, y, "f1")
+    results_df = binary_objective_vs_threshold(pipeline, X, y, "f1", steps=5)
     assert list(results_df.columns) == ["threshold", "score"]
-    assert results_df.shape == (101, 2)
+    assert results_df.shape == (6, 2)
     assert not results_df.isnull().all().all()
 
 
@@ -834,6 +840,8 @@ def test_jupyter_graph_check(
         reason="Skipping plotting test because plotly not installed",
     )
     X, y = X_y_binary
+    X = X[:20, :5]
+    y = y[:20]
     clf = test_pipeline
     clf.fit(X, y)
     cbm = CostBenefitMatrix(
@@ -849,11 +857,11 @@ def test_jupyter_graph_check(
 
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
-        graph_partial_dependence(clf, X, features=0, grid_resolution=20)
+        graph_partial_dependence(clf, X, features=0, grid_resolution=5)
         assert len(graph_valid) == 1
         import_check.assert_called_with("ipywidgets", warning=True)
     with pytest.warns(None) as graph_valid:
-        graph_binary_objective_vs_threshold(test_pipeline, X, y, cbm)
+        graph_binary_objective_vs_threshold(test_pipeline, X, y, cbm, steps=5)
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
     with pytest.warns(None) as graph_valid:

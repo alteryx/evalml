@@ -1,0 +1,43 @@
+name: Nightly unit tests, linux
+
+on:
+  schedule:
+      - cron: '0 7 * * *'
+
+jobs:
+  unit_tests:
+    name: Nightly ${{ matrix.python_version }} ${{matrix.command}}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python_version: ['3.7', '3.8', '3.9']
+        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
+    steps:
+      - name: Set up Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          repository: ${{ github.repository }}
+          ref: main
+      - name: Update apt and install Graphviz
+        run: sudo apt update && sudo apt install -y graphviz
+      - name: Create virtual environment, upgrade pip
+        run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          python -m pip install --upgrade pip -q
+      - name: Installing Latest Dependency Versions
+        run: |
+          source test_python/bin/activate
+          make installdeps
+          make installdeps-test
+          pip freeze
+      - name: Run unit tests
+        run: |
+          source test_python/bin/activate
+          make ${{matrix.command}}

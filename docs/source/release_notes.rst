@@ -11,29 +11,57 @@ Release Notes
 
     **Breaking Changes**
 
-
-**v0.26.0 Jun. 08, 2021**
+**v0.27.0 Jun. 22, 2021**
     * Enhancements
+        * Adds force plots for prediction explanations :pr:`2157`
         * Removed self-reference from ``AutoMLSearch`` :pr:`2304`
         * Added support for nonlinear pipelines for ``generate_pipeline_code`` :pr:`2332`
-        * Added ``inverse_transform`` method to pipelines :pr:`2256``
+        * Added ``inverse_transform`` method to pipelines :pr:`2256`
+        * Add optional automatic update checker :pr:`2350`
+        * Added ``search_order`` to ``AutoMLSearch``'s ``rankings`` and ``full_rankings`` tables :pr:`2345`
+        * Updated threshold optimization method for binary classification :pr:`2315`
+        * Updated demos to pull data from S3 instead of including demo data in package :pr:`2387`
+        * Upgrade woodwork version to v0.4.1 :pr:`2379`
     * Fixes
         * Preserve user-specified woodwork types throughout pipeline fit/predict :pr:`2297`
+        * Fixed ``ComponentGraph`` appending target to ``final_component_features`` if there is a component that returns both X and y :pr:`2358`
+        * Fixed partial dependence graph method failing on multiclass problems when the class labels are numeric :pr:`2372`
+        * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
+        * Added change for ``k_neighbors`` parameter in SMOTE Oversamplers to automatically handle small samples :pr:`2375`
+        * Changed naming for ``Logistic Regression Classifier`` file :pr:`2399`
+        * Pinned pytest-timeout to fix minimum dependence checker :pr:`2425`
+        * Replaced ``Elastic Net Classifier`` base class with ``Logistsic Regression`` to avoid ``NaN`` outputs :pr:`2420`
     * Changes
         * Cleaned up ``PipelineBase``'s ``component_graph`` and ``_component_graph`` attributes. Updated ``PipelineBase`` ``__repr__`` and added ``__eq__`` for ``ComponentGraph`` :pr:`2332`
         * Added and applied  ``black`` linting package to the EvalML repo in place of ``autopep8`` :pr:`2306`
         * Separated `custom_hyperparameters` from pipelines and added them as an argument to ``AutoMLSearch`` :pr:`2317`
+        * Replaced `allowed_pipelines` with `allowed_component_graphs` :pr:`2364`
+        * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
+        * Updated ``compute_order`` in ``ComponentGraph`` to be a read-only property :pr:`2408`
+        * Unpinned PyZMQ version in requirements.txt :pr:`2389` 
+        * Uncapping LightGBM version in requirements.txt :pr:`2405`
+        * Updated minimum version of plotly :pr:`2415`
+        * Removed ``SensitivityLowAlert`` objective from core objectives :pr:`2418`
     * Documentation Changes
+        * Fixed lead scoring weights in the demos documentation :pr:`2315`
+        * Fixed start page code and description dataset naming discrepancy :pr:`2370`
     * Testing Changes
         * Update minimum unit tests to run on all pull requests :pr:`2314`
         * Pass token to authorize uploading of codecov reports :pr:`2344`
+        * Add ``pytest-timeout``. All tests that run longer than 6 minutes will fail. :pr:`2374`
+        * Separated the dask tests out into separate github action jobs to isolate dask failures. :pr:`2376`
+        * Refactored dask tests :pr:`2377`
+        * Added the combined dask/non-dask unit tests back and renamed the dask only unit tests. :pr:`2382`
+        * Sped up unit tests and split into separate jobs :pr:`2365`
+        * Change CI job names, run lint for python 3.9, run nightlies on python 3.8 at 3am EST :pr:`2395` :pr:`2398`
+        * Set fail-fast to false for CI jobs that run for PRs :pr:`2402`
 
 .. warning::
 
     **Breaking Changes**
+        * `AutoMLSearch` will accept `allowed_component_graphs` instead of `allowed_pipelines` :pr:`2364`
         * Removed ``PipelineBase``'s ``_component_graph`` attribute. Updated ``PipelineBase`` ``__repr__`` and added ``__eq__`` for ``ComponentGraph`` :pr:`2332`
         * `pipeline_parameters` will no longer accept `skopt.space` variables since hyperparameter ranges will now be specified through `custom_hyperparameters` :pr:`2317`
-
 
 **v0.25.0 Jun. 01, 2021**
     * Enhancements
