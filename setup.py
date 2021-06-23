@@ -9,7 +9,7 @@ extras_require = {
 
 setup(
     name='evalml',
-    version='0.26.0',
+    version='0.27.0',
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     description='EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.',
@@ -26,6 +26,8 @@ setup(
           'evalml = evalml.__main__:cli'
         ]
     },
-    data_files=[('evalml/demos/data', ['evalml/demos/data/fraud_transactions.csv.gz', 'evalml/demos/data/churn.csv']),
-                ('evalml/tests/data', ['evalml/tests/data/tips.csv', 'evalml/tests/data/titanic.csv'])],
+    data_files=[('evalml/tests/data', ['evalml/tests/data/tips.csv',
+                                       'evalml/tests/data/titanic.csv',
+                                       'evalml/tests/data/churn.csv',
+                                       'evalml/tests/data/fraud_transactions.csv.gz'])],
 )

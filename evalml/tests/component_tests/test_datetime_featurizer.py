@@ -299,7 +299,7 @@ def test_datetime_featurizer_woodwork_custom_overrides_returned_by_components(
         try:
             X = X_df.copy()
             X.ww.init(logical_types={0: logical_type})
-        except (ww.exceptions.TypeConversionError, TypeError):
+        except (ww.exceptions.TypeConversionError, TypeError, ValueError):
             continue
         datetime_transformer = DateTimeFeaturizer(
             encode_as_categories=encode_as_categories
@@ -323,8 +323,11 @@ def test_datetime_featurizer_woodwork_custom_overrides_returned_by_components(
                     "datetime col_day_of_week": Integer,
                     "datetime col_hour": Integer,
                 }
+            logical_types = {
+                k: type(v) for (k, v) in transformed.ww.logical_types.items()
+            }
             assert all(
-                item in transformed.ww.logical_types.items()
+                item in logical_types.items()
                 for item in datetime_col_transformed.items()
             )
 
@@ -343,9 +346,11 @@ def test_datetime_featurizer_woodwork_custom_overrides_returned_by_components(
                     "0_day_of_week": Integer,
                     "0_hour": Integer,
                 }
+            logical_types = {
+                k: type(v) for (k, v) in transformed.ww.logical_types.items()
+            }
             assert all(
-                item in transformed.ww.logical_types.items()
-                for item in col_transformed.items()
+                item in logical_types.items() for item in col_transformed.items()
             )
         else:
-            assert transformed.ww.logical_types[0] == logical_type
+            assert isinstance(transformed.ww.logical_types[0], logical_type)
