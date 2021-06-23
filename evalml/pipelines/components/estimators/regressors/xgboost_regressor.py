@@ -53,10 +53,9 @@ class XGBoostRegressor(Estimator):
         xgb_error_msg = (
             "XGBoost is not installed. Please install using `pip install xgboost.`"
         )
+        xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         xgb_parameters = copy.copy(parameters)
         xgb_parameters["nthread"] = n_jobs
-
-        xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         xgb_regressor = xgb.XGBRegressor(random_state=random_seed, **xgb_parameters)
         parameters["n_jobs"] = n_jobs
         super().__init__(
