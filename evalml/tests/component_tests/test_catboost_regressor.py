@@ -22,3 +22,9 @@ def test_catboost_regressor_random_seed_bounds_seed(X_y_regression):
     )
     fitted = clf.fit(X, y)
     assert isinstance(fitted, CatBoostRegressor)
+
+
+def test_catboost_regressor_init_n_jobs():
+    n_jobs = 2
+    clf = CatBoostRegressor(n_jobs=n_jobs)
+    assert clf._component_obj.get_param("thread_count") == n_jobs

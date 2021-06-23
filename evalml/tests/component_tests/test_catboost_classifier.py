@@ -22,3 +22,9 @@ def test_catboost_classifier_random_seed_bounds_seed(X_y_binary):
     )
     fitted = clf.fit(X, y)
     assert isinstance(fitted, CatBoostClassifier)
+
+
+def test_catboost_classifier_init_n_jobs():
+    n_jobs = 2
+    clf = CatBoostClassifier(n_jobs=n_jobs)
+    assert clf._component_obj.get_param("thread_count") == n_jobs

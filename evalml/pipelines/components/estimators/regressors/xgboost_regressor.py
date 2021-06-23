@@ -1,5 +1,3 @@
-import copy
-
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -47,6 +45,7 @@ class XGBoostRegressor(Estimator):
             "max_depth": max_depth,
             "min_child_weight": min_child_weight,
             "n_estimators": n_estimators,
+            "n_jobs": n_jobs,
         }
         parameters.update(kwargs)
 
@@ -54,10 +53,7 @@ class XGBoostRegressor(Estimator):
             "XGBoost is not installed. Please install using `pip install xgboost.`"
         )
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
-        xgb_parameters = copy.copy(parameters)
-        xgb_parameters["nthread"] = n_jobs
-        xgb_regressor = xgb.XGBRegressor(random_state=random_seed, **xgb_parameters)
-        parameters["n_jobs"] = n_jobs
+        xgb_regressor = xgb.XGBRegressor(random_state=random_seed, **parameters)
         super().__init__(
             parameters=parameters, component_obj=xgb_regressor, random_seed=random_seed
         )
