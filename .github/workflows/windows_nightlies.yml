@@ -69,4 +69,18 @@ jobs:
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
-          make ${{matrix.command}}
+          make ${{matrix.command}}]
+  notify:
+    name: Notify on Slack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          github_base_url: https://github.com/alteryx/evalml
+          status: ${{ job.status }}
+          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
+          mention: 'channel'
+          if_mention: 'failure,cancelled'
+        if: always()
