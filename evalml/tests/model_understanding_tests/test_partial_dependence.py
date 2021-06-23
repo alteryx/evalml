@@ -3,7 +3,6 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
-from evalml.demos import load_breast_cancer, load_fraud, load_wine
 from evalml.exceptions import NullsInColumnWarning
 from evalml.model_understanding import (
     graph_partial_dependence,
@@ -101,9 +100,10 @@ def test_partial_dependence_problem_types(
 
 
 def test_partial_dependence_string_feature_name(
+    breast_cancer_local,
     logistic_regression_binary_pipeline_class,
 ):
-    X, y = load_breast_cancer()
+    X, y = breast_cancer_local
     pipeline = logistic_regression_binary_pipeline_class(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )
@@ -252,8 +252,10 @@ def test_partial_dependence_xgboost_feature_names(
     assert not part_dep.isnull().all().all()
 
 
-def test_partial_dependence_multiclass(logistic_regression_multiclass_pipeline_class):
-    X, y = load_wine()
+def test_partial_dependence_multiclass(
+    wine_local, logistic_regression_multiclass_pipeline_class
+):
+    X, y = wine_local
     pipeline = logistic_regression_multiclass_pipeline_class(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )
@@ -385,6 +387,7 @@ def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
 
 
 def test_partial_dependence_more_categories_than_grid_resolution(
+    fraud_local,
     logistic_regression_binary_pipeline_class,
 ):
     def round_dict_keys(dictionary, places=6):
@@ -394,7 +397,9 @@ def test_partial_dependence_more_categories_than_grid_resolution(
             dictionary_rounded[round(key, places)] = dictionary[key]
         return dictionary_rounded
 
-    X, y = load_fraud(100)
+    X, y = fraud_local
+    X = X[:100]
+    y = y[:100]
     X = X.drop(columns=["datetime", "expiration_date", "country", "region", "provider"])
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
@@ -439,8 +444,8 @@ def test_partial_dependence_more_categories_than_grid_resolution(
     assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
 
 
-def test_graph_partial_dependence(test_pipeline):
-    X, y = load_breast_cancer()
+def test_graph_partial_dependence(breast_cancer_local, test_pipeline):
+    X, y = breast_cancer_local
 
     go = pytest.importorskip(
         "plotly.graph_objects",
@@ -464,8 +469,8 @@ def test_graph_partial_dependence(test_pipeline):
     )
 
 
-def test_graph_two_way_partial_dependence(test_pipeline):
-    X, y = load_breast_cancer()
+def test_graph_two_way_partial_dependence(breast_cancer_local, test_pipeline):
+    X, y = breast_cancer_local
 
     go = pytest.importorskip(
         "plotly.graph_objects",
@@ -495,13 +500,14 @@ def test_graph_two_way_partial_dependence(test_pipeline):
 
 
 def test_graph_partial_dependence_multiclass(
+    wine_local,
     logistic_regression_multiclass_pipeline_class,
 ):
     go = pytest.importorskip(
         "plotly.graph_objects",
         reason="Skipping plotting test because plotly not installed",
     )
-    X, y = load_wine()
+    X, y = wine_local
     pipeline = logistic_regression_multiclass_pipeline_class(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )
@@ -742,14 +748,14 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
 
 @pytest.mark.parametrize("class_label", [None, "class_1"])
 def test_partial_dependence_multiclass_categorical(
-    class_label, logistic_regression_multiclass_pipeline_class
+    wine_local, class_label, logistic_regression_multiclass_pipeline_class
 ):
     pytest.importorskip(
         "plotly.graph_objects",
         reason="Skipping plotting test because plotly not installed",
     )
 
-    X, y = load_wine()
+    X, y = wine_local
     X.ww["categorical_column"] = ww.init_series(
         pd.Series([i % 3 for i in range(X.shape[0])]).astype(str),
         logical_type="Categorical",

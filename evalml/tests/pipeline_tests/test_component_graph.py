@@ -1228,8 +1228,8 @@ def test_component_graph_types_merge_mock(mock_rf_fit):
     assert input_feature_names["Random Forest"] == (
         ["column_2", "column_1_a", "column_1_b", "column_1_c", "column_1_d", "column_3"]
     )
-    assert mock_rf_fit.call_args[0][0].ww.logical_types["column_3"] == Integer
-    assert mock_rf_fit.call_args[0][0].ww.logical_types["column_2"] == Double
+    assert isinstance(mock_rf_fit.call_args[0][0].ww.logical_types["column_3"], Integer)
+    assert isinstance(mock_rf_fit.call_args[0][0].ww.logical_types["column_2"], Double)
 
 
 def test_component_graph_preserves_ltypes_created_during_pipeline_evaluation():
@@ -1659,12 +1659,12 @@ def test_describe_component_graph(return_dict, example_graph, caplog):
         "Elastic Net Classifier": {
             "name": "Elastic Net Classifier",
             "parameters": {
-                "alpha": 0.0001,
+                "C": 1,
                 "l1_ratio": 0.15,
                 "n_jobs": -1,
-                "max_iter": 1000,
+                "solver": "saga",
                 "penalty": "elasticnet",
-                "loss": "log",
+                "multi_class": "auto",
             },
         },
         "Logistic Regression Classifier": {

@@ -448,7 +448,7 @@ def test_imputer_int_preserved():
     pd.testing.assert_frame_equal(
         transformed, pd.DataFrame(pd.Series([1, 2, 11, 14 / 3]))
     )
-    assert transformed.ww.logical_types == {0: Double}
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Double}
 
     X = pd.DataFrame(pd.Series([1, 2, 3, np.nan]))
     imputer = Imputer(numeric_impute_strategy="mean")
@@ -456,7 +456,7 @@ def test_imputer_int_preserved():
     pd.testing.assert_frame_equal(
         transformed, pd.DataFrame(pd.Series([1, 2, 3, 2])), check_dtype=False
     )
-    assert transformed.ww.logical_types == {0: Double}
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Double}
 
     X = pd.DataFrame(pd.Series([1, 2, 3, 4], dtype="int"))
     imputer = Imputer(numeric_impute_strategy="mean")
@@ -464,7 +464,7 @@ def test_imputer_int_preserved():
     pd.testing.assert_frame_equal(
         transformed, pd.DataFrame(pd.Series([1, 2, 3, 4])), check_dtype=False
     )
-    assert transformed.ww.logical_types == {0: Integer}
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Integer}
 
 
 def test_imputer_bool_preserved():
@@ -475,7 +475,9 @@ def test_imputer_bool_preserved():
         transformed,
         pd.DataFrame(pd.Series([True, False, True, True], dtype="category")),
     )
-    assert transformed.ww.logical_types == {0: Categorical}
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+        0: Categorical
+    }
 
     X = pd.DataFrame(pd.Series([True, False, True, False]))
     imputer = Imputer(categorical_impute_strategy="most_frequent")
@@ -485,7 +487,7 @@ def test_imputer_bool_preserved():
         pd.DataFrame(pd.Series([True, False, True, False])),
         check_dtype=False,
     )
-    assert transformed.ww.logical_types == {0: Boolean}
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Boolean}
 
 
 @pytest.mark.parametrize(
@@ -527,8 +529,14 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
         transformed = imputer.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
         if numeric_impute_strategy == "most_frequent":
-            assert transformed.ww.logical_types == {0: logical_type}
+            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+                0: logical_type
+            }
         elif logical_type in [Categorical, NaturalLanguage] or not has_nan:
-            assert transformed.ww.logical_types == {0: logical_type}
+            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+                0: logical_type
+            }
         else:
-            assert transformed.ww.logical_types == {0: Double}
+            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+                0: Double
+            }

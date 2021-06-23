@@ -169,13 +169,8 @@ def test_shap(
         is_binary = False
     else:
         training_data, y = X_y_regression
-    # TODO: Figure out why we need to change the params in order for shap to pass. Filed as issue 2281
-    if "Elastic Net" in estimator.name:
-        parameters = {
-            "Elastic Net Classifier": {"alpha": 0.5, "l1_ratio": 0.5, "n_jobs": 1}
-        }
-    else:
-        parameters = {estimator.name: {"n_jobs": 1}}
+
+    parameters = {estimator.name: {"n_jobs": 1}}
     try:
         pipeline = make_pipeline(
             training_data, y, estimator, problem_type, parameters=parameters
