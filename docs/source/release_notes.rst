@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Updated psutils minimum version in requirements :pr:`2438`
     * Documentation Changes
     * Testing Changes
 
