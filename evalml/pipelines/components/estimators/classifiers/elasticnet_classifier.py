@@ -1,7 +1,7 @@
 import warnings
 
 import numpy as np
-from sklearn.linear_model import SGDClassifier as SKElasticNetClassifier
+from sklearn.linear_model import LogisticRegression
 from skopt.space import Real
 
 from evalml.model_family import ModelFamily
@@ -10,13 +10,12 @@ from evalml.problem_types import ProblemTypes
 
 
 class ElasticNetClassifier(Estimator):
-    """Elastic Net Classifier."""
+    """
+    Elastic Net Classifier. Uses Logistic Regression with elasticnet penalty as the base estimator.
+    """
 
     name = "Elastic Net Classifier"
-    hyperparameter_ranges = {
-        "alpha": Real(0, 1),
-        "l1_ratio": Real(0, 1),
-    }
+    hyperparameter_ranges = {"C": Real(0.01, 10), "l1_ratio": Real(0, 1)}
     model_family = ModelFamily.LINEAR_MODEL
     supported_problem_types = [
         ProblemTypes.BINARY,
@@ -27,39 +26,39 @@ class ElasticNetClassifier(Estimator):
 
     def __init__(
         self,
-        alpha=0.0001,
+        penalty="elasticnet",
+        C=1.0,
         l1_ratio=0.15,
         n_jobs=-1,
-        max_iter=1000,
+        multi_class="auto",
+        solver="saga",
         random_seed=0,
-        penalty="elasticnet",
-        **kwargs,
+        **kwargs
     ):
         parameters = {
-            "alpha": alpha,
+            "penalty": penalty,
+            "C": C,
             "l1_ratio": l1_ratio,
             "n_jobs": n_jobs,
-            "max_iter": max_iter,
-            "penalty": penalty,
+            "multi_class": multi_class,
+            "solver": solver,
         }
-        if kwargs.get("loss", "log") != "log":
-            warnings.warn(
-                "Parameter loss is being set to 'log' so that ElasticNetClassifier can predict probabilities"
-                f". Originally received '{kwargs['loss']}'."
-            )
-        kwargs["loss"] = "log"
         parameters.update(kwargs)
-        en_classifier = SKElasticNetClassifier(random_state=random_seed, **parameters)
+        lr_classifier = LogisticRegression(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=en_classifier, random_seed=random_seed
+            parameters=parameters, component_obj=lr_classifier, random_seed=random_seed
         )
+
+    def fit(self, X, y):
+        warnings.filterwarnings("ignore", message="The max_iter was reached")
+        return super().fit(X, y)
 
     @property
     def feature_importance(self):
         coef_ = self._component_obj.coef_
         # binary classification case
         if len(coef_) <= 2:
-            return coef_.flatten()
+            return coef_[0]
         else:
             # multiclass classification case
             return np.linalg.norm(coef_, axis=0, ord=2)

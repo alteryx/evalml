@@ -1,5 +1,4 @@
-import os
-
+import evalml
 from evalml.preprocessing import load_data
 
 
@@ -14,9 +13,10 @@ def load_churn(n_rows=None, verbose=True):
     Returns:
         (pd.Dataframe, pd.Series): X and y
     """
-    currdir_path = os.path.dirname(os.path.abspath(__file__))
-    data_folder_path = os.path.join(currdir_path, "data")
-    churn_data_path = os.path.join(data_folder_path, "churn.csv")
+    churn_data_path = (
+        "https://api.featurelabs.com/datasets/churn.csv?library=evalml&version="
+        + evalml.__version__
+    )
 
     return load_data(
         path=churn_data_path,

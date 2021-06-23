@@ -3,6 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
         * Updated threshold optimization method for binary classification :pr:`2315`
+        * Updated demos to pull data from S3 instead of including demo data in package :pr:`2387`
         * Upgrade woodwork version to v0.4.1 :pr:`2379`
     * Fixes
         * Fixed ``ComponentGraph`` appending target to ``final_component_features`` if there is a component that returns both X and y :pr:`2358`
@@ -10,6 +11,8 @@ Release Notes
         * Added ``thresholding_objective`` argument to ``AutoMLSearch`` for binary classification problems :pr:`2320`
         * Added change for ``k_neighbors`` parameter in SMOTE Oversamplers to automatically handle small samples :pr:`2375`
         * Changed naming for ``Logistic Regression Classifier`` file :pr:`2399`
+        * Pinned pytest-timeout to fix minimum dependence checker :pr:`2425`
+        * Replaced ``Elastic Net Classifier`` base class with ``Logistsic Regression`` to avoid ``NaN`` outputs :pr:`2420`
     * Changes
         * Replaced `allowed_pipelines` with `allowed_component_graphs` :pr:`2364`
         * Removed private method ``_compute_features_during_fit`` from ``PipelineBase`` :pr:`2359`
