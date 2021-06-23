@@ -1106,7 +1106,7 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_graph_partial_dependence_ice_plot(
-    problem_type, test_pipeline, logistic_regression_multiclass_pipeline_class
+    problem_type, wine_local, breast_cancer_local, test_pipeline, logistic_regression_multiclass_pipeline_class
 ):
     go = pytest.importorskip(
         "plotly.graph_objects",
@@ -1117,10 +1117,10 @@ def test_graph_partial_dependence_ice_plot(
         test_pipeline = logistic_regression_multiclass_pipeline_class(
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
         )
-        X, y = load_wine()
+        X, y = wine_local
         feature = "ash"
     else:
-        X, y = load_breast_cancer()
+        X, y = breast_cancer_local
         feature = "mean radius"
     clf = test_pipeline
     clf.fit(X, y)
@@ -1224,8 +1224,8 @@ def test_graph_partial_dependence_ice_plot(
             )
 
 
-def test_graph_partial_dependence_ice_plot_two_way_error(test_pipeline):
-    X, y = load_breast_cancer()
+def test_graph_partial_dependence_ice_plot_two_way_error(local_breast_cancer, test_pipeline):
+    X, y = local_breast_cancer
     clf = test_pipeline
     clf.fit(X, y)
     with pytest.raises(
