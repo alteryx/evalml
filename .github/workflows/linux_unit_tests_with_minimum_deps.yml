@@ -54,6 +54,7 @@ jobs:
       - uses: 8398a7/action-slack@v3
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
+          MATRIX_CONTEXT: ${{ toJson(matrix) }}
         with:
           github_base_url: https://github.com/alteryx/evalml
           status: ${{ job.status }}
