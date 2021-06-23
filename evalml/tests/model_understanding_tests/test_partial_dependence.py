@@ -1229,9 +1229,9 @@ def test_graph_partial_dependence_ice_plot(
 
 
 def test_graph_partial_dependence_ice_plot_two_way_error(
-    local_breast_cancer, test_pipeline
+    breast_cancer_local, test_pipeline
 ):
-    X, y = local_breast_cancer
+    X, y = breast_cancer_local
     clf = test_pipeline
     clf.fit(X, y)
     with pytest.raises(
