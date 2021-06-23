@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Sped up docs :pr:`2430`
     * Testing Changes
 
 .. warning::
