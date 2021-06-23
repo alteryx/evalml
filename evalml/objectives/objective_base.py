@@ -78,7 +78,9 @@ class ObjectiveBase(ABC):
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
         self.validate_inputs(y_true, y_predicted)
-        return self.objective_function(y_true, y_predicted, X=X, sample_weight=sample_weight)
+        return self.objective_function(
+            y_true, y_predicted, X=X, sample_weight=sample_weight
+        )
 
     @staticmethod
     def _standardize_input_type(input_data):
