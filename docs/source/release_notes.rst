@@ -3,6 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
         * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
+        * Updated Objectives API to allow for sample weighting :pr:`2433`
     * Fixes
     * Changes
         * Updated psutils minimum version in requirements :pr:`2438`
