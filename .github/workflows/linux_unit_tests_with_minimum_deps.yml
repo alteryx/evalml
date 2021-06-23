@@ -48,33 +48,17 @@ jobs:
           make ${{ matrix.command }}
       - name: Notify on Slack
         uses: 8398a7/action-slack@v3
-        if: always()
         with:
           status: custom
           fields: workflow,job,commit,repo,ref,author,took
           custom_payload: |
             {
-              icon_emoji: ':wow:',
-              author_name: 'Linux test bot',
               attachments: [{
                 color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-                text: `Linux Task: ${process.env.AS_WORKFLOW}\ncommit: (${process.env.AS_COMMIT}) ${{ github.event_name }} ${{ job.status }}. Initiated by ${process.env.AS_AUTHOR} in ${process.env.AS_TOOK}`,
+                text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
               }]
             }
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
-        # needs: [unit_tests]
-        # steps:
-        #     env:
-        #       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }} # required
-        #       MATRIX_CONTEXT: ${{ toJson(matrix) }}
-        #     with:
-        #       job_name: ${{ MATRIX_CONTENT.python_version }} min dep ${{ MATRIX_CONTENT.command }}
-        #       github_base_url: https://github.com/alteryx/evalml
-        #       status: ${{ job.status }}
-        #       fields: repo,message,eventName,workflow,job,took
-        #       text: 'Unit tests linux min deps. Make sure this works to set up nightlies!' + MATRIX_CONTENT
-        #       mention: 'here'
-        #       if_mention: 'failure,cancelled'
-        #     if: always()
+        if: always() # Pick up events even if the job fails or is canceled.
