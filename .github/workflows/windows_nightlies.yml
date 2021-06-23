@@ -80,7 +80,8 @@ jobs:
         with:
           github_base_url: https://github.com/alteryx/evalml
           status: ${{ job.status }}
-          fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-          mention: 'channel'
+          fields: repo,message,action,eventName,ref,workflow,job,took
+          text: 'Windows Nightly Tests'
+          mention: 'here'
           if_mention: 'failure,cancelled'
         if: always()

@@ -46,3 +46,18 @@ jobs:
         run: |
           source test_python/bin/activate
           make ${{ matrix.command }}
+  notify:
+    name: Notify on Slack
+    runs-on: ubuntu-latest
+    steps:
+      - uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          github_base_url: https://github.com/alteryx/evalml
+          status: ${{ job.status }}
+          fields: repo,message,action,eventName,ref,workflow,job,took
+          text: 'Unit tests linux min deps. Make sure this works!'
+          mention: 'here'
+          if_mention: 'failure,cancelled'
+        if: always()
