@@ -41,18 +41,15 @@ jobs:
         run: |
           source test_python/bin/activate
           make ${{matrix.command}}
-  notify:
-    name: Notify on Slack
-    runs-on: ubuntu-latest
-    steps:
-      - uses: 8398a7/action-slack@v3
+      - name: Notify on Slack
+        uses: 8398a7/action-slack@v3
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
-          github_base_url: https://github.com/alteryx/evalml
+          job_name: Nightly ${{ matrix.python_version }} ${{matrix.command}}
           status: ${{ job.status }}
-          fields: repo,message,action,eventName,ref,workflow,job,took
-          text: 'Linux Nightly Tests'
-          mention: 'here'
-          if_mention: 'failure,cancelled'
-        if: always()
+          fields: workflow,job,took
+          mention: channel
+          if_mention: failure,cancelled
+          icon_emoji: ':cry:'
+        if: failure() 
