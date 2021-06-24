@@ -69,7 +69,7 @@ jobs:
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
-          make ${{matrix.command}}]
+          make ${{matrix.command}}
       - name: Notify on Slack
         uses: 8398a7/action-slack@v3
         env:
