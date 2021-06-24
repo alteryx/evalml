@@ -1,2 +1,0 @@
-
-c.InteractiveShellApp.extensions = ['autotime']
