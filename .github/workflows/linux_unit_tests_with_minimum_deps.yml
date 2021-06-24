@@ -55,7 +55,7 @@ jobs:
           job_name: ${{ matrix.python_version }} min dep ${{ matrix.command }}
           fields: workflow,commit,job,repo,took
           mention: here
-          if_mention: 'failure,cancelled'
+          if_mention: failure,cancelled
           custom_payload: |
             {
               attachments: [{
