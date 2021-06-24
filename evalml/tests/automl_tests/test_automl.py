@@ -3329,7 +3329,9 @@ def test_automl_woodwork_user_types_preserved(
             assert arg.ww.semantic_tags["num col"] == {"numeric"}
             assert isinstance(arg.ww.logical_types["num col"], ww.logical_types.Integer)
             assert arg.ww.semantic_tags["text col"] == set()
-            assert isinstance(arg.ww.logical_types["text col"], ww.logical_types.NaturalLanguage)
+            assert isinstance(
+                arg.ww.logical_types["text col"], ww.logical_types.NaturalLanguage
+            )
     for arg in env.mock_score.call_args[0]:
         assert isinstance(arg, (pd.DataFrame, pd.Series))
         if isinstance(arg, pd.DataFrame):
