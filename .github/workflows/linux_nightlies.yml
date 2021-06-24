@@ -41,3 +41,15 @@ jobs:
         run: |
           source test_python/bin/activate
           make ${{matrix.command}}
+      - name: Notify on Slack
+        uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          job_name: Nightly ${{ matrix.python_version }} ${{matrix.command}}
+          status: ${{ job.status }}
+          fields: workflow,job,took
+          mention: channel
+          if_mention: failure,cancelled
+          text: ':elmofire:'
+        if: failure() 

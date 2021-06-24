@@ -9,6 +9,7 @@ Release Notes
     * Documentation Changes
         * Sped up docs :pr:`2430`
     * Testing Changes
+        * Added slack integration for nightlies tests :pr:`2436`
 
 .. warning::
 
