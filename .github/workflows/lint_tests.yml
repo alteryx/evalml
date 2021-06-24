@@ -41,7 +41,7 @@ jobs:
           MATRIX_CONTEXT: ${{ toJson(matrix) }}
         with:
           status: custom
-          job_name: Python ${{ MATRIX_CONTEXT.["python_version"] }} lint test
+          job_name: Python 3.7 lint test
           fields: workflow,commit,job,repo,ref,author
           custom_payload: |
             {
