@@ -3,6 +3,7 @@ from evalml.utils.logger import get_logger
 
 logger_ = get_logger(__file__)
 
+
 def silent_error_callback(exception, traceback, automl, logger, **kwargs):
     """No-op."""
 
