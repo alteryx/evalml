@@ -45,6 +45,18 @@ class CatBoostClassifier(Estimator):
         n_jobs=-1,
         **kwargs
     ):
+        """CatBoost Classifier.
+
+        Arguments:
+            n_estimators (int): Number of gradient boosted trees. Equivalent to number of boosting rounds. Defaults to 100.
+            eta (float): Learning rate. Defaults to 0.1.
+            max_depth (int): Maximum tree depth for base learners. Defaults to 6.
+            bootstrap_type (string): Defines the method for sampling the weights of objects. Defaults to None.
+            silent (bool): Whether to emit logging while training. Default to False.
+            allow_writing_files (bool): Whether to allow writing of analytical and snapshot files during training. Defaults to False.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
+            n_jobs (int): Number of parallel threads used to run CatBoost. Defaults to -1.
+        """
         parameters = {
             "n_estimators": n_estimators,
             "eta": eta,
