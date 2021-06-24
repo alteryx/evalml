@@ -38,12 +38,11 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: custom
-          job_name: Lint
           fields: workflow,commit,job,repo,ref,author
           custom_payload: |
             {
               attachments: [{
-                text: '${{ MATRIX_CONTEXT }}, ${{ matrix }}'
+                text: '${{ MATRIX_CONTEXT }}'
               }]
             }
         env:
