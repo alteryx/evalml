@@ -38,7 +38,7 @@ jobs:
         uses: 8398a7/action-slack@v3
         with:
           status: custom
-          job_name: Python ${{ matrix.python_version }} lint test
+          job_name: Lint
           fields: workflow,commit,job,repo,ref,author
           custom_payload: |
             {
