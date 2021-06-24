@@ -42,7 +42,7 @@ jobs:
           custom_payload: |
             {
               attachments: [{
-                text: '${{ MATRIX_CONTEXT }}'
+                text: 'Lint job!'
               }]
             }
         env:
