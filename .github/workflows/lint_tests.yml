@@ -34,20 +34,3 @@ jobs:
         run: |
           source test_python/bin/activate
           make lint
-      - name: Notify on Slack
-        uses: 8398a7/action-slack@v3
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          # MATRIX_CONTEXT: ${{ toJson(matrix) }}
-        with:
-          status: custom
-          job_name: Python ${{ matrix.python_version }} lint test
-          fields: workflow,commit,job,repo,ref,author
-          custom_payload: |
-            {
-              attachments: [{
-                color: '${{ job.status }}' === 'success' ? 'good' : '${{ job.status }}' === 'failure' ? 'danger' : 'warning',
-                text: `${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ job.status }} in ${process.env.AS_TOOK}`,
-              }]
-            }
-        if: always() # Pick up events even if the job fails or is canceled.
