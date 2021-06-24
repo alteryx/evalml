@@ -2,9 +2,12 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
     * Fixes
     * Changes
+        * Updated psutils minimum version in requirements :pr:`2438`
     * Documentation Changes
+        * Sped up docs :pr:`2430`
     * Testing Changes
 
 .. warning::
