@@ -45,6 +45,9 @@ class DataCheckMessageCode(Enum):
     TARGET_MULTICLASS_HIGH_UNIQUE_CLASS = "target_multiclass_high_unique_class_warning"
     """Message code for target data for a multi classification problem that has an abnormally large number of unique classes relative to the number of target values."""
 
+    TARGET_LOGNORMAL_DISTRIBUTION = "target_lognormal_distribution"
+    """Message code for target data with a lognormal distribution."""
+
     HIGH_VARIANCE = "high_variance"
     """Message code for when high variance is detected for cross-validation."""
 
