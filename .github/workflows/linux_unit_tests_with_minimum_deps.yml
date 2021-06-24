@@ -54,7 +54,8 @@ jobs:
           job_name: ${{ matrix.python_version }} min dep ${{ matrix.command }}
           status: ${{ job.status }}
           fields: workflow,job,took
-          mention: here
+          mention: channel
           if_mention: failure,cancelled
           icon_emoji: ':elmofire:'
+          text: "JOB FAILURE!"
         if: failure() 
