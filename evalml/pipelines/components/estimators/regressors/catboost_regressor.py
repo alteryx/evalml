@@ -1,4 +1,5 @@
 import copy
+import warnings
 
 from skopt.space import Integer, Real
 
@@ -60,6 +61,10 @@ class CatBoostRegressor(Estimator):
             "silent": silent,
             "allow_writing_files": allow_writing_files,
         }
+        if kwargs.get("thread_count", None) is not None:
+            warnings.warn(
+                "Parameter 'thread_count' will be ignored. To use parallel threads, use the 'n_jobs' parameter instead."
+            )
         parameters.update(kwargs)
 
         cb_error_msg = (
