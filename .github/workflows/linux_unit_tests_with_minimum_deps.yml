@@ -54,8 +54,9 @@ jobs:
           status: custom
           job_name: ${{ matrix.python_version }} min dep ${{ matrix.command }}
           fields: workflow,commit,job,repo,took
-          mention: here
-          if_mention: failure,cancelled
+          icon_emoji: ':elmofire:'
+          mention: 'here'
+          if_mention: 'failure,cancelled'
           custom_payload: |
             {
               attachments: [{
@@ -63,4 +64,4 @@ jobs:
                 text: `${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}\n${{ job.status }} in ${process.env.AS_TOOK}`,
               }]
             }
-        if: always() 
+        if: failure() 
