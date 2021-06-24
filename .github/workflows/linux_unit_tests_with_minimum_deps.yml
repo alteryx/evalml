@@ -53,7 +53,7 @@ jobs:
         with:
           status: custom
           job_name: ${{ matrix.python_version }} min dep ${{ matrix.command }}
-          fields: workflow,commit,job,repo,ref,author
+          fields: workflow,commit,job,repo,took
           custom_payload: |
             {
               attachments: [{
