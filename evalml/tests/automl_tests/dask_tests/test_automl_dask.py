@@ -189,6 +189,3 @@ def test_automl_immediate_quit(X_y_binary_cls, cluster, caplog):
         assert TestPipelineWithFitError.custom_name not in set(
             automl.full_rankings["pipeline_name"]
         )
-        boo = False
-        # let's just fail a test for fun
-        assert boo

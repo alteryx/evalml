@@ -51,5 +51,5 @@ jobs:
           fields: workflow,job,took
           mention: channel
           if_mention: failure,cancelled
-          icon_emoji: ':cry:'
+          text: ':elmofire:'
         if: failure() 
