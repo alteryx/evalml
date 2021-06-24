@@ -4929,7 +4929,8 @@ def test_automl_thresholding_train_pipelines(mock_objective, threshold, X_y_bina
     pipes = automl.train_pipelines(pipelines_to_train)
     if threshold:
         mock_objective.assert_called()
-        assert all([p.threshold == 0.42 for p in pipes.values()])
+        # assert all([p.threshold == 0.42 for p in pipes.values()])
+        assert all([p.threshold == 1.42 for p in pipes.values()]) # fail this test on purpose
     else:
         mock_objective.assert_not_called()
         assert all([p.threshold is None for p in pipes.values()])
