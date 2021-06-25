@@ -3,6 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
         * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
+        * Exposed ``thread_count`` for Catboost estimators as ``n_jobs`` parameter :pr:`2410`
     * Fixes
     * Changes
         * Updated psutils minimum version in requirements :pr:`2438`
@@ -23,7 +24,6 @@ Release Notes
         * Add optional automatic update checker :pr:`2350`
         * Added ``search_order`` to ``AutoMLSearch``'s ``rankings`` and ``full_rankings`` tables :pr:`2345`
         * Updated threshold optimization method for binary classification :pr:`2315`
-        * Exposed ``thread_count`` for Catboost estimators as ``n_jobs`` parameter :pr:`2410`
         * Updated demos to pull data from S3 instead of including demo data in package :pr:`2387`
         * Upgrade woodwork version to v0.4.1 :pr:`2379`
     * Fixes

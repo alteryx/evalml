@@ -56,7 +56,7 @@ class CatBoostClassifier(Estimator):
             silent (bool): Whether to emit logging while training. Default to False.
             allow_writing_files (bool): Whether to allow writing of analytical and snapshot files during training. Defaults to False.
             random_seed (int): Seed for the random number generator. Defaults to 0.
-            n_jobs (int): Number of parallel threads used to run CatBoost. Defaults to -1.
+            n_jobs (int): Number of parallel threads used to run CatBoost. This will be passed to CatBoost as the `thread_count` parameter. Defaults to -1.
         """
         parameters = {
             "n_estimators": n_estimators,
