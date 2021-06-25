@@ -1180,8 +1180,10 @@ class _AutoMLTestEnv:
     def _get_mock(self, mock_name):
         mock = getattr(self, f"_mock_{mock_name}")
         if mock is None:
-            raise ValueError(f"mock_{mock_name} cannot be accessed before leaving the test_context! "
-                             "Access it after leaving test_context.")
+            raise ValueError(
+                f"mock_{mock_name} cannot be accessed before leaving the test_context! "
+                "Access it after leaving test_context."
+            )
         return mock
 
     @property
