@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
         * Updated psutils minimum version in requirements :pr:`2438`
+        * Added ``logger`` parameter to AutoML error callbacks and replaced global logger with ``JobLogger`` for :pr:`2429`
     * Documentation Changes
         * Sped up docs :pr:`2430`
     * Testing Changes
