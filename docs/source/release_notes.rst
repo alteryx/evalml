@@ -8,7 +8,9 @@ Release Notes
         * Updated psutils minimum version in requirements :pr:`2438`
     * Documentation Changes
         * Sped up docs :pr:`2430`
+        * Removed mentions of ``DataTable`` and ``DataColumn`` from the docs :pr:`2445`
     * Testing Changes
+        * Added slack integration for nightlies tests :pr:`2436`
 
 .. warning::
 
