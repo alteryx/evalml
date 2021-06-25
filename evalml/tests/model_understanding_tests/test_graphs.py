@@ -857,8 +857,8 @@ def test_jupyter_graph_check(
 
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
-        graph_partial_dependence(clf, X, features=0, grid_resolution=5)
-        assert len(graph_valid) == 1
+        graph_partial_dependence(clf, X, features=0, grid_resolution=20)
+        assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
     with pytest.warns(None) as graph_valid:
         graph_binary_objective_vs_threshold(test_pipeline, X, y, cbm, steps=5)
