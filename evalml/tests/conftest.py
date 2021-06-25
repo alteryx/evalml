@@ -1139,12 +1139,12 @@ class _AutoMLTestEnv:
                 Set to None until the first computation is run in the test environment.
         """
         self.problem_type = handle_problem_types(problem_type)
-        self.mock_fit = None
-        self.mock_tell = None
-        self.mock_score = None
-        self.mock_encode_targets = None
-        self.mock_predict_proba = None
-        self.mock_optimize_threshold = None
+        self._mock_fit = None
+        self._mock_tell = None
+        self._mock_score = None
+        self._mock_encode_targets = None
+        self._mock_predict_proba = None
+        self._mock_optimize_threshold = None
 
     @property
     def _pipeline_class(self):
@@ -1166,6 +1166,47 @@ class _AutoMLTestEnv:
         elif return_value is not None:
             kwargs = {"return_value": return_value}
         return patch(pipeline_class_str + "." + method, **kwargs)
+
+    def _reset_mocks(self):
+        """Set the mocks to None before running a computation so that we can prevent users from trying to access
+        them before leaving the context manager."""
+        self._mock_fit = None
+        self._mock_tell = None
+        self._mock_score = None
+        self._mock_encode_targets = None
+        self._mock_predict_proba = None
+        self._mock_optimize_threshold = None
+
+    def _get_mock(self, mock_name):
+        mock = getattr(self, f"_mock_{mock_name}")
+        if mock is None:
+            raise ValueError(f"mock_{mock_name} cannot be accessed before leaving the test_context! "
+                             "Access it after leaving test_context.")
+        return mock
+
+    @property
+    def mock_fit(self):
+        return self._get_mock("fit")
+
+    @property
+    def mock_tell(self):
+        return self._get_mock("tell")
+
+    @property
+    def mock_score(self):
+        return self._get_mock("score")
+
+    @property
+    def mock_encode_targets(self):
+        return self._get_mock("encode_targets")
+
+    @property
+    def mock_predict_proba(self):
+        return self._get_mock("predict_proba")
+
+    @property
+    def mock_optimize_threshold(self):
+        return self._get_mock("optimize_threshold")
 
     @contextlib.contextmanager
     def test_context(
@@ -1223,17 +1264,21 @@ class _AutoMLTestEnv:
 
         mock_tell = patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 
+        # Reset the mocks from a previous computation so that ValueError can be properly raised if
+        # user tries to access mocks before leaving the context
+        self._reset_mocks()
+
         # Unfortunately, in order to set the MagicMock instances as class attributes we need to use the
         # `with ... ` syntax.
         with mock_fit as fit, mock_score as score, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
             # Can think of `yield` as blocking this method until the computation finishes running
             yield
-            self.mock_fit = fit
-            self.mock_tell = tell
-            self.mock_score = score
-            self.mock_encode_targets = encode
-            self.mock_predict_proba = proba
-            self.mock_optimize_threshold = optimize
+            self._mock_fit = fit
+            self._mock_tell = tell
+            self._mock_score = score
+            self._mock_encode_targets = encode
+            self._mock_predict_proba = proba
+            self._mock_optimize_threshold = optimize
 
     def run_search(
         self,

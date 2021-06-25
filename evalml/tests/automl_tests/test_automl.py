@@ -390,7 +390,6 @@ def test_rankings(
     )
     env = AutoMLTestEnv("binary")
     env.run_search(automl, score_return_value={"Log Loss Binary": 0.03})
-    automl.search()
     assert len(automl.full_rankings) == 3
     assert len(automl.rankings) == 2
 
