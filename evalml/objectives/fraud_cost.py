@@ -60,6 +60,7 @@ class FraudCost(BinaryClassificationObjective):
             y_predicted (pd.Series): Predicted fraud labels
             y_true (pd.Series): True fraud labels
             X (pd.DataFrame): Data with transaction amounts
+            sample_weight (pd.DataFrame): Ignored.
 
         Returns:
             float: Amount lost to fraud per transaction

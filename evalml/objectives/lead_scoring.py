@@ -29,6 +29,7 @@ class LeadScoring(BinaryClassificationObjective):
             y_predicted (pd.Series): Predicted labels
             y_true (pd.Series): True labels
             X (pd.DataFrame): Ignored.
+            sample_weight (pd.DataFrame): Ignored.
 
         Returns:
             float: Profit per lead
