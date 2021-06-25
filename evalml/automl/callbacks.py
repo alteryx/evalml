@@ -1,7 +1,7 @@
 from evalml.exceptions import PipelineScoreError
 from evalml.utils.logger import get_logger
 
-logger_ = get_logger(__file__)
+callback_file_logger = get_logger(__file__)
 
 
 def silent_error_callback(exception, traceback, automl, logger, **kwargs):
@@ -12,7 +12,7 @@ def raise_error_callback(exception, traceback, automl, logger, **kwargs):
     """Raises the exception thrown by the AutoMLSearch object. Also logs the exception as an error."""
     logger.error(f"AutoML search raised a fatal exception: {str(exception)}")
     logger.error("\n".join(traceback))
-    logger.write_to_logger(logger_)
+    logger.write_to_logger(callback_file_logger)
     raise exception
 
 
