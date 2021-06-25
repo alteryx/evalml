@@ -19,6 +19,7 @@ from evalml.automl.callbacks import (
     raise_error_callback,
     silent_error_callback,
 )
+from evalml.automl.engine.engine_base import JobLogger
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
@@ -3417,6 +3418,35 @@ def test_automl_error_callback(
     if callback in [raise_error_callback]:
         assert f"AutoML search raised a fatal exception: {msg}" in caplog.text
         assert msg in caplog.text
+
+
+@patch(
+    "evalml.pipelines.BinaryClassificationPipeline.score",
+    return_value={"Log Loss Binary": 0.8},
+)
+@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
+def test_automl_error_callback_job_logger(
+    mock_fit,
+    mock_score,
+    X_y_binary,
+):
+    X, y = X_y_binary
+    mock_score.return_value = {"Log Loss Binary": 0.8}
+    msg = "all your model are belong to us"
+    mock_fit.side_effect = [Exception(msg)] * 3 + [None] * 100
+    mock_callback = MagicMock()
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        error_callback=mock_callback,
+        train_best_pipeline=False,
+        optimize_thresholds=False,
+        n_jobs=1,
+    )
+    automl.search()
+    for call in mock_callback.call_args_list:
+        assert isinstance(call[1]["logger"], JobLogger)
 
 
 @pytest.mark.parametrize(
