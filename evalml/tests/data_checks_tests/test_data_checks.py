@@ -265,7 +265,7 @@ def test_default_data_checks_classification(input_type):
     # multiclass
     imbalance = [
         DataCheckError(
-            message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 2.0, 1.0]",
+            message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: {0.0, 2.0, 1.0}",
             data_check_name="ClassImbalanceDataCheck",
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
             details={"target_values": [0.0, 2.0, 1.0]},
