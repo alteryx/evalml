@@ -82,6 +82,11 @@ jobs:
         run: |
           source test_python/bin/activate
           make ${{matrix.command}}
+      - name: Upload pytest duration artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-duration-report
+          path: test-report/{{matrix.command}}-junit.xml
       - name: install coverage
         run: pip install coverage
       - name: Upload coverage to Codecov
