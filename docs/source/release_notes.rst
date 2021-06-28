@@ -5,6 +5,7 @@ Release Notes
         * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
         * Updated Objectives API to allow for sample weighting :pr:`2433`
     * Fixes
+        * Added custom exception to address features with scales to small for partial dependence :pr:`2455`
     * Changes
         * Updated psutils minimum version in requirements :pr:`2438`
         * Updated ``log_error_callback`` to not include filepath in logged message :pr:`2429`
