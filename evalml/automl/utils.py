@@ -81,7 +81,7 @@ def make_data_splitter(
     """
     random_seed = random_seed
     if n_splits is None:
-        if X.shape[0] < _SMALL_DATA_ROW_THRESHOLD and not is_time_series(problem_type):
+        if X.shape[0] <= _SMALL_DATA_ROW_THRESHOLD and not is_time_series(problem_type):
             n_splits = _SMALL_DATA_CV_FOLDS
         else:
             n_splits = 3
