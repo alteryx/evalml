@@ -23,7 +23,7 @@ class FraudCost(BinaryClassificationObjective):
             retry_percentage (float): What percentage of customers that will retry a transaction if it
                 is declined. Between 0 and 1. Defaults to .5
 
-            interchange_fee (float): How much of each successful transaction you can collect.
+            interchange_fee (float): How much of each successful transaction you pay.
                 Between 0 and 1. Defaults to .02
 
             fraud_payout_percentage (float): Percentage of fraud you will not be able to collect.
@@ -62,7 +62,7 @@ class FraudCost(BinaryClassificationObjective):
         # amount paid if transaction is fraud
         fraud_cost = transaction_amount * self.fraud_payout_percentage
 
-        # money made from interchange fees on transaction
+        # money paid from interchange fees on transaction
         interchange_cost = (
             transaction_amount * (1 - self.retry_percentage) * self.interchange_fee
         )
