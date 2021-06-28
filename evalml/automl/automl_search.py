@@ -124,96 +124,127 @@ class AutoMLSearch:
     
     Parameters
     ----------
-    X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
+    X_train : pd.DataFrame
+        The input training data of shape [n_samples, n_features]. Required.
 
-    y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
+    y_train : pd.Series
+        The target training data of length [n_samples]. Required for supervised learning tasks.
 
-    problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+    problem_type : str or ProblemTypes
+        Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
-    objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
+    objective : str or ObjectiveBase 
+        The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
         When set to 'auto', chooses:
 
-        - LogLossBinary for binary classification problems,
-        - LogLossMulticlass for multiclass classification problems, and
-        - R2 for regression problems.
+            - LogLossBinary for binary classification problems,
+            - LogLossMulticlass for multiclass classification problems, and
+            - R2 for regression problems.
 
-    max_iterations (int): Maximum number of iterations to search. If max_iterations and
+    max_iterations : int
+        Maximum number of iterations to search. If max_iterations and
         max_time is not set, then max_iterations will default to max_iterations of 5.
 
-    max_time (int, str): Maximum time to search for pipelines.
+    max_time : int, str
+        Maximum time to search for pipelines.
         This will not start a new pipeline search after the duration
         has elapsed. If it is an integer, then the time will be in seconds.
         For strings, time can be specified as seconds, minutes, or hours.
 
-    patience (int): Number of iterations without improvement to stop search early. Must be positive.
+    patience : int 
+        Number of iterations without improvement to stop search early. Must be positive.
         If None, early stopping is disabled. Defaults to None.
 
-    tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
+    tolerance : float 
+        Minimum percentage difference to qualify as score improvement for early stopping.
         Only applicable if patience is not None. Defaults to None.
 
-    allowed_component_graphs (dict): A dictionary of lists or ComponentGraphs indicating the component graphs allowed in the search.
+    allowed_component_graphs : dict
+        A dictionary of lists or ComponentGraphs indicating the component graphs allowed in the search.
         The format should follow { "Name_0": [list_of_components], "Name_1": [ComponentGraph(...)] }
 
         The default of None indicates all pipeline component graphs for this problem type are allowed. Setting this field will cause allowed_model_families to be ignored.
 
         e.g. allowed_component_graphs = { "My_Graph": ["Imputer", "One Hot Encoder", "Random Forest Classifier"] }
 
-    allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary` to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided, this parameter will be ignored.
+    allowed_model_families : list(str, ModelFamily)
+        The model families to search. The default of None searches over all model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary` to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided, this parameter will be ignored.
 
-    data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
+    data_splitter : sklearn.model_selection.BaseCrossValidator
+        Data splitting method to use. Defaults to StratifiedKFold.
 
-    tuner_class: The tuner class to use. Defaults to SKOptTuner.
+    tuner_class : Tuner
+        The tuner class to use. Defaults to SKOptTuner.
 
-    optimize_thresholds (bool): Whether or not to optimize the binary pipeline threshold. Defaults to True.
+    optimize_thresholds : boolean
+        Whether or not to optimize the binary pipeline threshold. Defaults to True.
 
-    start_iteration_callback (callable): Function called before each pipeline training iteration.
+    start_iteration_callback : callable
+        Function called before each pipeline training iteration.
         Callback function takes three positional parameters: The pipeline instance and the AutoMLSearch object.
 
-    add_result_callback (callable): Function called after each pipeline training iteration.
+    add_result_callback : callable
+        Function called after each pipeline training iteration.
         Callback function takes three positional parameters: A dictionary containing the training results for the new pipeline, an untrained_pipeline containing the parameters used during training, and the AutoMLSearch object.
 
-    error_callback (callable): Function called when `search()` errors and raises an Exception.
+    error_callback : callable
+        Function called when `search()` errors and raises an Exception.
         Callback function takes three positional parameters: the Exception raised, the traceback, and the AutoMLSearch object. Must also accepts kwargs, so AutoMLSearch is able to pass along other appropriate parameters by default. Defaults to None, which will call `log_error_callback`.
 
-    additional_objectives (list): Custom set of objectives to score on. Will override default objectives for problem type if not empty.
+    additional_objectives : list
+        Custom set of objectives to score on. Will override default objectives for problem type if not empty.
 
-    alternate_thresholding_objective (str): The objective to use for thresholding binary classification pipelines if the main objective provided isn't tuneable.
+    alternate_thresholding_objective : str
+        The objective to use for thresholding binary classification pipelines if the main objective provided isn't tuneable.
         Defaults to F1.
 
-    random_seed (int): Seed for the random number generator. Defaults to 0.
+    random_seed : int
+        Seed for the random number generator. Defaults to 0.
 
-    n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
+    n_jobs : int, None
+        Non-negative integer describing level of parallelism used for pipelines.
         None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
 
-    ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over.
+    ensembling : boolean
+        If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over.
         If the number of unique pipelines to search over per batch is one, ensembling will not run. Defaults to False.
 
-    max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and max_iterations have precedence over stopping the search.
+    max_batches : int
+        The maximum number of batches of pipelines to search. Parameters max_time, and max_iterations have precedence over stopping the search.
 
-    problem_configuration (dict, None): Additional parameters needed to configure the search. For example, in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+    problem_configuration : dict, None 
+        Additional parameters needed to configure the search. For example, in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
 
-    train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
+    train_best_pipeline : boolean
+        Whether or not to train the best pipeline before returning it. Defaults to True.
 
-    pipeline_parameters (dict): A dict of the parameters used to initialize a pipeline with.
+    pipeline_parameters : dict 
+        A dict of the parameters used to initialize a pipeline with.
         Keys should consist of the component names and values should specify parameter values
 
         e.g. pipeline_parameters = { 'Imputer' : { 'numeric_impute_strategy': 'most_frequent' } }
 
-    custom_hyperparameters (dict): A dict of the hyperparameter ranges used to iterate over during search.
+    custom_hyperparameters : dict
+        A dict of the hyperparameter ranges used to iterate over during search.
         Keys should consist of the component names and values should specify a singular value or skopt.Space.
 
         e.g. custom_hyperparameters = { 'Imputer' : { 'numeric_impute_strategy': Categorical(['most_frequent', 'median']) } }
 
-    sampler_method (str): The data sampling component to use in the pipelines if the problem type is classification and the target balance is smaller than the sampler_balanced_ratio.
+    sampler_method : str
+        The data sampling component to use in the pipelines if the problem type is classification and the target balance is smaller than the sampler_balanced_ratio.
         Either 'auto', which will use our preferred sampler for the data, 'Undersampler', 'Oversampler', or None. Defaults to 'auto'.
 
-    sampler_balanced_ratio (float): The minority:majority class ratio that we consider balanced, so a 1:4 ratio would be equal to 0.25. If the class balance is larger than this provided value, then we will not add a sampler since the data is then considered balanced. Overrides the `sampler_ratio` of the samplers. Defaults to 0.25.
+    sampler_balanced_ratio : float
+        The minority:majority class ratio that we consider balanced, so a 1:4 ratio would be equal to 0.25. If the class balance is larger than this provided value, then we will not add a sampler since the data is then considered balanced. Overrides the `sampler_ratio` of the samplers. Defaults to 0.25.
 
-    _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True. Must be between 0 and 1, exclusive. Defaults to 0.2
+    _ensembling_split_size : float
+        The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True. Must be between 0 and 1, exclusive. Defaults to 0.2
 
-    _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one. The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
+    _pipelines_per_batch : int
+        The number of pipelines to train for every batch after the first one. The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
 
-    engine (EngineBase or None): The engine instance used to evaluate pipelines. If None, a SequentialEngine will be used.
+    engine : EngineBase or None 
+        The engine instance used to evaluate pipelines. If None, a SequentialEngine will be used.
     
     """
 
