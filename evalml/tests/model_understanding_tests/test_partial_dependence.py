@@ -1304,20 +1304,13 @@ def test_partial_dependence_datetime_support(
     dates.index = X.index
     X["dt_column"] = dates
     pipeline.fit(X, y)
-    part_dep = partial_dependence(pipeline, X, features="dt_column", grid_resolution=grid)
+    part_dep = partial_dependence(
+        pipeline, X, features="dt_column", grid_resolution=grid
+    )
     if problem_type == "multiclass":
-        assert len(part_dep["partial_dependence"]) == 30  # 10 rows * 3 classes
-        assert len(part_dep["feature_values"]) == 30
+        assert len(part_dep["partial_dependence"]) == 3 * grid  # grid * 3 classes
+        assert len(part_dep["feature_values"]) == 3 * grid
     else:
-        assert len(part_dep["partial_dependence"]) == 10
-        assert len(part_dep["feature_values"]) == 10
-    assert not part_dep.isnull().any(axis=None)
-
-    part_dep = partial_dependence(pipeline, X, features=20)
-    if problem_type == "multiclass":
-        assert len(part_dep["partial_dependence"]) == 30  # 10 rows * 3 classes
-        assert len(part_dep["feature_values"]) == 30
-    else:
-        assert len(part_dep["partial_dependence"]) == 10
-        assert len(part_dep["feature_values"]) == 10
+        assert len(part_dep["partial_dependence"]) == grid
+        assert len(part_dep["feature_values"]) == grid
     assert not part_dep.isnull().any(axis=None)
