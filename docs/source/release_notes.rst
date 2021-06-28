@@ -12,6 +12,7 @@ Release Notes
         * Removed mentions of ``DataTable`` and ``DataColumn`` from the docs :pr:`2445`
     * Testing Changes
         * Added slack integration for nightlies tests :pr:`2436`
+        * Changed ``build_conda_pkg`` CI job to run only when dependencies are updates :pr:`2446`
 
 .. warning::
 
