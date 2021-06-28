@@ -4,13 +4,16 @@ Release Notes
     * Enhancements
         * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
         * Exposed ``thread_count`` for Catboost estimators as ``n_jobs`` parameter :pr:`2410`
+        * Updated Objectives API to allow for sample weighting :pr:`2433`
     * Fixes
     * Changes
         * Updated psutils minimum version in requirements :pr:`2438`
     * Documentation Changes
         * Sped up docs :pr:`2430`
+        * Removed mentions of ``DataTable`` and ``DataColumn`` from the docs :pr:`2445`
     * Testing Changes
         * Added slack integration for nightlies tests :pr:`2436`
+        * Changed ``build_conda_pkg`` CI job to run only when dependencies are updates :pr:`2446`
 
 .. warning::
 
