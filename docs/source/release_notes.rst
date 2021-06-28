@@ -7,6 +7,7 @@ Release Notes
     * Fixes
     * Changes
         * Updated psutils minimum version in requirements :pr:`2438`
+        * Updated ``log_error_callback`` to not include filepath in logged message :pr:`2429`
     * Documentation Changes
         * Sped up docs :pr:`2430`
         * Removed mentions of ``DataTable`` and ``DataColumn`` from the docs :pr:`2445`
