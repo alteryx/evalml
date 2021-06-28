@@ -13,6 +13,7 @@ Release Notes
     * Testing Changes
         * Added slack integration for nightlies tests :pr:`2436`
         * Changed ``build_conda_pkg`` CI job to run only when dependencies are updates :pr:`2446`
+        * Updated workflows to store pytest runtimes as test artifacts :pr:`2448`
 
 .. warning::
 
