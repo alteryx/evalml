@@ -1258,20 +1258,23 @@ def test_graph_partial_dependence_ice_plot_two_way_error(
             kind="individual",
         )
 
+
 def test_partial_dependence_scale_error():
 
     pl = RegressionPipeline(["Random Forest Regressor"])
     X = pd.DataFrame({"a": list(range(30)), "b": list(range(-10, 20))})
-    y = 10 * X['a'] + X['b']
+    y = 10 * X["a"] + X["b"]
 
     pl.fit(X, y)
 
     X_pd = X.copy()
-    X_pd['a'] = X['a'] * 1.e-10
+    X_pd["a"] = X["a"] * 1.0e-10
 
     with pytest.raises(ValueError, match="scale of these features is too small"):
         partial_dependence(pl, X_pd, "a", grid_resolution=5)
 
     # Ensure that sklearn partial_dependence exceptions are still caught as expected
-    with pytest.raises(ValueError, match="'grid_resolution' must be strictly greater than 1."):
+    with pytest.raises(
+        ValueError, match="'grid_resolution' must be strictly greater than 1."
+    ):
         partial_dependence(pl, X_pd, "a", grid_resolution=0)

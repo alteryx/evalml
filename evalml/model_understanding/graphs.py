@@ -6,7 +6,6 @@ from collections import OrderedDict
 import numpy as np
 import pandas as pd
 import woodwork as ww
-
 from sklearn.exceptions import NotFittedError
 from sklearn.inspection import partial_dependence as sk_partial_dependence
 from sklearn.manifold import TSNE
@@ -702,9 +701,11 @@ def partial_dependence(
         )
     except ValueError as e:
         if "percentiles are too close to each other" in str(e):
-            raise ValueError("The scale of these features is too small and results in" \
-                             "percentiles that are too close together.  Partial dependence" \
-                             "cannot be computed for these types of features.")
+            raise ValueError(
+                "The scale of these features is too small and results in"
+                "percentiles that are too close together.  Partial dependence"
+                "cannot be computed for these types of features."
+            )
         else:
             raise e
 
