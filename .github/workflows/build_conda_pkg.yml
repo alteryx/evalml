@@ -1,6 +1,9 @@
 name: Build conda package
 
 on:
+  push:
+    branches:
+      - main
   pull_request:
     types: [ opened, synchronize ]
     paths:
