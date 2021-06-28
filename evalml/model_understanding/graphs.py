@@ -18,6 +18,7 @@ from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.tree import export_graphviz
 from sklearn.utils.multiclass import unique_labels
+from sklearn.inspection._partial_dependence import _grid_from_X, _partial_dependence_brute
 
 import evalml
 from evalml.exceptions import NoPositiveLabelException, NullsInColumnWarning
@@ -655,9 +656,6 @@ def partial_dependence(
         grid_resolution = max([max_num_cats + 1, grid_resolution])
 
     X_dt = X_features.ww.select("datetime")
-    if any(is_datetime):
-        max_num_dt = max(X_dt.ww.describe().loc["nunique"])
-        grid_resolution = max([max_num_dt + 1, grid_resolution])
 
     if isinstance(features, (list, tuple)):
         feature_names = _get_feature_names_from_str_or_col_index(X, features)
@@ -690,14 +688,29 @@ def partial_dependence(
 
     _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
-    preds = sk_partial_dependence(
-        wrapped,
-        X=X,
-        features=features,
-        percentiles=percentiles,
-        grid_resolution=grid_resolution,
-        kind=kind,
-    )
+    if any(is_datetime):
+        timestamps = np.array([X_dt - pd.Timestamp('1970-01-01')] // np.timedelta64(1, 's')).reshape(-1, 1)
+        grid, values = _grid_from_X(timestamps, percentiles=percentiles, grid_resolution=grid_resolution)
+        grid_dates = pd.to_datetime(pd.Series(grid.squeeze()), unit='s').values.reshape(-1, 1)
+        feature_index = X.columns.tolist().index(features) if isinstance(features, str) else features
+        averaged_predictions, predictions = _partial_dependence_brute(
+            wrapped, grid_dates, [feature_index], X, response_method='auto')
+
+        predictions = predictions.reshape(
+            -1, X.shape[0], *[val.shape[0] for val in values])
+
+        averaged_predictions = averaged_predictions.reshape(
+            -1, *[val.shape[0] for val in values])
+        preds = {"average": averaged_predictions, "individual": predictions, "values": values}
+    else:
+        preds = sk_partial_dependence(
+            wrapped,
+            X=X,
+            features=features,
+            percentiles=percentiles,
+            grid_resolution=grid_resolution,
+            kind=kind,
+        )
 
     classes = None
     if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):

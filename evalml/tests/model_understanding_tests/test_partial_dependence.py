@@ -787,7 +787,7 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
     )
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "bar"
-    assert plot_data["x"] == ["0", "1", "2"]
+    assert all(plot_data["x"] == ["0", "1", "2"])
 
     fig = graph_partial_dependence(
         pipeline, X, features=("0", "categorical_column"), grid_resolution=5
@@ -853,7 +853,7 @@ def test_partial_dependence_multiclass_categorical(
 
     for i, plot_data in enumerate(fig.to_dict()["data"]):
         assert plot_data["type"] == "bar"
-        assert plot_data["x"] == ["0", "1", "2"]
+        assert all(plot_data["x"] == ["0", "1", "2"])
         if class_label is None:
             assert plot_data["name"] == f"class_{i}"
         else:
@@ -1047,7 +1047,7 @@ def test_graph_partial_dependence_regression_and_binary_datetime(
     fig = graph_partial_dependence(pipeline, X, features="dt_column", grid_resolution=5)
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "scatter"
-    assert plot_data["x"] == list(pd.date_range("20200101", periods=5))
+    assert all(plot_data["x"] == list(pd.date_range("20200101", periods=5)))
 
 
 def test_graph_partial_dependence_regression_date_order(X_y_binary):
@@ -1081,7 +1081,7 @@ def test_graph_partial_dependence_regression_date_order(X_y_binary):
     fig = graph_partial_dependence(pipeline, X, features="dt_column", grid_resolution=5)
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "scatter"
-    assert plot_data["x"] == list(pd.date_range("20200101", periods=5))
+    assert all(plot_data["x"] == list(pd.date_range("20200101", periods=5)))
 
 
 def test_partial_dependence_respect_grid_resolution(fraud_100):
@@ -1257,3 +1257,67 @@ def test_graph_partial_dependence_ice_plot_two_way_error(
             grid_resolution=5,
             kind="individual",
         )
+
+
+@pytest.mark.parametrize("grid", [10, 20, 50, 100])
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
+def test_partial_dependence_datetime_support(
+    grid, problem_type, X_y_regression, X_y_binary, X_y_multi
+):
+    if problem_type == "binary":
+        X, y = X_y_binary
+        pipeline = BinaryClassificationPipeline(
+            component_graph=[
+                "Imputer",
+                "One Hot Encoder",
+                "DateTime Featurization Component",
+                "Standard Scaler",
+                "Logistic Regression Classifier",
+            ]
+        )
+    elif problem_type == "multiclass":
+        X, y = X_y_multi
+        pipeline = MulticlassClassificationPipeline(
+            component_graph=[
+                "Imputer",
+                "One Hot Encoder",
+                "DateTime Featurization Component",
+                "Standard Scaler",
+                "Logistic Regression Classifier",
+            ]
+        )
+    else:
+        X, y = X_y_regression
+        pipeline = RegressionPipeline(
+            component_graph=[
+                "Imputer",
+                "One Hot Encoder",
+                "DateTime Featurization Component",
+                "Standard Scaler",
+                "Linear Regressor",
+            ]
+        )
+    X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
+    y = pd.Series(y)
+
+    dates = pd.date_range("2021-01-11", "2021-04-20")
+    dates.index = X.index
+    X["dt_column"] = dates
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, features="dt_column", grid_resolution=grid)
+    if problem_type == "multiclass":
+        assert len(part_dep["partial_dependence"]) == 30  # 10 rows * 3 classes
+        assert len(part_dep["feature_values"]) == 30
+    else:
+        assert len(part_dep["partial_dependence"]) == 10
+        assert len(part_dep["feature_values"]) == 10
+    assert not part_dep.isnull().any(axis=None)
+
+    part_dep = partial_dependence(pipeline, X, features=20)
+    if problem_type == "multiclass":
+        assert len(part_dep["partial_dependence"]) == 30  # 10 rows * 3 classes
+        assert len(part_dep["feature_values"]) == 30
+    else:
+        assert len(part_dep["partial_dependence"]) == 10
+        assert len(part_dep["feature_values"]) == 10
+    assert not part_dep.isnull().any(axis=None)
