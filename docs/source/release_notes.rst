@@ -5,7 +5,7 @@ Release Notes
         * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
         * Updated Objectives API to allow for sample weighting :pr:`2433`
     * Fixes
-        * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:``
+        * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
     * Changes
         * Updated psutils minimum version in requirements :pr:`2438`
     * Documentation Changes
