@@ -1047,7 +1047,7 @@ def test_graph_partial_dependence_regression_and_binary_datetime(
     fig = graph_partial_dependence(pipeline, X, features="dt_column", grid_resolution=5)
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "scatter"
-    assert plot_data["x"] == list(pd.date_range("20200101", periods=5))
+    assert all(plot_data["x"] == list(pd.date_range("20200101", periods=5)))
 
 
 def test_graph_partial_dependence_regression_date_order(X_y_binary):
@@ -1081,7 +1081,7 @@ def test_graph_partial_dependence_regression_date_order(X_y_binary):
     fig = graph_partial_dependence(pipeline, X, features="dt_column", grid_resolution=5)
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "scatter"
-    assert plot_data["x"] == list(pd.date_range("20200101", periods=5))
+    assert all(plot_data["x"] == list(pd.date_range("20200101", periods=5)))
 
 
 def test_partial_dependence_respect_grid_resolution(fraud_100):
@@ -1155,7 +1155,7 @@ def test_graph_partial_dependence_ice_plot(
     avg_dep_data, ind_dep_data = partial_dependence(
         clf, X, features=feature, grid_resolution=5, kind="both"
     )
-    assert np.array_equal(
+    assert np.array_equal(e
         fig_dict["data"][-1]["x"],
         avg_dep_data["feature_values"][: len(fig_dict["data"][-1]["x"])].values,
     )
