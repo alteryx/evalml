@@ -288,6 +288,7 @@ class AutoMLSearch:
                 "Time series support in evalml is still in beta, which means we are still actively building "
                 "its core features. Please be mindful of that when running search()."
             )
+        self._SLEEP_TIME = 0.1
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
@@ -1437,4 +1438,4 @@ class AutoMLSearch:
 
     @property
     def _sleep_time(self):
-        return 0.1
+        return self._SLEEP_TIME

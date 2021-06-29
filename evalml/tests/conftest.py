@@ -1,7 +1,7 @@
 import contextlib
 import os
 import sys
-from unittest.mock import patch, PropertyMock
+from unittest.mock import PropertyMock, patch
 
 import numpy as np
 import pandas as pd
@@ -1273,7 +1273,9 @@ class _AutoMLTestEnv:
         # Unfortunately, in order to set the MagicMock instances as class attributes we need to use the
         # `with ... ` syntax.
         sleep_time = PropertyMock(return_value=0.00000001)
-        mock_sleep = patch('evalml.automl.AutoMLSearch._sleep_time', new_callable=sleep_time)
+        mock_sleep = patch(
+            "evalml.automl.AutoMLSearch._sleep_time", new_callable=sleep_time
+        )
 
         with mock_sleep, mock_fit as fit, mock_score as score, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
             # Can think of `yield` as blocking this method until the computation finishes running
