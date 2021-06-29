@@ -3,6 +3,7 @@ import pandas as pd
 import woodwork as ww
 
 from evalml.utils.gen_utils import is_all_numeric
+from woodwork.logical_types import Ordinal, Datetime
 
 numeric_and_boolean_ww = [
     ww.logical_types.Integer.type_string,
@@ -110,8 +111,15 @@ def _retain_custom_types_and_initalize_woodwork(
         return ww.init_series(new_dataframe, old_logical_types)
     if ltypes_to_ignore is None:
         ltypes_to_ignore = []
-    old_logical_types = {k: type(v) for k, v in old_logical_types.items()}
-    col_intersection = set(old_logical_types.keys()).intersection(
+
+    new_logical_types = {}
+    for (k,v) in old_logical_types.items():
+        if isinstance(v, (Ordinal, Datetime)):
+            new_logical_types[k] = v
+        else:
+            new_logical_types[k] = type(v)
+    #old_logical_types = {k: type(v) for k, v in old_logical_types.items()}
+    col_intersection = set(new_logical_types.keys()).intersection(
         set(new_dataframe.columns)
     )
     retained_logical_types = {
