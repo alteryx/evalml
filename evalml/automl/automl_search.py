@@ -288,7 +288,6 @@ class AutoMLSearch:
                 "Time series support in evalml is still in beta, which means we are still actively building "
                 "its core features. Please be mindful of that when running search()."
             )
-        self._SLEEP_TIME = 0.1
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback
         self.add_result_callback = add_result_callback
@@ -813,7 +812,7 @@ class AutoMLSearch:
                     current_computation_index = (current_computation_index + 1) % max(
                         len(computations), 1
                     )
-                    time.sleep(self._SLEEP_TIME)
+                    time.sleep(self._sleep_time)
                 loop_interrupted = False
             except KeyboardInterrupt:
                 loop_interrupted = True
@@ -1435,3 +1434,7 @@ class AutoMLSearch:
             return PipelineSearchPlots(self.results, self.objective)
         except ImportError:
             return None
+
+    @property
+    def _sleep_time(self):
+        return 0.1

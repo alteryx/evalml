@@ -236,7 +236,8 @@ def test_pipeline_limits(
         max_iterations=1,
     )
     env = AutoMLTestEnv(automl_type)
-    env.run_search(automl, score_return_value=score_value)
+    with env.test_context(score_return_value=score_value):
+        automl.search()
     out = caplog.text
     assert "Searching up to 1 pipelines. " in out
     assert len(automl.results["pipeline_results"]) == 1
@@ -249,7 +250,8 @@ def test_pipeline_limits(
         optimize_thresholds=False,
         max_time=1,
     )
-    env.run_search(automl, score_return_value=score_value)
+    with env.test_context(score_return_value=score_value):
+        automl.search()
     out = caplog.text
     assert "Will stop searching for new pipelines after 1 seconds" in out
     assert len(automl.results["pipeline_results"]) >= 1
@@ -263,7 +265,8 @@ def test_pipeline_limits(
         max_time=1,
         max_iterations=5,
     )
-    env.run_search(automl, score_return_value=score_value)
+    with env.test_context(score_return_value=score_value):
+        automl.search()
     out = caplog.text
     assert "Searching up to 5 pipelines. " in out
     assert "Will stop searching for new pipelines after 1 seconds" in out
@@ -273,7 +276,8 @@ def test_pipeline_limits(
     automl = AutoMLSearch(
         X_train=X, y_train=y, problem_type=automl_type, optimize_thresholds=False
     )
-    env.run_search(automl, score_return_value=score_value)
+    with env.test_context(score_return_value=score_value):
+        automl.search()
     out = caplog.text
     assert "Using default limit of max_batches=1." in out
     assert "Searching up to 1 batches for a total of" in out
@@ -287,7 +291,8 @@ def test_pipeline_limits(
         optimize_thresholds=False,
         max_time=1e-16,
     )
-    env.run_search(automl, score_return_value=score_value)
+    with env.test_context(score_return_value=score_value):
+        automl.search()
     out = caplog.text
     assert "Will stop searching for new pipelines after 0 seconds" in out
     # search will always run at least one pipeline
@@ -306,9 +311,8 @@ def test_pipeline_fit_raises(AutoMLTestEnv, X_y_binary, caplog):
         train_best_pipeline=False,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(
-        automl, mock_fit_side_effect=Exception("all your model are belong to us")
-    )
+    with env.test_context(mock_fit_side_effect=Exception("all your model are belong to us")):
+        automl.search()
     out = caplog.text
     assert "Exception during automl search" in out
     pipeline_results = automl.results.get("pipeline_results", {})
@@ -329,9 +333,8 @@ def test_pipeline_score_raises(AutoMLTestEnv, X_y_binary, caplog):
         X_train=X, y_train=y, problem_type="binary", max_iterations=1, n_jobs=1
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(
-        automl, mock_score_side_effect=Exception("all your model are belong to us")
-    )
+    with env.test_context(mock_score_side_effect=Exception("all your model are belong to us")):
+        automl.search()
     out = caplog.text
     assert "Exception during automl search" in out
     assert "All scores will be replaced with nan." in out
@@ -347,7 +350,7 @@ def test_pipeline_score_raises(AutoMLTestEnv, X_y_binary, caplog):
 
 
 @patch("evalml.objectives.AUC.score")
-def test_objective_score_raises(mock_score, AutoMLTestEnv, X_y_binary, caplog):
+def test_objective_score_raises(mock_score, X_y_binary, caplog):
     msg = "all your model are belong to us"
     mock_score.side_effect = Exception(msg)
     X, y = X_y_binary
@@ -389,7 +392,8 @@ def test_rankings(
         n_jobs=1,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={"Log Loss Binary": 0.03})
+    with env.test_context(score_return_value={"Log Loss Binary": 0.03}):
+        automl.search()
     assert len(automl.full_rankings) == 3
     assert len(automl.rankings) == 2
 
@@ -404,7 +408,8 @@ def test_rankings(
         n_jobs=1,
     )
     env = AutoMLTestEnv("regression")
-    env.run_search(automl, score_return_value={"R2": 0.03})
+    with env.test_context(score_return_value={"R2": 0.03}):
+        automl.search()
     assert len(automl.full_rankings) == 3
     assert len(automl.rankings) == 2
 

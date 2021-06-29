@@ -1,7 +1,7 @@
 import contextlib
 import os
 import sys
-from unittest.mock import patch
+from unittest.mock import patch, PropertyMock
 
 import numpy as np
 import pandas as pd
@@ -1272,7 +1272,10 @@ class _AutoMLTestEnv:
 
         # Unfortunately, in order to set the MagicMock instances as class attributes we need to use the
         # `with ... ` syntax.
-        with mock_fit as fit, mock_score as score, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
+        sleep_time = PropertyMock(return_value=0.00000001)
+        mock_sleep = patch('evalml.automl.AutoMLSearch._sleep_time', new_callable=sleep_time)
+
+        with mock_sleep, mock_fit as fit, mock_score as score, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
             # Can think of `yield` as blocking this method until the computation finishes running
             yield
             self._mock_fit = fit
@@ -1281,28 +1284,6 @@ class _AutoMLTestEnv:
             self._mock_encode_targets = encode
             self._mock_predict_proba = proba
             self._mock_optimize_threshold = optimize
-
-    def run_search(
-        self,
-        automl,
-        score_return_value=None,
-        mock_score_side_effect=None,
-        mock_fit_side_effect=None,
-        mock_fit_return_value=None,
-        predict_proba_return_value=None,
-        optimize_threshold_return_value=None,
-    ):
-        """Short-hand for creating test_context and running search within that test_context."""
-        with self.test_context(
-            score_return_value=score_return_value,
-            mock_score_side_effect=mock_score_side_effect,
-            mock_fit_side_effect=mock_fit_side_effect,
-            mock_fit_return_value=mock_fit_return_value,
-            predict_proba_return_value=predict_proba_return_value,
-            optimize_threshold_return_value=optimize_threshold_return_value,
-        ):
-            automl._SLEEP_TIME = 0.0000001
-            automl.search()
 
 
 @pytest.fixture
