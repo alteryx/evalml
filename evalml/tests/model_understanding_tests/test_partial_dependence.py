@@ -1155,7 +1155,7 @@ def test_graph_partial_dependence_ice_plot(
     avg_dep_data, ind_dep_data = partial_dependence(
         clf, X, features=feature, grid_resolution=5, kind="both"
     )
-    assert np.array_equal(e
+    assert np.array_equal(
         fig_dict["data"][-1]["x"],
         avg_dep_data["feature_values"][: len(fig_dict["data"][-1]["x"])].values,
     )
