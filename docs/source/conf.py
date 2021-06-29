@@ -50,7 +50,8 @@ release = evalml.__version__
 # ones.
 extensions = [
     "nbsphinx",
-    "sphinx.ext.autodoc",
+    'sphinx.ext.autodoc',
+    "autoapi.extension",
     "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
@@ -60,7 +61,12 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+#templates_path = ["_templates"]
+
+autoapi_dirs = ['../../evalml']
+autoapi_template_dir = '_templates'
+suppress_warnings = ["autoapi"]
+
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -279,7 +285,7 @@ def setup(app):
     shutil.copy("disable-warnings.py", "/home/docs/.ipython/profile_default/startup/")
     shutil.copy("set-headers.py", "/home/docs/.ipython/profile_default/startup")
     app.add_javascript(
-        "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
+       "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
     )
     app.add_stylesheet("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)
