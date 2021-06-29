@@ -10,7 +10,11 @@ from evalml.utils import infer_feature_types
 
 
 class OutliersDataCheck(DataCheck):
-    """Checks if there are any outliers in input data by using IQR to determine score anomalies. Columns with score anomalies are considered to contain outliers."""
+    """Checks if there are any outliers in input data by using IQR to determine score anomalies. Columns with score anomalies are considered to contain outliers.
+
+    Parameters
+    ----------
+    """
 
     def __init__(self):
         """Checks if there are any outliers in the input data."""

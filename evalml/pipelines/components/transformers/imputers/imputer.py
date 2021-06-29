@@ -9,7 +9,11 @@ from evalml.utils import (
 
 
 class Imputer(Transformer):
-    """Imputes missing data according to a specified imputation strategy."""
+    """Imputes missing data according to a specified imputation strategy.
+
+    Parameters
+    ----------
+    """
 
     name = "Imputer"
     hyperparameter_ranges = {

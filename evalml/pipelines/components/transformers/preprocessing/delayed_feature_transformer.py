@@ -7,7 +7,11 @@ from evalml.utils import infer_feature_types
 
 
 class DelayedFeatureTransformer(Transformer):
-    """Transformer that delayes input features and target variable for time series problems."""
+    """Transformer that delays input features and target variable for time series problems.
+
+    Parameters
+    ----------
+    """
 
     name = "Delayed Feature Transformer"
     hyperparameter_ranges = {}

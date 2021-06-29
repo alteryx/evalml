@@ -8,7 +8,11 @@ from evalml.utils import import_or_raise, infer_feature_types
 
 
 class PolynomialDetrender(TargetTransformer):
-    """Removes trends from time series by fitting a polynomial to the data."""
+    """Removes trends from time series by fitting a polynomial to the data.
+
+    Parameters
+    ----------
+    """
 
     name = "Polynomial Detrender"
 

@@ -7,7 +7,13 @@ from .feature_selector import FeatureSelector
 
 
 class RFRegressorSelectFromModel(FeatureSelector):
-    """Selects top features based on importance weights using a Random Forest regressor."""
+    """
+    Selects top features based on importance weights using a Random Forest regressor.
+
+
+    Parameters
+    ----------
+    """
 
     name = "RF Regressor Select From Model"
     hyperparameter_ranges = {

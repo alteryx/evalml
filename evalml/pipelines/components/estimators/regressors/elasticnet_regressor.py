@@ -7,7 +7,11 @@ from evalml.problem_types import ProblemTypes
 
 
 class ElasticNetRegressor(Estimator):
-    """Elastic Net Regressor."""
+    """Elastic Net Regressor.
+
+    Parameters
+    ----------
+    """
 
     name = "Elastic Net Regressor"
     hyperparameter_ranges = {

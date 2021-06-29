@@ -8,7 +8,11 @@ from evalml.problem_types import ProblemTypes
 
 
 class StackedEnsembleRegressor(StackedEnsembleBase):
-    """Stacked Ensemble Regressor."""
+    """Stacked Ensemble Regressor.
+
+    Parameters
+    ----------
+    """
 
     name = "Stacked Ensemble Regressor"
     model_family = ModelFamily.ENSEMBLE

@@ -11,7 +11,11 @@ from evalml.utils import infer_feature_types
 
 
 class TextFeaturizer(TextTransformer):
-    """Transformer that can automatically featurize text columns."""
+    """Transformer that can automatically featurize text columns.
+
+    Parameters
+    ----------
+    """
 
     name = "Text Featurization Component"
     hyperparameter_ranges = {}

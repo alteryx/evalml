@@ -9,7 +9,12 @@ from evalml.utils import (
 
 
 class FeatureSelector(Transformer):
-    """Selects top features based on importance weights"""
+    """
+    Selects top features based on importance weights.
+
+    Parameters
+    ----------
+    """
 
     def get_names(self):
         """Get names of selected features.

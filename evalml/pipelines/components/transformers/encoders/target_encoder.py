@@ -14,7 +14,12 @@ from evalml.utils import (
 
 
 class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
-    """Target encoder to encode categorical data"""
+    """
+    Target encoder to encode categorical data.
+
+    Parameters
+    ----------
+    """
 
     name = "Target Encoder"
     hyperparameter_ranges = {}

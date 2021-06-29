@@ -8,7 +8,11 @@ _nonstackable_model_families = [ModelFamily.BASELINE, ModelFamily.NONE]
 
 
 class StackedEnsembleBase(Estimator):
-    """Stacked Ensemble Base Class."""
+    """Stacked Ensemble Base Class.
+
+    Parameters
+    ----------
+    """
 
     model_family = ModelFamily.ENSEMBLE
     _stacking_estimator_class = None

@@ -7,7 +7,10 @@ from evalml.problem_types import ProblemTypes
 
 
 class DecisionTreeClassifier(Estimator):
-    """Decision Tree Classifier."""
+    """Decision Tree Classifier.
+    Parameters
+    ----------
+    """
 
     name = "Decision Tree Classifier"
     hyperparameter_ranges = {

@@ -7,7 +7,12 @@ from evalml.problem_types import ProblemTypes
 
 
 class ExtraTreesClassifier(Estimator):
-    """Extra Trees Classifier."""
+    """
+    Extra Trees Classifier.
+
+    Parameters
+    ----------
+    """
 
     name = "Extra Trees Classifier"
     hyperparameter_ranges = {

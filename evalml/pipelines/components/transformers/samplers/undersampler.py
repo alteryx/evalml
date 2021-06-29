@@ -9,7 +9,12 @@ from evalml.preprocessing.data_splitters.balanced_classification_sampler import 
 
 
 class Undersampler(BaseSampler):
-    """Random undersampler component. This component is only run during training and not during predict."""
+    """Random undersampler component. This component is only run during training and not during predict.
+
+
+    Parameters
+    ----------
+    """
 
     name = "Undersampler"
     hyperparameter_ranges = {}

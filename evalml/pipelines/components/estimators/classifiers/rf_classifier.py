@@ -7,7 +7,12 @@ from evalml.problem_types import ProblemTypes
 
 
 class RandomForestClassifier(Estimator):
-    """Random Forest Classifier."""
+    """
+    Random Forest Classifier.
+
+    Parameters
+    ----------
+    """
 
     name = "Random Forest Classifier"
     hyperparameter_ranges = {

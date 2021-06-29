@@ -10,7 +10,12 @@ from evalml.utils import (
 
 
 class LinearDiscriminantAnalysis(Transformer):
-    """Reduces the number of features by using Linear Discriminant Analysis"""
+    """
+    Reduces the number of features by using Linear Discriminant Analysis
+
+    Parameters
+    ----------
+    """
 
     name = "Linear Discriminant Analysis Transformer"
     hyperparameter_ranges = {}

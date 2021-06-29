@@ -10,7 +10,13 @@ from evalml.utils.gen_utils import (
 
 
 class XGBoostClassifier(Estimator):
-    """XGBoost Classifier."""
+    """
+    XGBoost Classifier.
+
+
+    Parameters
+    ----------
+    """
 
     name = "XGBoost Classifier"
     hyperparameter_ranges = {

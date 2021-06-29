@@ -12,6 +12,9 @@ from evalml.problem_types import ProblemTypes
 class ElasticNetClassifier(Estimator):
     """
     Elastic Net Classifier. Uses Logistic Regression with elasticnet penalty as the base estimator.
+
+    Parameters
+    ----------
     """
 
     name = "Elastic Net Classifier"

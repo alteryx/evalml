@@ -8,7 +8,11 @@ from evalml.problem_types import ProblemTypes
 
 
 class SVMRegressor(Estimator):
-    """Support Vector Machine Regressor."""
+    """Support Vector Machine Regressor.
+
+    Parameters
+    ----------
+    """
 
     name = "SVM Regressor"
     hyperparameter_ranges = {

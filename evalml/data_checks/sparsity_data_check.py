@@ -12,7 +12,11 @@ warning_too_unique = "Input columns ({}) for {} problem type are too sparse."
 
 
 class SparsityDataCheck(DataCheck):
-    """Checks if there are any columns with sparsely populated values in the input."""
+    """Checks if there are any columns with sparsely populated values in the input.
+
+    Parameters
+    ----------
+    """
 
     def __init__(self, problem_type, threshold, unique_count_threshold=10):
         """Checks each column in the input to determine the sparsity of the values in those columns.

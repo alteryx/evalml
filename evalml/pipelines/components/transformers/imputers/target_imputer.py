@@ -35,7 +35,11 @@ class TargetImputerMeta(ComponentBaseMeta):
 
 
 class TargetImputer(Transformer, metaclass=TargetImputerMeta):
-    """Imputes missing target data according to a specified imputation strategy."""
+    """Imputes missing target data according to a specified imputation strategy.
+
+    Parameters
+    ----------
+    """
 
     name = "Target Imputer"
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}

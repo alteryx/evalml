@@ -158,7 +158,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def linearized_component_graph(self):
-        """A component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
+        """A component graph in list form. Note that this is not guaranteed to be in proper component computation order"""
         return ComponentGraph.linearized_component_graph(self.component_graph)
 
     def _validate_estimator_problem_type(self):

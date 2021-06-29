@@ -19,6 +19,11 @@ class SequentialComputation(EngineComputation):
     """
 
     def __init__(self, work, **kwargs):
+        """An Engine that sequentially computes the submitted jobs.
+
+        Arguments:
+            work (callable): Computation that should be done by the engine.
+        """
         self.work = work
         self.kwargs = kwargs
         self.meta_data = {}

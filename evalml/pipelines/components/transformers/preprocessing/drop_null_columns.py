@@ -3,7 +3,11 @@ from evalml.utils import infer_feature_types
 
 
 class DropNullColumns(Transformer):
-    """Transformer to drop features whose percentage of NaN values exceeds a specified threshold"""
+    """Transformer to drop features whose percentage of NaN values exceeds a specified threshold.
+
+    Parameters
+    ----------
+    """
 
     name = "Drop Null Columns Transformer"
     hyperparameter_ranges = {}

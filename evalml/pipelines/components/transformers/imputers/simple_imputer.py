@@ -10,7 +10,11 @@ from evalml.utils import (
 
 
 class SimpleImputer(Transformer):
-    """Imputes missing data according to a specified imputation strategy."""
+    """Imputes missing data according to a specified imputation strategy.
+
+    Parameters
+    ----------
+    """
 
     name = "Simple Imputer"
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}

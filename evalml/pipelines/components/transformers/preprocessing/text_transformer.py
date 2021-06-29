@@ -5,7 +5,11 @@ logger = get_logger(__file__)
 
 
 class TextTransformer(Transformer):
-    """Base class for all transformers working with text features"""
+    """Base class for all transformers working with text features.
+
+    Parameters
+    ----------
+    """
 
     def __init__(self, component_obj=None, random_seed=0, **kwargs):
         """Creates a transformer to perform TF-IDF transformation and Singular Value Decomposition for text columns.

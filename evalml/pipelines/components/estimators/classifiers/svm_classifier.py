@@ -8,7 +8,12 @@ from evalml.problem_types import ProblemTypes
 
 
 class SVMClassifier(Estimator):
-    """Support Vector Machine Classifier."""
+    """
+    Support Vector Machine Classifier.
+
+    Parameters
+    ----------
+    """
 
     name = "SVM Classifier"
     hyperparameter_ranges = {

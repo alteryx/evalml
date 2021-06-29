@@ -5,7 +5,12 @@ from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class SMOTESampler(BaseOverSampler):
-    """SMOTE Oversampler component. Works on numerical datasets only. This component is only run during training and not during predict."""
+    """SMOTE Oversampler component. Works on numerical datasets only. This component is only run during training and not during predict.
+
+
+    Parameters
+    ----------
+    """
 
     name = "SMOTE Oversampler"
     hyperparameter_ranges = {}

@@ -11,7 +11,7 @@ from evalml.utils import (
 
 
 class OneHotEncoderMeta(ComponentBaseMeta):
-    """A version of the ComponentBaseMeta class which includes validation on an additional one-hot-encoder-specific method `categories`"""
+    """A version of the ComponentBaseMeta class which includes validation on an additional one-hot-encoder-specific method `categories`."""
 
     METHODS_TO_CHECK = ComponentBaseMeta.METHODS_TO_CHECK + [
         "categories",
@@ -20,7 +20,11 @@ class OneHotEncoderMeta(ComponentBaseMeta):
 
 
 class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
-    """One-hot encoder to encode non-numeric data."""
+    """One-hot encoder to encode non-numeric data.
+
+    Parameters
+    ----------
+    """
 
     name = "One Hot Encoder"
     hyperparameter_ranges = {}

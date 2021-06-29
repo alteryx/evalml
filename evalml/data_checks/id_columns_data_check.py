@@ -9,7 +9,11 @@ from evalml.utils import infer_feature_types
 
 
 class IDColumnsDataCheck(DataCheck):
-    """Check if any of the features are likely to be ID columns."""
+    """Check if any of the features are likely to be ID columns.
+
+    Parameters
+    ----------
+    """
 
     def __init__(self, id_threshold=1.0):
         """Check if any of the features are likely to be ID columns.

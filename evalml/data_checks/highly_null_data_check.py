@@ -9,7 +9,11 @@ from evalml.utils import infer_feature_types
 
 
 class HighlyNullDataCheck(DataCheck):
-    """Checks if there are any highly-null columns and rows in the input."""
+    """Checks if there are any highly-null columns and rows in the input.
+
+    Parameters
+    ----------
+    """
 
     def __init__(self, pct_null_threshold=0.95):
         """Checks if there are any highly-null columns and rows in the input.

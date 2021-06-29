@@ -10,6 +10,9 @@ from evalml.problem_types import ProblemTypes
 class KNeighborsClassifier(Estimator):
     """
     K-Nearest Neighbors Classifier.
+
+    Parameters
+    ----------
     """
 
     name = "KNN Classifier"

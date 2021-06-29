@@ -10,7 +10,11 @@ from evalml.utils import infer_feature_types
 
 
 class LSA(TextTransformer):
-    """Transformer to calculate the Latent Semantic Analysis Values of text input"""
+    """Transformer to calculate the Latent Semantic Analysis Values of text input.
+
+    Parameters
+    ----------
+    """
 
     name = "LSA Transformer"
     hyperparameter_ranges = {}

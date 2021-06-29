@@ -14,7 +14,11 @@ from evalml.utils.woodwork_utils import (
 
 
 class TargetLeakageDataCheck(DataCheck):
-    """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation."""
+    """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
+
+    Parameters
+    ----------
+    """
 
     def __init__(self, pct_corr_threshold=0.95, method="mutual"):
         """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.

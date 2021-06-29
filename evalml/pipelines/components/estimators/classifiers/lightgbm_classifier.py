@@ -18,7 +18,11 @@ from evalml.utils import (
 
 
 class LightGBMClassifier(Estimator):
-    """LightGBM Classifier"""
+    """LightGBM Classifier.
+
+    Parameters
+    ----------
+    """
 
     name = "LightGBM Classifier"
     hyperparameter_ranges = {

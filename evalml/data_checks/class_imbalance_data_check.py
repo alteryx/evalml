@@ -8,7 +8,12 @@ from evalml.utils import infer_feature_types
 
 
 class ClassImbalanceDataCheck(DataCheck):
-    """Checks if any target labels are imbalanced beyond a threshold. Use for classification problems"""
+    """Checks if any target labels are imbalanced beyond a threshold. Use for classification problems.
+
+
+    Parameters
+    ----------
+    """
 
     def __init__(self, threshold=0.1, min_samples=100, num_cv_folds=3):
         """Check if any of the target labels are imbalanced, or if the number of values for each target

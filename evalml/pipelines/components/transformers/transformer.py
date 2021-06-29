@@ -22,6 +22,9 @@ class Transformer(ComponentBase):
     `fit`, `transform`, `fit_transform` and other methods in this class if appropriate.
 
     To see some examples, check out the definitions of any Transformer component.
+
+    Parameters
+    ----------
     """
 
     model_family = ModelFamily.NONE

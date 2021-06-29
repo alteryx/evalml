@@ -17,6 +17,9 @@ class CatBoostClassifier(Estimator):
     CatBoost is an open-source library and natively supports categorical features.
 
     For more information, check out https://catboost.ai/
+
+    Parameters
+    ----------
     """
 
     name = "CatBoost Classifier"

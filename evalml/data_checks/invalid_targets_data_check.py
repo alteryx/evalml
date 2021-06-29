@@ -23,7 +23,11 @@ from evalml.utils.woodwork_utils import (
 
 
 class InvalidTargetDataCheck(DataCheck):
-    """Checks if the target data contains missing or invalid values."""
+    """Checks if the target data contains missing or invalid values.
+
+    Parameters
+    ----------
+    """
 
     multiclass_continuous_threshold = 0.05
 

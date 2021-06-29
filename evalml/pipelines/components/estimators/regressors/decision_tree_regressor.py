@@ -7,7 +7,12 @@ from evalml.problem_types import ProblemTypes
 
 
 class DecisionTreeRegressor(Estimator):
-    """Decision Tree Regressor."""
+    """Decision Tree Regressor.
+
+
+    Parameters
+    ----------
+    """
 
     name = "Decision Tree Regressor"
     hyperparameter_ranges = {

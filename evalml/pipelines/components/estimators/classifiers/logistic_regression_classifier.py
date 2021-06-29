@@ -10,6 +10,9 @@ from evalml.problem_types import ProblemTypes
 class LogisticRegressionClassifier(Estimator):
     """
     Logistic Regression Classifier.
+
+    Parameters
+    ----------
     """
 
     name = "Logistic Regression Classifier"

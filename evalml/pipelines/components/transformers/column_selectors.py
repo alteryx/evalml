@@ -5,6 +5,12 @@ from evalml.utils import infer_feature_types
 
 
 class ColumnSelector(Transformer):
+    """
+    Initalizes an transformer that drops specified columns in input data.
+    Parameters
+    ----------
+    """
+
     def __init__(self, columns=None, random_seed=0, **kwargs):
         """Initalizes an transformer that drops specified columns in input data.
 

@@ -2,7 +2,11 @@ from .binary_classification_objective import BinaryClassificationObjective
 
 
 class FraudCost(BinaryClassificationObjective):
-    """Score the percentage of money lost of the total transaction amount process due to fraud."""
+    """Score the percentage of money lost of the total transaction amount process due to fraud.
+
+    Parameters
+    ----------
+    """
 
     name = "Fraud Cost"
     greater_is_better = False

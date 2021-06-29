@@ -11,7 +11,12 @@ from evalml.utils import (
 
 
 class PCA(Transformer):
-    """Reduces the number of features by using Principal Component Analysis"""
+    """
+    Reduces the number of features by using Principal Component Analysis
+
+    Parameters
+    ----------
+    """
 
     name = "PCA Transformer"
     hyperparameter_ranges = {"variance": Real(0.25, 1)}

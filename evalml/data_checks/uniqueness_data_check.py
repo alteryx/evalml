@@ -20,7 +20,11 @@ warning_too_unique = "Input columns ({}) for {} problem type are too unique."
 
 class UniquenessDataCheck(DataCheck):
     """Checks if there are any columns in the input that are either too unique for classification problems
-    or not unique enough for regression problems."""
+    or not unique enough for regression problems.
+
+    Parameters
+    ----------
+    """
 
     def __init__(self, problem_type, threshold=0.50):
         """Checks each column in the input to determine the uniqueness of the values in those columns.

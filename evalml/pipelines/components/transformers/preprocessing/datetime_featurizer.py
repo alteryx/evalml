@@ -59,7 +59,12 @@ def _extract_hour(col, encode_as_categories=False):
 
 
 class DateTimeFeaturizer(Transformer):
-    """Transformer that can automatically featurize DateTime columns."""
+    """
+    Transformer that can automatically featurize DateTime columns.
+
+    Parameters
+    ----------
+    """
 
     name = "DateTime Featurization Component"
     hyperparameter_ranges = {}

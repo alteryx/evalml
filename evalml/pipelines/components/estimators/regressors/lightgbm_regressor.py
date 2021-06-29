@@ -16,7 +16,11 @@ from evalml.utils import (
 
 
 class LightGBMRegressor(Estimator):
-    """LightGBM Regressor"""
+    """LightGBM Regressor
+
+    Parameters
+    ----------
+    """
 
     name = "LightGBM Regressor"
     hyperparameter_ranges = {

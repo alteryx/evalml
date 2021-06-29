@@ -11,6 +11,8 @@ class BaselineClassifier(Estimator):
     """Classifier that predicts using the specified strategy.
 
     This is useful as a simple baseline classifier to compare with other classifiers.
+    Parameters
+    ----------
     """
 
     name = "Baseline Classifier"

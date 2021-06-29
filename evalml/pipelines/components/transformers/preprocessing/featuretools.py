@@ -8,7 +8,11 @@ from evalml.utils import (
 
 
 class DFSTransformer(Transformer):
-    """Featuretools DFS component that generates features for pd.DataFrames"""
+    """Featuretools DFS component that generates features for the input features.
+
+    Parameters
+    ----------
+    """
 
     name = "DFS Transformer"
     hyperparameter_ranges = {}

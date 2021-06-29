@@ -25,6 +25,8 @@ class DefaultDataChecks(DataChecks):
         - `DateTimeNaNDataCheck`
         - `NaturalLanguageNaNDataCheck`
 
+    Parameters
+    ----------
     """
 
     _DEFAULT_DATA_CHECK_CLASSES = [

@@ -13,7 +13,11 @@ logger = get_logger(__file__)
 
 
 class NoVarianceDataCheck(DataCheck):
-    """Check if the target or any of the features have no variance."""
+    """Check if the target or any of the features have no variance.
+
+    Parameters
+    ----------
+    """
 
     def __init__(self, count_nan_as_value=False):
         """Check if the target or any of the features have no variance.

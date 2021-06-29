@@ -7,7 +7,11 @@ from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class BaseSampler(Transformer):
-    """Base Sampler component. Used as the base class of all sampler components"""
+    """Base Sampler component. Used as the base class of all sampler components.
+
+    Parameters
+    ----------
+    """
 
     def fit(self, X, y):
         """Resample the data using the sampler. Since our sampler doesn't need to be fit, we do nothing here.

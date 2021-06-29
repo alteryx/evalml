@@ -10,7 +10,14 @@ from evalml.utils import infer_feature_types, pad_with_nans
 class TimeSeriesBaselineEstimator(Estimator):
     """Time series estimator that predicts using the naive forecasting approach.
 
-    This is useful as a simple baseline estimator for time series problems
+    This is useful as a simple baseline estimator for time series problems.
+
+    Parameters
+    ----------
+    gap : int
+        Gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period. Defaults to 1.
+    random_seed : int
+        Seed for the random number generator. Defaults to 0.
     """
 
     name = "Time Series Baseline Estimator"
@@ -27,10 +34,8 @@ class TimeSeriesBaselineEstimator(Estimator):
         """Baseline time series estimator that predicts using the naive forecasting approach.
 
         Arguments:
-            gap (int): Gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period.
-            random_state (None, int): Deprecated - use random_seed instead.
+            gap (int): Gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period. Defaults to 1.
             random_seed (int): Seed for the random number generator. Defaults to 0.
-
         """
 
         self._prediction_value = None

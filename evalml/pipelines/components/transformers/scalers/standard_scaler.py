@@ -10,7 +10,11 @@ from evalml.utils import (
 
 
 class StandardScaler(Transformer):
-    """Standardize features: removes mean and scales to unit variance."""
+    """Standardize features: removes mean and scales to unit variance.
+
+    Parameters
+    ----------
+    """
 
     name = "Standard Scaler"
     hyperparameter_ranges = {}

@@ -8,7 +8,11 @@ from evalml.problem_types import ProblemTypes
 
 
 class StackedEnsembleClassifier(StackedEnsembleBase):
-    """Stacked Ensemble Classifier."""
+    """Stacked Ensemble Classifier.
+
+    Parameters
+    ----------
+    """
 
     name = "Stacked Ensemble Classifier"
     model_family = ModelFamily.ENSEMBLE
