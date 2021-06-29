@@ -701,6 +701,9 @@ def partial_dependence(
         grid_dates = pd.to_datetime(pd.Series(grid.squeeze()), unit="s").values.reshape(
             -1, 1
         )
+        # convert values to dates for the output
+        value_dates = pd.to_datetime(pd.Series(values[0]), unit="s")
+        # need to pass in the feature as an int index rather than string
         feature_index = (
             X.columns.tolist().index(features)
             if isinstance(features, str)
@@ -709,7 +712,7 @@ def partial_dependence(
         averaged_predictions, predictions = _partial_dependence_brute(
             wrapped, grid_dates, [feature_index], X, response_method="auto"
         )
-
+        # reshape based on the way scikit-learn reshapes the data
         predictions = predictions.reshape(
             -1, X.shape[0], *[val.shape[0] for val in values]
         )
@@ -720,7 +723,7 @@ def partial_dependence(
         preds = {
             "average": averaged_predictions,
             "individual": predictions,
-            "values": values,
+            "values": [value_dates],
         }
     else:
         preds = sk_partial_dependence(

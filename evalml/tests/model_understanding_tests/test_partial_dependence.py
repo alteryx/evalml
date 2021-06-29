@@ -1081,6 +1081,7 @@ def test_graph_partial_dependence_regression_date_order(X_y_binary):
     fig = graph_partial_dependence(pipeline, X, features="dt_column", grid_resolution=5)
     plot_data = fig.to_dict()["data"][0]
     assert plot_data["type"] == "scatter"
+    print(plot_data["x"])
     assert all(plot_data["x"] == list(pd.date_range("20200101", periods=5)))
 
 
