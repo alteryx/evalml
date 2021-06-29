@@ -121,7 +121,7 @@ def search(X_train=None, y_train=None, problem_type=None, objective="auto", **kw
 
 class AutoMLSearch:
     """Automated Pipeline search.
-    
+
     Parameters
     ----------
     X_train : pd.DataFrame
@@ -133,7 +133,7 @@ class AutoMLSearch:
     problem_type : str or ProblemTypes
         Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
-    objective : str or ObjectiveBase 
+    objective : str or ObjectiveBase
         The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
         When set to 'auto', chooses:
 
@@ -151,11 +151,11 @@ class AutoMLSearch:
         has elapsed. If it is an integer, then the time will be in seconds.
         For strings, time can be specified as seconds, minutes, or hours.
 
-    patience : int 
+    patience : int
         Number of iterations without improvement to stop search early. Must be positive.
         If None, early stopping is disabled. Defaults to None.
 
-    tolerance : float 
+    tolerance : float
         Minimum percentage difference to qualify as score improvement for early stopping.
         Only applicable if patience is not None. Defaults to None.
 
@@ -212,13 +212,13 @@ class AutoMLSearch:
     max_batches : int
         The maximum number of batches of pipelines to search. Parameters max_time, and max_iterations have precedence over stopping the search.
 
-    problem_configuration : dict, None 
+    problem_configuration : dict, None
         Additional parameters needed to configure the search. For example, in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
 
     train_best_pipeline : boolean
         Whether or not to train the best pipeline before returning it. Defaults to True.
 
-    pipeline_parameters : dict 
+    pipeline_parameters : dict
         A dict of the parameters used to initialize a pipeline with.
         Keys should consist of the component names and values should specify parameter values
 
@@ -243,9 +243,9 @@ class AutoMLSearch:
     _pipelines_per_batch : int
         The number of pipelines to train for every batch after the first one. The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
 
-    engine : EngineBase or None 
+    engine : EngineBase or None
         The engine instance used to evaluate pipelines. If None, a SequentialEngine will be used.
-    
+
     """
 
     _MAX_NAME_LEN = 40

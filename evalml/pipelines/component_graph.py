@@ -19,8 +19,22 @@ logger = get_logger(__file__)
 
 
 class ComponentGraph:
+    """Component graph for a pipeline as a directed acyclic graph (DAG).
+
+    Parameters
+    ----------
+    component_dict : dict
+        A dictionary which specifies the components and edges between components that should be used to create the component graph. Defaults to None.
+    random_seed : int
+        Seed for the random number generator. Defaults to 0.
+    """
+
     def __init__(self, component_dict=None, random_seed=0):
         """Initializes a component graph for a pipeline as a directed acyclic graph (DAG).
+
+        Arguments:
+            component_dict (dict): A dictionary which specifies the components and edges between components that should be used to create the component graph. Defaults to None.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
 
         Example:
             >>> component_dict = {'imputer': ['Imputer'], 'ohe': ['One Hot Encoder', 'imputer.x'], 'estimator_1': ['Random Forest Classifier', 'ohe.x'], 'estimator_2': ['Decision Tree Classifier', 'ohe.x'], 'final': ['Logistic Regression Classifier', 'estimator_1', 'estimator_2']}
