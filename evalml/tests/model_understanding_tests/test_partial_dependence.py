@@ -969,16 +969,18 @@ def test_partial_dependence_datetime(
     y = pd.Series(y)
     random_dates = pd.Series(pd.date_range("20200101", periods=size))
     if size == 10:
-        random_dates = random_dates.sample(
-            replace=True, random_state=0, n=100
-        )
+        random_dates = random_dates.sample(replace=True, random_state=0, n=100)
     random_dates.index = X.index
     X["dt_column"] = random_dates
     pipeline.fit(X, y)
-    part_dep = partial_dependence(pipeline, X, features="dt_column", grid_resolution=grid)
+    part_dep = partial_dependence(
+        pipeline, X, features="dt_column", grid_resolution=grid
+    )
     expected_size = min(size, grid)
     if problem_type == "multiclass":
-        assert len(part_dep["partial_dependence"]) == 3 * expected_size  # 10 rows * 3 classes
+        assert (
+            len(part_dep["partial_dependence"]) == 3 * expected_size
+        )  # 10 rows * 3 classes
         assert len(part_dep["feature_values"]) == 3 * expected_size
     else:
         assert len(part_dep["partial_dependence"]) == expected_size
@@ -989,7 +991,9 @@ def test_partial_dependence_datetime(
         return
     part_dep = partial_dependence(pipeline, X, features=20, grid_resolution=grid)
     if problem_type == "multiclass":
-        assert len(part_dep["partial_dependence"]) == 3 * expected_size  # 10 rows * 3 classes
+        assert (
+            len(part_dep["partial_dependence"]) == 3 * expected_size
+        )  # 10 rows * 3 classes
         assert len(part_dep["feature_values"]) == 3 * expected_size
     else:
         assert len(part_dep["partial_dependence"]) == expected_size
