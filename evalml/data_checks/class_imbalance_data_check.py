@@ -21,7 +21,7 @@ class ClassImbalanceDataCheck(DataCheck):
         The minimum number of samples per accepted class. If the minority class is both below the threshold and min_samples,
         then we consider this severely imbalanced. Must be greater than 0. Defaults to 100.
     num_cv_folds : int
-        The number of cross-validation folds. Must be positive. Choose 0 to ignore this warning.
+        The number of cross-validation folds. Must be positive. Choose 0 to ignore this warning. Defaults to 3.
     """
 
     def __init__(self, threshold=0.1, min_samples=100, num_cv_folds=3):
@@ -35,7 +35,7 @@ class ClassImbalanceDataCheck(DataCheck):
                 would have a 0.10 threshold for class 2 (100 / (900 + 100)). Defaults to 0.10.
             min_samples (int): The minimum number of samples per accepted class. If the minority class is both below the threshold and min_samples,
                 then we consider this severely imbalanced. Must be greater than 0. Defaults to 100.
-            num_cv_folds (int): The number of cross-validation folds. Must be positive. Choose 0 to ignore this warning.
+            num_cv_folds (int): The number of cross-validation folds. Must be positive. Choose 0 to ignore this warning. Defaults to 3.
         """
         if threshold <= 0 or threshold > 0.5:
             raise ValueError(
