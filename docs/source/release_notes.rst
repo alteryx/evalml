@@ -6,6 +6,7 @@ Release Notes
         * Updated Objectives API to allow for sample weighting :pr:`2433`
     * Fixes
     * Changes
+        * Pinned Woodwork version between 0.4.1 and 0.4.2 :pr:`2460`
         * Updated psutils minimum version in requirements :pr:`2438`
         * Updated ``log_error_callback`` to not include filepath in logged message :pr:`2429`
     * Documentation Changes
