@@ -10,6 +10,7 @@
    .. autosummary::
       :nosignatures:
       :toctree: methods
+      :exclude-members: __init__
 
    {% for item in methods %}
       ~{{ name }}.{{ item }}
