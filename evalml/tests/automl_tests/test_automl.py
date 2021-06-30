@@ -665,7 +665,10 @@ def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
     )
     automl.search()
     if pickle_type == "invalid":
-        with pytest.raises(ValueError, match="`pickle_type` must be either \'pickle\' or \'cloudpickle\'. Received invalid"):
+        with pytest.raises(
+            ValueError,
+            match="`pickle_type` must be either 'pickle' or 'cloudpickle'. Received invalid",
+        ):
             automl.save(path, pickle_type=pickle_type)
     else:
         automl.save(path, pickle_type=pickle_type)
@@ -673,7 +676,8 @@ def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
 
         for i in range(num_max_iterations):
             assert (
-                automl.get_pipeline(i).__class__ == loaded_automl.get_pipeline(i).__class__
+                automl.get_pipeline(i).__class__
+                == loaded_automl.get_pipeline(i).__class__
             )
             assert (
                 automl.get_pipeline(i).parameters
