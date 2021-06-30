@@ -12,17 +12,13 @@ from evalml.preprocessing import split_data
 from evalml.utils import get_logger
 
 
-@patch("evalml.pipelines.BinaryClassificationPipeline.score")
-@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_train_and_score_pipelines(
-    mock_fit,
-    mock_score,
+    AutoMLTestEnv,
     dummy_classifier_estimator_class,
     dummy_binary_pipeline_class,
     X_y_binary,
 ):
     X, y = X_y_binary
-    mock_score.return_value = {"Log Loss Binary": 0.42}
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -34,16 +30,18 @@ def test_train_and_score_pipelines(
         },
         optimize_thresholds=False,
     )
+    env = AutoMLTestEnv("binary")
     pipeline = dummy_binary_pipeline_class({})
-    evaluation_result = evaluate_pipeline(
-        pipeline,
-        automl.automl_config,
-        automl.X_train,
-        automl.y_train,
-        logger=MagicMock(),
-    ).get("scores")
-    assert mock_fit.call_count == automl.data_splitter.get_n_splits()
-    assert mock_score.call_count == automl.data_splitter.get_n_splits()
+    with env.test_context(score_return_value={automl.objective.name: 0.42}):
+        evaluation_result = evaluate_pipeline(
+            pipeline,
+            automl.automl_config,
+            automl.X_train,
+            automl.y_train,
+            logger=MagicMock(),
+        ).get("scores")
+    assert env.mock_fit.call_count == automl.data_splitter.get_n_splits()
+    assert env.mock_score.call_count == automl.data_splitter.get_n_splits()
     assert evaluation_result.get("training_time") is not None
     assert evaluation_result.get("cv_score_mean") == 0.42
     pd.testing.assert_series_equal(
@@ -56,18 +54,14 @@ def test_train_and_score_pipelines(
         )
 
 
-@patch("evalml.pipelines.BinaryClassificationPipeline.score")
-@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 def test_train_and_score_pipelines_error(
-    mock_fit,
-    mock_score,
+    AutoMLTestEnv,
     dummy_classifier_estimator_class,
     dummy_binary_pipeline_class,
     X_y_binary,
     caplog,
 ):
     X, y = X_y_binary
-    mock_score.side_effect = Exception("yeet")
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -79,18 +73,24 @@ def test_train_and_score_pipelines_error(
         },
         optimize_thresholds=False,
     )
+    env = AutoMLTestEnv("binary")
     pipeline = dummy_binary_pipeline_class({})
 
     job_log = JobLogger()
-    result = evaluate_pipeline(
-        pipeline, automl.automl_config, automl.X_train, automl.y_train, logger=job_log
-    )
+    with env.test_context(mock_score_side_effect=Exception("yeet")):
+        result = evaluate_pipeline(
+            pipeline,
+            automl.automl_config,
+            automl.X_train,
+            automl.y_train,
+            logger=job_log,
+        )
     evaluation_result, job_log = result.get("scores"), result.get("logger")
     logger = get_logger(__file__)
     job_log.write_to_logger(logger)
 
-    assert mock_fit.call_count == automl.data_splitter.get_n_splits()
-    assert mock_score.call_count == automl.data_splitter.get_n_splits()
+    assert env.mock_fit.call_count == automl.data_splitter.get_n_splits()
+    assert env.mock_score.call_count == automl.data_splitter.get_n_splits()
     assert evaluation_result.get("training_time") is not None
     assert np.isnan(evaluation_result.get("cv_score_mean"))
     pd.testing.assert_series_equal(
@@ -103,21 +103,11 @@ def test_train_and_score_pipelines_error(
     assert "yeet" in caplog.text
 
 
-@patch("evalml.objectives.BinaryClassificationObjective.optimize_threshold")
-@patch(
-    "evalml.pipelines.BinaryClassificationPipeline._encode_targets",
-    side_effect=lambda y: y,
-)
-@patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
-@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.automl.engine.engine_base.split_data")
 def test_train_pipeline_trains_and_tunes_threshold(
     mock_split_data,
-    mock_pipeline_fit,
-    mock_predict_proba,
-    mock_encode_targets,
-    mock_optimize,
     X_y_binary,
+    AutoMLTestEnv,
     dummy_binary_pipeline_class,
 ):
     X, y = X_y_binary
@@ -127,26 +117,25 @@ def test_train_pipeline_trains_and_tunes_threshold(
     automl_config = AutoMLConfig(
         None, "binary", LogLossBinary(), [], None, True, None, 0, None, None
     )
-    _ = train_pipeline(
-        dummy_binary_pipeline_class({}), X, y, automl_config=automl_config
-    )
+    env = AutoMLTestEnv("binary")
+    with env.test_context():
+        _ = train_pipeline(
+            dummy_binary_pipeline_class({}), X, y, automl_config=automl_config
+        )
 
-    mock_pipeline_fit.assert_called_once()
-    mock_optimize.assert_not_called()
+    env.mock_fit.assert_called_once()
+    env.mock_optimize_threshold.assert_not_called()
     mock_split_data.assert_not_called()
-
-    mock_pipeline_fit.reset_mock()
-    mock_optimize.reset_mock()
-    mock_split_data.reset_mock()
 
     automl_config = AutoMLConfig(
         None, "binary", LogLossBinary(), [], F1(), True, None, 0, None, None
     )
-    _ = train_pipeline(
-        dummy_binary_pipeline_class({}), X, y, automl_config=automl_config
-    )
-    mock_pipeline_fit.assert_called_once()
-    mock_optimize.assert_called_once()
+    with env.test_context():
+        _ = train_pipeline(
+            dummy_binary_pipeline_class({}), X, y, automl_config=automl_config
+        )
+    env.mock_fit.assert_called_once()
+    env.mock_optimize_threshold.assert_called_once()
     mock_split_data.assert_called_once()
 
 
