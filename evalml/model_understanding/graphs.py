@@ -704,7 +704,8 @@ def partial_dependence(
             raise ValueError(
                 "The scale of these features is too small and results in"
                 "percentiles that are too close together.  Partial dependence"
-                "cannot be computed for these types of features."
+                "cannot be computed for these types of features.  Consider"
+                "scaling the features so that they differ by > 10E-7"
             )
         else:
             raise e
