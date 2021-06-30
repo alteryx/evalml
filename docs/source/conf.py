@@ -219,6 +219,7 @@ templates_path = ["_templates"]
 
 html_show_sphinx = False
 napoleon_include_init_with_doc = True
+autoclass_content = "class"
 nbsphinx_execute = "always"
 nbsphinx_timeout = (
     600  # sphinx defaults each cell to 30 seconds so we need to override here
