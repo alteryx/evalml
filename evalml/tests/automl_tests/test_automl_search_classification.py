@@ -347,7 +347,8 @@ def test_optimizable_threshold_enabled(
     env = AutoMLTestEnv("binary")
     with env.test_context(
         score_return_value={"precision": 1.0},
-        optimize_threshold_return_value=0.8,):
+        optimize_threshold_return_value=0.8,
+    ):
         automl.search()
 
     env.mock_fit.assert_called()

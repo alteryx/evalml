@@ -1862,6 +1862,7 @@ def test_pipelines_in_batch_return_none(
         with env.test_context(score_return_value={"Log Loss Binary": None}):
             automl.search()
 
+
 @patch("evalml.automl.engine.engine_base.split_data")
 def test_error_during_train_test_split(mock_split_data, X_y_binary, AutoMLTestEnv):
     X, y = X_y_binary
@@ -2605,7 +2606,7 @@ def test_automl_one_allowed_component_graph_ensembling_disabled(
         ensembling=True,
     )
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
-            automl.search()
+        automl.search()
     pipeline_names = automl.rankings["pipeline_name"]
     assert pipeline_names.str.contains("Ensemble").any()
     assert (
@@ -3294,13 +3295,19 @@ def test_automl_error_callback(error_type, callback, AutoMLTestEnv, X_y_binary, 
         silent_error_callback,
         log_error_callback,
     ]:
-        with env.test_context(mock_fit_side_effect=fit_side_effect, score_return_value=score_return_value,
-                              mock_score_side_effect=score_side_effect):
+        with env.test_context(
+            mock_fit_side_effect=fit_side_effect,
+            score_return_value=score_return_value,
+            mock_score_side_effect=score_side_effect,
+        ):
             automl.search()
     else:
         with pytest.raises(exception, match=match):
-            with env.test_context(mock_fit_side_effect=fit_side_effect, score_return_value=score_return_value,
-                                  mock_score_side_effect=score_side_effect):
+            with env.test_context(
+                mock_fit_side_effect=fit_side_effect,
+                score_return_value=score_return_value,
+                mock_score_side_effect=score_side_effect,
+            ):
                 automl.search()
 
     if callback == silent_error_callback:
