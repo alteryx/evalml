@@ -650,7 +650,8 @@ def test_automl_allowed_component_graphs_algorithm(
         assert actual.parameters == expected.parameters
 
 
-def test_automl_serialization(X_y_binary, tmpdir):
+@pytest.mark.parametrize("pickle_type", ["cloudpickle", "pickle"])
+def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), "automl.pkl")
     num_max_iterations = 5
@@ -663,7 +664,7 @@ def test_automl_serialization(X_y_binary, tmpdir):
         n_jobs=1,
     )
     automl.search()
-    automl.save(path)
+    automl.save(path, pickle_type=pickle_type)
     loaded_automl = automl.load(path)
 
     for i in range(num_max_iterations):
