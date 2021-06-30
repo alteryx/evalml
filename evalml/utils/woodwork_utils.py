@@ -124,7 +124,7 @@ def _retain_custom_types_and_initalize_woodwork(
     )
     retained_logical_types = {
         col: ltype
-        for col, ltype in old_logical_types.items()
+        for col, ltype in new_logical_types.items()
         if col in col_intersection and ltype not in ltypes_to_ignore
     }
     new_dataframe.ww.init(logical_types=retained_logical_types)
