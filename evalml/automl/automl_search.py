@@ -1308,7 +1308,12 @@ class AutoMLSearch:
 
         return self._best_pipeline
 
-    def save(self, file_path, pickle_type="cloudpickle", pickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
+    def save(
+        self,
+        file_path,
+        pickle_type="cloudpickle",
+        pickle_protocol=cloudpickle.DEFAULT_PROTOCOL,
+    ):
         """Saves AutoML object at file path
 
         Arguments:
@@ -1324,7 +1329,9 @@ class AutoMLSearch:
         elif pickle_type == "pickle":
             pkl_lib = pickle
         else:
-            raise ValueError(f"`pickle_type` must be either 'pickle' or 'cloudpickle'. Received: {pickle_type}")
+            raise ValueError(
+                f"`pickle_type` must be either 'pickle' or 'cloudpickle'. Received: {pickle_type}"
+            )
 
         with open(file_path, "wb") as f:
             pkl_lib.dump(self, f, protocol=pickle_protocol)
