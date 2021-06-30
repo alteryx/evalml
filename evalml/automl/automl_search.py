@@ -1330,7 +1330,7 @@ class AutoMLSearch:
             pkl_lib = pickle
         else:
             raise ValueError(
-                f"`pickle_type` must be either 'pickle' or 'cloudpickle'. Received: {pickle_type}"
+                f"`pickle_type` must be either 'pickle' or 'cloudpickle'. Received {pickle_type}"
             )
 
         with open(file_path, "wb") as f:

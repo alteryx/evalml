@@ -650,7 +650,7 @@ def test_automl_allowed_component_graphs_algorithm(
         assert actual.parameters == expected.parameters
 
 
-@pytest.mark.parametrize("pickle_type", ["cloudpickle", "pickle"])
+@pytest.mark.parametrize("pickle_type", ["cloudpickle", "pickle", "invalid"])
 def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), "automl.pkl")
@@ -664,35 +664,39 @@ def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
         n_jobs=1,
     )
     automl.search()
-    automl.save(path, pickle_type=pickle_type)
-    loaded_automl = automl.load(path)
+    if pickle_type == "invalid":
+        with pytest.raises(ValueError, match="`pickle_type` must be either \'pickle\' or \'cloudpickle\'. Received invalid"):
+            automl.save(path, pickle_type=pickle_type)
+    else:
+        automl.save(path, pickle_type=pickle_type)
+        loaded_automl = automl.load(path)
 
-    for i in range(num_max_iterations):
-        assert (
-            automl.get_pipeline(i).__class__ == loaded_automl.get_pipeline(i).__class__
-        )
-        assert (
-            automl.get_pipeline(i).parameters
-            == loaded_automl.get_pipeline(i).parameters
-        )
+        for i in range(num_max_iterations):
+            assert (
+                automl.get_pipeline(i).__class__ == loaded_automl.get_pipeline(i).__class__
+            )
+            assert (
+                automl.get_pipeline(i).parameters
+                == loaded_automl.get_pipeline(i).parameters
+            )
 
-        for id_, pipeline_results in automl.results["pipeline_results"].items():
-            loaded_ = loaded_automl.results["pipeline_results"][id_]
-            for name in pipeline_results:
-                # Use np to check percent_better_than_baseline because of (possible) nans
-                if name == "percent_better_than_baseline_all_objectives":
-                    for objective_name, value in pipeline_results[name].items():
+            for id_, pipeline_results in automl.results["pipeline_results"].items():
+                loaded_ = loaded_automl.results["pipeline_results"][id_]
+                for name in pipeline_results:
+                    # Use np to check percent_better_than_baseline because of (possible) nans
+                    if name == "percent_better_than_baseline_all_objectives":
+                        for objective_name, value in pipeline_results[name].items():
+                            np.testing.assert_almost_equal(
+                                value, loaded_[name][objective_name]
+                            )
+                    elif name == "percent_better_than_baseline":
                         np.testing.assert_almost_equal(
-                            value, loaded_[name][objective_name]
+                            pipeline_results[name], loaded_[name]
                         )
-                elif name == "percent_better_than_baseline":
-                    np.testing.assert_almost_equal(
-                        pipeline_results[name], loaded_[name]
-                    )
-                else:
-                    assert pipeline_results[name] == loaded_[name]
+                    else:
+                        assert pipeline_results[name] == loaded_[name]
 
-    pd.testing.assert_frame_equal(automl.rankings, loaded_automl.rankings)
+        pd.testing.assert_frame_equal(automl.rankings, loaded_automl.rankings)
 
 
 @patch("cloudpickle.dump")
