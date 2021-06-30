@@ -7,6 +7,7 @@ Release Notes
     * Fixes
         * Added custom exception to address features with scales too small for partial dependence :pr:`2455`
     * Changes
+        * Pinned Woodwork version between 0.4.1 and 0.4.2 :pr:`2460`
         * Updated psutils minimum version in requirements :pr:`2438`
         * Updated ``log_error_callback`` to not include filepath in logged message :pr:`2429`
     * Documentation Changes
