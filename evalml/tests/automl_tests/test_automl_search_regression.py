@@ -180,7 +180,8 @@ def test_plot_iterations_max_time(AutoMLTestEnv, X_y_regression):
         n_jobs=1,
     )
     env = AutoMLTestEnv("regression")
-    env.run_search(automl, score_return_value={automl.objective.name: 0.2})
+    with env.test_context(score_return_value={automl.objective.name: 0.2}):
+        automl.search()
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
     x = pd.Series(plot_data["x"])
@@ -255,7 +256,8 @@ def test_automl_allowed_component_graphs_specified_component_graphs(
     assert automl.allowed_pipelines[0].parameters == expected_oarameters
     assert automl.allowed_model_families == [ModelFamily.NONE]
 
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
@@ -284,7 +286,8 @@ def test_automl_allowed_component_graphs_specified_allowed_model_families(
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
     env = AutoMLTestEnv("regression")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
 
     automl = AutoMLSearch(
         X_train=X,
@@ -301,7 +304,8 @@ def test_automl_allowed_component_graphs_specified_allowed_model_families(
     ]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
 
@@ -326,7 +330,8 @@ def test_automl_allowed_component_graphs_init_allowed_both_not_specified(
         [p.model_family for p in expected_pipelines]
     )
     env = AutoMLTestEnv("regression")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
 
@@ -354,7 +359,8 @@ def test_automl_allowed_component_graphs_init_allowed_both_specified(
         [p.model_family for p in expected_pipelines]
     )
     env = AutoMLTestEnv("regression")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
 
@@ -384,7 +390,8 @@ def test_automl_allowed_component_graphs_search(
         allowed_component_graphs=component_graph,
     )
     env = AutoMLTestEnv("regression")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
 
     assert start_iteration_callback.call_count == 2
     assert isinstance(
@@ -416,7 +423,8 @@ def test_automl_supports_time_series_regression(AutoMLTestEnv, X_y_regression):
         max_batches=2,
     )
     env = AutoMLTestEnv("time series regression")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
 
     dt = configuration.pop("date_index")

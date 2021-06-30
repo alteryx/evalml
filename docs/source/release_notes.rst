@@ -66,7 +66,6 @@ Release Notes
         * Sped up unit tests and split into separate jobs :pr:`2365`
         * Change CI job names, run lint for python 3.9, run nightlies on python 3.8 at 3am EST :pr:`2395` :pr:`2398`
         * Set fail-fast to false for CI jobs that run for PRs :pr:`2402`
-        * Added ``AutoMLTestEnv`` test fixture :pr:`2406`
 
 .. warning::
 

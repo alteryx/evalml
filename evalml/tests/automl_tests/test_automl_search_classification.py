@@ -126,7 +126,8 @@ def test_max_iterations(AutoMLTestEnv, X_y_binary):
         n_jobs=1,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 0.2})
+    with env.test_context(score_return_value={automl.objective.name: 0.2}):
+        automl.search()
     assert len(automl.full_rankings) == max_iterations
 
 
@@ -344,11 +345,11 @@ def test_optimizable_threshold_enabled(
         optimize_thresholds=True,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(
-        automl,
+    with env.test_context(
         score_return_value={"precision": 1.0},
-        optimize_threshold_return_value=0.8,
-    )
+        optimize_threshold_return_value=0.8,):
+        automl.search()
+
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
     env.mock_predict_proba.assert_called()
@@ -392,7 +393,8 @@ def test_optimizable_threshold_disabled(
         optimize_thresholds=False,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 1})
+    with env.test_context(score_return_value={automl.objective.name: 1}):
+        automl.search()
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
     assert not env.mock_predict_proba.called
@@ -429,7 +431,8 @@ def test_non_optimizable_threshold(AutoMLTestEnv, X_y_binary):
         max_iterations=1,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={"AUC": 1})
+    with env.test_context(score_return_value={"AUC": 1}):
+        automl.search()
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
     assert automl.best_pipeline.threshold is None
@@ -583,7 +586,8 @@ def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary):
         optimize_thresholds=False,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={"F1": 0.8})
+    with env.test_context(score_return_value={"F1": 0.8}):
+        automl.search()
     plot = automl.plot.search_iteration_plot()
     plot_data = plot.data[0]
     x = pd.Series(plot_data["x"])
@@ -713,7 +717,8 @@ def test_automl_component_graphs_specified_component_graphs_binary(
     assert automl.allowed_model_families == [ModelFamily.NONE]
 
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
@@ -750,7 +755,8 @@ def test_automl_component_graphs_specified_component_graphs_multi(
     assert automl.allowed_model_families == [ModelFamily.NONE]
 
     env = AutoMLTestEnv("multiclass")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
@@ -780,7 +786,8 @@ def test_automl_component_graphs_specified_allowed_model_families_binary(
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
 
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
     env.mock_fit.assert_called()
@@ -801,7 +808,8 @@ def test_automl_component_graphs_specified_allowed_model_families_binary(
         )
     ]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
     env.mock_fit.assert_called()
@@ -828,7 +836,8 @@ def test_automl_component_graphs_specified_allowed_model_families_multi(
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
 
     env = AutoMLTestEnv("multiclass")
-    env.run_search(automl, score_return_value={automl.objective.name: 1})
+    with env.test_context(score_return_value={automl.objective.name: 1}):
+        automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
     env.mock_fit.assert_called()
@@ -848,7 +857,8 @@ def test_automl_component_graphs_specified_allowed_model_families_multi(
         )
     ]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
-    env.run_search(automl, score_return_value={automl.objective.name: 1})
+    with env.test_context(score_return_value={automl.objective.name: 1}):
+        automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set([ModelFamily.RANDOM_FOREST])
     env.mock_fit.assert_called()
@@ -873,7 +883,8 @@ def test_automl_component_graphs_init_allowed_both_not_specified_binary(
     ]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 1})
+    with env.test_context(score_return_value={automl.objective.name: 1}):
+        automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set(
         [p.model_family for p in expected_pipelines]
@@ -899,7 +910,8 @@ def test_automl_component_graphs_init_allowed_both_not_specified_multi(
     ]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     env = AutoMLTestEnv("multiclass")
-    env.run_search(automl, score_return_value={automl.objective.name: 1})
+    with env.test_context(score_return_value={automl.objective.name: 1}):
+        automl.search()
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set(
         [p.model_family for p in expected_pipelines]
@@ -935,7 +947,8 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
     assert automl.allowed_model_families == [ModelFamily.NONE]
 
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 1})
+    with env.test_context(score_return_value={automl.objective.name: 1}):
+        automl.search()
     assert set(automl.allowed_model_families) == set(
         [p.model_family for p in expected_pipeline]
     )
@@ -971,7 +984,8 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
     assert automl.allowed_model_families == [ModelFamily.NONE]
 
     env = AutoMLTestEnv("multiclass")
-    env.run_search(automl, score_return_value={automl.objective.name: 1})
+    with env.test_context(score_return_value={automl.objective.name: 1}):
+        automl.search()
     assert set(automl.allowed_model_families) == set(
         [p.model_family for p in expected_pipeline]
     )
@@ -1020,7 +1034,8 @@ def test_automl_component_graphs_search(
         optimize_thresholds=False,
     )
     env = AutoMLTestEnv(problem_type)
-    env.run_search(automl, score_return_value=score_return_value)
+    with env.test_context(score_return_value=score_return_value):
+        automl.search()
 
     assert isinstance(
         start_iteration_callback.call_args_list[0][0][0], expected_mock_class
@@ -1096,7 +1111,8 @@ def test_automl_supports_time_series_classification(
         max_batches=2,
     )
     env = AutoMLTestEnv(problem_type)
-    env.run_search(automl, score_return_value=score_return_value)
+    with env.test_context(score_return_value=score_return_value):
+        automl.search()
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
     for result in automl.results["pipeline_results"].values():
         if result["id"] == 0:
@@ -1143,11 +1159,11 @@ def test_automl_time_series_classification_threshold(
         max_batches=2,
     )
     env = AutoMLTestEnv(problem_type)
-    env.run_search(
-        automl,
+    with env.test_context(
         score_return_value=score_return_value,
         optimize_threshold_return_value=optimize_return_value,
-    )
+    ):
+        automl.search()
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
     if optimize:
         env.mock_optimize_threshold.assert_called()

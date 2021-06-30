@@ -1049,7 +1049,7 @@ def test_add_to_rankings(
         allowed_component_graphs=dummy_classifier_linear_component_graph,
     )
     env = AutoMLTestEnv("binary")
-    with env.test_env(score_return_value={"Log Loss Binary": 1.0, "F1": 0.5}):
+    with env.test_context(score_return_value={"Log Loss Binary": 1.0, "F1": 0.5}):
         automl.search()
     assert len(automl.rankings) == 1
     assert len(automl.full_rankings) == 1
@@ -2680,7 +2680,7 @@ def test_max_batches_output(max_batches, AutoMLTestEnv, X_y_binary, caplog):
         max_batches=max_batches,
     )
     env = AutoMLTestEnv("binary")
-    with env.test_context(automl, score_return_value={"Log Loss Binary": 0.3}):
+    with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
         automl.search()
 
     output = caplog.text
@@ -2777,19 +2777,22 @@ def test_data_splitter_binary(AutoMLTestEnv, X_y_binary):
     env = AutoMLTestEnv("binary")
     with pytest.raises(Exception, match="Missing target values in the"):
         with pytest.warns(UserWarning):
-            env.run_search(automl, score_return_value={"Log Loss Binary": 1.0})
+            with env.test_context(score_return_value={"Log Loss Binary": 1.0}):
+                automl.search()
 
     y[1] = 1
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", n_jobs=1)
     with pytest.raises(Exception, match="Missing target values in the"):
         with pytest.warns(UserWarning):
-            env.run_search(automl, score_return_value={"Log Loss Binary": 1.0})
+            with env.test_context(score_return_value={"Log Loss Binary": 1.0}):
+                automl.search()
 
     y[2] = 1
     automl = AutoMLSearch(
         X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False, n_jobs=1
     )
-    env.run_search(automl, score_return_value={"Log Loss Binary": 1.0})
+    with env.test_context(score_return_value={"Log Loss Binary": 1.0}):
+        automl.search()
 
 
 def test_data_splitter_multi(AutoMLTestEnv, X_y_multi):
@@ -2801,7 +2804,8 @@ def test_data_splitter_multi(AutoMLTestEnv, X_y_multi):
     env = AutoMLTestEnv("multiclass")
     with pytest.raises(Exception, match="Missing target values"):
         with pytest.warns(UserWarning):
-            env.run_search(automl, score_return_value={"Log Loss Multiclass": 1.0})
+            with env.test_context(score_return_value={"Log Loss Multiclass": 1.0}):
+                automl.search()
 
     y[1] = 2
     # match based on regex, since data split doesn't have a random seed for reproducibility
@@ -2810,24 +2814,28 @@ def test_data_splitter_multi(AutoMLTestEnv, X_y_multi):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="multiclass", n_jobs=1)
     with pytest.raises(Exception, match=r"(\{\d?\}.+\{\d?\})|(\{.+\,.+\})"):
         with pytest.warns(UserWarning):
-            env.run_search(automl, score_return_value={"Log Loss Multiclass": 1.0})
+            with env.test_context(score_return_value={"Log Loss Multiclass": 1.0}):
+                automl.search()
 
     y[1] = 0
     y[2:4] = 2
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="multiclass", n_jobs=1)
     with pytest.raises(Exception, match="Missing target values"):
         with pytest.warns(UserWarning):
-            env.run_search(automl, score_return_value={"Log Loss Multiclass": 1.0})
+            with env.test_context(score_return_value={"Log Loss Multiclass": 1.0}):
+                automl.search()
 
     y[4] = 2
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="multiclass", n_jobs=1)
     with pytest.raises(Exception, match="Missing target values"):
         with pytest.warns(UserWarning):
-            env.run_search(automl, score_return_value={"Log Loss Multiclass": 1.0})
+            with env.test_context(score_return_value={"Log Loss Multiclass": 1.0}):
+                automl.search()
 
     y[5] = 0
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="multiclass", n_jobs=1)
-    env.run_search(automl, score_return_value={"Log Loss Multiclass": 1.0})
+    with env.test_context(score_return_value={"Log Loss Multiclass": 1.0}):
+        automl.search()
 
 
 @patch("evalml.tuners.skopt_tuner.SKOptTuner.add")
@@ -2856,7 +2864,8 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors
 
     mock_add.side_effect = ValueError("Alternate error that can be thrown")
     with pytest.raises(ValueError) as error:
-        env.run_search(automl, score_return_value={"Log Loss Multiclass": 1.0})
+        with env.test_context(score_return_value={"Log Loss Multiclass": 1.0}):
+            automl.search()
     assert "Alternate error that can be thrown" in str(error.value)
     assert "Default parameters for components" not in str(error.value)
 
@@ -2913,7 +2922,8 @@ def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(
         max_batches=4,
     )
     env = AutoMLTestEnv("multiclass")
-    env.run_search(automl, score_return_value={"Log Loss Multiclass": 1.0})
+    with env.test_context(score_return_value={"Log Loss Multiclass": 1.0}):
+        automl.search()
 
     for i, row in automl.full_rankings.iterrows():
         if "Random Forest Classifier" in row["pipeline_name"]:
@@ -2998,7 +3008,8 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(
         optimize_thresholds=False,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={"Log Loss Binary": 0.2})
+    with env.test_context(score_return_value={"Log Loss Binary": 0.2}):
+        automl.search()
     for parameters in automl.full_rankings.parameters:
         if "Mock Classifier with njobs" in parameters:
             assert parameters["Mock Classifier with njobs"]["n_jobs"] == 3
@@ -3022,8 +3033,8 @@ def test_automl_ensembling_false(AutoMLTestEnv, X_y_binary):
         ensembling=False,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={"Log Loss Binary": 0.32})
-    automl.search()
+    with env.test_context(score_return_value={"Log Loss Binary": 0.32}):
+        automl.search()
     assert not automl.rankings["pipeline_name"].str.contains("Ensemble").any()
 
 
@@ -3053,7 +3064,8 @@ def test_search_with_text(AutoMLTestEnv):
         X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={"Log Loss Binary": 0.30})
+    with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
+        automl.search()
     assert automl.rankings["pipeline_name"][1:].str.contains("Text").all()
 
 
@@ -3146,7 +3158,8 @@ def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
         optimize_thresholds=False,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={"Log Loss Binary": 0.30})
+    with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
+        automl.search()
     assert automl._pipelines_per_batch == 5
     assert automl._automl_algorithm.pipelines_per_batch == 5
     assert total_pipelines(automl, 2, 5) == len(automl.full_rankings)
@@ -3159,7 +3172,8 @@ def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
         optimize_thresholds=False,
         _pipelines_per_batch=2,
     )
-    env.run_search(automl, score_return_value={"Log Loss Binary": 0.30})
+    with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
+        automl.search()
     assert automl._pipelines_per_batch == 2
     assert automl._automl_algorithm.pipelines_per_batch == 2
     assert total_pipelines(automl, 1, 2) == len(automl.full_rankings)
@@ -3172,7 +3186,8 @@ def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
         optimize_thresholds=False,
         _pipelines_per_batch=10,
     )
-    env.run_search(automl, score_return_value={"Log Loss Binary": 0.30})
+    with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
+        automl.search()
     assert automl._pipelines_per_batch == 10
     assert automl._automl_algorithm.pipelines_per_batch == 10
     assert total_pipelines(automl, 2, 10) == len(automl.full_rankings)
@@ -3229,7 +3244,8 @@ def test_automl_respects_random_seed(
     )
 
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={"Log Loss Binary": 0.30})
+    with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
+        automl.search()
     assert automl.allowed_pipelines[0].random_seed == 42
     assert (
         DummyPipeline.num_pipelines_different_seed == 0
@@ -3278,20 +3294,14 @@ def test_automl_error_callback(error_type, callback, AutoMLTestEnv, X_y_binary, 
         silent_error_callback,
         log_error_callback,
     ]:
-        env.run_search(
-            automl,
-            mock_fit_side_effect=fit_side_effect,
-            score_return_value=score_return_value,
-            mock_score_side_effect=score_side_effect,
-        )
+        with env.test_context(mock_fit_side_effect=fit_side_effect, score_return_value=score_return_value,
+                              mock_score_side_effect=score_side_effect):
+            automl.search()
     else:
         with pytest.raises(exception, match=match):
-            env.run_search(
-                automl,
-                mock_fit_side_effect=fit_side_effect,
-                score_return_value=score_return_value,
-                mock_score_side_effect=score_side_effect,
-            )
+            with env.test_context(mock_fit_side_effect=fit_side_effect, score_return_value=score_return_value,
+                                  mock_score_side_effect=score_side_effect):
+                automl.search()
 
     if callback == silent_error_callback:
         assert msg not in caplog.text
@@ -3348,7 +3358,8 @@ def test_automl_woodwork_user_types_preserved(
         optimize_thresholds=False,
     )
     env = AutoMLTestEnv(problem_type)
-    env.run_search(automl, score_return_value=score_return_value)
+    with env.test_context(score_return_value=score_return_value):
+        automl.search()
     for arg in env.mock_fit.call_args[0]:
         assert isinstance(arg, (pd.DataFrame, pd.Series))
         if isinstance(arg, pd.DataFrame):
@@ -3510,7 +3521,8 @@ def test_automl_data_splitter_consistent(
             max_iterations=1,
         )
         env = AutoMLTestEnv(problem_type)
-        env.run_search(a)
+        with env.test_context():
+            a.search()
         data_splitters.append(
             [[set(train), set(test)] for train, test in a.data_splitter.split(X, y)]
         )
@@ -3536,9 +3548,11 @@ def test_automl_rerun(AutoMLTestEnv, X_y_binary, caplog):
         n_jobs=1,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 2})
+    with env.test_context(score_return_value={automl.objective.name: 2}):
+        automl.search()
     assert msg not in caplog.text
-    env.run_search(automl, score_return_value={automl.objective.name: 2})
+    with env.test_context(score_return_value={automl.objective.name: 2}):
+        automl.search()
     assert msg in caplog.text
 
 
@@ -3555,7 +3569,8 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(
         max_iterations=1,
     )
     env = AutoMLTestEnv("time series regression")
-    env.run_search(automl)
+    with env.test_context():
+        automl.search()
 
     # Best pipeline is baseline pipeline because we only run one iteration
     assert automl.best_pipeline.parameters == {
@@ -3637,7 +3652,8 @@ def test_automl_pipeline_params_simple(AutoMLTestEnv, X_y_binary):
         n_jobs=1,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.23})
+    with env.test_context(score_return_value={automl.objective.name: 1.23}):
+        automl.search()
     for i, row in automl.rankings.iterrows():
         if "Imputer" in row["parameters"]:
             assert (
@@ -3677,7 +3693,8 @@ def test_automl_pipeline_params_multiple(AutoMLTestEnv, X_y_regression):
         n_jobs=1,
     )
     env = AutoMLTestEnv("regression")
-    env.run_search(automl, score_return_value={automl.objective.name: 0.28})
+    with env.test_context(score_return_value={automl.objective.name: 0.28}):
+        automl.search()
     for i, row in automl.rankings.iterrows():
         if "Imputer" in row["parameters"]:
             assert row["parameters"]["Imputer"][
@@ -3727,7 +3744,8 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
         max_batches=3,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 0.63})
+    with env.test_context(score_return_value={automl.objective.name: 0.63}):
+        automl.search()
     for row in automl.full_rankings.iloc[1:3].parameters:
         assert row["Imputer"]["numeric_impute_strategy"] == "most_frequent"
         assert row["Imputer_1"]["numeric_impute_strategy"] == "median"
@@ -3758,7 +3776,8 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
         optimize_thresholds=False,
         max_batches=3,
     )
-    env.run_search(automl, score_return_value={automl.objective.name: 0.63})
+    with env.test_context(score_return_value={automl.objective.name: 0.63}):
+        automl.search()
     for row in automl.full_rankings.iloc[1:3].parameters:
         assert row["One Hot Encoder"]["top_n"] == 15
         assert row["One Hot Encoder_1"]["top_n"] == 25
@@ -3807,7 +3826,8 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
         max_batches=5,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 0.12})
+    with env.test_context(score_return_value={automl.objective.name: 0.12}):
+        automl.search()
     for i, row in automl.full_rankings.iterrows():
         if "Mode Baseline Binary" in row["pipeline_name"]:
             continue
@@ -3882,7 +3902,8 @@ def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(
         max_batches=4,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.767})
+    with env.test_context(score_return_value={automl.objective.name: 1.767}):
+        automl.search()
 
     for i, row in automl.full_rankings.iterrows():
         if "Mode Baseline Binary" in row["pipeline_name"]:
@@ -3912,7 +3933,8 @@ def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
         n_jobs=1,
     )
     env = AutoMLTestEnv("multiclass")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
     for i, row in automl.rankings.iterrows():
         if "Imputer" in row["parameters"]:
             assert (
@@ -3937,7 +3959,8 @@ def test_automl_pipeline_random_seed(AutoMLTestEnv, random_seed, X_y_multi):
         n_jobs=1,
     )
     env = AutoMLTestEnv("multiclass")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
 
     for i, row in automl.rankings.iterrows():
         if "Base" not in list(row["parameters"].keys())[0]:
@@ -3976,7 +3999,8 @@ def test_automl_check_high_variance_logs_warning(AutoMLTestEnv, X_y_binary, capl
     automl = AutoMLSearch(
         X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False
     )
-    env.run_search(automl, score_return_value={"Log Loss Binary": 1})
+    with env.test_context(score_return_value={"Log Loss Binary": 1}):
+        automl.search()
     out = caplog.text
     assert "High coefficient of variation" not in out
 
@@ -3990,7 +4014,8 @@ def test_automl_check_high_variance_logs_warning(AutoMLTestEnv, X_y_binary, capl
         optimize_thresholds=False,
         max_iterations=2,
     )
-    env.run_search(automl, mock_score_side_effect=desired_score_values)
+    with env.test_context(mock_score_side_effect=desired_score_values):
+        automl.search()
     out = caplog.text
     assert "High coefficient of variation" in out
 
@@ -4081,7 +4106,8 @@ def test_train_batch_score_batch(
         max_iterations=3,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 0.9})
+    with env.test_context(score_return_value={automl.objective.name: 0.9}):
+        automl.search()
 
     with env.test_context(mock_fit_side_effect=[None, Exception("foo"), None]):
         fitted_pipelines = automl.train_pipelines(pipelines)
@@ -4203,7 +4229,8 @@ def test_train_batch_works(
     train_batch_and_check()
 
     # Test training after search.
-    env.run_search(automl, score_return_value={automl.objective.name: 1.2})
+    with env.test_context(score_return_value={automl.objective.name: 1.2}):
+        automl.search()
     train_batch_and_check()
 
 
@@ -4341,7 +4368,8 @@ def test_score_batch_works(
     # Test scoring before search
     score_batch_and_check()
 
-    env.run_search(automl, score_return_value={automl.objective.name: 3.12})
+    with env.test_context(score_return_value={automl.objective.name: 3.12}):
+        automl.search()
 
     # Test scoring after search
     score_batch_and_check()
@@ -4462,7 +4490,8 @@ def test_automl_supports_float_targets_for_classification(
         n_jobs=1,
     )
     env = AutoMLTestEnv(automl.problem_type)
-    env.run_search(automl, score_return_value={automl.objective.name: 0.1})
+    with env.test_context(score_return_value={automl.objective.name: 0.1}):
+        automl.search()
 
     # Assert that we train pipeline on the original target, not the encoded one used in EngineBase for data splitting
     _, kwargs = mock_train.call_args
@@ -4509,7 +4538,8 @@ def test_automl_drop_index_columns(AutoMLTestEnv, X_y_binary):
         max_batches=2,
     )
     env = AutoMLTestEnv("binary")
-    env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
     for pipeline in automl.allowed_pipelines:
         assert pipeline.get_component("Drop Columns Transformer")
         assert "Drop Columns Transformer" in pipeline.parameters
