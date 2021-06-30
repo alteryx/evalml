@@ -50,9 +50,7 @@ release = evalml.__version__
 # ones.
 extensions = [
     "nbsphinx",
-    'sphinx.ext.autodoc',
     "autoapi.extension",
-    "sphinx.ext.autosummary",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.extlinks",
@@ -64,9 +62,9 @@ extensions = [
 #templates_path = ["_templates"]
 
 autoapi_dirs = ['../../evalml']
-autoapi_template_dir = '_templates'
-suppress_warnings = ["autoapi"]
-autoapi_add_toctree_entry = False
+autoapi_ignore = ["*test*"]
+autoapi_options = ['members', 'undoc-members', 'show-inheritance', 'show-module-summary', 'imported-members', ]
+# autoapi_template_dir = 'autoapi_templates'
 
 
 # The suffix(es) of source filenames.
@@ -88,7 +86,10 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["**.ipynb_checkpoints", "autoapi"]
+exclude_patterns = ["**.ipynb_checkpoints", "_templates"]
+
+suppress_warnings = ["autoapi"]
+
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
@@ -220,8 +221,8 @@ extlinks = {
 }
 
 # autoclass_content = 'both'
-autosummary_generate = ["api_reference.rst"]
-templates_path = ["_templates"]
+#autosummary_generate = ["api_reference.rst"]
+#templates_path = ["_templates"]
 
 html_show_sphinx = False
 nbsphinx_execute = "always"
@@ -272,23 +273,27 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
     # lower than MethodDocumenter so this is not chosen for normal methods
     priority = 0.6
 
-def autodoc_skip_member(app, what, name, obj, skip, options):
-    if what == "method" and name.startswith("_"):
-        return True
-    if what == "attribute" and name.startswith("_"):
-        return True
-    return skip
+from sphinx.domains.python import PythonDomain
+
+
+class PatchedPythonDomain(PythonDomain):
+    """To disable cross-reference warning: https://github.com/sphinx-doc/sphinx/issues/3866"""
+    def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
+        if 'refspecific' in node:
+            del node['refspecific']
+        return super(PatchedPythonDomain, self).resolve_xref(
+            env, fromdocname, builder, typ, target, node, contnode)
 
 
 def setup(app):
-    p = Path("/home/docs/.ipython/profile_default/startup")
-    p.mkdir(parents=True, exist_ok=True)
-    shutil.copy("disable-warnings.py", "/home/docs/.ipython/profile_default/startup/")
-    shutil.copy("set-headers.py", "/home/docs/.ipython/profile_default/startup")
+    # p = Path("/home/docs/.ipython/profile_default/startup")
+    # p.mkdir(parents=True, exist_ok=True)
+    # shutil.copy("disable-warnings.py", "/home/docs/.ipython/profile_default/startup/")
+    # shutil.copy("set-headers.py", "/home/docs/.ipython/profile_default/startup")
+    app.add_domain(PatchedPythonDomain, override=True)
     app.add_javascript(
        "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
     )
     app.add_stylesheet("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)
     app.add_autodocumenter(AccessorMethodDocumenter)
-    app.connect('autodoc-skip-member', autodoc_skip_member)

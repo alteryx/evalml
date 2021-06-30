@@ -97,7 +97,7 @@ class SparsityDataCheck(DataCheck):
         Arguments:
             col (pd.Series): Feature values.
             count_threshold (int): The number of instances below which a value is considered sparse.
-                Default is 10.
+            Default is 10.
         Returns:
             (float): Sparsity score, or the percentage of the unique values that exceed count_threshold.
         """

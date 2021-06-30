@@ -235,9 +235,6 @@ class AutoMLSearch:
 
     _MAX_NAME_LEN = 40
 
-    # Necessary for "Plotting" documentation, since Sphinx does not work well with instance attributes.
-    plot = PipelineSearchPlots
-
     def __init__(
         self,
         X_train=None,
