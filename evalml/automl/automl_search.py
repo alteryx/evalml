@@ -56,7 +56,12 @@ from evalml.problem_types import (
 )
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, infer_feature_types
-from evalml.utils.logger import get_logger, log_subtitle, log_title, time_elapsed
+from evalml.utils.logger import (
+    get_logger,
+    log_subtitle,
+    log_title,
+    time_elapsed,
+)
 
 logger = get_logger(__file__)
 
