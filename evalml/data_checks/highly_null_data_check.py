@@ -13,6 +13,10 @@ class HighlyNullDataCheck(DataCheck):
 
     Parameters
     ----------
+    pct_null_threshold : float
+        If the percentage of NaN values in an input feature exceeds this amount,
+        that column/row will be considered highly-null. Defaults to 0.95.
+
     """
 
     def __init__(self, pct_null_threshold=0.95):

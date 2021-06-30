@@ -10,9 +10,18 @@ from evalml.utils import infer_feature_types
 class ClassImbalanceDataCheck(DataCheck):
     """Checks if any target labels are imbalanced beyond a threshold. Use for classification problems.
 
-
     Parameters
     ----------
+    threshold : float
+        The minimum threshold allowed for class imbalance before a warning is raised.
+        This threshold is calculated by comparing the number of samples in each class to the sum of samples in that class and the majority class.
+        For example, a multiclass case with [900, 900, 100] samples per classes 0, 1, and 2, respectively,
+        would have a 0.10 threshold for class 2 (100 / (900 + 100)). Defaults to 0.10.
+    min_samples : int
+        The minimum number of samples per accepted class. If the minority class is both below the threshold and min_samples,
+        then we consider this severely imbalanced. Must be greater than 0. Defaults to 100.
+    num_cv_folds : int
+        The number of cross-validation folds. Must be positive. Choose 0 to ignore this warning.
     """
 
     def __init__(self, threshold=0.1, min_samples=100, num_cv_folds=3):

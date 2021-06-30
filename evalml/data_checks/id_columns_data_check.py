@@ -13,6 +13,8 @@ class IDColumnsDataCheck(DataCheck):
 
     Parameters
     ----------
+    id_threshold : float
+        The probability threshold to be considered an ID column. Defaults to 1.0.
     """
 
     def __init__(self, id_threshold=1.0):
