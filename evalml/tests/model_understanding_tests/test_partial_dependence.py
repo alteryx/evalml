@@ -1260,10 +1260,10 @@ def test_graph_partial_dependence_ice_plot_two_way_error(
 
 
 def test_partial_dependence_scale_error():
-    """ Test to catch the case when the scale of the features is so small
+    """Test to catch the case when the scale of the features is so small
     that the 5th and 95th percentiles are too close to each other.  This is
-    an sklearn exception. """
-    
+    an sklearn exception."""
+
     pl = RegressionPipeline(["Random Forest Regressor"])
     X = pd.DataFrame({"a": list(range(30)), "b": list(range(-10, 20))})
     y = 10 * X["a"] + X["b"]
