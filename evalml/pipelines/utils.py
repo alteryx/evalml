@@ -154,6 +154,7 @@ def make_pipeline(
     problem_type,
     parameters=None,
     sampler_name=None,
+    extra_components=None,
 ):
     """Given input data, target data, an estimator class and the problem type,
          generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
@@ -186,7 +187,12 @@ def make_pipeline(
     preprocessing_components = _get_preprocessing_components(
         X, y, problem_type, estimator, sampler_name
     )
-    complete_component_graph = preprocessing_components + [estimator]
+
+    complete_component_graph = (
+        preprocessing_components + extra_components + [estimator]
+        if extra_components
+        else preprocessing_components + [estimator]
+    )
 
     base_class = _get_pipeline_base_class(problem_type)
     return base_class(
