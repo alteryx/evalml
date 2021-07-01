@@ -188,6 +188,8 @@ texinfo_documents = [
 autodoc_default_options = {
     'members': True,
     'member-order': 'bysource',
+    'special-members': '__init__',
+    'private-members': False,
     'exclude-members': '__weakref__'
 }
 # -- Options for Epub output -------------------------------------------------
