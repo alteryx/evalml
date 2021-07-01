@@ -25,16 +25,12 @@ from evalml.utils.woodwork_utils import (
 class InvalidTargetDataCheck(DataCheck):
     """Checks if the target data contains missing or invalid values.
 
-    Parameters
-    ----------
-    problem_type : str or ProblemTypes
-        The specific problem type to data check for.
-        e.g. 'binary', 'multiclass', 'regression, 'time series regression'
-    objective : str or ObjectiveBase
-        Name or instance of the objective class.
-    n_unique : int
-        Number of unique target values to store when problem type is binary and target
-        incorrectly has more than 2 unique values. Non-negative integer. Defaults to 100. If None, stores all unique values.
+    Arguments:
+        problem_type (str or ProblemTypes): The specific problem type to data check for.
+            e.g. 'binary', 'multiclass', 'regression, 'time series regression'
+        objective (str or ObjectiveBase): Name or instance of the objective class.
+        n_unique (int): Number of unique target values to store when problem type is binary and target
+            incorrectly has more than 2 unique values. Non-negative integer. If None, stores all unique values. Defaults to 100.
     """
 
     multiclass_continuous_threshold = 0.05

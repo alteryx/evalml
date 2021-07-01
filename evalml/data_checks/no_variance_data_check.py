@@ -15,8 +15,10 @@ logger = get_logger(__file__)
 class NoVarianceDataCheck(DataCheck):
     """Check if the target or any of the features have no variance.
 
-    Parameters
-    ----------
+    Arguments:
+        count_nan_as_value (bool): If True, missing values will be counted as their own unique value.
+            If set to True, a feature that has one unique value and all other data is missing, a
+            DataCheckWarning will be returned instead of an error. Defaults to False.
     """
 
     def __init__(self, count_nan_as_value=False):

@@ -10,7 +10,10 @@ from evalml.utils.gen_utils import (
 
 
 class XGBoostRegressor(Estimator):
-    """XGBoost Regressor."""
+    """XGBoost Regressor.
+
+    Parameters:
+    """
 
     name = "XGBoost Regressor"
     hyperparameter_ranges = {
