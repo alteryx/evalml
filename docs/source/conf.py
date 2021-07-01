@@ -185,7 +185,11 @@ texinfo_documents = [
     ),
 ]
 
-
+autodoc_default_options = {
+    'members': None,
+    'member-order': 'bysource',
+    'exclude-members': '__weakref__'
+}
 # -- Options for Epub output -------------------------------------------------
 
 # Bibliographic Dublin Core info.
@@ -271,8 +275,8 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
 def autodoc_skip_member(app, what, name, obj, skip, options):
     exclusions = ('__init__')
     exclude = name in exclusions
-    print (options)
-    return skip or exclude or "undoc_members" in options
+    print (app, what, name, obj, skip, options)
+    return skip or exclude
 
 
 def setup(app):
@@ -286,4 +290,4 @@ def setup(app):
     app.add_stylesheet("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)
     app.add_autodocumenter(AccessorMethodDocumenter)
-    app.connect('autodoc-skip-member', autodoc_skip_member)
+    # app.connect('autodoc-skip-member', autodoc_skip_member)
