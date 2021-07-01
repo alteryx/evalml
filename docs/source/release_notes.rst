@@ -5,6 +5,7 @@ Release Notes
         * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
         * Updated Objectives API to allow for sample weighting :pr:`2433`
     * Fixes
+        * Deleted unreachable line from ``IterativeAlgorithm`` :pr:`2464`
     * Changes
         * Pinned Woodwork version between 0.4.1 and 0.4.2 :pr:`2460`
         * Updated psutils minimum version in requirements :pr:`2438`
