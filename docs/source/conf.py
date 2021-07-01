@@ -271,7 +271,8 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
 def autodoc_skip_member(app, what, name, obj, skip, options):
     exclusions = ('__init__')
     exclude = name in exclusions
-    return skip or exclude
+    print (options)
+    return skip or exclude or "undoc_members" in options
 
 
 def setup(app):
