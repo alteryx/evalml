@@ -186,7 +186,7 @@ texinfo_documents = [
 ]
 
 autodoc_default_options = {
-    'members': None,
+    'members': True,
     'member-order': 'bysource',
     'exclude-members': '__weakref__'
 }
