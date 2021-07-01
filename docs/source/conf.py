@@ -268,9 +268,12 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
     priority = 0.6
 
 def autodoc_skip_member(app, what, name, obj, skip, options):
-    if what in ["method", "attribute"] and name.startswith("_"):
+    if what == "method" and name.startswith("_"):
+        return True
+    if what == "attribute" and name.startswith("_"):
         return True
     print (app, what, name, obj, skip, options)
+    print (what == "attribute" and name.startswith("_"))
     return skip
 
 
