@@ -64,7 +64,7 @@ extensions = [
 autoapi_dirs = ['../../evalml']
 autoapi_ignore = ["*test*"]
 autoapi_options = ['members', 'undoc-members', 'show-inheritance', 'show-module-summary', 'imported-members', ]
-# autoapi_template_dir = 'autoapi_templates'
+autoapi_add_toctree_entry = False
 
 
 # The suffix(es) of source filenames.
