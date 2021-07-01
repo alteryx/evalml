@@ -664,6 +664,8 @@ def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
         n_jobs=1,
     )
     automl.search()
+    # Testing pickling of SearchIterationPlot object
+    automl.search_iteration_plot = automl.plot.search_iteration_plot(interactive_plot=True)
     if pickle_type == "invalid":
         with pytest.raises(
             ValueError,
