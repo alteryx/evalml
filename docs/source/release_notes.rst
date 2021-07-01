@@ -2,10 +2,22 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
+        * Updated Objectives API to allow for sample weighting :pr:`2433`
     * Fixes
+        * Deleted unreachable line from ``IterativeAlgorithm`` :pr:`2464`
     * Changes
+        * Pinned Woodwork version between 0.4.1 and 0.4.2 :pr:`2460`
+        * Updated psutils minimum version in requirements :pr:`2438`
+        * Updated ``log_error_callback`` to not include filepath in logged message :pr:`2429`
     * Documentation Changes
+        * Sped up docs :pr:`2430`
+        * Removed mentions of ``DataTable`` and ``DataColumn`` from the docs :pr:`2445`
     * Testing Changes
+        * Added slack integration for nightlies tests :pr:`2436`
+        * Changed ``build_conda_pkg`` CI job to run only when dependencies are updates :pr:`2446`
+        * Updated workflows to store pytest runtimes as test artifacts :pr:`2448`
+        * Added ``AutoMLTestEnv`` test fixture for making it easy to mock automl tests :pr:`2406`
 
 .. warning::
 
