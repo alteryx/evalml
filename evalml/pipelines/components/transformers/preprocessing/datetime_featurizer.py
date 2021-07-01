@@ -60,10 +60,14 @@ def _extract_hour(col, encode_as_categories=False):
 
 class DateTimeFeaturizer(Transformer):
     """
-    Transformer that can automatically featurize DateTime columns.
+    Transformer that can automatically extract features from datetime columns.
 
-    Parameters
-    ----------
+    Arguments:
+        features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour". Defaults to None.
+        encode_as_categories (bool): Whether day-of-week and month features should be encoded as pandas "category" dtype.
+            This allows OneHotEncoders to encode these features. Defaults to False.
+        date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "DateTime Featurization Component"
@@ -83,15 +87,6 @@ class DateTimeFeaturizer(Transformer):
         random_seed=0,
         **kwargs,
     ):
-        """Extracts features from DateTime columns
-
-        Arguments:
-            features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour".
-            encode_as_categories (bool): Whether day-of-week and month features should be encoded as pandas "category" dtype.
-                This allows OneHotEncoders to encode these features.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-            date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
-        """
         if features_to_extract is None:
             features_to_extract = ["year", "month", "day_of_week", "hour"]
         invalid_features = set(features_to_extract) - set(

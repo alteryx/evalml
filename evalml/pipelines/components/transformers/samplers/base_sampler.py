@@ -115,7 +115,17 @@ class BaseSampler(Transformer):
 
 
 class BaseOverSampler(BaseSampler):
-    """Base Oversampler component. Used as the base class of all imbalance-learn oversampler components"""
+    """
+    Base Oversampler component. Used as the base class of all imbalance-learn oversampler components.
+
+    Arguments:
+        sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
+            of the minority to majority class after oversampling. We will create the a sampling dictionary using this ratio, with the keys corresponding to the class
+            and the values responding to the number of samples. Defaults to 0.25.
+        k_neighbors_default (int): The number of nearest neighbors used to construct synthetic samples. This is the default value used, but the actual k_neighbors value might be smaller
+            if there are less samples. Defaults to 5.
+        n_jobs (int): The number of CPU cores to use. Defaults to -1.
+    """
 
     def __init__(
         self,
@@ -127,16 +137,6 @@ class BaseOverSampler(BaseSampler):
         random_seed=0,
         **kwargs,
     ):
-        """Initializes the oversampler component.
-
-        Arguments:
-            sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
-                of the minority to majority class after oversampling. We will create the a sampling dictionary using this ratio, with the keys corresponding to the class
-                and the values responding to the number of samples. Defaults to 0.25.
-            k_neighbors_default (int): The number of nearest neighbors used to construct synthetic samples. This is the default value used, but the actual k_neighbors value might be smaller
-                if there are less samples. Defaults to 5.
-            n_jobs (int): The number of CPU cores to use. Defaults to -1.
-        """
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
         im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
         parameters = {

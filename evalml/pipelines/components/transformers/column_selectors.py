@@ -7,16 +7,13 @@ from evalml.utils import infer_feature_types
 class ColumnSelector(Transformer):
     """
     Initalizes an transformer that drops specified columns in input data.
-    Parameters
-    ----------
+
+    Arguments:
+        columns (list(string)): List of column names, used to determine which columns to drop.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     def __init__(self, columns=None, random_seed=0, **kwargs):
-        """Initalizes an transformer that drops specified columns in input data.
-
-        Arguments:
-            columns (list(string)): List of column names, used to determine which columns to drop.
-        """
         if columns and not isinstance(columns, list):
             raise ValueError(
                 f"Parameter columns must be a list. Received {type(columns)}."
