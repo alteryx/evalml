@@ -1,3 +1,4 @@
+from evalml.utils.gen_utils import import_or_raise
 import os
 import warnings
 from collections import OrderedDict
@@ -665,10 +666,11 @@ def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
     )
     automl.search()
 
-    # Testing pickling of SearchIterationPlot object
-    automl.search_iteration_plot = automl.plot.search_iteration_plot(
-        interactive_plot=True
-    )
+    if automl.search_iteration_plot:
+        # Testing pickling of SearchIterationPlot object
+        automl.search_iteration_plot = automl.plot.search_iteration_plot(
+            interactive_plot=True
+        )
 
     if pickle_type == "invalid":
         with pytest.raises(
