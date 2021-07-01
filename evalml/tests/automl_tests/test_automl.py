@@ -1,4 +1,3 @@
-from evalml.utils.gen_utils import import_or_raise
 import os
 import warnings
 from collections import OrderedDict
