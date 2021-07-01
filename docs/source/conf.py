@@ -268,6 +268,11 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
     # lower than MethodDocumenter so this is not chosen for normal methods
     priority = 0.6
 
+def autodoc_skip_member(app, what, name, obj, skip, options):
+    exclusions = ('__init__')
+    exclude = name in exclusions
+    return skip or exclude
+
 
 def setup(app):
     p = Path("/home/docs/.ipython/profile_default/startup")
@@ -280,3 +285,4 @@ def setup(app):
     app.add_stylesheet("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)
     app.add_autodocumenter(AccessorMethodDocumenter)
+    app.connect('autodoc-skip-member', autodoc_skip_member)
