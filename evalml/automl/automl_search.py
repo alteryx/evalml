@@ -1337,11 +1337,15 @@ class AutoMLSearch:
             pkl_lib.dump(self, f, protocol=pickle_protocol)
 
     @staticmethod
-    def load(file_path):
+    def load(
+        file_path,
+        pickle_type="cloudpickle",
+    ):
         """Loads AutoML object at file path
 
         Arguments:
             file_path (str): location to find file to load
+            pickle_type {"pickle", "cloudpickle"}: the pickling library to use. Currently not used since the standard pickle library can handle cloudpickles.
 
         Returns:
             AutoSearchBase object
