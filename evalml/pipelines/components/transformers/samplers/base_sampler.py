@@ -7,10 +7,13 @@ from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class BaseSampler(Transformer):
-    """Base Sampler component. Used as the base class of all sampler components.
+    """
+    Base Sampler component. Used as the base class of all sampler components.
 
-    Parameters
-    ----------
+    Arguments:
+        parameters (dict): Dictionary of parameters for the component. Defaults to None.
+        component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     def fit(self, X, y):
@@ -119,12 +122,17 @@ class BaseOverSampler(BaseSampler):
     Base Oversampler component. Used as the base class of all imbalance-learn oversampler components.
 
     Arguments:
+        sampler (obj): Sampler object to use.
         sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
             of the minority to majority class after oversampling. We will create the a sampling dictionary using this ratio, with the keys corresponding to the class
             and the values responding to the number of samples. Defaults to 0.25.
+        sampling_ratio_dict (dict): A dictionary specifying the desired balanced ratio for each target value. For instance, in a binary case where class 1 is the minority, we could specify:
+            `sampling_ratio_dict={0: 0.5, 1: 1}`, which means we would undersample class 0 to have twice the number of samples as class 1 (minority:majority ratio = 0.5), and don't sample class 1.
+            Overrides sampling_ratio if provided. Defaults to None.
         k_neighbors_default (int): The number of nearest neighbors used to construct synthetic samples. This is the default value used, but the actual k_neighbors value might be smaller
             if there are less samples. Defaults to 5.
         n_jobs (int): The number of CPU cores to use. Defaults to -1.
+        random_seed (int): The seed to use for random sampling. Defaults to 0.
     """
 
     def __init__(
