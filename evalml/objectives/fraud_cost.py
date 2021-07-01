@@ -4,8 +4,14 @@ from .binary_classification_objective import BinaryClassificationObjective
 class FraudCost(BinaryClassificationObjective):
     """Score the percentage of money lost of the total transaction amount process due to fraud.
 
-    Parameters
-    ----------
+    Arguments:
+        retry_percentage (float): What percentage of customers that will retry a transaction if it
+            is declined. Between 0 and 1. Defaults to 0.5.
+        interchange_fee (float): How much of each successful transaction you can collect.
+            Between 0 and 1. Defaults to .02.
+        fraud_payout_percentage (float): Percentage of fraud you will not be able to collect.
+            Between 0 and 1. Defaults to 1.0.
+        amount_col (str): Name of column in data that contains the amount. Defaults to "amount".
     """
 
     name = "Fraud Cost"
@@ -21,20 +27,6 @@ class FraudCost(BinaryClassificationObjective):
         fraud_payout_percentage=1.0,
         amount_col="amount",
     ):
-        """Create instance of FraudCost
-
-        Arguments:
-            retry_percentage (float): What percentage of customers that will retry a transaction if it
-                is declined. Between 0 and 1. Defaults to .5
-
-            interchange_fee (float): How much of each successful transaction you can collect.
-                Between 0 and 1. Defaults to .02
-
-            fraud_payout_percentage (float): Percentage of fraud you will not be able to collect.
-                Between 0 and 1. Defaults to 1.0
-
-            amount_col (str): Name of column in data that contains the amount. Defaults to "amount"
-        """
         self.retry_percentage = retry_percentage
         self.interchange_fee = interchange_fee
         self.fraud_payout_percentage = fraud_payout_percentage

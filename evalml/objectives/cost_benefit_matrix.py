@@ -11,8 +11,11 @@ class CostBenefitMatrix(BinaryClassificationObjective):
     scores represents a better score. Costs and scores can be negative, indicating that a value is not beneficial.
     For example, in the case of monetary profit, a negative cost and/or score represents loss of cash flow.
 
-    Parameters
-    ----------
+    Arguments:
+        true_positive (float): Cost associated with true positive predictions
+        true_negative (float): Cost associated with true negative predictions
+        false_positive (float): Cost associated with false positive predictions
+        false_negative (float): Cost associated with false negative predictions
     """
 
     name = "Cost Benefit Matrix"
@@ -22,14 +25,6 @@ class CostBenefitMatrix(BinaryClassificationObjective):
     is_bounded_like_percentage = False  # Range (-Inf, Inf)
 
     def __init__(self, true_positive, true_negative, false_positive, false_negative):
-        """Create instance of CostBenefitMatrix.
-
-        Arguments:
-            true_positive (float): Cost associated with true positive predictions
-            true_negative (float): Cost associated with true negative predictions
-            false_positive (float): Cost associated with false positive predictions
-            false_negative (float): Cost associated with false negative predictions
-        """
         if None in {true_positive, true_negative, false_positive, false_negative}:
             raise ValueError(
                 "Parameters to CostBenefitMatrix must all be numeric values."

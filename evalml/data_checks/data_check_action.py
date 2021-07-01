@@ -1,22 +1,12 @@
 class DataCheckAction:
     """A recommended action returned by a DataCheck.
 
-    Parameters
-    ----------
-    action_code : DataCheckActionCode
-        Action code associated with the action.
-    metadata : dict, optional
-        Additional useful information associated with the action. Defaults to None.
+    Arguments:
+        action_code (DataCheckActionCode): Action code associated with the action.
+        metadata (dict, optional): Additional useful information associated with the action. Defaults to None.
     """
 
     def __init__(self, action_code, metadata=None):
-        """
-        A recommended action returned by a DataCheck.
-
-        Arguments:
-            action_code (DataCheckActionCode): Action code associated with the action.
-            metadata (dict, optional): Additional useful information associated with the action. Defaults to None.
-        """
         self.action_code = action_code
         self.metadata = metadata or {}
 

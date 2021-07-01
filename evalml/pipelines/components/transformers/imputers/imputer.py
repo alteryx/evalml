@@ -11,8 +11,12 @@ from evalml.utils import (
 class Imputer(Transformer):
     """Imputes missing data according to a specified imputation strategy.
 
-    Parameters
-    ----------
+    Arguments:
+        categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes. Valid values include "most_frequent" and "constant".
+        numeric_impute_strategy (string): Impute strategy to use for numeric columns. Valid values include "mean", "median", "most_frequent", and "constant".
+        categorical_fill_value (string): When categorical_impute_strategy == "constant", fill_value is used to replace missing data. The default value of None will fill with the string "missing_value".
+        numeric_fill_value (int, float): When numeric_impute_strategy == "constant", fill_value is used to replace missing data. The default value of None will fill with 0.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "Imputer"
@@ -34,15 +38,6 @@ class Imputer(Transformer):
         random_seed=0,
         **kwargs,
     ):
-        """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
-
-        Arguments:
-            categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes. Valid values include "most_frequent" and "constant".
-            numeric_impute_strategy (string): Impute strategy to use for numeric columns. Valid values include "mean", "median", "most_frequent", and "constant".
-            categorical_fill_value (string): When categorical_impute_strategy == "constant", fill_value is used to replace missing data. The default value of None will fill with the string "missing_value".
-            numeric_fill_value (int, float): When numeric_impute_strategy == "constant", fill_value is used to replace missing data. The default value of None will fill with 0.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         if categorical_impute_strategy not in self._valid_categorical_impute_strategies:
             raise ValueError(
                 f"{categorical_impute_strategy} is an invalid parameter. Valid categorical impute strategies are {', '.join(self._valid_numeric_impute_strategies)}"
