@@ -19,6 +19,7 @@ Release Notes
         * Exposed ``thread_count`` for Catboost estimators as ``n_jobs`` parameter :pr:`2410`
         * Updated Objectives API to allow for sample weighting :pr:`2433`
         * Added ability to use built-in pickle for saving AutoMLSearch :pr:`2463`
+        * Added details on how to fix error caused by broken ww schema :pr:`2466`
     * Fixes
         * Deleted unreachable line from ``IterativeAlgorithm`` :pr:`2464`
     * Changes
