@@ -1,0 +1,10 @@
+wheel>=0.33.1
+setuptools>=50.0.1
+pytest==6.0.1
+pytest-xdist==2.1.0
+pytest-timeout==1.4.2
+pytest-cov==2.10.1
+nbval==0.9.3
+IPython>=5.0.0
+codecov==2.1.11
+PyYAML==5.4
