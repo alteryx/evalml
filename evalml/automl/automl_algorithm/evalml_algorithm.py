@@ -1,3 +1,7 @@
+from evalml.problem_types.problem_types import ProblemTypes
+from evalml import problem_types
+from evalml.pipelines.components.estimators import estimator
+from evalml import pipelines
 import inspect
 from operator import itemgetter
 
@@ -11,6 +15,12 @@ from evalml.pipelines.utils import (
     _make_stacked_ensemble_pipeline,
 )
 from evalml.pipelines.components.utils import handle_component_class
+from evalml.pipelines.components import (
+    RFClassifierSelectFromModel,
+    RFRegressorSelectFromModel,
+    RandomForestClassifier,
+    RandomForestRegressor,
+)
 from evalml.problem_types import is_regression
 
 
@@ -84,7 +94,6 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             random_seed=random_seed,
         )
 
-
         self.X = X
         self.y = y
         self.problem_type = problem_type
@@ -98,6 +107,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         self._custom_hyperparameters = custom_hyperparameters or {}
         self._frozen_pipeline_parameters = _frozen_pipeline_parameters or {}
 
+        self._selected_cols = None
         if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
             raise ValueError(
                 f"If custom_hyperparameters provided, must be of type dict. Received {type(custom_hyperparameters)}"
@@ -118,21 +128,29 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                         " and Real!"
                     )
 
-    def _create_naive_pipelines(self):
-        # don't need to add baseline as it is added as part of AutoMLSearch TODO: what to do here
+    def _naive_estimators(self):
         if is_regression(self.problem_type):
             naive_estimators = [
                 "Linear Regressor",
                 "Random Forest Regressor",
             ]
-            estimators = [handle_component_class(estimator) for estimator in naive_estimators]
+            estimators = [
+                handle_component_class(estimator) for estimator in naive_estimators
+            ]
         else:
             naive_estimators = [
                 "Logistic Regression Classifier",
                 "Random Forest Classifier",
             ]
-            estimators = [handle_component_class(estimator) for estimator in naive_estimators]
+            estimators = [
+                handle_component_class(estimator) for estimator in naive_estimators
+            ]
 
+        return estimators
+
+    def _create_naive_pipelines(self):
+        # don't need to add baseline as it is added as part of AutoMLSearch TODO: what to do here
+        estimators = self._naive_estimators()
         return [
             make_pipeline(
                 self.X,
@@ -145,6 +163,27 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             for estimator in estimators
         ]
 
+    def _create_naive_pipelines_with_feature_selection(self):
+        feature_selector = (
+            RFRegressorSelectFromModel
+            if is_regression(self.problem_type)
+            else RFClassifierSelectFromModel
+        )
+        estimators = self._naive_estimators()
+        pipelines = [
+            make_pipeline(
+                self.X,
+                self.y,
+                estimator,
+                self.problem_type,
+                parameters=self._frozen_pipeline_parameters,
+                sampler_name=self._sampler_name,
+                extra_components=[feature_selector],
+            )
+            for estimator in estimators
+        ]
+        return pipelines
+
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
 
@@ -154,7 +193,66 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
 
         if self._batch_number == 0:
             next_batch = self._create_naive_pipelines()
+        elif self._batch_number == 1:
+            next_batch = self._create_naive_pipelines_with_feature_selection()
 
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
+
+    def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
+        """Register results from evaluating a pipeline
+
+        Arguments:
+            score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
+            pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
+            trained_pipeline_results (dict): Results from training a pipeline.
+        """
+        if pipeline.model_family != ModelFamily.ENSEMBLE:
+            if self.batch_number > 5:
+                try:
+                    super().add_result(
+                        score_to_minimize, pipeline, trained_pipeline_results
+                    )
+                except ValueError as e:
+                    if "is not within the bounds of the space" in str(e):
+                        raise ValueError(
+                            "Default parameters for components in pipeline {} not in the hyperparameter ranges: {}".format(
+                                pipeline.name, e
+                            )
+                        )
+                    else:
+                        raise (e)
+            # else:
+            #     super().add_result(
+            #         score_to_minimize, pipeline, trained_pipeline_results
+            #     )
+
+        if self.batch_number == 2 and self._selected_cols is None:
+            if is_regression(self.problem_type):
+                self._selected_cols = pipeline.get_component(
+                    "RF Regressor Select From Model"
+                ).get_names()
+            else:
+                self._selected_cols = pipeline.get_component(
+                    "RF Classifier Select From Model"
+                ).get_names()
+
+        current_best_score = self._best_pipeline_info.get(
+            pipeline.model_family, {}
+        ).get("mean_cv_score", np.inf)
+        if (
+            score_to_minimize is not None
+            and score_to_minimize < current_best_score
+            and pipeline.model_family != ModelFamily.ENSEMBLE
+        ):
+            self._best_pipeline_info.update(
+                {
+                    pipeline.model_family: {
+                        "mean_cv_score": score_to_minimize,
+                        "pipeline": pipeline,
+                        "parameters": pipeline.parameters,
+                        "id": trained_pipeline_results["id"],
+                    }
+                }
+            )

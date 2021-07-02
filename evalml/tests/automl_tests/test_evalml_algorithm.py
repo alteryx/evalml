@@ -1,8 +1,11 @@
+import numpy as np
+
 from evalml import pipelines
 from evalml.automl.automl_algorithm import EvalMLAlgorithm
 from evalml.problem_types import ProblemTypes
 from evalml.model_family import ModelFamily
 
+from unittest.mock import patch
 import pytest
 
 
@@ -42,29 +45,53 @@ def test_evalml_algorithm_custom_hyperparameters_error(X_y_binary):
         )
 
 
+def add_result(algo, batch):
+    scores = np.arange(0, len(batch))
+    for score, pipeline in zip(scores, batch):
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
+
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
 @pytest.mark.parametrize(
     "automl_type",
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
-def test_evalml_algorithm_first_batch(
+def test_evalml_algorithm_short(
+    mock_get_names,
     automl_type,
     X_y_binary,
     X_y_multi,
-    X_y_regression,):
+    X_y_regression,
+):
 
     if automl_type == ProblemTypes.BINARY:
         X, y = X_y_binary
+        fs = "RF Classifier Select From Model"
     elif automl_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
+        fs = "RF Classifier Select From Model"
     elif automl_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
-
-    problem_type = "binary"
-    sampler_name = "Undersampler"
+        fs = "RF Regressor Select From Model"
+    mock_get_names.return_value = ["0", "1", "2"]
+    problem_type = automl_type
+    sampler_name = None
     algo = EvalMLAlgorithm(X, y, problem_type, sampler_name)
+
     first_batch = algo.next_batch()
     model_families = [ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST]
     assert len(first_batch) == 2
     for pipeline in first_batch:
         assert pipeline.model_family in model_families
-    
+
+    add_result(algo, first_batch)
+
+    second_batch = algo.next_batch()
+    model_families = [ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST]
+    assert len(first_batch) == 2
+    for pipeline in second_batch:
+        assert pipeline.model_family in model_families
+        assert pipeline.get_component(fs)
+
+    add_result(algo, second_batch)
+    assert algo._selected_cols == ["0", "1", "2"]
