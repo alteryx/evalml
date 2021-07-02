@@ -2,6 +2,17 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.28.0 Jul. 2, 2021**
+    * Enhancements
         * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
         * Exposed ``thread_count`` for Catboost estimators as ``n_jobs`` parameter :pr:`2410`
         * Updated Objectives API to allow for sample weighting :pr:`2433`
@@ -19,10 +30,6 @@ Release Notes
         * Changed ``build_conda_pkg`` CI job to run only when dependencies are updates :pr:`2446`
         * Updated workflows to store pytest runtimes as test artifacts :pr:`2448`
         * Added ``AutoMLTestEnv`` test fixture for making it easy to mock automl tests :pr:`2406`
-
-.. warning::
-
-    **Breaking Changes**
 
 **v0.27.0 Jun. 22, 2021**
     * Enhancements
