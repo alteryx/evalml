@@ -197,7 +197,7 @@ def test_infer_feature_types_raises_invalid_schema_error():
 
     with pytest.raises(
         ValueError,
-        match="The following columns in the typing information were missing from the DataFrame",
+        match="Please initialize ww with df.ww.init()",
     ):
         df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
         df.ww.init()

@@ -74,6 +74,8 @@ def infer_feature_types(data, feature_types=None):
                     "when a data transformation does not go through the ww accessor. Call df.ww.init() to "
                     f"get rid of this message. This is a more detailed message about the mismatch: {ww_error}"
                 )
+            else:
+                ww_error = f"{ww_error}. Please initialize ww with df.ww.init() to get rid of this message."
             raise ValueError(ww_error)
         data.ww.init(schema=data.ww.schema)
         return data
