@@ -3,6 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
         * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
+        * Exposed ``thread_count`` for Catboost estimators as ``n_jobs`` parameter :pr:`2410`
         * Updated Objectives API to allow for sample weighting :pr:`2433`
     * Fixes
         * Deleted unreachable line from ``IterativeAlgorithm`` :pr:`2464`
