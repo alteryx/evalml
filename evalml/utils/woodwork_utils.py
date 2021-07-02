@@ -67,7 +67,14 @@ def infer_feature_types(data, feature_types=None):
         if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
             data, data.ww.schema
         ):
-            raise ValueError(ww.get_invalid_schema_message(data, data.ww.schema))
+            ww_error = ww.get_invalid_schema_message(data, data.ww.schema)
+            if "dtype mismatch" in ww_error:
+                ww_error = (
+                    "Dataframe types are not consistent with logical types. This usually happens "
+                    "when a data transformation does not go through the ww accessor. Call df.ww.init() to "
+                    f"get rid of this message. This is a more detailed message about the mismatch: {ww_error}"
+                )
+            raise ValueError(ww_error)
         data.ww.init(schema=data.ww.schema)
         return data
 
