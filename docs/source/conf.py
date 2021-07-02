@@ -65,7 +65,7 @@ autoapi_dirs = ['../../evalml']
 autoapi_ignore = ["*test*"]
 autoapi_options = ['members', 'undoc-members', 'show-inheritance', 'show-module-summary', 'imported-members', ]
 autoapi_add_toctree_entry = False
-
+autoapi_template_dir = "_auto_api_templates"
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -86,7 +86,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["**.ipynb_checkpoints", "_templates"]
+exclude_patterns = ["**.ipynb_checkpoints", "_templates", "_auto_api_templates"]
 
 suppress_warnings = ["autoapi"]
 
@@ -109,7 +109,7 @@ html_theme = "pydata_sphinx_theme"
 html_theme_options = {
     "github_url": "https://github.com/alteryx/evalml",
     "twitter_url": "https://twitter.com/AlteryxOSS",
-    "collapse_navigation": True,
+    "collapse_navigation": False,
     "navigation_depth": 2,
 }
 
@@ -286,10 +286,10 @@ class PatchedPythonDomain(PythonDomain):
 
 
 def setup(app):
-    p = Path("/home/docs/.ipython/profile_default/startup")
-    p.mkdir(parents=True, exist_ok=True)
-    shutil.copy("disable-warnings.py", "/home/docs/.ipython/profile_default/startup/")
-    shutil.copy("set-headers.py", "/home/docs/.ipython/profile_default/startup")
+    # p = Path("/home/docs/.ipython/profile_default/startup")
+    # p.mkdir(parents=True, exist_ok=True)
+    # shutil.copy("disable-warnings.py", "/home/docs/.ipython/profile_default/startup/")
+    # shutil.copy("set-headers.py", "/home/docs/.ipython/profile_default/startup")
     app.add_domain(PatchedPythonDomain, override=True)
     app.add_javascript(
        "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"

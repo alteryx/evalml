@@ -47,6 +47,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
 
     name = "Target Imputer"
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
+    """{"impute_strategy": ["mean", "median", "most_frequent"]}"""
 
     def __init__(
         self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs

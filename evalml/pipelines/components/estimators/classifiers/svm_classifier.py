@@ -28,13 +28,25 @@ class SVMClassifier(Estimator):
         "kernel": ["linear", "poly", "rbf", "sigmoid", "precomputed"],
         "gamma": ["scale", "auto"],
     }
+    """{
+        "C": Real(0, 10),
+        "kernel": ["linear", "poly", "rbf", "sigmoid", "precomputed"],
+        "gamma": ["scale", "auto"],
+    }"""
     model_family = ModelFamily.SVM
+    """ModelFamily.SVM"""
     supported_problem_types = [
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]
+    """[
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]"""
 
     def __init__(
         self,

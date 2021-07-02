@@ -19,6 +19,7 @@ class TextFeaturizer(TextTransformer):
 
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(self, random_seed=0, **kwargs):
         self._trans = [

@@ -30,6 +30,7 @@ class Transformer(ComponentBase):
     """
 
     model_family = ModelFamily.NONE
+    """ModelFamily.NONE"""
 
     def transform(self, X, y=None):
         """Transforms data X.

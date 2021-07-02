@@ -24,6 +24,10 @@ class Imputer(Transformer):
         "categorical_impute_strategy": ["most_frequent"],
         "numeric_impute_strategy": ["mean", "median", "most_frequent"],
     }
+    """{
+        "categorical_impute_strategy": ["most_frequent"],
+        "numeric_impute_strategy": ["mean", "median", "most_frequent"],
+    }"""
     _valid_categorical_impute_strategies = set(["most_frequent", "constant"])
     _valid_numeric_impute_strategies = set(
         ["mean", "median", "most_frequent", "constant"]

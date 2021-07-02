@@ -21,11 +21,20 @@ class RandomForestRegressor(Estimator):
         "n_estimators": Integer(10, 1000),
         "max_depth": Integer(1, 32),
     }
+    """{
+        "n_estimators": Integer(10, 1000),
+        "max_depth": Integer(1, 32),
+    }"""
     model_family = ModelFamily.RANDOM_FOREST
+    """ModelFamily.RANDOM_FOREST"""
     supported_problem_types = [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]
+    """[
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]"""
 
     def __init__(
         self, n_estimators=100, max_depth=6, n_jobs=-1, random_seed=0, **kwargs

@@ -69,6 +69,7 @@ class DateTimeFeaturizer(Transformer):
 
     name = "DateTime Featurization Component"
     hyperparameter_ranges = {}
+    """{}"""
     _function_mappings = {
         "year": _extract_year,
         "month": _extract_month,

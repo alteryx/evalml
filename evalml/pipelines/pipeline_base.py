@@ -55,6 +55,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     """
 
     problem_type = None
+    """None"""
 
     def __init__(
         self,

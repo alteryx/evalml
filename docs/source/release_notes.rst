@@ -32,6 +32,7 @@ Release Notes
     * Documentation Changes
         * Sped up docs :pr:`2430`
         * Removed mentions of ``DataTable`` and ``DataColumn`` from the docs :pr:`2445`
+        * Build documentation with sphinx-autoapi :pr:`2458`
     * Testing Changes
         * Added slack integration for nightlies tests :pr:`2436`
         * Changed ``build_conda_pkg`` CI job to run only when dependencies are updates :pr:`2446`

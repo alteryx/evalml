@@ -29,13 +29,26 @@ class XGBoostClassifier(Estimator):
         "min_child_weight": Real(1, 10),
         "n_estimators": Integer(1, 1000),
     }
+    """{
+        "eta": Real(0.000001, 1),
+        "max_depth": Integer(1, 10),
+        "min_child_weight": Real(1, 10),
+        "n_estimators": Integer(1, 1000),
+    }"""
     model_family = ModelFamily.XGBOOST
+    """ModelFamily.XGBOOST"""
     supported_problem_types = [
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]
+    """[
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]"""
 
     # xgboost supports seeds from -2**31 to 2**31 - 1 inclusive. these limits ensure the random seed generated below
     # is within that range.
