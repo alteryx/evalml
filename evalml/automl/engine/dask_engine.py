@@ -13,7 +13,7 @@ from evalml.automl.engine.engine_base import (
 class DaskComputation(EngineComputation):
     """A Future-like wrapper around jobs created by the DaskEngine.
 
-    Parameters:
+    Arguments:
         dask_future (callable): Computation to do.
     """
 

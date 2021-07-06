@@ -12,8 +12,10 @@ class FeatureSelector(Transformer):
     """
     Selects top features based on importance weights.
 
-    Parameters
-    ----------
+    Arguments:
+        parameters (dict): Dictionary of parameters for the component. Defaults to None.
+        component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     def get_names(self):

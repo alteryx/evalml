@@ -12,12 +12,13 @@ from evalml.utils.gen_utils import (
 class XGBoostRegressor(Estimator):
     """XGBoost Regressor.
 
-    Parameters:
+    Arguments:
         eta (float): Boosting learning rate. Defaults to 0.1.
         max_depth (int): Maximum tree depth for base learners. Defaults to 6.
         min_child_weight (float): Minimum sum of instance weight (hessian) needed in a child. Defaults to 1.0
         n_estimators (int): Number of gradient boosted trees. Equivalent to number of boosting rounds. Defaults to 100.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+        n_jobs (int): Number of parallel threads used to run xgboost. Note that creating thread contention will significantly slow down the algorithm. Defaults to -1.
     """
 
     name = "XGBoost Regressor"
@@ -48,16 +49,6 @@ class XGBoostRegressor(Estimator):
         n_jobs=-1,
         **kwargs
     ):
-        """XGBoost Regressor.
-
-        Arguments:
-            eta (float): Learning rate. Defaults to 0.1.
-            max_depth (int): Maximum tree depth for base learners. Defaults to 6.
-            min_child_weight (float): Minimum sum of instance weight(hessian) needed in a child. Defaults to 1.
-            n_estimators (int): Number of gradient boosted trees. Equivalent to number of boosting rounds. Defaults to 100.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-            n_jobs (int): Number of parallel threads used to run xgboost. Note that creating thread contention will significantly slow down the algorithm. Defaults to -1.
-        """
         parameters = {
             "eta": eta,
             "max_depth": max_depth,
