@@ -11,8 +11,15 @@ class SVMClassifier(Estimator):
     """
     Support Vector Machine Classifier.
 
-    Parameters
-    ----------
+    Arguments:
+        C (float): The regularization parameter. The strength of the regularization is inversely proportional to C.
+            Must be strictly positive. The penalty is a squared l2 penalty. Defaults to 1.0.
+        kernel ({"linear", "poly", "rbf", "sigmoid", "precomputed"}): Specifies the kernel type to be used in the algorithm. Defaults to "rbf".
+        gamma ({"scale", "auto"} or float): Kernel coefficient for "rbf", "poly" and "sigmoid". Defaults to "scale".
+            - If gamma='scale' (default) is passed then it uses 1 / (n_features * X.var()) as value of gamma
+            - if "auto", uses 1 / n_features
+        probability (boolean): Whether to enable probability estimates. Defaults to True.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "SVM Classifier"

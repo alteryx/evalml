@@ -7,14 +7,14 @@ class TrainingValidationSplit(BaseCrossValidator):
     """Split the training data into training and validation sets.
 
     Arguments:
-    test_size (float): What percentage of data points should be included in the validation
-        set. Defalts to the complement of `train_size` if `train_size` is set, and 0.25 otherwise.
-    train_size (float): What percentage of data points should be included in the training set.
-        Defaults to the complement of `test_size`
-    shuffle (bool): Whether to shuffle the data before splitting. Defaults to False.
-    stratify (list): Splits the data in a stratified fashion, using this argument as class labels.
-        Defaults to None.
-    random_seed (int): The seed to use for random sampling. Defaults to 0.
+        test_size (float): What percentage of data points should be included in the validation
+            set. Defalts to the complement of `train_size` if `train_size` is set, and 0.25 otherwise.
+        train_size (float): What percentage of data points should be included in the training set.
+            Defaults to the complement of `test_size`
+        shuffle (boolean): Whether to shuffle the data before splitting. Defaults to False.
+        stratify (list): Splits the data in a stratified fashion, using this argument as class labels.
+            Defaults to None.
+        random_seed (int): The seed to use for random sampling. Defaults to 0.
     """
 
     def __init__(

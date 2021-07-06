@@ -12,7 +12,7 @@ class DecisionTreeRegressor(Estimator):
     criterion ({"mse", "friedman_mse", "mae", "poisson"}): The function to measure the quality of a split.
         Supported criteria are:
             - "mse" for the mean squared error, which is equal to variance reduction as feature selection criterion and minimizes the L2 loss using the mean of each terminal node
-            - "friedman_mse", which uses mean squared error with Friedman’s improvement score for potential splits
+            - "friedman_mse", which uses mean squared error with Friedman"s improvement score for potential splits
             - "mae" for the mean absolute error, which minimizes the L1 loss using the median of each terminal node,
             - "poisson" which uses reduction in Poisson deviance to find splits.
     max_features (int, float or {"auto", "sqrt", "log2"}): The number of features to consider when looking for the best split:
