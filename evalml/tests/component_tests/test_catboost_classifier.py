@@ -1,3 +1,5 @@
+import warnings
+
 import pandas as pd
 from pytest import importorskip
 
@@ -22,3 +24,16 @@ def test_catboost_classifier_random_seed_bounds_seed(X_y_binary):
     )
     fitted = clf.fit(X, y)
     assert isinstance(fitted, CatBoostClassifier)
+
+
+def test_catboost_classifier_init_n_jobs():
+    n_jobs = 2
+    clf = CatBoostClassifier(n_jobs=n_jobs)
+    assert clf._component_obj.get_param("thread_count") == n_jobs
+
+
+def test_catboost_classifier_init_thread_count():
+    with warnings.catch_warnings(record=True) as w:
+        CatBoostClassifier(thread_count=2)
+    assert len(w) == 1
+    assert "Parameter 'thread_count' will be ignored. " in str(w[-1].message)
