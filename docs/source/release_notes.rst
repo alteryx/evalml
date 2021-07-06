@@ -6,6 +6,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Fixed flaky dask tests :pr:``
 
 .. warning::
 

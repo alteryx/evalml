@@ -148,8 +148,8 @@ def test_automl_immediate_quit(X_y_binary_cls, cluster, caplog):
 
         pipelines = [
             TestPipelineFast({}),
-            TestPipelineWithFitError({}),
             TestPipelineSlow({}),
+            TestPipelineWithFitError({}),
         ]
         automl = AutoMLSearch(
             X_train=X,
