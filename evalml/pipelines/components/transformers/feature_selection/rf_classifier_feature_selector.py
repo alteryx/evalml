@@ -10,7 +10,7 @@ class RFClassifierSelectFromModel(FeatureSelector):
     """
     Selects top features based on importance weights using a Random Forest classifier.
 
-    Parameters:
+    Arguments:
         number_features (int): The maximum number of features to select.
             If both percent_features and number_features are specified, take the greater number of features. Defaults to 0.5.
             Defaults to None.

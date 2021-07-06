@@ -122,7 +122,7 @@ def search(X_train=None, y_train=None, problem_type=None, objective="auto", **kw
 class AutoMLSearch:
     """Automated Pipeline search.
 
-    Parameters:
+    Arguments:
         X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
 
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.

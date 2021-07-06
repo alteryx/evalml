@@ -11,7 +11,7 @@ class KNeighborsClassifier(Estimator):
     """
     K-Nearest Neighbors Classifier.
 
-    Parameters:
+    Arguments:
         n_neighbors (int): Number of neighbors to use by default. Defaults to 5.
         weights ({‘uniform’, ‘distance’} or callable): Weight function used in prediction. Can be:
 
