@@ -30,7 +30,7 @@ class DecisionTreeClassifier(Estimator):
             - If int, then consider min_samples_split as the minimum number.
             - If float, then min_samples_split is a fraction and ceil(min_samples_split * n_samples) are the minimum number of samples for each split.
 
-        Defaults to 2.
+            Defaults to 2.
         min_weight_fraction_leaf (float): The minimum weighted fraction of the sum total of weights
             (of all the input samples) required to be at a leaf node. Defaults to 0.0.
         random_seed (int): Seed for the random number generator. Defaults to 0.
