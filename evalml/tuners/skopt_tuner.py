@@ -12,7 +12,12 @@ logger = get_logger(__file__)
 
 
 class SKOptTuner(Tuner):
-    """Bayesian Optimizer."""
+    """Bayesian Optimizer.
+
+    Arguments:
+        pipeline_hyperparameter_ranges (dict): A set of hyperparameter ranges corresponding to a pipeline's parameters
+        random_seed (int): The seed for the random number generator. Defaults to 0.
+    """
 
     def __init__(self, pipeline_hyperparameter_ranges, random_seed=0):
         """Init SkOptTuner

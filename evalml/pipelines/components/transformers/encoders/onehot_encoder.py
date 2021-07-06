@@ -20,7 +20,7 @@ class OneHotEncoderMeta(ComponentBaseMeta):
 
 
 class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
-    """A transformer that encodes categorical features in a one-hot numeric array."
+    """A transformer that encodes categorical features in a one-hot numeric array.
 
     Arguments:
         top_n (int): Number of categories per column to encode. If None, all categories will be encoded.

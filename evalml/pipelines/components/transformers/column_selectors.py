@@ -9,7 +9,7 @@ class ColumnSelector(Transformer):
     Initalizes an transformer that drops specified columns in input data.
 
     Arguments:
-        columns (list(string)): List of column names, used to determine which columns to drop.
+        columns (list(string)): List of column names, used to determine which columns to select.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -65,7 +65,13 @@ class ColumnSelector(Transformer):
 
 
 class DropColumns(ColumnSelector):
-    """Drops specified columns in input data."""
+    """
+    Drops specified columns in input data.
+
+    Arguments:
+        columns (list(string)): List of column names, used to determine which columns to drop.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Drop Columns Transformer"
     hyperparameter_ranges = {}
@@ -88,7 +94,12 @@ class DropColumns(ColumnSelector):
 
 
 class SelectColumns(ColumnSelector):
-    """Selects specified columns in input data."""
+    """Selects specified columns in input data.
+
+    Arguments:
+        columns (list(string)): List of column names, used to determine which columns to select.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Select Columns Transformer"
     hyperparameter_ranges = {}

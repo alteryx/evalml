@@ -16,6 +16,11 @@ class Estimator(ComponentBase):
     `fit`, `transform`, `fit_transform` and other methods in this class if appropriate.
 
     To see some examples, check out the definitions of any Estimator component.
+
+    Arguments:
+        parameters (dict): Dictionary of parameters for the component. Defaults to None.
+        component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     # We can't use the inspect module to dynamically determine this because of issue 1582
