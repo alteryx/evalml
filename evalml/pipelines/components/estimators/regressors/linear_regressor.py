@@ -21,7 +21,10 @@ class LinearRegressor(Estimator):
 
     name = "Linear Regressor"
     hyperparameter_ranges = {"fit_intercept": [True, False], "normalize": [True, False]}
-    """{"fit_intercept": [True, False], "normalize": [True, False]}"""
+    """{
+        "fit_intercept": [True, False],
+        "normalize": [True, False]
+    }"""
     model_family = ModelFamily.LINEAR_MODEL
     """ModelFamily.LINEAR_MODEL"""
     supported_problem_types = [
