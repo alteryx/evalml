@@ -213,12 +213,10 @@ extlinks = {
 }
 
 # autoclass_content = 'both'
-autoclass_content = "class"
 autosummary_generate = ["api_reference.rst"]
 templates_path = ["_templates"]
 
 html_show_sphinx = False
-napoleon_include_init_with_doc = True
 nbsphinx_execute = "always"
 nbsphinx_timeout = (
     600  # sphinx defaults each cell to 30 seconds so we need to override here

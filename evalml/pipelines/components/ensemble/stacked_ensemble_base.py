@@ -39,7 +39,7 @@ class StackedEnsembleBase(Estimator):
         input_pipelines=None,
         final_estimator=None,
         cv=None,
-        n_jobs=None,
+        n_jobs=-1,
         random_seed=0,
         **kwargs,
     ):
