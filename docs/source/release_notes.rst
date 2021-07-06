@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Updated 1-way partial dependence support for datetime features :pr:`2454`
     * Fixes
     * Changes
     * Documentation Changes
@@ -16,7 +17,6 @@ Release Notes
         * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
         * Exposed ``thread_count`` for Catboost estimators as ``n_jobs`` parameter :pr:`2410`
         * Updated Objectives API to allow for sample weighting :pr:`2433`
-        * Updated 1-way partial dependence support for datetime features :pr:`2454`
     * Fixes
         * Deleted unreachable line from ``IterativeAlgorithm`` :pr:`2464`
     * Changes
