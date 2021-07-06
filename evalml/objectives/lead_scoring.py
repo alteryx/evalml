@@ -22,13 +22,14 @@ class LeadScoring(BinaryClassificationObjective):
         self.true_positives = true_positives
         self.false_positives = false_positives
 
-    def objective_function(self, y_true, y_predicted, X=None):
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Calculate the profit per lead.
 
         Arguments:
             y_predicted (pd.Series): Predicted labels
             y_true (pd.Series): True labels
             X (pd.DataFrame): Ignored.
+            sample_weight (pd.DataFrame): Ignored.
 
         Returns:
             float: Profit per lead

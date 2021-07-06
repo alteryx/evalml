@@ -1,5 +1,7 @@
+import contextlib
 import os
 import sys
+from unittest.mock import PropertyMock, patch
 
 import numpy as np
 import pandas as pd
@@ -34,7 +36,11 @@ from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
 )
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.preprocessing import load_data
-from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_regression,
+)
 
 
 def pytest_configure(config):
@@ -1088,3 +1094,200 @@ def mock_imbalanced_data_X_y():
         return X, y
 
     return _imbalanced_data_X_y
+
+
+class _AutoMLTestEnv:
+    """A test environment that makes it easy to test automl behavior with patched pipeline computations.
+
+    This class provides a context manager that will automatically patch pipeline fit/score/predict_proba methods,
+    as well as _encode_targets, BinaryClassificationObjective.optimize_threshold, and skopt.Optimizer.tell. These are
+    the most time consuming operations during search, so your test will run as fast as possible.
+
+    This class is ideal for tests that verify some behavior of AutoMLSearch that can be controlled via the side_effect
+    or return_value parameters exposed to the patched methods but it may not be suitable for all tests, such as
+    tests that patch Estimator.fit instead of Pipeline.fit or tests that only want to patch a selective
+    subset of the methods listed above.
+
+    Example:
+        >>> env = _AutoMLTestEnv(problem_type="binary")
+        >>> # run_search is short-hand for creating the context manager and then running search
+        >>> # env.run_search(automl, score_return_value={automl.objective.name: 1.0})
+        >>> # with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        >>> #    automl.search()
+        >>> # env.mock_fit.assert_called_once()
+        >>> # env.mock_score.assert_called_once()
+    """
+
+    def __init__(self, problem_type):
+        """Create a test environment.
+
+        Arguments:
+            problem_type (str): The problem type corresponding to the search class you want to test.
+
+        Attributes:
+            mock_fit (MagicMock): MagicMock corresponding to the pipeline.fit method for the latest automl computation.
+                Set to None until the first computation is run in the test environment.
+            mock_tell (MagicMock): Magic mock corresponding to the skopt.Optimizer.tell method. Set to None unil the
+                first computation is run in the test environment.
+            mock_score (MagicMock): MagicMock corresponding to the pipeline.score method for the latest automl computation.
+                Set to None until the first computation is run in the test environment.
+            mock_encode_targets (MagicMock): MagicMock corresponding to the pipeline._encode_targets method for the latest automl computation.
+                Set to None until the first computation is run in the test environment.
+            mock_predict_proba (MagicMock): MagicMock corresponding to the pipeline.predict_proba method for the latest automl computation.
+                Set to None until the first computation is run in the test environment.
+            mock_optimize_threshold (MagicMock): MagicMock corresponding to the BinaryClassificationObjective.optimize_threshold for the latest automl computation.
+                Set to None until the first computation is run in the test environment.
+        """
+        self.problem_type = handle_problem_types(problem_type)
+        self._mock_fit = None
+        self._mock_tell = None
+        self._mock_score = None
+        self._mock_encode_targets = None
+        self._mock_predict_proba = None
+        self._mock_optimize_threshold = None
+
+    @property
+    def _pipeline_class(self):
+        return {
+            ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
+            ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
+            ProblemTypes.MULTICLASS: "evalml.pipelines.MulticlassClassificationPipeline",
+            ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline",
+            ProblemTypes.TIME_SERIES_MULTICLASS: "evalml.pipelines.TimeSeriesMulticlassClassificationPipeline",
+            ProblemTypes.TIME_SERIES_BINARY: "evalml.pipelines.TimeSeriesBinaryClassificationPipeline",
+        }[self.problem_type]
+
+    def _patch_method(self, method, side_effect, return_value, pipeline_class_str=None):
+        kwargs = {}
+        if pipeline_class_str is None:
+            pipeline_class_str = self._pipeline_class
+        if side_effect is not None:
+            kwargs = {"side_effect": side_effect}
+        elif return_value is not None:
+            kwargs = {"return_value": return_value}
+        return patch(pipeline_class_str + "." + method, **kwargs)
+
+    def _reset_mocks(self):
+        """Set the mocks to None before running a computation so that we can prevent users from trying to access
+        them before leaving the context manager."""
+        self._mock_fit = None
+        self._mock_tell = None
+        self._mock_score = None
+        self._mock_encode_targets = None
+        self._mock_predict_proba = None
+        self._mock_optimize_threshold = None
+
+    def _get_mock(self, mock_name):
+        mock = getattr(self, f"_mock_{mock_name}")
+        if mock is None:
+            raise ValueError(
+                f"mock_{mock_name} cannot be accessed before leaving the test_context! "
+                "Access it after leaving test_context."
+            )
+        return mock
+
+    @property
+    def mock_fit(self):
+        return self._get_mock("fit")
+
+    @property
+    def mock_tell(self):
+        return self._get_mock("tell")
+
+    @property
+    def mock_score(self):
+        return self._get_mock("score")
+
+    @property
+    def mock_encode_targets(self):
+        return self._get_mock("encode_targets")
+
+    @property
+    def mock_predict_proba(self):
+        return self._get_mock("predict_proba")
+
+    @property
+    def mock_optimize_threshold(self):
+        return self._get_mock("optimize_threshold")
+
+    @contextlib.contextmanager
+    def test_context(
+        self,
+        score_return_value=None,
+        mock_score_side_effect=None,
+        mock_fit_side_effect=None,
+        mock_fit_return_value=None,
+        predict_proba_return_value=None,
+        optimize_threshold_return_value=0.2,
+    ):
+        """A context manager for creating an environment that patches time-consuming pipeline methods.
+        Sets the mock_fit, mock_score, mock_encode_targets, mock_predict_proba, mock_optimize_threshold attributes.
+
+        Arguments:
+            score_return_value: Passed as the return_value argument of the pipeline.score patch.
+            mock_score_side_effect: Passed as the side_effect argument of the pipeline.score patch. Takes precedence over
+                score_return_value.
+            mock_fit_side_effect: Passed as the side_effect argument of the pipeline.fit patch. Takes precedence over mock_fit_return_value.
+            mock_fit_return_value: Passed as the return_value argument of the pipeline.fit patch.
+            predict_proba_return_value: Passed as the return_value argument of the pipeline.predict_proba patch.
+            optimize_threshold_return_value: Passed as the return value of BinaryClassificationObjective.optimize_threshold patch.
+        """
+        mock_fit = self._patch_method(
+            "fit", side_effect=mock_fit_side_effect, return_value=mock_fit_return_value
+        )
+        mock_score = self._patch_method(
+            "score", side_effect=mock_score_side_effect, return_value=score_return_value
+        )
+
+        # For simplicity, we will always mock predict_proba and _encode_targets even if the problem is not a
+        # classification problem. For regression problems, we'll mock BinaryClassificationPipeline but it doesn't
+        # matter which one we mock since those methods won't be called for regression.
+        pipeline_to_mock = self._pipeline_class
+        if is_regression(self.problem_type):
+            pipeline_to_mock = "evalml.pipelines.BinaryClassificationPipeline"
+
+        mock_encode_targets = self._patch_method(
+            "_encode_targets",
+            side_effect=lambda y: y,
+            return_value=None,
+            pipeline_class_str=pipeline_to_mock,
+        )
+        mock_predict_proba = self._patch_method(
+            "predict_proba",
+            side_effect=None,
+            return_value=predict_proba_return_value,
+            pipeline_class_str=pipeline_to_mock,
+        )
+
+        mock_optimize = patch(
+            "evalml.objectives.BinaryClassificationObjective.optimize_threshold",
+            return_value=optimize_threshold_return_value,
+        )
+
+        mock_tell = patch("evalml.tuners.skopt_tuner.Optimizer.tell")
+
+        # Reset the mocks from a previous computation so that ValueError can be properly raised if
+        # user tries to access mocks before leaving the context
+        self._reset_mocks()
+
+        # Unfortunately, in order to set the MagicMock instances as class attributes we need to use the
+        # `with ... ` syntax.
+        sleep_time = PropertyMock(return_value=0.00000001)
+        mock_sleep = patch(
+            "evalml.automl.AutoMLSearch._sleep_time", new_callable=sleep_time
+        )
+
+        with mock_sleep, mock_fit as fit, mock_score as score, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
+            # Can think of `yield` as blocking this method until the computation finishes running
+            yield
+            self._mock_fit = fit
+            self._mock_tell = tell
+            self._mock_score = score
+            self._mock_encode_targets = encode
+            self._mock_predict_proba = proba
+            self._mock_optimize_threshold = optimize
+
+
+@pytest.fixture
+def AutoMLTestEnv():
+    return _AutoMLTestEnv

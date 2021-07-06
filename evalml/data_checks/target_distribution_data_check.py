@@ -93,7 +93,10 @@ class TargetDistributionDataCheck(DataCheck):
                 ).to_dict()
             )
 
-        y_new = y + abs(y.min()) + 1
+        if any(y <= 0):
+            y_new = y + abs(y.min()) + 1
+        else:
+            y_new = y
 
         ks_pvals = []
         for sigma in [0.1, 0.25, 0.3, 0.5, 0.7, 1.0, 1.5, 2]:
