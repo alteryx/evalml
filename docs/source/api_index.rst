@@ -249,7 +249,7 @@ Prediction Explanations
     evalml.model_understanding.explain_predictions_best_worst
 
 
-Objective Functions
+Objectives
 ====================
 
 Objective Base Classes
