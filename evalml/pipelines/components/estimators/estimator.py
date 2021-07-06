@@ -62,7 +62,8 @@ class Estimator(ComponentBase):
         """
         try:
             X = infer_feature_types(X)
-            import pandas.core.indexes.range as r
+            from pandas.core.indexes import range as r
+
             if isinstance(X.columns, r.RangeIndex):
                 X.columns = [x for x in X.columns]
             predictions = self._component_obj.predict(X)
