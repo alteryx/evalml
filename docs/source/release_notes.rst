@@ -2,11 +2,25 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.28.0 Jul. 2, 2021**
+    * Enhancements
         * Added support for showing a Individual Conditional Expectations plot when graphing Partial Dependence :pr:`2386`
+        * Exposed ``thread_count`` for Catboost estimators as ``n_jobs`` parameter :pr:`2410`
         * Updated Objectives API to allow for sample weighting :pr:`2433`
         * Updated 1-way partial dependence support for datetime features :pr:`2454`
     * Fixes
+        * Deleted unreachable line from ``IterativeAlgorithm`` :pr:`2464`
     * Changes
+        * Pinned Woodwork version between 0.4.1 and 0.4.2 :pr:`2460`
         * Updated psutils minimum version in requirements :pr:`2438`
         * Updated ``log_error_callback`` to not include filepath in logged message :pr:`2429`
     * Documentation Changes
@@ -16,10 +30,7 @@ Release Notes
         * Added slack integration for nightlies tests :pr:`2436`
         * Changed ``build_conda_pkg`` CI job to run only when dependencies are updates :pr:`2446`
         * Updated workflows to store pytest runtimes as test artifacts :pr:`2448`
-
-.. warning::
-
-    **Breaking Changes**
+        * Added ``AutoMLTestEnv`` test fixture for making it easy to mock automl tests :pr:`2406`
 
 **v0.27.0 Jun. 22, 2021**
     * Enhancements
