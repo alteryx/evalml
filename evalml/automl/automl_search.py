@@ -812,7 +812,7 @@ class AutoMLSearch:
                     current_computation_index = (current_computation_index + 1) % max(
                         len(computations), 1
                     )
-                    time.sleep(self._SLEEP_TIME)
+                    time.sleep(self._sleep_time)
                 loop_interrupted = False
             except KeyboardInterrupt:
                 loop_interrupted = True
@@ -1434,3 +1434,7 @@ class AutoMLSearch:
             return PipelineSearchPlots(self.results, self.objective)
         except ImportError:
             return None
+
+    @property
+    def _sleep_time(self):
+        return self._SLEEP_TIME
