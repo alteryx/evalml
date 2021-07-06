@@ -265,10 +265,10 @@ def test_default_data_checks_classification(input_type):
     # multiclass
     imbalance = [
         DataCheckError(
-            message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: {0.0, 2.0, 1.0}",
+            message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 1.0, 2.0]",
             data_check_name="ClassImbalanceDataCheck",
             message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
-            details={"target_values": [0.0, 2.0, 1.0]},
+            details={"target_values": [0.0, 1.0, 2.0]},
         ).to_dict()
     ]
     min_2_class_count = [
@@ -276,7 +276,7 @@ def test_default_data_checks_classification(input_type):
             message="Target does not have at least two instances per class which is required for multiclass classification",
             data_check_name="InvalidTargetDataCheck",
             message_code=DataCheckMessageCode.TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS,
-            details={"least_populated_class_labels": [2.0, 1.0]},
+            details={"least_populated_class_labels": [1.0, 2.0]},
         ).to_dict()
     ]
     high_class_to_sample_ratio = [

@@ -191,10 +191,10 @@ def test_class_imbalance_data_check_multiclass(input_type):
         "warnings": [],
         "errors": [
             DataCheckError(
-                message="The number of instances of these targets is less than 2 * the number of cross folds = 4 instances: [2, 0]",
+                message="The number of instances of these targets is less than 2 * the number of cross folds = 4 instances: [0, 2]",
                 data_check_name=class_imbalance_data_check_name,
                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
-                details={"target_values": [2, 0]},
+                details={"target_values": [0, 2]},
             ).to_dict()
         ],
         "actions": [],
@@ -204,10 +204,10 @@ def test_class_imbalance_data_check_multiclass(input_type):
         "warnings": [],
         "errors": [
             DataCheckError(
-                message="The number of instances of these targets is less than 2 * the number of cross folds = 4 instances: [1, 0]",
+                message="The number of instances of these targets is less than 2 * the number of cross folds = 4 instances: [0, 1]",
                 data_check_name=class_imbalance_data_check_name,
                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
-                details={"target_values": [1, 0]},
+                details={"target_values": [0, 1]},
             ).to_dict()
         ],
         "actions": [],
@@ -218,10 +218,10 @@ def test_class_imbalance_data_check_multiclass(input_type):
         "warnings": [],
         "errors": [
             DataCheckError(
-                message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [3, 2, 1, 0]",
+                message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0, 1, 2, 3]",
                 data_check_name=class_imbalance_data_check_name,
                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
-                details={"target_values": [3, 2, 1, 0]},
+                details={"target_values": [0, 1, 2, 3]},
             ).to_dict()
         ],
         "actions": [],
@@ -437,10 +437,10 @@ def test_class_imbalance_nonnumeric(input_type):
         "warnings": [],
         "errors": [
             DataCheckError(
-                message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: ['green', 'blue']",
+                message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: ['blue', 'green']",
                 data_check_name=class_imbalance_data_check_name,
                 message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
-                details={"target_values": ["green", "blue"]},
+                details={"target_values": ["blue", "green"]},
             ).to_dict()
         ],
         "actions": [],
