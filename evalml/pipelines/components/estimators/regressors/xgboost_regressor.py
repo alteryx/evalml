@@ -13,6 +13,11 @@ class XGBoostRegressor(Estimator):
     """XGBoost Regressor.
 
     Parameters:
+        eta (float): Boosting learning rate. Defaults to 0.1.
+        max_depth (int): Maximum tree depth for base learners. Defaults to 6.
+        min_child_weight (float): Minimum sum of instance weight (hessian) needed in a child. Defaults to 1.0
+        n_estimators (int): Number of gradient boosted trees. Equivalent to number of boosting rounds. Defaults to 100.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "XGBoost Regressor"

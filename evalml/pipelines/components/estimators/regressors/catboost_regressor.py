@@ -15,8 +15,14 @@ class CatBoostRegressor(Estimator):
 
     For more information, check out https://catboost.ai/
 
-    Parameters
-    ----------
+    Parameters:
+        n_estimators (float): The maximum number of trees to build. Defaults to 10.
+        eta (float): The learning rate. Defaults to 0.03.
+        max_depth (int): The maximum tree depth for base learners. Defaults to 6.
+        bootstrap_type (string): Defines the method for sampling the weights of objects. Available methods are 'Bayesian', 'Bernoulli', 'MVS'. Defaults to None.
+        silent (boolean): Whether to use the "silent" logging mode. Defaults to True.
+        allow_writing_files (boolean): Whether to allow writing snapshot files while training. Defaults to False.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "CatBoost Regressor"

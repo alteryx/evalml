@@ -63,7 +63,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
             random_seed (int): Seed for the random number generator. Defaults to 0.
             pipelines_per_batch (int): The number of pipelines to be evaluated in each batch, after the first batch. Defaults to 5.
-            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to None.
+            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
             number_features (int): The number of columns in the input features. Defaults to None.
             ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
             text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.

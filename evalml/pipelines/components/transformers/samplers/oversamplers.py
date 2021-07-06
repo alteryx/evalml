@@ -41,7 +41,7 @@ class SMOTESampler(BaseOverSampler):
 class SMOTENCSampler(BaseOverSampler):
     """SMOTENC Oversampler component. Uses SMOTENC to generate synthetic samples. Works on a mix of nomerical and categorical columns.
     Input data must be Woodwork type, and this component is only run during training and not during predict.
-    
+
     Arguments:
         sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
             of the minority to majority class after oversampling. We will create the a sampling dictionary using this ratio, with the keys corresponding to the class
@@ -92,7 +92,7 @@ class SMOTENSampler(BaseOverSampler):
     """
     SMOTEN Oversampler component. Uses SMOTEN to generate synthetic samples. Works for purely categorical datasets.
     This component is only run during training and not during predict.
-    
+
     Arguments:
         sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
             of the minority to majority class after oversampling. We will create the a sampling dictionary using this ratio, with the keys corresponding to the class
