@@ -22,9 +22,7 @@ def sequential_engine():
 
 @pytest.fixture(scope="module")
 def cluster():
-    dask_cluster = LocalCluster(
-        n_workers=1, threads_per_worker=2, dashboard_address=None
-    )
+    dask_cluster = LocalCluster(n_workers=1, dashboard_address=None)
     yield dask_cluster
     dask_cluster.close()
 
@@ -180,9 +178,6 @@ def test_automl_immediate_quit(X_y_binary_cls, cluster, caplog):
 
         # Make sure the automl algorithm stopped after the broken pipeline raised
         assert len(automl.full_rankings) < len(pipelines)
-        assert TestPipelineFast.custom_name in set(
-            automl.full_rankings["pipeline_name"]
-        )
         assert TestPipelineSlow.custom_name not in set(
             automl.full_rankings["pipeline_name"]
         )
