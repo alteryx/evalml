@@ -2,9 +2,13 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from woodwork.logical_types import Categorical, Datetime, Ordinal
 
-from evalml.utils import _convert_numeric_dataset_pandas, infer_feature_types, _retain_custom_types_and_initalize_woodwork
-from woodwork.logical_types import Ordinal, Datetime, Categorical
+from evalml.utils import (
+    _convert_numeric_dataset_pandas,
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types,
+)
 
 
 def test_infer_feature_types_no_type_change():
@@ -206,29 +210,45 @@ def test_infer_feature_types_raises_invalid_schema_error():
         infer_feature_types(df)
 
 def test_ordinal_retains_order_min():
-    features = pd.DataFrame({"non-ordinal": [0,1,2,3,4,5],
-                             "ordinal": [0,1,2,2,1,0],
-                             "categorical": ["red", "white", "blue", "red", "white", "blue"],
-                             "datetime": ["2020-09-10", "2020-09-11", "2020-09-12",
-                                          "2020-09-13", "2020-09-14" ,"2020-09-15"]})
+    features = pd.DataFrame(
+        {
+            "non-ordinal": [0, 1, 2, 3, 4, 5],
+            "ordinal": [0, 1, 2, 2, 1, 0],
+            "categorical": ["red", "white", "blue", "red", "white", "blue"],
+            "datetime": [
+                "2020-09-10",
+                "2020-09-11",
+                "2020-09-12",
+                "2020-09-13",
+                "2020-09-14",
+                "2020-09-15",
+            ],
+        }
+    )
     logical_types = {
         "non-ordinal": "Age",
-        "ordinal": Ordinal(order=[0,1,2]),
+        "ordinal": Ordinal(order=[0, 1, 2]),
         "categorical": Categorical(encoding="Encoding"),
-        "datetime": Datetime(datetime_format="%Y-%m-%d")
+        "datetime": Datetime(datetime_format="%Y-%m-%d"),
     }
     features.ww.init(logical_types=logical_types)
 
     # Ordinal type doesn't retain the 'order' property
-    #with pytest.raises(TypeError, match="Must use an Ordinal instance with order values defined"):
-    ordinal_subset = _retain_custom_types_and_initalize_woodwork(old_logical_types=logical_types, new_dataframe=features[["ordinal"]])
+    # with pytest.raises(TypeError, match="Must use an Ordinal instance with order values defined"):
+    ordinal_subset = _retain_custom_types_and_initalize_woodwork(
+        old_logical_types=logical_types, new_dataframe=features[["ordinal"]]
+    )
 
     # Datetimes pass the function but fail to retain the 'datetime_format' property
-    datetime_subset = _retain_custom_types_and_initalize_woodwork(old_logical_types=logical_types, new_dataframe=features[["datetime"]])
+    datetime_subset = _retain_custom_types_and_initalize_woodwork(
+        old_logical_types=logical_types, new_dataframe=features[["datetime"]]
+    )
     ltypes = datetime_subset.ww.logical_types
     assert ltypes["datetime"].datetime_format is not None
 
     # Categorical pass the function but the ltype, as implemented, doesn't ever retain the 'encoding' property
-    cat_subset = _retain_custom_types_and_initalize_woodwork(old_logical_types=logical_types, new_dataframe=features[["categorical"]])
+    cat_subset = _retain_custom_types_and_initalize_woodwork(
+        old_logical_types=logical_types, new_dataframe=features[["categorical"]]
+    )
     ltypes = cat_subset.ww.logical_types
     assert not hasattr(ltypes["categorical"], "encoding")
