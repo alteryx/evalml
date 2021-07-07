@@ -22,9 +22,7 @@ def sequential_engine():
 
 @pytest.fixture(scope="module")
 def cluster():
-    dask_cluster = LocalCluster(
-        n_workers=1, dashboard_address=None
-    )
+    dask_cluster = LocalCluster(n_workers=1, dashboard_address=None)
     yield dask_cluster
     dask_cluster.close()
 
@@ -148,8 +146,8 @@ def test_automl_immediate_quit(X_y_binary_cls, cluster, caplog):
 
         pipelines = [
             TestPipelineFast({}),
-            TestPipelineSlow({}),
             TestPipelineWithFitError({}),
+            TestPipelineSlow({}),
         ]
         automl = AutoMLSearch(
             X_train=X,
