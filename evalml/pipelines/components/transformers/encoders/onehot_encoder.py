@@ -1,13 +1,11 @@
 import numpy as np
 import pandas as pd
+import woodwork as ww
 from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 
 from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types,
-)
+from evalml.utils import _put_into_original_order, infer_feature_types
 
 
 class OneHotEncoderMeta(ComponentBaseMeta):
@@ -91,7 +89,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     @staticmethod
     def _get_cat_cols(X):
         """Get names of categorical columns in the input DataFrame."""
-        return list(X.ww.select(include=["category"]).columns)
+        return _put_into_original_order(
+            X, list(X.ww.select(include=["category"], return_schema=True).columns)
+        )
 
     def fit(self, X, y=None):
         top_n = self.parameters["top_n"]
@@ -168,10 +168,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             pd.DataFrame: Transformed data, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
         X = infer_feature_types(X)
-        original_ltypes = X.ww.schema.logical_types
         X_copy = self._handle_parameter_handle_missing(X)
 
-        X = X.drop(columns=self.features_to_encode)
+        X = X.ww.drop(columns=self.features_to_encode)
 
         # Call sklearn's transform on the categorical columns
         if len(self.features_to_encode) > 0:
@@ -184,9 +183,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             X_cat.ww.init(logical_types={c: "Boolean" for c in X_cat.columns})
             self._feature_names = X_cat.columns
 
-            X = pd.concat([X, X_cat], axis=1)
+            X = ww.utils.concat_columns([X, X_cat])
 
-        return _retain_custom_types_and_initalize_woodwork(original_ltypes, X)
+        return X
 
     def _handle_parameter_handle_missing(self, X):
         """Helper method to handle the `handle_missing` parameter."""
