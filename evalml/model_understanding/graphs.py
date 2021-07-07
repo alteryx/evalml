@@ -691,7 +691,7 @@ def partial_dependence(
 
     _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
-    
+
     try:
         if any(is_datetime):
             timestamps = np.array(
@@ -700,9 +700,9 @@ def partial_dependence(
             grid, values = _grid_from_X(
                 timestamps, percentiles=percentiles, grid_resolution=grid_resolution
             )
-            grid_dates = pd.to_datetime(pd.Series(grid.squeeze()), unit="s").values.reshape(
-                -1, 1
-            )
+            grid_dates = pd.to_datetime(
+                pd.Series(grid.squeeze()), unit="s"
+            ).values.reshape(-1, 1)
             # convert values to dates for the output
             value_dates = pd.to_datetime(pd.Series(values[0]), unit="s")
             # need to pass in the feature as an int index rather than string
