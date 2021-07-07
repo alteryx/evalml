@@ -116,35 +116,29 @@ def test_binary_more_than_two_unique_values():
         fraud_cost.score(y_true, y_predicted)
 
 
-def test_fraud_objective_score(X_y_binary):
-    X, y = X_y_binary
+def test_fraud_objective_score():
     fraud_cost = FraudCost(amount_col="value")
 
-    y_predicted = pd.Series([0.1, 0.5, 0.5])
+    y_predicted = pd.Series([0.5, 0.1, 0.5])
     y_true = pd.Series([True, False, True])
     extra_columns = pd.DataFrame({"value": [100, 5, 250]})
 
-    out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
+    out = fraud_cost.decision_function(y_predicted, 0.45)
     assert isinstance(out, pd.Series)
-    pd.testing.assert_series_equal(out, y_true, check_names=False)
-    score = fraud_cost.score(y_true, out, extra_columns)
-    assert score == 0.0
-
-    out = fraud_cost.decision_function(y_predicted.to_numpy(), 5, extra_columns)
-    assert isinstance(out, pd.Series)
-    pd.testing.assert_series_equal(out, y_true, check_names=False)
-    score = fraud_cost.score(y_true, out, extra_columns)
-    assert score == 0.0
-
-    out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
     pd.testing.assert_series_equal(out, y_true, check_dtype=False, check_names=False)
     score = fraud_cost.score(y_true, out, extra_columns)
     assert score == 0.0
 
+    out = fraud_cost.decision_function(y_predicted.to_numpy(), 0.45)
+    assert isinstance(out, pd.Series)
+    pd.testing.assert_series_equal(out, y_true, check_names=False)
+    score = fraud_cost.score(y_true, out, extra_columns)
+    assert score == 0.0
+
     # testing with other types of inputs
-    y_predicted = np.array([0.1, 0.5, 0.5])
+    y_predicted = np.array([0.5, 0.1, 0.5])
     extra_columns = pd.DataFrame({"value": [100, 5, 250]})
-    out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
+    out = fraud_cost.decision_function(y_predicted, 0.45)
     pd.testing.assert_series_equal(out, y_true, check_names=False)
     score = fraud_cost.score(y_true, out, extra_columns)
     assert score == 0.0
@@ -153,22 +147,36 @@ def test_fraud_objective_score(X_y_binary):
     extra_columns = pd.DataFrame({"value": [100, 50, 50]})
     y_true = pd.Series([False, False, True])
     expected_y_pred = pd.Series([True, False, False])
-    out = fraud_cost.decision_function(y_predicted, 10, extra_columns)
+    out = fraud_cost.decision_function(y_predicted, 0.1)
     pd.testing.assert_series_equal(out, expected_y_pred, check_names=False)
     score = fraud_cost.score(y_true, out, extra_columns)
     assert score == 0.255
 
 
-def test_fraud_objective_score_list(X_y_binary):
-    X, y = X_y_binary
+def test_fraud_objective_score_list():
     fraud_cost = FraudCost(amount_col="value")
 
-    y_predicted = [0.1, 0.5, 0.5]
+    y_predicted = [0.5, 0.1, 0.5]
     y_true = [True, False, True]
     extra_columns = pd.DataFrame({"value": [100, 5, 250]})
 
-    out = fraud_cost.decision_function(y_predicted, 5, extra_columns)
+    out = fraud_cost.decision_function(y_predicted, 0.45)
     assert isinstance(out, pd.Series)
     pd.testing.assert_series_equal(out, pd.Series(y_true), check_names=False)
     score = fraud_cost.score(y_true, out, extra_columns)
     assert score == 0.0
+
+
+@pytest.mark.parametrize(
+    "predictions,score",
+    [([0.1, 0.1, 0.1], 1.9859154929577465), ([0.8, 0.3, 0.8], 0), ([0.9, 0.9, 0.9], 1)],
+)
+def test_fraud_objective_one_prediction_penalty(predictions, score):
+    fraud_cost = FraudCost(retry_percentage=1, interchange_fee=0.0, amount_col="value")
+    y_predicted = pd.Series(predictions)
+    y_true = pd.Series([True, False, True])
+    extra_columns = pd.DataFrame({"value": [100, 5, 250]})
+
+    out = fraud_cost.decision_function(y_predicted, 0.45)
+    scores = fraud_cost.score(y_true, out, extra_columns)
+    assert scores == score
