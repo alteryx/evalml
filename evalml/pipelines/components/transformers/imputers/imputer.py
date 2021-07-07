@@ -84,8 +84,10 @@ class Imputer(Transformer):
             self
         """
         X = infer_feature_types(X)
-        cat_cols = list(X.ww.select(["category", "boolean"]).columns)
-        numeric_cols = list(X.ww.select(["numeric"]).columns)
+        cat_cols = list(
+            X.ww.select(["category", "boolean"], return_schema=True).columns
+        )
+        numeric_cols = list(X.ww.select(["numeric"], return_schema=True).columns)
 
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
