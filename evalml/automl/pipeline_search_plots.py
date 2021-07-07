@@ -32,6 +32,7 @@ class SearchIterationPlot:
         self.best_score_by_iter_fig = self._go.FigureWidget(data, layout)
         self.best_score_by_iter_fig.update_layout(showlegend=False)
         self.update(results, objective)
+        self._go = None
 
     def update(self, results, objective):
         if len(results["search_order"]) > 0 and len(results["pipeline_results"]) > 0:

@@ -1,4 +1,5 @@
 import copy
+import pickle
 import sys
 import time
 import traceback
@@ -1307,31 +1308,50 @@ class AutoMLSearch:
 
         return self._best_pipeline
 
-    def save(self, file_path, pickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
+    def save(
+        self,
+        file_path,
+        pickle_type="cloudpickle",
+        pickle_protocol=cloudpickle.DEFAULT_PROTOCOL,
+    ):
         """Saves AutoML object at file path
 
         Arguments:
             file_path (str): location to save file
+            pickle_type {"pickle", "cloudpickle"}: the pickling library to use.
             pickle_protocol (int): the pickle data stream format.
 
         Returns:
             None
         """
+        if pickle_type == "cloudpickle":
+            pkl_lib = cloudpickle
+        elif pickle_type == "pickle":
+            pkl_lib = pickle
+        else:
+            raise ValueError(
+                f"`pickle_type` must be either 'pickle' or 'cloudpickle'. Received {pickle_type}"
+            )
+
         with open(file_path, "wb") as f:
-            cloudpickle.dump(self, f, protocol=pickle_protocol)
+            pkl_lib.dump(self, f, protocol=pickle_protocol)
 
     @staticmethod
-    def load(file_path):
+    def load(
+        file_path,
+        pickle_type="cloudpickle",
+    ):
         """Loads AutoML object at file path
 
         Arguments:
             file_path (str): location to find file to load
+            pickle_type {"pickle", "cloudpickle"}: the pickling library to use. Currently not used since the standard pickle library can handle cloudpickles.
 
         Returns:
             AutoSearchBase object
         """
         with open(file_path, "rb") as f:
-            return cloudpickle.load(f)
+            return pickle.load(f)
 
     def train_pipelines(self, pipelines):
         """Train a list of pipelines on the training data.
