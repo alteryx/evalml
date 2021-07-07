@@ -3,6 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
     * Changes
     * Documentation Changes
     * Testing Changes
