@@ -512,15 +512,15 @@ def test_fit_correct_inputs(
     X = pd.DataFrame(X)
     y = pd.Series(y)
     graph = {"Imputer": [Imputer], "OHE": [OneHotEncoder, "Imputer.x", "Imputer.y"]}
-    expected_x = pd.DataFrame(index=X.index, columns=X.columns).fillna(1)
+    expected_x = pd.DataFrame(index=X.index, columns=X.columns).fillna(1.0)
+    expected_x.ww.init()
 
     expected_y = pd.Series(index=y.index).fillna(0)
     mock_imputer_fit_transform.return_value = tuple((expected_x, expected_y))
     mock_ohe_fit_transform.return_value = expected_x
     component_graph = ComponentGraph(graph).instantiate({})
     component_graph.fit(X, y)
-    expected_x_df = expected_x.astype("float64")
-    assert_frame_equal(expected_x_df, mock_ohe_fit_transform.call_args[0][0])
+    assert_frame_equal(expected_x, mock_ohe_fit_transform.call_args[0][0])
     assert_series_equal(expected_y, mock_ohe_fit_transform.call_args[0][1])
 
 

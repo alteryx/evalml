@@ -55,7 +55,11 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.tuners import SKOptTuner
-from evalml.utils import convert_to_seconds, infer_feature_types
+from evalml.utils import (
+    _put_into_original_order,
+    convert_to_seconds,
+    infer_feature_types,
+)
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -488,7 +492,10 @@ class AutoMLSearch:
                 if "Drop Columns Transformer" in self.pipeline_parameters
                 else None
             )
-            index_columns = list(self.X_train.ww.select("index").columns)
+            index_columns = list(
+                self.X_train.ww.select("index", return_schema=True).columns
+            )
+            index_columns = _put_into_original_order(self.X_train, index_columns)
             if len(index_columns) > 0 and drop_columns is None:
                 parameters["Drop Columns Transformer"] = {"columns": index_columns}
             self.allowed_pipelines = [
@@ -516,7 +523,10 @@ class AutoMLSearch:
         logger.info(f"{len(self.allowed_pipelines)} pipelines ready for search.")
 
         run_ensembling = self.ensembling
-        text_in_ensembling = len(self.X_train.ww.select("natural_language").columns) > 0
+        text_in_ensembling = (
+            len(self.X_train.ww.select("natural_language", return_schema=True).columns)
+            > 0
+        )
         if run_ensembling and len(self.allowed_pipelines) == 1:
             logger.warning(
                 "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
