@@ -3,6 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
         * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
     * Changes
     * Documentation Changes
