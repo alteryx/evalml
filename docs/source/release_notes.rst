@@ -12,6 +12,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Fixed flaky dask tests :pr:`2471`
 
 .. warning::
 
