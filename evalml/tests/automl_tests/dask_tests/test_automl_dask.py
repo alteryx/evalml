@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from dask.distributed import Client, LocalCluster
+from dask.system import CPU_COUNT
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
@@ -22,7 +23,7 @@ def sequential_engine():
 
 @pytest.fixture(scope="module")
 def cluster():
-    dask_cluster = LocalCluster(n_workers=1, dashboard_address=None)
+    dask_cluster = LocalCluster(n_workers=1, threads_per_worker=12, dashboard_address=None)
     yield dask_cluster
     dask_cluster.close()
 
@@ -141,6 +142,7 @@ def test_automl_immediate_quit(X_y_binary_cls, cluster, caplog):
     """Make sure the AutoMLSearch quits when error_callback is defined and does no further work."""
     caplog.clear()
     X, y = X_y_binary_cls
+    assert CPU_COUNT is None
     with Client(cluster) as client:
         parallel_engine = DaskEngine(client)
 
