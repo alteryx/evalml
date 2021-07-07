@@ -23,7 +23,7 @@ def sequential_engine():
 @pytest.fixture(scope="module")
 def cluster():
     dask_cluster = LocalCluster(
-        n_workers=1, threads_per_worker=4, dashboard_address=None
+        n_workers=1, dashboard_address=None
     )
     yield dask_cluster
     dask_cluster.close()
