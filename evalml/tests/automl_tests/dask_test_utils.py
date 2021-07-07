@@ -65,7 +65,7 @@ class TestPipelineWithFitError(BinaryClassificationPipeline):
     def clone(self):
         return self.__class__(self.parameters, random_seed=self.random_seed)
 
-    @delayed(20)
+    @delayed(5)
     def fit(self, X, y):
         raise Exception("Yikes")
 
@@ -117,7 +117,7 @@ class TestPipelineSlow(BinaryClassificationPipeline):
     def clone(self):
         return self.__class__(self.parameters, random_seed=self.random_seed)
 
-    @delayed(20)
+    @delayed(15)
     def fit(self, X, y):
         super().fit(X, y)
 
@@ -145,7 +145,7 @@ class TestPipelineFast(BinaryClassificationPipeline):
         return self.__class__(self.parameters, random_seed=self.random_seed)
 
     def fit(self, X, y):
-        # self._is_fitted = True
+        self._is_fitted = True
         super().fit(X, y)
 
 
