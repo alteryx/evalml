@@ -118,7 +118,7 @@ def _retain_custom_types_and_initalize_woodwork(
             new_logical_types[k] = v
         else:
             new_logical_types[k] = type(v)
-    # old_logical_types = {k: type(v) for k, v in old_logical_types.items()}
+
     col_intersection = set(new_logical_types.keys()).intersection(
         set(new_dataframe.columns)
     )
