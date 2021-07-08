@@ -44,12 +44,13 @@ class ObjectiveBase(ABC):
 
     @classmethod
     @abstractmethod
-    def objective_function(cls, y_true, y_predicted, X=None):
+    def objective_function(cls, y_true, y_predicted, X=None, sample_weight=None):
         """Computes the relative value of the provided predictions compared to the actual labels, according a specified metric
          Arguments:
             y_predicted (pd.Series): Predicted values of length [n_samples]
             y_true (pd.Series): Actual class labels of length [n_samples]
             X (pd.DataFrame or np.ndarray): Extra data of shape [n_samples, n_features] necessary to calculate score
+            sample_weight (pd.DataFrame or np.ndarray): Sample weights used in computing objective value result
 
         Returns:
             Numerical value used to calculate score
@@ -60,13 +61,14 @@ class ObjectiveBase(ABC):
         """If True, this objective is only valid for positive data. Default False."""
         return False
 
-    def score(self, y_true, y_predicted, X=None):
+    def score(self, y_true, y_predicted, X=None, sample_weight=None):
         """Returns a numerical score indicating performance based on the differences between the predicted and actual values.
 
         Arguments:
             y_predicted (pd.Series): Predicted values of length [n_samples]
             y_true (pd.Series): Actual class labels of length [n_samples]
             X (pd.DataFrame or np.ndarray): Extra data of shape [n_samples, n_features] necessary to calculate score
+            sample_weight (pd.DataFrame or np.ndarray): Sample weights used in computing objective value result
 
         Returns:
             score
@@ -76,7 +78,9 @@ class ObjectiveBase(ABC):
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)
         self.validate_inputs(y_true, y_predicted)
-        return self.objective_function(y_true, y_predicted, X=X)
+        return self.objective_function(
+            y_true, y_predicted, X=X, sample_weight=sample_weight
+        )
 
     @staticmethod
     def _standardize_input_type(input_data):

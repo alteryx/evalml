@@ -37,13 +37,25 @@ class XGBoostRegressor(Estimator):
         min_child_weight=1,
         n_estimators=100,
         random_seed=0,
+        n_jobs=-1,
         **kwargs
     ):
+        """XGBoost Regressor.
+
+        Arguments:
+            eta (float): Learning rate. Defaults to 0.1.
+            max_depth (int): Maximum tree depth for base learners. Defaults to 6.
+            min_child_weight (float): Minimum sum of instance weight(hessian) needed in a child. Defaults to 1.
+            n_estimators (int): Number of gradient boosted trees. Equivalent to number of boosting rounds. Defaults to 100.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
+            n_jobs (int): Number of parallel threads used to run xgboost. Note that creating thread contention will significantly slow down the algorithm. Defaults to -1.
+        """
         parameters = {
             "eta": eta,
             "max_depth": max_depth,
             "min_child_weight": min_child_weight,
             "n_estimators": n_estimators,
+            "n_jobs": n_jobs,
         }
         parameters.update(kwargs)
 
@@ -51,9 +63,9 @@ class XGBoostRegressor(Estimator):
             "XGBoost is not installed. Please install using `pip install xgboost.`"
         )
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
-        xgb_Regressor = xgb.XGBRegressor(random_state=random_seed, **parameters)
+        xgb_regressor = xgb.XGBRegressor(random_state=random_seed, **parameters)
         super().__init__(
-            parameters=parameters, component_obj=xgb_Regressor, random_seed=random_seed
+            parameters=parameters, component_obj=xgb_regressor, random_seed=random_seed
         )
 
     def fit(self, X, y=None):

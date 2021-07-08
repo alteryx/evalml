@@ -23,7 +23,7 @@ class FraudCost(BinaryClassificationObjective):
             retry_percentage (float): What percentage of customers that will retry a transaction if it
                 is declined. Between 0 and 1. Defaults to .5
 
-            interchange_fee (float): How much of each successful transaction you can collect.
+            interchange_fee (float): How much of each successful transaction you pay.
                 Between 0 and 1. Defaults to .02
 
             fraud_payout_percentage (float): Percentage of fraud you will not be able to collect.
@@ -36,30 +36,14 @@ class FraudCost(BinaryClassificationObjective):
         self.fraud_payout_percentage = fraud_payout_percentage
         self.amount_col = amount_col
 
-    def decision_function(self, ypred_proba, threshold=0.0, X=None):
-        """Determine if a transaction is fraud given predicted probabilities, threshold, and dataframe with transaction amount.
-
-        Arguments:
-            ypred_proba (pd.Series): Predicted probablities
-            threshold (float): Dollar threshold to determine if transaction is fraud
-            X (pd.DataFrame): Data containing transaction amounts
-
-        Returns:
-            pd.Series: pd.Series of predicted fraud labels using X and threshold
-        """
-        if X is not None:
-            X = self._standardize_input_type(X)
-        ypred_proba = self._standardize_input_type(ypred_proba)
-        transformed_probs = ypred_proba.values * X[self.amount_col]
-        return transformed_probs > threshold
-
-    def objective_function(self, y_true, y_predicted, X):
+    def objective_function(self, y_true, y_predicted, X, sample_weight=None):
         """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount.
 
         Arguments:
             y_predicted (pd.Series): Predicted fraud labels
             y_true (pd.Series): True fraud labels
             X (pd.DataFrame): Data with transaction amounts
+            sample_weight (pd.DataFrame): Ignored.
 
         Returns:
             float: Amount lost to fraud per transaction
@@ -78,7 +62,7 @@ class FraudCost(BinaryClassificationObjective):
         # amount paid if transaction is fraud
         fraud_cost = transaction_amount * self.fraud_payout_percentage
 
-        # money made from interchange fees on transaction
+        # money paid from interchange fees on transaction
         interchange_cost = (
             transaction_amount * (1 - self.retry_percentage) * self.interchange_fee
         )
@@ -89,7 +73,9 @@ class FraudCost(BinaryClassificationObjective):
         # calculate money lost from fees
         false_positives = (~y_true & y_predicted) * interchange_cost
 
-        loss = false_negatives.sum() + false_positives.sum()
+        # add a penalty if we output naive predictions
+        all_one_prediction_cost = (2 - len(set(y_predicted))) * fraud_cost.sum()
+        loss = false_negatives.sum() + false_positives.sum() + all_one_prediction_cost
 
         loss_per_total_processed = loss / transaction_amount.sum()
 
