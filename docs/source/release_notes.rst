@@ -8,7 +8,7 @@ Release Notes
     * Fixes
         * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
         * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
-        * Updated to work with Pandas 1.3.0 :pr`2442`
+        * Updated to work with Pandas 1.3.0 :pr:`2442`
     * Changes
     * Documentation Changes
     * Testing Changes
