@@ -28,5 +28,5 @@ shap==0.39.0
 sktime==0.6.1
 statsmodels==0.12.2
 texttable==1.6.3
-woodwork==0.4.2
+woodwork==0.5.0
 xgboost==1.2.1
