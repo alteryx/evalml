@@ -42,3 +42,10 @@ class RegressionPipeline(PipelineBase):
         return self._score_all_objectives(
             X, y, y_predicted, y_pred_proba=None, objectives=objectives
         )
+
+    def predict(self, X, objective=None):
+        X = infer_feature_types(X)
+        predictions = self.component_graph.predict(X)
+        predictions = self.inverse_transform(predictions)
+        predictions.name = self.input_target_name
+        return infer_feature_types(predictions)

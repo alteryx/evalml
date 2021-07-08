@@ -1,6 +1,7 @@
 from woodwork import logical_types
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
+from .components.transformers.preprocessing.log_transformer import LogTransformer
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
 )
@@ -44,6 +45,7 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.utils import get_logger, import_or_raise, infer_feature_types
+from ..data_checks.target_distribution_data_check import TargetDistributionDataCheck
 
 logger = get_logger(__file__)
 
@@ -65,6 +67,12 @@ def _get_preprocessing_components(
     """
 
     pp_components = []
+
+    if problem_type in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
+        for each_action in TargetDistributionDataCheck(problem_type).validate(X, y)["actions"]:
+            if each_action["metadata"]["transformation_strategy"] == "lognormal":
+                pp_components.append(LogTransformer)
+
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)

@@ -5,20 +5,23 @@ from evalml.pipelines.components.transformers.transformer import (
 )
 from evalml.utils import infer_feature_types
 
-class LogTransform(TargetTransformer):
-    """Applies a log transformation to the data."""
+
+class LogTransformer(TargetTransformer):
+    """Applies a log transformation to the target data."""
 
     name = "Log Transformer"
+
+    hyperparameter_ranges = {}
 
     def __init__(self, random_seed=0):
         super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
 
-    def fit(self, X, y):
+    def fit(self, X, y=None):
         """Fits the LogTransform.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): The target training data of length [n_samples]
+            X (pd.DataFrame or np.ndarray): Ignored.
+            y (pd.Series, optional): Ignored.
 
         Returns:
             self
@@ -26,7 +29,26 @@ class LogTransform(TargetTransformer):
         return self
 
     def transform(self, X, y=None):
-        """Removes fitted trend from target variable.
+        """Log transforms the target variable.
+
+        Arguments:
+            X (pd.DataFrame, optional): Ignored.
+            y (pd.Series): Target data to log transform.
+
+        Returns:
+            tuple of pd.DataFrame, pd.Series: The input features are returned without modification. The target
+                variable y is log transformed.
+        """
+        if y is None:
+            return X, y
+        self.min = y.min()
+        if self.min <= 0:
+            y = y + abs(self.min) + 1
+        y = infer_feature_types(np.log(y))
+        return X, y
+
+    def fit_transform(self, X, y=None):
+        """Log transforms the target variable.
 
         Arguments:
             X (pd.DataFrame, optional): Ignored.
@@ -34,13 +56,13 @@ class LogTransform(TargetTransformer):
 
         Returns:
             tuple of pd.DataFrame, pd.Series: The input features are returned without modification. The target
-                variable y is detrended
+                variable y is log transformed.
         """
-        if y is None:
-            return X, y
-        y = infer_feature_types(y)
-        return X, infer_feature_types(np.log(y))
+        return self.fit(X, y).transform(X, y)
 
     def inverse_transform(self, y):
+        y = np.exp(y)
+        if self.min <= 0:
+            y = y - abs(self.min) - 1
         y = infer_feature_types(y)
-        return infer_feature_types(np.exp(y))
+        return y

@@ -28,6 +28,9 @@ class DataCheckMessageCode(Enum):
     TARGET_UNSUPPORTED_TYPE = "target_unsupported_type"
     """Message code for target data that is of an unsupported type."""
 
+    TARGET_UNSUPPORTED_PROBLEM_TYPE = "target_unsupported_problem_type"
+    """Message code for target data that is being checked against an unsupported problem type."""
+
     TARGET_BINARY_NOT_TWO_UNIQUE_VALUES = "target_binary_not_two_unique_values"
     """Message code for target data for a binary classification problem that does not have two unique values."""
 
