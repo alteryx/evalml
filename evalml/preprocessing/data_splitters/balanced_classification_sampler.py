@@ -5,7 +5,21 @@ from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class BalancedClassificationSampler(SamplerBase):
-    """Class for balanced classification downsampler."""
+    """Class for balanced classification downsampler.
+
+    Arguments:
+        sampling_ratio (float): The smallest minority:majority ratio that is accepted as 'balanced'. For instance, a 1:4 ratio would be
+            represented as 0.25, while a 1:1 ratio is 1.0. Must be between 0 and 1, inclusive. Defaults to 0.25.
+        sampling_ratio_dict (dict): A dictionary specifying the desired balanced ratio for each target value. Overrides sampling_ratio if provided.
+            Defaults to None.
+        min_samples (int): The minimum number of samples that we must have for any class, pre or post sampling. If a class must be downsampled, it will not be downsampled past this value.
+            To determine severe imbalance, the minority class must occur less often than this and must have a class ratio below min_percentage.
+            Must be greater than 0. Defaults to 100.
+        min_percentage (float): The minimum percentage of the minimum class to total dataset that we tolerate, as long as it is above min_samples.
+            To determine severe imbalance, the minority class must have a class ratio below this and must occur less often than min_samples.
+            Must be between 0 and 0.5, inclusive. Defaults to 0.1.
+        random_seed (int): The seed to use for random sampling. Defaults to 0.
+    """
 
     def __init__(
         self,
@@ -15,24 +29,6 @@ class BalancedClassificationSampler(SamplerBase):
         min_percentage=0.1,
         random_seed=0,
     ):
-        """
-        Arguments:
-            sampling_ratio (float): The smallest minority:majority ratio that is accepted as 'balanced'. For instance, a 1:4 ratio would be
-                represented as 0.25, while a 1:1 ratio is 1.0. Must be between 0 and 1, inclusive. Defaults to 0.25.
-
-            sampling_ratio_dict (dict): A dictionary specifying the desired balanced ratio for each target value. Overrides sampling_ratio if provided.
-                Defaults to None.
-
-            min_samples (int): The minimum number of samples that we must have for any class, pre or post sampling. If a class must be downsampled, it will not be downsampled past this value.
-                To determine severe imbalance, the minority class must occur less often than this and must have a class ratio below min_percentage.
-                Must be greater than 0. Defaults to 100.
-
-            min_percentage (float): The minimum percentage of the minimum class to total dataset that we tolerate, as long as it is above min_samples.
-                To determine severe imbalance, the minority class must have a class ratio below this and must occur less often than min_samples.
-                Must be between 0 and 0.5, inclusive. Defaults to 0.1.
-
-            random_seed (int): The seed to use for random sampling. Defaults to 0.
-        """
         super().__init__(random_seed=random_seed)
         if sampling_ratio <= 0 or sampling_ratio > 1:
             raise ValueError(

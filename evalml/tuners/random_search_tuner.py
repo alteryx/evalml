@@ -7,6 +7,14 @@ from evalml.utils import get_random_state
 class RandomSearchTuner(Tuner):
     """Random Search Optimizer.
 
+    Arguments:
+        pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
+        with_replacement (bool): If false, only unique hyperparameters will be shown
+        replacement_max_attempts (int): The maximum number of tries to get a unique
+            set of random parameters. Only used if tuner is initalized with
+            with_replacement=True
+        random_seed (int): Seed for random number generator. Defaults to 0.
+
     Example:
         >>> tuner = RandomSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, random_seed=42)
         >>> proposal = tuner.propose()
@@ -17,21 +25,10 @@ class RandomSearchTuner(Tuner):
     def __init__(
         self,
         pipeline_hyperparameter_ranges,
-        random_seed=0,
         with_replacement=False,
         replacement_max_attempts=10,
+        random_seed=0,
     ):
-        """Sets up check for duplication if needed.
-
-        Arguments:
-            pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
-            random_state (int): Unused in this class. Defaults to 0.
-            with_replacement (bool): If false, only unique hyperparameters will be shown
-            replacement_max_attempts (int): The maximum number of tries to get a unique
-                set of random parameters. Only used if tuner is initalized with
-                with_replacement=True
-            random_seed (int): Seed for random number generator. Defaults to 0.
-        """
         super().__init__(pipeline_hyperparameter_ranges, random_seed=random_seed)
         self._space = Space(self._search_space_ranges)
         self._random_state = get_random_state(random_seed)

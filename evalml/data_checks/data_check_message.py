@@ -2,20 +2,18 @@ from .data_check_message_type import DataCheckMessageType
 
 
 class DataCheckMessage:
-    """Base class for all DataCheckMessages."""
+    """Base class for a message returned by a DataCheck, tagged by name.
+
+    Arguments:
+        message (str): Message string
+        data_check_name (str): Name of data check
+        message_code (DataCheckMessageCode): Message code associated with message. Defaults to None.
+        details (dict): Additional useful information associated with the message. Defaults to None.
+    """
 
     message_type = None
 
     def __init__(self, message, data_check_name, message_code=None, details=None):
-        """
-        Message returned by a DataCheck, tagged by name.
-
-        Arguments:
-            message (str): Message string
-            data_check_name (str): Name of data check
-            message_code (DataCheckMessageCode, optional): Message code associated with message.
-            details (dict, optional): Additional useful information associated with the message
-        """
         self.message = message
         self.data_check_name = data_check_name
         self.message_code = message_code

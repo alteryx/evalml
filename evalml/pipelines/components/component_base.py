@@ -17,11 +17,24 @@ logger = get_logger(__file__)
 
 
 class ComponentBase(ABC, metaclass=ComponentBaseMeta):
-    """Base class for all components."""
+    """Base class for all components.
+
+    Arguments:
+        parameters (dict): Dictionary of parameters for the component. Defaults to None.
+        component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     _default_parameters = None
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
+        """Base class for all components.
+
+        Arguments:
+            parameters (dict): Dictionary of parameters for the component. Defaults to None.
+            component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
+        """
         self.random_seed = random_seed
         self._component_obj = component_obj
         self._parameters = parameters or {}

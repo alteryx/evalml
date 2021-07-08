@@ -185,7 +185,6 @@ texinfo_documents = [
     ),
 ]
 
-
 # -- Options for Epub output -------------------------------------------------
 
 # Bibliographic Dublin Core info.
@@ -266,6 +265,13 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
     # lower than MethodDocumenter so this is not chosen for normal methods
     priority = 0.6
 
+def autodoc_skip_member(app, what, name, obj, skip, options):
+    if what == "method" and name.startswith("_"):
+        return True
+    if what == "attribute" and name.startswith("_"):
+        return True
+    return skip
+
 
 def setup(app):
     p = Path("/home/docs/.ipython/profile_default/startup")
@@ -278,3 +284,4 @@ def setup(app):
     app.add_stylesheet("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)
     app.add_autodocumenter(AccessorMethodDocumenter)
+    app.connect('autodoc-skip-member', autodoc_skip_member)

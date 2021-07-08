@@ -11,6 +11,10 @@ class BaselineClassifier(Estimator):
     """Classifier that predicts using the specified strategy.
 
     This is useful as a simple baseline classifier to compare with other classifiers.
+
+    Arguments:
+        strategy (str): Method used to predict. Valid options are "mode", "random" and "random_weighted". Defaults to "mode".
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "Baseline Classifier"
@@ -19,12 +23,6 @@ class BaselineClassifier(Estimator):
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def __init__(self, strategy="mode", random_seed=0, **kwargs):
-        """Baseline classifier that uses a simple strategy to make predictions.
-
-        Arguments:
-            strategy (str): Method used to predict. Valid options are "mode", "random" and "random_weighted". Defaults to "mode".
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         if strategy not in ["mode", "random", "random_weighted"]:
             raise ValueError(
                 "'strategy' parameter must equal either 'mode', 'random', or 'random_weighted'"

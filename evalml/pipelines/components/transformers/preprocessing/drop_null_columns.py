@@ -3,20 +3,19 @@ from evalml.utils import infer_feature_types
 
 
 class DropNullColumns(Transformer):
-    """Transformer to drop features whose percentage of NaN values exceeds a specified threshold"""
+    """Transformer to drop features whose percentage of NaN values exceeds a specified threshold.
+
+    Arguments:
+        pct_null_threshold(float): The percentage of NaN values in an input feature to drop.
+            Must be a value between [0, 1] inclusive. If equal to 0.0, will drop columns with any null values.
+            If equal to 1.0, will drop columns with all null values. Defaults to 0.95.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Drop Null Columns Transformer"
     hyperparameter_ranges = {}
 
     def __init__(self, pct_null_threshold=1.0, random_seed=0, **kwargs):
-        """Initalizes an transformer to drop features whose percentage of NaN values exceeds a specified threshold.
-
-        Arguments:
-            pct_null_threshold(float): The percentage of NaN values in an input feature to drop.
-                Must be a value between [0, 1] inclusive. If equal to 0.0, will drop columns with any null values.
-                If equal to 1.0, will drop columns with all null values. Defaults to 0.95.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         if pct_null_threshold < 0 or pct_null_threshold > 1:
             raise ValueError(
                 "pct_null_threshold must be a float between 0 and 1, inclusive."

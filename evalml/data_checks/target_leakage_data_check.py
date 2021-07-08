@@ -14,20 +14,19 @@ from evalml.utils.woodwork_utils import (
 
 
 class TargetLeakageDataCheck(DataCheck):
-    """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation."""
+    """
+    Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
+
+    If `method='mutual'`, this data check uses mutual information and supports all target and feature types.
+    Otherwise, if `method='pearson'`, it uses Pearson correlation and only supports binary with numeric and boolean dtypes.
+    Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
+
+    Arguments:
+        pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
+        method (string): The method to determine correlation. Use 'mutual' for mutual information, otherwise 'pearson' for Pearson correlation. Defaults to 'mutual'.
+    """
 
     def __init__(self, pct_corr_threshold=0.95, method="mutual"):
-        """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
-
-        If `method='mutual'`, this data check uses mutual information and supports all target and feature types.
-        Otherwise, if `method='pearson'`, it uses Pearson correlation and only supports binary with numeric and boolean dtypes.
-        Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
-
-        Arguments:
-            pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
-            method (string): The method to determine correlation. Use 'mutual' for mutual information, otherwise 'pearson' for Pearson correlation. Defaults to 'mutual'.
-
-        """
         if pct_corr_threshold < 0 or pct_corr_threshold > 1:
             raise ValueError(
                 "pct_corr_threshold must be a float between 0 and 1, inclusive."
