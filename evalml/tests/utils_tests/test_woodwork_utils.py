@@ -234,21 +234,22 @@ def test_ordinal_retains_order_min():
     }
     features.ww.init(logical_types=logical_types)
 
-    # Ordinal type doesn't retain the 'order' property
+    # Ordinal type should now pass through the function without issue and retain the 'order' property
     ordinal_subset = _retain_custom_types_and_initalize_woodwork(
         old_logical_types=logical_types, new_dataframe=features[["ordinal"]]
     )
     ltypes = ordinal_subset.ww.logical_types
     assert ltypes["ordinal"].order is not None
 
-    # Datetimes pass the function but fail to retain the 'datetime_format' property
+    # Datetimes pass the function without issue but should now retain the 'datetime_format' property
     datetime_subset = _retain_custom_types_and_initalize_woodwork(
         old_logical_types=logical_types, new_dataframe=features[["datetime"]]
     )
     ltypes = datetime_subset.ww.logical_types
     assert ltypes["datetime"].datetime_format is not None
 
-    # Categorical pass the function but the ltype, as implemented, doesn't ever retain the 'encoding' property
+    # Categorical pass the function but the ltype, as implemented, doesn't ever retain the 'encoding' property,
+    # so we do not expect it here.
     cat_subset = _retain_custom_types_and_initalize_woodwork(
         old_logical_types=logical_types, new_dataframe=features[["categorical"]]
     )
