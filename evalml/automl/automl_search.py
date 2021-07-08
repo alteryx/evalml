@@ -493,11 +493,22 @@ class AutoMLSearch:
                 else None
             )
             index_columns = list(
-                self.X_train.ww.select("index", return_schema=True).columns
+                self.X_train.ww.select(["index"], return_schema=True).columns
             )
-            index_columns = _put_into_original_order(self.X_train, index_columns)
-            if len(index_columns) > 0 and drop_columns is None:
-                parameters["Drop Columns Transformer"] = {"columns": index_columns}
+            unknown_columns = list(
+                self.X_train.ww.select(["Unknown"], return_schema=True).columns
+            )
+            index_and_unknown_columns = _put_into_original_order(
+                self.X_train, index_columns + unknown_columns
+            )
+            if len(index_and_unknown_columns) > 0 and drop_columns is None:
+                parameters["Drop Columns Transformer"] = {
+                    "columns": index_and_unknown_columns
+                }
+                if len(unknown_columns):
+                    logger.info(
+                        f"Removing columns {unknown_columns} because they are of 'Unknown' type"
+                    )
             self.allowed_pipelines = [
                 make_pipeline(
                     self.X_train,
