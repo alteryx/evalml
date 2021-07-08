@@ -1,28 +1,7 @@
 {% if obj.display %}
 {% if obj.docstring|length > 0 %}
 .. py:{{ obj.type }}:: {{ obj.name }}
-   :annotation:
-        {%- if obj.docstring is not none %} = {%
-            if obj.docstring.splitlines()|count > 1 -%}
-                Multiline-Value
-
-    .. raw:: html
-
-        <details><summary>Show Value</summary>
-
-    .. code-block:: text
-        :linenos:
-
-        {{ obj.docstring|indent(width=8) }}
-
-    .. raw:: html
-
-        </details>
-
-            {%- else -%}
-                {{ obj.docstring }}
-            {%- endif %}
-    {% endif %}
+   :annotation: = {{ obj.docstring.replace("\n", "") }}
 
 {% else %}
 .. py:{{ obj.type }}:: {{ obj.name }}

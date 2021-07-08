@@ -56,7 +56,7 @@ class ExtraTreesClassifier(Estimator):
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]
-    """supported_problem_types = [
+    """[
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,
         ProblemTypes.TIME_SERIES_BINARY,

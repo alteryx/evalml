@@ -50,9 +50,11 @@ class DataCheckError(DataCheckMessage):
     """DataCheckMessage subclass for errors returned by data checks."""
 
     message_type = DataCheckMessageType.ERROR
+    """DataCheckMessageType.ERROR"""
 
 
 class DataCheckWarning(DataCheckMessage):
     """DataCheckMessage subclass for warnings returned by data checks."""
 
     message_type = DataCheckMessageType.WARNING
+    """DataCheckMessageType.WARNING"""

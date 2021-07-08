@@ -42,7 +42,7 @@ class LogisticRegressionClassifier(Estimator):
         "C": Real(0.01, 10),
     }"""
     model_family = ModelFamily.LINEAR_MODEL
-    """model_family = ModelFamily.LINEAR_MODEL"""
+    """ModelFamily.LINEAR_MODEL"""
     supported_problem_types = [
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,

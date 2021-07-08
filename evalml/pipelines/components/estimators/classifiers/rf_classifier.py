@@ -27,7 +27,7 @@ class RandomForestClassifier(Estimator):
         "max_depth": Integer(1, 10),
     }"""
     model_family = ModelFamily.RANDOM_FOREST
-    """model_family = ModelFamily.RANDOM_FOREST"""
+    """ModelFamily.RANDOM_FOREST"""
     supported_problem_types = [
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,
