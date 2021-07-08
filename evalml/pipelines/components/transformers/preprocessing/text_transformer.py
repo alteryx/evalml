@@ -1,4 +1,5 @@
 from evalml.pipelines.components.transformers import Transformer
+from evalml.utils import _put_into_original_order
 from evalml.utils.logger import get_logger
 
 logger = get_logger(__file__)
@@ -22,4 +23,6 @@ class TextTransformer(Transformer):
 
     def _get_text_columns(self, X):
         """Returns the ordered list of columns names in the input which have been designated as text columns."""
-        return list(X.ww.select("NaturalLanguage").columns)
+        return _put_into_original_order(
+            X, list(X.ww.select("NaturalLanguage", return_schema=True).columns)
+        )

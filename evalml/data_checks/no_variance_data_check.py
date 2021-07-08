@@ -17,7 +17,7 @@ class NoVarianceDataCheck(DataCheck):
 
     Arguments:
         count_nan_as_value (bool): If True, missing values will be counted as their own unique value.
-            Additionally, if true, will return a DataCheckWarning instead of an error 
+            Additionally, if true, will return a DataCheckWarning instead of an error
             if the feature has mostly missing data and only one unique value.
             Defaults to False.
     """

@@ -80,17 +80,17 @@ def _get_preprocessing_components(
     if len(input_logical_types.intersection(types_imputer_handles)) > 0:
         pp_components.append(Imputer)
 
-    text_columns = list(X.ww.select("NaturalLanguage").columns)
+    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
     if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
 
-    index_columns = list(X.ww.select("index").columns)
+    index_columns = list(X.ww.select("index", return_schema=True).columns)
     if len(index_columns) > 0:
         pp_components.append(DropColumns)
 
-    datetime_cols = X.ww.select(["Datetime"])
+    datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
 
-    add_datetime_featurizer = len(datetime_cols.columns) > 0
+    add_datetime_featurizer = len(datetime_cols) > 0
     if add_datetime_featurizer and estimator_class.model_family != ModelFamily.ARIMA:
         pp_components.append(DateTimeFeaturizer)
 
@@ -100,8 +100,8 @@ def _get_preprocessing_components(
     ):
         pp_components.append(DelayedFeatureTransformer)
 
-    categorical_cols = X.ww.select("category")
-    if len(categorical_cols.columns) > 0 and estimator_class not in {
+    categorical_cols = list(X.ww.select("category", return_schema=True).columns)
+    if len(categorical_cols) > 0 and estimator_class not in {
         CatBoostClassifier,
         CatBoostRegressor,
     }:
