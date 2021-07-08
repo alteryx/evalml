@@ -5,7 +5,17 @@ from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class SMOTESampler(BaseOverSampler):
-    """SMOTE Oversampler component. Works on numerical datasets only. This component is only run during training and not during predict."""
+    """SMOTE Oversampler component. Works on numerical datasets only. This component is only run during training and not during predict.
+
+    Arguments:
+        sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
+            of the minority to majority class after oversampling. We will create the a sampling dictionary using this ratio, with the keys corresponding to the class
+            and the values responding to the number of samples. Defaults to 0.25.
+        k_neighbors_default (int): The number of nearest neighbors used to construct synthetic samples. This is the default value used, but the actual k_neighbors value might be smaller
+            if there are less samples. Defaults to 5.
+        n_jobs (int): The number of CPU cores to use. Defaults to -1.
+        random_seed (int): The seed to use for random sampling. Defaults to 0.
+    """
 
     name = "SMOTE Oversampler"
     hyperparameter_ranges = {}
@@ -30,7 +40,17 @@ class SMOTESampler(BaseOverSampler):
 
 class SMOTENCSampler(BaseOverSampler):
     """SMOTENC Oversampler component. Uses SMOTENC to generate synthetic samples. Works on a mix of nomerical and categorical columns.
-    Input data must be Woodwork type, and this component is only run during training and not during predict."""
+    Input data must be Woodwork type, and this component is only run during training and not during predict.
+
+    Arguments:
+        sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
+            of the minority to majority class after oversampling. We will create the a sampling dictionary using this ratio, with the keys corresponding to the class
+            and the values responding to the number of samples. Defaults to 0.25.
+        k_neighbors_default (int): The number of nearest neighbors used to construct synthetic samples. This is the default value used, but the actual k_neighbors value might be smaller
+            if there are less samples. Defaults to 5.
+        n_jobs (int): The number of CPU cores to use. Defaults to -1.
+        random_seed (int): The seed to use for random sampling. Defaults to 0.
+    """
 
     name = "SMOTENC Oversampler"
     hyperparameter_ranges = {}
@@ -69,8 +89,19 @@ class SMOTENCSampler(BaseOverSampler):
 
 
 class SMOTENSampler(BaseOverSampler):
-    """SMOTEN Oversampler component. Uses SMOTEN to generate synthetic samples. Works for purely categorical datasets.
-    This component is only run during training and not during predict."""
+    """
+    SMOTEN Oversampler component. Uses SMOTEN to generate synthetic samples. Works for purely categorical datasets.
+    This component is only run during training and not during predict.
+
+    Arguments:
+        sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
+            of the minority to majority class after oversampling. We will create the a sampling dictionary using this ratio, with the keys corresponding to the class
+            and the values responding to the number of samples. Defaults to 0.25.
+        k_neighbors_default (int): The number of nearest neighbors used to construct synthetic samples. This is the default value used, but the actual k_neighbors value might be smaller
+            if there are less samples. Defaults to 5.
+        n_jobs (int): The number of CPU cores to use. Defaults to -1.
+        random_seed (int): The seed to use for random sampling. Defaults to 0.
+    """
 
     name = "SMOTEN Oversampler"
     hyperparameter_ranges = {}

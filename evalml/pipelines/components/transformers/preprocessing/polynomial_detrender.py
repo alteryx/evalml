@@ -8,20 +8,19 @@ from evalml.utils import import_or_raise, infer_feature_types
 
 
 class PolynomialDetrender(TargetTransformer):
-    """Removes trends from time series by fitting a polynomial to the data."""
+    """Removes trends from time series by fitting a polynomial to the data.
+
+    Arguments:
+        degree (int): Degree for the polynomial. If 1, linear model is fit to the data.
+            If 2, quadratic model is fit, etc. Defaults to 1.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Polynomial Detrender"
 
     hyperparameter_ranges = {"degree": Integer(1, 3)}
 
     def __init__(self, degree=1, random_seed=0, **kwargs):
-        """Initialize the PolynomialDetrender.
-
-        Arguments:
-            degree (int): Degree for the polynomial. If 1, linear model is fit to the data.
-                If 2, quadratic model is fit, etc. Default of 1.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         if not isinstance(degree, int):
             if isinstance(degree, float) and degree.is_integer():
                 degree = int(degree)

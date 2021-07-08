@@ -14,7 +14,20 @@ from evalml.utils import (
 
 
 class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
-    """Target encoder to encode categorical data"""
+    """
+    A transformer that encodes categorical features into target encodings.
+
+    Arguments:
+        cols (list): Columns to encode. If None, all string columns will be encoded, otherwise only the columns provided will be encoded.
+            Defaults to None
+        smoothing (float): The smoothing factor to apply. The larger this value is, the more influence the expected target value has
+            on the resulting target encodings. Must be strictly larger than 0. Defaults to 1.0
+        handle_unknown (string): Determines how to handle unknown categories for a feature encountered. Options are 'value', 'error', nd 'return_nan'.
+            Defaults to 'value', which replaces with the target mean
+        handle_missing (string): Determines how to handle missing values encountered during `fit` or `transform`. Options are 'value', 'error', and 'return_nan'.
+            Defaults to 'value', which replaces with the target mean
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Target Encoder"
     hyperparameter_ranges = {}
@@ -28,20 +41,6 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
         random_seed=0,
         **kwargs
     ):
-        """Initializes a transformer that encodes categorical features into target encodings.
-
-        Arguments:
-            cols (list): Columns to encode. If None, all string columns will be encoded, otherwise only the columns provided will be encoded.
-                Defaults to None
-            smoothing (float): The smoothing factor to apply. The larger this value is, the more influence the expected target value has
-                on the resulting target encodings. Must be strictly larger than 0. Defaults to 1.0
-            handle_unknown (string): Determines how to handle unknown categories for a feature encountered. Options are 'value', 'error', nd 'return_nan'.
-                Defaults to 'value', which replaces with the target mean
-            handle_missing (string): Determines how to handle missing values encountered during `fit` or `transform`. Options are 'value', 'error', and 'return_nan'.
-                Defaults to 'value', which replaces with the target mean
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
-
         parameters = {
             "cols": cols,
             "smoothing": smoothing,

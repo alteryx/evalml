@@ -11,17 +11,16 @@ from evalml.utils import infer_feature_types
 
 
 class TextFeaturizer(TextTransformer):
-    """Transformer that can automatically featurize text columns."""
+    """Transformer that can automatically featurize text columns using featuretools' nlp_primitives.
+
+    Arguments:
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
 
     def __init__(self, random_seed=0, **kwargs):
-        """Extracts features from text columns using featuretools' nlp_primitives
-
-        Arguments:
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         self._trans = [
             nlp_primitives.DiversityScore,
             nlp_primitives.MeanCharactersPerWord,

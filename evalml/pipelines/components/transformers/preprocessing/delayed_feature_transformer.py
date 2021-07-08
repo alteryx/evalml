@@ -7,7 +7,19 @@ from evalml.utils import infer_feature_types
 
 
 class DelayedFeatureTransformer(Transformer):
-    """Transformer that delayes input features and target variable for time series problems."""
+    """Transformer that delays input features and target variable for time series problems.
+
+    Arguments:
+        date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
+        max_delay (int): Maximum number of time units to delay each feature. Defaults to 2.
+        delay_features (bool): Whether to delay the input features. Defaults to True.
+        delay_target (bool): Whether to delay the target. Defaults to True.
+        gap (int): The number of time units between when the features are collected and
+            when the target is collected. For example, if you are predicting the next time step's target, gap=1.
+            This is only needed because when gap=0, we need to be sure to start the lagging of the target variable
+            at 1. Defaults to 1.
+        random_seed (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
+    """
 
     name = "Delayed Feature Transformer"
     hyperparameter_ranges = {}
@@ -23,19 +35,6 @@ class DelayedFeatureTransformer(Transformer):
         random_seed=0,
         **kwargs,
     ):
-        """Creates a DelayedFeatureTransformer.
-
-        Arguments:
-            date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
-            max_delay (int): Maximum number of time units to delay each feature.
-            delay_features (bool): Whether to delay the input features.
-            delay_target (bool): Whether to delay the target.
-            gap (int): The number of time units between when the features are collected and
-                when the target is collected. For example, if you are predicting the next time step's target, gap=1.
-                This is only needed because when gap=0, we need to be sure to start the lagging of the target variable
-                at 1.
-            random_seed (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
-        """
         self.date_index = date_index
         self.max_delay = max_delay
         self.delay_features = delay_features

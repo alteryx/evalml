@@ -5,12 +5,15 @@ from evalml.utils import infer_feature_types
 
 
 class ColumnSelector(Transformer):
-    def __init__(self, columns=None, random_seed=0, **kwargs):
-        """Initalizes an transformer that drops specified columns in input data.
+    """
+    Initalizes an transformer that drops specified columns in input data.
 
-        Arguments:
-            columns (list(string)): List of column names, used to determine which columns to drop.
-        """
+    Arguments:
+        columns (list(string)): List of column names, used to determine which columns to select.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
+
+    def __init__(self, columns=None, random_seed=0, **kwargs):
         if columns and not isinstance(columns, list):
             raise ValueError(
                 f"Parameter columns must be a list. Received {type(columns)}."
@@ -62,7 +65,13 @@ class ColumnSelector(Transformer):
 
 
 class DropColumns(ColumnSelector):
-    """Drops specified columns in input data."""
+    """
+    Drops specified columns in input data.
+
+    Arguments:
+        columns (list(string)): List of column names, used to determine which columns to drop.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Drop Columns Transformer"
     hyperparameter_ranges = {}
@@ -85,7 +94,13 @@ class DropColumns(ColumnSelector):
 
 
 class SelectColumns(ColumnSelector):
-    """Selects specified columns in input data."""
+    """
+    Selects specified columns in input data.
+
+    Arguments:
+        columns (list(string)): List of column names, used to determine which columns to select.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Select Columns Transformer"
     hyperparameter_ranges = {}

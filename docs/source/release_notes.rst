@@ -11,6 +11,7 @@ Release Notes
         * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
     * Changes
     * Documentation Changes
+        * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
 
