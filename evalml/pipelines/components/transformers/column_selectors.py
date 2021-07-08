@@ -94,7 +94,8 @@ class DropColumns(ColumnSelector):
 
 
 class SelectColumns(ColumnSelector):
-    """Selects specified columns in input data.
+    """
+    Selects specified columns in input data.
 
     Arguments:
         columns (list(string)): List of column names, used to determine which columns to select.
