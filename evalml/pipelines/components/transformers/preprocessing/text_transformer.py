@@ -6,14 +6,14 @@ logger = get_logger(__file__)
 
 
 class TextTransformer(Transformer):
-    """Base class for all transformers working with text features"""
+    """Base class for all transformers working with text features.
+
+    Arguments:
+        component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     def __init__(self, component_obj=None, random_seed=0, **kwargs):
-        """Creates a transformer to perform TF-IDF transformation and Singular Value Decomposition for text columns.
-
-        Arguments:
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         parameters = {}
         parameters.update(kwargs)
 

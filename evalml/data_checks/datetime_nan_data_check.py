@@ -5,10 +5,7 @@ error_contains_nan = "Input datetime column(s) ({}) contains NaN values. Please 
 
 
 class DateTimeNaNDataCheck(DataCheck):
-    """Checks if datetime columns contain NaN values."""
-
-    def __init__(self):
-        """Checks each column in the input for datetime features and will issue an error if NaN values are present."""
+    """Checks each column in the input for datetime features and will issue an error if NaN values are present."""
 
     def validate(self, X, y=None):
         """Checks if any datetime columns contain NaN values.

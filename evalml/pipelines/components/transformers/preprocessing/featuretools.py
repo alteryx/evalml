@@ -8,19 +8,18 @@ from evalml.utils import (
 
 
 class DFSTransformer(Transformer):
-    """Featuretools DFS component that generates features for pd.DataFrames"""
+    """Featuretools DFS component that generates features for the input features.
+
+    Arguments:
+        index (string): The name of the column that contains the indices. If no column with this name exists,
+            then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "DFS Transformer"
     hyperparameter_ranges = {}
 
     def __init__(self, index="index", random_seed=0, **kwargs):
-        """Allows for featuretools to be used in EvalML.
-
-        Arguments:
-            index (string): The name of the column that contains the indices. If no column with this name exists,
-                then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'
-            random_seed (int): Seed for the random number generator
-        """
         parameters = {"index": index}
         if not isinstance(index, str):
             raise TypeError(f"Index provided must be string, got {type(index)}")

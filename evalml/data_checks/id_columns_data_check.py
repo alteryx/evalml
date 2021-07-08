@@ -9,14 +9,13 @@ from evalml.utils import infer_feature_types
 
 
 class IDColumnsDataCheck(DataCheck):
-    """Check if any of the features are likely to be ID columns."""
+    """Check if any of the features are likely to be ID columns.
+
+    Arguments:
+        id_threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0.
+    """
 
     def __init__(self, id_threshold=1.0):
-        """Check if any of the features are likely to be ID columns.
-
-        Arguments:
-            id_threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0.
-        """
         if id_threshold < 0 or id_threshold > 1:
             raise ValueError("id_threshold must be a float between 0 and 1, inclusive.")
         self.id_threshold = id_threshold

@@ -10,17 +10,16 @@ from evalml.utils import infer_feature_types
 
 
 class LSA(TextTransformer):
-    """Transformer to calculate the Latent Semantic Analysis Values of text input"""
+    """Transformer to calculate the Latent Semantic Analysis Values of text input.
+
+    Arguments:
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "LSA Transformer"
     hyperparameter_ranges = {}
 
     def __init__(self, random_seed=0, **kwargs):
-        """Creates a transformer to perform TF-IDF transformation and Singular Value Decomposition for text columns.
-
-        Arguments:
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         self._lsa_pipeline = make_pipeline(
             TfidfVectorizer(), TruncatedSVD(random_state=random_seed)
         )

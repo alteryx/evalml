@@ -8,9 +8,13 @@ from evalml.utils import infer_feature_types
 
 
 class BaselineRegressor(Estimator):
-    """Regressor that predicts using the specified strategy.
-
+    """
+    Baseline regressor that uses a simple strategy to make predictions.
     This is useful as a simple baseline regressor to compare with other regressors.
+
+    Arguments:
+        strategy (str): Method used to predict. Valid options are "mean", "median". Defaults to "mean".
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "Baseline Regressor"
@@ -22,12 +26,6 @@ class BaselineRegressor(Estimator):
     ]
 
     def __init__(self, strategy="mean", random_seed=0, **kwargs):
-        """Baseline regressor that uses a simple strategy to make predictions.
-
-        Arguments:
-            strategy (str): Method used to predict. Valid options are "mean", "median". Defaults to "mean".
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         if strategy not in ["mean", "median"]:
             raise ValueError(
                 "'strategy' parameter must equal either 'mean' or 'median'"
