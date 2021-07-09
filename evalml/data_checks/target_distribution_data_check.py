@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.stats import ks_2samp, lognorm
+from scipy.stats import shapiro, lognorm
 import woodwork as ww
 
 from evalml.data_checks import (
@@ -104,20 +104,28 @@ class TargetDistributionDataCheck(DataCheck):
             )
             return results
 
+        # Check if a normal distribution is detected with p-value above 0.05
+        if shapiro(y).pvalue >= 0.05:
+            return results
+
         if any(y <= 0):
             y_new = y + abs(y.min()) + 1
         else:
             y_new = y
 
-        ks_pvals = []
-        for sigma in [0.7, 0.85, 1.0, 1.25, 1.5, 2]:
-            dummy = lognorm.rvs(sigma, size=1000)
-            ks_pval = ks_2samp(y_new, dummy, alternative="greater").pvalue
-            ks_pvals.append((sigma, ks_pval))
-        print("----------------------")
-        print(ks_pvals)
-        if sum(np.array(ks_pvals))[1] == 6:
-            details = {"kolomogoroc-smirnov-sigma-pvalues": ks_pvals}
+        y_new = y_new[y_new < (y_new.mean() + 3 * round(y.std(), 3))]   # Drop values greater than 3 standard deviations
+        shapiro_test_og = shapiro(y_new)
+        shapiro_test_log = shapiro(np.log(y_new))
+
+        log_detected = False
+
+        # If the p-value of the log transformed target is greater than or equal to the p-value of the original target
+        # with outliers dropped, then it would imply that the log transformed target has more of a normal distribution
+        if shapiro_test_log.pvalue >= shapiro_test_og.pvalue:
+            log_detected = True
+
+        if log_detected:
+            details = {"shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 3)}/{round(shapiro_test_og.pvalue, 3)}"}
             results["warnings"].append(
                 DataCheckWarning(
                     message="Target may have a lognormal distribution.",

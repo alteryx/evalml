@@ -37,7 +37,6 @@ class DefaultDataChecks(DataChecks):
         NoVarianceDataCheck,
         NaturalLanguageNaNDataCheck,
         DateTimeNaNDataCheck,
-        TargetDistributionDataCheck,
     ]
 
     def __init__(self, problem_type, objective, n_splits=3):
@@ -54,12 +53,13 @@ class DefaultDataChecks(DataChecks):
             ProblemTypes.TIME_SERIES_REGRESSION,
         ]:
             super().__init__(
-                self._DEFAULT_DATA_CHECK_CLASSES,
+                self._DEFAULT_DATA_CHECK_CLASSES + [TargetDistributionDataCheck],
                 data_check_params={
                     "InvalidTargetDataCheck": {
                         "problem_type": problem_type,
                         "objective": objective,
-                    }
+                    },
+                    "TargetDistributionDataCheck": {"problem_type": problem_type},
                 },
             )
         else:

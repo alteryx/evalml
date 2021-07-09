@@ -41,11 +41,12 @@ class LogTransformer(TargetTransformer):
         """
         if y is None:
             return X, y
-        self.min = y.min()
+        y_ww = infer_feature_types(y)
+        self.min = y_ww.min()
         if self.min <= 0:
-            y = y + abs(self.min) + 1
-        y = infer_feature_types(np.log(y))
-        return X, y
+            y_ww = y_ww.apply(lambda x: x + abs(self.min) + 1)
+        y_t = infer_feature_types(y_ww.apply(np.log))
+        return X, y_t
 
     def fit_transform(self, X, y=None):
         """Log transforms the target variable.
@@ -61,8 +62,8 @@ class LogTransformer(TargetTransformer):
         return self.fit(X, y).transform(X, y)
 
     def inverse_transform(self, y):
-        y = np.exp(y)
+        y_ww_inv = infer_feature_types(y)
+        y_inv = y_ww_inv.apply(np.exp)
         if self.min <= 0:
-            y = y - abs(self.min) - 1
-        y = infer_feature_types(y)
-        return y
+            y_inv = y_inv.apply(lambda x: x - abs(self.min) - 1)
+        return infer_feature_types(y_inv)

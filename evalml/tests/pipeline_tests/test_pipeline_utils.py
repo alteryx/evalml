@@ -27,6 +27,7 @@ from evalml.pipelines.components import (
     TextFeaturizer,
     Transformer,
 )
+from evalml.pipelines.components.transformers.preprocessing.log_transformer import LogTransformer
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_component_list_from_actions,
@@ -34,17 +35,18 @@ from evalml.pipelines.utils import (
     get_estimators,
     make_pipeline,
 )
-from evalml.problem_types import ProblemTypes, is_time_series
+from evalml.problem_types import ProblemTypes, is_time_series, is_regression
 
 
+@pytest.mark.parametrize("lognormal_distribution", [True, False])
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
+def test_make_pipeline_all_nan_no_categoricals(problem_type, input_type, lognormal_distribution):
     # testing that all_null column is not considered categorical
     X = pd.DataFrame(
-        {"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan], "num": [1, 2, 3, 4, 5]}
+        {"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan], "num": [1, 2, 3, 4, 5, 6, 7]}
     )
-    y = pd.Series([0, 0, 1, 1, 0])
+    y = pd.Series([0, 1, 1, 0, 1, 1, 0])
     if input_type == "ww":
         X.ww.init()
         y = ww.init_series(y)
@@ -52,7 +54,12 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
     if problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2])
+        y = pd.Series([0, 2, 1, 2, 0, 2, 1])
+    elif is_regression(problem_type):
+        if lognormal_distribution:
+            y = pd.Series([1, 1, 1, 2, 3, 6, 9])
+        else:
+            y = pd.Series([1, 2, 3, 3, 3, 4, 5])
 
     for estimator_class in estimators:
         if problem_type in estimator_class.supported_problem_types:
@@ -82,6 +89,8 @@ def test_make_pipeline_all_nan_no_categoricals(input_type, problem_type):
             expected_components = (
                 [DropNullColumns, Imputer] + delayed_features + estimator_components
             )
+            if lognormal_distribution and is_regression(problem_type):
+                expected_components.insert(0, LogTransformer)
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]

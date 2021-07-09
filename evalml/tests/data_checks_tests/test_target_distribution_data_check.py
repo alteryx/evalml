@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from scipy.stats import ks_2samp, lognorm, norm, ks_1samp
+from scipy.stats import shapiro, lognorm, norm
 import pytest
 
 from evalml.data_checks import (
@@ -64,7 +64,6 @@ def test_target_distribution_data_check_unsupported_target_type(target_type, X_y
             "actions": [],
         }
     else:
-        print(y.ww.logical_type.type_string)
         assert target_dist_check.validate(X, y) == {
             "warnings": [],
             "errors": [
@@ -106,27 +105,25 @@ def test_target_distribution_data_check_invalid_problem_type(problem_type, X_y_r
         }
 
 
-@pytest.mark.parametrize("distribution", ["normal", "lognormal"])
-def test_target_distribution_data_check_warning_action(distribution, X_y_regression):
+@pytest.mark.parametrize("data_type", ["positive", "mixed", "negative"])
+@pytest.mark.parametrize("distribution", ["normal", "lognormal", "lognormal_"])
+def test_target_distribution_data_check_warning_action(distribution, data_type, X_y_regression):
     X, y = X_y_regression
-    print()
 
     target_dist_check = TargetDistributionDataCheck("regression")
 
     if distribution == "normal":
-        y = norm.rvs(loc=3000, size=1000)
+        y = norm.rvs(loc=3, size=10000)
     elif distribution == "lognormal":
-        y = lognorm.rvs(0.5, size=1000)
+        y = lognorm.rvs(0.4, size=10000)
+    else:
+        # Will have a p-value of 0 the null hypothesis even after log transforming
+        y = lognorm.rvs(s=1, loc=1, scale=1, size=10000)
 
-    if any(y <= 0):
-        y = y + abs(y.min()) + 1
-
-    ks_pvals = []
-    for sigma in [0.7, 0.85, 1.0, 1.25, 1.5, 2]:
-        dummy_log = lognorm.rvs(sigma, size=1000)
-        ks_pval = ks_2samp(y, dummy_log, alternative="greater").pvalue
-        ks_pvals.append((sigma, ks_pval))
-    print(ks_pvals)
+    if data_type == "negative":
+        y = -np.abs(y)
+    elif data_type == "mixed":
+        y = y - 1.2
 
     if distribution == "normal":
         assert target_dist_check.validate(X, y) == {
@@ -134,9 +131,16 @@ def test_target_distribution_data_check_warning_action(distribution, X_y_regress
             "errors": [],
             "actions": [],
         }
-    elif distribution == "lognormal":
-        details = {"kolomogoroc-smirnov-sigma-pvalues": ks_pvals}
-        assert target_dist_check.validate(X, y) == {
+    else:
+        target_dist_ = target_dist_check.validate(X, y)
+
+        if any(y <= 0):
+            y = y + abs(y.min()) + 1
+        y = y[y < (y.mean() + 3 * round(y.std(), 3))]
+        shapiro_test_og = shapiro(y)
+
+        details = {"shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 3)}/{round(shapiro_test_og.pvalue, 3)}"}
+        assert target_dist_ == {
             "warnings": [
                 DataCheckWarning(
                     message="Target may have a lognormal distribution.",
