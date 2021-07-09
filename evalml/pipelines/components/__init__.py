@@ -52,5 +52,6 @@ from .transformers import (
     SMOTESampler,
     SMOTENCSampler,
     SMOTENSampler,
+    LogTransformer,
 )
 from .ensemble import StackedEnsembleClassifier, StackedEnsembleRegressor

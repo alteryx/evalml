@@ -1,7 +1,11 @@
 import numpy as np
 import pandas as pd
-from scipy.stats import lognorm, norm, shapiro
 import pytest
+from scipy.stats import (
+    lognorm,
+    norm,
+    shapiro,
+)
 
 from evalml.data_checks import (
     DataCheckAction,

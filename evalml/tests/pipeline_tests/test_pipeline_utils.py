@@ -18,6 +18,7 @@ from evalml.pipelines.components import (
     Estimator,
     Imputer,
     LinearRegressor,
+    LogTransformer,
     LogisticRegressionClassifier,
     OneHotEncoder,
     StackedEnsembleClassifier,
@@ -27,9 +28,6 @@ from evalml.pipelines.components import (
     TextFeaturizer,
     Transformer,
 )
-from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
-    LogTransformer,
-)
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_component_list_from_actions,
@@ -37,7 +35,11 @@ from evalml.pipelines.utils import (
     get_estimators,
     make_pipeline,
 )
-from evalml.problem_types import ProblemTypes, is_time_series, is_regression
+from evalml.problem_types import (
+    ProblemTypes,
+    is_regression,
+    is_time_series,
+)
 
 
 @pytest.mark.parametrize("lognormal_distribution", [True, False])

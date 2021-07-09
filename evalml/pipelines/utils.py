@@ -1,7 +1,6 @@
 from woodwork import logical_types
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
-from .components.transformers.preprocessing.log_transformer import LogTransformer
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
 )
@@ -12,7 +11,7 @@ from .time_series_classification_pipelines import (
 )
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 
-from evalml.data_checks import DataCheckActionCode
+from evalml.data_checks import DataCheckActionCode, TargetDistributionDataCheck
 from evalml.model_family import ModelFamily
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (  # noqa: F401
@@ -25,6 +24,7 @@ from evalml.pipelines.components import (  # noqa: F401
     DropNullColumns,
     Estimator,
     Imputer,
+    LogTransformer,
     OneHotEncoder,
     RandomForestClassifier,
     SMOTENCSampler,
@@ -45,7 +45,6 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.utils import get_logger, import_or_raise, infer_feature_types
-from ..data_checks.target_distribution_data_check import TargetDistributionDataCheck
 
 logger = get_logger(__file__)
 
