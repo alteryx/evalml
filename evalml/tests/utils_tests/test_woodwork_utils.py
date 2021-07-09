@@ -226,11 +226,13 @@ def test_ordinal_retains_order_min():
             ],
         }
     )
+    user_defined_order = [0, 1, 2]
+    user_defined_dt_format = "%Y-%m-%d"
     logical_types = {
         "non-ordinal": "Age",
-        "ordinal": Ordinal(order=[0, 1, 2]),
+        "ordinal": Ordinal(order=user_defined_order),
         "categorical": Categorical(encoding="Encoding"),
-        "datetime": Datetime(datetime_format="%Y-%m-%d"),
+        "datetime": Datetime(datetime_format=user_defined_dt_format),
     }
     features.ww.init(logical_types=logical_types)
 
