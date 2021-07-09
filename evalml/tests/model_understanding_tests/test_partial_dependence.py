@@ -977,11 +977,12 @@ def test_partial_dependence_datetime(
         pipeline, X, features="dt_column", grid_resolution=grid
     )
     expected_size = min(size, grid)
+    num_classes = y.nunique()
     if problem_type == "multiclass":
         assert (
-            len(part_dep["partial_dependence"]) == 3 * expected_size
+            len(part_dep["partial_dependence"]) == num_classes * expected_size
         )  # 10 rows * 3 classes
-        assert len(part_dep["feature_values"]) == 3 * expected_size
+        assert len(part_dep["feature_values"]) == num_classes * expected_size
     else:
         assert len(part_dep["partial_dependence"]) == expected_size
         assert len(part_dep["feature_values"]) == expected_size
@@ -992,9 +993,9 @@ def test_partial_dependence_datetime(
     part_dep = partial_dependence(pipeline, X, features=20, grid_resolution=grid)
     if problem_type == "multiclass":
         assert (
-            len(part_dep["partial_dependence"]) == 3 * expected_size
+            len(part_dep["partial_dependence"]) == num_classes * expected_size
         )  # 10 rows * 3 classes
-        assert len(part_dep["feature_values"]) == 3 * expected_size
+        assert len(part_dep["feature_values"]) == num_classes * expected_size
     else:
         assert len(part_dep["partial_dependence"]) == expected_size
         assert len(part_dep["feature_values"]) == expected_size

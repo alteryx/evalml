@@ -1,3 +1,5 @@
+# import pandas as pd
+# from pandas.api.types import is_numeric_dtype
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import _put_into_original_order, infer_feature_types
 
@@ -133,6 +135,10 @@ class DateTimeFeaturizer(Transformer):
         for col_name in self._date_time_col_names:
             for feature in features_to_extract:
                 name = f"{col_name}_{feature}"
+                # if is_numeric_dtype(X[col_name].dtype):
+                #     features = pd.to_datetime(pd.Series(X[col_name]), unit="s")
+                #     categories = None
+                # else:
                 features, categories = self._function_mappings[feature](
                     X[col_name], self.encode_as_categories
                 )
