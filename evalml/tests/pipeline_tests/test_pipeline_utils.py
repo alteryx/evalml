@@ -27,7 +27,9 @@ from evalml.pipelines.components import (
     TextFeaturizer,
     Transformer,
 )
-from evalml.pipelines.components.transformers.preprocessing.log_transformer import LogTransformer
+from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
+    LogTransformer,
+)
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_component_list_from_actions,
@@ -41,10 +43,15 @@ from evalml.problem_types import ProblemTypes, is_time_series, is_regression
 @pytest.mark.parametrize("lognormal_distribution", [True, False])
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_all_nan_no_categoricals(problem_type, input_type, lognormal_distribution):
+def test_make_pipeline_all_nan_no_categoricals(
+    problem_type, input_type, lognormal_distribution
+):
     # testing that all_null column is not considered categorical
     X = pd.DataFrame(
-        {"all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan], "num": [1, 2, 3, 4, 5, 6, 7]}
+        {
+            "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+            "num": [1, 2, 3, 4, 5, 6, 7],
+        }
     )
     y = pd.Series([0, 1, 1, 0, 1, 1, 0])
     if input_type == "ww":

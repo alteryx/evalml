@@ -69,7 +69,9 @@ def _get_preprocessing_components(
     pp_components = []
 
     if problem_type in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
-        for each_action in TargetDistributionDataCheck(problem_type).validate(X, y)["actions"]:
+        for each_action in TargetDistributionDataCheck(problem_type).validate(X, y)[
+            "actions"
+        ]:
             if each_action["metadata"]["transformation_strategy"] == "lognormal":
                 pp_components.append(LogTransformer)
 

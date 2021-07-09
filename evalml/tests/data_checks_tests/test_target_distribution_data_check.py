@@ -1,6 +1,6 @@
 import numpy as np
 import pandas as pd
-from scipy.stats import shapiro, lognorm, norm
+from scipy.stats import lognorm, norm, shapiro
 import pytest
 
 from evalml.data_checks import (
@@ -8,7 +8,6 @@ from evalml.data_checks import (
     DataCheckActionCode,
     DataCheckError,
     DataCheckMessageCode,
-    DataChecks,
     DataCheckWarning,
     TargetDistributionDataCheck,
 )
@@ -41,11 +40,13 @@ def test_target_distribution_data_check_no_y(X_y_regression):
 
 
 @pytest.mark.parametrize("target_type", ["boolean", "categorical", "integer", "double"])
-def test_target_distribution_data_check_unsupported_target_type(target_type, X_y_regression):
+def test_target_distribution_data_check_unsupported_target_type(
+    target_type, X_y_regression
+):
     X, y = X_y_regression
 
     if target_type == "boolean":
-        y = pd.Series([True, False]*50)
+        y = pd.Series([True, False] * 50)
     elif target_type == "categorical":
         y = pd.Series(["One", "Two", "Three", "Four"] * 25)
     elif target_type == "integer":
@@ -79,7 +80,9 @@ def test_target_distribution_data_check_unsupported_target_type(target_type, X_y
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
-def test_target_distribution_data_check_invalid_problem_type(problem_type, X_y_regression):
+def test_target_distribution_data_check_invalid_problem_type(
+    problem_type, X_y_regression
+):
     X, y = X_y_regression
 
     target_dist_check = TargetDistributionDataCheck(problem_type)
@@ -98,7 +101,9 @@ def test_target_distribution_data_check_invalid_problem_type(problem_type, X_y_r
                     message=f"Problem type {problem_type} is unsupported. Valid problem types include: [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]",
                     data_check_name=target_dist_check_name,
                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_PROBLEM_TYPE,
-                    details={"unsupported_problem_type": handle_problem_types(problem_type)},
+                    details={
+                        "unsupported_problem_type": handle_problem_types(problem_type)
+                    },
                 ).to_dict()
             ],
             "actions": [],
@@ -107,7 +112,9 @@ def test_target_distribution_data_check_invalid_problem_type(problem_type, X_y_r
 
 @pytest.mark.parametrize("data_type", ["positive", "mixed", "negative"])
 @pytest.mark.parametrize("distribution", ["normal", "lognormal", "lognormal_"])
-def test_target_distribution_data_check_warning_action(distribution, data_type, X_y_regression):
+def test_target_distribution_data_check_warning_action(
+    distribution, data_type, X_y_regression
+):
     X, y = X_y_regression
 
     target_dist_check = TargetDistributionDataCheck("regression")
@@ -139,7 +146,9 @@ def test_target_distribution_data_check_warning_action(distribution, data_type, 
         y = y[y < (y.mean() + 3 * round(y.std(), 3))]
         shapiro_test_og = shapiro(y)
 
-        details = {"shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 3)}/{round(shapiro_test_og.pvalue, 3)}"}
+        details = {
+            "shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 3)}/{round(shapiro_test_og.pvalue, 3)}"
+        }
         assert target_dist_ == {
             "warnings": [
                 DataCheckWarning(

@@ -2,7 +2,9 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from evalml.pipelines.components.transformers.preprocessing.log_transformer import LogTransformer
+from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
+    LogTransformer,
+)
 
 
 def test_log_transformer_init():

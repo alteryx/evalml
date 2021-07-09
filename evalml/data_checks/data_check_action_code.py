@@ -15,4 +15,3 @@ class DataCheckActionCode(Enum):
 
     TRANSFORM_TARGET = "transform_target"
     """Action code for transforming the target data."""
-

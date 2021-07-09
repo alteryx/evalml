@@ -207,6 +207,7 @@ Transformers are components that take in data as input and output transformed da
     SMOTESampler
     SMOTENCSampler
     SMOTENSampler
+    LogTransformer
 
 Estimators
 ~~~~~~~~~~
@@ -489,6 +490,7 @@ Data Check Classes
     MulticollinearityDataCheck
     DateTimeNaNDataCheck
     NaturalLanguageNaNDataCheck
+    TargetDistributionDataCheck
 
 .. autosummary::
     :toctree: generated

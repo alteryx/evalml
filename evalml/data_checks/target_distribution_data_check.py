@@ -1,6 +1,6 @@
 import numpy as np
-from scipy.stats import shapiro, lognorm
 import woodwork as ww
+from scipy.stats import shapiro
 
 from evalml.data_checks import (
     DataCheck,
@@ -21,7 +21,7 @@ from evalml.utils.woodwork_utils import (
 
 class TargetDistributionDataCheck(DataCheck):
     """Checks if the target data contains certain distributions that may need to be transformed prior training to
-     improve model performance."""
+    improve model performance."""
 
     def __init__(self, problem_type):
         """Check if the target is invalid for the specified problem type.
@@ -68,7 +68,10 @@ class TargetDistributionDataCheck(DataCheck):
             )
             return results
 
-        if self.problem_type not in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
+        if self.problem_type not in [
+            ProblemTypes.REGRESSION,
+            ProblemTypes.TIME_SERIES_REGRESSION,
+        ]:
             results["errors"].append(
                 DataCheckError(
                     message="Problem type {} is unsupported. Valid problem types include: [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]".format(
@@ -84,7 +87,7 @@ class TargetDistributionDataCheck(DataCheck):
         y = infer_feature_types(y)
         allowed_types = [
             ww.logical_types.Integer.type_string,
-            ww.logical_types.Double.type_string
+            ww.logical_types.Double.type_string,
         ]
         is_supported_type = y.ww.logical_type.type_string in allowed_types
 
@@ -93,9 +96,7 @@ class TargetDistributionDataCheck(DataCheck):
                 DataCheckError(
                     message="Target is unsupported {} type. Valid Woodwork logical types include: {}".format(
                         y.ww.logical_type.type_string,
-                        ", ".join(
-                            [ltype for ltype in allowed_types]
-                        ),
+                        ", ".join([ltype for ltype in allowed_types]),
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
@@ -113,7 +114,9 @@ class TargetDistributionDataCheck(DataCheck):
         else:
             y_new = y
 
-        y_new = y_new[y_new < (y_new.mean() + 3 * round(y.std(), 3))]   # Drop values greater than 3 standard deviations
+        y_new = y_new[
+            y_new < (y_new.mean() + 3 * round(y.std(), 3))
+        ]  # Drop values greater than 3 standard deviations
         shapiro_test_og = shapiro(y_new)
         shapiro_test_log = shapiro(np.log(y_new))
 
@@ -125,7 +128,9 @@ class TargetDistributionDataCheck(DataCheck):
             log_detected = True
 
         if log_detected:
-            details = {"shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 3)}/{round(shapiro_test_og.pvalue, 3)}"}
+            details = {
+                "shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 3)}/{round(shapiro_test_og.pvalue, 3)}"
+            }
             results["warnings"].append(
                 DataCheckWarning(
                     message="Target may have a lognormal distribution.",

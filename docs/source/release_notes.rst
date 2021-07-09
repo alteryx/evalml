@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Added ``LogTransformer`` and ``TargetDistributionDataCheck`` :pr:`2487`
         * Added details on how to fix error caused by broken ww schema :pr:`2466`
         * Added ability to use built-in pickle for saving AutoMLSearch :pr:`2463`
         * Updated our components and component graphs to use latest features of ww 0.4.1, e.g. ``concat_columns`` and drop in-place. :pr:`2465`

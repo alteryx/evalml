@@ -68,7 +68,9 @@ from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
-from evalml.pipelines.components.transformers.preprocessing.log_transformer import LogTransformer
+from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
+    LogTransformer,
+)
 from evalml.pipelines.components.utils import (
     _all_estimators,
     _all_transformers,
