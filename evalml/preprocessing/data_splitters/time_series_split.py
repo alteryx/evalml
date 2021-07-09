@@ -4,26 +4,24 @@ from sklearn.model_selection._split import BaseCrossValidator
 
 
 class TimeSeriesSplit(BaseCrossValidator):
-    """Rolling Origin Cross Validation for time series problems."""
+    """Rolling Origin Cross Validation for time series problems.
+
+    This class uses max_delay and gap values to take into account that evalml time series pipelines perform
+    some feature and target engineering, e.g delaying input features and shifting the target variable by the
+    desired amount. If the data that will be split already has all the features and appropriate target values, and
+    then set max_delay and gap to 0.
+
+    Arguments:
+        max_delay (int): Max delay value for feature engineering. Time series pipelines create delayed features
+            from existing features. This process will introduce NaNs into the first max_delay number of rows. The
+            splitter uses the last max_delay number of rows from the previous split as the first max_delay number
+            of rows of the current split to avoid "throwing out" more data than in necessary. Defaults to 0.
+        gap (int): Gap used in time series problem. Time series pipelines shift the target variable by gap rows. Defaults to 0.
+        date_index (str): Name of the column containing the datetime information used to order the data. Defaults to None.
+        n_splits (int): number of data splits to make. Defaults to 3.
+    """
 
     def __init__(self, max_delay=0, gap=0, date_index=None, n_splits=3):
-        """Create a TimeSeriesSplit.
-
-        This class uses max_delay and gap values to take into account that evalml time series pipelines perform
-        some feature and target engineering, e.g delaying input features and shifting the target variable by the
-        desired amount. If the data that will be split already has all the features and appropriate target values, and
-        then set max_delay and gap to 0.
-
-        Arguments:
-            max_delay (int): Max delay value for feature engineering. Time series pipelines create delayed features
-                from existing features. This process will introduce NaNs into the first max_delay number of rows. The
-                splitter uses the last max_delay number of rows from the previous split as the first max_delay number
-                of rows of the current split to avoid "throwing out" more data than in necessary.
-            gap (int): Gap used in time series problem. Time series pipelines shift the target variable by gap rows
-                since we are interested in
-            date_index (str): Name of the column containing the datetime information used to order the data.
-            n_splits (int): number of data splits to make.
-        """
         self.max_delay = max_delay
         self.gap = gap
         self.date_index = date_index

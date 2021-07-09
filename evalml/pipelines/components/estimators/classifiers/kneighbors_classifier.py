@@ -10,6 +10,32 @@ from evalml.problem_types import ProblemTypes
 class KNeighborsClassifier(Estimator):
     """
     K-Nearest Neighbors Classifier.
+
+    Arguments:
+        n_neighbors (int): Number of neighbors to use by default. Defaults to 5.
+        weights ({‘uniform’, ‘distance’} or callable): Weight function used in prediction. Can be:
+
+            - ‘uniform’ : uniform weights. All points in each neighborhood are weighted equally.
+            - ‘distance’ : weight points by the inverse of their distance. in this case, closer neighbors of a query point will have a greater influence than neighbors which are further away.
+            - [callable] : a user-defined function which accepts an array of distances, and returns an array of the same shape containing the weights.
+
+            Defaults to "uniform".
+        algorithm ({‘auto’, ‘ball_tree’, ‘kd_tree’, ‘brute’}): Algorithm used to compute the nearest neighbors:
+
+            - ‘ball_tree’ will use BallTree
+            - ‘kd_tree’ will use KDTree
+            - ‘brute’ will use a brute-force search.
+
+            ‘auto’ will attempt to decide the most appropriate algorithm based on the values passed to fit method. Defaults to "auto".
+            Note: fitting on sparse input will override the setting of this parameter, using brute force.
+        leaf_size (int): Leaf size passed to BallTree or KDTree.
+            This can affect the speed of the construction and query, as well as the memory required to store the tree.
+            The optimal value depends on the nature of the problem. Defaults to 30.
+        p (int): Power parameter for the Minkowski metric.
+            When p = 1, this is equivalent to using manhattan_distance (l1),
+            and euclidean_distance (l2) for p = 2. For arbitrary p, minkowski_distance (l_p) is used.
+            Defaults to 2.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "KNN Classifier"

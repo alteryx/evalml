@@ -15,6 +15,16 @@ class CatBoostRegressor(Estimator):
     CatBoost is an open-source library and natively supports categorical features.
 
     For more information, check out https://catboost.ai/
+
+    Arguments:
+        n_estimators (float): The maximum number of trees to build. Defaults to 10.
+        eta (float): The learning rate. Defaults to 0.03.
+        max_depth (int): The maximum tree depth for base learners. Defaults to 6.
+        bootstrap_type (string): Defines the method for sampling the weights of objects. Available methods are 'Bayesian', 'Bernoulli', 'MVS'. Defaults to None.
+        silent (boolean): Whether to use the "silent" logging mode. Defaults to True.
+        allow_writing_files (boolean): Whether to allow writing snapshot files while training. Defaults to False.
+        n_jobs (int or None): Number of jobs to run in parallel. -1 uses all processes. Defaults to -1.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "CatBoost Regressor"
@@ -41,18 +51,6 @@ class CatBoostRegressor(Estimator):
         n_jobs=-1,
         **kwargs
     ):
-        """CatBoost Regressor.
-
-        Arguments:
-            n_estimators (int): Number of gradient boosted trees. Equivalent to number of boosting rounds. Defaults to 100.
-            eta (float): Learning rate. Defaults to 0.1.
-            max_depth (int): Maximum tree depth for base learners. Defaults to 6.
-            bootstrap_type (string): Defines the method for sampling the weights of objects. Defaults to None.
-            silent (bool): Whether to emit logging while training. Default to False.
-            allow_writing_files (bool): Whether to allow writing of analytical and snapshot files during training. Defaults to False.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-            n_jobs (int): Number of parallel threads used to run CatBoost. This will be passed to CatBoost as the `thread_count` parameter. Defaults to -1.
-        """
         parameters = {
             "n_estimators": n_estimators,
             "eta": eta,

@@ -11,21 +11,21 @@ from evalml.utils import (
 
 
 class PCA(Transformer):
-    """Reduces the number of features by using Principal Component Analysis"""
+    """
+    Reduces the number of features by using Principal Component Analysis (PCA).
+
+    Arguments:
+        variance (float): The percentage of the original data variance that should be preserved when reducing the
+            number of features. Defaults to 0.95.
+        n_components (int): The number of features to maintain after computing SVD. Defaults to None, but will override
+            variance variable if set.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "PCA Transformer"
     hyperparameter_ranges = {"variance": Real(0.25, 1)}
 
     def __init__(self, variance=0.95, n_components=None, random_seed=0, **kwargs):
-        """Initalizes an transformer that reduces the number of features using PCA."
-
-        Arguments:
-            variance (float): The percentage of the original data variance that should be preserved when reducing the
-                              number of features.
-            n_components (int): The number of features to maintain after computing SVD. Defaults to None, but will override
-                                variance variable if set.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         parameters = {"variance": variance, "n_components": n_components}
         parameters.update(kwargs)
         if n_components:

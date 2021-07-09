@@ -6,7 +6,18 @@ from evalml.problem_types import ProblemTypes
 
 
 class LinearRegressor(Estimator):
-    """Linear Regressor."""
+    """Linear Regressor.
+
+    Arguments:
+        fit_intercept (boolean): Whether to calculate the intercept for this model.
+            If set to False, no intercept will be used in calculations (i.e. data is expected to be centered).
+            Defaults to True.
+        normalize (boolean): If True, the regressors will be normalized before regression
+            by subtracting the mean and dividing by the l2-norm.
+            This parameter is ignored when fit_intercept is set to False. Defaults to False.
+        n_jobs (int or None): Number of jobs to run in parallel. -1 uses all threads. Defaults to -1.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Linear Regressor"
     hyperparameter_ranges = {"fit_intercept": [True, False], "normalize": [True, False]}

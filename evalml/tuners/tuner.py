@@ -4,22 +4,21 @@ from skopt.space import Categorical, Integer, Real
 
 
 class Tuner(ABC):
-    """Defines API for Tuners.
+    """Defines API for base Tuner classes.
 
     Tuners implement different strategies for sampling from a search space. They're used in EvalML to search the space of pipeline hyperparameters.
+
+    Arguments:
+        pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters.
+        random_seed (int): The random state. Defaults to 0.
     """
 
     def __init__(self, pipeline_hyperparameter_ranges, random_seed=0):
-        """Base Tuner class
-
-        Arguments:
-            pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
-            random_seed (int): The random state. Defaults to 0.
-        """
         self._pipeline_hyperparameter_ranges = pipeline_hyperparameter_ranges
         self._parameter_names_map = dict()
         self._search_space_names = []
         self._search_space_ranges = []
+        self.random_seed = random_seed
         if not isinstance(pipeline_hyperparameter_ranges, dict):
             raise ValueError(
                 "pipeline_hyperparameter_ranges must be a dict but is of type {}".format(
