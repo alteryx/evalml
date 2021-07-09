@@ -11,6 +11,7 @@ from evalml.automl.automl_algorithm import (
 from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
+    RegressionPipeline,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
@@ -274,6 +275,43 @@ def test_iterative_algorithm_passes_njobs(mock_opt_tell, dummy_binary_pipeline_c
             assert all(
                 [p.parameters["Mock Classifier"]["n_jobs"] == 2 for p in next_batch]
             )
+            scores = -np.arange(0, len(next_batch))
+            for score, pipeline in zip(scores, next_batch):
+                algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
+
+@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
+@pytest.mark.parametrize("is_regression", [True, False])
+@pytest.mark.parametrize("estimator", ["XGBoost", "CatBoost"])
+def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
+    mock_opt_tell, is_regression, estimator
+):
+    if estimator == "XGBoost":
+        pytest.importorskip(
+            "xgboost", reason="Skipping test because xgboost is not installed."
+        )
+    else:
+        pytest.importorskip(
+            "catboost", reason="Skipping test because catboost is not installed."
+        )
+    if is_regression:
+        pipelines = [RegressionPipeline([f"{estimator} Regressor"])]
+    else:
+        pipelines = [BinaryClassificationPipeline([f"{estimator} Classifier"])]
+
+    algo = IterativeAlgorithm(allowed_pipelines=pipelines, n_jobs=2, ensembling=False)
+    next_batch = algo.next_batch()
+
+    # the "best" score will be the 1st dummy pipeline
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
+    for _ in range(1, 3):
+        for _ in range(len(pipelines)):
+            next_batch = algo.next_batch()
+            for parameter_values in [list(p.parameters.values()) for p in next_batch]:
+                assert parameter_values[0]["n_jobs"] == 2
             scores = -np.arange(0, len(next_batch))
             for score, pipeline in zip(scores, next_batch):
                 algo.add_result(score, pipeline, {"id": algo.pipeline_number})

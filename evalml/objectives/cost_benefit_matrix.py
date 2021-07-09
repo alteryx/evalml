@@ -6,9 +6,17 @@ from evalml.model_understanding.graphs import confusion_matrix
 
 
 class CostBenefitMatrix(BinaryClassificationObjective):
-    """Score using a cost-benefit matrix. Scores quantify the benefits of a given value, so greater numeric
+    """
+    Score using a cost-benefit matrix. Scores quantify the benefits of a given value, so greater numeric
     scores represents a better score. Costs and scores can be negative, indicating that a value is not beneficial.
-    For example, in the case of monetary profit, a negative cost and/or score represents loss of cash flow."""
+    For example, in the case of monetary profit, a negative cost and/or score represents loss of cash flow.
+
+    Arguments:
+        true_positive (float): Cost associated with true positive predictions
+        true_negative (float): Cost associated with true negative predictions
+        false_positive (float): Cost associated with false positive predictions
+        false_negative (float): Cost associated with false negative predictions
+    """
 
     name = "Cost Benefit Matrix"
     greater_is_better = True
@@ -17,14 +25,6 @@ class CostBenefitMatrix(BinaryClassificationObjective):
     is_bounded_like_percentage = False  # Range (-Inf, Inf)
 
     def __init__(self, true_positive, true_negative, false_positive, false_negative):
-        """Create instance of CostBenefitMatrix.
-
-        Arguments:
-            true_positive (float): Cost associated with true positive predictions
-            true_negative (float): Cost associated with true negative predictions
-            false_positive (float): Cost associated with false positive predictions
-            false_negative (float): Cost associated with false negative predictions
-        """
         if None in {true_positive, true_negative, false_positive, false_negative}:
             raise ValueError(
                 "Parameters to CostBenefitMatrix must all be numeric values."

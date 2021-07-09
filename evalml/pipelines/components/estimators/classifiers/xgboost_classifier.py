@@ -10,7 +10,17 @@ from evalml.utils.gen_utils import (
 
 
 class XGBoostClassifier(Estimator):
-    """XGBoost Classifier."""
+    """
+    XGBoost Classifier.
+
+    Arguments:
+        eta (float): Boosting learning rate. Defaults to 0.1.
+        max_depth (int): Maximum tree depth for base learners. Defaults to 6.
+        min_child_weight (float): Minimum sum of instance weight (hessian) needed in a child. Defaults to 1.0
+        n_estimators (int): Number of gradient boosted trees. Equivalent to number of boosting rounds. Defaults to 100.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+        n_jobs (int): Number of parallel threads used to run xgboost. Note that creating thread contention will significantly slow down the algorithm. Defaults to -1.
+    """
 
     name = "XGBoost Classifier"
     hyperparameter_ranges = {
@@ -39,6 +49,7 @@ class XGBoostClassifier(Estimator):
         min_child_weight=1,
         n_estimators=100,
         random_seed=0,
+        n_jobs=-1,
         **kwargs
     ):
         parameters = {
@@ -46,6 +57,7 @@ class XGBoostClassifier(Estimator):
             "max_depth": max_depth,
             "min_child_weight": min_child_weight,
             "n_estimators": n_estimators,
+            "n_jobs": n_jobs,
         }
         parameters.update(kwargs)
         xgb_error_msg = (
@@ -53,7 +65,6 @@ class XGBoostClassifier(Estimator):
         )
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         xgb_classifier = xgb.XGBClassifier(random_state=random_seed, **parameters)
-
         super().__init__(
             parameters=parameters, component_obj=xgb_classifier, random_seed=random_seed
         )

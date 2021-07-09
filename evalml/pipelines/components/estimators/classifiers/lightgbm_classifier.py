@@ -18,7 +18,29 @@ from evalml.utils import (
 
 
 class LightGBMClassifier(Estimator):
-    """LightGBM Classifier"""
+    """LightGBM Classifier.
+
+    Arguments:
+        boosting_type (string): Type of boosting to use. Defaults to "gbdt".
+            - 'gbdt' uses traditional Gradient Boosting Decision Tree
+            - "dart", uses Dropouts meet Multiple Additive Regression Trees
+            - "goss", uses Gradient-based One-Side Sampling
+            - "rf", uses Random Forest
+        learning_rate (float): Boosting learning rate. Defaults to 0.1.
+        n_estimators (int): Number of boosted trees to fit. Defaults to 100.
+        max_depth (int): Maximum tree depth for base learners, <=0 means no limit. Defaults to 0.
+        num_leaves (int): Maximum tree leaves for base learners. Defaults to 31.
+        min_child_samples (int): Minimum number of data needed in a child (leaf). Defaults to 20.
+        bagging_fraction (float): LightGBM will randomly select a subset of features on each iteration (tree) without resampling if this is smaller than 1.0.
+            For example, if set to 0.8, LightGBM will select 80% of features before training each tree.
+            This can be used to speed up training and deal with overfitting. Defaults to 0.9.
+        bagging_freq (int): Frequency for bagging. 0 means bagging is disabled.
+            k means perform bagging at every k iteration.
+            Every k-th iteration, LightGBM will randomly select bagging_fraction * 100 % of
+            the data to use for the next k iterations. Defaults to 0.
+        n_jobs (int or None): Number of threads to run in parallel. -1 uses all threads. Defaults to -1.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "LightGBM Classifier"
     hyperparameter_ranges = {
@@ -50,10 +72,10 @@ class LightGBMClassifier(Estimator):
         max_depth=0,
         num_leaves=31,
         min_child_samples=20,
-        n_jobs=-1,
-        random_seed=0,
         bagging_fraction=0.9,
         bagging_freq=0,
+        n_jobs=-1,
+        random_seed=0,
         **kwargs
     ):
         parameters = {
@@ -102,7 +124,7 @@ class LightGBMClassifier(Estimator):
     def _encode_categories(self, X, fit=False):
         """Encodes each categorical feature using ordinal encoding."""
         X = infer_feature_types(X)
-        cat_cols = X.ww.select("category").columns
+        cat_cols = list(X.ww.select("category", return_schema=True).columns)
         if fit:
             self.input_feature_names = list(X.columns)
         X_encoded = _rename_column_names_to_numeric(X)

@@ -10,7 +10,15 @@ from evalml.utils import (
 
 
 class SimpleImputer(Transformer):
-    """Imputes missing data according to a specified imputation strategy."""
+    """Imputes missing data according to a specified imputation strategy.
+
+    Arguments:
+        impute_strategy (string): Impute strategy to use. Valid values include "mean", "median", "most_frequent", "constant" for
+           numerical data, and "most_frequent", "constant" for object data types.
+        fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
+           Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Simple Imputer"
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
@@ -18,15 +26,6 @@ class SimpleImputer(Transformer):
     def __init__(
         self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs
     ):
-        """Initalizes an transformer that imputes missing data according to the specified imputation strategy."
-
-        Arguments:
-            impute_strategy (string): Impute strategy to use. Valid values include "mean", "median", "most_frequent", "constant" for
-               numerical data, and "most_frequent", "constant" for object data types.
-            fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
-               Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         parameters = {"impute_strategy": impute_strategy, "fill_value": fill_value}
         parameters.update(kwargs)
         imputer = SkImputer(strategy=impute_strategy, fill_value=fill_value, **kwargs)

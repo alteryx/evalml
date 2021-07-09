@@ -1,17 +1,15 @@
 import numpy as np
 import pandas as pd
+import woodwork as ww
 from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 
 from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types,
-)
+from evalml.utils import _put_into_original_order, infer_feature_types
 
 
 class OneHotEncoderMeta(ComponentBaseMeta):
-    """A version of the ComponentBaseMeta class which includes validation on an additional one-hot-encoder-specific method `categories`"""
+    """A version of the ComponentBaseMeta class which includes validation on an additional one-hot-encoder-specific method `categories`."""
 
     METHODS_TO_CHECK = ComponentBaseMeta.METHODS_TO_CHECK + [
         "categories",
@@ -20,7 +18,26 @@ class OneHotEncoderMeta(ComponentBaseMeta):
 
 
 class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
-    """One-hot encoder to encode non-numeric data."""
+    """A transformer that encodes categorical features in a one-hot numeric array.
+
+    Arguments:
+        top_n (int): Number of categories per column to encode. If None, all categories will be encoded.
+            Otherwise, the `n` most frequent will be encoded and all others will be dropped. Defaults to 10.
+        features_to_encode (list[str]): List of columns to encode. All other columns will remain untouched.
+            If None, all appropriate columns will be encoded. Defaults to None.
+        categories (list): A two dimensional list of categories, where `categories[i]` is a list of the categories
+            for the column at index `i`. This can also be `None`, or `"auto"` if `top_n` is not None. Defaults to None.
+        drop (string, list): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
+            a list specifying which categories to drop for each feature. Defaults to 'if_binary'.
+        handle_unknown (string): Whether to ignore or error for unknown categories for a feature encountered
+            during `fit` or `transform`. If either `top_n` or `categories` is used to limit the number of categories
+            per column, this must be "ignore". Defaults to "ignore".
+        handle_missing (string): Options for how to handle missing (NaN) values encountered during
+            `fit` or `transform`. If this is set to "as_category" and NaN values are within the `n` most frequent,
+            "nan" values will be encoded as their own column. If this is set to "error", any missing
+            values encountered will raise an error. Defaults to "error".
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "One Hot Encoder"
     hyperparameter_ranges = {}
@@ -36,26 +53,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         random_seed=0,
         **kwargs,
     ):
-        """Initalizes an transformer that encodes categorical features in a one-hot numeric array."
-
-        Arguments:
-            top_n (int): Number of categories per column to encode. If None, all categories will be encoded.
-                Otherwise, the `n` most frequent will be encoded and all others will be dropped. Defaults to 10.
-            features_to_encode (list[str]): List of columns to encode. All other columns will remain untouched.
-                If None, all appropriate columns will be encoded. Defaults to None.
-            categories (list): A two dimensional list of categories, where `categories[i]` is a list of the categories
-                for the column at index `i`. This can also be `None`, or `"auto"` if `top_n` is not None. Defaults to None.
-            drop (string, list): Method ("first" or "if_binary") to use to drop one category per feature. Can also be
-                a list specifying which categories to drop for each feature. Defaults to 'if_binary'.
-            handle_unknown (string): Whether to ignore or error for unknown categories for a feature encountered
-                during `fit` or `transform`. If either `top_n` or `categories` is used to limit the number of categories
-                per column, this must be "ignore". Defaults to "ignore".
-            handle_missing (string): Options for how to handle missing (NaN) values encountered during
-                `fit` or `transform`. If this is set to "as_category" and NaN values are within the `n` most frequent,
-                "nan" values will be encoded as their own column. If this is set to "error", any missing
-                values encountered will raise an error. Defaults to "error".
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         parameters = {
             "top_n": top_n,
             "features_to_encode": features_to_encode,
@@ -91,7 +88,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     @staticmethod
     def _get_cat_cols(X):
         """Get names of categorical columns in the input DataFrame."""
-        return list(X.ww.select(include=["category"]).columns)
+        return _put_into_original_order(
+            X, list(X.ww.select(include=["category"], return_schema=True).columns)
+        )
 
     def fit(self, X, y=None):
         top_n = self.parameters["top_n"]
@@ -168,10 +167,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             pd.DataFrame: Transformed data, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
         X = infer_feature_types(X)
-        original_ltypes = X.ww.schema.logical_types
         X_copy = self._handle_parameter_handle_missing(X)
 
-        X = X.drop(columns=self.features_to_encode)
+        X = X.ww.drop(columns=self.features_to_encode)
 
         # Call sklearn's transform on the categorical columns
         if len(self.features_to_encode) > 0:
@@ -184,9 +182,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             X_cat.ww.init(logical_types={c: "Boolean" for c in X_cat.columns})
             self._feature_names = X_cat.columns
 
-            X = pd.concat([X, X_cat], axis=1)
+            X = ww.utils.concat_columns([X, X_cat])
 
-        return _retain_custom_types_and_initalize_woodwork(original_ltypes, X)
+        return X
 
     def _handle_parameter_handle_missing(self, X):
         """Helper method to handle the `handle_missing` parameter."""

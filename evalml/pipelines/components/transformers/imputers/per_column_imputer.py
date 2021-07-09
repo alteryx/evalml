@@ -9,7 +9,19 @@ from evalml.utils import (
 
 
 class PerColumnImputer(Transformer):
-    """Imputes missing data according to a specified imputation strategy per column"""
+    """Imputes missing data according to a specified imputation strategy per column.
+
+    Arguments:
+        impute_strategies (dict): Column and {"impute_strategy": strategy, "fill_value":value} pairings.
+            Valid values for impute strategy include "mean", "median", "most_frequent", "constant" for numerical data,
+            and "most_frequent", "constant" for object data types. Defaults to None, which uses "most_frequent" for all columns.
+            When impute_strategy == "constant", fill_value is used to replace missing data.
+            When None, uses 0 when imputing numerical data and "missing_value" for strings or object data types.
+        default_impute_strategy (str): Impute strategy to fall back on when none is provided for a certain column.
+            Valid values include "mean", "median", "most_frequent", "constant" for numerical data,
+            and "most_frequent", "constant" for object data types. Defaults to "most_frequent".
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Per Column Imputer"
     hyperparameter_ranges = {}
@@ -21,22 +33,6 @@ class PerColumnImputer(Transformer):
         random_seed=0,
         **kwargs
     ):
-        """Initializes a transformer that imputes missing data according to the specified imputation strategy per column."
-
-        Arguments:
-            impute_strategies (dict): Column and {"impute_strategy": strategy, "fill_value":value} pairings.
-                Valid values for impute strategy include "mean", "median", "most_frequent", "constant" for numerical data,
-                and "most_frequent", "constant" for object data types. Defaults to "most_frequent" for all columns.
-
-                When impute_strategy == "constant", fill_value is used to replace missing data.
-                Defaults to 0 when imputing numerical data and "missing_value" for strings or object data types.
-
-            default_impute_strategy (str): Impute strategy to fall back on when none is provided for a certain column.
-                Valid values include "mean", "median", "most_frequent", "constant" for numerical data,
-                and "most_frequent", "constant" for object data types. Defaults to "most_frequent"
-
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         parameters = {
             "impute_strategies": impute_strategies,
             "default_impute_strategy": default_impute_strategy,

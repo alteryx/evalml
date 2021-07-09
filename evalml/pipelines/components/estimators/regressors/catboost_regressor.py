@@ -1,4 +1,5 @@
 import copy
+import warnings
 
 from skopt.space import Integer, Real
 
@@ -14,6 +15,16 @@ class CatBoostRegressor(Estimator):
     CatBoost is an open-source library and natively supports categorical features.
 
     For more information, check out https://catboost.ai/
+
+    Arguments:
+        n_estimators (float): The maximum number of trees to build. Defaults to 10.
+        eta (float): The learning rate. Defaults to 0.03.
+        max_depth (int): The maximum tree depth for base learners. Defaults to 6.
+        bootstrap_type (string): Defines the method for sampling the weights of objects. Available methods are 'Bayesian', 'Bernoulli', 'MVS'. Defaults to None.
+        silent (boolean): Whether to use the "silent" logging mode. Defaults to True.
+        allow_writing_files (boolean): Whether to allow writing snapshot files while training. Defaults to False.
+        n_jobs (int or None): Number of jobs to run in parallel. -1 uses all processes. Defaults to -1.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "CatBoost Regressor"
@@ -37,6 +48,7 @@ class CatBoostRegressor(Estimator):
         silent=False,
         allow_writing_files=False,
         random_seed=0,
+        n_jobs=-1,
         **kwargs
     ):
         parameters = {
@@ -47,6 +59,10 @@ class CatBoostRegressor(Estimator):
             "silent": silent,
             "allow_writing_files": allow_writing_files,
         }
+        if kwargs.get("thread_count", None) is not None:
+            warnings.warn(
+                "Parameter 'thread_count' will be ignored. To use parallel threads, use the 'n_jobs' parameter instead."
+            )
         parameters.update(kwargs)
 
         cb_error_msg = (
@@ -57,16 +73,18 @@ class CatBoostRegressor(Estimator):
         cb_parameters = copy.copy(parameters)
         if bootstrap_type is None:
             cb_parameters.pop("bootstrap_type")
+        cb_parameters["thread_count"] = n_jobs
         cb_regressor = catboost.CatBoostRegressor(
             **cb_parameters, random_seed=random_seed
         )
+        parameters["n_jobs"] = n_jobs
         super().__init__(
             parameters=parameters, component_obj=cb_regressor, random_seed=random_seed
         )
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
-        cat_cols = list(X.ww.select("category").columns)
+        cat_cols = list(X.ww.select("category", return_schema=True).columns)
         self.input_feature_names = list(X.columns)
         X, y = super()._manage_woodwork(X, y)
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)

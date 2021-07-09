@@ -183,8 +183,23 @@ def test_infer_feature_types_raises_invalid_schema_error():
         infer_feature_types(df, feature_types={0: "Integer"})
 
     # Raise error when user breaks the schema and then passes it to evalml
-    with pytest.raises(ValueError):
+    with pytest.raises(
+        ValueError,
+        match=(
+            "Dataframe types are not consistent with logical types. This usually happens "
+            "when a data transformation does not go through the ww accessor."
+        ),
+    ):
         df.iloc[2, 0] = 3
         df.ww.init(logical_types={0: "Integer"})
         df.iloc[2, 0] = None
         infer_feature_types(df, feature_types={0: "Integer"})
+
+    with pytest.raises(
+        ValueError,
+        match="Please initialize ww with df.ww.init()",
+    ):
+        df = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6]})
+        df.ww.init()
+        df.drop(columns=["b"], inplace=True)
+        infer_feature_types(df)

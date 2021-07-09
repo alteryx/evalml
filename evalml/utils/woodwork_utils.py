@@ -67,7 +67,16 @@ def infer_feature_types(data, feature_types=None):
         if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
             data, data.ww.schema
         ):
-            raise ValueError(ww.get_invalid_schema_message(data, data.ww.schema))
+            ww_error = ww.get_invalid_schema_message(data, data.ww.schema)
+            if "dtype mismatch" in ww_error:
+                ww_error = (
+                    "Dataframe types are not consistent with logical types. This usually happens "
+                    "when a data transformation does not go through the ww accessor. Call df.ww.init() to "
+                    f"get rid of this message. This is a more detailed message about the mismatch: {ww_error}"
+                )
+            else:
+                ww_error = f"{ww_error}. Please initialize ww with df.ww.init() to get rid of this message."
+            raise ValueError(ww_error)
         data.ww.init(schema=data.ww.schema)
         return data
 
@@ -131,3 +140,8 @@ def _convert_numeric_dataset_pandas(X, y):
         )
     y_ww = infer_feature_types(y)
     return X_ww, y_ww
+
+
+def _put_into_original_order(X, columns_to_subset):
+    """Put the columns returned by X.ww.select(...., return_schema=True) into the original order found in X."""
+    return [col_name for col_name in X.columns if col_name in columns_to_subset]

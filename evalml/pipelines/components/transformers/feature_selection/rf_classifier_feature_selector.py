@@ -7,7 +7,24 @@ from .feature_selector import FeatureSelector
 
 
 class RFClassifierSelectFromModel(FeatureSelector):
-    """Selects top features based on importance weights using a Random Forest classifier."""
+    """
+    Selects top features based on importance weights using a Random Forest classifier.
+
+    Arguments:
+        number_features (int): The maximum number of features to select.
+            If both percent_features and number_features are specified, take the greater number of features. Defaults to 0.5.
+            Defaults to None.
+        n_estimators (float): The number of trees in the forest. Defaults to 100.
+        max_depth (int): Maximum tree depth for base learners. Defaults to 6.
+        percent_features (float): Percentage of features to use.
+            If both percent_features and number_features are specified, take the greater number of features. Defaults to 0.5.
+        threshold (string or float): The threshold value to use for feature selection.
+            Features whose importance is greater or equal are kept while the others are discarded.
+            If "median", then the threshold value is the median of the feature importances.
+            A scaling factor (e.g., "1.25*mean") may also be used. Defaults to -np.inf.
+        n_jobs (int or None): Number of jobs to run in parallel. -1 uses all processes. Defaults to -1.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "RF Classifier Select From Model"
     hyperparameter_ranges = {
