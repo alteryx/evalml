@@ -3076,6 +3076,7 @@ def test_search_with_text(AutoMLTestEnv):
             ],
         }
     )
+    X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     y = [0, 1, 1, 0, 1, 0]
     automl = AutoMLSearch(
         X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False
@@ -3133,6 +3134,7 @@ def test_search_with_text_and_ensembling(
 
     if df_text:
         X = X_with_text
+        X.ww.init(logical_types={"col_1": "NaturalLanguage"})
     else:
         X = X_no_text
     if problem_type == "binary":
