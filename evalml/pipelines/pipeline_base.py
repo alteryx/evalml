@@ -23,6 +23,9 @@ from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
 from evalml.exceptions.exceptions import MissingComponentError
 from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
+from evalml.pipelines.components.transformers.transformer import (
+    TargetTransformer,
+)
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
 from evalml.utils import (
@@ -66,7 +69,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_seed = random_seed
 
         if isinstance(component_graph, list):  # Backwards compatibility
-            self.component_graph = ComponentGraph().from_list(
+            self.component_graph = self._from_list(
                 component_graph, random_seed=self.random_seed
             )
         elif isinstance(component_graph, dict):
@@ -141,7 +144,118 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     @property
     def linearized_component_graph(self):
         """A component graph in list form. Note that this is not guaranteed to be in proper component computation order"""
-        return ComponentGraph.linearized_component_graph(self.component_graph)
+        return self._linearized_component_graph(self.component_graph.component_dict)
+
+    def _linearized_component_graph(self, components):
+        """Return a list of (component name, component class) tuples from a pre-initialized component graph defined
+        as either a list or a dictionary. The component names are guaranteed to be unique.
+
+        Args:
+            components (list(ComponentBase) or Dict[str, ComponentBase]): Components in the pipeline.
+
+        Returns:
+            list((component name, ComponentBase)) - tuples with the unique component name as the first element and the
+                component class as the second element. When the input is a list, the components will be returned in
+                the order they appear in the input.
+        """
+        names = []
+        if isinstance(components, list):
+            seen = set()
+            for idx, component in enumerate(components):
+                component_class = handle_component_class(component)
+                component_name = component_class.name
+
+                if component_name in seen:
+                    component_name = f"{component_name}_{idx}"
+                seen.add(component_name)
+                names.append((component_name, component_class))
+        elif isinstance(components, dict):
+            for k, v in components.items():
+                names.append((k, handle_component_class(v[0])))
+        else:
+            for k, v in components.component_dict.items():
+                names.append((k, handle_component_class(v[0])))
+        return names
+
+    def _from_list(self, component_list, random_seed=0):
+        """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its X transformed output to the next component
+
+        Arguments:
+            component_list (list): String names or ComponentBase subclasses in
+                                   an order that represents a valid linear graph
+        """
+        component_dict = {}
+        previous_component = None
+
+        component_list = self._linearized_component_graph(component_list)
+
+        # Logic is as follows: Create the component dict for the non-target transformers as expected.
+        # If there are target transformers present, connect them together and then pass the final output
+        # to the sampler (if present) or the final estimator
+
+        target_transformers = list(
+            filter(lambda tup: issubclass(tup[1], TargetTransformer), component_list)
+        )
+        not_target_transformers = list(
+            filter(
+                lambda tup: not issubclass(tup[1], TargetTransformer), component_list
+            )
+        )
+
+        for component_name, component_class in not_target_transformers:
+            component_dict[component_name] = [component_class]
+            if previous_component is not None:
+                if "sampler" in previous_component:
+                    component_dict[component_name].extend(
+                        [f"{previous_component}.x", f"{previous_component}.y"]
+                    )
+                else:
+                    component_dict[component_name].append(f"{previous_component}.x")
+            previous_component = component_name
+
+        previous_component = None
+        for component_name, component_class in target_transformers:
+            component_dict[component_name] = [component_class]
+            if previous_component is not None:
+                component_dict[component_name].append(f"{previous_component}.y")
+            previous_component = component_name
+
+        if target_transformers:
+            sampler_index = next(
+                iter(
+                    [
+                        i
+                        for i, tup in enumerate(not_target_transformers)
+                        if "sampler" in tup[0]
+                    ]
+                ),
+                -1,
+            )
+            component_dict[not_target_transformers[sampler_index][0]].append(
+                f"{target_transformers[-1][0]}.y"
+            )
+
+        return ComponentGraph(component_dict, random_seed=random_seed)
+
+    def get_hyperparameter_ranges(self, custom_hyperparameters):
+        """
+        Returns hyperparameter ranges from all components as a dictionary.
+
+        Arguments:
+            component_graph (list(str, ComponentBase)): The component_graph of the pipeline.
+            custom_hyperparameters (dict): The custom hyperparameters to be passed to the pipeline.
+
+        Returns:
+            dict: Dictionary of hyperparameter ranges for each component in the component graph.
+        """
+        linearized_component_graph = self.component_graph.component_instances
+        hyperparameter_ranges = dict()
+        for component_name, component_class in linearized_component_graph.items():
+            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
+            if custom_hyperparameters and component_name in custom_hyperparameters:
+                component_hyperparameters.update(custom_hyperparameters[component_name])
+            hyperparameter_ranges[component_name] = component_hyperparameters
+        return hyperparameter_ranges
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
