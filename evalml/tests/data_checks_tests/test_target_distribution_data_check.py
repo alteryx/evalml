@@ -1,12 +1,12 @@
 import numpy as np
 import pandas as pd
 import pytest
+
 from scipy.stats import (
     lognorm,
     norm,
     shapiro,
 )
-
 from evalml.data_checks import (
     DataCheckAction,
     DataCheckActionCode,
@@ -15,10 +15,8 @@ from evalml.data_checks import (
     DataCheckWarning,
     TargetDistributionDataCheck,
 )
-from evalml.problem_types import (
-    handle_problem_types,
-)
-from evalml.utils.woodwork_utils import infer_feature_types
+from evalml.problem_types import handle_problem_types
+from evalml.utils import infer_feature_types
 
 target_dist_check_name = TargetDistributionDataCheck.name
 
