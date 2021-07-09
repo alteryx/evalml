@@ -1,5 +1,6 @@
 import networkx as nx
 import pandas as pd
+import woodwork as ww
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
@@ -8,24 +9,24 @@ from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    get_logger,
-    import_or_raise,
-    infer_feature_types,
-)
+from evalml.utils import get_logger, import_or_raise, infer_feature_types
 
 logger = get_logger(__file__)
 
 
 class ComponentGraph:
-    def __init__(self, component_dict=None, random_seed=0):
-        """Initializes a component graph for a pipeline as a directed acyclic graph (DAG).
+    """Component graph for a pipeline as a directed acyclic graph (DAG).
 
-        Example:
-            >>> component_dict = {'imputer': ['Imputer'], 'ohe': ['One Hot Encoder', 'imputer.x'], 'estimator_1': ['Random Forest Classifier', 'ohe.x'], 'estimator_2': ['Decision Tree Classifier', 'ohe.x'], 'final': ['Logistic Regression Classifier', 'estimator_1', 'estimator_2']}
-            >>> component_graph = ComponentGraph(component_dict)
-        """
+    Arguments:
+        component_dict (dict): A dictionary which specifies the components and edges between components that should be used to create the component graph. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+
+    Example:
+        >>> component_dict = {'imputer': ['Imputer'], 'ohe': ['One Hot Encoder', 'imputer.x'], 'estimator_1': ['Random Forest Classifier', 'ohe.x'], 'estimator_2': ['Decision Tree Classifier', 'ohe.x'], 'final': ['Logistic Regression Classifier', 'estimator_1', 'estimator_2']}
+        >>> component_graph = ComponentGraph(component_dict)
+    """
+
+    def __init__(self, component_dict=None, random_seed=0):
         self.random_seed = random_seed
         self.component_dict = component_dict or {}
         self.component_instances = {}
@@ -258,14 +259,14 @@ class ComponentGraph:
                 parent_output = infer_feature_types(parent_output)
             if parent_output is not None:
                 final_component_inputs.append(parent_output)
-        concatted = pd.concat(
-            [component_input for component_input in final_component_inputs], axis=1
+        concatted = ww.utils.concat_columns(
+            [component_input for component_input in final_component_inputs]
         )
         if needs_fitting:
             self.input_feature_names.update(
                 {self.compute_order[-1]: list(concatted.columns)}
             )
-        return infer_feature_types(concatted)
+        return concatted
 
     def predict(self, X):
         """Make predictions using selected features.
@@ -436,26 +437,11 @@ class ComponentGraph:
         if len(x_inputs) == 0:
             return_x = X
         else:
-            return_x = pd.concat(x_inputs, axis=1)
+            return_x = ww.concat_columns(x_inputs)
         return_y = y
         if y_input is not None:
             return_y = y_input
 
-        # Expected behavior: Preserve types selected by user unless one of the components updates the
-        # type for that column. This requirement is important because the StandardScaler is expected to convert
-        # Ints to Doubles and converting back to an int would lose information.
-        # In order to meet this requirement, we start off with the user selected types (X.ww.logical_types) and then
-        # update them with the types created by components (if they are different).
-        # Components are not expected to create features with the same names
-        # so the only possible clash is between the types selected by the user and the types selected by a component.
-        # Because of that, the for-loop below is sufficient.
-
-        logical_types = {}
-        logical_types.update(X.ww.logical_types)
-        for x_input in x_inputs:
-            if x_input.ww.schema is not None:
-                logical_types.update(x_input.ww.logical_types)
-        return_x = _retain_custom_types_and_initalize_woodwork(logical_types, return_x)
         if return_y is not None:
             return_y = infer_feature_types(return_y)
         return return_x, return_y

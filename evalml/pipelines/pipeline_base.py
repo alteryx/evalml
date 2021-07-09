@@ -39,7 +39,20 @@ logger = get_logger(__file__)
 
 
 class PipelineBase(ABC, metaclass=PipelineBaseMeta):
-    """Base class for all pipelines."""
+    """
+    Machine learning pipeline made out of transformers and a estimator.
+
+    Arguments:
+        component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
+            Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
+            component's index in the list. For example, the component graph
+            [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
+            ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
+        parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+             An empty dictionary or None implies using all default values for component parameters. Defaults to None.
+        custom_name (str): Custom name for the pipeline. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     problem_type = None
 
@@ -50,19 +63,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         custom_name=None,
         random_seed=0,
     ):
-        """Machine learning pipeline made out of transformers and a estimator.
-
-        Arguments:
-            component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
-                Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
-                component's index in the list. For example, the component graph
-                [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
-                ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
-            parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                 An empty dictionary or None implies using all default values for component parameters. Defaults to None.
-            custom_name (str): Custom name for the pipeline. Defaults to None.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         self.random_seed = random_seed
 
         if isinstance(component_graph, list):  # Backwards compatibility
@@ -140,7 +140,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def linearized_component_graph(self):
-        """A component graph in list form. Note: this is not guaranteed to be in proper component computation order"""
+        """A component graph in list form. Note that this is not guaranteed to be in proper component computation order"""
         return ComponentGraph.linearized_component_graph(self.component_graph)
 
     def _validate_estimator_problem_type(self):
@@ -277,6 +277,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score.
 
         Will raise a PipelineScoreError if any objectives fail.
+
         Arguments:
             X (pd.DataFrame): The feature matrix.
             y (pd.Series): The target data.

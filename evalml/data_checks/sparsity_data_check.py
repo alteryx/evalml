@@ -12,19 +12,19 @@ warning_too_unique = "Input columns ({}) for {} problem type are too sparse."
 
 
 class SparsityDataCheck(DataCheck):
-    """Checks if there are any columns with sparsely populated values in the input."""
+    """Checks if there are any columns with sparsely populated values in the input.
+
+    Arguments:
+        problem_type (str or ProblemTypes): The specific problem type to data check for.
+            'multiclass' or 'time series multiclass' is the only accepted problem type.
+        threshold (float): The threshold value, or percentage of each column's unique values,
+            below which, a column exhibits sparsity.  Should be between 0 and 1.
+        unique_count_threshold (int): The minimum number of times a unique
+            value has to be present in a column to not be considered "sparse."
+            Defaults to 10.
+    """
 
     def __init__(self, problem_type, threshold, unique_count_threshold=10):
-        """Checks each column in the input to determine the sparsity of the values in those columns.
-        Arguments:
-            problem_type (str or ProblemTypes): The specific problem type to data check for.
-                'multiclass' or 'time series multiclass' is the only accepted problem type.
-            threshold (float): The threshold value, or percentage of each column's unique values,
-                below which, a column exhibits sparsity.  Should be between 0 and 1.
-            unique_count_threshold (int): The minimum number of times a unique
-                value has to be present in a column to not be considered "sparse."
-                Default is 10.
-        """
         self.problem_type = handle_problem_types(problem_type)
         if not is_multiclass(self.problem_type):
             raise ValueError("Sparsity is only defined for multiclass problem types.")

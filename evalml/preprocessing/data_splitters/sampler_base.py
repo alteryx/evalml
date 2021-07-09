@@ -2,7 +2,11 @@ from abc import ABC, abstractmethod
 
 
 class SamplerBase(ABC):
-    """Base class for all custom samplers"""
+    """Base class for all custom samplers.
+
+    Arguments:
+        random_seed (int): The seed to use for random sampling. Defaults to 0.
+    """
 
     def __init__(self, random_seed=0):
         self.random_seed = random_seed

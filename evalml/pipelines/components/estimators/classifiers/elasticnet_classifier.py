@@ -12,6 +12,28 @@ from evalml.problem_types import ProblemTypes
 class ElasticNetClassifier(Estimator):
     """
     Elastic Net Classifier. Uses Logistic Regression with elasticnet penalty as the base estimator.
+
+    Arguments:
+        penalty ({"l1", "l2", "elasticnet", "none"}): The norm used in penalization. Defaults to "elasticnet".
+        C (float): Inverse of regularization strength. Must be a positive float. Defaults to 1.0.
+        l1_ratio (float): The mixing parameter, with 0 <= l1_ratio <= 1. Only used if penalty='elasticnet'. Setting l1_ratio=0 is equivalent to using penalty='l2',
+            while setting l1_ratio=1 is equivalent to using penalty='l1'. For 0 < l1_ratio <1, the penalty is a combination of L1 and L2. Defaults to 0.15.
+        multi_class ({"auto", "ovr", "multinomial"}): If the option chosen is "ovr", then a binary problem is fit for each label.
+            For "multinomial" the loss minimised is the multinomial loss fit across the entire probability distribution,
+            even when the data is binary. "multinomial" is unavailable when solver="liblinear".
+            "auto" selects "ovr" if the data is binary, or if solver="liblinear", and otherwise selects "multinomial". Defaults to "auto".
+        solver ({"newton-cg", "lbfgs", "liblinear", "sag", "saga"}): Algorithm to use in the optimization problem.
+            For small datasets, "liblinear" is a good choice, whereas "sag" and "saga" are faster for large ones.
+            For multiclass problems, only "newton-cg", "sag", "saga" and "lbfgs" handle multinomial loss; "liblinear" is limited to one-versus-rest schemes.
+
+            - "newton-cg", "lbfgs", "sag" and "saga" handle L2 or no penalty
+            - "liblinear" and "saga" also handle L1 penalty
+            - "saga" also supports "elasticnet" penalty
+            - "liblinear" does not support setting penalty='none'
+
+            Defaults to "saga".
+        n_jobs (int): Number of parallel threads used to run xgboost. Note that creating thread contention will significantly slow down the algorithm. Defaults to -1.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "Elastic Net Classifier"
@@ -29,9 +51,9 @@ class ElasticNetClassifier(Estimator):
         penalty="elasticnet",
         C=1.0,
         l1_ratio=0.15,
-        n_jobs=-1,
         multi_class="auto",
         solver="saga",
+        n_jobs=-1,
         random_seed=0,
         **kwargs
     ):

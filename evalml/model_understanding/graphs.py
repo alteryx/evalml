@@ -690,14 +690,25 @@ def partial_dependence(
 
     _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
-    preds = sk_partial_dependence(
-        wrapped,
-        X=X,
-        features=features,
-        percentiles=percentiles,
-        grid_resolution=grid_resolution,
-        kind=kind,
-    )
+    try:
+        preds = sk_partial_dependence(
+            wrapped,
+            X=X,
+            features=features,
+            percentiles=percentiles,
+            grid_resolution=grid_resolution,
+            kind=kind,
+        )
+    except ValueError as e:
+        if "percentiles are too close to each other" in str(e):
+            raise ValueError(
+                "The scale of these features is too small and results in"
+                "percentiles that are too close together.  Partial dependence"
+                "cannot be computed for these types of features.  Consider"
+                "scaling the features so that they differ by > 10E-7"
+            )
+        else:
+            raise e
 
     classes = None
     if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):

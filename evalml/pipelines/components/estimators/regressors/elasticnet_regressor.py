@@ -7,7 +7,17 @@ from evalml.problem_types import ProblemTypes
 
 
 class ElasticNetRegressor(Estimator):
-    """Elastic Net Regressor."""
+    """Elastic Net Regressor.
+
+    Arguments:
+        alpha (float): Constant that multiplies the penalty terms. Defaults to 0.0001.
+        l1_ratio (float): The mixing parameter, with 0 <= l1_ratio <= 1. Only used if penalty='elasticnet'. Setting l1_ratio=0 is equivalent to using penalty='l2',
+            while setting l1_ratio=1 is equivalent to using penalty='l1'. For 0 < l1_ratio <1, the penalty is a combination of L1 and L2. Defaults to 0.15.
+        max_iter (int): The maximum number of iterations. Defaults to 1000.
+        normalize (boolean): If True, the regressors will be normalized before regression by subtracting the mean
+            and dividing by the l2-norm. Defaults to False.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Elastic Net Regressor"
     hyperparameter_ranges = {

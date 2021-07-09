@@ -7,7 +7,13 @@ from .tuner_exceptions import NoParamsException
 
 
 class GridSearchTuner(Tuner):
-    """Grid Search Optimizer.
+    """Grid Search Optimizer, which generates all of the possible points to search for using a grid.
+
+    Arguments:
+        pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
+        n_points (int): The number of points to sample from along each dimension
+            defined in the ``space`` argument. Defaults to 10.
+        random_seed (int): Seed for random number generator. Unused in this class, defaults to 0.
 
     Example:
         >>> tuner = GridSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, n_points=5)
@@ -17,14 +23,6 @@ class GridSearchTuner(Tuner):
     """
 
     def __init__(self, pipeline_hyperparameter_ranges, n_points=10, random_seed=0):
-        """Generate all of the possible points to search for in the grid
-
-        Arguments:
-            pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
-            n_points (int): The number of points to sample from along each dimension
-                defined in the ``space`` argument
-            random_seed (int): Seed for random number generator. Unused in this class, defaults to 0.
-        """
         super().__init__(pipeline_hyperparameter_ranges, random_seed=random_seed)
         raw_dimensions = list()
         for dimension in self._search_space_ranges:

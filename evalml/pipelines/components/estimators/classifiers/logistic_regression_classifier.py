@@ -10,6 +10,26 @@ from evalml.problem_types import ProblemTypes
 class LogisticRegressionClassifier(Estimator):
     """
     Logistic Regression Classifier.
+
+    Arguments:
+        penalty ({"l1", "l2", "elasticnet", "none"}): The norm used in penalization. Defaults to "l2".
+        C (float): Inverse of regularization strength. Must be a positive float. Defaults to 1.0.
+        multi_class ({"auto", "ovr", "multinomial"}): If the option chosen is "ovr", then a binary problem is fit for each label.
+            For "multinomial" the loss minimised is the multinomial loss fit across the entire probability distribution,
+            even when the data is binary. "multinomial" is unavailable when solver="liblinear".
+            "auto" selects "ovr" if the data is binary, or if solver="liblinear", and otherwise selects "multinomial". Defaults to "auto".
+        solver ({"newton-cg", "lbfgs", "liblinear", "sag", "saga"}): Algorithm to use in the optimization problem.
+            For small datasets, "liblinear" is a good choice, whereas "sag" and "saga" are faster for large ones.
+            For multiclass problems, only "newton-cg", "sag", "saga" and "lbfgs" handle multinomial loss; "liblinear" is limited to one-versus-rest schemes.
+
+            - "newton-cg", "lbfgs", "sag" and "saga" handle L2 or no penalty
+            - "liblinear" and "saga" also handle L1 penalty
+            - "saga" also supports "elasticnet" penalty
+            - "liblinear" does not support setting penalty='none'
+
+            Defaults to "lbfgs".
+        n_jobs (int): Number of parallel threads used to run xgboost. Note that creating thread contention will significantly slow down the algorithm. Defaults to -1.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "Logistic Regression Classifier"
@@ -29,9 +49,9 @@ class LogisticRegressionClassifier(Estimator):
         self,
         penalty="l2",
         C=1.0,
-        n_jobs=-1,
         multi_class="auto",
         solver="lbfgs",
+        n_jobs=-1,
         random_seed=0,
         **kwargs
     ):

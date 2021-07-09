@@ -10,7 +10,12 @@ from evalml.utils import (
 
 
 class StandardScaler(Transformer):
-    """Standardize features: removes mean and scales to unit variance."""
+    """A transformer that standardizes input features by removing the mean and scaling to unit variance.
+
+    Arguments:
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+
+    """
 
     name = "Standard Scaler"
     hyperparameter_ranges = {}

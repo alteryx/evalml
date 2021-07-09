@@ -16,6 +16,20 @@ class ARIMARegressor(Estimator):
 
     Currently ARIMARegressor isn't supported via conda install. It's recommended that it be installed via PyPI.
 
+    Arguments:
+        date_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
+        trend (str): Controls the deterministic trend. Options are ['n', 'c', 't', 'ct'] where 'c' is a constant term,
+            't' indicates a linear trend, and 'ct' is both. Can also be an iterable when defining a polynomial, such
+            as [1, 1, 0, 1].
+        start_p (int): Minimum Autoregressive order. Defaults to 2.
+        d (int): Minimum Differencing degree. Defaults to 0.
+        start_q (int): Minimum Moving Average order. Defaults to 2.
+        max_p (int): Maximum Autoregressive order. Defaults to 5.
+        max_d (int): Maximum Differencing degree. Defaults to 2.
+        max_q (int): Maximum Moving Average order. Defaults to 5.
+        seasonal (boolean): Whether to fit a seasonal model to ARIMA. Defaults to True.
+        n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "ARIMA Regressor"
@@ -46,21 +60,6 @@ class ARIMARegressor(Estimator):
         random_seed=0,
         **kwargs,
     ):
-        """
-        Arguments:
-            date_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
-            trend (str): Controls the deterministic trend. Options are ['n', 'c', 't', 'ct'] where 'c' is a constant term,
-                't' indicates a linear trend, and 'ct' is both. Can also be an iterable when defining a polynomial, such
-                as [1, 1, 0, 1].
-            start_p (int): Minimum Autoregressive order.
-            d (int): Minimum Differencing degree.
-            start_q (int): Minimum Moving Average order.
-            max_p (int): Maximum Autoregressive order.
-            max_d (int): Maximum Differencing degree.
-            max_q (int): Maximum Moving Average order.
-            seasonal (bool): Whether to fit a seasonal model to ARIMA.
-        """
-
         parameters = {
             "trend": trend,
             "start_p": start_p,

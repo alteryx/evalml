@@ -1,8 +1,5 @@
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types,
-)
+from evalml.utils import _put_into_original_order, infer_feature_types
 
 
 def _extract_year(col, encode_as_categories=False):
@@ -59,7 +56,16 @@ def _extract_hour(col, encode_as_categories=False):
 
 
 class DateTimeFeaturizer(Transformer):
-    """Transformer that can automatically featurize DateTime columns."""
+    """
+    Transformer that can automatically extract features from datetime columns.
+
+    Arguments:
+        features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour". Defaults to None.
+        encode_as_categories (bool): Whether day-of-week and month features should be encoded as pandas "category" dtype.
+            This allows OneHotEncoders to encode these features. Defaults to False.
+        date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "DateTime Featurization Component"
     hyperparameter_ranges = {}
@@ -78,15 +84,6 @@ class DateTimeFeaturizer(Transformer):
         random_seed=0,
         **kwargs,
     ):
-        """Extracts features from DateTime columns
-
-        Arguments:
-            features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour".
-            encode_as_categories (bool): Whether day-of-week and month features should be encoded as pandas "category" dtype.
-                This allows OneHotEncoders to encode these features.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-            date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
-        """
         if features_to_extract is None:
             features_to_extract = ["year", "month", "day_of_week", "hour"]
         invalid_features = set(features_to_extract) - set(
@@ -114,7 +111,8 @@ class DateTimeFeaturizer(Transformer):
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
-        self._date_time_col_names = X.ww.select("datetime").columns.tolist()
+        date_cols = list(X.ww.select("datetime", return_schema=True).columns)
+        self._date_time_col_names = _put_into_original_order(X, date_cols)
         return self
 
     def transform(self, X, y=None):
@@ -129,7 +127,6 @@ class DateTimeFeaturizer(Transformer):
         """
         X = infer_feature_types(X)
         X = X.ww.copy()
-        original_ltypes = X.ww.schema.logical_types
         features_to_extract = self.parameters["features_to_extract"]
         if len(features_to_extract) == 0:
             return X
@@ -139,12 +136,11 @@ class DateTimeFeaturizer(Transformer):
                 features, categories = self._function_mappings[feature](
                     X[col_name], self.encode_as_categories
                 )
-                X[name] = features
+                X.ww[name] = features
                 if categories:
                     self._categories[name] = categories
-        return _retain_custom_types_and_initalize_woodwork(
-            original_ltypes, X.drop(columns=self._date_time_col_names)
-        )
+        X.ww.drop(columns=self._date_time_col_names, inplace=True)
+        return X
 
     def get_feature_names(self):
         """Gets the categories of each datetime feature.

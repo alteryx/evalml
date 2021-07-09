@@ -13,7 +13,20 @@ from evalml.utils import (
 class TimeSeriesRegressionPipeline(
     RegressionPipeline, metaclass=TimeSeriesPipelineBaseMeta
 ):
-    """Pipeline base class for time series regression problems."""
+    """Pipeline base class for time series regression problems.
+
+    Arguments:
+        component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
+            Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
+            component's index in the list. For example, the component graph
+            [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
+            ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
+        parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+             An empty dictionary {} implies using all default values for component parameters. Pipeline-level
+             parameters such as date_index, gap, and max_delay must be specified with the "pipeline" key. For example:
+             Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
@@ -24,20 +37,6 @@ class TimeSeriesRegressionPipeline(
         custom_name=None,
         random_seed=0,
     ):
-        """Machine learning pipeline for time series regression problems made out of transformers and a classifier.
-
-        Arguments:
-            component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
-                Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
-                component's index in the list. For example, the component graph
-                [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
-                ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
-            parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                 An empty dictionary {} implies using all default values for component parameters. Pipeline-level
-                 parameters such as date_index, gap, and max_delay must be specified with the "pipeline" key. For example:
-                 Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         if not parameters or "pipeline" not in parameters:
             raise ValueError(
                 "date_index, gap, and max_delay parameters cannot be omitted from the parameters dict. "

@@ -1,5 +1,7 @@
 from abc import abstractmethod
 
+from pandas.core.indexes import range
+
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
@@ -16,6 +18,11 @@ class Estimator(ComponentBase):
     `fit`, `transform`, `fit_transform` and other methods in this class if appropriate.
 
     To see some examples, check out the definitions of any Estimator component.
+
+    Arguments:
+        parameters (dict): Dictionary of parameters for the component. Defaults to None.
+        component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     # We can't use the inspect module to dynamically determine this because of issue 1582
@@ -62,6 +69,8 @@ class Estimator(ComponentBase):
         """
         try:
             X = infer_feature_types(X)
+            if isinstance(X.columns, range.RangeIndex):
+                X.columns = [x for x in X.columns]
             predictions = self._component_obj.predict(X)
         except AttributeError:
             raise MethodPropertyNotFoundError(

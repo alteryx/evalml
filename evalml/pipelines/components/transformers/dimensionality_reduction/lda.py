@@ -10,18 +10,18 @@ from evalml.utils import (
 
 
 class LinearDiscriminantAnalysis(Transformer):
-    """Reduces the number of features by using Linear Discriminant Analysis"""
+    """
+    Reduces the number of features by using Linear Discriminant Analysis.
+
+    Arguments:
+        n_components (int): The number of features to maintain after computation. Defaults to None.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
 
     name = "Linear Discriminant Analysis Transformer"
     hyperparameter_ranges = {}
 
     def __init__(self, n_components=None, random_seed=0, **kwargs):
-        """Initalizes an transformer that reduces the number of features using linear discriminant analysis."
-
-        Arguments:
-            n_components (int): The number of features to maintain after computation. Defaults to None.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-        """
         if n_components and n_components < 1:
             raise ValueError(
                 "Invalid number of compponents for Linear Discriminant Analysis"

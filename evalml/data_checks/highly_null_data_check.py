@@ -9,16 +9,15 @@ from evalml.utils import infer_feature_types
 
 
 class HighlyNullDataCheck(DataCheck):
-    """Checks if there are any highly-null columns and rows in the input."""
+    """Checks if there are any highly-null columns and rows in the input.
+
+    Arguments:
+        pct_null_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
+            that column/row will be considered highly-null. Defaults to 0.95.
+
+    """
 
     def __init__(self, pct_null_threshold=0.95):
-        """Checks if there are any highly-null columns and rows in the input.
-
-        Arguments:
-            pct_null_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
-                that column/row will be considered highly-null. Defaults to 0.95.
-
-        """
         if pct_null_threshold < 0 or pct_null_threshold > 1:
             raise ValueError(
                 "pct_null_threshold must be a float between 0 and 1, inclusive."

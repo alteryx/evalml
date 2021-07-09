@@ -27,6 +27,10 @@ class DefaultDataChecks(DataChecks):
         - `NaturalLanguageNaNDataCheck`
         - `TargetDistributionDataCheck`
 
+    Arguments:
+        problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
+        objective (str or ObjectiveBase): Name or instance of the objective class.
+        n_splits (int): The number of splits as determined by the data splitter being used. Defaults to 3.
     """
 
     _DEFAULT_DATA_CHECK_CLASSES = [
@@ -40,14 +44,6 @@ class DefaultDataChecks(DataChecks):
     ]
 
     def __init__(self, problem_type, objective, n_splits=3):
-        """
-        A collection of basic data checks.
-
-        Arguments:
-            problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
-            objective (str or ObjectiveBase): Name or instance of the objective class.
-            n_splits (int): The number of splits as determined by the data splitter being used.
-        """
         if handle_problem_types(problem_type) in [
             ProblemTypes.REGRESSION,
             ProblemTypes.TIME_SERIES_REGRESSION,

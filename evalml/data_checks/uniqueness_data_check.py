@@ -20,18 +20,17 @@ warning_too_unique = "Input columns ({}) for {} problem type are too unique."
 
 class UniquenessDataCheck(DataCheck):
     """Checks if there are any columns in the input that are either too unique for classification problems
-    or not unique enough for regression problems."""
+    or not unique enough for regression problems.
+
+    Arguments:
+        problem_type (str or ProblemTypes): The specific problem type to data check for.
+            e.g. 'binary', 'multiclass', 'regression, 'time series regression'
+        threshold(float): The threshold to set as an upper bound on uniqueness for classification type problems
+            or lower bound on for regression type problems.  Defaults to 0.50.
+
+    """
 
     def __init__(self, problem_type, threshold=0.50):
-        """Checks each column in the input to determine the uniqueness of the values in those columns.
-
-        Arguments:
-            problem_type (str or ProblemTypes): The specific problem type to data check for.
-                e.g. 'binary', 'multiclass', 'regression, 'time series regression'
-            threshold(float): The threshold to set as an upper bound on uniqueness for classification type problems
-                or lower bound on for regression type problems.  Defaults to 0.50.
-
-        """
         self.problem_type = handle_problem_types(problem_type)
         if threshold < 0 or threshold > 1:
             raise ValueError("threshold must be a float between 0 and 1, inclusive.")
