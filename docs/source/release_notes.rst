@@ -9,6 +9,7 @@ Release Notes
         * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
         * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
     * Changes
+        * Updated XGBoost dependency to ``>=1.4.0`` :pr:`2484`
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
     * Testing Changes
