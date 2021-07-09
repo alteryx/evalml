@@ -173,7 +173,9 @@ class InvalidTargetDataCheck(DataCheck):
             if value_counts.min() <= 1:
                 least_populated = value_counts[value_counts <= 1]
                 details = {
-                    "least_populated_class_labels": least_populated.index.tolist()
+                    "least_populated_class_labels": sorted(
+                        least_populated.index.tolist()
+                    )
                 }
                 results["errors"].append(
                     DataCheckError(
