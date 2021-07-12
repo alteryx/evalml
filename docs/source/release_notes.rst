@@ -8,7 +8,9 @@ Release Notes
     * Fixes
         * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
         * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
+        * Updated to work with Pandas 1.3.0 :pr:`2442`
     * Changes
+        * Added a ``DeprecationWarning`` about deprecating the list API for ``ComponentGraph`` :pr:`2488`
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
     * Testing Changes

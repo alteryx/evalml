@@ -1,3 +1,5 @@
+import warnings
+
 import networkx as nx
 import pandas as pd
 import woodwork as ww
@@ -101,6 +103,10 @@ class ComponentGraph:
             component_list (list): String names or ComponentBase subclasses in
                                    an order that represents a valid linear graph
         """
+        warnings.warn(
+            "ComponentGraph.from_list will be deprecated in the next release. Please use a dictionary to specify your graph instead.",
+            DeprecationWarning,
+        )
         component_dict = {}
         previous_component = None
 
