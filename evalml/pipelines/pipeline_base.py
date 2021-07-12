@@ -3,6 +3,7 @@ import inspect
 import os
 import sys
 import traceback
+import warnings
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
@@ -67,9 +68,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_seed = random_seed
 
         if isinstance(component_graph, list):  # Backwards compatibility
-            self.component_graph = ComponentGraph().from_list(
-                component_graph, random_seed=self.random_seed
-            )
+            with warnings.catch_warnings():
+                warnings.filterwarnings(
+                    "ignore",
+                    message="ComponentGraph.from_list will be deprecated in the next release. Please use a dictionary to specify your graph instead.",
+                )
+                self.component_graph = ComponentGraph().from_list(
+                    component_graph, random_seed=self.random_seed
+                )
         elif isinstance(component_graph, dict):
             self.component_graph = ComponentGraph(
                 component_dict=component_graph, random_seed=self.random_seed
