@@ -13,6 +13,8 @@ class ColumnSelector(Transformer):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
+    _supported_by_list_API = True
+
     def __init__(self, columns=None, random_seed=0, **kwargs):
         if columns and not isinstance(columns, list):
             raise ValueError(
