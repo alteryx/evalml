@@ -64,19 +64,35 @@ Submodules
 {{ obj.type|title }} Contents
 {{ "-" * obj.type|length }}---------
 
-{% set visible_classes = visible_children|selectattr("type", "equalto", "class")|list %}
-{% set visible_functions = visible_children|selectattr("type", "equalto", "function")|list %}
-{% set visible_attributes = visible_children|selectattr("type", "equalto", "data")|list %}
+{% set visible_classes = visible_children|selectattr("type", "equalto", "class")|list|sort(attribute="id") %}
+{% set visible_functions = visible_children|selectattr("type", "equalto", "function")|list|sort(attribute="id") %}
+{% set visible_attributes = visible_children|selectattr("type", "equalto", "data")|list|sort(attribute="id") %}
+{% set visible_exceptions = visible_children|selectattr("type", "equalto", "exception")|list|sort(attribute="id") %}
 {% if "show-module-summary" in autoapi_options and (visible_classes or visible_functions) %}
 {% block classes scoped %}
 {% if visible_classes %}
-Classes
-~~~~~~~
+Classes Summary
+~~~~~~~~~~~~~~~
 
 .. autoapisummary::
 
 {% for klass in visible_classes %}
    {{ klass.id }}
+{% endfor %}
+
+
+{% endif %}
+{% endblock %}
+
+{% block exceptions scoped %}
+{% if visible_exceptions %}
+Exceptions Summary
+~~~~~~~~~~~~~~~~~~
+
+.. autoapisummary::
+
+{% for klass in visible_exceptions %}
+   `{{ klass.id }}`
 {% endfor %}
 
 
@@ -89,6 +105,7 @@ Functions
 ~~~~~~~~~
 
 .. autoapisummary::
+   :nosignatures:
 
 {% for function in visible_functions %}
    {{ function.id }}
@@ -100,8 +117,8 @@ Functions
 
 {% block attributes scoped %}
 {% if visible_attributes %}
-Attributes
-~~~~~~~~~~
+Attributes Summary
+~~~~~~~~~~~~~~~~~~~
 
 .. autoapisummary::
 
@@ -113,7 +130,9 @@ Attributes
 {% endif %}
 {% endblock %}
 {% endif %}
-{% for obj_item in visible_children %}
+Contents
+~~~~~~~~~~~~~~~~~~~
+{% for obj_item in visible_children|sort(attribute="id") %}
 {{ obj_item.render()|indent(0) }}
 {% endfor %}
 {% endif %}

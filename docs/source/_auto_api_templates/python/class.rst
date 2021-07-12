@@ -45,11 +45,10 @@
       :header-rows: 0
 
    {% for attribute in visible_attributes|sort(attribute='name') %}
+      * - **{{ attribute.name }}**
    {% if attribute.docstring|length > 0 %}
-      * - {{ attribute.name }}
         - {{ attribute.docstring.replace("\n", "") }}
    {% else %}
-      * - {{ attribute.name }}
         - {{ attribute.value|string }}
    {% endif %}
    {% endfor %}
