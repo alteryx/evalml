@@ -1,3 +1,4 @@
+import warnings
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
@@ -287,6 +288,16 @@ def test_from_list_repeat_component():
     )
     assert component_graph.get_component("One Hot Encoder").parameters["top_n"] == 2
     assert component_graph.get_component("One Hot Encoder_2").parameters["top_n"] == 11
+
+
+def test_component_graph_from_list_deprecation_warning():
+    component_list = ["Imputer", "One Hot Encoder", RandomForestClassifier]
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        ComponentGraph.from_list(component_list)
+        assert len(w) == 1
+        assert issubclass(w[-1].category, DeprecationWarning)
+        assert "deprecated" in str(w[-1].message)
 
 
 def test_instantiate_with_parameters(example_graph):
