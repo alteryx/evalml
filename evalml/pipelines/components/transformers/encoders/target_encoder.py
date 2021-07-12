@@ -31,7 +31,7 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     name = "Target Encoder"
     hyperparameter_ranges = {}
-    _supported_by_list_API = False
+    _supported_by_list_API = True
 
     def __init__(
         self,
