@@ -89,10 +89,12 @@ class ClassImbalanceDataCheck(DataCheck):
             error_msg = "The number of instances of these targets is less than 2 * the number of cross folds = {} instances: {}"
             DataCheck._add_message(
                 DataCheckError(
-                    message=error_msg.format(self.cv_folds, below_threshold_values),
+                    message=error_msg.format(
+                        self.cv_folds, sorted(below_threshold_values)
+                    ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
-                    details={"target_values": below_threshold_values},
+                    details={"target_values": sorted(below_threshold_values)},
                 ),
                 results,
             )
