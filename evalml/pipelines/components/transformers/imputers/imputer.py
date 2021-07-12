@@ -28,6 +28,7 @@ class Imputer(Transformer):
     _valid_numeric_impute_strategies = set(
         ["mean", "median", "most_frequent", "constant"]
     )
+    _supported_by_list_API = True
 
     def __init__(
         self,

@@ -18,6 +18,8 @@ class FeatureSelector(Transformer):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
+    _supported_by_list_API = True
+
     def get_names(self):
         """Get names of selected features.
 
