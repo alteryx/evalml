@@ -29,7 +29,8 @@ class Estimator(ComponentBase):
     predict_uses_y = False
     model_family = ModelFamily.NONE
     _supported_by_list_API = True
-
+    _returns_features = True
+    _returns_targets = False
     @property
     @classmethod
     @abstractmethod
