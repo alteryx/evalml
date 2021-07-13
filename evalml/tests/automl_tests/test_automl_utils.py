@@ -291,37 +291,6 @@ def test_get_best_sampler_for_data_sampler_method(
             assert name_output == "SMOTEN Oversampler"
 
 
-def test_get_hyperparameter_ranges():
-    pipeline = BinaryClassificationPipeline(
-        component_graph=["Imputer", "Random Forest Classifier"]
-    )
-    custom_hyperparameters = {
-        "One Hot Encoder": {"top_n": 3},
-        "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])},
-        "Random Forest Classifier": {"n_estimators": Integer(150, 160)},
-    }
-
-    algo_ranges = {
-        "Imputer": {
-            "categorical_impute_strategy": ["most_frequent"],
-            "numeric_impute_strategy": Categorical(
-                categories=("most_frequent", "mean"), prior=None
-            ),
-        },
-        "Random Forest Classifier": {
-            "n_estimators": Integer(
-                low=150, high=160, prior="uniform", transform="identity"
-            ),
-            "max_depth": Integer(low=1, high=10, prior="uniform", transform="identity"),
-        },
-    }
-    hyper_ranges = pipeline.get_hyperparameter_ranges(
-        pipeline.component_graph, custom_hyperparameters
-    )
-
-    assert algo_ranges == hyper_ranges
-
-
 @pytest.mark.parametrize(
     "problem_type,estimator",
     [

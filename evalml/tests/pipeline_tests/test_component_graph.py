@@ -240,64 +240,64 @@ def test_order_x_and_y():
     assert component_graph.compute_order == ["Imputer", "OHE", "Random Forest"]
 
 
-def test_from_list():
-    component_list = ["Imputer", "One Hot Encoder", RandomForestClassifier]
+# def test_from_list():
+#     component_list = ["Imputer", "One Hot Encoder", RandomForestClassifier]
 
-    component_graph = ComponentGraph.from_list(component_list)
+#     component_graph = ComponentGraph.from_list(component_list)
 
-    assert len(component_graph.component_dict) == 3
-    assert component_graph.get_component("Imputer") == Imputer
-    assert component_graph.get_component("One Hot Encoder") == OneHotEncoder
-    assert (
-        component_graph.get_component("Random Forest Classifier")
-        == RandomForestClassifier
-    )
+#     assert len(component_graph.component_dict) == 3
+#     assert component_graph.get_component("Imputer") == Imputer
+#     assert component_graph.get_component("One Hot Encoder") == OneHotEncoder
+#     assert (
+#         component_graph.get_component("Random Forest Classifier")
+#         == RandomForestClassifier
+#     )
 
-    expected_order = ["Imputer", "One Hot Encoder", "Random Forest Classifier"]
-    assert component_graph.compute_order == expected_order
-    assert component_graph.component_dict == {
-        "Imputer": [Imputer],
-        "One Hot Encoder": [OneHotEncoder, "Imputer.x"],
-        "Random Forest Classifier": [RandomForestClassifier, "One Hot Encoder.x"],
-    }
+#     expected_order = ["Imputer", "One Hot Encoder", "Random Forest Classifier"]
+#     assert component_graph.compute_order == expected_order
+#     assert component_graph.component_dict == {
+#         "Imputer": [Imputer],
+#         "One Hot Encoder": [OneHotEncoder, "Imputer.x"],
+#         "Random Forest Classifier": [RandomForestClassifier, "One Hot Encoder.x"],
+#     }
 
-    bad_component_list = ["Imputer", "Fake Estimator"]
-    with pytest.raises(MissingComponentError, match="was not found"):
-        ComponentGraph.from_list(bad_component_list)
-
-
-def test_from_list_repeat_component():
-    component_list = [
-        "Imputer",
-        "One Hot Encoder",
-        "One Hot Encoder",
-        RandomForestClassifier,
-    ]
-    component_graph = ComponentGraph.from_list(component_list)
-
-    expected_order = [
-        "Imputer",
-        "One Hot Encoder",
-        "One Hot Encoder_2",
-        "Random Forest Classifier",
-    ]
-    assert component_graph.compute_order == expected_order
-
-    component_graph.instantiate(
-        {"One Hot Encoder": {"top_n": 2}, "One Hot Encoder_2": {"top_n": 11}}
-    )
-    assert component_graph.get_component("One Hot Encoder").parameters["top_n"] == 2
-    assert component_graph.get_component("One Hot Encoder_2").parameters["top_n"] == 11
+#     bad_component_list = ["Imputer", "Fake Estimator"]
+#     with pytest.raises(MissingComponentError, match="was not found"):
+#         ComponentGraph.from_list(bad_component_list)
 
 
-def test_component_graph_from_list_deprecation_warning():
-    component_list = ["Imputer", "One Hot Encoder", RandomForestClassifier]
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
-        ComponentGraph.from_list(component_list)
-        assert len(w) == 1
-        assert issubclass(w[-1].category, DeprecationWarning)
-        assert "deprecated" in str(w[-1].message)
+# def test_from_list_repeat_component():
+#     component_list = [
+#         "Imputer",
+#         "One Hot Encoder",
+#         "One Hot Encoder",
+#         RandomForestClassifier,
+#     ]
+#     component_graph = ComponentGraph.from_list(component_list)
+
+#     expected_order = [
+#         "Imputer",
+#         "One Hot Encoder",
+#         "One Hot Encoder_2",
+#         "Random Forest Classifier",
+#     ]
+#     assert component_graph.compute_order == expected_order
+
+#     component_graph.instantiate(
+#         {"One Hot Encoder": {"top_n": 2}, "One Hot Encoder_2": {"top_n": 11}}
+#     )
+#     assert component_graph.get_component("One Hot Encoder").parameters["top_n"] == 2
+#     assert component_graph.get_component("One Hot Encoder_2").parameters["top_n"] == 11
+
+
+# def test_component_graph_from_list_deprecation_warning():
+#     component_list = ["Imputer", "One Hot Encoder", RandomForestClassifier]
+#     with warnings.catch_warnings(record=True) as w:
+#         warnings.simplefilter("always")
+#         ComponentGraph.from_list(component_list)
+#         assert len(w) == 1
+#         assert issubclass(w[-1].category, DeprecationWarning)
+#         assert "deprecated" in str(w[-1].message)
 
 
 def test_instantiate_with_parameters(example_graph):

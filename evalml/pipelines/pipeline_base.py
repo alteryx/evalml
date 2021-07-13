@@ -69,7 +69,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_seed = random_seed
 
         if isinstance(component_graph, list):  # Backwards compatibility
-            self.component_graph = self._from_list(
+            self.component_graph = self._make_component_graph_from_list(
                 component_graph, random_seed=self.random_seed
             )
         elif isinstance(component_graph, dict):
@@ -177,6 +177,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 names.append((k, handle_component_class(v[0])))
         return names
 
+    def _make_component_graph_from_list(self, component_list, random_seed=0):
+        for component in component_list:
+            component_class = handle_component_class(component)
+            if not component_class._supported_by_list_API:
+                raise ValueError("This component cannot be handled")
+        return self._from_list(component_list, random_seed)
+
     def _from_list(self, component_list, random_seed=0):
         """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its X transformed output to the next component
 
@@ -248,9 +255,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             dict: Dictionary of hyperparameter ranges for each component in the component graph.
         """
-        linearized_component_graph = self.component_graph.component_instances
         hyperparameter_ranges = dict()
-        for component_name, component_class in linearized_component_graph.items():
+        for (
+            component_name,
+            component_class,
+        ) in self.component_graph.component_instances.items():
             component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
             if custom_hyperparameters and component_name in custom_hyperparameters:
                 component_hyperparameters.update(custom_hyperparameters[component_name])
