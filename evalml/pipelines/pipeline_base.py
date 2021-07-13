@@ -123,8 +123,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
         component_graph = [
-            handle_component_class(component_class)
-            for _, component_class in copy.copy(self.linearized_component_graph)
+            type(self.component_graph.component_instances[component])
+            for component in copy.copy(self.component_graph.component_instances)
         ]
         if len(component_graph) == 0:
             return "Empty Pipeline"
