@@ -131,6 +131,56 @@ def _get_preprocessing_components(
     return pp_components
 
 
+from evalml.pipelines.components.transformers.transformer import (
+    TargetTransformer,
+)
+
+def _make_component_graph_from_preprocessing(component_list):
+    # Logic is as follows: Create the component dict for the non-target transformers as expected.
+    # If there are target transformers present, connect them together and then pass the final output
+    # to the sampler (if present) or the final estimator
+    component_dict = {}
+    previous_component = None
+
+    target_transformers = list(
+        filter(lambda tup: issubclass(tup[1], TargetTransformer), component_list)
+    )
+    not_target_transformers = list(
+        filter(
+            lambda tup: not issubclass(tup[1], TargetTransformer), component_list
+        )
+    )
+    for component_name, component_class in not_target_transformers:
+        component_dict[component_name] = [component_class]
+        if previous_component is not None:
+            if "sampler" in previous_component:
+                component_dict[component_name].extend(
+                    [f"{previous_component}.x", f"{previous_component}.y"]
+                )
+            else:
+                component_dict[component_name].append(f"{previous_component}.x")
+        previous_component = component_name
+    previous_component = None
+    for component_name, component_class in target_transformers:
+        component_dict[component_name] = [component_class]
+        if previous_component is not None:
+            component_dict[component_name].append(f"{previous_component}.y")
+        previous_component = component_name
+    if target_transformers:
+        sampler_index = next(
+            iter(
+                [
+                    i
+                    for i, tup in enumerate(not_target_transformers)
+                    if "sampler" in tup[0]
+                ]
+            ),
+            -1,
+        )
+        component_dict[not_target_transformers[sampler_index][0]].append(
+            f"{target_transformers[-1][0]}.y"
+        )
+    return cls(component_dict, random_seed=random_seed)
 def _get_pipeline_base_class(problem_type):
     """Returns pipeline base class for problem_type"""
     if problem_type == ProblemTypes.BINARY:
