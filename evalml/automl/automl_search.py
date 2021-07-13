@@ -492,10 +492,10 @@ class AutoMLSearch:
                 else None
             )
             index_columns = list(
-                self.X_train.ww.select(["index"], return_schema=True).columns
+                self.X_train.ww.select("index", return_schema=True).columns
             )
             unknown_columns = list(
-                self.X_train.ww.select(["Unknown"], return_schema=True).columns
+                self.X_train.ww.select("Unknown", return_schema=True).columns
             )
             index_and_unknown_columns = _put_into_original_order(
                 self.X_train, index_columns + unknown_columns
