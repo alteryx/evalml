@@ -263,6 +263,7 @@ def test_pipeline_limits(
         problem_type=automl_type,
         optimize_thresholds=False,
         max_time=1,
+        max_iterations=5,
     )
     with env.test_context(score_return_value=score_value):
         automl.search()
@@ -584,7 +585,7 @@ def test_automl_algorithm(
 ):
     X, y = X_y_binary
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=5)
     mock_algo_next_batch.side_effect = StopIteration("that's all, folks")
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1.0, "F1": 0.5}):
@@ -713,7 +714,9 @@ def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
 def test_automl_serialization_protocol(mock_cloudpickle_dump, tmpdir, X_y_binary):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir), "automl.pkl")
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", n_jobs=1)
+    automl = AutoMLSearch(
+        X_train=X, y_train=y, problem_type="binary", max_iterations=5, n_jobs=1
+    )
 
     automl.save(path)
     assert len(mock_cloudpickle_dump.call_args_list) == 1
@@ -1675,7 +1678,9 @@ def test_catch_keyboard_interrupt_baseline(
     mock_future_get_result.side_effect = KeyboardInterruptOnKthPipeline(
         k=when_to_interrupt, starting_index=1
     )
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", objective="f1")
+    automl = AutoMLSearch(
+        X_train=X, y_train=y, problem_type="binary", max_iterations=5, objective="f1"
+    )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"F1": 1.0}):
         automl.search()
@@ -1726,6 +1731,7 @@ def test_catch_keyboard_interrupt(
         X_train=X,
         y_train=y,
         problem_type="binary",
+        max_iterations=5,
         objective="f1",
         optimize_thresholds=False,
     )
@@ -2495,6 +2501,7 @@ def test_early_stopping_negative(X_y_binary):
             y_train=y,
             problem_type="binary",
             objective="AUC",
+            max_iterations=5,
             allowed_model_families=["linear_model"],
             patience=-1,
             random_seed=0,
@@ -2505,6 +2512,7 @@ def test_early_stopping_negative(X_y_binary):
             y_train=y,
             problem_type="binary",
             objective="AUC",
+            max_iterations=5,
             allowed_model_families=["linear_model"],
             patience=1,
             tolerance=1.5,
@@ -2519,6 +2527,7 @@ def test_early_stopping(caplog, logistic_regression_binary_pipeline_class, X_y_b
         y_train=y,
         problem_type="binary",
         objective="AUC",
+        max_iterations=5,
         allowed_model_families=["linear_model"],
         patience=2,
         tolerance=0.05,

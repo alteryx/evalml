@@ -1027,6 +1027,7 @@ def test_automl_component_graphs_search(
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
+        max_iterations=5,
         problem_type=problem_type,
         start_iteration_callback=start_iteration_callback,
         allowed_component_graphs=component_graph,

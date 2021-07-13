@@ -61,7 +61,6 @@ def test_random_seed(X_y_regression):
         y_train=y,
         problem_type="regression",
         objective="R2",
-        max_batches=1,
         random_seed=0,
         n_jobs=1,
     )
@@ -72,7 +71,6 @@ def test_random_seed(X_y_regression):
         y_train=y,
         problem_type="regression",
         objective="R2",
-        max_batches=1,
         random_seed=0,
         n_jobs=1,
     )
