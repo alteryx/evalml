@@ -9,6 +9,7 @@ Release Notes
         * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
         * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
         * Updated to work with Pandas 1.3.0 :pr:`2442`
+        * Updated to work with sktime 0.7.0 :pr:`2499`
     * Changes
         * Updated XGBoost dependency to ``>=1.4.2`` :pr:`2484`, :pr:`2498`
         * Added a ``DeprecationWarning`` about deprecating the list API for ``ComponentGraph`` :pr:`2488`
