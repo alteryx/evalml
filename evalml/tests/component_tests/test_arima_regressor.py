@@ -265,8 +265,8 @@ def test_predict_ts_without_X_error(ts_data):
         clf_.predict(y=y)
 
 
-@patch("sktime.forecasting.base._sktime._SktimeForecaster.predict")
-@patch("sktime.forecasting.base._sktime._SktimeForecaster.fit")
+@patch("sktime.forecasting.base._sktime.BaseForecaster.predict")
+@patch("sktime.forecasting.base._sktime.BaseForecaster.fit")
 def test_predict_ts_X_error(mock_sktime_fit, mock_sktime_predict, ts_data):
     X, y = ts_data
 
