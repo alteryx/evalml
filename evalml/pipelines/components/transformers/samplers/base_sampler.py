@@ -19,6 +19,7 @@ class BaseSampler(Transformer):
     _supported_by_list_API = False
     _returns_features = True
     _returns_targets = True
+
     def fit(self, X, y):
         """Resample the data using the sampler. Since our sampler doesn't need to be fit, we do nothing here.
 

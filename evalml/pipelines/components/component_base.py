@@ -27,8 +27,6 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
     _default_parameters = None
     _supported_by_list_API = False
-    _returns_features = False
-    _returns_targets = False
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         """Base class for all components.

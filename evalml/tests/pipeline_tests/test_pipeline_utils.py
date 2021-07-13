@@ -27,8 +27,15 @@ from evalml.pipelines.components import (
     TextFeaturizer,
     Transformer,
 )
+from evalml.pipelines.components.estimators.classifiers.rf_classifier import (
+    RandomForestClassifier,
+)
+from evalml.pipelines.components.transformers.samplers.undersampler import (
+    Undersampler,
+)
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
+    _make_component_graph_from_preprocessing,
     _make_component_list_from_actions,
     generate_pipeline_code,
     get_estimators,
@@ -986,3 +993,50 @@ def test_generate_code_pipeline_with_custom_components():
     )
     pipeline = generate_pipeline_code(mock_pipeline_with_custom_components)
     assert pipeline == expected_code
+
+
+def test_make_component_graph_from_preprocessing():
+    # _make_component_graph_from_preprocessing([RandomForestClassifier])
+    # assert _make_component_graph_from_preprocessing([Imputer]) == {'Imputer': [Imputer]}
+    # assert _make_component_graph_from_preprocessing([Imputer, OneHotEncoder]) == {'Imputer': [Imputer],
+    #                                                                              'One Hot Encoder': [OneHotEncoder, 'Imputer.x']}
+    # assert _make_component_graph_from_preprocessing([Imputer, OneHotEncoder, DropNullColumns]) == {'Imputer': [Imputer],
+    #                                                                              'One Hot Encoder': [OneHotEncoder, 'Imputer.x'],
+    #                                                                              'Drop Null Columns Transformer': [DropNullColumns, 'One Hot Encoder.x']}
+    # assert _make_component_graph_from_preprocessing([Imputer, OneHotEncoder, TargetImputer]) == {'Imputer': [Imputer],
+    #                                                                              'One Hot Encoder': [OneHotEncoder, 'Imputer.x'],
+    #                                                                              'Target Imputer': [TargetImputer]}
+    # assert _make_component_graph_from_preprocessing([Imputer, OneHotEncoder, TargetImputer, TargetImputer]) == {'Imputer': [Imputer],
+    #                                                                              'One Hot Encoder': [OneHotEncoder, 'Imputer.x'],
+    #                                                                              'Target Imputer': [TargetImputer],
+    #                                                                              'Target Imputer_3': [TargetImputer, 'Target Imputer.y']}
+    # assert _make_component_graph_from_preprocessing([Imputer, OneHotEncoder, TargetImputer, DropNullColumns, TargetImputer]) == {'Imputer': [Imputer],
+    #                                                                              'One Hot Encoder': [OneHotEncoder, 'Imputer.x'],
+    #                                                                              'Target Imputer': [TargetImputer],
+    #                                                                              'Drop Null Columns Transformer': [DropNullColumns, 'One Hot Encoder.x'],
+    #                                                                              'Target Imputer_4': [TargetImputer, 'Target Imputer.y']}
+    assert _make_component_graph_from_preprocessing(
+        [
+            Imputer,
+            OneHotEncoder,
+            TargetImputer,
+            DropNullColumns,
+            Undersampler,
+            RandomForestClassifier,
+        ]
+    ) == {
+        "Imputer": [Imputer],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x"],
+        "Target Imputer": [TargetImputer],
+        "Drop Null Columns Transformer": [DropNullColumns, "One Hot Encoder.x"],
+        "Undersampler": [
+            Undersampler,
+            "Drop Null Columns Transformer.x",
+            "Target Imputer.y",
+        ],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Undersampler.x",
+            "Undersampler.y",
+        ],
+    }
