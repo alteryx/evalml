@@ -711,7 +711,9 @@ def test_automl_serialization(pickle_type, X_y_binary, tmpdir_with_cleanup):
 
 
 @patch("cloudpickle.dump")
-def test_automl_serialization_protocol(mock_cloudpickle_dump, tmpdir_with_cleanup, X_y_binary):
+def test_automl_serialization_protocol(
+    mock_cloudpickle_dump, tmpdir_with_cleanup, X_y_binary
+):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir_with_cleanup), "automl.pkl")
     automl = AutoMLSearch(

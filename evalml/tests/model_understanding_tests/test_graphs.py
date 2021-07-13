@@ -1224,7 +1224,9 @@ def test_visualize_decision_trees_filepath(fitted_tree_estimators, tmpdir_with_c
     assert isinstance(src, graphviz.Source)
 
 
-def test_visualize_decision_trees_wrong_format(fitted_tree_estimators, tmpdir_with_cleanup):
+def test_visualize_decision_trees_wrong_format(
+    fitted_tree_estimators, tmpdir_with_cleanup
+):
     graphviz = pytest.importorskip(
         "graphviz", reason="Skipping visualizing test because graphviz not installed"
     )

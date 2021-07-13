@@ -451,7 +451,11 @@ def test_save_plotly_static_no_filepath(
         pipeline = decision_tree_classification_pipeline_class
         feat_fig_ = pipeline.graph_feature_importance()
 
-        filepath = os.path.join(str(tmpdir_with_cleanup), f"{file_name}") if file_name else None
+        filepath = (
+            os.path.join(str(tmpdir_with_cleanup), f"{file_name}")
+            if file_name
+            else None
+        )
         output_ = save_plot(
             fig=feat_fig_,
             filepath=filepath,
@@ -489,7 +493,11 @@ def test_save_plotly_interactive(
         pipeline = decision_tree_classification_pipeline_class
         feat_fig_ = pipeline.graph_feature_importance()
 
-        filepath = os.path.join(str(tmpdir_with_cleanup), f"{file_name}") if file_name else None
+        filepath = (
+            os.path.join(str(tmpdir_with_cleanup), f"{file_name}")
+            if file_name
+            else None
+        )
         no_output_ = save_plot(
             fig=feat_fig_,
             filepath=filepath,
@@ -531,7 +539,11 @@ def test_save_graphviz_default_format(
         est_class, _ = fitted_tree_estimators
         src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
 
-        filepath = os.path.join(str(tmpdir_with_cleanup), f"{file_name}") if file_name else None
+        filepath = (
+            os.path.join(str(tmpdir_with_cleanup), f"{file_name}")
+            if file_name
+            else None
+        )
         no_output_ = save_plot(
             fig=src,
             filepath=filepath,

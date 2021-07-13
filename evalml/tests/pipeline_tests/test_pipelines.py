@@ -98,7 +98,9 @@ def test_required_fields():
         TestPipelineWithoutComponentGraph(parameters={})
 
 
-def test_serialization(X_y_binary, tmpdir_with_cleanup, logistic_regression_binary_pipeline_class):
+def test_serialization(
+    X_y_binary, tmpdir_with_cleanup, logistic_regression_binary_pipeline_class
+):
     X, y = X_y_binary
     path = os.path.join(str(tmpdir_with_cleanup), "pipe.pkl")
     pipeline = logistic_regression_binary_pipeline_class(
@@ -113,7 +115,9 @@ def test_serialization(X_y_binary, tmpdir_with_cleanup, logistic_regression_bina
 
 @patch("cloudpickle.dump")
 def test_serialization_protocol(
-    mock_cloudpickle_dump, tmpdir_with_cleanup, logistic_regression_binary_pipeline_class
+    mock_cloudpickle_dump,
+    tmpdir_with_cleanup,
+    logistic_regression_binary_pipeline_class,
 ):
     path = os.path.join(str(tmpdir_with_cleanup), "pipe.pkl")
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
