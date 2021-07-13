@@ -1294,3 +1294,97 @@ def test_partial_dependence_scale_error():
         ValueError, match="'grid_resolution' must be strictly greater than 1."
     ):
         partial_dependence(pl, X_pd, "a", grid_resolution=0)
+
+
+@pytest.mark.parametrize(
+    "X_datasets",
+    [
+        pd.DataFrame(
+            {
+                "date_column": pd.date_range("20200101", periods=100),
+                "numbers": [i % 3 for i in range(100)],
+                "date2": pd.date_range("20191001", periods=100),
+            }
+        ),
+        pd.DataFrame(
+            {
+                "date_column": pd.date_range("20200101", periods=10).append(
+                    pd.date_range("20191201", periods=50).append(
+                        pd.date_range("20180201", periods=40)
+                    )
+                )
+            }
+        ),
+        pd.DataFrame(
+            {
+                "date_column": pd.date_range(
+                    start="20200101", freq="10h30min50s", periods=100
+                )
+            }
+        ),
+    ],
+)
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
+def test_partial_dependence_datetime_extra(
+    problem_type, X_datasets, X_y_regression, X_y_binary, X_y_multi
+):
+    if problem_type == "binary":
+        X, y = X_y_binary
+        pipeline = BinaryClassificationPipeline(
+            component_graph=[
+                "Imputer",
+                "One Hot Encoder",
+                "DateTime Featurization Component",
+                "Standard Scaler",
+                "Logistic Regression Classifier",
+            ]
+        )
+    elif problem_type == "multiclass":
+        X, y = X_y_multi
+        pipeline = MulticlassClassificationPipeline(
+            component_graph=[
+                "Imputer",
+                "One Hot Encoder",
+                "DateTime Featurization Component",
+                "Standard Scaler",
+                "Logistic Regression Classifier",
+            ]
+        )
+    else:
+        X, y = X_y_regression
+        pipeline = RegressionPipeline(
+            component_graph=[
+                "Imputer",
+                "One Hot Encoder",
+                "DateTime Featurization Component",
+                "Standard Scaler",
+                "Linear Regressor",
+            ]
+        )
+
+    X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
+    X = pd.concat([X, X_datasets], axis=1, join="inner")
+    y = pd.Series(y)
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(
+        pipeline, X, features="date_column", grid_resolution=10
+    )
+    num_classes = y.nunique()
+    if problem_type == "multiclass":
+        assert (
+            len(part_dep["partial_dependence"]) == num_classes * 10
+        )  # 10 rows * 3 classes
+        assert len(part_dep["feature_values"]) == num_classes * 10
+    else:
+        assert len(part_dep["partial_dependence"]) == 10
+        assert len(part_dep["feature_values"]) == 10
+    assert not part_dep.isnull().any(axis=None)
+
+    part_dep = partial_dependence(pipeline, X, features=20, grid_resolution=10)
+    if problem_type == "multiclass":
+        assert len(part_dep["partial_dependence"]) == num_classes * 10
+        assert len(part_dep["feature_values"]) == num_classes * 10
+    else:
+        assert len(part_dep["partial_dependence"]) == 10
+        assert len(part_dep["feature_values"]) == 10
+    assert not part_dep.isnull().any(axis=None)
