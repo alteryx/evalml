@@ -651,9 +651,9 @@ def test_automl_allowed_component_graphs_algorithm(
 
 
 @pytest.mark.parametrize("pickle_type", ["cloudpickle", "pickle", "invalid"])
-def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
+def test_automl_serialization(pickle_type, X_y_binary, tmpdir_with_cleanup):
     X, y = X_y_binary
-    path = os.path.join(str(tmpdir), "automl.pkl")
+    path = os.path.join(str(tmpdir_with_cleanup), "automl.pkl")
     num_max_iterations = 5
     automl = AutoMLSearch(
         X_train=X,
@@ -711,9 +711,9 @@ def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
 
 
 @patch("cloudpickle.dump")
-def test_automl_serialization_protocol(mock_cloudpickle_dump, tmpdir, X_y_binary):
+def test_automl_serialization_protocol(mock_cloudpickle_dump, tmpdir_with_cleanup, X_y_binary):
     X, y = X_y_binary
-    path = os.path.join(str(tmpdir), "automl.pkl")
+    path = os.path.join(str(tmpdir_with_cleanup), "automl.pkl")
     automl = AutoMLSearch(
         X_train=X, y_train=y, problem_type="binary", max_iterations=5, n_jobs=1
     )

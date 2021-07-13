@@ -1206,30 +1206,30 @@ def test_decision_tree_data_from_pipeline(X_y_categorical_regression):
     )
 
 
-def test_visualize_decision_trees_filepath(fitted_tree_estimators, tmpdir):
+def test_visualize_decision_trees_filepath(fitted_tree_estimators, tmpdir_with_cleanup):
     graphviz = pytest.importorskip(
         "graphviz", reason="Skipping visualizing test because graphviz not installed"
     )
     est_class, _ = fitted_tree_estimators
-    filepath = os.path.join(str(tmpdir), "invalid", "path", "test.png")
+    filepath = os.path.join(str(tmpdir_with_cleanup), "invalid", "path", "test.png")
 
     assert not os.path.exists(filepath)
     with pytest.raises(ValueError, match="Specified filepath is not writeable"):
         visualize_decision_tree(estimator=est_class, filepath=filepath)
 
-    filepath = os.path.join(str(tmpdir), "test_0.png")
+    filepath = os.path.join(str(tmpdir_with_cleanup), "test_0.png")
     src = visualize_decision_tree(estimator=est_class, filepath=filepath)
     assert os.path.exists(filepath)
     assert src.format == "png"
     assert isinstance(src, graphviz.Source)
 
 
-def test_visualize_decision_trees_wrong_format(fitted_tree_estimators, tmpdir):
+def test_visualize_decision_trees_wrong_format(fitted_tree_estimators, tmpdir_with_cleanup):
     graphviz = pytest.importorskip(
         "graphviz", reason="Skipping visualizing test because graphviz not installed"
     )
     est_class, _ = fitted_tree_estimators
-    filepath = os.path.join(str(tmpdir), "test_0.xyz")
+    filepath = os.path.join(str(tmpdir_with_cleanup), "test_0.xyz")
     with pytest.raises(
         ValueError,
         match=f"Unknown format 'xyz'. Make sure your format is one of the following: "
@@ -1238,9 +1238,9 @@ def test_visualize_decision_trees_wrong_format(fitted_tree_estimators, tmpdir):
         visualize_decision_tree(estimator=est_class, filepath=filepath)
 
 
-def test_visualize_decision_trees_est_wrong_type(logit_estimator, tmpdir):
+def test_visualize_decision_trees_est_wrong_type(logit_estimator, tmpdir_with_cleanup):
     est_logit = logit_estimator
-    filepath = os.path.join(str(tmpdir), "test_1.png")
+    filepath = os.path.join(str(tmpdir_with_cleanup), "test_1.png")
     with pytest.raises(
         ValueError,
         match="Tree visualizations are only supported for decision tree estimators",
@@ -1248,9 +1248,9 @@ def test_visualize_decision_trees_est_wrong_type(logit_estimator, tmpdir):
         visualize_decision_tree(estimator=est_logit, filepath=filepath)
 
 
-def test_visualize_decision_trees_max_depth(tree_estimators, tmpdir):
+def test_visualize_decision_trees_max_depth(tree_estimators, tmpdir_with_cleanup):
     est_class, _ = tree_estimators
-    filepath = os.path.join(str(tmpdir), "test_1.png")
+    filepath = os.path.join(str(tmpdir_with_cleanup), "test_1.png")
     with pytest.raises(
         ValueError,
         match="Unknown value: '-1'. The parameter max_depth has to be a non-negative integer",
@@ -1258,9 +1258,9 @@ def test_visualize_decision_trees_max_depth(tree_estimators, tmpdir):
         visualize_decision_tree(estimator=est_class, max_depth=-1, filepath=filepath)
 
 
-def test_visualize_decision_trees_not_fitted(tree_estimators, tmpdir):
+def test_visualize_decision_trees_not_fitted(tree_estimators, tmpdir_with_cleanup):
     est_class, _ = tree_estimators
-    filepath = os.path.join(str(tmpdir), "test_1.png")
+    filepath = os.path.join(str(tmpdir_with_cleanup), "test_1.png")
     with pytest.raises(
         NotFittedError,
         match="This DecisionTree estimator is not fitted yet. Call 'fit' with "
@@ -1269,20 +1269,20 @@ def test_visualize_decision_trees_not_fitted(tree_estimators, tmpdir):
         visualize_decision_tree(estimator=est_class, max_depth=3, filepath=filepath)
 
 
-def test_visualize_decision_trees(fitted_tree_estimators, tmpdir):
+def test_visualize_decision_trees(fitted_tree_estimators, tmpdir_with_cleanup):
     graphviz = pytest.importorskip(
         "graphviz", reason="Skipping visualizing test because graphviz not installed"
     )
     est_class, est_reg = fitted_tree_estimators
 
-    filepath = os.path.join(str(tmpdir), "test_2")
+    filepath = os.path.join(str(tmpdir_with_cleanup), "test_2")
     src = visualize_decision_tree(
         estimator=est_class, filled=True, max_depth=3, rotate=True, filepath=filepath
     )
     assert src.format == "pdf"  # Check that extension defaults to pdf
     assert isinstance(src, graphviz.Source)
 
-    filepath = os.path.join(str(tmpdir), "test_3.pdf")
+    filepath = os.path.join(str(tmpdir_with_cleanup), "test_3.pdf")
     src = visualize_decision_tree(estimator=est_reg, filled=True, filepath=filepath)
     assert src.format == "pdf"
     assert isinstance(src, graphviz.Source)

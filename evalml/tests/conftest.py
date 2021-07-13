@@ -1291,3 +1291,9 @@ class _AutoMLTestEnv:
 @pytest.fixture
 def AutoMLTestEnv():
     return _AutoMLTestEnv
+
+
+@pytest.fixture
+def tmpdir_with_cleanup(tmpdir):
+    yield tmpdir
+    tmpdir.remove(ignore_errors=True)

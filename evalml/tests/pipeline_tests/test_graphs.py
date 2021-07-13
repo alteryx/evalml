@@ -83,13 +83,11 @@ def test_backend_comp_graph(test_component_graph):
             comp.graph()
 
 
-def test_saving_png_file(tmpdir, test_pipeline, is_using_conda):
-    if is_using_conda:
-        pytest.skip("Skipping saving_png_file if running during conda build process.")
+def test_saving_png_file(tmpdir_with_cleanup, test_pipeline):
     pytest.importorskip(
         "graphviz", reason="Skipping plotting test because graphviz not installed"
     )
-    filepath = os.path.join(str(tmpdir), "pipeline.png")
+    filepath = os.path.join(str(tmpdir_with_cleanup), "pipeline.png")
     pipeline = test_pipeline
     pipeline.graph(filepath=filepath)
     assert os.path.isfile(filepath)
@@ -122,31 +120,31 @@ def test_returns_digraph_object_comp_graph_with_params(test_component_graph):
     assert "max_iter : 100" in graph.source
 
 
-def test_missing_file_extension(tmpdir, test_pipeline):
+def test_missing_file_extension(tmpdir_with_cleanup, test_pipeline):
     pytest.importorskip(
         "graphviz", reason="Skipping plotting test because graphviz not installed"
     )
-    filepath = os.path.join(str(tmpdir), "test1")
+    filepath = os.path.join(str(tmpdir_with_cleanup), "test1")
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
 
 
-def test_invalid_format(tmpdir, test_pipeline):
+def test_invalid_format(tmpdir_with_cleanup, test_pipeline):
     pytest.importorskip(
         "graphviz", reason="Skipping plotting test because graphviz not installed"
     )
-    filepath = os.path.join(str(tmpdir), "test1.xyz")
+    filepath = os.path.join(str(tmpdir_with_cleanup), "test1.xyz")
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
 
 
-def test_invalid_path(tmpdir, test_pipeline):
+def test_invalid_path(tmpdir_with_cleanup, test_pipeline):
     pytest.importorskip(
         "graphviz", reason="Skipping plotting test because graphviz not installed"
     )
-    filepath = os.path.join(str(tmpdir), "invalid", "path", "pipeline.png")
+    filepath = os.path.join(str(tmpdir_with_cleanup), "invalid", "path", "pipeline.png")
     assert not os.path.exists(filepath)
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Specified filepath is not writeable"):
