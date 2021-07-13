@@ -1,7 +1,3 @@
-import multiprocessing as mp
-import joblib
-from time import time
-
 from evalml.automl.engine.engine_base import (
     EngineBase,
     EngineComputation,
@@ -11,13 +7,13 @@ from evalml.automl.engine.engine_base import (
 )
 
 
-class Client():
+class CFClient:
+    """Custom CFClient API to match Dask's CFClient and allow context management."""
 
     def __init__(self, pool):
         self.pool = pool
 
     def __enter__(self):
-        self.start = time()
         return self
 
     def __exit__(self, typ, value, traceback):
@@ -27,12 +23,11 @@ class Client():
         return self.pool.submit(*args, **kwargs)
 
 
-
-class KComputation(EngineComputation):
-    """A Future-like wrapper around jobs created by the DaskEngine.
+class CFComputation(EngineComputation):
+    """A Future-like wrapper around jobs created by the CFEngine.
 
     Arguments:
-        dask_future (callable): Computation to do.
+        future (callable): Computation to do.
     """
 
     def __init__(self, future):
@@ -47,7 +42,8 @@ class KComputation(EngineComputation):
         """Gets the computation result.
         Will block until the computation is finished.
 
-        Raises Exception: If computation fails. Returns traceback.
+        Raises:
+             Exception: If computation fails. Returns traceback.
         """
         return self.work.result()
 
@@ -61,23 +57,16 @@ class KComputation(EngineComputation):
         return self.work.cancelled()
 
 
-class KarstEngine(EngineBase):
-    """The dask engine"""
+class CFEngine(EngineBase):
+    """The concurrent.futures (CF) engine"""
 
     def __init__(self, client):
-        if not isinstance(client, Client):
+        if not isinstance(client, CFClient):
             raise TypeError(
-                f"Expected evalml.automl.engine.karstengine.Client, received {type(client)}"
+                f"Expected evalml.automl.engine.cf_engine.CFClient, received {type(client)}"
             )
         self.client = client
         self._data_futures_cache = {}
-
-    def send_data_to_cluster(self, X, y):
-        """Send data to the cluster.
-
-        No-op.
-        """
-        return X, y
 
     def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send evaluation job to cluster.
@@ -88,11 +77,10 @@ class KarstEngine(EngineBase):
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
         Return:
-            DaskComputation: a object wrapping a reference to a future-like computation
-                occurring in the dask cluster
+            CFComputation: an object wrapping a reference to a future-like computation
+                occurring in the resource pool
         """
         logger = self.setup_job_log()
-        X, y = self.send_data_to_cluster(X, y)
         future = self.client.submit(
             evaluate_pipeline,
             pipeline=pipeline,
@@ -101,7 +89,7 @@ class KarstEngine(EngineBase):
             y=y,
             logger=logger,
         )
-        return KComputation(future)
+        return CFComputation(future)
 
     def submit_training_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send training job to cluster.
@@ -112,14 +100,13 @@ class KarstEngine(EngineBase):
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
         Return:
-            DaskComputation: a object wrapping a reference to a future-like computation
-                occurring in the dask cluster
+            CFComputation: an object wrapping a reference to a future-like computation
+                occurring in the resource pool
         """
-        X, y = self.send_data_to_cluster(X, y)
         future = self.client.submit(
             train_pipeline, pipeline=pipeline, X=X, y=y, automl_config=automl_config
         )
-        return KComputation(future)
+        return CFComputation(future)
 
     def submit_scoring_job(
         self, automl_config, pipeline, X, y, objectives
@@ -132,13 +119,12 @@ class KarstEngine(EngineBase):
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
         Return:
-            DaskComputation: a object wrapping a reference to a future-like computation
-                occurring in the dask cluster
+            CFComputation: a object wrapping a reference to a future-like computation
+                occurring in the resource pool
         """
         # Get the schema before we lose it
         X_schema = X.ww.schema
         y_schema = y.ww.schema
-        X, y = self.send_data_to_cluster(X, y)
         future = self.client.submit(
             score_pipeline,
             pipeline=pipeline,
@@ -148,6 +134,6 @@ class KarstEngine(EngineBase):
             X_schema=X_schema,
             y_schema=y_schema,
         )
-        computation = KComputation(future)
+        computation = CFComputation(future)
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation

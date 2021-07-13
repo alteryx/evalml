@@ -31,7 +31,7 @@ test-dask:
 
 .PHONY: git-test-dask
 git-test-dask:
-	pytest evalml/tests/automl_tests/dask_tests/ -n 1 --doctest-modules --cov=evalml/tests/automl_tests/dask_tests/ --junitxml=test-reports/git-test-dask-junit.xml --doctest-continue-on-failure  --timeout 300 --durations 0
+	pytest evalml/tests/automl_tests/dask_tests/ -n 1 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-dask-junit.xml --doctest-continue-on-failure  --timeout 300 --durations 0
 
 .PHONY: git-test-minimal-deps-dask
 git-test-minimal-deps-dask:

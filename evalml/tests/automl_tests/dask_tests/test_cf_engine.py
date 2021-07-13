@@ -1,11 +1,11 @@
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+
 import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
 
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
-
-from evalml.automl.engine.karstengine import KarstEngine, Client, KComputation
+from evalml.automl.engine.cf_engine import CFClient, CFComputation, CFEngine
 from evalml.automl.engine.engine_base import (
     JobLogger,
     evaluate_pipeline,
@@ -16,24 +16,55 @@ from evalml.automl.utils import AutoMLConfig
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.pipeline_base import PipelineBase
 from evalml.tests.automl_tests.dask_test_utils import (
-    TestPipelineSlow,
-    TestSchemaCheckPipeline,
+    DaskPipelineSlow,
+    DaskSchemaCheckPipeline,
     automl_data,
 )
 
 
 @pytest.fixture(scope="module")
-def pool():
-    pool = ThreadPoolExecutor()
-    yield pool
-    pool.shutdown()
+def process_pool():
+    process_pool = ProcessPoolExecutor()
+    yield process_pool
+    process_pool.shutdown()
 
-def test_submit_training_job_single(X_y_binary_cls, pool):
+
+@pytest.fixture(scope="module")
+def thread_pool():
+    thread_pool = ThreadPoolExecutor()
+    yield thread_pool
+    thread_pool.shutdown()
+
+
+def get_pool(pool_type, thread_pool, process_pool):
+    if pool_type == "threads":
+        return thread_pool
+    elif pool_type == "processes":
+        return process_pool
+
+
+def test_init(process_pool):
+    with CFClient(process_pool) as client:
+        engine = CFEngine(client=client)
+        assert engine.client == client
+
+        with pytest.raises(
+            TypeError,
+            match="Expected evalml.automl.engine.cf_engine.CFClient, received",
+        ):
+            CFEngine(client="CFClient")
+
+
+@pytest.mark.parametrize("pool_type", ["threads", "processes"])
+def test_submit_training_job_single(
+    X_y_binary_cls, pool_type, thread_pool, process_pool
+):
     """Test that training a single pipeline using the parallel engine produces the
     same results as simply running the train_pipeline function."""
     X, y = X_y_binary_cls
-    with Client(pool) as client:
-        engine = KarstEngine(client=client)
+    pool = get_pool(pool_type, thread_pool, process_pool)
+    with CFClient(pool) as client:
+        engine = CFEngine(client=client)
         pipeline = BinaryClassificationPipeline(
             component_graph=["Logistic Regression Classifier"],
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
@@ -56,11 +87,15 @@ def test_submit_training_job_single(X_y_binary_cls, pool):
         )
 
 
-def test_submit_training_jobs_multiple(X_y_binary_cls, pool):
+@pytest.mark.parametrize("pool_type", ["threads", "processes"])
+def test_submit_training_jobs_multiple(
+    X_y_binary_cls, pool_type, thread_pool, process_pool
+):
     """Test that training multiple pipelines using the parallel engine produces the
     same results as the sequential engine."""
     X, y = X_y_binary_cls
-    with Client(pool) as client:
+    pool = get_pool(pool_type, thread_pool, process_pool)
+    with CFClient(pool) as client:
         pipelines = [
             BinaryClassificationPipeline(
                 component_graph=["Logistic Regression Classifier"],
@@ -87,7 +122,7 @@ def test_submit_training_jobs_multiple(X_y_binary_cls, pool):
             assert pipeline._is_fitted
 
         # Verify all pipelines are trained and fitted.
-        par_pipelines = fit_pipelines(pipelines, KarstEngine(client=client))
+        par_pipelines = fit_pipelines(pipelines, CFEngine(client=client))
         for pipeline in par_pipelines:
             assert pipeline._is_fitted
 
@@ -97,27 +132,31 @@ def test_submit_training_jobs_multiple(X_y_binary_cls, pool):
             assert par_pipeline in seq_pipelines
 
 
-def test_submit_evaluate_job_single(X_y_binary_cls, pool):
+@pytest.mark.parametrize("pool_type", ["threads", "processes"])
+def test_submit_evaluate_job_single(
+    X_y_binary_cls, pool_type, thread_pool, process_pool
+):
     """Test that evaluating a single pipeline using the parallel engine produces the
     same results as simply running the evaluate_pipeline function."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
+    pool = get_pool(pool_type, thread_pool, process_pool)
 
-    with Client(pool) as client:
+    with CFClient(pool) as client:
 
         pipeline = BinaryClassificationPipeline(
             component_graph=["Logistic Regression Classifier"],
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
         )
 
-        engine = KarstEngine(client=client)
+        engine = CFEngine(client=client)
 
         # Verify that engine evaluates a pipeline
         pipeline_future = engine.submit_evaluation_job(
             X=X, y=y, automl_config=automl_data, pipeline=pipeline
         )
-        assert isinstance(pipeline_future, KComputation)
+        assert isinstance(pipeline_future, CFComputation)
 
         par_eval_results = pipeline_future.get_result()
 
@@ -148,14 +187,18 @@ def test_submit_evaluate_job_single(X_y_binary_cls, pool):
         )
 
 
-def test_submit_evaluate_jobs_multiple(X_y_binary_cls, pool):
+@pytest.mark.parametrize("pool_type", ["threads", "processes"])
+def test_submit_evaluate_jobs_multiple(
+    X_y_binary_cls, pool_type, thread_pool, process_pool
+):
     """Test that evaluating multiple pipelines using the parallel engine produces the
     same results as the sequential engine."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
+    pool = get_pool(pool_type, thread_pool, process_pool)
 
-    with Client(pool) as client:
+    with CFClient(pool) as client:
 
         pipelines = [
             BinaryClassificationPipeline(
@@ -177,7 +220,7 @@ def test_submit_evaluate_jobs_multiple(X_y_binary_cls, pool):
             results = [f.get_result() for f in futures]
             return results
 
-        par_eval_results = eval_pipelines(pipelines, KarstEngine(client=client))
+        par_eval_results = eval_pipelines(pipelines, CFEngine(client=client))
         par_dicts = [s.get("scores") for s in par_eval_results]
         par_scores = [s["cv_data"][0]["mean_cv_score"] for s in par_dicts]
         par_pipelines = [s.get("pipeline") for s in par_eval_results]
@@ -201,20 +244,24 @@ def test_submit_evaluate_jobs_multiple(X_y_binary_cls, pool):
             assert par_pipeline in seq_pipelines
 
 
-def test_submit_scoring_job_single(X_y_binary_cls, pool):
+@pytest.mark.parametrize("pool_type", ["threads", "processes"])
+def test_submit_scoring_job_single(
+    X_y_binary_cls, pool_type, thread_pool, process_pool
+):
     """Test that scoring a single pipeline using the parallel engine produces the
     same results as simply running the score_pipeline function."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
+    pool = get_pool(pool_type, thread_pool, process_pool)
 
-    with Client(pool) as client:
+    with CFClient(pool) as client:
 
         pipeline = BinaryClassificationPipeline(
             component_graph=["Logistic Regression Classifier"],
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
         )
-        engine = KarstEngine(client=client)
+        engine = CFEngine(client=client)
         objectives = [automl_data.objective]
 
         pipeline_future = engine.submit_training_job(
@@ -228,7 +275,7 @@ def test_submit_scoring_job_single(X_y_binary_cls, pool):
             pipeline=pipeline,
             objectives=objectives,
         )
-        assert isinstance(pipeline_score_future, KComputation)
+        assert isinstance(pipeline_score_future, CFComputation)
         pipeline_score = pipeline_score_future.get_result()
 
         original_pipeline_score = pipeline.score(X=X, y=y, objectives=objectives)
@@ -237,14 +284,18 @@ def test_submit_scoring_job_single(X_y_binary_cls, pool):
         assert pipeline_score == original_pipeline_score
 
 
-def test_submit_scoring_jobs_multiple(X_y_binary_cls, pool):
+@pytest.mark.parametrize("pool_type", ["threads", "processes"])
+def test_submit_scoring_jobs_multiple(
+    X_y_binary_cls, pool_type, thread_pool, process_pool
+):
     """Test that scoring multiple pipelines using the parallel engine produces the
     same results as the sequential engine."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
+    pool = get_pool(pool_type, thread_pool, process_pool)
 
-    with Client(pool) as client:
+    with CFClient(pool) as client:
 
         pipelines = [
             BinaryClassificationPipeline(
@@ -278,7 +329,7 @@ def test_submit_scoring_jobs_multiple(X_y_binary_cls, pool):
             results = [f.get_result() for f in futures]
             return results
 
-        par_eval_results = score_pipelines(pipelines, KarstEngine(client=client))
+        par_eval_results = score_pipelines(pipelines, CFEngine(client=client))
         par_scores = [s["Log Loss Binary"] for s in par_eval_results]
 
         seq_eval_results = score_pipelines(pipelines, SequentialEngine())
@@ -291,14 +342,16 @@ def test_submit_scoring_jobs_multiple(X_y_binary_cls, pool):
         np.testing.assert_allclose(par_scores, seq_scores, rtol=1e-10)
 
 
-def test_cancel_job(X_y_binary_cls, pool):
+@pytest.mark.parametrize("pool_type", ["threads", "processes"])
+def test_cancel_job(X_y_binary_cls, pool_type, thread_pool, process_pool):
     """Test that training a single pipeline using the parallel engine produces the
     same results as simply running the train_pipeline function."""
     X, y = X_y_binary_cls
+    pool = get_pool(pool_type, thread_pool, process_pool)
 
-    with Client(pool) as client:
-        engine = KarstEngine(client=client)
-        pipeline = TestPipelineSlow({"Logistic Regression Classifier": {"n_jobs": 1}})
+    with CFClient(pool) as client:
+        engine = CFEngine(client=client)
+        pipeline = DaskPipelineSlow({"Logistic Regression Classifier": {"n_jobs": 1}})
 
         # Verify that engine fits a pipeline
         pipeline_future = engine.submit_training_job(
@@ -308,11 +361,15 @@ def test_cancel_job(X_y_binary_cls, pool):
         assert pipeline_future.is_cancelled
 
 
-def test_dask_sends_woodwork_schema(X_y_binary_cls, pool):
+@pytest.mark.parametrize("pool_type", ["threads", "processes"])
+def test_dask_sends_woodwork_schema(
+    X_y_binary_cls, pool_type, thread_pool, process_pool
+):
     X, y = X_y_binary_cls
+    pool = get_pool(pool_type, thread_pool, process_pool)
 
-    with Client(pool) as client:
-        engine = KarstEngine(client=client)
+    with CFClient(pool) as client:
+        engine = CFEngine(client=client)
 
         X.ww.init(
             logical_types={0: "Categorical"}, semantic_tags={0: ["my cool feature"]}
@@ -334,7 +391,7 @@ def test_dask_sends_woodwork_schema(X_y_binary_cls, pool):
 
         # TestSchemaCheckPipeline will verify that the schema is preserved by the time we call
         # pipeline.fit and pipeline.score
-        pipeline = TestSchemaCheckPipeline(
+        pipeline = DaskSchemaCheckPipeline(
             component_graph=["One Hot Encoder", "Logistic Regression Classifier"],
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
             X_schema_to_check=X.ww.schema,
