@@ -91,7 +91,7 @@ def test_categorical_regression(X_y_categorical_regression):
         n_jobs=1,
     )
     automl.search()
-    assert not automl.rankings["mean_cv_score"].isnull().all()
+    assert not automl.rankings["mean_cv_score"].isnull().any()
 
 
 def test_callback(X_y_regression):
