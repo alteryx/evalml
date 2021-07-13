@@ -17,8 +17,8 @@ class PolynomialDetrender(TargetTransformer):
     """
 
     name = "Polynomial Detrender"
-
     hyperparameter_ranges = {"degree": Integer(1, 3)}
+    _supported_by_list_API = False
 
     def __init__(self, degree=1, random_seed=0, **kwargs):
         if not isinstance(degree, int):

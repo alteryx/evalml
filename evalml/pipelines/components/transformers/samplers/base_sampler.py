@@ -16,6 +16,8 @@ class BaseSampler(Transformer):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
+    _supported_by_list_API = False
+
     def fit(self, X, y):
         """Resample the data using the sampler. Since our sampler doesn't need to be fit, we do nothing here.
 

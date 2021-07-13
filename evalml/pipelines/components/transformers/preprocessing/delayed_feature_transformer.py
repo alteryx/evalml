@@ -24,6 +24,7 @@ class DelayedFeatureTransformer(Transformer):
     name = "Delayed Feature Transformer"
     hyperparameter_ranges = {}
     needs_fitting = False
+    _supported_by_list_API = True
 
     def __init__(
         self,

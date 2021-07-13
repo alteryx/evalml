@@ -75,6 +75,7 @@ class DateTimeFeaturizer(Transformer):
         "day_of_week": _extract_day_of_week,
         "hour": _extract_hour,
     }
+    _supported_by_list_API = True
 
     def __init__(
         self,
