@@ -74,3 +74,22 @@ def test_xgboost_multiindex(data_type, X_y_binary, make_data_type):
     y_pred_proba = clf.predict_proba(X)
     assert not y_pred.isnull().values.any()
     assert not y_pred_proba.isnull().values.any().any()
+
+
+@pytest.mark.parametrize("data_type", ["pd", "ww"])
+def test_xgboost_multiindex(data_type, X_y_binary, make_data_type):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    col_names = [
+        ("column_{}".format(num), "{}".format(num)) for num in range(len(X.columns))
+    ]
+    X.columns = pd.MultiIndex.from_tuples(col_names)
+    X = make_data_type(data_type, X)
+    y = make_data_type(data_type, y)
+
+    clf = XGBoostClassifier()
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+    y_pred_proba = clf.predict_proba(X)
+    assert not y_pred.isnull().values.any()
+    assert not y_pred_proba.isnull().values.any().any()
