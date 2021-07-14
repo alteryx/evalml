@@ -135,6 +135,7 @@ from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
 
+
 def _make_component_graph_from_preprocessing(component_list):
     # Logic is as follows: Create the component dict for the non-target transformers as expected.
     # If there are target transformers present, connect them together and then pass the final output
@@ -153,87 +154,16 @@ def _make_component_graph_from_preprocessing(component_list):
     most_recent_target = "y"
     most_recent_features = "X"
     for component_name, component_class in components_with_names:
-        component_dict[component_name] = [component_class, most_recent_features, most_recent_target]
+        component_dict[component_name] = [
+            component_class,
+            most_recent_features,
+            most_recent_target,
+        ]
         if component_class._returns_targets:
             most_recent_target = f"{component_name}.y"
         if component_class._returns_features:
             most_recent_features = f"{component_name}.x"
-    import pdb; pdb.set_trace()
     return component_dict
-
-
-
-# def _make_component_graph_from_preprocessing(component_list):
-#     # Logic is as follows: Create the component dict for the non-target transformers as expected.
-#     # If there are target transformers present, connect them together and then pass the final output
-#     # to the sampler (if present) or the final estimator
-#     components_with_names = []
-#     seen = set()
-#     for idx, component in enumerate(component_list):
-#         component_name = component.name
-#         if component_name in seen:
-#             component_name = f"{component_name}_{idx}"
-#         seen.add(component_name)
-#         components_with_names.append((component_name, component))
-
-#     component_dict = {}
-#     previous_component = None
-
-#     target_transformers = list(
-#         filter(
-#             lambda component_tuple: component_tuple[1]._returns_targets,
-#             components_with_names,
-#         )
-#     )
-#     feature_transformers = list(
-#         filter(
-#             lambda component_tuple: component_tuple[1]._returns_features,
-#             components_with_names,
-#         )
-#     )
-#     feature_and_target_transformers = list(
-#         filter(
-#             lambda component: component._returns_features
-#             and component._returns_targets,
-#             component_list,
-#         )
-#     )
-#     for component_name, component_class in feature_transformers:
-#         component_dict[component_name] = [component_class]
-#         if previous_component is not None:
-#             if previous_component[1] in feature_and_target_transformers:
-#                 component_dict[component_name].extend(
-#                     [f"{previous_component[0]}.x", f"{previous_component[0]}.y"]
-#                 )
-#             else:
-#                 component_dict[component_name].append(f"{previous_component[0]}.x")
-#         previous_component = (component_name, component_class)
-#     previous_component = None
-
-#     for component_name, component_class in target_transformers:
-#         if component_name not in component_dict:
-#             component_dict[component_name] = [component_class]
-#         if previous_component is not None:
-#             component_dict[component_name].append(f"{previous_component[0]}.y")
-#         previous_component = (component_name, component_class)
-#     # if target_transformers:
-#     #     sampler_index = next(
-#     #         iter(
-#     #             [
-#     #                 i
-#     #                 for i, tup in enumerate(not_target_transformers)
-#     #                 if "sampler" in tup[0]
-#     #             ]
-#     #         ),
-#     #         -1,
-#     #     )
-#     #     component_dict[not_target_transformers[sampler_index][0]].append(
-#     #         f"{target_transformers[-1][0]}.y"
-#     #     )
-#     for component in component_dict:
-#         print(component, component_dict[component])
-#     print(component_dict)
-#     return component_dict
 
 
 def _get_pipeline_base_class(problem_type):
@@ -291,11 +221,11 @@ def make_pipeline(
     preprocessing_components = _get_preprocessing_components(
         X, y, problem_type, estimator, sampler_name
     )
-    complete_component_graph = preprocessing_components + [estimator]
-
+    complete_component_list = preprocessing_components + [estimator]
+    component_graph = _make_component_graph_from_preprocessing(complete_component_list)
     base_class = _get_pipeline_base_class(problem_type)
     return base_class(
-        complete_component_graph,
+        component_graph,
         parameters=parameters,
     )
 

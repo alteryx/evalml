@@ -996,25 +996,36 @@ def test_generate_code_pipeline_with_custom_components():
 
 
 def test_make_component_graph_from_preprocessing():
-    # _make_component_graph_from_preprocessing([RandomForestClassifier])
-    # assert _make_component_graph_from_preprocessing([Imputer]) == {'Imputer': [Imputer]}
-    # assert _make_component_graph_from_preprocessing([Imputer, OneHotEncoder]) == {'Imputer': [Imputer],
-    #                                                                              'One Hot Encoder': [OneHotEncoder, 'Imputer.x']}
-    # assert _make_component_graph_from_preprocessing([Imputer, OneHotEncoder, DropNullColumns]) == {'Imputer': [Imputer],
-    #                                                                              'One Hot Encoder': [OneHotEncoder, 'Imputer.x'],
-    #                                                                              'Drop Null Columns Transformer': [DropNullColumns, 'One Hot Encoder.x']}
-    # assert _make_component_graph_from_preprocessing([Imputer, OneHotEncoder, TargetImputer]) == {'Imputer': [Imputer],
-    #                                                                              'One Hot Encoder': [OneHotEncoder, 'Imputer.x'],
-    #                                                                              'Target Imputer': [TargetImputer]}
-    # assert _make_component_graph_from_preprocessing([Imputer, OneHotEncoder, TargetImputer, TargetImputer]) == {'Imputer': [Imputer],
-    #                                                                              'One Hot Encoder': [OneHotEncoder, 'Imputer.x'],
-    #                                                                              'Target Imputer': [TargetImputer],
-    #                                                                              'Target Imputer_3': [TargetImputer, 'Target Imputer.y']}
-    # assert _make_component_graph_from_preprocessing([Imputer, OneHotEncoder, TargetImputer, DropNullColumns, TargetImputer]) == {'Imputer': [Imputer],
-    #                                                                              'One Hot Encoder': [OneHotEncoder, 'Imputer.x'],
-    #                                                                              'Target Imputer': [TargetImputer],
-    #                                                                              'Drop Null Columns Transformer': [DropNullColumns, 'One Hot Encoder.x'],
-    #                                                                              'Target Imputer_4': [TargetImputer, 'Target Imputer.y']}
+    _make_component_graph_from_preprocessing([RandomForestClassifier]) == {
+        "RF": [RandomForestClassifier, "X", "y"]
+    }
+    assert _make_component_graph_from_preprocessing([Imputer]) == {
+        "Imputer": [Imputer, "X", "y"]
+    }
+    assert _make_component_graph_from_preprocessing([Imputer, OneHotEncoder]) == {
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+    }
+    assert _make_component_graph_from_preprocessing(
+        [Imputer, OneHotEncoder, DropNullColumns]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+        "Drop Null Columns Transformer": [DropNullColumns, "One Hot Encoder.x", "y"],
+    }
+    assert _make_component_graph_from_preprocessing(
+        [Imputer, OneHotEncoder, TargetImputer, RandomForestClassifier]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+        "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "One Hot Encoder.x",
+            "Target Imputer.y",
+        ],
+    }
+
     assert _make_component_graph_from_preprocessing(
         [
             Imputer,
@@ -1025,10 +1036,14 @@ def test_make_component_graph_from_preprocessing():
             RandomForestClassifier,
         ]
     ) == {
-        "Imputer": [Imputer],
-        "One Hot Encoder": [OneHotEncoder, "Imputer.x"],
-        "Target Imputer": [TargetImputer],
-        "Drop Null Columns Transformer": [DropNullColumns, "One Hot Encoder.x"],
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+        "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+        "Drop Null Columns Transformer": [
+            DropNullColumns,
+            "One Hot Encoder.x",
+            "Target Imputer.y",
+        ],
         "Undersampler": [
             Undersampler,
             "Drop Null Columns Transformer.x",
