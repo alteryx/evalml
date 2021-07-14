@@ -1,11 +1,3 @@
-from evalml.pipelines.components.estimators import regressors
-from evalml.pipelines.components.estimators.classifiers.rf_classifier import (
-    RandomForestClassifier,
-)
-from evalml.pipelines.components.estimators.regressors.rf_regressor import (
-    RandomForestRegressor,
-)
-
 import pandas as pd
 import pytest
 import woodwork as ww
@@ -17,6 +9,12 @@ from evalml.pipelines.components import (
     FeatureSelector,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
+)
+from evalml.pipelines.components.estimators.classifiers.rf_classifier import (
+    RandomForestClassifier,
+)
+from evalml.pipelines.components.estimators.regressors.rf_regressor import (
+    RandomForestRegressor,
 )
 
 
@@ -153,7 +151,7 @@ def test_feature_selectors_custom_estimator(X_y_binary, X_y_regression):
     classifier = RandomForestClassifier().fit(X_binary, y_binary)
     regressor = RandomForestRegressor().fit(X_regression, y_regression)
 
-    rf_classifier = RFClassifierSelectFromModel(
+    RFClassifierSelectFromModel(
         estimator=classifier._component_obj,
         number_features=5,
         n_estimators=10,
@@ -162,7 +160,7 @@ def test_feature_selectors_custom_estimator(X_y_binary, X_y_regression):
         threshold=0,
     ).fit_transform(X_binary, y_binary)
 
-    rf_regressor = RFRegressorSelectFromModel(
+    RFRegressorSelectFromModel(
         estimator=regressor._component_obj,
         number_features=5,
         n_estimators=10,
@@ -172,7 +170,7 @@ def test_feature_selectors_custom_estimator(X_y_binary, X_y_regression):
     ).fit_transform(X_regression, y_regression)
 
     with pytest.raises(ValueError, match="Estimator must be a sklearn estimator."):
-        rf_regressor = RFRegressorSelectFromModel(
+        RFRegressorSelectFromModel(
             estimator=regressor,
             number_features=5,
             n_estimators=10,
@@ -182,7 +180,7 @@ def test_feature_selectors_custom_estimator(X_y_binary, X_y_regression):
         )
 
     with pytest.raises(ValueError, match="Estimator must be a sklearn estimator."):
-        rf_classifier = RFClassifierSelectFromModel(
+        RFClassifierSelectFromModel(
             estimator=classifier,
             number_features=5,
             n_estimators=10,

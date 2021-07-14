@@ -1,25 +1,23 @@
-from evalml.problem_types.problem_types import ProblemTypes
-from evalml import problem_types
-from evalml.pipelines.components.estimators import estimator
-from evalml import pipelines
-import inspect
-from operator import itemgetter
-
 import numpy as np
 from skopt.space import Categorical, Integer, Real
 
-from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
+from .automl_algorithm import AutoMLAlgorithm
+
+
 from evalml.model_family import ModelFamily
-from evalml.pipelines.utils import (
-    make_pipeline,
-    _make_stacked_ensemble_pipeline,
-)
-from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.components import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
-    RandomForestClassifier,
-    RandomForestRegressor,
+)
+from evalml.pipelines.components.transformers.column_selectors import (
+    SelectColumns,
+)
+from evalml.pipelines.components.utils import (
+    get_estimators,
+    handle_component_class,
+)
+from evalml.pipelines.utils import (
+    make_pipeline,
 )
 from evalml.problem_types import is_regression
 
@@ -60,11 +58,11 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         Do we need to allow users to select what models and pipelines are allowed?
             - originally my thinking was we would remove that choice from user
             - however, how does the automl_search impl affect it?
-        
+
         options:
             - top level user can select and pass down
             - do not let users select
-        
+
         considerations
             - change `AutoMLAlgorithm` init impl to not create tuners for each pipeline?
             - ignore `AutoMLAlgorithm` init and do our own thing here
@@ -184,6 +182,36 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         ]
         return pipelines
 
+    def _create_fast_final(self):
+        estimators = [
+            estimator
+            for estimator in get_estimators(self.problem_type)
+            if estimator not in self._naive_estimators()
+        ]
+        print(estimators)
+        pipelines = [
+            make_pipeline(
+                self.X,
+                self.y,
+                estimator,
+                self.problem_type,
+                parameters=self._frozen_pipeline_parameters,
+                sampler_name=self._sampler_name,
+                extra_components=[SelectColumns],
+            )
+            for estimator in estimators
+        ]
+        pipelines = [
+            pipeline.new(
+                parameters={
+                    "Select Columns Transformer": {"columns": self._selected_cols}
+                },
+                random_seed=self.random_seed,
+            )
+            for pipeline in pipelines
+        ]
+        return pipelines
+
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
 
@@ -195,6 +223,8 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             next_batch = self._create_naive_pipelines()
         elif self._batch_number == 1:
             next_batch = self._create_naive_pipelines_with_feature_selection()
+        elif self._batch_number == 2:
+            next_batch = self._create_fast_final()
 
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
