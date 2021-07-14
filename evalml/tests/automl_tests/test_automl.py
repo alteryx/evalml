@@ -4857,8 +4857,8 @@ def test_data_splitter_gives_pipelines_same_data(
         y_score_hashes,
     ]:
         assert (
-            len(data_hash_dictionary) == 3
-        ), "We should have hashes for exactly three splits"
+            len(data_hash_dictionary) == n_splits
+        ), f"We should have hashes for exactly {n_splits} splits"
         assert all(
             len(data_hash_dictionary[i]) == 1 for i in range(n_splits)
         ), "There should only be one hash per split."
