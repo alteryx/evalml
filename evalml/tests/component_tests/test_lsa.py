@@ -17,7 +17,6 @@ from evalml.utils import infer_feature_types
 
 def test_lsa_only_text(text_df):
     X = text_df
-    X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     lsa = LSA()
     lsa.fit(X)
 
@@ -60,7 +59,6 @@ def test_lsa_no_text():
 
 def test_some_missing_col_names(text_df, caplog):
     X = text_df
-    X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     expected_col_names = set(
         ["LSA(col_1)[0]", "LSA(col_1)[1]", "LSA(col_2)[0]", "LSA(col_2)[1]"]
     )

@@ -648,6 +648,12 @@ def partial_dependence(
         X_features = (
             X.ww.iloc[:, [features]] if isinstance(features, int) else X.ww[[features]]
         )
+    X_unknown = X_features.ww.select("unknown")
+    if len(X_unknown.columns):
+        # We drop the unknown columns in the pipelines, so we cannot calculate partial dependence for these
+        raise ValueError(
+            "Columns included for partial dependence cannot be of type 'Unknown'"
+        )
 
     X_cats = X_features.ww.select("categorical")
     if any(is_categorical):
@@ -678,7 +684,6 @@ def partial_dependence(
         )
 
     feature_list = X[feature_names]
-
     _raise_value_error_if_any_features_all_nan(feature_list)
 
     if feature_list.isnull().sum().any():

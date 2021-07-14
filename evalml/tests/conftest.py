@@ -282,6 +282,7 @@ def text_df():
             ],
         }
     )
+    df.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     yield df
 
 
