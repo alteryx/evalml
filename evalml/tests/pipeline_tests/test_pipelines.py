@@ -98,11 +98,9 @@ def test_required_fields():
         TestPipelineWithoutComponentGraph(parameters={})
 
 
-def test_serialization(
-    X_y_binary, tmpdir_with_cleanup, logistic_regression_binary_pipeline_class
-):
+def test_serialization(X_y_binary, tmpdir, logistic_regression_binary_pipeline_class):
     X, y = X_y_binary
-    path = os.path.join(str(tmpdir_with_cleanup), "pipe.pkl")
+    path = os.path.join(str(tmpdir), "pipe.pkl")
     pipeline = logistic_regression_binary_pipeline_class(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )
@@ -115,11 +113,9 @@ def test_serialization(
 
 @patch("cloudpickle.dump")
 def test_serialization_protocol(
-    mock_cloudpickle_dump,
-    tmpdir_with_cleanup,
-    logistic_regression_binary_pipeline_class,
+    mock_cloudpickle_dump, tmpdir, logistic_regression_binary_pipeline_class
 ):
-    path = os.path.join(str(tmpdir_with_cleanup), "pipe.pkl")
+    path = os.path.join(str(tmpdir), "pipe.pkl")
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
 
     pipeline.save(path)
@@ -138,10 +134,10 @@ def test_serialization_protocol(
 
 @pytest.fixture
 def pickled_pipeline_path(
-    X_y_binary, tmpdir_with_cleanup, logistic_regression_binary_pipeline_class
+    X_y_binary, tmpdir, logistic_regression_binary_pipeline_class
 ):
     X, y = X_y_binary
-    path = os.path.join(str(tmpdir_with_cleanup), "pickled_pipe.pkl")
+    path = os.path.join(str(tmpdir), "pickled_pipe.pkl")
     pipeline = logistic_regression_binary_pipeline_class(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )

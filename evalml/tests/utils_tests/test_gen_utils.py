@@ -374,14 +374,14 @@ def test_save_plotly_static_default_format(
     format,
     interactive,
     decision_tree_classification_pipeline_class,
-    tmpdir_with_cleanup,
+    tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
         pipeline = decision_tree_classification_pipeline_class
         feat_fig_ = pipeline.graph_feature_importance()
 
-        filepath = os.path.join(str(tmpdir_with_cleanup), f"{file_name}")
+        filepath = os.path.join(str(tmpdir), f"{file_name}")
         no_output_ = save_plot(
             fig=feat_fig_,
             filepath=filepath,
@@ -409,14 +409,14 @@ def test_save_plotly_static_different_format(
     format,
     interactive,
     decision_tree_classification_pipeline_class,
-    tmpdir_with_cleanup,
+    tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
         pipeline = decision_tree_classification_pipeline_class
         feat_fig_ = pipeline.graph_feature_importance()
 
-        filepath = os.path.join(str(tmpdir_with_cleanup), f"{file_name}")
+        filepath = os.path.join(str(tmpdir), f"{file_name}")
         no_output_ = save_plot(
             fig=feat_fig_,
             filepath=filepath,
@@ -444,18 +444,14 @@ def test_save_plotly_static_no_filepath(
     format,
     interactive,
     decision_tree_classification_pipeline_class,
-    tmpdir_with_cleanup,
+    tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
         pipeline = decision_tree_classification_pipeline_class
         feat_fig_ = pipeline.graph_feature_importance()
 
-        filepath = (
-            os.path.join(str(tmpdir_with_cleanup), f"{file_name}")
-            if file_name
-            else None
-        )
+        filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
         output_ = save_plot(
             fig=feat_fig_,
             filepath=filepath,
@@ -486,18 +482,14 @@ def test_save_plotly_interactive(
     format,
     interactive,
     decision_tree_classification_pipeline_class,
-    tmpdir_with_cleanup,
+    tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
         pipeline = decision_tree_classification_pipeline_class
         feat_fig_ = pipeline.graph_feature_importance()
 
-        filepath = (
-            os.path.join(str(tmpdir_with_cleanup), f"{file_name}")
-            if file_name
-            else None
-        )
+        filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
         no_output_ = save_plot(
             fig=feat_fig_,
             filepath=filepath,
@@ -532,18 +524,14 @@ def test_save_graphviz_default_format(
     format,
     interactive,
     fitted_tree_estimators,
-    tmpdir_with_cleanup,
+    tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
         est_class, _ = fitted_tree_estimators
         src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
 
-        filepath = (
-            os.path.join(str(tmpdir_with_cleanup), f"{file_name}")
-            if file_name
-            else None
-        )
+        filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
         no_output_ = save_plot(
             fig=src,
             filepath=filepath,
@@ -571,14 +559,14 @@ def test_save_graphviz_different_format(
     format,
     interactive,
     fitted_tree_estimators,
-    tmpdir_with_cleanup,
+    tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
         est_class, _ = fitted_tree_estimators
         src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
 
-        filepath = os.path.join(str(tmpdir_with_cleanup), f"{file_name}")
+        filepath = os.path.join(str(tmpdir), f"{file_name}")
         no_output_ = save_plot(
             fig=src,
             filepath=filepath,
@@ -608,6 +596,7 @@ def test_save_graphviz_invalid_filepath(
     format,
     interactive,
     fitted_tree_estimators,
+    tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
@@ -635,14 +624,14 @@ def test_save_graphviz_different_filename_output(
     format,
     interactive,
     fitted_tree_estimators,
-    tmpdir_with_cleanup,
+    tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
         est_class, _ = fitted_tree_estimators
         src = visualize_decision_tree(estimator=est_class, filled=True, max_depth=3)
 
-        filepath = os.path.join(str(tmpdir_with_cleanup), f"{file_name}")
+        filepath = os.path.join(str(tmpdir), f"{file_name}")
         no_output_ = save_plot(
             fig=src,
             filepath=filepath,
@@ -674,7 +663,7 @@ def test_save_graphviz_different_filename_output(
     ],
 )
 def test_save_matplotlib_default_format(
-    file_name, format, interactive, fitted_tree_estimators, tmpdir_with_cleanup
+    file_name, format, interactive, fitted_tree_estimators, tmpdir
 ):
     plt = pytest.importorskip("matplotlib.pyplot")
 
@@ -684,7 +673,7 @@ def test_save_matplotlib_default_format(
         return fig_
 
     fig = setup_plt()
-    filepath = os.path.join(str(tmpdir_with_cleanup), f"{file_name}")
+    filepath = os.path.join(str(tmpdir), f"{file_name}")
     no_output_ = save_plot(
         fig=fig,
         filepath=filepath,
@@ -720,7 +709,7 @@ def test_save_seaborn_default_format(
     format,
     interactive,
     fitted_tree_estimators,
-    tmpdir_with_cleanup,
+    tmpdir,
     has_minimal_dependencies,
 ):
     sns = pytest.importorskip("seaborn")
@@ -731,7 +720,7 @@ def test_save_seaborn_default_format(
         return fig
 
     fig = setup_plt()
-    filepath = os.path.join(str(tmpdir_with_cleanup), f"{file_name}")
+    filepath = os.path.join(str(tmpdir), f"{file_name}")
     no_output_ = save_plot(
         fig=fig,
         filepath=filepath,

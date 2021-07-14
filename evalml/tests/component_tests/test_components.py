@@ -1181,8 +1181,8 @@ def test_no_fitting_required_components(
                 component.transform(X, y)
 
 
-def test_serialization(X_y_binary, ts_data, tmpdir_with_cleanup, helper_functions):
-    path = os.path.join(str(tmpdir_with_cleanup), "component.pkl")
+def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
+    path = os.path.join(str(tmpdir), "component.pkl")
     for component_class in all_components():
         print("Testing serialization of component {}".format(component_class.name))
         try:
@@ -1235,8 +1235,8 @@ def test_serialization(X_y_binary, ts_data, tmpdir_with_cleanup, helper_function
 
 
 @patch("cloudpickle.dump")
-def test_serialization_protocol(mock_cloudpickle_dump, tmpdir_with_cleanup):
-    path = os.path.join(str(tmpdir_with_cleanup), "pipe.pkl")
+def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
+    path = os.path.join(str(tmpdir), "pipe.pkl")
     component = LogisticRegressionClassifier()
 
     component.save(path)
