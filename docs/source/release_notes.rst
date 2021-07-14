@@ -18,6 +18,7 @@ Release Notes
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
         * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`
+        * Added a tmp_dir fixture that deletes its contents after tests run :pr:`2505`
 
 .. warning::
 
