@@ -8,8 +8,9 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ElasticNetClassifier,
     ElasticNetRegressor,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor,
 )
-
 from evalml.problem_types import ProblemTypes
 
 
@@ -87,7 +88,6 @@ def test_evalml_algorithm_short(
     assert len(first_batch) == 2
     for pipeline in first_batch:
         assert pipeline.model_family in naive_model_families
-
     add_result(algo, first_batch)
 
     second_batch = algo.next_batch()
@@ -95,12 +95,10 @@ def test_evalml_algorithm_short(
     for pipeline in second_batch:
         assert pipeline.model_family in naive_model_families
         assert pipeline.get_component(fs)
-
     add_result(algo, second_batch)
-    assert algo._selected_cols == ["0", "1", "2"]
 
+    assert algo._selected_cols == ["0", "1", "2"]
     final_batch = algo.next_batch()
-    # assert len(first_batch) == 2
     for pipeline in final_batch:
         if not isinstance(
             pipeline.estimator, (ElasticNetClassifier, ElasticNetRegressor)
@@ -108,6 +106,12 @@ def test_evalml_algorithm_short(
             assert pipeline.model_family not in naive_model_families
         select = pipeline.get_component("Select Columns Transformer")
         assert select.parameters["columns"] == algo._selected_cols
+        assert algo._tuners[pipeline.name]
+    add_result(algo, final_batch)
 
-    # add_result(algo, second_batch)
-    # assert algo._selected_cols == ["0", "1", "2"]
+    final_ensemble = algo.next_batch()
+    assert isinstance(
+        final_ensemble[0].estimator,
+        (StackedEnsembleRegressor, StackedEnsembleClassifier),
+    )
+    add_result(algo, final_ensemble)

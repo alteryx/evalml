@@ -1,9 +1,11 @@
+import inspect
+
 import numpy as np
 from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm
 
-
+from evalml.automl.utils import get_hyperparameter_ranges
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     RFClassifierSelectFromModel,
@@ -17,6 +19,7 @@ from evalml.pipelines.components.utils import (
     handle_component_class,
 )
 from evalml.pipelines.utils import (
+    _make_stacked_ensemble_pipeline,
     make_pipeline,
 )
 from evalml.problem_types import is_regression
@@ -188,7 +191,6 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             for estimator in get_estimators(self.problem_type)
             if estimator not in self._naive_estimators()
         ]
-        print(estimators)
         pipelines = [
             make_pipeline(
                 self.X,
@@ -210,7 +212,34 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             )
             for pipeline in pipelines
         ]
+
+        for pipeline in pipelines:
+            pipeline_hyperparameters = get_hyperparameter_ranges(
+                pipeline.component_graph, self._custom_hyperparameters
+            )
+            self._tuners[pipeline.name] = self._tuner_class(
+                pipeline_hyperparameters, random_seed=self.random_seed
+            )
+
         return pipelines
+
+    def _create_ensemble(self):
+        input_pipelines = []
+        for pipeline_dict in self._best_pipeline_info.values():
+            pipeline = pipeline_dict["pipeline"]
+            pipeline_params = pipeline_dict["parameters"]
+            parameters = self._transform_parameters(pipeline, pipeline_params)
+            input_pipelines.append(
+                pipeline.new(parameters=parameters, random_seed=self.random_seed)
+            )
+        n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
+        ensemble = _make_stacked_ensemble_pipeline(
+            input_pipelines,
+            input_pipelines[0].problem_type,
+            random_seed=self.random_seed,
+            n_jobs=n_jobs_ensemble,
+        )
+        return [ensemble]
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -225,6 +254,8 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             next_batch = self._create_naive_pipelines_with_feature_selection()
         elif self._batch_number == 2:
             next_batch = self._create_fast_final()
+        elif self.batch_number == 3:
+            next_batch = self._create_ensemble()
 
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
@@ -239,7 +270,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             trained_pipeline_results (dict): Results from training a pipeline.
         """
         if pipeline.model_family != ModelFamily.ENSEMBLE:
-            if self.batch_number > 5:
+            if self.batch_number >= 3:
                 try:
                     super().add_result(
                         score_to_minimize, pipeline, trained_pipeline_results
@@ -253,10 +284,6 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                         )
                     else:
                         raise (e)
-            # else:
-            #     super().add_result(
-            #         score_to_minimize, pipeline, trained_pipeline_results
-            #     )
 
         if self.batch_number == 2 and self._selected_cols is None:
             if is_regression(self.problem_type):
@@ -286,3 +313,46 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                     }
                 }
             )
+
+    def _transform_parameters(self, pipeline, proposed_parameters):
+        """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
+        parameters = {}
+        if "pipeline" in self._pipeline_params:
+            parameters["pipeline"] = self._pipeline_params["pipeline"]
+
+        for name, component_class in pipeline.linearized_component_graph:
+            component_parameters = proposed_parameters.get(name, {})
+            init_params = inspect.signature(component_class.__init__).parameters
+            # For first batch, pass the pipeline params to the components that need them
+            if name in self._custom_hyperparameters and self._batch_number == 0:
+                for param_name, value in self._custom_hyperparameters[name].items():
+                    if isinstance(value, (Integer, Real)):
+                        # get a random value in the space
+                        component_parameters[param_name] = value.rvs(
+                            random_state=self.random_seed
+                        )[0]
+                    # Categorical
+                    else:
+                        component_parameters[param_name] = value.rvs(
+                            random_state=self.random_seed
+                        )
+            if name in self._pipeline_params and self._batch_number == 0:
+                for param_name, value in self._pipeline_params[name].items():
+                    component_parameters[param_name] = value
+            # Inspects each component and adds the following parameters when needed
+            if "n_jobs" in init_params:
+                component_parameters["n_jobs"] = self.n_jobs
+            if "number_features" in init_params:
+                component_parameters["number_features"] = self.number_features
+            if (
+                name in self._pipeline_params
+                and name == "Drop Columns Transformer"
+                and self._batch_number > 0
+            ):
+                component_parameters["columns"] = self._pipeline_params[name]["columns"]
+            if "pipeline" in self._pipeline_params:
+                for param_name, value in self._pipeline_params["pipeline"].items():
+                    if param_name in init_params:
+                        component_parameters[param_name] = value
+            parameters[name] = component_parameters
+        return parameters
