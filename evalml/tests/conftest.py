@@ -5,6 +5,7 @@ from unittest.mock import PropertyMock, patch
 
 import numpy as np
 import pandas as pd
+import py
 import pytest
 import woodwork as ww
 from sklearn import datasets
@@ -1292,3 +1293,10 @@ class _AutoMLTestEnv:
 @pytest.fixture
 def AutoMLTestEnv():
     return _AutoMLTestEnv
+
+
+@pytest.fixture
+def tmpdir(tmp_path):
+    dir = py.path.local(tmp_path)
+    yield dir
+    dir.remove(ignore_errors=True)
