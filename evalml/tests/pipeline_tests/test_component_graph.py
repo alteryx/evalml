@@ -2067,3 +2067,84 @@ def test_final_component_features_does_not_have_target():
 
     final_features = cg.compute_final_component_features(X, y)
     assert "TargetImputer.y" not in final_features.columns
+
+
+@patch("evalml.pipelines.components.Estimator.fit")
+def test_component_graph_with_X_y_inputs_X(mock_fit):
+    class DummyColumnNameTransformer(Transformer):
+        name = "Dummy Column Name Transform"
+
+        def __init__(self, parameters=None, random_seed=0):
+            super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
+
+        def fit(self, X, y):
+            return self
+
+        def transform(self, X, y=None):
+            return X.rename(columns=lambda x: x + "_new", inplace=False)
+
+    X = pd.DataFrame(
+        {
+            "column_1": [0, 2, 3, 1, 5, 6, 5, 4, 3],
+            "column_2": [1, 2, 3, 4, 5, 6, 5, 4, 3],
+        }
+    )
+
+    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
+    graph = {
+        "DummyColumnNameTransformer": [DummyColumnNameTransformer, "X", "y"],
+        "Random Forest": [
+            "Random Forest Classifier",
+            "DummyColumnNameTransformer.x",
+            "X",
+            "y",
+        ],
+    }
+
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate({})
+    assert component_graph.get_parents("DummyColumnNameTransformer") == ["X", "y"]
+    assert component_graph.get_parents("Random Forest Classifier") == [
+        "DummyColumnNameTransformer.x",
+        "X",
+        "y",
+    ]
+
+    component_graph.fit(X, y)
+
+    # Check that we have columns from both the output of DummyColumnNameTransformer as well as the original columns since "X" was specified
+    assert list(mock_fit.call_args[0][0].columns) == [
+        "column_1_new",
+        "column_2_new",
+        "column_1",
+        "column_2",
+    ]
+
+
+@patch("evalml.pipelines.components.Imputer.fit_transform")
+@patch("evalml.pipelines.components.Estimator.fit")
+def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
+    X = pd.DataFrame(
+        {
+            "column_1": [0, 2, 3, 1, 5, 6, 5, 4, 3],
+            "column_2": [1, 2, 3, 4, 5, 6, 5, 4, 3],
+        }
+    )
+    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
+    graph = {
+        "Log": [LogTransform, "X", "y"],
+        "Imputer": ["Imputer", "Log.x", "y"],
+        "Random Forest": ["Random Forest Classifier", "Imputer.x", "Log.y"],
+    }
+    mock_fit_transform.return_value = X
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate({})
+    assert component_graph.get_parents("Log") == ["X", "y"]
+    assert component_graph.get_parents("Imputer") == ["Log.x", "y"]
+    assert component_graph.get_parents("Random Forest") == ["Imputer.x", "Log.y"]
+
+    component_graph.fit(X, y)
+    # Check that we use "y" for Imputer, not "Log.y"
+    assert_series_equal(mock_fit_transform.call_args[0][1], y)
+    # Check that we use "Log.y" for RF
+    assert_series_equal(mock_fit.call_args[0][1], infer_feature_types(np.log(y)))
