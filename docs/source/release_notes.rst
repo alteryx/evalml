@@ -23,6 +23,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * `NaN` values in the `Natural Language` type are no longer supported by the Imputer with the pandas upgrade. :pr:`2477`
 
 **v0.28.0 Jul. 2, 2021**
     * Enhancements
