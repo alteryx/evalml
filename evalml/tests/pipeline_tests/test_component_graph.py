@@ -2104,7 +2104,7 @@ def test_component_graph_with_X_y_inputs_X(mock_fit):
     component_graph = ComponentGraph(graph)
     component_graph.instantiate({})
     assert component_graph.get_parents("DummyColumnNameTransformer") == ["X", "y"]
-    assert component_graph.get_parents("Random Forest Classifier") == [
+    assert component_graph.get_parents("Random Forest") == [
         "DummyColumnNameTransformer.x",
         "X",
         "y",
