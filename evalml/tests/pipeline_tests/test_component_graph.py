@@ -2069,7 +2069,7 @@ def test_final_component_features_does_not_have_target():
     assert "TargetImputer.y" not in final_features.columns
 
 
-@patch("evalml.pipelines.components.Estimator.fit")
+@patch("evalml.pipelines.components.Imputer.fit_transform")
 def test_component_graph_with_X_y_inputs_X(mock_fit):
     class DummyColumnNameTransformer(Transformer):
         name = "Dummy Column Name Transform"
@@ -2093,18 +2093,15 @@ def test_component_graph_with_X_y_inputs_X(mock_fit):
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
     graph = {
         "DummyColumnNameTransformer": [DummyColumnNameTransformer, "X", "y"],
-        "Random Forest": [
-            "Random Forest Classifier",
-            "DummyColumnNameTransformer.x",
-            "X",
-            "y",
-        ],
+        "Imputer": ["Imputer", "DummyColumnNameTransformer.x", "X", "y"],
+        "Random Forest": ["Random Forest Classifier", "Imputer.x", "y"],
     }
 
     component_graph = ComponentGraph(graph)
     component_graph.instantiate({})
+    mock_fit.return_value = X
     assert component_graph.get_parents("DummyColumnNameTransformer") == ["X", "y"]
-    assert component_graph.get_parents("Random Forest") == [
+    assert component_graph.get_parents("Imputer") == [
         "DummyColumnNameTransformer.x",
         "X",
         "y",

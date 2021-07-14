@@ -257,8 +257,6 @@ class ComponentGraph:
             if parent_input[-2:] != ".y"
         ]
         for parent in parent_inputs:
-            if parent == "X":
-                final_component_inputs.append(X)
             parent_output = component_outputs.get(
                 parent, component_outputs.get(f"{parent}.x")
             )
