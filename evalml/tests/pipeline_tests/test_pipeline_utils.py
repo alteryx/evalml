@@ -1067,15 +1067,36 @@ def test_make_component_dict_from_component_list_with_duplicate_names():
             "y",
         ],
     }
-    assert _make_component_dict_from_component_list([Imputer, Imputer]) == {
+    assert _make_component_dict_from_component_list(
+        [Imputer, Imputer, RandomForestClassifier]
+    ) == {
         "Imputer": [Imputer, "X", "y"],
         "Imputer_1": [Imputer, "Imputer.x", "y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Imputer_1.x",
+            "y",
+        ],
     }
-    assert _make_component_dict_from_component_list([TargetImputer, TargetImputer]) == {
+    assert _make_component_dict_from_component_list(
+        [TargetImputer, TargetImputer, RandomForestClassifier]
+    ) == {
         "Target Imputer": [TargetImputer, "X", "y"],
         "Target Imputer_1": [TargetImputer, "X", "Target Imputer.y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "X",
+            "Target Imputer_1.y",
+        ],
     }
-    assert _make_component_dict_from_component_list([Undersampler, Undersampler]) == {
+    assert _make_component_dict_from_component_list(
+        [Undersampler, Undersampler, RandomForestClassifier]
+    ) == {
         "Undersampler": [Undersampler, "X", "y"],
         "Undersampler_1": [Undersampler, "Undersampler.x", "Undersampler.y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Undersampler_1.x",
+            "Undersampler_1.y",
+        ],
     }
