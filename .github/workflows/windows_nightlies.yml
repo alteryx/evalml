@@ -40,7 +40,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{ github.repository }}
-          ref: main
+          ref: fix-windows-37-nightlies
       - name: Install make
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
