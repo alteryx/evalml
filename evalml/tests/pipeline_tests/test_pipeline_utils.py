@@ -35,7 +35,7 @@ from evalml.pipelines.components.transformers.samplers.undersampler import (
 )
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
-    _make_component_graph_from_preprocessing,
+    _make_component_dict_from_component_list,
     _make_component_list_from_actions,
     generate_pipeline_code,
     get_estimators,
@@ -995,25 +995,23 @@ def test_generate_code_pipeline_with_custom_components():
     assert pipeline == expected_code
 
 
-def test_make_component_graph_from_preprocessing():
-    _make_component_graph_from_preprocessing([RandomForestClassifier]) == {
-        "RF": [RandomForestClassifier, "X", "y"]
+def test_make_component_dict_from_component_list():
+    assert _make_component_dict_from_component_list([RandomForestClassifier]) == {
+        "Random Forest Classifier": [RandomForestClassifier, "X", "y"]
     }
-    assert _make_component_graph_from_preprocessing([Imputer]) == {
+    assert _make_component_dict_from_component_list([Imputer]) == {
         "Imputer": [Imputer, "X", "y"]
     }
-    assert _make_component_graph_from_preprocessing([Imputer, OneHotEncoder]) == {
-        "Imputer": [Imputer, "X", "y"],
-        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
-    }
-    assert _make_component_graph_from_preprocessing(
+    assert _make_component_dict_from_component_list(
         [Imputer, OneHotEncoder, DropNullColumns]
     ) == {
         "Imputer": [Imputer, "X", "y"],
         "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
         "Drop Null Columns Transformer": [DropNullColumns, "One Hot Encoder.x", "y"],
     }
-    assert _make_component_graph_from_preprocessing(
+
+    # Test with component that modifies y (Target Imputer)
+    assert _make_component_dict_from_component_list(
         [Imputer, OneHotEncoder, TargetImputer, RandomForestClassifier]
     ) == {
         "Imputer": [Imputer, "X", "y"],
@@ -1026,7 +1024,8 @@ def test_make_component_graph_from_preprocessing():
         ],
     }
 
-    assert _make_component_graph_from_preprocessing(
+    # Test with component that modifies X and y (Undersampler)
+    assert _make_component_dict_from_component_list(
         [
             Imputer,
             OneHotEncoder,
@@ -1054,4 +1053,29 @@ def test_make_component_graph_from_preprocessing():
             "Undersampler.x",
             "Undersampler.y",
         ],
+    }
+
+
+def test_make_component_dict_from_component_list_with_duplicate_names():
+    assert _make_component_dict_from_component_list(
+        [RandomForestClassifier, RandomForestClassifier]
+    ) == {
+        "Random Forest Classifier": [RandomForestClassifier, "X", "y"],
+        "Random Forest Classifier_1": [
+            RandomForestClassifier,
+            "Random Forest Classifier.x",
+            "y",
+        ],
+    }
+    assert _make_component_dict_from_component_list([Imputer, Imputer]) == {
+        "Imputer": [Imputer, "X", "y"],
+        "Imputer_1": [Imputer, "Imputer.x", "y"],
+    }
+    assert _make_component_dict_from_component_list([TargetImputer, TargetImputer]) == {
+        "Target Imputer": [TargetImputer, "X", "y"],
+        "Target Imputer_1": [TargetImputer, "X", "Target Imputer.y"],
+    }
+    assert _make_component_dict_from_component_list([Undersampler, Undersampler]) == {
+        "Undersampler": [Undersampler, "X", "y"],
+        "Undersampler_1": [Undersampler, "Undersampler.x", "Undersampler.y"],
     }

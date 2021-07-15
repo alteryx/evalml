@@ -131,16 +131,8 @@ def _get_preprocessing_components(
     return pp_components
 
 
-from evalml.pipelines.components.transformers.transformer import (
-    TargetTransformer,
-)
-
-
-def _make_component_graph_from_preprocessing(component_list):
-    # Logic is as follows: Create the component dict for the non-target transformers as expected.
-    # If there are target transformers present, connect them together and then pass the final output
-    # to the sampler (if present) or the final estimator
-
+def _make_component_dict_from_component_list(component_list):
+    """Generates a component dictionary from a list of components."""
     components_with_names = []
     seen = set()
     for idx, component in enumerate(component_list):
@@ -222,7 +214,7 @@ def make_pipeline(
         X, y, problem_type, estimator, sampler_name
     )
     complete_component_list = preprocessing_components + [estimator]
-    component_graph = _make_component_graph_from_preprocessing(complete_component_list)
+    component_graph = _make_component_dict_from_component_list(complete_component_list)
     base_class = _get_pipeline_base_class(problem_type)
     return base_class(
         component_graph,

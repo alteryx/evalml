@@ -15,6 +15,7 @@ Release Notes
     * Changes
         * Updated XGBoost dependency to ``>=1.4.2`` :pr:`2484`, :pr:`2498`
         * Added a ``DeprecationWarning`` about deprecating the list API for ``ComponentGraph`` :pr:`2488`
+        * Updated ``make_pipeline`` for AutoML to create dictionaries, not lists, to initialize pipelines :pr:`2504`
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
     * Testing Changes
