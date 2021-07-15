@@ -83,9 +83,7 @@ def test_backend_comp_graph(test_component_graph):
             comp.graph()
 
 
-def test_saving_png_file(tmpdir, test_pipeline, is_using_conda):
-    if is_using_conda:
-        pytest.skip("Skipping saving_png_file if running during conda build process.")
+def test_saving_png_file(tmpdir, test_pipeline):
     pytest.importorskip(
         "graphviz", reason="Skipping plotting test because graphviz not installed"
     )
