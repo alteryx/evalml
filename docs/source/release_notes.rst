@@ -2,10 +2,12 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Updated 1-way partial dependence support for datetime features :pr:`2454`
         * Added details on how to fix error caused by broken ww schema :pr:`2466`
         * Added ability to use built-in pickle for saving AutoMLSearch :pr:`2463`
         * Updated our components and component graphs to use latest features of ww 0.4.1, e.g. ``concat_columns`` and drop in-place. :pr:`2465`
         * Added support for new Woodwork ``Unknown`` type in AutoMLSearch :pr:`2477`
+        * Updated ``ComponentGraph`` to accept X and y as inputs :pr:`2507`
     * Fixes
         * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
         * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
@@ -18,6 +20,7 @@ Release Notes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
+        * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`
         * Added a tmp_dir fixture that deletes its contents after tests run :pr:`2505`
 
 .. warning::

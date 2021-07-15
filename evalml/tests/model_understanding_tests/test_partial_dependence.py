@@ -925,9 +925,11 @@ def test_partial_dependence_all_nan_value_error(
         partial_dependence(pl, pred_df, features=0, grid_resolution=10)
 
 
+@pytest.mark.parametrize("grid", [20, 100])
+@pytest.mark.parametrize("size", [10, 100])
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
 def test_partial_dependence_datetime(
-    problem_type, X_y_regression, X_y_binary, X_y_multi
+    problem_type, size, grid, X_y_regression, X_y_binary, X_y_multi
 ):
     if problem_type == "binary":
         X, y = X_y_binary
@@ -965,28 +967,38 @@ def test_partial_dependence_datetime(
 
     X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
     y = pd.Series(y)
-    random_dates = pd.Series(pd.date_range("20200101", periods=10)).sample(
-        replace=True, random_state=0, n=100
-    )
+    random_dates = pd.Series(pd.date_range("20200101", periods=size))
+    if size == 10:
+        random_dates = random_dates.sample(replace=True, random_state=0, n=100)
     random_dates.index = X.index
     X["dt_column"] = random_dates
     pipeline.fit(X, y)
-    part_dep = partial_dependence(pipeline, X, features="dt_column")
+    part_dep = partial_dependence(
+        pipeline, X, features="dt_column", grid_resolution=grid
+    )
+    expected_size = min(size, grid)
+    num_classes = y.nunique()
     if problem_type == "multiclass":
-        assert len(part_dep["partial_dependence"]) == 30  # 10 rows * 3 classes
-        assert len(part_dep["feature_values"]) == 30
+        assert (
+            len(part_dep["partial_dependence"]) == num_classes * expected_size
+        )  # 10 rows * 3 classes
+        assert len(part_dep["feature_values"]) == num_classes * expected_size
     else:
-        assert len(part_dep["partial_dependence"]) == 10
-        assert len(part_dep["feature_values"]) == 10
+        assert len(part_dep["partial_dependence"]) == expected_size
+        assert len(part_dep["feature_values"]) == expected_size
     assert not part_dep.isnull().any(axis=None)
-
-    part_dep = partial_dependence(pipeline, X, features=20)
+    # keeps the test from running too long. The part below still runs for 3 other tests
+    if grid == 100 or size == 100:
+        return
+    part_dep = partial_dependence(pipeline, X, features=20, grid_resolution=grid)
     if problem_type == "multiclass":
-        assert len(part_dep["partial_dependence"]) == 30  # 10 rows * 3 classes
-        assert len(part_dep["feature_values"]) == 30
+        assert (
+            len(part_dep["partial_dependence"]) == num_classes * expected_size
+        )  # 10 rows * 3 classes
+        assert len(part_dep["feature_values"]) == num_classes * expected_size
     else:
-        assert len(part_dep["partial_dependence"]) == 10
-        assert len(part_dep["feature_values"]) == 10
+        assert len(part_dep["partial_dependence"]) == expected_size
+        assert len(part_dep["feature_values"]) == expected_size
     assert not part_dep.isnull().any(axis=None)
 
     with pytest.raises(
@@ -1301,3 +1313,97 @@ def test_partial_dependence_unknown(indices, error, X_y_binary):
         return
     s = partial_dependence(pl, X, indices, grid_resolution=10)
     assert not s.isnull().any().any()
+
+
+@pytest.mark.parametrize(
+    "X_datasets",
+    [
+        pd.DataFrame(
+            {
+                "date_column": pd.date_range("20200101", periods=100),
+                "numbers": [i % 3 for i in range(100)],
+                "date2": pd.date_range("20191001", periods=100),
+            }
+        ),
+        pd.DataFrame(
+            {
+                "date_column": pd.date_range("20200101", periods=10).append(
+                    pd.date_range("20191201", periods=50).append(
+                        pd.date_range("20180201", periods=40)
+                    )
+                )
+            }
+        ),
+        pd.DataFrame(
+            {
+                "date_column": pd.date_range(
+                    start="20200101", freq="10h30min50s", periods=100
+                )
+            }
+        ),
+    ],
+)
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
+def test_partial_dependence_datetime_extra(
+    problem_type, X_datasets, X_y_regression, X_y_binary, X_y_multi
+):
+    if problem_type == "binary":
+        X, y = X_y_binary
+        pipeline = BinaryClassificationPipeline(
+            component_graph=[
+                "Imputer",
+                "One Hot Encoder",
+                "DateTime Featurization Component",
+                "Standard Scaler",
+                "Logistic Regression Classifier",
+            ]
+        )
+    elif problem_type == "multiclass":
+        X, y = X_y_multi
+        pipeline = MulticlassClassificationPipeline(
+            component_graph=[
+                "Imputer",
+                "One Hot Encoder",
+                "DateTime Featurization Component",
+                "Standard Scaler",
+                "Logistic Regression Classifier",
+            ]
+        )
+    else:
+        X, y = X_y_regression
+        pipeline = RegressionPipeline(
+            component_graph=[
+                "Imputer",
+                "One Hot Encoder",
+                "DateTime Featurization Component",
+                "Standard Scaler",
+                "Linear Regressor",
+            ]
+        )
+
+    X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
+    X = pd.concat([X, X_datasets], axis=1, join="inner")
+    y = pd.Series(y)
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(
+        pipeline, X, features="date_column", grid_resolution=10
+    )
+    num_classes = y.nunique()
+    if problem_type == "multiclass":
+        assert (
+            len(part_dep["partial_dependence"]) == num_classes * 10
+        )  # 10 rows * 3 classes
+        assert len(part_dep["feature_values"]) == num_classes * 10
+    else:
+        assert len(part_dep["partial_dependence"]) == 10
+        assert len(part_dep["feature_values"]) == 10
+    assert not part_dep.isnull().any(axis=None)
+
+    part_dep = partial_dependence(pipeline, X, features=20, grid_resolution=10)
+    if problem_type == "multiclass":
+        assert len(part_dep["partial_dependence"]) == num_classes * 10
+        assert len(part_dep["feature_values"]) == num_classes * 10
+    else:
+        assert len(part_dep["partial_dependence"]) == 10
+        assert len(part_dep["feature_values"]) == 10
+    assert not part_dep.isnull().any(axis=None)
