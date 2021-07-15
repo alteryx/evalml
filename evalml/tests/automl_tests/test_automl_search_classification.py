@@ -241,11 +241,11 @@ def test_categorical_classification(X_y_categorical_classification):
         y_train=y,
         problem_type="binary",
         objective="precision",
-        max_iterations=5,
+        max_batches=1,
         n_jobs=1,
     )
     automl.search()
-    assert not automl.rankings["mean_cv_score"].isnull().all()
+    assert not automl.rankings["mean_cv_score"].isnull().any()
 
 
 def test_random_seed(X_y_binary):
@@ -256,7 +256,7 @@ def test_random_seed(X_y_binary):
         y_train=y,
         problem_type="binary",
         objective=Precision(),
-        max_iterations=5,
+        max_batches=1,
         random_seed=0,
         n_jobs=1,
     )
@@ -267,7 +267,6 @@ def test_random_seed(X_y_binary):
         y_train=y,
         problem_type="binary",
         objective=Precision(),
-        max_iterations=5,
         random_seed=0,
         n_jobs=1,
     )
@@ -1028,8 +1027,8 @@ def test_automl_component_graphs_search(
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
-        problem_type=problem_type,
         max_iterations=5,
+        problem_type=problem_type,
         start_iteration_callback=start_iteration_callback,
         allowed_component_graphs=component_graph,
         optimize_thresholds=False,

@@ -12,18 +12,8 @@ on:
       - 'evalml/tests/dependency_update_check/*.txt'
 
 jobs:
-  shellcheck:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v2
-      - name: Shellcheck
-        uses: reviewdog/action-shellcheck@v1
-        with:
-          python-version: '3.8.x'
   build_conda_pkg:
     runs-on: ubuntu-latest
-    needs: shellcheck
     steps:
       - name: Set up Python 3.8
         uses: actions/setup-python@v2
