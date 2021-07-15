@@ -8,6 +8,10 @@ import pandas as pd
 import woodwork as ww
 from sklearn.exceptions import NotFittedError
 from sklearn.inspection import partial_dependence as sk_partial_dependence
+from sklearn.inspection._partial_dependence import (
+    _grid_from_X,
+    _partial_dependence_brute,
+)
 from sklearn.manifold import TSNE
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
@@ -655,9 +659,6 @@ def partial_dependence(
         grid_resolution = max([max_num_cats + 1, grid_resolution])
 
     X_dt = X_features.ww.select("datetime")
-    if any(is_datetime):
-        max_num_dt = max(X_dt.ww.describe().loc["nunique"])
-        grid_resolution = max([max_num_dt + 1, grid_resolution])
 
     if isinstance(features, (list, tuple)):
         feature_names = _get_feature_names_from_str_or_col_index(X, features)
@@ -690,15 +691,51 @@ def partial_dependence(
 
     _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
+
     try:
-        preds = sk_partial_dependence(
-            wrapped,
-            X=X,
-            features=features,
-            percentiles=percentiles,
-            grid_resolution=grid_resolution,
-            kind=kind,
-        )
+        if any(is_datetime):
+            timestamps = np.array(
+                [X_dt - pd.Timestamp("1970-01-01")] // np.timedelta64(1, "s")
+            ).reshape(-1, 1)
+            grid, values = _grid_from_X(
+                timestamps, percentiles=percentiles, grid_resolution=grid_resolution
+            )
+            grid_dates = pd.to_datetime(
+                pd.Series(grid.squeeze()), unit="s"
+            ).values.reshape(-1, 1)
+            # convert values to dates for the output
+            value_dates = pd.to_datetime(pd.Series(values[0]), unit="s")
+            # need to pass in the feature as an int index rather than string
+            feature_index = (
+                X.columns.tolist().index(features)
+                if isinstance(features, str)
+                else features
+            )
+            averaged_predictions, predictions = _partial_dependence_brute(
+                wrapped, grid_dates, [feature_index], X, response_method="auto"
+            )
+            # reshape based on the way scikit-learn reshapes the data
+            predictions = predictions.reshape(
+                -1, X.shape[0], *[val.shape[0] for val in values]
+            )
+
+            averaged_predictions = averaged_predictions.reshape(
+                -1, *[val.shape[0] for val in values]
+            )
+            preds = {
+                "average": averaged_predictions,
+                "individual": predictions,
+                "values": [value_dates],
+            }
+        else:
+            preds = sk_partial_dependence(
+                wrapped,
+                X=X,
+                features=features,
+                percentiles=percentiles,
+                grid_resolution=grid_resolution,
+                kind=kind,
+            )
     except ValueError as e:
         if "percentiles are too close to each other" in str(e):
             raise ValueError(
