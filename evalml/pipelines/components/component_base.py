@@ -26,7 +26,6 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """
 
     _default_parameters = None
-    _supported_by_list_API = False
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         """Base class for all components.
@@ -52,6 +51,20 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     @abstractmethod
     def model_family(cls):
         """Returns ModelFamily of this component"""
+
+    @property
+    @classmethod
+    @abstractmethod
+    def modifies_features(cls):
+        """Returns whether this component modifies (subsets or transforms) the feature variable during transform.
+        For Estimators, this attribute determines if the return value from `predict` or `predict_proba` should be used as features or targets."""
+
+    @property
+    @classmethod
+    @abstractmethod
+    def modifies_target(cls):
+        """Returns whether this component modifies (subsets or transforms) the target variable during transform.
+        For Estimators, this attribute determines if the return value from `predict` or `predict_proba` should be used as features or targets."""
 
     @classproperty
     def needs_fitting(self):

@@ -151,9 +151,9 @@ def _make_component_dict_from_component_list(component_list):
             most_recent_features,
             most_recent_target,
         ]
-        if component_class._returns_targets:
+        if component_class.modifies_target:
             most_recent_target = f"{component_name}.y"
-        if component_class._returns_features:
+        if component_class.modifies_features:
             most_recent_features = f"{component_name}.x"
     return component_dict
 

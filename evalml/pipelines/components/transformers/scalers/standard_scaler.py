@@ -19,7 +19,6 @@ class StandardScaler(Transformer):
 
     name = "Standard Scaler"
     hyperparameter_ranges = {}
-    _supported_by_list_API = True
 
     def __init__(self, random_seed=0, **kwargs):
         parameters = {}

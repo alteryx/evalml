@@ -30,8 +30,8 @@ class Transformer(ComponentBase):
     """
 
     model_family = ModelFamily.NONE
-    _returns_features = True
-    _returns_targets = False
+    modifies_features = True
+    modifies_target = False
 
     def transform(self, X, y=None):
         """Transforms data X.
@@ -88,8 +88,8 @@ class Transformer(ComponentBase):
 class TargetTransformer(Transformer):
     """A component that transforms the target."""
 
-    _returns_features = False
-    _returns_targets = True
+    modifies_features = False
+    modifies_target = True
 
     @abstractmethod
     def inverse_transform(self, y):
