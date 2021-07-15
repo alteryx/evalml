@@ -56,15 +56,15 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     @classmethod
     @abstractmethod
     def modifies_features(cls):
-        """Returns whether this component modifies (subsets or transforms) the feature variable during transform.
-        For Estimators, this attribute determines if the return value from `predict` or `predict_proba` should be used as features or targets."""
+        """Returns whether this component modifies (subsets or transforms) the features variable during transform.
+        For Estimator objectss, this attribute determines if the return value from `predict` or `predict_proba` should be used as features or targets."""
 
     @property
     @classmethod
     @abstractmethod
     def modifies_target(cls):
         """Returns whether this component modifies (subsets or transforms) the target variable during transform.
-        For Estimators, this attribute determines if the return value from `predict` or `predict_proba` should be used as features or targets."""
+        For Estimator objects, this attribute determines if the return value from `predict` or `predict_proba` should be used as features or targets."""
 
     @classproperty
     def needs_fitting(self):
@@ -93,6 +93,10 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             cls._default_parameters = cls().parameters
 
         return cls._default_parameters
+
+    @classproperty
+    def _supported_by_list_API(cls):
+        return not cls.modifies_target
 
     def clone(self):
         """Constructs a new component with the same parameters and random state.

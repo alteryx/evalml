@@ -68,6 +68,12 @@ from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
+from evalml.pipelines.components.transformers.samplers.base_sampler import (
+    BaseSampler,
+)
+from evalml.pipelines.components.transformers.transformer import (
+    TargetTransformer,
+)
 from evalml.pipelines.components.utils import (
     _all_estimators,
     _all_transformers,
@@ -1642,13 +1648,31 @@ def test_estimator_fit_respects_custom_indices(
     pd.testing.assert_index_equal(y.index, y_original_index)
 
 
-# def test_component_parameters_supported_by_list_API():
-#     for component_class in all_components():
-#         if (
-#             issubclass(component_class, BaseSampler)
-#             or issubclass(component_class, TargetTransformer)
-#             or component_class in [TargetImputer]
-#         ):
-#             assert not component_class._supported_by_list_API
-#         else:
-#             assert component_class._supported_by_list_API
+def test_component_parameters_modifies_feature_target():
+    for component_class in all_components():
+        if (
+            issubclass(component_class, BaseSampler)
+            or issubclass(component_class, TargetTransformer)
+            or component_class in [TargetImputer]
+        ):
+            assert component_class.modifies_target
+        else:
+            assert not component_class.modifies_target
+        if issubclass(component_class, TargetTransformer) or component_class in [
+            TargetImputer
+        ]:
+            assert not component_class.modifies_features
+        else:
+            assert component_class.modifies_features
+
+
+def test_component_parameters_supported_by_list_API():
+    for component_class in all_components():
+        if (
+            issubclass(component_class, BaseSampler)
+            or issubclass(component_class, TargetTransformer)
+            or component_class in [TargetImputer]
+        ):
+            assert not component_class._supported_by_list_API
+        else:
+            assert component_class._supported_by_list_API

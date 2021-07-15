@@ -6,7 +6,7 @@ Release Notes
         * Added details on how to fix error caused by broken ww schema :pr:`2466`
         * Added ability to use built-in pickle for saving AutoMLSearch :pr:`2463`
         * Updated our components and component graphs to use latest features of ww 0.4.1, e.g. ``concat_columns`` and drop in-place. :pr:`2465`
-        * Updated our components with an attribute that describes if they can be used in list API for pipeline initialization :pr:`2496`
+        * Updated our components with an attribute that describes if they modify features or targets and can be used in list API for pipeline initialization :pr:`2504`
         * Updated ``ComponentGraph`` to accept X and y as inputs :pr:`2507`
     * Fixes
         * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
