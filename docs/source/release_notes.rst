@@ -21,6 +21,7 @@ Release Notes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
+        * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`
         * Added a tmp_dir fixture that deletes its contents after tests run :pr:`2505`
 
 .. warning::
