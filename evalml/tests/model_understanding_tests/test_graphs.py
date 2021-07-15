@@ -401,15 +401,13 @@ def test_roc_curve_multiclass(data_type, make_data_type):
     y_predict_proba = make_data_type(data_type, y_predict_proba)
 
     roc_curve_data = roc_curve(y_true, y_predict_proba)
-    fpr_expected = np.array([[0, 0, 0, 1], [0, 0, 0, 0.25, 0.75, 1], [0, 0, 0, 0.5, 1]])
-    tpr_expected = np.array([[0, 0.5, 1, 1], [0, 0.5, 1, 1, 1, 1], [0, 0.5, 1, 1, 1]])
-    thresholds_expected = np.array(
-        [
-            [1.8, 0.8, 0.75, 0.05],
-            [1.4, 0.4, 0.33, 0.15, 0.1, 0.05],
-            [1.9, 0.9, 0.8, 0.3, 0.1],
-        ]
-    )
+    fpr_expected = [[0, 0, 0, 1], [0, 0, 0, 0.25, 0.75, 1], [0, 0, 0, 0.5, 1]]
+    tpr_expected = [[0, 0.5, 1, 1], [0, 0.5, 1, 1, 1, 1], [0, 0.5, 1, 1, 1]]
+    thresholds_expected = [
+        [1.8, 0.8, 0.75, 0.05],
+        [1.4, 0.4, 0.33, 0.15, 0.1, 0.05],
+        [1.9, 0.9, 0.8, 0.3, 0.1],
+    ]
     auc_expected = [1, 1, 1]
 
     y_true_unique = y_true
