@@ -13,7 +13,7 @@ matplotlib==3.4.2
 matplotlib-inline==0.1.2
 networkx==2.5.1
 nlp-primitives==1.1.0
-numpy==1.21.0
+numpy==1.21.1
 pandas==1.2.4
 plotly==5.1.0
 pmdarima==1.8.0
