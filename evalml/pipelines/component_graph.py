@@ -1,3 +1,5 @@
+import warnings
+
 import networkx as nx
 import pandas as pd
 import woodwork as ww
@@ -101,6 +103,10 @@ class ComponentGraph:
             component_list (list): String names or ComponentBase subclasses in
                                    an order that represents a valid linear graph
         """
+        warnings.warn(
+            "ComponentGraph.from_list will be deprecated in the next release. Please use a dictionary to specify your graph instead.",
+            DeprecationWarning,
+        )
         component_dict = {}
         previous_component = None
 
@@ -315,19 +321,25 @@ class ComponentGraph:
             y_input = None
 
             for parent_input in self.get_parents(component_name):
-                if parent_input[-2:] == ".y":
+                if parent_input[-2:] == ".y" or parent_input == "y":
                     if y_input is not None:
                         raise ValueError(
                             f"Cannot have multiple `y` parents for a single component {component_name}"
                         )
-                    y_input = output_cache[parent_input]
-                else:
-                    parent_x = output_cache.get(
-                        parent_input, output_cache.get(f"{parent_input}.x")
+                    y_input = (
+                        output_cache[parent_input] if parent_input[-2:] == ".y" else y
                     )
-                    if isinstance(parent_x, pd.Series):
-                        parent_x = parent_x.rename(parent_input)
-                    x_inputs.append(parent_x)
+
+                else:
+                    if parent_input == "X":
+                        x_inputs.append(X)
+                    else:
+                        parent_x = output_cache.get(
+                            parent_input, output_cache.get(f"{parent_input}.x")
+                        )
+                        if isinstance(parent_x, pd.Series):
+                            parent_x = parent_x.rename(parent_input)
+                        x_inputs.append(parent_x)
             input_x, input_y = self._consolidate_inputs(
                 x_inputs, y_input, X, most_recent_y
             )
@@ -488,13 +500,13 @@ class ComponentGraph:
         ]
 
     def get_parents(self, component_name):
-        """Finds the names of all parent nodes of the given component
+        """Finds all of the inputs for a given component, including the names of all parent nodes of the given component
 
         Arguments:
             component_name (str): Name of the child component to look up
 
         Returns:
-            list[str]: Iterator of parent component names
+            list[str]: List of inputs to use
         """
         try:
             component_info = self.component_dict[component_name]
@@ -580,7 +592,9 @@ class ComponentGraph:
         for component_name, component_info in component_dict.items():
             if len(component_info) > 1:
                 for parent in component_info[1:]:
-                    if parent[-2:] == ".x" or parent[-2:] == ".y":
+                    if parent == "X" or parent == "y":
+                        continue
+                    elif parent[-2:] == ".x" or parent[-2:] == ".y":
                         parent = parent[:-2]
                     edges.append((parent, component_name))
         return edges

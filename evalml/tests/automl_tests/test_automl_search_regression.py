@@ -61,7 +61,6 @@ def test_random_seed(X_y_regression):
         y_train=y,
         problem_type="regression",
         objective="R2",
-        max_iterations=5,
         random_seed=0,
         n_jobs=1,
     )
@@ -72,7 +71,6 @@ def test_random_seed(X_y_regression):
         y_train=y,
         problem_type="regression",
         objective="R2",
-        max_iterations=5,
         random_seed=0,
         n_jobs=1,
     )
@@ -89,12 +87,11 @@ def test_categorical_regression(X_y_categorical_regression):
         y_train=y,
         problem_type="regression",
         objective="R2",
-        max_iterations=5,
         random_seed=0,
         n_jobs=1,
     )
     automl.search()
-    assert not automl.rankings["mean_cv_score"].isnull().all()
+    assert not automl.rankings["mean_cv_score"].isnull().any()
 
 
 def test_callback(X_y_regression):
