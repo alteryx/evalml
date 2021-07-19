@@ -656,7 +656,7 @@ def partial_dependence(
     if len(X_unknown.columns):
         # We drop the unknown columns in the pipelines, so we cannot calculate partial dependence for these
         raise ValueError(
-            "Columns included for partial dependence cannot be of type 'Unknown'"
+            f"Columns {X_unknown.columns.values} are of type 'Unknown', which cannot be used for partial dependence"
         )
 
     X_cats = X_features.ww.select("categorical")

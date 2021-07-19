@@ -1307,11 +1307,11 @@ def test_partial_dependence_unknown(indices, error, X_y_binary):
     if error:
         with pytest.raises(
             ValueError,
-            match="Columns included for partial dependence cannot be of type 'Unknown'",
+            match="Columns \[0\] are of type 'Unknown', which cannot be used for partial dependence",
         ):
-            partial_dependence(pl, X, indices, grid_resolution=10)
+            partial_dependence(pl, X, indices, grid_resolution=2)
         return
-    s = partial_dependence(pl, X, indices, grid_resolution=10)
+    s = partial_dependence(pl, X, indices, grid_resolution=2)
     assert not s.isnull().any().any()
 
 
