@@ -13,8 +13,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ['3.7']
-        command: ['git-test-modelunderstanding', 'git-test-other']
+        python_version: ['3.7', '3.8', '3.9']
+        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
     steps:
       - name: Download Miniconda
         shell: pwsh
