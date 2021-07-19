@@ -1648,7 +1648,7 @@ def test_estimator_fit_respects_custom_indices(
     pd.testing.assert_index_equal(y.index, y_original_index)
 
 
-def test_component_parameters_modifies_feature_target():
+def test_component_modifies_feature_or_target():
     for component_class in all_components():
         if (
             issubclass(component_class, BaseSampler)

@@ -133,27 +133,25 @@ def _get_preprocessing_components(
 
 def _make_component_dict_from_component_list(component_list):
     """Generates a component dictionary from a list of components."""
-    components_with_names = []
     seen = set()
+    component_dict = {}
+    most_recent_features = "X"
+    most_recent_target = "y"
+
     for idx, component in enumerate(component_list):
         component_name = component.name
         if component_name in seen:
             component_name = f"{component_name}_{idx}"
         seen.add(component_name)
-        components_with_names.append((component_name, component))
 
-    component_dict = {}
-    most_recent_target = "y"
-    most_recent_features = "X"
-    for component_name, component_class in components_with_names:
         component_dict[component_name] = [
-            component_class,
+            component,
             most_recent_features,
             most_recent_target,
         ]
-        if component_class.modifies_target:
+        if component.modifies_target:
             most_recent_target = f"{component_name}.y"
-        if component_class.modifies_features:
+        if component.modifies_features:
             most_recent_features = f"{component_name}.x"
     return component_dict
 
