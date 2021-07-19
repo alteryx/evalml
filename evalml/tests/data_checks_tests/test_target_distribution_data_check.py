@@ -1,19 +1,15 @@
 import numpy as np
 import pandas as pd
 import pytest
+from scipy.stats import lognorm, norm, shapiro
 
-from scipy.stats import (
-    lognorm,
-    norm,
-    shapiro,
-)
 from evalml.data_checks import (
     DataCheckAction,
     DataCheckActionCode,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
-    TargetDistributionDataCheck,
+    TargetDistributionDataCheck
 )
 from evalml.problem_types import handle_problem_types
 from evalml.utils import infer_feature_types
