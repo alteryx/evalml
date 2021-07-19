@@ -85,7 +85,7 @@ def _get_preprocessing_components(
         pp_components.append(TextFeaturizer)
 
     index_and_unknown_columns = list(
-        X.ww.select(["Index", "Unknown"], return_schema=True).columns
+        X.ww.select(["index", "unknown"], return_schema=True).columns
     )
     if len(index_and_unknown_columns) > 0:
         pp_components.append(DropColumns)
