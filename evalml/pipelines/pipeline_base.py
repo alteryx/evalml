@@ -37,7 +37,6 @@ from evalml.utils import (
     log_title,
     safe_repr,
 )
-
 logger = get_logger(__file__)
 
 
@@ -59,6 +58,32 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     problem_type = None
 
+    def _make_component_dict_from_component_list(self, component_list):
+        """Generates a component dictionary from a list of components."""
+        components_with_names = []
+        seen = set()
+        for idx, component in enumerate(component_list):
+            component_name = component.name
+            if component_name in seen:
+                component_name = f"{component_name}_{idx}"
+            seen.add(component_name)
+            components_with_names.append((component_name, component))
+
+        component_dict = {}
+        most_recent_target = "y"
+        most_recent_features = "X"
+        for component_name, component_class in components_with_names:
+            component_dict[component_name] = [
+                component_class,
+                most_recent_features,
+                most_recent_target,
+            ]
+            if component_class.modifies_target:
+                most_recent_target = f"{component_name}.y"
+            if component_class.modifies_features:
+                most_recent_features = f"{component_name}.x"
+        return component_dict
+
     def __init__(
         self,
         component_graph,
@@ -69,8 +94,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_seed = random_seed
 
         if isinstance(component_graph, list):  # Backwards compatibility
-            self.component_graph = self._make_component_graph_from_list(
-                component_graph, random_seed=self.random_seed
+            self.component_graph = ComponentGraph(component_dict=self._make_component_graph_from_list(
+                component_graph), random_seed=self.random_seed
             )
         elif isinstance(component_graph, dict):
             self.component_graph = ComponentGraph(
@@ -178,11 +203,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return names
 
     def _make_component_graph_from_list(self, component_list, random_seed=0):
+        component_list_to_use = []
         for component in component_list:
             component_class = handle_component_class(component)
-            if not component_class._supported_by_list_API:
-                raise ValueError("This component cannot be handled")
-        return self._from_list(component_list, random_seed)
+            component_list_to_use.append(component_class)
+        return self._make_component_dict_from_component_list(component_list_to_use)
 
     def _from_list(self, component_list, random_seed=0):
         """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its X transformed output to the next component
@@ -191,6 +216,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             component_list (list): String names or ComponentBase subclasses in
                                    an order that represents a valid linear graph
         """
+        
         component_dict = {}
         previous_component = None
 

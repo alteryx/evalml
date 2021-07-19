@@ -29,6 +29,7 @@ class ComponentGraph:
     def __init__(self, component_dict=None, random_seed=0):
         self.random_seed = random_seed
         self.component_dict = component_dict or {}
+        self.validate_graph()
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
@@ -42,6 +43,14 @@ class ComponentGraph:
         self._feature_provenance = {}
         self._i = 0
         self._compute_order = self.generate_order(self.component_dict)
+
+    def validate_graph(self):
+        for component, component_inputs in self.component_dict.items():
+            component_inputs = component_inputs[1:]
+            has_feature_input = any(component_input.endswith(".x") or component_input == "X" for component_input in component_inputs)
+            has_target_input = any(component_input.endswith(".y") or component_input == "y" for component_input in component_inputs)
+            if not (has_feature_input or has_target_input):
+                raise ValueError("All edges must be specified")
 
     @property
     def compute_order(self):

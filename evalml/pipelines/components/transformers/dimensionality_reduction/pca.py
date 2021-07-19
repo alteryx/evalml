@@ -24,7 +24,6 @@ class PCA(Transformer):
 
     name = "PCA Transformer"
     hyperparameter_ranges = {"variance": Real(0.25, 1)}
-    _supported_by_list_API = True
 
     def __init__(self, variance=0.95, n_components=None, random_seed=0, **kwargs):
         parameters = {"variance": variance, "n_components": n_components}

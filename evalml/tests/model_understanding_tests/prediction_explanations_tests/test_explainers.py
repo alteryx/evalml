@@ -1417,13 +1417,13 @@ def test_categories_aggregated_pca_dag(pipeline_class, estimator, fraud_100):
     X, y = fraud_100
 
     component_graph = {
-        "SelectNumeric": ["Select Columns Transformer"],
-        "SelectCategorical": ["Select Columns Transformer"],
-        "SelectDate": ["Select Columns Transformer"],
-        "OHE": ["One Hot Encoder", "SelectCategorical"],
-        "DT": ["DateTime Featurization Component", "SelectDate"],
-        "PCA": ["PCA Transformer", "SelectNumeric"],
-        "Estimator": [estimator, "PCA", "DT", "OHE"],
+        "SelectNumeric": ["Select Columns Transformer", "X", "y"],
+        "SelectCategorical": ["Select Columns Transformer", "X", "y"],
+        "SelectDate": ["Select Columns Transformer", "X", "y"],
+        "OHE": ["One Hot Encoder", "SelectCategorical.x", "y"],
+        "DT": ["DateTime Featurization Component", "SelectDate.x", "y"],
+        "PCA": ["PCA Transformer", "SelectNumeric.x", "y"],
+        "Estimator": [estimator, "PCA.x", "DT.x", "OHE.x", "y"],
     }
     parameters = {
         "SelectNumeric": {"columns": ["card_id", "store_id", "amount", "lat", "lng"]},

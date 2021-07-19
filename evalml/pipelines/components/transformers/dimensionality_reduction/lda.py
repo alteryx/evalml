@@ -20,7 +20,6 @@ class LinearDiscriminantAnalysis(Transformer):
 
     name = "Linear Discriminant Analysis Transformer"
     hyperparameter_ranges = {}
-    _supported_by_list_API = True
 
     def __init__(self, n_components=None, random_seed=0, **kwargs):
         if n_components and n_components < 1:

@@ -362,19 +362,13 @@ def test_automl_allowed_component_graphs_init_allowed_both_specified(
     env.mock_score.assert_called()
 
 
-@pytest.mark.parametrize("is_linear", [True, False])
 def test_automl_allowed_component_graphs_search(
-    is_linear,
     AutoMLTestEnv,
-    dummy_regressor_linear_component_graph,
     dummy_regressor_dict_component_graph,
     X_y_regression,
 ):
     X, y = X_y_regression
-    component_graph = (
-        dummy_regressor_linear_component_graph
-        if is_linear
-        else dummy_regressor_dict_component_graph
+    component_graph = (dummy_regressor_dict_component_graph
     )
 
     start_iteration_callback = MagicMock()

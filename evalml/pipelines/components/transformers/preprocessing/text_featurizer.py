@@ -19,7 +19,6 @@ class TextFeaturizer(TextTransformer):
 
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
-    _supported_by_list_API = True
 
     def __init__(self, random_seed=0, **kwargs):
         self._trans = [

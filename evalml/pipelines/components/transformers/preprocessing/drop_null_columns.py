@@ -14,7 +14,6 @@ class DropNullColumns(Transformer):
 
     name = "Drop Null Columns Transformer"
     hyperparameter_ranges = {}
-    _supported_by_list_API = True
 
     def __init__(self, pct_null_threshold=1.0, random_seed=0, **kwargs):
         if pct_null_threshold < 0 or pct_null_threshold > 1:

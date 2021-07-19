@@ -47,7 +47,8 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
 
     name = "Target Imputer"
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
-    _supported_by_list_API = False
+    modifies_features = False
+    modifies_target = True
 
     def __init__(
         self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs
