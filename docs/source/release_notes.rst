@@ -2,20 +2,28 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Updated 1-way partial dependence support for datetime features :pr:`2454`
         * Added details on how to fix error caused by broken ww schema :pr:`2466`
         * Added ability to use built-in pickle for saving AutoMLSearch :pr:`2463`
         * Updated our components and component graphs to use latest features of ww 0.4.1, e.g. ``concat_columns`` and drop in-place. :pr:`2465`
+        * Updated ``ComponentGraph`` to accept X and y as inputs :pr:`2507`
     * Fixes
         * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
         * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
         * Ensures the typing for Ordinal and Datetime ltypes are passed through _retain_custom_types_and_initalize_woodwork :pr:`2461`
         * Updated to work with Pandas 1.3.0 :pr:`2442`
+        * Updated to work with sktime 0.7.0 :pr:`2499`
     * Changes
+        * Updated XGBoost dependency to ``>=1.4.2`` :pr:`2484`, :pr:`2498`
         * Added a ``DeprecationWarning`` about deprecating the list API for ``ComponentGraph`` :pr:`2488`
+        * No longer installing graphviz on windows in our CI pipelines because release 0.17 breaks windows 3.7 :pr:`2516`
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
+        * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`
+        * Added a tmp_dir fixture that deletes its contents after tests run :pr:`2505`
+        * Added a test that makes sure all pipelines in ``AutoMLSearch`` get the same data splits :pr:`2513`
 
 .. warning::
 
