@@ -46,6 +46,7 @@ class ObjectiveBase(ABC):
     @abstractmethod
     def objective_function(cls, y_true, y_predicted, X=None, sample_weight=None):
         """Computes the relative value of the provided predictions compared to the actual labels, according a specified metric
+
          Arguments:
             y_predicted (pd.Series): Predicted values of length [n_samples]
             y_true (pd.Series): Actual class labels of length [n_samples]
