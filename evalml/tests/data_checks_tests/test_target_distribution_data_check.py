@@ -11,7 +11,6 @@ from evalml.data_checks import (
     DataCheckWarning,
     TargetDistributionDataCheck,
 )
-from evalml.problem_types import handle_problem_types
 from evalml.utils import infer_feature_types
 
 target_dist_check_name = TargetDistributionDataCheck.name
@@ -21,7 +20,7 @@ def test_target_distribution_data_check_no_y(X_y_regression):
     X, y = X_y_regression
     y = None
 
-    target_dist_check = TargetDistributionDataCheck("regression")
+    target_dist_check = TargetDistributionDataCheck()
 
     assert target_dist_check.validate(X, y) == {
         "warnings": [],
@@ -54,7 +53,7 @@ def test_target_distribution_data_check_unsupported_target_type(
 
     y = infer_feature_types(y)
 
-    target_dist_check = TargetDistributionDataCheck("regression")
+    target_dist_check = TargetDistributionDataCheck()
 
     if target_type in ["integer", "double"]:
         assert target_dist_check.validate(X, y) == {
@@ -77,37 +76,6 @@ def test_target_distribution_data_check_unsupported_target_type(
         }
 
 
-@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
-def test_target_distribution_data_check_invalid_problem_type(
-    problem_type, X_y_regression
-):
-    X, y = X_y_regression
-
-    target_dist_check = TargetDistributionDataCheck(problem_type)
-
-    if problem_type == "regression":
-        assert target_dist_check.validate(X, y) == {
-            "warnings": [],
-            "errors": [],
-            "actions": [],
-        }
-    else:
-        assert target_dist_check.validate(X, y) == {
-            "warnings": [],
-            "errors": [
-                DataCheckError(
-                    message=f"Problem type {problem_type} is unsupported. Valid problem types include: [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]",
-                    data_check_name=target_dist_check_name,
-                    message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_PROBLEM_TYPE,
-                    details={
-                        "unsupported_problem_type": handle_problem_types(problem_type)
-                    },
-                ).to_dict()
-            ],
-            "actions": [],
-        }
-
-
 @pytest.mark.parametrize("data_type", ["positive", "mixed", "negative"])
 @pytest.mark.parametrize("distribution", ["normal", "lognormal", "very_lognormal"])
 def test_target_distribution_data_check_warning_action(
@@ -115,7 +83,7 @@ def test_target_distribution_data_check_warning_action(
 ):
     X, y = X_y_regression
 
-    target_dist_check = TargetDistributionDataCheck("regression")
+    target_dist_check = TargetDistributionDataCheck()
 
     if distribution == "normal":
         y = norm.rvs(loc=3, size=10000)

@@ -69,7 +69,7 @@ def _get_preprocessing_components(
     pp_components = []
 
     if is_regression(problem_type):
-        for each_action in TargetDistributionDataCheck(problem_type).validate(X, y)[
+        for each_action in TargetDistributionDataCheck().validate(X, y)[
             "actions"
         ]:
             if each_action["metadata"]["transformation_strategy"] == "lognormal":

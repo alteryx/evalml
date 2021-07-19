@@ -18,15 +18,6 @@ class TargetDistributionDataCheck(DataCheck):
     """Checks if the target data contains certain distributions that may need to be transformed prior training to
     improve model performance."""
 
-    def __init__(self, problem_type):
-        """Check if the target is invalid for the specified problem type.
-
-        Arguments:
-            problem_type (str or ProblemTypes): The specific problem type to data check for.
-                e.g. 'regression, 'time series regression'
-        """
-        self.problem_type = handle_problem_types(problem_type)
-
     def validate(self, X, y):
         """Checks if the target data has a certain distribution.
 
@@ -41,7 +32,7 @@ class TargetDistributionDataCheck(DataCheck):
             >>> from scipy.stats import lognorm
             >>> X = None
             >>> y = lognorm.rvs(0.1, size=1000)
-            >>> target_checdk = TargetDistributionDataCheck('regression')
+            >>> target_checdk = TargetDistributionDataCheck()
             >>> assert target_check.validate(X, y) == {"errors": [],\
                                                        "warnings": [{"message": "Target may have a lognormal distribution.",\
                                                                     "data_check_name": "TargetDistributionDataCheck",\
@@ -59,22 +50,6 @@ class TargetDistributionDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_IS_NONE,
                     details={},
-                ).to_dict()
-            )
-            return results
-
-        if self.problem_type not in [
-            ProblemTypes.REGRESSION,
-            ProblemTypes.TIME_SERIES_REGRESSION,
-        ]:
-            results["errors"].append(
-                DataCheckError(
-                    message="Problem type {} is unsupported. Valid problem types include: [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]".format(
-                        self.problem_type,
-                    ),
-                    data_check_name=self.name,
-                    message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_PROBLEM_TYPE,
-                    details={"unsupported_problem_type": self.problem_type},
                 ).to_dict()
             )
             return results

@@ -55,7 +55,6 @@ class DefaultDataChecks(DataChecks):
                         "problem_type": problem_type,
                         "objective": objective,
                     },
-                    "TargetDistributionDataCheck": {"problem_type": problem_type},
                 },
             )
         else:
