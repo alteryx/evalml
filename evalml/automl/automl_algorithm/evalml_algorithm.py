@@ -56,21 +56,6 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         b. Run ensembling
     """
 
-    """
-    Jeremy notes:
-        Do we need to allow users to select what models and pipelines are allowed?
-            - originally my thinking was we would remove that choice from user
-            - however, how does the automl_search impl affect it?
-
-        options:
-            - top level user can select and pass down
-            - do not let users select
-
-        considerations
-            - change `AutoMLAlgorithm` init impl to not create tuners for each pipeline?
-            - ignore `AutoMLAlgorithm` init and do our own thing here
-    """
-
     def __init__(
         self,
         X,
@@ -82,10 +67,10 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         pipeline_params=None,
         custom_hyperparameters=None,
         _frozen_pipeline_parameters=None,
-        n_jobs=-1,  # TODO: necessary?
-        number_features=None,  # TODO: necessary?
+        n_jobs=-1,
+        number_features=None,
         text_in_ensembling=None,
-    ):  # TODO: necessary?
+    ):
 
         super().__init__(
             allowed_pipelines=[],
