@@ -11,6 +11,7 @@ Release Notes
     * Fixes
         * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
         * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
+        * Ensures the typing for Ordinal and Datetime ltypes are passed through _retain_custom_types_and_initalize_woodwork :pr:`2461`
         * Updated to work with Pandas 1.3.0 :pr:`2442`
         * Updated to work with sktime 0.7.0 :pr:`2499`
     * Changes
@@ -23,6 +24,7 @@ Release Notes
         * Fixed flaky dask tests :pr:`2471`
         * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`
         * Added a tmp_dir fixture that deletes its contents after tests run :pr:`2505`
+        * Added a test that makes sure all pipelines in ``AutoMLSearch`` get the same data splits :pr:`2513`
 
 .. warning::
 
