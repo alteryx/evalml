@@ -61,7 +61,7 @@ def add_result(algo, batch):
     "automl_type",
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
-def test_evalml_algorithm_short(
+def test_evalml_algorithm(
     mock_get_names,
     automl_type,
     X_y_binary,
@@ -115,3 +115,30 @@ def test_evalml_algorithm_short(
         (StackedEnsembleRegressor, StackedEnsembleClassifier),
     )
     add_result(algo, final_ensemble)
+
+    long_explore = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
+    assert len(long_explore) == 150
+    assert len(long_estimators) == 3
+
+    long_first_ensemble = algo.next_batch()
+    assert isinstance(
+        long_first_ensemble[0].estimator,
+        (StackedEnsembleRegressor, StackedEnsembleClassifier),
+    )
+
+    long = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long])
+    assert len(long) == 30
+    assert len(long_estimators) == 3
+
+    long_second_ensemble = algo.next_batch()
+    assert isinstance(
+        long_second_ensemble[0].estimator,
+        (StackedEnsembleRegressor, StackedEnsembleClassifier),
+    )
+
+    long_2 = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long_2])
+    assert len(long_2) == 30
+    assert len(long_estimators) == 3

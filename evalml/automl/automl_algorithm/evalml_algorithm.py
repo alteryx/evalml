@@ -107,8 +107,8 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         self._pipeline_params = pipeline_params or {}
         self._custom_hyperparameters = custom_hyperparameters or {}
         self._frozen_pipeline_parameters = _frozen_pipeline_parameters or {}
-
         self._selected_cols = None
+        self._top_n_pipelines = None
         if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
             raise ValueError(
                 f"If custom_hyperparameters provided, must be of type dict. Received {type(custom_hyperparameters)}"
@@ -185,6 +185,14 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         ]
         return pipelines
 
+    def _create_tuner(self, pipeline):
+        pipeline_hyperparameters = get_hyperparameter_ranges(
+            pipeline.component_graph, self._custom_hyperparameters
+        )
+        self._tuners[pipeline.name] = self._tuner_class(
+            pipeline_hyperparameters, random_seed=self.random_seed
+        )
+
     def _create_fast_final(self):
         estimators = [
             estimator
@@ -214,13 +222,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         ]
 
         for pipeline in pipelines:
-            pipeline_hyperparameters = get_hyperparameter_ranges(
-                pipeline.component_graph, self._custom_hyperparameters
-            )
-            self._tuners[pipeline.name] = self._tuner_class(
-                pipeline_hyperparameters, random_seed=self.random_seed
-            )
-
+            self._create_tuner(pipeline)
         return pipelines
 
     def _create_ensemble(self):
@@ -241,6 +243,43 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         )
         return [ensemble]
 
+    def _create_long_top_n(self, n):
+        estimators = [
+            (pipeline_dict["pipeline"].estimator, pipeline_dict["mean_cv_score"])
+            for pipeline_dict in self._best_pipeline_info.values()
+        ]
+        estimators.sort(key=lambda pipeline: pipeline[1])
+        estimators = estimators[:n]
+        estimators = [estimator[0].__class__ for estimator in estimators]
+        pipelines = [
+            make_pipeline(
+                self.X,
+                self.y,
+                estimator,
+                self.problem_type,
+                parameters=self._frozen_pipeline_parameters,
+                sampler_name=self._sampler_name,
+                extra_components=[SelectColumns],
+            )
+            for estimator in estimators
+        ]
+        self._top_n_pipelines = pipelines
+        next_batch = []
+        for _ in range(50):
+            for pipeline in pipelines:
+                if pipeline.name not in self._tuners:
+                    self._create_tuner(pipeline)
+                proposed_parameters = self._tuners[pipeline.name].propose()
+                parameters = self._transform_parameters(pipeline, proposed_parameters)
+                parameters.update(
+                    {"Select Columns Transformer": {"columns": self._selected_cols}}
+                )
+                next_batch.append(
+                    pipeline.new(parameters=parameters, random_seed=self.random_seed)
+                )
+
+        return next_batch
+
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
 
@@ -256,7 +295,28 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             next_batch = self._create_fast_final()
         elif self.batch_number == 3:
             next_batch = self._create_ensemble()
-
+        elif self.batch_number == 4:
+            next_batch = self._create_long_top_n(n=3)
+        elif self.batch_number % 2 != 0:
+            next_batch = self._create_ensemble()
+        else:
+            next_batch = []
+            for _ in range(10):
+                for pipeline in self._top_n_pipelines:
+                    if pipeline.name not in self._tuners:
+                        self._create_tuner(pipeline)
+                    proposed_parameters = self._tuners[pipeline.name].propose()
+                    parameters = self._transform_parameters(
+                        pipeline, proposed_parameters
+                    )
+                    parameters.update(
+                        {"Select Columns Transformer": {"columns": self._selected_cols}}
+                    )
+                    next_batch.append(
+                        pipeline.new(
+                            parameters=parameters, random_seed=self.random_seed
+                        )
+                    )
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
