@@ -3759,12 +3759,12 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
             "Imputer_1": {"numeric_impute_strategy": "median"},
         },
         optimize_thresholds=False,
-        max_batches=3,
+        max_batches=1,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={automl.objective.name: 0.63}):
         automl.search()
-    for row in automl.full_rankings.iloc[1:3].parameters:
+    for row in automl.full_rankings.iloc[1:].parameters:
         assert row["Imputer"]["numeric_impute_strategy"] == "most_frequent"
         assert row["Imputer_1"]["numeric_impute_strategy"] == "median"
 
@@ -3786,11 +3786,11 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
             "One Hot Encoder_1": {"top_n": 25},
         },
         optimize_thresholds=False,
-        max_batches=3,
+        max_batches=1,
     )
     with env.test_context(score_return_value={automl.objective.name: 0.63}):
         automl.search()
-    for row in automl.full_rankings.iloc[1:3].parameters:
+    for row in automl.full_rankings.iloc[1:].parameters:
         assert row["One Hot Encoder"]["top_n"] == 15
         assert row["One Hot Encoder_1"]["top_n"] == 25
 

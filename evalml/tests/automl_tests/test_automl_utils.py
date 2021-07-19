@@ -302,11 +302,10 @@ def test_get_best_sampler_for_data_sampler_method(
 )
 def test_get_pipelines_from_component_graphs(problem_type, estimator):
     component_graphs = {
-        "Name_0": ["Imputer", estimator],
-        "Name_1": {
-            "Imputer": ["Imputer"],
-            "Imputer_1": ["Imputer", "Imputer"],
-            estimator: [estimator, "Imputer_1"],
+        "Name_0": {
+            "Imputer": ["Imputer", "X", "y"],
+            "Imputer_1": ["Imputer", "Imputer.x", "y"],
+            estimator: [estimator, "Imputer_1.x", "y"],
         },
     }
     if problem_type == "time series regression":
@@ -317,7 +316,6 @@ def test_get_pipelines_from_component_graphs(problem_type, estimator):
             component_graphs, problem_type
         )
         assert returned_pipelines[0].random_seed == 0
-        assert returned_pipelines[1].random_seed == 0
         if problem_type == "binary":
             assert all(
                 isinstance(pipe_, BinaryClassificationPipeline)
