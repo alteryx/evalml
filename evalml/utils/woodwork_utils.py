@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import woodwork as ww
+from woodwork.logical_types import Datetime, Ordinal
 
 from evalml.utils.gen_utils import is_all_numeric
 
@@ -110,13 +111,20 @@ def _retain_custom_types_and_initalize_woodwork(
         return ww.init_series(new_dataframe, old_logical_types)
     if ltypes_to_ignore is None:
         ltypes_to_ignore = []
-    old_logical_types = {k: type(v) for k, v in old_logical_types.items()}
-    col_intersection = set(old_logical_types.keys()).intersection(
+
+    new_logical_types = {}
+    for (k, v) in old_logical_types.items():
+        if isinstance(v, (Ordinal, Datetime)):
+            new_logical_types[k] = v
+        else:
+            new_logical_types[k] = type(v)
+
+    col_intersection = set(new_logical_types.keys()).intersection(
         set(new_dataframe.columns)
     )
     retained_logical_types = {
         col: ltype
-        for col, ltype in old_logical_types.items()
+        for col, ltype in new_logical_types.items()
         if col in col_intersection and ltype not in ltypes_to_ignore
     }
     new_dataframe.ww.init(logical_types=retained_logical_types)
