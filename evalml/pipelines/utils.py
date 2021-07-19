@@ -42,6 +42,7 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
+    is_regression,
     is_time_series,
 )
 from evalml.utils import get_logger, import_or_raise, infer_feature_types
@@ -67,7 +68,7 @@ def _get_preprocessing_components(
 
     pp_components = []
 
-    if problem_type in [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]:
+    if is_regression(problem_type):
         for each_action in TargetDistributionDataCheck(problem_type).validate(X, y)[
             "actions"
         ]:

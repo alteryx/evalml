@@ -29,24 +29,23 @@ def test_log_transformer_fit_transform(data_type, input_type, X_y_regression):
     elif data_type == "negative":
         y_ = -np.abs(y_)
 
+    X = pd.DataFrame(X_)
+    y = pd.Series(y_)
+
+    if input_type == "np":
+        X = X.values
+        y = y.values
+    elif input_type == "ww":
+        X = X.copy()
+        X.ww.init()
+        y = ww.init_series(y.copy())
+
     if y_.min() <= 0:
         y_ = y_ + abs(y_.min()) + 1
     expected_log = np.log(y_)
 
-    X_ = pd.DataFrame(X_)
-    y_ = pd.Series(y_)
-
-    X, y = X_, y_
-
-    if input_type == "np":
-        X = X_.values
-        y = y_.values
-    elif input_type == "ww":
-        X = X_.copy()
-        X.ww.init()
-        y = ww.init_series(y_.copy())
-
     output_X, output_y = LogTransformer().fit_transform(X, y)
+
     pd.testing.assert_series_equal(pd.Series(expected_log), output_y)
 
     # Verify the X is not changed
@@ -56,9 +55,13 @@ def test_log_transformer_fit_transform(data_type, input_type, X_y_regression):
         pd.testing.assert_frame_equal(X, output_X)
 
 
+@pytest.mark.parametrize("is_time_series", ["time_series", "non_time_series"])
 @pytest.mark.parametrize("data_type", ["positive", "mixed", "negative"])
-def test_log_transformer_inverse_transform(data_type, X_y_regression):
-    X, y = X_y_regression
+def test_log_transformer_inverse_transform(data_type, is_time_series, X_y_regression, ts_data):
+    if is_time_series:
+        X, y = ts_data
+    else:
+        X, y = X_y_regression
 
     if data_type == "positive":
         y = np.abs(y)

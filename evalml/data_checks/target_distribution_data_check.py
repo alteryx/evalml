@@ -104,10 +104,9 @@ class TargetDistributionDataCheck(DataCheck):
         if shapiro(y).pvalue >= 0.05:
             return results
 
+        y_new = y
         if any(y <= 0):
             y_new = y + abs(y.min()) + 1
-        else:
-            y_new = y
 
         y_new = y_new[
             y_new < (y_new.mean() + 3 * round(y.std(), 3))

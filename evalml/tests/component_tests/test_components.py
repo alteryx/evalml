@@ -817,7 +817,7 @@ def test_transformer_transform_output_type(X_y_binary):
 
     for component_class in _all_transformers():
         if component_class in [PolynomialDetrender, LogTransformer]:
-            # Skipping because this test is handled in test_polynomial_detrender
+            # Skipping because these tests are handled in their respective test files
             continue
         print("Testing transformer {}".format(component_class.name))
         for X, y, X_cols_expected in datatype_combos:

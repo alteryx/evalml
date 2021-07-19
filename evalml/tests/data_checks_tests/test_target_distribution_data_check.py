@@ -109,7 +109,7 @@ def test_target_distribution_data_check_invalid_problem_type(
 
 
 @pytest.mark.parametrize("data_type", ["positive", "mixed", "negative"])
-@pytest.mark.parametrize("distribution", ["normal", "lognormal", "lognormal_"])
+@pytest.mark.parametrize("distribution", ["normal", "lognormal", "very_lognormal"])
 def test_target_distribution_data_check_warning_action(
     distribution, data_type, X_y_regression
 ):
@@ -122,7 +122,8 @@ def test_target_distribution_data_check_warning_action(
     elif distribution == "lognormal":
         y = lognorm.rvs(0.4, size=10000)
     else:
-        # Will have a p-value of 0 the null hypothesis even after log transforming
+        # Will have a p-value of 0 thereby rejecting the null hypothesis even after log transforming
+        # This is essentially just checking the = of "shapiro_test_log.pvalue >= shapiro_test_og.pvalue"
         y = lognorm.rvs(s=1, loc=1, scale=1, size=10000)
 
     if data_type == "negative":
