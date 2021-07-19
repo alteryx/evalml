@@ -41,14 +41,14 @@ class TargetDistributionDataCheck(DataCheck):
             >>> from scipy.stats import lognorm
             >>> X = None
             >>> y = lognorm.rvs(0.1, size=1000)
-            >>> target_check = TargetDistributionDataCheck('regression')
+            >>> target_checdk = TargetDistributionDataCheck('regression')
             >>> assert target_check.validate(X, y) == {"errors": [],\
                                                        "warnings": [{"message": "Target may have a lognormal distribution.",\
                                                                     "data_check_name": "TargetDistributionDataCheck",\
                                                                     "level": "warning",\
                                                                     "code": "TARGET_LOGNORMAL_DISTRIBUTION",\
-                                                                    "details": {"kolomogoroc-smirnov-sigma-pvalues": [(0.1, 1.0), (0.25, 1.0), (0.3, 1.0), (0.5, 1.0), (0.7, 1.0), (1.0, 1.0), (1.5, 1.0), (2.0, 1.0)]}}],\
-                                                       "actions": [{'code': 'TRANSFORM_TARGET', 'metadata': {'column': None, 'transformation_strategy': 'lognormal', 'is_target': True}}]}
+                                                                    "details": {"shapiro-statistic/pvalue": '0.993/0.0'}}],\
+                                                        "actions": [{'code': 'TRANSFORM_TARGET', 'metadata': {'column': None, 'transformation_strategy': 'lognormal', 'is_target': True}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
