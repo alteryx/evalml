@@ -9,7 +9,7 @@ from evalml.data_checks import (
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
-    TargetDistributionDataCheck
+    TargetDistributionDataCheck,
 )
 from evalml.problem_types import handle_problem_types
 from evalml.utils import infer_feature_types

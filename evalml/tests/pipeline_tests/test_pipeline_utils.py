@@ -8,7 +8,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
-    RegressionPipeline
+    RegressionPipeline,
 )
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
@@ -26,14 +26,14 @@ from evalml.pipelines.components import (
     StandardScaler,
     TargetImputer,
     TextFeaturizer,
-    Transformer
+    Transformer,
 )
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_component_list_from_actions,
     generate_pipeline_code,
     get_estimators,
-    make_pipeline
+    make_pipeline,
 )
 from evalml.problem_types import ProblemTypes, is_regression, is_time_series
 
