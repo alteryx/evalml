@@ -10,7 +10,6 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataCheckWarning,
 )
-from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import infer_feature_types
 
 
