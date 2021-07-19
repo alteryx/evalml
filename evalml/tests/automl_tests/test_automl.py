@@ -2274,7 +2274,12 @@ def test_automl_accepts_component_graphs(
             "ohe": ["One Hot Encoder", "imputer.x", "y"],
             "estimator_1": ["Random Forest Classifier", "ohe.x", "y"],
             "estimator_2": ["Decision Tree Classifier", "ohe.x", "y"],
-            "final": ["Logistic Regression Classifier", "estimator_1.x", "estimator_2.x", "y"],
+            "final": [
+                "Logistic Regression Classifier",
+                "estimator_1.x",
+                "estimator_2.x",
+                "y",
+            ],
         }
         component_graph_obj = ComponentGraph(component_graph)
     else:
@@ -2283,7 +2288,12 @@ def test_automl_accepts_component_graphs(
             "ohe": ["One Hot Encoder", "imputer.x", "y"],
             "estimator_1": ["Random Forest Classifier", "ohe.x", "y"],
             "estimator_2": ["Decision Tree Classifier", "ohe.x", "y"],
-            "final": ["Logistic Regression Classifier", "estimator_1.x", "estimator_2.x", "y"],
+            "final": [
+                "Logistic Regression Classifier",
+                "estimator_1.x",
+                "estimator_2.x",
+                "y",
+            ],
         }
         component_graph = ComponentGraph(component_dict)
         component_graph_obj = component_graph
@@ -3752,9 +3762,7 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
         X,
         y,
         problem_type="binary",
-        allowed_component_graphs={
-            "Pipeline from dict": component_graph_dict
-        },
+        allowed_component_graphs={"Pipeline from dict": component_graph_dict},
         pipeline_parameters={
             "Imputer": {"numeric_impute_strategy": "most_frequent"},
             "Imputer_1": {"numeric_impute_strategy": "median"},
@@ -3772,7 +3780,11 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
     component_graph_dict = {
         "One Hot Encoder": ["One Hot Encoder", "X", "y"],
         "One Hot Encoder_1": ["One Hot Encoder", "One Hot Encoder.x", "y"],
-        "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder_1.x", "y"],
+        "Random Forest Classifier": [
+            "Random Forest Classifier",
+            "One Hot Encoder_1.x",
+            "y",
+        ],
     }
 
     automl = AutoMLSearch(
@@ -3815,19 +3827,21 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
     #     }
     # else:
     custom_hyperparameters = {
-            "Imputer": {
-                "numeric_impute_strategy": Categorical(["most_frequent", "mean"])
-            },
-            "Imputer_1": {"numeric_impute_strategy": Categorical(["median", "mean"])},
-            "Random Forest Classifier": {"n_estimators": Categorical([50, 100])},
-        }
+        "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])},
+        "Imputer_1": {"numeric_impute_strategy": Categorical(["median", "mean"])},
+        "Random Forest Classifier": {"n_estimators": Categorical([50, 100])},
+    }
     component_graph = {
-            "Name_dict": {
-                "Imputer": ["Imputer", "X", "y"],
-                "Imputer_1": ["Imputer", "Imputer.x", "y"],
-                "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1.x", "y"],
-            }
+        "Name_dict": {
+            "Imputer": ["Imputer", "X", "y"],
+            "Imputer_1": ["Imputer", "Imputer.x", "y"],
+            "Random Forest Classifier": [
+                "Random Forest Classifier",
+                "Imputer_1.x",
+                "y",
+            ],
         }
+    }
 
     automl = AutoMLSearch(
         X,
@@ -3878,7 +3892,11 @@ def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(
         "Imputer": ["Imputer", "X", "y"],
         "Imputer_1": ["Imputer", "Imputer.x", "y"],
         "One Hot Encoder": ["One Hot Encoder", "Imputer_1.x", "y"],
-        "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder.x", "y"],
+        "Random Forest Classifier": [
+            "Random Forest Classifier",
+            "One Hot Encoder.x",
+            "y",
+        ],
     }
 
     automl = AutoMLSearch(

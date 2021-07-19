@@ -33,10 +33,6 @@ class ComponentGraph:
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
-            if not isinstance(component_info, list):
-                raise ValueError(
-                    "All component information should be passed in as a list"
-                )
             component_class = handle_component_class(component_info[0])
             self.component_instances[component_name] = component_class
         self.input_feature_names = {}
@@ -46,9 +42,19 @@ class ComponentGraph:
 
     def validate_graph(self):
         for component, component_inputs in self.component_dict.items():
+            if not isinstance(component_inputs, list):
+                raise ValueError(
+                    "All component information should be passed in as a list"
+                )
             component_inputs = component_inputs[1:]
-            has_feature_input = any(component_input.endswith(".x") or component_input == "X" for component_input in component_inputs)
-            has_target_input = any(component_input.endswith(".y") or component_input == "y" for component_input in component_inputs)
+            has_feature_input = any(
+                component_input.endswith(".x") or component_input == "X"
+                for component_input in component_inputs
+            )
+            has_target_input = any(
+                component_input.endswith(".y") or component_input == "y"
+                for component_input in component_inputs
+            )
             if not (has_feature_input or has_target_input):
                 raise ValueError("All edges must be specified")
 
@@ -163,7 +169,7 @@ class ComponentGraph:
 
         parent_inputs = [
             parent_input
-            for parent_input in self.get_parents(self.compute_order[-1])
+            for parent_input in self.get_inputs(self.compute_order[-1])
             if parent_input[-2:] != ".y"
         ]
         for parent in parent_inputs:
@@ -230,7 +236,7 @@ class ComponentGraph:
             x_inputs = []
             y_input = None
 
-            for parent_input in self.get_parents(component_name):
+            for parent_input in self.get_inputs(component_name):
                 if parent_input[-2:] == ".y" or parent_input == "y":
                     if y_input is not None:
                         raise ValueError(
@@ -276,7 +282,7 @@ class ComponentGraph:
                     output = component_instance.predict(input_x)
                 else:
                     output = None
-                output_cache[component_name] = output
+                output_cache[f"{component_name}.x"] = output
         return output_cache
 
     def _get_feature_provenance(self, input_feature_names):
@@ -409,7 +415,7 @@ class ComponentGraph:
             if isinstance(component_class, Estimator)
         ]
 
-    def get_parents(self, component_name):
+    def get_inputs(self, component_name):
         """Finds all of the inputs for a given component, including the names of all parent nodes of the given component
 
         Arguments:
@@ -519,8 +525,8 @@ class ComponentGraph:
             return []
         digraph = nx.DiGraph()
         digraph.add_edges_from(edges)
-        if not nx.is_weakly_connected(digraph):
-            raise ValueError("The given graph is not completely connected")
+        # if not nx.is_weakly_connected(digraph):
+        #     raise ValueError("The given graph is not completely connected")
         try:
             compute_order = list(topological_sort(digraph))
         except NetworkXUnfeasible:
@@ -573,7 +579,7 @@ class ComponentGraph:
 
     def _get_parent_y(self, component_name):
         """Helper for inverse_transform method."""
-        parents = self.get_parents(component_name)
+        parents = self.get_inputs(component_name)
         return next(iter(p[:-2] for p in parents if ".y" in p), None)
 
     def inverse_transform(self, y):

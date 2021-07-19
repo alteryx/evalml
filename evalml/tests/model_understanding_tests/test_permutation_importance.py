@@ -388,7 +388,12 @@ class EnsembleDag(BinaryClassificationPipeline):
         "DT_2": ["DateTime Featurization Component", "OHE_2.x", "y"],
         "Estimator_1": ["Random Forest Classifier", "DT_1.x", "y"],
         "Estimator_2": ["Extra Trees Classifier", "DT_2.x", "y"],
-        "Ensembler": ["Logistic Regression Classifier", "Estimator_1.x", "Estimator_2.x", "y"],
+        "Ensembler": [
+            "Logistic Regression Classifier",
+            "Estimator_1.x",
+            "Estimator_2.x",
+            "y",
+        ],
     }
 
     def __init__(self, parameters, random_seed=0):

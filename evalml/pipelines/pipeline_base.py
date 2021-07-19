@@ -37,6 +37,7 @@ from evalml.utils import (
     log_title,
     safe_repr,
 )
+
 logger = get_logger(__file__)
 
 
@@ -94,8 +95,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_seed = random_seed
 
         if isinstance(component_graph, list):  # Backwards compatibility
-            self.component_graph = ComponentGraph(component_dict=self._make_component_graph_from_list(
-                component_graph), random_seed=self.random_seed
+            self.component_graph = ComponentGraph(
+                component_dict=self._make_component_graph_from_list(component_graph),
+                random_seed=self.random_seed,
             )
         elif isinstance(component_graph, dict):
             self.component_graph = ComponentGraph(
@@ -216,7 +218,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             component_list (list): String names or ComponentBase subclasses in
                                    an order that represents a valid linear graph
         """
-        
+
         component_dict = {}
         previous_component = None
 

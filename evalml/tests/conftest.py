@@ -391,7 +391,11 @@ def dummy_classifier_dict_component_graph(dummy_classifier_estimator_class):
     component_graph_dict = {
         "Name": {
             "Imputer": ["Imputer", "X", "y"],
-            "Random Forest Classifier": [dummy_classifier_estimator_class, "Imputer.x", "y"],
+            "Random Forest Classifier": [
+                dummy_classifier_estimator_class,
+                "Imputer.x",
+                "y",
+            ],
         }
     }
     return component_graph_dict
@@ -402,7 +406,11 @@ def dummy_regressor_dict_component_graph(dummy_regressor_estimator_class):
     component_graph_dict = {
         "Name": {
             "Imputer": ["Imputer", "X", "y"],
-            "Random Forest Classifier": [dummy_regressor_estimator_class, "Imputer.x", "y"],
+            "Random Forest Classifier": [
+                dummy_regressor_estimator_class,
+                "Imputer.x",
+                "y",
+            ],
         }
     }
     return component_graph_dict
@@ -719,12 +727,16 @@ def time_series_multiclass_classification_pipeline_class():
 @pytest.fixture
 def decision_tree_classification_pipeline_class(X_y_categorical_classification):
     pipeline = BinaryClassificationPipeline(
-        [
-            "Simple Imputer",
-            "One Hot Encoder",
-            "Standard Scaler",
-            "Decision Tree Classifier",
-        ]
+        component_graph={
+            "Imputer": ["Imputer", "X", "y"],
+            "OneHot": ["One Hot Encoder", "Imputer.x", "y"],
+            "Standard Scaler": ["Standard Scaler", "OneHot.x", "y"],
+            "Decision Tree Classifier": [
+                "Elastic Net Classifier",
+                "Standard Scaler.x",
+                "y",
+            ],
+        }
     )
     X, y = X_y_categorical_classification
     pipeline.fit(X, y)
@@ -736,15 +748,16 @@ def nonlinear_binary_pipeline_class():
     class NonLinearBinaryPipeline(BinaryClassificationPipeline):
         custom_name = "Non Linear Binary Pipeline"
         component_graph = {
-            "Imputer": ["Imputer"],
-            "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x"],
-            "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x"],
-            "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x"],
-            "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x"],
+            "Imputer": ["Imputer", "X", "y"],
+            "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "y"],
+            "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
+            "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
+            "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
             "Logistic Regression": [
                 "Logistic Regression Classifier",
-                "Random Forest",
-                "Elastic Net",
+                "Random Forest.x",
+                "Elastic Net.x",
+                "y",
             ],
         }
 
