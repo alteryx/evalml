@@ -3077,6 +3077,7 @@ def test_search_with_text(AutoMLTestEnv):
             ],
         }
     )
+    X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     y = [0, 1, 1, 0, 1, 0]
     automl = AutoMLSearch(
         X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False
@@ -3134,6 +3135,7 @@ def test_search_with_text_and_ensembling(
 
     if df_text:
         X = X_with_text
+        X.ww.init(logical_types={"col_1": "NaturalLanguage"})
     else:
         X = X_no_text
     if problem_type == "binary":
@@ -4788,6 +4790,45 @@ def test_automl_thresholding_train_pipelines(mock_objective, threshold, X_y_bina
     else:
         mock_objective.assert_not_called()
         assert all([p.threshold is None for p in pipes.values()])
+
+
+@pytest.mark.parametrize("columns", [[], ["unknown_col"], ["unknown1, unknown2"]])
+def test_automl_drop_unknown_columns(columns, AutoMLTestEnv, X_y_binary, caplog):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    for col in columns:
+        X[col] = pd.Series(range(len(X)))
+    X.ww.init()
+    X.ww.set_types({col: "Unknown" for col in columns})
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=False,
+        max_batches=2,
+    )
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+    if not len(columns):
+        for pipeline in automl.allowed_pipelines:
+            assert "Drop Columns Transformer" not in pipeline.name
+        assert "because they are of 'Unknown'" not in caplog.text
+        return
+
+    assert "because they are of 'Unknown'" in caplog.text
+    for pipeline in automl.allowed_pipelines:
+        assert pipeline.get_component("Drop Columns Transformer")
+        assert "Drop Columns Transformer" in pipeline.parameters
+        assert pipeline.parameters["Drop Columns Transformer"] == {"columns": columns}
+
+    all_drop_column_params = []
+    for _, row in automl.full_rankings.iterrows():
+        if "Baseline" not in row.pipeline_name:
+            all_drop_column_params.append(
+                row.parameters["Drop Columns Transformer"]["columns"]
+            )
+    assert all(param == columns for param in all_drop_column_params)
 
 
 @pytest.mark.parametrize(
