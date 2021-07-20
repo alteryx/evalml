@@ -2,8 +2,13 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
+from woodwork.logical_types import Categorical, Datetime, Ordinal
 
-from evalml.utils import _convert_numeric_dataset_pandas, infer_feature_types
+from evalml.utils import (
+    _convert_numeric_dataset_pandas,
+    _retain_custom_types_and_initalize_woodwork,
+    infer_feature_types,
+)
 
 
 def test_infer_feature_types_no_type_change():
@@ -203,3 +208,52 @@ def test_infer_feature_types_raises_invalid_schema_error():
         df.ww.init()
         df.drop(columns=["b"], inplace=True)
         infer_feature_types(df)
+
+
+def test_ordinal_retains_order_min():
+    features = pd.DataFrame(
+        {
+            "non-ordinal": [0, 1, 2, 3, 4, 5],
+            "ordinal": [0, 1, 2, 2, 1, 0],
+            "categorical": ["red", "white", "blue", "red", "white", "blue"],
+            "datetime": [
+                "2020-09-10",
+                "2020-09-11",
+                "2020-09-12",
+                "2020-09-13",
+                "2020-09-14",
+                "2020-09-15",
+            ],
+        }
+    )
+    user_defined_order = [0, 1, 2]
+    user_defined_dt_format = "%Y-%m-%d"
+    logical_types = {
+        "non-ordinal": "Age",
+        "ordinal": Ordinal(order=user_defined_order),
+        "categorical": Categorical(encoding="Encoding"),
+        "datetime": Datetime(datetime_format=user_defined_dt_format),
+    }
+    features.ww.init(logical_types=logical_types)
+
+    # Ordinal type should now pass through the function without issue and retain the 'order' property
+    ordinal_subset = _retain_custom_types_and_initalize_woodwork(
+        old_logical_types=logical_types, new_dataframe=features[["ordinal"]]
+    )
+    ltypes = ordinal_subset.ww.logical_types
+    assert ltypes["ordinal"].order is not None
+
+    # Datetimes pass the function without issue but should now retain the 'datetime_format' property
+    datetime_subset = _retain_custom_types_and_initalize_woodwork(
+        old_logical_types=logical_types, new_dataframe=features[["datetime"]]
+    )
+    ltypes = datetime_subset.ww.logical_types
+    assert ltypes["datetime"].datetime_format is not None
+
+    # Categorical pass the function but the ltype, as implemented, doesn't ever retain the 'encoding' property,
+    # so we do not expect it here.
+    cat_subset = _retain_custom_types_and_initalize_woodwork(
+        old_logical_types=logical_types, new_dataframe=features[["categorical"]]
+    )
+    ltypes = cat_subset.ww.logical_types
+    assert not hasattr(ltypes["categorical"], "encoding")

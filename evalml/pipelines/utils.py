@@ -131,6 +131,31 @@ def _get_preprocessing_components(
     return pp_components
 
 
+def _make_component_dict_from_component_list(component_list):
+    """Generates a component dictionary from a list of components."""
+    seen = set()
+    component_dict = {}
+    most_recent_features = "X"
+    most_recent_target = "y"
+
+    for idx, component in enumerate(component_list):
+        component_name = component.name
+        if component_name in seen:
+            component_name = f"{component_name}_{idx}"
+        seen.add(component_name)
+
+        component_dict[component_name] = [
+            component,
+            most_recent_features,
+            most_recent_target,
+        ]
+        if component.modifies_target:
+            most_recent_target = f"{component_name}.y"
+        if component.modifies_features:
+            most_recent_features = f"{component_name}.x"
+    return component_dict
+
+
 def _get_pipeline_base_class(problem_type):
     """Returns pipeline base class for problem_type"""
     if problem_type == ProblemTypes.BINARY:
@@ -188,15 +213,15 @@ def make_pipeline(
         X, y, problem_type, estimator, sampler_name
     )
 
-    complete_component_graph = (
+    complete_component_list = (
         preprocessing_components + extra_components + [estimator]
         if extra_components
         else preprocessing_components + [estimator]
     )
-
+    component_graph = _make_component_dict_from_component_list(complete_component_list)
     base_class = _get_pipeline_base_class(problem_type)
     return base_class(
-        complete_component_graph,
+        component_graph,
         parameters=parameters,
     )
 
