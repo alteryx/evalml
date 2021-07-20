@@ -7,10 +7,10 @@ from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.engine import DaskEngine, SequentialEngine
 from evalml.tests.automl_tests.dask_test_utils import (
-    TestPipelineFast,
-    TestPipelineSlow,
-    TestPipelineWithFitError,
-    TestPipelineWithScoreError,
+    DaskPipelineFast,
+    DaskPipelineSlow,
+    DaskPipelineWithFitError,
+    DaskPipelineWithScoreError,
 )
 from evalml.tuners import SKOptTuner
 
@@ -100,7 +100,7 @@ def test_automl_train_dask_error_callback(X_y_binary_cls, cluster, caplog):
         parallel_engine = DaskEngine(client)
         X, y = X_y_binary_cls
 
-        pipelines = [TestPipelineWithFitError({})]
+        pipelines = [DaskPipelineWithFitError({})]
         automl = AutoMLSearch(
             X_train=X,
             y_train=y,
@@ -121,7 +121,7 @@ def test_automl_score_dask_error_callback(X_y_binary_cls, cluster, caplog):
         parallel_engine = DaskEngine(client)
 
         X, y = X_y_binary_cls
-        pipelines = [TestPipelineWithScoreError({})]
+        pipelines = [DaskPipelineWithScoreError({})]
         automl = AutoMLSearch(
             X_train=X,
             y_train=y,
@@ -145,9 +145,9 @@ def test_automl_immediate_quit(X_y_binary_cls, cluster, caplog):
         parallel_engine = DaskEngine(client)
 
         pipelines = [
-            TestPipelineFast({}),
-            TestPipelineWithFitError({}),
-            TestPipelineSlow({}),
+            DaskPipelineFast({}),
+            DaskPipelineWithFitError({}),
+            DaskPipelineSlow({}),
         ]
         automl = AutoMLSearch(
             X_train=X,
@@ -178,9 +178,9 @@ def test_automl_immediate_quit(X_y_binary_cls, cluster, caplog):
 
         # Make sure the automl algorithm stopped after the broken pipeline raised
         assert len(automl.full_rankings) < len(pipelines)
-        assert TestPipelineSlow.custom_name not in set(
+        assert DaskPipelineSlow.custom_name not in set(
             automl.full_rankings["pipeline_name"]
         )
-        assert TestPipelineWithFitError.custom_name not in set(
+        assert DaskPipelineWithFitError.custom_name not in set(
             automl.full_rankings["pipeline_name"]
         )
