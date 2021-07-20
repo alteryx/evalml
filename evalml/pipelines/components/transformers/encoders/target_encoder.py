@@ -31,6 +31,7 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     name = "Target Encoder"
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(
         self,

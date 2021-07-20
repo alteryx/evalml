@@ -29,6 +29,7 @@ class TimeSeriesRegressionPipeline(
     """
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
+    """ProblemTypes.TIME_SERIES_REGRESSIO"""
 
     def __init__(
         self,

@@ -25,6 +25,7 @@ Release Notes
         * Updated ``make_pipeline`` for AutoML to create dictionaries, not lists, to initialize pipelines :pr:`2504`
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
+        * Build documentation with sphinx-autoapi :pr:`2458`
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
         * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`

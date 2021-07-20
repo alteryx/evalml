@@ -18,6 +18,7 @@ class LSA(TextTransformer):
 
     name = "LSA Transformer"
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(self, random_seed=0, **kwargs):
         self._lsa_pipeline = make_pipeline(

@@ -41,11 +41,21 @@ class ExtraTreesRegressor(Estimator):
         "max_features": ["auto", "sqrt", "log2"],
         "max_depth": Integer(4, 10),
     }
+    """{
+        "n_estimators": Integer(10, 1000),
+        "max_features": ["auto", "sqrt", "log2"],
+        "max_depth": Integer(4, 10),
+    }"""
     model_family = ModelFamily.EXTRA_TREES
+    """ModelFamily.EXTRA_TREES"""
     supported_problem_types = [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]
+    """[
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]"""
 
     def __init__(
         self,

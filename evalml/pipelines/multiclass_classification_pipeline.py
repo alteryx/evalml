@@ -18,3 +18,4 @@ class MulticlassClassificationPipeline(ClassificationPipeline):
     """
 
     problem_type = ProblemTypes.MULTICLASS
+    """ProblemTypes.MULTICLASS"""

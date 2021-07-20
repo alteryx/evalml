@@ -31,13 +31,21 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
 
     name = "Stacked Ensemble Classifier"
     model_family = ModelFamily.ENSEMBLE
+    """ModelFamily.ENSEMBLE"""
     supported_problem_types = [
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]
+    """[
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]"""
     hyperparameter_ranges = {}
+    """{}"""
     _stacking_estimator_class = StackingClassifier
     _default_final_estimator = LogisticRegressionClassifier
     _default_cv = StratifiedKFold
