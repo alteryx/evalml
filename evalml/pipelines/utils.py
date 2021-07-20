@@ -77,12 +77,12 @@ def _get_preprocessing_components(
         logical_types.Integer,
     }
 
-    if len(input_logical_types.intersection(types_imputer_handles)) > 0:
-        pp_components.append(Imputer)
-
     text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
     if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
+
+    if len(input_logical_types.intersection(types_imputer_handles)) > 0:
+        pp_components.append(Imputer)
 
     index_columns = list(X.ww.select("index", return_schema=True).columns)
     if len(index_columns) > 0:

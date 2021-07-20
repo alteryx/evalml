@@ -2,6 +2,8 @@ import string
 
 import featuretools as ft
 import nlp_primitives
+import numpy as np
+import pandas as pd
 
 from evalml.pipelines.components.transformers.preprocessing import (
     LSA,
@@ -40,6 +42,7 @@ class TextFeaturizer(TextTransformer):
 
         for col_name in X.columns:
             # we assume non-str values will have been filtered out prior to calling TextFeaturizer. casting to str is a safeguard.
+            X[col_name].fillna("", inplace=True)
             col = X[col_name].astype(str)
             X[col_name] = col.apply(normalize)
         return X
@@ -125,15 +128,35 @@ class TextFeaturizer(TextTransformer):
         if X_nlp_primitives.isnull().any().any():
             X_nlp_primitives.fillna(0, inplace=True)
 
-        X_lsa = self._lsa.transform(X_ww.ww[self._text_columns])
+        X_lsa = self._lsa.transform(X_ww.ww[self._text_columns].fillna(""))
         X_nlp_primitives.set_index(X_ww.index, inplace=True)
 
         X_ww = X_ww.ww.drop(self._text_columns)
+        all_columns = np.append(X_nlp_primitives.columns.values, X_lsa.columns.values)
         for col in X_nlp_primitives:
             X_ww.ww[col] = X_nlp_primitives[col]
         for col in X_lsa:
             X_ww.ww[col] = X_lsa[col]
+        X_ww = self._empty_to_nan(X_ww, all_columns)
         return X_ww
+
+    def _empty_to_nan(self, df, columns):
+        """Finds the columns with empty values, which were empty strings/NaNs, and converts them to NaNs for the imputer"""
+        mean_char_str = "MEAN_CHARACTERS_PER_WORD"
+        cols_to_search = [col for col in columns if mean_char_str in col]
+
+        def _transform_cols(args):
+            return_value = args.copy()
+            if all(args.values == 0):
+                return_value = pd.Series([np.nan for i in range(len(args))], index=args.index)
+            return return_value
+
+        transforming = df.copy()
+        for col in cols_to_search:
+            col_name = col[len(mean_char_str) + 1: -1]
+            relevant_cols = [c for c in columns if f"({col_name})" in c]
+            transforming[relevant_cols] = transforming[relevant_cols].apply(_transform_cols, axis=1)
+        return transforming
 
     def _get_feature_provenance(self):
         if not self._text_columns:
