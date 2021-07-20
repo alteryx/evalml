@@ -24,9 +24,9 @@
    {{ obj.docstring|prepare_docstring|indent(3) }}
    {% endif %}
    {% if "inherited-members" in autoapi_options %}
-   {% set visible_classes = obj.classes|selectattr("display")|list %}
+   {% set visible_classes = obj.classes|selectattr("display")|rejectattr("name", "equalto", "args")|list %}
    {% else %}
-   {% set visible_classes = obj.classes|rejectattr("inherited")|selectattr("display")|list %}
+   {% set visible_classes = obj.classes|rejectattr("inherited")|rejectattr("name", "equalto", "args")|selectattr("display")|list %}
    {% endif %}
    {% for klass in visible_classes %}
    {{ klass.render()|indent(3) }}
@@ -55,11 +55,12 @@
    {% endif %}
 
    {% if "inherited-members" in autoapi_options %}
-   {% set visible_methods = obj.methods|selectattr("display")|list %}
+   {% set visible_methods = obj.methods|selectattr("display")|rejectattr("name", "equalto", "with_traceback")|list %}
    {% else %}
-   {% set visible_methods = obj.methods|rejectattr("inherited")|selectattr("display")|list %}
+   {% set visible_methods = obj.methods|rejectattr("inherited")|rejectattr("name", "equalto", "with_traceback")|selectattr("display")|list %}
    {% endif %}
 
+   {% if visible_methods|length %}
    **Methods**
 
    .. autoapisummary::
@@ -72,4 +73,5 @@
    {% for method in visible_methods|sort(attribute='name') %}
    {{ method.render()|indent(3) }}
    {% endfor %}
+   {% endif %}
 {% endif %}

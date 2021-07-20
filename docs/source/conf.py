@@ -58,9 +58,6 @@ extensions = [
     "sphinx.ext.inheritance_diagram",
 ]
 
-# Add any paths that contain templates here, relative to this directory.
-#templates_path = ["_templates"]
-
 autoapi_dirs = ['../../evalml']
 autoapi_ignore = ["*test*"]
 autoapi_options = ['members', 'undoc-members', 'show-module-summary', 'imported-members', 'inherited-members']
@@ -70,7 +67,6 @@ autoapi_template_dir = "_auto_api_templates"
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
 source_suffix = ".rst"
 
 # The main toctree document.
@@ -219,10 +215,6 @@ extlinks = {
     "pr": ("https://github.com/alteryx/evalml/pull/%s", "#"),
     "user": ("https://github.com/%s", "@"),
 }
-
-# autoclass_content = 'both'
-#autosummary_generate = ["api_reference.rst"]
-#templates_path = ["_templates"]
 
 html_show_sphinx = False
 nbsphinx_execute = "always"

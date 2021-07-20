@@ -61,7 +61,7 @@ div.graphviz {
     margin-right: 15px;
 }
 
-.class > dt, .function > dt, .method > dt {
+.class > dt, .function > dt, .method > dt, .exception > dt {
   padding: 0.5rem;
   background-color: #f8f8f8;
   font-weight: normal;
