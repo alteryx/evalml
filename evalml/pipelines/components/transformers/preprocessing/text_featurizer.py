@@ -130,7 +130,11 @@ class TextFeaturizer(TextTransformer):
         if X_nlp_primitives.isnull().any().any():
             X_nlp_primitives.fillna(0, inplace=True)
 
-        X_lsa = self._lsa.transform(X_ww.ww[self._text_columns].fillna(""))
+        X_ww_altered = infer_feature_types(
+            X_ww.ww[self._text_columns].fillna(""),
+            {s: "NaturalLanguage" for s in self._text_columns},
+        )
+        X_lsa = self._lsa.transform(X_ww_altered)
         X_nlp_primitives.set_index(X_ww.index, inplace=True)
 
         X_ww = X_ww.ww.drop(self._text_columns)
@@ -139,7 +143,8 @@ class TextFeaturizer(TextTransformer):
             X_ww.ww[col] = X_nlp_primitives[col]
         for col in X_lsa:
             X_ww.ww[col] = X_lsa[col]
-        X_ww = self._empty_to_nan(X_ww, all_columns, X)
+        if X_ww.isna().any().any():
+            X_ww = self._empty_to_nan(X_ww, all_columns, X)
         return X_ww
 
     def _empty_to_nan(self, df, columns, original_df):
