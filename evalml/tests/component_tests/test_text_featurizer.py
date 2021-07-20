@@ -41,6 +41,7 @@ def test_featurizer_only_text(text_df):
 def test_featurizer_with_nontext(text_df):
     X = text_df
     X["col_3"] = [73.7, 67.213, 92]
+    X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     tf = TextFeaturizer()
 
     tf.fit(X)
@@ -147,6 +148,7 @@ def test_no_null_output():
             ],
         }
     )
+    X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     tf = TextFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
@@ -170,6 +172,8 @@ def test_index_col_names():
             ],
         ]
     )
+    X = pd.DataFrame(X)
+    X.ww.init(logical_types={0: "NaturalLanguage", 1: "NaturalLanguage"})
     tf = TextFeaturizer()
 
     tf.fit(X)
@@ -210,6 +214,7 @@ def test_float_col_names():
             ],
         }
     )
+    X.ww.init(logical_types={4.75: "NaturalLanguage", -1: "NaturalLanguage"})
     tf = TextFeaturizer()
     tf.fit(X)
     expected_col_names = set(
@@ -249,6 +254,7 @@ def test_output_null():
             ],
         }
     )
+    X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     tf = TextFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
@@ -265,6 +271,7 @@ def test_diversity_primitive_output():
             ]
         }
     )
+    X.ww.init(logical_types={"diverse": "NaturalLanguage"})
     tf = TextFeaturizer()
     tf.fit(X)
 
@@ -284,6 +291,7 @@ def test_lsa_primitive_output():
             ]
         }
     )
+    X.ww.init(logical_types={"lsa": "NaturalLanguage"})
     tf = TextFeaturizer()
     tf.fit(X)
 
@@ -300,7 +308,9 @@ def test_featurizer_custom_types(text_df):
     # force one of the two provided columns to be a user-specified type.
     # if the output contains text features for col_2, then the text featurizer didn't pass the right
     # ww types to LSA, because LSA still thought col_2 was natural language even though the user said otherwise.
-    X = infer_feature_types(text_df, {"col_2": "categorical"})
+    X = infer_feature_types(
+        pd.DataFrame(text_df), {"col_1": "NaturalLanguage", "col_2": "categorical"}
+    )
     tf = TextFeaturizer()
     tf.fit(X)
 
@@ -339,6 +349,7 @@ def test_mean_characters_primitive_output():
             ]
         }
     )
+    X.ww.init(logical_types={"mean_characters": "NaturalLanguage"})
     tf = TextFeaturizer()
     tf.fit(X)
 
@@ -361,6 +372,7 @@ def test_polarity_primitive_output():
             ]
         }
     )
+    X.ww.init(logical_types={"polarity": "NaturalLanguage"})
     tf = TextFeaturizer()
     tf.fit(X)
 
@@ -415,7 +427,7 @@ def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df):
     for logical_type in override_types:
         try:
             X = X_df.copy()
-            X.ww.init(logical_types={0: logical_type})
+            X.ww.init(logical_types={0: logical_type, "text col": "NaturalLanguage"})
         except ww.exceptions.TypeConversionError:
             continue
 
@@ -443,6 +455,7 @@ def test_text_featurizer_sets_max_depth_1(mock_dfs):
             ]
         }
     )
+    X.ww.init(logical_types={"polarity": "NaturalLanguage"})
     tf = TextFeaturizer()
     tf.fit(X)
     _, kwargs = mock_dfs.call_args

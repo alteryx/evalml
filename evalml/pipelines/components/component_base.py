@@ -57,7 +57,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     @abstractmethod
     def modifies_features(cls):
         """Returns whether this component modifies (subsets or transforms) the features variable during transform.
-        For Estimator objectss, this attribute determines if the return value from `predict` or `predict_proba` should be used as features or targets."""
+        For Estimator objects, this attribute determines if the return value from `predict` or `predict_proba` should be used as features or targets."""
 
     @property
     @classmethod

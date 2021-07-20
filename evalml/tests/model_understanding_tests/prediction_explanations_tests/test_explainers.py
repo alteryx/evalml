@@ -1673,3 +1673,30 @@ def test_explain_predictions_best_worst_callback(mock_make_table):
     )
     assert mock_callback.progress_stages == [e for e in ExplainPredictionsStage]
     assert mock_callback.total_elapsed_time > 0
+
+
+@pytest.mark.parametrize("indices", [0, 1])
+def test_explain_predictions_unknown(indices, X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X.ww.init(logical_types={0: "unknown"})
+    pl = BinaryClassificationPipeline(["Random Forest Classifier"])
+    pl.fit(X, y)
+
+    report = explain_predictions(
+        pl,
+        X,
+        y,
+        indices_to_explain=[indices],
+        output_format="dataframe",
+        top_k_features=4,
+    )
+    assert report["feature_names"].isnull().sum() == 0
+    assert report["feature_values"].isnull().sum() == 0
+    if indices == 0:
+        # make sure we only run this part once
+        exp = explain_predictions_best_worst(
+            pipeline=pl, input_features=X, y_true=y, output_format="dataframe"
+        )
+        assert exp["feature_names"].isnull().sum() == 0
+        assert exp["feature_values"].isnull().sum() == 0

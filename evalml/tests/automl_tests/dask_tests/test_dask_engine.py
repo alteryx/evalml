@@ -15,8 +15,8 @@ from evalml.automl.utils import AutoMLConfig
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.pipeline_base import PipelineBase
 from evalml.tests.automl_tests.dask_test_utils import (
-    TestPipelineSlow,
-    TestSchemaCheckPipeline,
+    DaskPipelineSlow,
+    DaskSchemaCheckPipeline,
     automl_data,
 )
 
@@ -311,7 +311,7 @@ def test_cancel_job(X_y_binary_cls, cluster):
 
     with Client(cluster) as client:
         engine = DaskEngine(client=client)
-        pipeline = TestPipelineSlow({"Logistic Regression Classifier": {"n_jobs": 1}})
+        pipeline = DaskPipelineSlow({"Logistic Regression Classifier": {"n_jobs": 1}})
 
         # Verify that engine fits a pipeline
         pipeline_future = engine.submit_training_job(
@@ -347,7 +347,7 @@ def test_dask_sends_woodwork_schema(X_y_binary_cls, cluster):
 
         # TestSchemaCheckPipeline will verify that the schema is preserved by the time we call
         # pipeline.fit and pipeline.score
-        pipeline = TestSchemaCheckPipeline(
+        pipeline = DaskSchemaCheckPipeline(
             component_graph=["One Hot Encoder", "Logistic Regression Classifier"],
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
             X_schema_to_check=X.ww.schema,
