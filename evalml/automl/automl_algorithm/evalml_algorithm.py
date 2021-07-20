@@ -146,7 +146,6 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         return estimators
 
     def _create_naive_pipelines(self):
-        # don't need to add baseline as it is added as part of AutoMLSearch TODO: what to do here
         estimators = self._naive_estimators()
         return [
             make_pipeline(
