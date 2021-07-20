@@ -20,7 +20,7 @@ class CFClient:
         pass
 
     def submit(self, *args, **kwargs):
-        """ Pass through to imitate Dask's Client API. """
+        """Pass through to imitate Dask's Client API."""
         return self.pool.submit(*args, **kwargs)
 
 
