@@ -84,8 +84,10 @@ def _get_preprocessing_components(
     if len(input_logical_types.intersection(types_imputer_handles)) > 0:
         pp_components.append(Imputer)
 
-    index_columns = list(X.ww.select("index", return_schema=True).columns)
-    if len(index_columns) > 0:
+    index_and_unknown_columns = list(
+        X.ww.select(["index", "unknown"], return_schema=True).columns
+    )
+    if len(index_and_unknown_columns) > 0:
         pp_components.append(DropColumns)
 
     datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)

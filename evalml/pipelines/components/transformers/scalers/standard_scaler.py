@@ -19,6 +19,7 @@ class StandardScaler(Transformer):
 
     name = "Standard Scaler"
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(self, random_seed=0, **kwargs):
         parameters = {}

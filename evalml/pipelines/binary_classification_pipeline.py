@@ -26,6 +26,7 @@ class BinaryClassificationPipeline(
     """
 
     problem_type = ProblemTypes.BINARY
+    """ProblemTypes.BINARY"""
 
     def _predict(self, X, objective=None):
         """Make predictions using selected features.

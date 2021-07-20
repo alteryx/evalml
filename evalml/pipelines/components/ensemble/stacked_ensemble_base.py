@@ -30,6 +30,7 @@ class StackedEnsembleBase(Estimator):
     """
 
     model_family = ModelFamily.ENSEMBLE
+    """ModelFamily.ENSEMBLE"""
     _stacking_estimator_class = None
     _default_final_estimator = None
     _default_cv = None

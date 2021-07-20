@@ -6,6 +6,7 @@ Release Notes
         * Added details on how to fix error caused by broken ww schema :pr:`2466`
         * Added ability to use built-in pickle for saving AutoMLSearch :pr:`2463`
         * Updated our components and component graphs to use latest features of ww 0.4.1, e.g. ``concat_columns`` and drop in-place. :pr:`2465`
+        * Added support for new Woodwork ``Unknown`` type in AutoMLSearch :pr:`2477`
         * Updated our components with an attribute that describes if they modify features or targets and can be used in list API for pipeline initialization :pr:`2504`
         * Updated ``ComponentGraph`` to accept X and y as inputs :pr:`2507`
         * Removed unused ``TARGET_BINARY_INVALID_VALUES`` from ``DataCheckMessageCode`` enum and fixed formatting of objective documentation :pr:`2520`
@@ -22,6 +23,8 @@ Release Notes
         * No longer installing graphviz on windows in our CI pipelines because release 0.17 breaks windows 3.7 :pr:`2516`
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
+        * Build documentation with sphinx-autoapi :pr:`2458`
+        * Change ``autoapi_ignore`` to only ignore files in ``evalml/tests/*`` :pr:`2530` 
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
         * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`
@@ -32,6 +35,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * `NaN` values in the `Natural Language` type are no longer supported by the Imputer with the pandas upgrade. :pr:`2477`
 
 **v0.28.0 Jul. 2, 2021**
     * Enhancements

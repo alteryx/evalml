@@ -31,6 +31,10 @@ class RFClassifierSelectFromModel(FeatureSelector):
         "percent_features": Real(0.01, 1),
         "threshold": ["mean", -np.inf],
     }
+    """{
+        "percent_features": Real(0.01, 1),
+        "threshold": ["mean", -np.inf],
+    }"""
 
     def __init__(
         self,

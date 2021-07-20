@@ -1,3 +1,4 @@
+import re
 import string
 
 import featuretools as ft
@@ -21,6 +22,7 @@ class TextFeaturizer(TextTransformer):
 
     name = "Text Featurization Component"
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(self, random_seed=0, **kwargs):
         self._trans = [
@@ -137,10 +139,10 @@ class TextFeaturizer(TextTransformer):
             X_ww.ww[col] = X_nlp_primitives[col]
         for col in X_lsa:
             X_ww.ww[col] = X_lsa[col]
-        X_ww = self._empty_to_nan(X_ww, all_columns)
+        X_ww = self._empty_to_nan(X_ww, all_columns, X)
         return X_ww
 
-    def _empty_to_nan(self, df, columns):
+    def _empty_to_nan(self, df, columns, original_df):
         """Finds the columns with empty values, which were empty strings/NaNs, and converts them to NaNs for the imputer"""
         mean_char_str = "MEAN_CHARACTERS_PER_WORD"
         cols_to_search = [col for col in columns if mean_char_str in col]
@@ -148,15 +150,21 @@ class TextFeaturizer(TextTransformer):
         def _transform_cols(args):
             return_value = args.copy()
             if all(args.values == 0):
-                return_value = pd.Series([np.nan for i in range(len(args))], index=args.index)
+                col_name = re.search(r"\((.+)\)", args.index[0]).group(1)
+                if pd.isnull(original_df.at[args.name, col_name]):
+                    return_value = pd.Series(
+                        [np.nan for i in range(len(args))], index=args.index
+                    )
             return return_value
 
         transforming = df.copy()
         for col in cols_to_search:
-            col_name = col[len(mean_char_str) + 1: -1]
+            col_name = col[len(mean_char_str) + 1 : -1]
             relevant_cols = [c for c in columns if f"({col_name})" in c]
-            transforming[relevant_cols] = transforming[relevant_cols].apply(_transform_cols, axis=1)
-        return transforming
+            transforming[relevant_cols] = transforming[relevant_cols].apply(
+                _transform_cols, axis=1
+            )
+        return infer_feature_types(transforming)
 
     def _get_feature_provenance(self):
         if not self._text_columns:

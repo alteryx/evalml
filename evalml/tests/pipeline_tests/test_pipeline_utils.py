@@ -362,10 +362,10 @@ def test_make_pipeline_text_columns(input_type, problem_type):
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
             if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = [Imputer, TextFeaturizer] + estimator_components
+                expected_components = [TextFeaturizer, Imputer] + estimator_components
             else:
                 expected_components = (
-                    [Imputer, TextFeaturizer] + delayed_features + estimator_components
+                    [TextFeaturizer, Imputer] + delayed_features + estimator_components
                 )
             pipeline.component_graph.compute_order == [
                 component.name for component in expected_components

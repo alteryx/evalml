@@ -31,6 +31,7 @@ class Undersampler(BaseSampler):
 
     name = "Undersampler"
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(
         self,
