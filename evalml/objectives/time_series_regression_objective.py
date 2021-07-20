@@ -7,3 +7,4 @@ class TimeSeriesRegressionObjective(RegressionObjective):
     """Base class for all time series regression objectives."""
 
     problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
+    """[ProblemTypes.TIME_SERIES_REGRESSION]"""

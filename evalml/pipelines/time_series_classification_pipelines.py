@@ -265,3 +265,4 @@ class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipelin
     """
 
     problem_type = ProblemTypes.TIME_SERIES_MULTICLASS
+    """ProblemTypes.TIME_SERIES_MULTICLASS"""

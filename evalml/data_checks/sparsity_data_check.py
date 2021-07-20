@@ -38,11 +38,14 @@ class SparsityDataCheck(DataCheck):
     def validate(self, X, y=None):
         """Calculates what percentage of each column's unique values exceed the count threshold and compare
         that percentage to the sparsity threshold stored in the class instance.
+
         Arguments:
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.
+
         Returns:
             dict: dict with a DataCheckWarning if there are any sparse columns.
+
         Example:
             >>> import pandas as pd
             >>> df = pd.DataFrame({
@@ -94,10 +97,12 @@ class SparsityDataCheck(DataCheck):
     def sparsity_score(col, count_threshold=10):
         """This function calculates a sparsity score for the given value counts by calculating the percentage of
         unique values that exceed the count_threshold.
+
         Arguments:
             col (pd.Series): Feature values.
             count_threshold (int): The number of instances below which a value is considered sparse.
                 Default is 10.
+
         Returns:
             (float): Sparsity score, or the percentage of the unique values that exceed count_threshold.
         """

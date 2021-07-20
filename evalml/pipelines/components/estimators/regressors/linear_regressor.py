@@ -21,11 +21,20 @@ class LinearRegressor(Estimator):
 
     name = "Linear Regressor"
     hyperparameter_ranges = {"fit_intercept": [True, False], "normalize": [True, False]}
+    """{
+        "fit_intercept": [True, False],
+        "normalize": [True, False]
+    }"""
     model_family = ModelFamily.LINEAR_MODEL
+    """ModelFamily.LINEAR_MODEL"""
     supported_problem_types = [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]
+    """[
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]"""
 
     def __init__(
         self, fit_intercept=True, normalize=False, n_jobs=-1, random_seed=0, **kwargs

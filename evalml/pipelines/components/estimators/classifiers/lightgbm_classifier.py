@@ -53,16 +53,34 @@ class LightGBMClassifier(Estimator):
         "bagging_fraction": Real(0.000001, 1),
         "bagging_freq": Integer(0, 1),
     }
+    """{
+        "learning_rate": Real(0.000001, 1),
+        "boosting_type": ["gbdt", "dart", "goss", "rf"],
+        "n_estimators": Integer(10, 100),
+        "max_depth": Integer(0, 10),
+        "num_leaves": Integer(2, 100),
+        "min_child_samples": Integer(1, 100),
+        "bagging_fraction": Real(0.000001, 1),
+        "bagging_freq": Integer(0, 1),
+    }"""
     model_family = ModelFamily.LIGHTGBM
+    """ModelFamily.LIGHTGBM"""
     supported_problem_types = [
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]
+    """[
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]"""
 
     SEED_MIN = 0
     SEED_MAX = SEED_BOUNDS.max_bound
+    """SEED_BOUNDS.max_bound"""
 
     def __init__(
         self,

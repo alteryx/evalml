@@ -58,6 +58,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     """
 
     problem_type = None
+    """None"""
 
     def _make_component_dict_from_component_list(self, component_list):
         """Generates a component dictionary from a list of components."""
