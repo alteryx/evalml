@@ -19,11 +19,17 @@ class BaselineRegressor(Estimator):
 
     name = "Baseline Regressor"
     hyperparameter_ranges = {}
+    """{}"""
     model_family = ModelFamily.BASELINE
+    """ModelFamily.BASELINE"""
     supported_problem_types = [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]
+    """[
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]"""
 
     def __init__(self, strategy="mean", random_seed=0, **kwargs):
         if strategy not in ["mean", "median"]:

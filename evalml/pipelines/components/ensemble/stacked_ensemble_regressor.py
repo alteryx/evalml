@@ -31,11 +31,17 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
 
     name = "Stacked Ensemble Regressor"
     model_family = ModelFamily.ENSEMBLE
+    """ModelFamily.ENSEMBLE"""
     supported_problem_types = [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]
+    """[
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]"""
     hyperparameter_ranges = {}
+    """{}"""
     _stacking_estimator_class = StackingRegressor
     _default_final_estimator = LinearRegressor
     _default_cv = KFold

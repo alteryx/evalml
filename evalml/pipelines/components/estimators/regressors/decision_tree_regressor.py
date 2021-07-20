@@ -46,11 +46,21 @@ class DecisionTreeRegressor(Estimator):
         "max_features": ["auto", "sqrt", "log2"],
         "max_depth": Integer(4, 10),
     }
+    """{
+        "criterion": ["mse", "friedman_mse", "mae"],
+        "max_features": ["auto", "sqrt", "log2"],
+        "max_depth": Integer(4, 10),
+    }"""
     model_family = ModelFamily.DECISION_TREE
+    """ModelFamily.DECISION_TREE"""
     supported_problem_types = [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]
+    """[
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]"""
 
     def __init__(
         self,

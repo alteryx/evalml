@@ -26,11 +26,21 @@ class SVMRegressor(Estimator):
         "kernel": ["linear", "poly", "rbf", "sigmoid", "precomputed"],
         "gamma": ["scale", "auto"],
     }
+    """{
+        "C": Real(0, 10),
+        "kernel": ["linear", "poly", "rbf", "sigmoid", "precomputed"],
+        "gamma": ["scale", "auto"],
+    }"""
     model_family = ModelFamily.SVM
+    """ModelFamily.SVM"""
     supported_problem_types = [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]
+    """[
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]"""
 
     def __init__(self, C=1.0, kernel="rbf", gamma="scale", random_seed=0, **kwargs):
         parameters = {"C": C, "kernel": kernel, "gamma": gamma}

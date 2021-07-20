@@ -75,6 +75,7 @@ class DropColumns(ColumnSelector):
 
     name = "Drop Columns Transformer"
     hyperparameter_ranges = {}
+    """{}"""
     needs_fitting = False
 
     def _modify_columns(self, cols, X, y=None):
@@ -104,6 +105,7 @@ class SelectColumns(ColumnSelector):
 
     name = "Select Columns Transformer"
     hyperparameter_ranges = {}
+    """{}"""
     needs_fitting = False
 
     def _modify_columns(self, cols, X, y=None):
