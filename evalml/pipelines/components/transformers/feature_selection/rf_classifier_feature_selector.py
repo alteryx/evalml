@@ -34,7 +34,6 @@ class RFClassifierSelectFromModel(FeatureSelector):
 
     def __init__(
         self,
-        estimator=None,
         number_features=None,
         n_estimators=10,
         max_depth=None,
@@ -54,22 +53,15 @@ class RFClassifierSelectFromModel(FeatureSelector):
         }
         parameters.update(kwargs)
 
-        estimator = (
-            SKRandomForestClassifier(
-                random_state=random_seed,
-                n_estimators=n_estimators,
-                max_depth=max_depth,
-                n_jobs=n_jobs,
-            )
-            if estimator is None
-            else estimator
+        estimator = SKRandomForestClassifier(
+            random_state=random_seed,
+            n_estimators=n_estimators,
+            max_depth=max_depth,
+            n_jobs=n_jobs,
         )
-
         max_features = (
             max(1, int(percent_features * number_features)) if number_features else None
         )
-        if not hasattr(estimator, "get_params"):
-            raise ValueError("Estimator must be a sklearn estimator.")
         feature_selection = SkSelect(
             estimator=estimator,
             max_features=max_features,

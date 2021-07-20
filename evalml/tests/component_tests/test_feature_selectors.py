@@ -10,12 +10,6 @@ from evalml.pipelines.components import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
 )
-from evalml.pipelines.components.estimators.classifiers.rf_classifier import (
-    RandomForestClassifier,
-)
-from evalml.pipelines.components.estimators.regressors.rf_regressor import (
-    RandomForestRegressor,
-)
 
 
 def make_rf_feature_selectors():
@@ -143,48 +137,3 @@ def test_feature_selectors_woodwork_custom_overrides_returned_by_components(X_df
             0: logical_type,
             "another column": Double,
         }
-
-
-def test_feature_selectors_custom_estimator(X_y_binary, X_y_regression):
-    X_binary, y_binary = X_y_binary
-    X_regression, y_regression = X_y_regression
-    classifier = RandomForestClassifier().fit(X_binary, y_binary)
-    regressor = RandomForestRegressor().fit(X_regression, y_regression)
-
-    RFClassifierSelectFromModel(
-        estimator=classifier._component_obj,
-        number_features=5,
-        n_estimators=10,
-        max_depth=7,
-        percent_features=0.5,
-        threshold=0,
-    ).fit_transform(X_binary, y_binary)
-
-    RFRegressorSelectFromModel(
-        estimator=regressor._component_obj,
-        number_features=5,
-        n_estimators=10,
-        max_depth=7,
-        percent_features=0.5,
-        threshold=0,
-    ).fit_transform(X_regression, y_regression)
-
-    with pytest.raises(ValueError, match="Estimator must be a sklearn estimator."):
-        RFRegressorSelectFromModel(
-            estimator=regressor,
-            number_features=5,
-            n_estimators=10,
-            max_depth=7,
-            percent_features=0.5,
-            threshold=0,
-        )
-
-    with pytest.raises(ValueError, match="Estimator must be a sklearn estimator."):
-        RFClassifierSelectFromModel(
-            estimator=classifier,
-            number_features=5,
-            n_estimators=10,
-            max_depth=7,
-            percent_features=0.5,
-            threshold=0,
-        )
