@@ -766,15 +766,16 @@ def nonlinear_binary_pipeline_class():
 def nonlinear_multiclass_pipeline_class():
     class NonLinearMulticlassPipeline(MulticlassClassificationPipeline):
         component_graph = {
-            "Imputer": ["Imputer"],
-            "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x"],
-            "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x"],
-            "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x"],
-            "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x"],
+            "Imputer": ["Imputer", "X", "y"],
+            "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "y"],
+            "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
+            "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
+            "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
             "Logistic Regression": [
                 "Logistic Regression Classifier",
-                "Random Forest",
-                "Elastic Net",
+                "Random Forest.x",
+                "Elastic Net.x",
+                "y",
             ],
         }
 
@@ -794,11 +795,16 @@ def nonlinear_multiclass_pipeline_class():
 def nonlinear_regression_pipeline_class():
     class NonLinearRegressionPipeline(RegressionPipeline):
         component_graph = {
-            "Imputer": ["Imputer"],
-            "OneHot": ["One Hot Encoder", "Imputer.x"],
-            "Random Forest": ["Random Forest Regressor", "OneHot.x"],
-            "Elastic Net": ["Elastic Net Regressor", "OneHot.x"],
-            "Linear Regressor": ["Linear Regressor", "Random Forest", "Elastic Net"],
+            "Imputer": ["Imputer", "X", "y"],
+            "OneHot": ["One Hot Encoder", "Imputer.x", "y"],
+            "Random Forest": ["Random Forest Regressor", "OneHot.x", "y"],
+            "Elastic Net": ["Elastic Net Regressor", "OneHot.x", "y"],
+            "Linear Regressor": [
+                "Linear Regressor",
+                "Random Forest.x",
+                "Elastic Net.x",
+                "y",
+            ],
         }
 
         def __init__(self, parameters, random_seed=0):

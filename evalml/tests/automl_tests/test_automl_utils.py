@@ -3,7 +3,6 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 from sklearn.model_selection import KFold, StratifiedKFold
-from skopt.space import Categorical, Integer
 
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,

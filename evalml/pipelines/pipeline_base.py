@@ -108,6 +108,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 component_dict=component_graph.component_dict,
                 random_seed=self.random_seed,
             )
+        else:
+            raise ValueError(
+                "component_graph must be a list, dict, or ComponentGraph object"
+            )
         self.component_graph.instantiate(parameters)
 
         self.input_feature_names = {}

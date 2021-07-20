@@ -27,7 +27,7 @@ def cluster():
     dask_cluster.close()
 
 
-def test_automl(X_y_binary_cls, cluster, sequential_engine):
+def test_automl_parallel_vs_sequential(X_y_binary_cls, cluster, sequential_engine):
     """Comparing the results of parallel and sequential AutoML to each other."""
     with Client(cluster) as client:
         parallel_engine = DaskEngine(client)
