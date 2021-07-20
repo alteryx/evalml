@@ -60,7 +60,7 @@ def test_logger_info(caplog, logger_env_cleanup):
 
 def test_logger_warn(caplog, logger_env_cleanup):
     logger = get_logger(TEST_LOGGER_NAME)
-    logger.warn("Test warning")
+    logger.warning("Test warning")
     assert "Test warning" in caplog.text
     assert "WARN" in caplog.text
 

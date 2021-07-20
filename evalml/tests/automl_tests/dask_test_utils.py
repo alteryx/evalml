@@ -47,7 +47,7 @@ def delayed(delay):
     return wrap
 
 
-class TestPipelineWithFitError(BinaryClassificationPipeline):
+class DaskPipelineWithFitError(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "PipelineWithError"
 
@@ -70,7 +70,7 @@ class TestPipelineWithFitError(BinaryClassificationPipeline):
         raise Exception("Yikes")
 
 
-class TestPipelineWithScoreError(BinaryClassificationPipeline):
+class DaskPipelineWithScoreError(BinaryClassificationPipeline):
     component_graph = ["Baseline Classifier"]
     custom_name = "PipelineWithError"
 
@@ -95,7 +95,7 @@ class TestPipelineWithScoreError(BinaryClassificationPipeline):
         )
 
 
-class TestPipelineSlow(BinaryClassificationPipeline):
+class DaskPipelineSlow(BinaryClassificationPipeline):
     """Pipeline for testing whose fit() should take longer than the
     fast pipeline.  This exists solely to test AutoMLSearch termination
     and not complete fitting."""
@@ -122,7 +122,7 @@ class TestPipelineSlow(BinaryClassificationPipeline):
         super().fit(X, y)
 
 
-class TestPipelineFast(BinaryClassificationPipeline):
+class DaskPipelineFast(BinaryClassificationPipeline):
     """Pipeline for testing whose fit() should complete before the
     slow pipeline.  This exists solely to test AutoMLSearch termination
     and complete fitting."""
@@ -149,7 +149,7 @@ class TestPipelineFast(BinaryClassificationPipeline):
         super().fit(X, y)
 
 
-class TestSchemaCheckPipeline(BinaryClassificationPipeline):
+class DaskSchemaCheckPipeline(BinaryClassificationPipeline):
     def __init__(
         self,
         component_graph,
