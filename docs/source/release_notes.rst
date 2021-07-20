@@ -28,6 +28,7 @@ Release Notes
         * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`
         * Added a tmp_dir fixture that deletes its contents after tests run :pr:`2505`
         * Added a test that makes sure all pipelines in ``AutoMLSearch`` get the same data splits :pr:`2513`
+        * Condensed warning output in test logs :pr:`2521`
 
 .. warning::
 
