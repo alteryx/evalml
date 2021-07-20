@@ -859,7 +859,9 @@ def test_transformer_transform_output_type(X_y_binary):
             else:
                 assert isinstance(transform_output, pd.DataFrame)
 
-            if isinstance(component, SelectColumns) or isinstance(component, SelectDtypeColumns):
+            if isinstance(component, SelectColumns) or isinstance(
+                component, SelectDtypeColumns
+            ):
                 assert transform_output.shape == (X.shape[0], 0)
             elif isinstance(component, PCA) or isinstance(
                 component, LinearDiscriminantAnalysis
@@ -890,7 +892,9 @@ def test_transformer_transform_output_type(X_y_binary):
             else:
                 assert isinstance(transform_output, pd.DataFrame)
 
-            if isinstance(component, SelectColumns) or isinstance(component, SelectDtypeColumns):
+            if isinstance(component, SelectColumns) or isinstance(
+                component, SelectDtypeColumns
+            ):
                 assert transform_output.shape == (X.shape[0], 0)
             elif isinstance(component, PCA) or isinstance(
                 component, LinearDiscriminantAnalysis

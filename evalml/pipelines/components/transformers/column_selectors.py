@@ -141,9 +141,13 @@ class SelectDtypeColumns(ColumnSelector):
         cols = self.parameters.get("columns") or []
 
         if len(cols) > 0 and not isinstance(cols[0], str):
-            column_types = [logical_type.__class__ for logical_type in X.ww.logical_types.values()]
+            column_types = [
+                logical_type.__class__ for logical_type in X.ww.logical_types.values()
+            ]
         else:
-            column_types = [logical_type.type_string for logical_type in X.ww.logical_types.values()]
+            column_types = [
+                logical_type.type_string for logical_type in X.ww.logical_types.values()
+            ]
 
         missing_cols = set(cols) - set(column_types)
         if missing_cols:
