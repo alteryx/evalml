@@ -371,22 +371,6 @@ def dummy_classifier_estimator_class():
     return MockEstimator
 
 
-# @pytest.fixture
-# def dummy_classifier_linear_component_graph(dummy_classifier_estimator_class):
-#     component_graph_linear = {
-#         "Name": ["Imputer", "One Hot Encoder", dummy_classifier_estimator_class]
-#     }
-#     return component_graph_linear
-
-
-# @pytest.fixture
-# def dummy_regressor_linear_component_graph(dummy_regressor_estimator_class):
-#     component_graph_linear = {
-#         "Name": ["Imputer", "One Hot Encoder", dummy_regressor_estimator_class]
-#     }
-#     return component_graph_linear
-
-
 @pytest.fixture
 def dummy_classifier_dict_component_graph(dummy_classifier_estimator_class):
     component_graph_dict = {

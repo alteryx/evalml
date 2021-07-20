@@ -1055,8 +1055,6 @@ def test_make_component_dict_from_component_list():
         ],
     }
 
-<<<<<<< HEAD
-=======
     # Test with component after estimator
     assert _make_component_dict_from_component_list(
         [Imputer, RandomForestClassifier, Imputer]
@@ -1070,7 +1068,6 @@ def test_make_component_dict_from_component_list():
         "Imputer_2": [Imputer, "Random Forest Classifier.x", "y"],
     }
 
->>>>>>> main
 
 def test_make_component_dict_from_component_list_with_duplicate_names():
     assert _make_component_dict_from_component_list(

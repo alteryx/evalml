@@ -1051,7 +1051,7 @@ def test_default_objective(X_y_binary):
 
 
 def test_add_to_rankings(
-    dummy_classifier_linear_component_graph,
+    dummy_classifier_dict_component_graph,
     AutoMLTestEnv,
     dummy_binary_pipeline_class,
     X_y_binary,
@@ -1063,7 +1063,6 @@ def test_add_to_rankings(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs=dummy_classifier_linear_component_graph,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1.0, "F1": 0.5}):
@@ -1099,7 +1098,6 @@ def test_add_to_rankings(
 
 
 def test_add_to_rankings_no_search(
-    dummy_classifier_linear_component_graph,
     AutoMLTestEnv,
     dummy_binary_pipeline_class,
     X_y_binary,
@@ -1110,7 +1108,6 @@ def test_add_to_rankings_no_search(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs=dummy_classifier_linear_component_graph,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.5234}):
@@ -1202,7 +1199,6 @@ def test_add_to_rankings_regression(
 
 
 def test_add_to_rankings_duplicate(
-    dummy_classifier_linear_component_graph,
     AutoMLTestEnv,
     dummy_binary_pipeline_class,
     X_y_binary,
@@ -1215,7 +1211,6 @@ def test_add_to_rankings_duplicate(
         problem_type="binary",
         optimize_thresholds=False,
         max_iterations=1,
-        allowed_component_graphs=dummy_classifier_linear_component_graph,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.1234}):
