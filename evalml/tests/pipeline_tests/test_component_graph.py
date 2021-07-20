@@ -600,7 +600,7 @@ def test_compute_final_component_features(
     mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
     mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
     X_expected = pd.DataFrame(
-        {"Random Forest": np.zeros(X.shape[0]), "Elastic Net": np.ones(X.shape[0])}
+        {"Random Forest.x": np.zeros(X.shape[0]), "Elastic Net.x": np.ones(X.shape[0])}
     )
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
