@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
+import woodwork as ww
 
 from evalml.pipelines.components import DropColumns, SelectColumns, SelectDtypeColumns
 
@@ -158,7 +159,7 @@ def test_drop_column_transformer_input_invalid_col_name(class_to_test):
     with pytest.raises(ValueError, match="'not in data' not found in input data"):
         transformer.transform(X)
     with pytest.raises(ValueError, match="'not in data' not found in input data"):
-        transformer.transform(X)
+        transformer.fit_transform(X)
 
     X = np.arange(12).reshape(3, 4)
     transformer = class_to_test(columns=[5])
@@ -207,3 +208,21 @@ def test_column_transformer_int_col_names_np_array(class_to_test, answers):
 
     transformer = class_to_test(columns=[])
     assert_frame_equal(answer3, transformer.transform(X))
+
+
+def test_dtype_column_transformer_ww_types():
+    X = pd.DataFrame({"one": ['1', '2', '3', '4'], "two": [False, True, True, False], "three": [1, 2, 3, 4]})
+
+    transformer = SelectDtypeColumns(columns=[ww.logical_types.Age])
+    with pytest.raises(ValueError, match=" not found in input data"):
+        transformer.fit(X)
+    with pytest.raises(ValueError, match=" not found in input data"):
+        transformer.transform(X)
+    with pytest.raises(ValueError, match=" not found in input data"):
+        transformer.fit_transform(X)
+
+    # X_t = SelectDtypeColumns(columns=[ww.logical_types.Integer]).fit_transform(X)
+    # assert X_t.equals(X[["three"]].astype("int64"))
+
+    X_t = SelectDtypeColumns(columns=[ww.logical_types.Categorical, ww.logical_types.Boolean, ww.logical_types.Integer]).fit_transform(X)
+    assert X_t.astype(str).equals(X.astype(str))

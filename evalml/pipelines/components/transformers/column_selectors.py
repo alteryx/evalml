@@ -129,7 +129,7 @@ class SelectDtypeColumns(ColumnSelector):
     Selects columns by specified datatype in input data.
 
     Arguments:
-        columns (list(string)): List of datatypes, used to determine which columns to select.
+        columns (list(string), list(ww.LogicalType)): List of datatypes, used to determine which columns to select.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -140,7 +140,10 @@ class SelectDtypeColumns(ColumnSelector):
     def _check_input_for_columns(self, X):
         cols = self.parameters.get("columns") or []
 
-        column_types = set([logical_type.type_string for logical_type in X.ww.logical_types.values()])
+        if len(cols) > 0 and not isinstance(cols[0], str):
+            column_types = [logical_type.__class__ for logical_type in X.ww.logical_types.values()]
+        else:
+            column_types = [logical_type.type_string for logical_type in X.ww.logical_types.values()]
 
         missing_cols = set(cols) - set(column_types)
         if missing_cols:
