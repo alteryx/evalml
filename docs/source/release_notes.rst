@@ -23,6 +23,7 @@ Release Notes
         * No longer installing graphviz on windows in our CI pipelines because release 0.17 breaks windows 3.7 :pr:`2516`
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
+        * Build documentation with sphinx-autoapi :pr:`2458`
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
         * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`

@@ -42,8 +42,19 @@ class ARIMARegressor(Estimator):
         "max_q": Integer(3, 10),
         "seasonal": [True, False],
     }
+    """{
+        "start_p": Integer(1, 3),
+        "d": Integer(0, 2),
+        "start_q": Integer(1, 3),
+        "max_p": Integer(3, 10),
+        "max_d": Integer(2, 5),
+        "max_q": Integer(3, 10),
+        "seasonal": [True, False],
+    }"""
     model_family = ModelFamily.ARIMA
+    """ModelFamily.ARIMA"""
     supported_problem_types = [ProblemTypes.TIME_SERIES_REGRESSION]
+    """[ProblemTypes.TIME_SERIES_REGRESSION]"""
 
     def __init__(
         self,

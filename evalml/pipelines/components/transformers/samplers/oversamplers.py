@@ -19,6 +19,7 @@ class SMOTESampler(BaseOverSampler):
 
     name = "SMOTE Oversampler"
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(
         self,
@@ -54,6 +55,7 @@ class SMOTENCSampler(BaseOverSampler):
 
     name = "SMOTENC Oversampler"
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(
         self,
@@ -105,6 +107,7 @@ class SMOTENSampler(BaseOverSampler):
 
     name = "SMOTEN Oversampler"
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(
         self,

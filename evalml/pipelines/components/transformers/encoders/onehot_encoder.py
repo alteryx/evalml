@@ -41,6 +41,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
     name = "One Hot Encoder"
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(
         self,

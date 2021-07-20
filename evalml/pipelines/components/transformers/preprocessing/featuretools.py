@@ -18,6 +18,7 @@ class DFSTransformer(Transformer):
 
     name = "DFS Transformer"
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(self, index="index", random_seed=0, **kwargs):
         parameters = {"index": index}

@@ -25,6 +25,7 @@ class PerColumnImputer(Transformer):
 
     name = "Per Column Imputer"
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(
         self,
