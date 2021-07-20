@@ -49,6 +49,7 @@ from evalml.pipelines.components import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     SelectColumns,
+    SelectDtypeColumns,
     SimpleImputer,
     SMOTENCSampler,
     SMOTENSampler,
@@ -858,7 +859,7 @@ def test_transformer_transform_output_type(X_y_binary):
             else:
                 assert isinstance(transform_output, pd.DataFrame)
 
-            if isinstance(component, SelectColumns):
+            if isinstance(component, SelectColumns) or isinstance(component, SelectDtypeColumns):
                 assert transform_output.shape == (X.shape[0], 0)
             elif isinstance(component, PCA) or isinstance(
                 component, LinearDiscriminantAnalysis
@@ -889,7 +890,7 @@ def test_transformer_transform_output_type(X_y_binary):
             else:
                 assert isinstance(transform_output, pd.DataFrame)
 
-            if isinstance(component, SelectColumns):
+            if isinstance(component, SelectColumns) or isinstance(component, SelectDtypeColumns):
                 assert transform_output.shape == (X.shape[0], 0)
             elif isinstance(component, PCA) or isinstance(
                 component, LinearDiscriminantAnalysis
@@ -1066,6 +1067,7 @@ def test_all_transformers_needs_fitting():
         if component_class.__name__ in [
             "DropColumns",
             "SelectColumns",
+            "SelectDtypeColumns",
             "DelayedFeatureTransformer",
         ]:
             assert not component_class.needs_fitting
