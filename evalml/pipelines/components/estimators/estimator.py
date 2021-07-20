@@ -29,6 +29,9 @@ class Estimator(ComponentBase):
     predict_uses_y = False
     model_family = ModelFamily.NONE
 
+    modifies_features = True
+    modifies_target = False
+
     @property
     @classmethod
     @abstractmethod
