@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
+from skopt.space import Categorical
 
 from evalml.automl.automl_algorithm import EvalMLAlgorithm
 from evalml.model_family import ModelFamily
@@ -34,7 +35,7 @@ def test_evalml_algorithm_custom_hyperparameters_error(X_y_binary):
     sampler_name = "Undersampler"
 
     custom_hyperparameters = [
-        {"Imputer": {"numeric_imput_strategy": ["median"]}},
+        {"Imputer": {"numeric_impute_strategy": ["median"]}},
         {"One Hot Encoder": {"value1": ["value2"]}},
     ]
 
@@ -47,6 +48,30 @@ def test_evalml_algorithm_custom_hyperparameters_error(X_y_binary):
             problem_type,
             sampler_name,
             custom_hyperparameters=custom_hyperparameters,
+        )
+
+    with pytest.raises(
+        ValueError, match="Custom hyperparameters should only contain skopt"
+    ):
+        EvalMLAlgorithm(
+            X,
+            y,
+            problem_type,
+            sampler_name,
+            random_seed=0,
+            custom_hyperparameters={"Imputer": {"impute_strategy": (1, 2)}},
+        )
+
+    with pytest.raises(
+        ValueError, match="Pipeline parameters should not contain skopt.Space variables"
+    ):
+        EvalMLAlgorithm(
+            X,
+            y,
+            problem_type,
+            sampler_name,
+            random_seed=0,
+            pipeline_params={"Imputer": {"impute_strategy": Categorical([1, 3, 4])}},
         )
 
 

@@ -66,11 +66,23 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         random_seed=0,
         pipeline_params=None,
         custom_hyperparameters=None,
-        _frozen_pipeline_parameters=None,
         n_jobs=-1,
         number_features=None,
         text_in_ensembling=None,
     ):
+        """
+        Arguments:
+            X (pd.DataFrame): Training data
+            y (pd.Series): Target data
+            problem_type (ProblemType): Problem type associated with training data
+            _sampler_name (BaseSampler): Sampler to use for preprocessing
+            tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
+            random_seed (int): Seed for the random number generator. Defaults to 0.
+            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
+            pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
+            custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
+            text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
+        """
 
         super().__init__(
             allowed_pipelines=[],
@@ -91,7 +103,6 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         self.text_in_ensembling = text_in_ensembling
         self._pipeline_params = pipeline_params or {}
         self._custom_hyperparameters = custom_hyperparameters or {}
-        self._frozen_pipeline_parameters = _frozen_pipeline_parameters or {}
         self._selected_cols = None
         self._top_n_pipelines = None
         if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
@@ -143,7 +154,6 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 self.y,
                 estimator,
                 self.problem_type,
-                parameters=self._frozen_pipeline_parameters,
                 sampler_name=self._sampler_name,
             )
             for estimator in estimators
@@ -162,7 +172,6 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 self.y,
                 estimator,
                 self.problem_type,
-                parameters=self._frozen_pipeline_parameters,
                 sampler_name=self._sampler_name,
                 extra_components=[feature_selector],
             )
@@ -190,7 +199,6 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 self.y,
                 estimator,
                 self.problem_type,
-                parameters=self._frozen_pipeline_parameters,
                 sampler_name=self._sampler_name,
                 extra_components=[SelectColumns],
             )
@@ -242,7 +250,6 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 self.y,
                 estimator,
                 self.problem_type,
-                parameters=self._frozen_pipeline_parameters,
                 sampler_name=self._sampler_name,
                 extra_components=[SelectColumns],
             )
@@ -288,8 +295,6 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             next_batch = []
             for _ in range(10):
                 for pipeline in self._top_n_pipelines:
-                    if pipeline.name not in self._tuners:
-                        self._create_tuner(pipeline)
                     proposed_parameters = self._tuners[pipeline.name].propose()
                     parameters = self._transform_parameters(
                         pipeline, proposed_parameters
@@ -302,6 +307,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                             parameters=parameters, random_seed=self.random_seed
                         )
                     )
+
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch
@@ -316,19 +322,9 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         """
         if pipeline.model_family != ModelFamily.ENSEMBLE:
             if self.batch_number >= 3:
-                try:
-                    super().add_result(
-                        score_to_minimize, pipeline, trained_pipeline_results
-                    )
-                except ValueError as e:
-                    if "is not within the bounds of the space" in str(e):
-                        raise ValueError(
-                            "Default parameters for components in pipeline {} not in the hyperparameter ranges: {}".format(
-                                pipeline.name, e
-                            )
-                        )
-                    else:
-                        raise (e)
+                super().add_result(
+                    score_to_minimize, pipeline, trained_pipeline_results
+                )
 
         if self.batch_number == 2 and self._selected_cols is None:
             if is_regression(self.problem_type):
@@ -362,28 +358,9 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
     def _transform_parameters(self, pipeline, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
         parameters = {}
-        if "pipeline" in self._pipeline_params:
-            parameters["pipeline"] = self._pipeline_params["pipeline"]
-
         for name, component_class in pipeline.linearized_component_graph:
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
-            # For first batch, pass the pipeline params to the components that need them
-            if name in self._custom_hyperparameters and self._batch_number == 0:
-                for param_name, value in self._custom_hyperparameters[name].items():
-                    if isinstance(value, (Integer, Real)):
-                        # get a random value in the space
-                        component_parameters[param_name] = value.rvs(
-                            random_state=self.random_seed
-                        )[0]
-                    # Categorical
-                    else:
-                        component_parameters[param_name] = value.rvs(
-                            random_state=self.random_seed
-                        )
-            if name in self._pipeline_params and self._batch_number == 0:
-                for param_name, value in self._pipeline_params[name].items():
-                    component_parameters[param_name] = value
             # Inspects each component and adds the following parameters when needed
             if "n_jobs" in init_params:
                 component_parameters["n_jobs"] = self.n_jobs
@@ -395,9 +372,5 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 and self._batch_number > 0
             ):
                 component_parameters["columns"] = self._pipeline_params[name]["columns"]
-            if "pipeline" in self._pipeline_params:
-                for param_name, value in self._pipeline_params["pipeline"].items():
-                    if param_name in init_params:
-                        component_parameters[param_name] = value
             parameters[name] = component_parameters
         return parameters
