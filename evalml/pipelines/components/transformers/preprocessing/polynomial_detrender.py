@@ -17,7 +17,6 @@ class PolynomialDetrender(TargetTransformer):
     """
 
     name = "Polynomial Detrender"
-
     hyperparameter_ranges = {"degree": Integer(1, 3)}
     """{"degree": Integer(1, 3)}"""
 

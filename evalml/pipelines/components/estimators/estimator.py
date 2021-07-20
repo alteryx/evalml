@@ -30,6 +30,9 @@ class Estimator(ComponentBase):
     model_family = ModelFamily.NONE
     """ModelFamily.NONE"""
 
+    modifies_features = True
+    modifies_target = False
+
     @property
     @classmethod
     @abstractmethod

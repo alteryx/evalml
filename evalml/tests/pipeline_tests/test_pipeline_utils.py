@@ -27,8 +27,15 @@ from evalml.pipelines.components import (
     TextFeaturizer,
     Transformer,
 )
+from evalml.pipelines.components.estimators.classifiers.rf_classifier import (
+    RandomForestClassifier,
+)
+from evalml.pipelines.components.transformers.samplers.undersampler import (
+    Undersampler,
+)
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
+    _make_component_dict_from_component_list,
     _make_component_list_from_actions,
     generate_pipeline_code,
     get_estimators,
@@ -986,3 +993,123 @@ def test_generate_code_pipeline_with_custom_components():
     )
     pipeline = generate_pipeline_code(mock_pipeline_with_custom_components)
     assert pipeline == expected_code
+
+
+def test_make_component_dict_from_component_list():
+    assert _make_component_dict_from_component_list([RandomForestClassifier]) == {
+        "Random Forest Classifier": [RandomForestClassifier, "X", "y"]
+    }
+    assert _make_component_dict_from_component_list([Imputer]) == {
+        "Imputer": [Imputer, "X", "y"]
+    }
+    assert _make_component_dict_from_component_list(
+        [Imputer, OneHotEncoder, DropNullColumns]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+        "Drop Null Columns Transformer": [DropNullColumns, "One Hot Encoder.x", "y"],
+    }
+
+    # Test with component that modifies y (Target Imputer)
+    assert _make_component_dict_from_component_list(
+        [Imputer, OneHotEncoder, TargetImputer, RandomForestClassifier]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+        "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "One Hot Encoder.x",
+            "Target Imputer.y",
+        ],
+    }
+
+    # Test with component that modifies X and y (Undersampler)
+    assert _make_component_dict_from_component_list(
+        [
+            Imputer,
+            OneHotEncoder,
+            TargetImputer,
+            DropNullColumns,
+            Undersampler,
+            RandomForestClassifier,
+        ]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+        "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+        "Drop Null Columns Transformer": [
+            DropNullColumns,
+            "One Hot Encoder.x",
+            "Target Imputer.y",
+        ],
+        "Undersampler": [
+            Undersampler,
+            "Drop Null Columns Transformer.x",
+            "Target Imputer.y",
+        ],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Undersampler.x",
+            "Undersampler.y",
+        ],
+    }
+
+    # Test with component after estimator
+    assert _make_component_dict_from_component_list(
+        [Imputer, RandomForestClassifier, Imputer]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Imputer.x",
+            "y",
+        ],
+        "Imputer_2": [Imputer, "Random Forest Classifier.x", "y"],
+    }
+
+
+def test_make_component_dict_from_component_list_with_duplicate_names():
+    assert _make_component_dict_from_component_list(
+        [RandomForestClassifier, RandomForestClassifier]
+    ) == {
+        "Random Forest Classifier": [RandomForestClassifier, "X", "y"],
+        "Random Forest Classifier_1": [
+            RandomForestClassifier,
+            "Random Forest Classifier.x",
+            "y",
+        ],
+    }
+    assert _make_component_dict_from_component_list(
+        [Imputer, Imputer, RandomForestClassifier]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "Imputer_1": [Imputer, "Imputer.x", "y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Imputer_1.x",
+            "y",
+        ],
+    }
+    assert _make_component_dict_from_component_list(
+        [TargetImputer, TargetImputer, RandomForestClassifier]
+    ) == {
+        "Target Imputer": [TargetImputer, "X", "y"],
+        "Target Imputer_1": [TargetImputer, "X", "Target Imputer.y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "X",
+            "Target Imputer_1.y",
+        ],
+    }
+    assert _make_component_dict_from_component_list(
+        [Undersampler, Undersampler, RandomForestClassifier]
+    ) == {
+        "Undersampler": [Undersampler, "X", "y"],
+        "Undersampler_1": [Undersampler, "Undersampler.x", "Undersampler.y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Undersampler_1.x",
+            "Undersampler_1.y",
+        ],
+    }
