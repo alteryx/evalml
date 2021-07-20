@@ -122,3 +122,45 @@ class SelectColumns(ColumnSelector):
             pd.DataFrame: Transformed X.
         """
         return super().transform(X, y)
+
+
+class SelectDtypeColumns(ColumnSelector):
+    """
+    Selects columns by specified datatype in input data.
+
+    Arguments:
+        columns (list(string)): List of datatypes, used to determine which columns to select.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+    """
+
+    name = "Select Datatype Columns Transformer"
+    hyperparameter_ranges = {}
+    needs_fitting = False
+
+    def _check_input_for_columns(self, X):
+        cols = self.parameters.get("columns") or []
+
+        column_types = set([logical_type.type_string for logical_type in X.ww.logical_types.values()])
+
+        missing_cols = set(cols) - set(column_types)
+        if missing_cols:
+            raise ValueError(
+                "Column(s) of type {} not found in input data".format(
+                    ", ".join(f"'{col_name}'" for col_name in missing_cols)
+                )
+            )
+
+    def _modify_columns(self, cols, X, y=None):
+        return X.ww.select(cols)
+
+    def transform(self, X, y=None):
+        """Transforms data X by dropping columns.
+
+        Arguments:
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Targets.
+
+        Returns:
+            pd.DataFrame: Transformed X.
+        """
+        return super().transform(X, y)
