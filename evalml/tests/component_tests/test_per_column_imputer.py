@@ -262,7 +262,7 @@ def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(
     override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
     for logical_type in override_types:
         # Column with Nans to boolean used to fail. Now it doesn't
-        if has_nan and logical_type == Boolean:
+        if has_nan and logical_type in [Boolean, NaturalLanguage]:
             continue
         try:
             X = X_df.copy()

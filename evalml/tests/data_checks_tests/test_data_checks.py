@@ -224,8 +224,8 @@ def test_default_data_checks_classification(input_type):
 
     y = pd.Series([0, 1, np.nan, 1, 0])
     y_multiclass = pd.Series([0, 1, np.nan, 2, 0])
+    X.ww.init(logical_types={"natural_language_nan": "NaturalLanguage"})
     if input_type == "ww":
-        X.ww.init()
         y = ww.init_series(y)
         y_multiclass = ww.init_series(y_multiclass)
 
@@ -336,9 +336,8 @@ def test_default_data_checks_regression(input_type):
     X["nan_dt_col"][0] = None
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
     y_no_variance = pd.Series([5] * 5)
-
+    X.ww.init(logical_types={"natural_language_nan": "NaturalLanguage"})
     if input_type == "ww":
-        X.ww.init()
         y = ww.init_series(y)
         y_no_variance = ww.init_series(y_no_variance)
     null_leakage = [
