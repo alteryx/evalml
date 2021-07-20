@@ -1,13 +1,19 @@
 import numpy as np
 import pandas as pd
 import pytest
-from pandas.testing import assert_frame_equal
 import woodwork as ww
+from pandas.testing import assert_frame_equal
 
-from evalml.pipelines.components import DropColumns, SelectColumns, SelectDtypeColumns
+from evalml.pipelines.components import (
+    DropColumns,
+    SelectColumns,
+    SelectDtypeColumns,
+)
 
 
-@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns, SelectDtypeColumns])
+@pytest.mark.parametrize(
+    "class_to_test", [DropColumns, SelectColumns, SelectDtypeColumns]
+)
 def test_column_transformer_init(class_to_test):
     transformer = class_to_test(columns=None)
     assert transformer.parameters["columns"] is None
@@ -22,7 +28,9 @@ def test_column_transformer_init(class_to_test):
         _ = class_to_test(columns="Column1")
 
 
-@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns, SelectDtypeColumns])
+@pytest.mark.parametrize(
+    "class_to_test", [DropColumns, SelectColumns, SelectDtypeColumns]
+)
 def test_column_transformer_empty_X(class_to_test):
     X = pd.DataFrame()
     transformer = class_to_test(columns=[])
@@ -73,9 +81,17 @@ def test_column_transformer_empty_X(class_to_test):
 )
 def test_column_transformer_transform(class_to_test, checking_functions):
     if class_to_test is SelectDtypeColumns:
-        X = pd.DataFrame({"one": ['1', '2', '3', '4'], "two": [False, True, True, False], "three": [1, 2, 3, 4]})
+        X = pd.DataFrame(
+            {
+                "one": ["1", "2", "3", "4"],
+                "two": [False, True, True, False],
+                "three": [1, 2, 3, 4],
+            }
+        )
     else:
-        X = pd.DataFrame({"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]})
+        X = pd.DataFrame(
+            {"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]}
+        )
     check1, check2, check3, check4 = checking_functions
 
     transformer = class_to_test(columns=None)
@@ -128,9 +144,17 @@ def test_column_transformer_transform(class_to_test, checking_functions):
 )
 def test_column_transformer_fit_transform(class_to_test, checking_functions):
     if class_to_test is SelectDtypeColumns:
-        X = pd.DataFrame({"one": ['1', '2', '3', '4'], "two": [False, True, True, False], "three": [1, 2, 3, 4]})
+        X = pd.DataFrame(
+            {
+                "one": ["1", "2", "3", "4"],
+                "two": [False, True, True, False],
+                "three": [1, 2, 3, 4],
+            }
+        )
     else:
-        X = pd.DataFrame({"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]})
+        X = pd.DataFrame(
+            {"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]}
+        )
     check1, check2, check3 = checking_functions
 
     assert check1(X, class_to_test(columns=[]).fit_transform(X))
@@ -141,16 +165,19 @@ def test_column_transformer_fit_transform(class_to_test, checking_functions):
         assert check2(X, class_to_test(columns=["one"]).fit_transform(X))
 
     if class_to_test is SelectDtypeColumns:
-        assert check3(X, class_to_test(columns=["categorical", "boolean", "integer"]).fit_transform(X))
+        assert check3(
+            X,
+            class_to_test(columns=["categorical", "boolean", "integer"]).fit_transform(
+                X
+            ),
+        )
     else:
         assert check3(X, class_to_test(columns=list(X.columns)).fit_transform(X))
 
 
-def test_column_dtype_transformer_fit_transform():
-    X = pd.DataFrame({"one": ['1', '2', '3', '4'], "two": [False, True, True, False], "three": [1, 2, 3, 4]})
-
-
-@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns, SelectDtypeColumns])
+@pytest.mark.parametrize(
+    "class_to_test", [DropColumns, SelectColumns, SelectDtypeColumns]
+)
 def test_drop_column_transformer_input_invalid_col_name(class_to_test):
     X = pd.DataFrame({"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]})
     transformer = class_to_test(columns=["not in data"])
@@ -211,7 +238,13 @@ def test_column_transformer_int_col_names_np_array(class_to_test, answers):
 
 
 def test_dtype_column_transformer_ww_types():
-    X = pd.DataFrame({"one": ['1', '2', '3', '4'], "two": [False, True, True, False], "three": [1, 2, 3, 4]})
+    X = pd.DataFrame(
+        {
+            "one": ["1", "2", "3", "4"],
+            "two": [False, True, True, False],
+            "three": [1, 2, 3, 4],
+        }
+    )
 
     transformer = SelectDtypeColumns(columns=[ww.logical_types.Age])
     with pytest.raises(ValueError, match=" not found in input data"):
@@ -224,5 +257,11 @@ def test_dtype_column_transformer_ww_types():
     # X_t = SelectDtypeColumns(columns=[ww.logical_types.Integer]).fit_transform(X)
     # assert X_t.equals(X[["three"]].astype("int64"))
 
-    X_t = SelectDtypeColumns(columns=[ww.logical_types.Categorical, ww.logical_types.Boolean, ww.logical_types.Integer]).fit_transform(X)
+    X_t = SelectDtypeColumns(
+        columns=[
+            ww.logical_types.Categorical,
+            ww.logical_types.Boolean,
+            ww.logical_types.Integer,
+        ]
+    ).fit_transform(X)
     assert X_t.astype(str).equals(X.astype(str))
