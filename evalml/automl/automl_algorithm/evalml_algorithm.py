@@ -364,13 +364,5 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             # Inspects each component and adds the following parameters when needed
             if "n_jobs" in init_params:
                 component_parameters["n_jobs"] = self.n_jobs
-            if "number_features" in init_params:
-                component_parameters["number_features"] = self.number_features
-            if (
-                name in self._pipeline_params
-                and name == "Drop Columns Transformer"
-                and self._batch_number > 0
-            ):
-                component_parameters["columns"] = self._pipeline_params[name]["columns"]
             parameters[name] = component_parameters
         return parameters
