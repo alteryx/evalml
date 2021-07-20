@@ -6,6 +6,7 @@ Release Notes
         * Added details on how to fix error caused by broken ww schema :pr:`2466`
         * Added ability to use built-in pickle for saving AutoMLSearch :pr:`2463`
         * Updated our components and component graphs to use latest features of ww 0.4.1, e.g. ``concat_columns`` and drop in-place. :pr:`2465`
+        * Updated our components with an attribute that describes if they modify features or targets and can be used in list API for pipeline initialization :pr:`2504`
         * Updated ``ComponentGraph`` to accept X and y as inputs :pr:`2507`
         * Removed unused ``TARGET_BINARY_INVALID_VALUES`` from ``DataCheckMessageCode`` enum and fixed formatting of objective documentation :pr:`2520`
     * Fixes
@@ -17,6 +18,7 @@ Release Notes
     * Changes
         * Updated XGBoost dependency to ``>=1.4.2`` :pr:`2484`, :pr:`2498`
         * Added a ``DeprecationWarning`` about deprecating the list API for ``ComponentGraph`` :pr:`2488`
+        * Updated ``make_pipeline`` for AutoML to create dictionaries, not lists, to initialize pipelines :pr:`2504`
         * No longer installing graphviz on windows in our CI pipelines because release 0.17 breaks windows 3.7 :pr:`2516`
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
