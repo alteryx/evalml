@@ -31,26 +31,19 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
     1. Naive pipelines:
         a. run baseline with default preprocessing pipeline
         b. run naive linear model with default preprocessing pipeline
-        c. run basic RF pipeline (for feature selection) with default preprocessing pipeline
-    2. Feature engineering and naive pipelines with feature selection:
-        a. create feature selection component with previous batches’ RF estimator then add to another linear model
-        b. Run feature engineering: leveraging featuretools and our DFSTransformer
-    3. Naive pipelines with feature engineering
-        a. Use FT component from previous batch with naive linear model and RF pipeline
-    4. Naive pipelines with feature engineering and feature selection
-        a. use previous RF estimator to run FS with naive linear model
-
-    At this point we have a single pipeline candidate for preprocessing, feature engineering and feature selection
-
-    5. Pipelines with preprocessing components:
-        a. scan estimators (our current batch 1).
-        b. Then run ensembling
+        c. run basic RF pipeline with default preprocessing pipeline
+    2. Naive pipelines with feature selection
+        a. future pipelines will use the selected features with a SelectedColumns transformer
+    At this point we have a single pipeline candidate for preprocessing and feature selection
+    3. Pipelines with preprocessing components:
+        a. scan rest of estimators (our current batch 1).
+    4. First ensembling run
 
     Fast mode ends here. Begin long mode.
 
-    6. Run some random pipelines:
-        a. Choose top 3 estimators. Generate 50 random parameter sets. Run all 150 in one batch
-    7. Run ensembling
+    6. Run top 3 estimators:
+        a. Generate 50 random parameter sets. Run all 150 in one batch
+    7. Second ensembling run
     8. Repeat these indefinitely until stopping criterion is met:
         a. For each of the previous top 3 estimators, sample 10 parameters from the tuner. Run all 30 in one batch
         b. Run ensembling
