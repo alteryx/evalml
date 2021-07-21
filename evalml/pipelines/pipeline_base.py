@@ -23,9 +23,9 @@ from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
 from evalml.exceptions.exceptions import MissingComponentError
 from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
-from evalml.pipelines.components.transformers.transformer import (
-    TargetTransformer,
-)
+# from evalml.pipelines.components.transformers.transformer import (
+#     TargetTransformer,
+# )
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
 from evalml.utils import (
@@ -40,6 +40,29 @@ from evalml.utils import (
 
 logger = get_logger(__file__)
 
+def _make_component_dict_from_component_list(component_list):
+    """Generates a component dictionary from a list of components."""
+    seen = set()
+    component_dict = {}
+    most_recent_features = "X"
+    most_recent_target = "y"
+
+    for idx, component in enumerate(component_list):
+        component_name = component.name
+        if component_name in seen:
+            component_name = f"{component_name}_{idx}"
+        seen.add(component_name)
+
+        component_dict[component_name] = [
+            component,
+            most_recent_features,
+            most_recent_target,
+        ]
+        if component.modifies_target:
+            most_recent_target = f"{component_name}.y"
+        if component.modifies_features:
+            most_recent_features = f"{component_name}.x"
+    return component_dict
 
 class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     """
@@ -96,9 +119,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_seed = random_seed
 
         if isinstance(component_graph, list):  # Backwards compatibility
+            # self.component_graph = ComponentGraph(
+            #     component_dict=self._make_component_graph_from_list(component_graph),
+            #     random_seed=self.random_seed,
+            # )
             self.component_graph = ComponentGraph(
-                component_dict=self._make_component_graph_from_list(component_graph),
-                random_seed=self.random_seed,
+                component_dict=_make_component_dict_from_component_list(component_graph),
+                random_seed=self.random_seed
             )
         elif isinstance(component_graph, dict):
             self.component_graph = ComponentGraph(
@@ -216,66 +243,66 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             component_list_to_use.append(component_class)
         return self._make_component_dict_from_component_list(component_list_to_use)
 
-    def _from_list(self, component_list, random_seed=0):
-        """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its X transformed output to the next component
+    # def _from_list(self, component_list, random_seed=0):
+    #     """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its X transformed output to the next component
 
-        Arguments:
-            component_list (list): String names or ComponentBase subclasses in
-                                   an order that represents a valid linear graph
-        """
+    #     Arguments:
+    #         component_list (list): String names or ComponentBase subclasses in
+    #                                an order that represents a valid linear graph
+    #     """
 
-        component_dict = {}
-        previous_component = None
+    #     component_dict = {}
+    #     previous_component = None
 
-        component_list = self._linearized_component_graph(component_list)
+    #     component_list = self._linearized_component_graph(component_list)
 
-        # Logic is as follows: Create the component dict for the non-target transformers as expected.
-        # If there are target transformers present, connect them together and then pass the final output
-        # to the sampler (if present) or the final estimator
+    #     # Logic is as follows: Create the component dict for the non-target transformers as expected.
+    #     # If there are target transformers present, connect them together and then pass the final output
+    #     # to the sampler (if present) or the final estimator
 
-        target_transformers = list(
-            filter(lambda tup: issubclass(tup[1], TargetTransformer), component_list)
-        )
-        not_target_transformers = list(
-            filter(
-                lambda tup: not issubclass(tup[1], TargetTransformer), component_list
-            )
-        )
+    #     target_transformers = list(
+    #         filter(lambda tup: issubclass(tup[1], TargetTransformer), component_list)
+    #     )
+    #     not_target_transformers = list(
+    #         filter(
+    #             lambda tup: not issubclass(tup[1], TargetTransformer), component_list
+    #         )
+    #     )
 
-        for component_name, component_class in not_target_transformers:
-            component_dict[component_name] = [component_class]
-            if previous_component is not None:
-                if "sampler" in previous_component:
-                    component_dict[component_name].extend(
-                        [f"{previous_component}.x", f"{previous_component}.y"]
-                    )
-                else:
-                    component_dict[component_name].append(f"{previous_component}.x")
-            previous_component = component_name
+    #     for component_name, component_class in not_target_transformers:
+    #         component_dict[component_name] = [component_class]
+    #         if previous_component is not None:
+    #             if "sampler" in previous_component:
+    #                 component_dict[component_name].extend(
+    #                     [f"{previous_component}.x", f"{previous_component}.y"]
+    #                 )
+    #             else:
+    #                 component_dict[component_name].append(f"{previous_component}.x")
+    #         previous_component = component_name
 
-        previous_component = None
-        for component_name, component_class in target_transformers:
-            component_dict[component_name] = [component_class]
-            if previous_component is not None:
-                component_dict[component_name].append(f"{previous_component}.y")
-            previous_component = component_name
+    #     previous_component = None
+    #     for component_name, component_class in target_transformers:
+    #         component_dict[component_name] = [component_class]
+    #         if previous_component is not None:
+    #             component_dict[component_name].append(f"{previous_component}.y")
+    #         previous_component = component_name
 
-        if target_transformers:
-            sampler_index = next(
-                iter(
-                    [
-                        i
-                        for i, tup in enumerate(not_target_transformers)
-                        if "sampler" in tup[0]
-                    ]
-                ),
-                -1,
-            )
-            component_dict[not_target_transformers[sampler_index][0]].append(
-                f"{target_transformers[-1][0]}.y"
-            )
+    #     if target_transformers:
+    #         sampler_index = next(
+    #             iter(
+    #                 [
+    #                     i
+    #                     for i, tup in enumerate(not_target_transformers)
+    #                     if "sampler" in tup[0]
+    #                 ]
+    #             ),
+    #             -1,
+    #         )
+    #         component_dict[not_target_transformers[sampler_index][0]].append(
+    #             f"{target_transformers[-1][0]}.y"
+    #         )
 
-        return ComponentGraph(component_dict, random_seed=random_seed)
+    #     return ComponentGraph(component_dict, random_seed=random_seed)
 
     def get_hyperparameter_ranges(self, custom_hyperparameters):
         """
