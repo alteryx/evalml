@@ -22,14 +22,18 @@ class DaskComputation(EngineComputation):
         self.meta_data = {}
 
     def done(self):
-        """Whether the computation is done."""
+        """
+        Returns:
+            bool: Whether the computation is done.
+        """
         return self.work.done()
 
     def get_result(self):
         """Gets the computation result.
         Will block until the computation is finished.
 
-        Raises Exception: If computation fails. Returns traceback.
+        Raises:
+             Exception: If computation fails. Returns traceback.
         """
         return self.work.result()
 
@@ -39,7 +43,10 @@ class DaskComputation(EngineComputation):
 
     @property
     def is_cancelled(self):
-        """Returns whether computation was cancelled."""
+        """
+        Returns:
+            bool: Returns whether computation was cancelled.
+        """
         return self.work.status
 
 
@@ -60,7 +67,7 @@ class DaskEngine(EngineBase):
         The implementation uses caching so the data is only sent once. This follows
         dask best practices.
 
-        Args:
+        Arguments:
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
         Return:
@@ -79,7 +86,7 @@ class DaskEngine(EngineBase):
     def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send evaluation job to cluster.
 
-        Args:
+        Arguments:
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to evaluate
             X (pd.DataFrame): input data for modeling
@@ -103,7 +110,7 @@ class DaskEngine(EngineBase):
     def submit_training_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send training job to cluster.
 
-        Args:
+        Arguments:
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling
@@ -123,7 +130,7 @@ class DaskEngine(EngineBase):
     ) -> EngineComputation:
         """Send scoring job to cluster.
 
-        Args:
+        Arguments:
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling

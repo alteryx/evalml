@@ -55,8 +55,8 @@ def _get_engine_support(parallel_engine_type, thread_pool, cluster):
     engine class for testing purposes.
 
     e.g. The CFEngine can be run either with a ThreadPoolExecutor or a ProcessPoolExecutor,
-    so _get_engine_support("CFEngine", thread_pool, process_pool, "thread", cluster) returns a
-    tuple of (ThreadPoolExecutor, cf.Client, cf.CFEngine)
+        so _get_engine_support("CFEngine", thread_pool, cluster) returns a
+        tuple of (ThreadPoolExecutor, cf.Client, cf.CFEngine)
     """
     if parallel_engine_type == "CFEngine":
         resources = thread_pool

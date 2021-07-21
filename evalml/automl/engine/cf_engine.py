@@ -11,6 +11,11 @@ class CFClient:
     """Custom CFClient API to match Dask's CFClient and allow context management."""
 
     def __init__(self, pool):
+        """
+        Arguments:
+            pool(cf.ThreadPoolExecutor or cf.ProcessPoolExecutor): the resource pool
+                to execute the futures work on.
+        """
         self.pool = pool
 
     def __enter__(self):
@@ -25,18 +30,22 @@ class CFClient:
 
 
 class CFComputation(EngineComputation):
-    """A Future-like wrapper around jobs created by the CFEngine.
-
-    Arguments:
-        future (callable): Computation to do.
-    """
+    """A Future-like wrapper around jobs created by the CFEngine."""
 
     def __init__(self, future):
+        """
+        Arguments:
+            future(cf.Future): The concurrent.futures.Future that is desired
+                to be executed.
+        """
         self.work = future
         self.meta_data = {}
 
     def done(self):
-        """Whether the computation is done."""
+        """
+        Returns:
+            bool: Whether the computation is done.
+        """
         return self.work.done()
 
     def get_result(self):
@@ -44,17 +53,29 @@ class CFComputation(EngineComputation):
         Will block until the computation is finished.
 
         Raises:
-             Exception: If computation fails. Returns traceback.
+            Exception: If computation fails. Returns traceback.
+            cf.TimeoutError: If computation takes longer than default timeout time.
+            cf.CancelledError: If computation was canceled before completing.
+        Returns:
+            The result of the requested job.
         """
         return self.work.result()
 
     def cancel(self):
-        """Cancel the current computation."""
+        """Cancel the current computation.
+
+        Returns:
+            bool: False if the call is currently being executed or finished running
+              and cannot be cancelled.  True if the call can be canceled.
+        """
         return self.work.cancel()
 
     @property
     def is_cancelled(self):
-        """Returns whether computation was cancelled."""
+        """
+        Returns:
+            bool: Returns whether computation was cancelled.
+        """
         return self.work.cancelled()
 
 
@@ -72,7 +93,7 @@ class CFEngine(EngineBase):
     def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send evaluation job to cluster.
 
-        Args:
+        Arguments:
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to evaluate
             X (pd.DataFrame): input data for modeling
@@ -95,7 +116,7 @@ class CFEngine(EngineBase):
     def submit_training_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send training job to cluster.
 
-        Args:
+        Arguments:
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling
@@ -114,7 +135,7 @@ class CFEngine(EngineBase):
     ) -> EngineComputation:
         """Send scoring job to cluster.
 
-        Args:
+        Arguments:
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling
