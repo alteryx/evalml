@@ -23,10 +23,6 @@ from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
 from evalml.exceptions.exceptions import MissingComponentError
 from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
-
-# from evalml.pipelines.components.transformers.transformer import (
-#     TargetTransformer,
-# )
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
 from evalml.utils import (
@@ -40,7 +36,6 @@ from evalml.utils import (
 )
 
 logger = get_logger(__file__)
-from evalml.pipelines.components.utils import handle_component_class
 
 def _make_component_dict_from_component_list(component_list):
     """Generates a component dictionary from a list of components."""
