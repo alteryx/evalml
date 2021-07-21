@@ -1,6 +1,3 @@
-import joblib
-from dask.distributed import Client
-
 from evalml.automl.engine.engine_base import (
     EngineBase,
     EngineComputation,
@@ -10,15 +7,38 @@ from evalml.automl.engine.engine_base import (
 )
 
 
-class DaskComputation(EngineComputation):
-    """A Future-like wrapper around jobs created by the DaskEngine.
+class CFClient:
+    """Custom CFClient API to match Dask's CFClient and allow context management."""
 
-    Arguments:
-        dask_future (callable): Computation to do.
-    """
+    def __init__(self, pool):
+        """
+        Arguments:
+            pool(cf.ThreadPoolExecutor or cf.ProcessPoolExecutor): the resource pool
+                to execute the futures work on.
+        """
+        self.pool = pool
 
-    def __init__(self, dask_future):
-        self.work = dask_future
+    def __enter__(self):
+        return self
+
+    def __exit__(self, typ, value, traceback):
+        pass
+
+    def submit(self, *args, **kwargs):
+        """Pass through to imitate Dask's Client API."""
+        return self.pool.submit(*args, **kwargs)
+
+
+class CFComputation(EngineComputation):
+    """A Future-like wrapper around jobs created by the CFEngine."""
+
+    def __init__(self, future):
+        """
+        Arguments:
+            future(cf.Future): The concurrent.futures.Future that is desired
+                to be executed.
+        """
+        self.work = future
         self.meta_data = {}
 
     def done(self):
@@ -33,12 +53,21 @@ class DaskComputation(EngineComputation):
         Will block until the computation is finished.
 
         Raises:
-             Exception: If computation fails. Returns traceback.
+            Exception: If computation fails. Returns traceback.
+            cf.TimeoutError: If computation takes longer than default timeout time.
+            cf.CancelledError: If computation was canceled before completing.
+        Returns:
+            The result of the requested job.
         """
         return self.work.result()
 
     def cancel(self):
-        """Cancel the current computation."""
+        """Cancel the current computation.
+
+        Returns:
+            bool: False if the call is currently being executed or finished running
+              and cannot be cancelled.  True if the call can be canceled.
+        """
         return self.work.cancel()
 
     @property
@@ -47,41 +76,19 @@ class DaskComputation(EngineComputation):
         Returns:
             bool: Returns whether computation was cancelled.
         """
-        return self.work.status
+        return self.work.cancelled()
 
 
-class DaskEngine(EngineBase):
-    """The dask engine"""
+class CFEngine(EngineBase):
+    """The concurrent.futures (CF) engine"""
 
     def __init__(self, client):
-        if not isinstance(client, Client):
+        if not isinstance(client, CFClient):
             raise TypeError(
-                f"Expected dask.distributed.Client, received {type(client)}"
+                f"Expected evalml.automl.engine.cf_engine.CFClient, received {type(client)}"
             )
         self.client = client
         self._data_futures_cache = {}
-
-    def send_data_to_cluster(self, X, y):
-        """Send data to the cluster.
-
-        The implementation uses caching so the data is only sent once. This follows
-        dask best practices.
-
-        Arguments:
-            X (pd.DataFrame): input data for modeling
-            y (pd.Series): target data for modeling
-        Return:
-            dask.Future: the modeling data
-        """
-        data_hash = joblib.hash(X), joblib.hash(y)
-        if data_hash in self._data_futures_cache:
-            X_future, y_future = self._data_futures_cache[data_hash]
-            if not (X_future.cancelled() or y_future.cancelled()):
-                return X_future, y_future
-        self._data_futures_cache[data_hash] = self.client.scatter(
-            [X, y], broadcast=True
-        )
-        return self._data_futures_cache[data_hash]
 
     def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send evaluation job to cluster.
@@ -92,12 +99,11 @@ class DaskEngine(EngineBase):
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
         Return:
-            DaskComputation: a object wrapping a reference to a future-like computation
-                occurring in the dask cluster
+            CFComputation: an object wrapping a reference to a future-like computation
+                occurring in the resource pool
         """
         logger = self.setup_job_log()
-        X, y = self.send_data_to_cluster(X, y)
-        dask_future = self.client.submit(
+        future = self.client.submit(
             evaluate_pipeline,
             pipeline=pipeline,
             automl_config=automl_config,
@@ -105,7 +111,7 @@ class DaskEngine(EngineBase):
             y=y,
             logger=logger,
         )
-        return DaskComputation(dask_future)
+        return CFComputation(future)
 
     def submit_training_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send training job to cluster.
@@ -116,14 +122,13 @@ class DaskEngine(EngineBase):
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
         Return:
-            DaskComputation: a object wrapping a reference to a future-like computation
-                occurring in the dask cluster
+            CFComputation: an object wrapping a reference to a future-like computation
+                occurring in the resource pool
         """
-        X, y = self.send_data_to_cluster(X, y)
-        dask_future = self.client.submit(
+        future = self.client.submit(
             train_pipeline, pipeline=pipeline, X=X, y=y, automl_config=automl_config
         )
-        return DaskComputation(dask_future)
+        return CFComputation(future)
 
     def submit_scoring_job(
         self, automl_config, pipeline, X, y, objectives
@@ -136,14 +141,13 @@ class DaskEngine(EngineBase):
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
         Return:
-            DaskComputation: a object wrapping a reference to a future-like computation
-                occurring in the dask cluster
+            CFComputation: a object wrapping a reference to a future-like computation
+                occurring in the resource pool
         """
         # Get the schema before we lose it
         X_schema = X.ww.schema
         y_schema = y.ww.schema
-        X, y = self.send_data_to_cluster(X, y)
-        dask_future = self.client.submit(
+        future = self.client.submit(
             score_pipeline,
             pipeline=pipeline,
             X=X,
@@ -152,6 +156,6 @@ class DaskEngine(EngineBase):
             X_schema=X_schema,
             y_schema=y_schema,
         )
-        computation = DaskComputation(dask_future)
+        computation = CFComputation(future)
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation
