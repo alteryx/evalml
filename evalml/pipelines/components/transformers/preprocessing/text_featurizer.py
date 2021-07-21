@@ -143,7 +143,8 @@ class TextFeaturizer(TextTransformer):
             X_ww.ww[col] = X_nlp_primitives[col]
         for col in X_lsa:
             X_ww.ww[col] = X_lsa[col]
-        if X_ww.isna().any().any():
+
+        if X.isna().any().any():
             X_ww = self._empty_to_nan(X_ww, all_columns, X)
         return X_ww
 
