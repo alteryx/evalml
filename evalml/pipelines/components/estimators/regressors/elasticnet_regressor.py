@@ -24,11 +24,20 @@ class ElasticNetRegressor(Estimator):
         "alpha": Real(0, 1),
         "l1_ratio": Real(0, 1),
     }
+    """{
+        "alpha": Real(0, 1),
+        "l1_ratio": Real(0, 1),
+    }"""
     model_family = ModelFamily.LINEAR_MODEL
+    """ModelFamily.LINEAR_MODEL"""
     supported_problem_types = [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]
+    """[
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]"""
 
     def __init__(
         self,

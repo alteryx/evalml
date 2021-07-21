@@ -23,6 +23,7 @@ class DelayedFeatureTransformer(Transformer):
 
     name = "Delayed Feature Transformer"
     hyperparameter_ranges = {}
+    """{}"""
     needs_fitting = False
 
     def __init__(

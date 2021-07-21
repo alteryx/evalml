@@ -19,8 +19,11 @@ class BaselineClassifier(Estimator):
 
     name = "Baseline Classifier"
     hyperparameter_ranges = {}
+    """{}"""
     model_family = ModelFamily.BASELINE
+    """ModelFamily.BASELINE"""
     supported_problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+    """[ProblemTypes.BINARY, ProblemTypes.MULTICLASS]"""
 
     def __init__(self, strategy="mode", random_seed=0, **kwargs):
         if strategy not in ["mode", "random", "random_weighted"]:

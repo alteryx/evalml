@@ -47,6 +47,9 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
 
     name = "Target Imputer"
     hyperparameter_ranges = {"impute_strategy": ["mean", "median", "most_frequent"]}
+    """{
+        "impute_strategy": ["mean", "median", "most_frequent"]
+    }"""
     modifies_features = False
     modifies_target = True
 

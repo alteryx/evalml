@@ -34,6 +34,7 @@ def test_lsa_only_text(text_df):
 def test_lsa_with_nontext(text_df):
     X = text_df
     X["col_3"] = [73.7, 67.213, 92]
+    X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
     lsa = LSA()
 
     lsa.fit(X)
@@ -120,7 +121,8 @@ def test_index_col_names():
         ]
     )
     lsa = LSA()
-
+    X = pd.DataFrame(X)
+    X.ww.init(logical_types={0: "NaturalLanguage", 1: "NaturalLanguage"})
     lsa.fit(X)
     expected_col_names = set(["LSA(0)[0]", "LSA(0)[1]", "LSA(1)[0]", "LSA(1)[1]"])
     X_t = lsa.transform(X)
@@ -146,6 +148,7 @@ def test_float_col_names():
             ],
         }
     )
+    X.ww.init(logical_types={-1: "NaturalLanguage", 4.75: "NaturalLanguage"})
     lsa = LSA()
     lsa.fit(X)
     expected_col_names = set(
@@ -169,6 +172,7 @@ def test_lsa_output():
             ]
         }
     )
+    X.ww.init(logical_types={"lsa": "NaturalLanguage"})
     lsa = LSA()
     lsa.fit(X)
     expected_features = pd.DataFrame(
@@ -218,7 +222,7 @@ def test_lsa_woodwork_custom_overrides_returned_by_components(X_df):
     for logical_type in override_types:
         try:
             X = X_df
-            X.ww.init(logical_types={0: logical_type})
+            X.ww.init(logical_types={0: logical_type, "text col": "NaturalLanguage"})
         except ww.exceptions.TypeConversionError:
             continue
 

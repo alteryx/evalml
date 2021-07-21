@@ -38,13 +38,24 @@ class ElasticNetClassifier(Estimator):
 
     name = "Elastic Net Classifier"
     hyperparameter_ranges = {"C": Real(0.01, 10), "l1_ratio": Real(0, 1)}
+    """{
+        "C": Real(0.01, 10),
+        "l1_ratio": Real(0, 1)
+    }"""
     model_family = ModelFamily.LINEAR_MODEL
+    """ModelFamily.LINEAR_MODEL"""
     supported_problem_types = [
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]
+    """[
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]"""
 
     def __init__(
         self,

@@ -50,8 +50,7 @@ release = evalml.__version__
 # ones.
 extensions = [
     "nbsphinx",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.autosummary",
+    "autoapi.extension",
     "sphinx.ext.napoleon",
     "sphinx.ext.viewcode",
     "sphinx.ext.extlinks",
@@ -59,13 +58,15 @@ extensions = [
     "sphinx.ext.inheritance_diagram",
 ]
 
-# Add any paths that contain templates here, relative to this directory.
-templates_path = ["_templates"]
+autoapi_dirs = ['../../evalml']
+autoapi_ignore = ["*/evalml/tests/*"]
+autoapi_options = ['members', 'undoc-members', 'show-module-summary', 'imported-members', 'inherited-members']
+autoapi_add_toctree_entry = False
+autoapi_template_dir = "_auto_api_templates"
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
 source_suffix = ".rst"
 
 # The main toctree document.
@@ -81,7 +82,10 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ["**.ipynb_checkpoints"]
+exclude_patterns = ["**.ipynb_checkpoints", "_templates", "_auto_api_templates"]
+
+suppress_warnings = ["autoapi"]
+
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = None
@@ -101,7 +105,7 @@ html_theme = "pydata_sphinx_theme"
 html_theme_options = {
     "github_url": "https://github.com/alteryx/evalml",
     "twitter_url": "https://twitter.com/AlteryxOSS",
-    "collapse_navigation": True,
+    "collapse_navigation": False,
     "navigation_depth": 2,
 }
 
@@ -212,10 +216,6 @@ extlinks = {
     "user": ("https://github.com/%s", "@"),
 }
 
-# autoclass_content = 'both'
-autosummary_generate = ["api_reference.rst"]
-templates_path = ["_templates"]
-
 html_show_sphinx = False
 nbsphinx_execute = "always"
 nbsphinx_timeout = (
@@ -265,12 +265,16 @@ class AccessorMethodDocumenter(AccessorLevelDocumenter, MethodDocumenter):
     # lower than MethodDocumenter so this is not chosen for normal methods
     priority = 0.6
 
-def autodoc_skip_member(app, what, name, obj, skip, options):
-    if what == "method" and name.startswith("_"):
-        return True
-    if what == "attribute" and name.startswith("_"):
-        return True
-    return skip
+from sphinx.domains.python import PythonDomain
+
+
+class PatchedPythonDomain(PythonDomain):
+    """To disable cross-reference warning: https://github.com/sphinx-doc/sphinx/issues/3866"""
+    def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
+        if 'refspecific' in node:
+            del node['refspecific']
+        return super(PatchedPythonDomain, self).resolve_xref(
+            env, fromdocname, builder, typ, target, node, contnode)
 
 
 def setup(app):
@@ -278,10 +282,10 @@ def setup(app):
     p.mkdir(parents=True, exist_ok=True)
     shutil.copy("disable-warnings.py", "/home/docs/.ipython/profile_default/startup/")
     shutil.copy("set-headers.py", "/home/docs/.ipython/profile_default/startup")
+    app.add_domain(PatchedPythonDomain, override=True)
     app.add_javascript(
-        "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
+       "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.1.10/require.min.js"
     )
     app.add_stylesheet("style.css")
     app.add_autodocumenter(AccessorCallableDocumenter)
     app.add_autodocumenter(AccessorMethodDocumenter)
-    app.connect('autodoc-skip-member', autodoc_skip_member)

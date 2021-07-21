@@ -19,6 +19,7 @@ class RegressionPipeline(PipelineBase):
     """
 
     problem_type = ProblemTypes.REGRESSION
+    """ProblemTypes.REGRESSION"""
 
     def fit(self, X, y):
         """Build a regression model.
