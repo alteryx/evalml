@@ -7,3 +7,4 @@ from .engine_base import (
 )
 from .sequential_engine import SequentialEngine
 from .dask_engine import DaskEngine
+from .cf_engine import CFEngine
