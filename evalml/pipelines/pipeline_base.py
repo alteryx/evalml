@@ -57,7 +57,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     problem_type = None
     """None"""
 
-    def _make_component_dict_from_component_list(self, component_list):
+    @staticmethod
+    def _make_component_dict_from_component_list(component_list):
         """Generates a component dictionary from a list of components."""
         components_with_names = []
         seen = set()
@@ -95,7 +96,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         if isinstance(component_graph, list):  # Backwards compatibility
             self.component_graph = ComponentGraph(
-                component_dict=self._make_component_dict_from_component_list(
+                component_dict=PipelineBase._make_component_dict_from_component_list(
                     component_graph
                 ),
                 random_seed=self.random_seed,
