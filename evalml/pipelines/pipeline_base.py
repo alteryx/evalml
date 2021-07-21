@@ -23,6 +23,7 @@ from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
 from evalml.exceptions.exceptions import MissingComponentError
 from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
+
 # from evalml.pipelines.components.transformers.transformer import (
 #     TargetTransformer,
 # )
@@ -39,6 +40,7 @@ from evalml.utils import (
 )
 
 logger = get_logger(__file__)
+from evalml.pipelines.components.utils import handle_component_class
 
 def _make_component_dict_from_component_list(component_list):
     """Generates a component dictionary from a list of components."""
@@ -48,6 +50,7 @@ def _make_component_dict_from_component_list(component_list):
     most_recent_target = "y"
 
     for idx, component in enumerate(component_list):
+        component = handle_component_class(component)
         component_name = component.name
         if component_name in seen:
             component_name = f"{component_name}_{idx}"
@@ -63,6 +66,7 @@ def _make_component_dict_from_component_list(component_list):
         if component.modifies_features:
             most_recent_features = f"{component_name}.x"
     return component_dict
+
 
 class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     """
@@ -124,8 +128,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             #     random_seed=self.random_seed,
             # )
             self.component_graph = ComponentGraph(
-                component_dict=_make_component_dict_from_component_list(component_graph),
-                random_seed=self.random_seed
+                component_dict=_make_component_dict_from_component_list(
+                    component_graph
+                ),
+                random_seed=self.random_seed,
             )
         elif isinstance(component_graph, dict):
             self.component_graph = ComponentGraph(
