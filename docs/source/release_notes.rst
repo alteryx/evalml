@@ -3,6 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Fix for ``partial_dependence`` when working with mixed string/NaN values :pr:`2537`
     * Changes
     * Documentation Changes
     * Testing Changes

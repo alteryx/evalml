@@ -1410,30 +1410,34 @@ def test_partial_dependence_datetime_extra(
 
 
 import pandas as pd
+
 from evalml import AutoMLSearch
 from evalml.model_understanding import partial_dependence
-def test_bug():
-    df = pd.read_csv('1625078186889-mushroom_subset.csv')
-    y_train = df['class']
-    X_train = df.drop('class', axis=1)
 
-    aml = AutoMLSearch(X_train, y_train, 'binary')
+
+def test_bug():
+    df = pd.read_csv("1625078186889-mushroom_subset.csv")
+    y_train = df["class"]
+    X_train = df.drop("class", axis=1)
+
+    aml = AutoMLSearch(X_train, y_train, "binary")
     aml.search()
 
     pipeline = aml.best_pipeline
 
-    holdout = pd.read_csv('mushroom_holdout.csv')
+    holdout = pd.read_csv("mushroom_holdout.csv")
     partial_dependence(pipeline, holdout, 3)
 
-@pytest.mark.parametrize("col, holdout", [
-    (["cats", "are", "the", "best", None], ["right?"]),
-    ([0,1,2,3,4,None], [1])
-])
+
+@pytest.mark.parametrize(
+    "col, holdout",
+    [(["cats", "are", "the", "best", None], ["right?"]), ([0, 1, 2, 3, 4, None], [1])],
+)
 def test_nan_in_feature(col, holdout):
     X_train = pd.DataFrame({"test_column": col})
     y_train = pd.DataFrame({"target": np.ones(len(col))})
 
-    aml = AutoMLSearch(X_train, y_train, 'binary')
+    aml = AutoMLSearch(X_train, y_train, "binary")
     aml.search()
     pipeline = aml.best_pipeline
 
