@@ -1,3 +1,4 @@
+import warnings
 from abc import abstractmethod
 
 from evalml.pipelines.components.transformers import Transformer
@@ -124,7 +125,7 @@ class SelectColumns(ColumnSelector):
         return super().transform(X, y)
 
 
-class SelectDtypeColumns(ColumnSelector):
+class SelectByTypeorTag(ColumnSelector):
     """
     Selects columns by specified datatype in input data.
 
@@ -138,30 +139,21 @@ class SelectDtypeColumns(ColumnSelector):
     needs_fitting = False
 
     def _check_input_for_columns(self, X):
-        cols = self.parameters.get("columns") or []
-
-        if len(cols) > 0 and not isinstance(cols[0], str):
-            column_types = [
-                logical_type.__class__ for logical_type in X.ww.logical_types.values()
-            ]
-        else:
-            column_types = [
-                logical_type.type_string for logical_type in X.ww.logical_types.values()
-            ]
-
-        missing_cols = set(cols) - set(column_types)
-        if missing_cols:
-            raise ValueError(
-                "Column(s) of type {} not found in input data".format(
-                    ", ".join(f"'{col_name}'" for col_name in missing_cols)
-                )
-            )
+        """
+        This check is not required, since ww.select does not throw an error if the requested types are not in the dataset.
+        """
+        return
 
     def _modify_columns(self, cols, X, y=None):
+        columns = X.ww.select(cols)
+        if len(cols) > 0 and columns.empty:
+            warnings.warn(
+                "No columns of the selected type(s) were found in the input data. SelectByTypeorTag will return an empty DataFrame"
+            )
         return X.ww.select(cols)
 
     def transform(self, X, y=None):
-        """Transforms data X by dropping columns.
+        """Transforms data X by selecting columns.
 
         Arguments:
             X (pd.DataFrame): Data to transform.
