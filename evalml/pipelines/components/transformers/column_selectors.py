@@ -136,6 +136,7 @@ class SelectByTypeorTag(ColumnSelector):
 
     name = "Select Columns By Type or Tag Transformer"
     hyperparameter_ranges = {}
+    """{}"""
     needs_fitting = False
 
     def _check_input_for_columns(self, X):
