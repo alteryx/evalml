@@ -55,7 +55,7 @@ class ComponentGraph:
                 component_input.endswith(".y") or component_input == "y"
                 for component_input in component_inputs
             )
-            if not (has_feature_input or has_target_input):
+            if not (has_feature_input and has_target_input):
                 raise ValueError("All edges must be specified")
 
     @property

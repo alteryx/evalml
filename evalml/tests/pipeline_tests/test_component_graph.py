@@ -2027,3 +2027,48 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
     assert_series_equal(mock_fit_transform.call_args[0][1], y)
     # Check that we use "Log.y" for RF
     assert_series_equal(mock_fit.call_args[0][1], infer_feature_types(np.log(y)))
+
+
+def test_component_graph_does_not_define_all_edges():
+    # Graph does not define an X edge
+    with pytest.raises(ValueError, match="All edges must be specified"):
+        ComponentGraph(
+            {
+                "Imputer": [Imputer, "y"],
+                "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+                "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+                "Random Forest Classifier": [
+                    RandomForestClassifier,
+                    "One Hot Encoder.x",
+                    "Target Imputer.y",
+                ],
+            }
+        )
+    # Graph does not define a y edge
+    with pytest.raises(ValueError, match="All edges must be specified"):
+        ComponentGraph(
+            {
+                "Imputer": [Imputer, "X"],
+                "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+                "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+                "Random Forest Classifier": [
+                    RandomForestClassifier,
+                    "One Hot Encoder.x",
+                    "Target Imputer.y",
+                ],
+            }
+        )
+    # Graph does not define X and y edges
+    with pytest.raises(ValueError, match="All edges must be specified"):
+        ComponentGraph(
+            {
+                "Imputer": [Imputer],
+                "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+                "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+                "Random Forest Classifier": [
+                    RandomForestClassifier,
+                    "One Hot Encoder.x",
+                    "Target Imputer.y",
+                ],
+            }
+        )
