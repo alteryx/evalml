@@ -127,14 +127,14 @@ class SelectColumns(ColumnSelector):
 
 class SelectByTypeorTag(ColumnSelector):
     """
-    Selects columns by specified datatype in input data.
+    Selects columns by specified Woodwork logical type or semantic tag in input data.
 
     Arguments:
         columns (list(string), list(ww.LogicalType)): List of datatypes, used to determine which columns to select.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    name = "Select Datatype Columns Transformer"
+    name = "Select Columns By Type or Tag Transformer"
     hyperparameter_ranges = {}
     needs_fitting = False
 

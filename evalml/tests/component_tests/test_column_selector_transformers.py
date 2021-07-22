@@ -40,12 +40,12 @@ def test_column_transformer_empty_X(class_to_test):
     assert_frame_equal(X, transformer.fit_transform(X))
 
     transformer = class_to_test(columns=["not in data"])
-    if class_to_test is not SelectByTypeorTag:
-        with pytest.raises(ValueError, match="'not in data' not found in input data"):
-            transformer.fit(X)
-    else:
+    if class_to_test is SelectByTypeorTag:
         with pytest.warns(None, match="No columns of the selected type(s)"):
             transformer.fit_transform(X)
+    else:
+        with pytest.raises(ValueError, match="'not in data' not found in input data"):
+            transformer.fit(X)
 
     transformer = class_to_test(columns=list(X.columns))
     assert transformer.transform(X).empty
@@ -111,7 +111,7 @@ def test_column_transformer_transform(class_to_test, checking_functions):
     assert check3(X, transformer.transform(X))
 
     if class_to_test is SelectByTypeorTag:
-        transformer = class_to_test(columns=["categorical", "boolean", "integer"])
+        transformer = class_to_test(columns=["categorical", "Boolean", "Integer"])
     else:
         transformer = class_to_test(columns=list(X.columns))
     assert check4(X, transformer.transform(X))
