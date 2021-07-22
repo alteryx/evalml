@@ -12,6 +12,7 @@ class LogTransformer(TargetTransformer):
     name = "Log Transformer"
 
     hyperparameter_ranges = {}
+    """{}"""
 
     def __init__(self, random_seed=0):
         super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
