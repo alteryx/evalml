@@ -1,5 +1,8 @@
 from skopt.space import Integer, Real
-
+import numpy as np
+import pandas as pd
+from pandas.api.types import is_integer_dtype
+from sklearn.preprocessing import LabelEncoder
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
@@ -77,7 +80,8 @@ class XGBoostClassifier(Estimator):
             "XGBoost is not installed. Please install using `pip install xgboost.`"
         )
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
-        xgb_classifier = xgb.XGBClassifier(random_state=random_seed, **parameters)
+        self._label_encoder = None
+        xgb_classifier = xgb.XGBClassifier(random_state=random_seed, use_label_encoder=False, **parameters)
         super().__init__(
             parameters=parameters, component_obj=xgb_classifier, random_seed=random_seed
         )
@@ -86,12 +90,23 @@ class XGBoostClassifier(Estimator):
         X, y = super()._manage_woodwork(X, y)
         self.input_feature_names = list(X.columns)
         X = _rename_column_names_to_numeric(X, flatten_tuples=False)
+        if not is_integer_dtype(y):
+            self._label_encoder = LabelEncoder()
+            y = pd.Series(
+                self._label_encoder.fit_transform(y), dtype="int64"
+            )
         self._component_obj.fit(X, y)
         return self
 
     def predict(self, X):
         X = _rename_column_names_to_numeric(X, flatten_tuples=False)
-        return super().predict(X)
+        predictions = super().predict(X)
+        if self._label_encoder:
+            predictions = pd.Series(
+                self._label_encoder.inverse_transform(predictions.astype(np.int64))
+            )
+
+        return predictions
 
     def predict_proba(self, X):
         X = _rename_column_names_to_numeric(X, flatten_tuples=False)
