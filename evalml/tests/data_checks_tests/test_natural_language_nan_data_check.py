@@ -18,6 +18,7 @@ def test_nl_nan_data_check_error():
             ]
         }
     )
+    data.ww.init(logical_types={"natural_language": "NaturalLanguage"})
     nl_nan_check = NaturalLanguageNaNDataCheck()
     assert nl_nan_check.validate(data) == {
         "warnings": [],
@@ -34,20 +35,17 @@ def test_nl_nan_data_check_error():
 
 
 def test_nl_nan_data_check_error_no_nan():
-    nl_nan_check = NaturalLanguageNaNDataCheck()
-    assert (
-        nl_nan_check.validate(
-            pd.DataFrame(
-                {
-                    "natural_language": [
-                        "string_that_is_long_enough_for_natural_language",
-                        "string_that_is_long_enough_for_natural_language",
-                    ]
-                }
-            )
-        )
-        == {"warnings": [], "actions": [], "errors": []}
+    data = pd.DataFrame(
+        {
+            "natural_language": [
+                "string_that_is_long_enough_for_natural_language",
+                "string_that_is_long_enough_for_natural_language",
+            ]
+        }
     )
+    data.ww.init(logical_types={"natural_language": "NaturalLanguage"})
+    nl_nan_check = NaturalLanguageNaNDataCheck()
+    assert nl_nan_check.validate(data) == {"warnings": [], "actions": [], "errors": []}
 
 
 def test_nl_nan_data_check_error_other_cols_with_nan():
@@ -74,7 +72,7 @@ def test_nl_nan_data_check_error_multiple_nl_no_nan():
     ]
 
     data["C"] = np.random.randint(0, 3, size=len(data))
-
+    data.ww.init(logical_types={"A": "NaturalLanguage", "B": "NaturalLanguage"})
     nl_nan_check = NaturalLanguageNaNDataCheck()
     assert nl_nan_check.validate(data) == {"warnings": [], "actions": [], "errors": []}
 
@@ -103,7 +101,13 @@ def test_nl_nan_data_check_error_multiple_nl_nan():
         ]
     )
     data["D"] = np.random.randint(0, 5, size=len(data))
-
+    data.ww.init(
+        logical_types={
+            "A": "NaturalLanguage",
+            "B": "NaturalLanguage",
+            "C": "NaturalLanguage",
+        }
+    )
     nl_nan_check = NaturalLanguageNaNDataCheck()
     assert nl_nan_check.validate(data) == {
         "warnings": [],
@@ -165,14 +169,3 @@ def test_nl_nan_check_input_formats():
             ).to_dict()
         ],
     }
-
-    #  test 2D list
-    nl_col_without_nan = [
-        "string_that_is_long_enough_for_natural_language",
-        "string_that_is_long_enough_for_natural_language",
-        "string_that_is_long_enough_for_natural_language",
-    ]
-    assert nl_nan_check.validate([nl_col, nl_col_without_nan]) == expected
-
-    # test np.array
-    assert nl_nan_check.validate(np.array([nl_col, nl_col_without_nan])) == expected

@@ -10,6 +10,7 @@ class BinaryClassificationObjective(ObjectiveBase):
     """Base class for all binary classification objectives."""
 
     problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
+    """[ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]"""
 
     @property
     def can_optimize_threshold(cls):

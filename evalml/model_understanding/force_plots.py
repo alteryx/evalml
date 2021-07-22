@@ -57,7 +57,7 @@ def graph_force_plot(pipeline, rows_to_explain, training_data, y, matplotlib=Fal
 
 
 def force_plot(pipeline, rows_to_explain, training_data, y):
-    """Function to generate the data required to build a force plot.
+    r"""Function to generate the data required to build a force plot.
 
     Args:
         pipeline (PipelineBase): The pipeline to generate the force plot for.
@@ -68,20 +68,22 @@ def force_plot(pipeline, rows_to_explain, training_data, y):
     Returns:
         list(dict()): list of dictionaries where each dict contains force plot data.  Each dictionary
             entry represents the explanations for a single row.
-            e.x. For single row binary force plots:
-                    [{'malignant': {'expected_value': 0.37,
-                                    'feature_names': ['worst concave points', 'worst perimeter', 'worst radius'],
-                                    'shap_values': [0.09, 0.09, 0.08],
-                                    'plot': AdditiveForceVisualizer}]
-                 For two row binary force plots:
-                    [{'malignant': {'expected_value': 0.37,
-                                    'feature_names': ['worst concave points', 'worst perimeter', 'worst radius'],
-                                    'shap_values': [0.09, 0.09, 0.08],
-                                    'plot': AdditiveForceVisualizer},
-                    {'malignant': {'expected_value': 0.29,
-                                    'feature_names': ['worst concave points', 'worst perimeter', 'worst radius'],
-                                    'shap_values': [0.05, 0.03, 0.02],
-                                    'plot': AdditiveForceVisualizer}]
+
+            For single row binary force plots:
+                [{'malignant': {'expected_value': 0.37,
+                                'feature_names': ['worst concave points', 'worst perimeter', 'worst radius'],
+                                'shap_values': [0.09, 0.09, 0.08],
+                                'plot': AdditiveForceVisualizer}]
+
+            For two row binary force plots:
+                [{'malignant': {'expected_value': 0.37,
+                                'feature_names': ['worst concave points', 'worst perimeter', 'worst radius'],
+                                'shap_values': [0.09, 0.09, 0.08],
+                                'plot': AdditiveForceVisualizer},
+                {'malignant': {'expected_value': 0.29,
+                                'feature_names': ['worst concave points', 'worst perimeter', 'worst radius'],
+                                'shap_values': [0.05, 0.03, 0.02],
+                                'plot': AdditiveForceVisualizer}]
 
     Raises:
         TypeError: if rows_to_explain is not a list.

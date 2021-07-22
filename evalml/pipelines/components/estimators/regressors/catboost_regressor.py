@@ -33,11 +33,21 @@ class CatBoostRegressor(Estimator):
         "eta": Real(0.000001, 1),
         "max_depth": Integer(4, 10),
     }
+    """{
+        "n_estimators": Integer(4, 100),
+        "eta": Real(0.000001, 1),
+        "max_depth": Integer(4, 10),
+    }"""
     model_family = ModelFamily.CATBOOST
+    """ModelFamily.CATBOOST"""
     supported_problem_types = [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]
+    """[
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]"""
 
     def __init__(
         self,

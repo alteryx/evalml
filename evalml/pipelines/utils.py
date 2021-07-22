@@ -92,8 +92,10 @@ def _get_preprocessing_components(
     if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
 
-    index_columns = list(X.ww.select("index", return_schema=True).columns)
-    if len(index_columns) > 0:
+    index_and_unknown_columns = list(
+        X.ww.select(["index", "unknown"], return_schema=True).columns
+    )
+    if len(index_and_unknown_columns) > 0:
         pp_components.append(DropColumns)
 
     datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
@@ -137,6 +139,31 @@ def _get_preprocessing_components(
         pp_components.append(StandardScaler)
 
     return pp_components
+
+
+def _make_component_dict_from_component_list(component_list):
+    """Generates a component dictionary from a list of components."""
+    seen = set()
+    component_dict = {}
+    most_recent_features = "X"
+    most_recent_target = "y"
+
+    for idx, component in enumerate(component_list):
+        component_name = component.name
+        if component_name in seen:
+            component_name = f"{component_name}_{idx}"
+        seen.add(component_name)
+
+        component_dict[component_name] = [
+            component,
+            most_recent_features,
+            most_recent_target,
+        ]
+        if component.modifies_target:
+            most_recent_target = f"{component_name}.y"
+        if component.modifies_features:
+            most_recent_features = f"{component_name}.x"
+    return component_dict
 
 
 def _get_pipeline_base_class(problem_type):
@@ -194,11 +221,11 @@ def make_pipeline(
     preprocessing_components = _get_preprocessing_components(
         X, y, problem_type, estimator, sampler_name
     )
-    complete_component_graph = preprocessing_components + [estimator]
-
+    complete_component_list = preprocessing_components + [estimator]
+    component_graph = _make_component_dict_from_component_list(complete_component_list)
     base_class = _get_pipeline_base_class(problem_type)
     return base_class(
-        complete_component_graph,
+        component_graph,
         parameters=parameters,
     )
 

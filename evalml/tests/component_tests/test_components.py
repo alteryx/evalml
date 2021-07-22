@@ -71,6 +71,12 @@ from evalml.pipelines.components.ensemble import (
 from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
     LogTransformer,
 )
+from evalml.pipelines.components.transformers.samplers.base_sampler import (
+    BaseSampler,
+)
+from evalml.pipelines.components.transformers.transformer import (
+    TargetTransformer,
+)
 from evalml.pipelines.components.utils import (
     _all_estimators,
     _all_transformers,
@@ -85,6 +91,8 @@ def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+        modifies_features = True
+        modifies_target = False
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
@@ -114,6 +122,8 @@ def test_estimator_needs_fitting_false():
 class MockFitComponent(ComponentBase):
     model_family = ModelFamily.NONE
     name = "Mock Fit Component"
+    modifies_features = True
+    modifies_target = False
 
     def __init__(self, param_a=2, param_b=10, random_seed=0):
         parameters = {"param_a": param_a, "param_b": param_b}
@@ -1293,10 +1303,14 @@ def test_component_equality_different_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+        modifies_features = True
+        modifies_target = False
 
     class MockComponentWithADifferentName(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+        modifies_features = True
+        modifies_target = False
 
     assert MockComponent() != MockComponentWithADifferentName()
 
@@ -1305,6 +1319,8 @@ def test_component_equality_subclasses():
     class MockComponent(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+        modifies_features = True
+        modifies_target = False
 
     class MockEstimatorSubclass(MockComponent):
         pass
@@ -1316,6 +1332,8 @@ def test_component_equality():
     class MockComponent(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
+        modifies_features = True
+        modifies_target = False
 
         def __init__(self, param_1=0, param_2=0, random_seed=0, **kwargs):
             parameters = {"param_1": param_1, "param_2": param_2}
@@ -1631,3 +1649,33 @@ def test_estimator_fit_respects_custom_indices(
     estimator.fit(X, y)
     pd.testing.assert_index_equal(X.index, X_original_index)
     pd.testing.assert_index_equal(y.index, y_original_index)
+
+
+def test_component_modifies_feature_or_target():
+    for component_class in all_components():
+        if (
+            issubclass(component_class, BaseSampler)
+            or issubclass(component_class, TargetTransformer)
+            or component_class in [TargetImputer]
+        ):
+            assert component_class.modifies_target
+        else:
+            assert not component_class.modifies_target
+        if issubclass(component_class, TargetTransformer) or component_class in [
+            TargetImputer
+        ]:
+            assert not component_class.modifies_features
+        else:
+            assert component_class.modifies_features
+
+
+def test_component_parameters_supported_by_list_API():
+    for component_class in all_components():
+        if (
+            issubclass(component_class, BaseSampler)
+            or issubclass(component_class, TargetTransformer)
+            or component_class in [TargetImputer]
+        ):
+            assert not component_class._supported_by_list_API
+        else:
+            assert component_class._supported_by_list_API

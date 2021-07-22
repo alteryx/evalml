@@ -1296,6 +1296,25 @@ def test_partial_dependence_scale_error():
         partial_dependence(pl, X_pd, "a", grid_resolution=0)
 
 
+@pytest.mark.parametrize("indices,error", [(0, True), (1, False)])
+def test_partial_dependence_unknown(indices, error, X_y_binary):
+    # test to see if we can get partial dependence fine with a dataset that has unknown features
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X.ww.init(logical_types={0: "unknown"})
+    pl = BinaryClassificationPipeline(["Random Forest Classifier"])
+    pl.fit(X, y)
+    if error:
+        with pytest.raises(
+            ValueError,
+            match=r"Columns \[0\] are of type 'Unknown', which cannot be used for partial dependence",
+        ):
+            partial_dependence(pl, X, indices, grid_resolution=2)
+        return
+    s = partial_dependence(pl, X, indices, grid_resolution=2)
+    assert not s.isnull().any().any()
+
+
 @pytest.mark.parametrize(
     "X_datasets",
     [

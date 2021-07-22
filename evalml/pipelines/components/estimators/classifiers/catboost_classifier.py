@@ -36,13 +36,25 @@ class CatBoostClassifier(Estimator):
         "eta": Real(0.000001, 1),
         "max_depth": Integer(4, 10),
     }
+    """{
+        "n_estimators": Integer(4, 100),
+        "eta": Real(0.000001, 1),
+        "max_depth": Integer(4, 10),
+    }"""
     model_family = ModelFamily.CATBOOST
+    """ModelFamily.CATBOOST"""
     supported_problem_types = [
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]
+    """[
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]"""
 
     def __init__(
         self,

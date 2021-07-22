@@ -28,6 +28,10 @@ class Estimator(ComponentBase):
     # We can't use the inspect module to dynamically determine this because of issue 1582
     predict_uses_y = False
     model_family = ModelFamily.NONE
+    """ModelFamily.NONE"""
+
+    modifies_features = True
+    modifies_target = False
 
     @property
     @classmethod

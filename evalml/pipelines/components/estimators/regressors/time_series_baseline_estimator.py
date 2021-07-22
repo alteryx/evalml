@@ -19,12 +19,19 @@ class TimeSeriesBaselineEstimator(Estimator):
 
     name = "Time Series Baseline Estimator"
     hyperparameter_ranges = {}
+    """{}"""
     model_family = ModelFamily.BASELINE
+    """ModelFamily.BASELINE"""
     supported_problem_types = [
         ProblemTypes.TIME_SERIES_REGRESSION,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]
+    """[
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]"""
     predict_uses_y = True
 
     def __init__(self, gap=1, random_seed=0, **kwargs):

@@ -46,13 +46,27 @@ class KNeighborsClassifier(Estimator):
         "leaf_size": Integer(10, 30),
         "p": Integer(1, 5),
     }
+    """{
+        "n_neighbors": Integer(2, 12),
+        "weights": ["uniform", "distance"],
+        "algorithm": ["auto", "ball_tree", "kd_tree", "brute"],
+        "leaf_size": Integer(10, 30),
+        "p": Integer(1, 5),
+    }"""
     model_family = ModelFamily.K_NEIGHBORS
+    """ModelFamily.K_NEIGHBORS"""
     supported_problem_types = [
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]
+    """[
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]"""
 
     def __init__(
         self,

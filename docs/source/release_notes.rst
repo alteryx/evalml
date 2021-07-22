@@ -3,10 +3,25 @@ Release Notes
 **Future Release**
     * Enhancements
         * Added ``LogTransformer`` and ``TargetDistributionDataCheck`` :pr:`2487`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.29.0 Jul. 21, 2021**
+    * Enhancements
         * Updated 1-way partial dependence support for datetime features :pr:`2454`
         * Added details on how to fix error caused by broken ww schema :pr:`2466`
         * Added ability to use built-in pickle for saving AutoMLSearch :pr:`2463`
         * Updated our components and component graphs to use latest features of ww 0.4.1, e.g. ``concat_columns`` and drop in-place. :pr:`2465`
+        * Added new, concurrent.futures based engine for parallel AutoML :pr:`2506`
+        * Added support for new Woodwork ``Unknown`` type in AutoMLSearch :pr:`2477`
+        * Updated our components with an attribute that describes if they modify features or targets and can be used in list API for pipeline initialization :pr:`2504`
         * Updated ``ComponentGraph`` to accept X and y as inputs :pr:`2507`
         * Removed unused ``TARGET_BINARY_INVALID_VALUES`` from ``DataCheckMessageCode`` enum and fixed formatting of objective documentation :pr:`2520`
     * Fixes
@@ -18,18 +33,23 @@ Release Notes
     * Changes
         * Updated XGBoost dependency to ``>=1.4.2`` :pr:`2484`, :pr:`2498`
         * Added a ``DeprecationWarning`` about deprecating the list API for ``ComponentGraph`` :pr:`2488`
+        * Updated ``make_pipeline`` for AutoML to create dictionaries, not lists, to initialize pipelines :pr:`2504`
         * No longer installing graphviz on windows in our CI pipelines because release 0.17 breaks windows 3.7 :pr:`2516`
     * Documentation Changes
         * Moved docstrings from ``__init__`` to class pages, added missing docstrings for missing classes, and updated missing default values :pr:`2452`
+        * Build documentation with sphinx-autoapi :pr:`2458`
+        * Change ``autoapi_ignore`` to only ignore files in ``evalml/tests/*`` :pr:`2530` 
     * Testing Changes
         * Fixed flaky dask tests :pr:`2471`
         * Removed shellcheck action from ``build_conda_pkg`` action :pr:`2514`
         * Added a tmp_dir fixture that deletes its contents after tests run :pr:`2505`
         * Added a test that makes sure all pipelines in ``AutoMLSearch`` get the same data splits :pr:`2513`
+        * Condensed warning output in test logs :pr:`2521`
 
 .. warning::
 
     **Breaking Changes**
+        * `NaN` values in the `Natural Language` type are no longer supported by the Imputer with the pandas upgrade. :pr:`2477`
 
 **v0.28.0 Jul. 2, 2021**
     * Enhancements
