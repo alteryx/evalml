@@ -16,6 +16,7 @@ Release Notes
         * Ensures the typing for Ordinal and Datetime ltypes are passed through _retain_custom_types_and_initalize_woodwork :pr:`2461`
         * Updated to work with Pandas 1.3.0 :pr:`2442`
         * Updated to work with sktime 0.7.0 :pr:`2499`
+        * Added label encoder to XGBClassifier :pr:`2538`
     * Changes
         * Updated XGBoost dependency to ``>=1.4.2`` :pr:`2484`, :pr:`2498`
         * Added a ``DeprecationWarning`` about deprecating the list API for ``ComponentGraph`` :pr:`2488`
