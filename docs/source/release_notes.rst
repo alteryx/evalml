@@ -2,10 +2,23 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.29.0 Jul. 21, 2021**
+    * Enhancements
         * Updated 1-way partial dependence support for datetime features :pr:`2454`
         * Added details on how to fix error caused by broken ww schema :pr:`2466`
         * Added ability to use built-in pickle for saving AutoMLSearch :pr:`2463`
         * Updated our components and component graphs to use latest features of ww 0.4.1, e.g. ``concat_columns`` and drop in-place. :pr:`2465`
+        * Added new, concurrent.futures based engine for parallel AutoML :pr:`2506`
         * Added support for new Woodwork ``Unknown`` type in AutoMLSearch :pr:`2477`
         * Updated our components with an attribute that describes if they modify features or targets and can be used in list API for pipeline initialization :pr:`2504`
         * Updated ``ComponentGraph`` to accept X and y as inputs :pr:`2507`
