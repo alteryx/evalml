@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Added Gini coefficient as an objective :pr:`2544`
     * Fixes
     * Changes
     * Documentation Changes

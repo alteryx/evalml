@@ -19,7 +19,6 @@ from evalml.objectives import (
     F1Macro,
     F1Micro,
     F1Weighted,
-    Gini,
     LogLossBinary,
     MCCBinary,
     MCCMulticlass,

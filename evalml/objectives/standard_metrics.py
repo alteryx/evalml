@@ -358,7 +358,7 @@ class Gini(BinaryClassificationObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         auc = metrics.roc_auc_score(y_true, y_predicted, sample_weight=sample_weight)
-        return 2*auc - 1
+        return 2 * auc - 1
 
 
 class LogLossBinary(BinaryClassificationObjective):
