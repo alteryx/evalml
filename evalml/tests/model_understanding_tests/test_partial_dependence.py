@@ -1419,7 +1419,8 @@ def test_bug():
     df = pd.read_csv("1625078186889-mushroom_subset.csv")
     y_train = df["class"]
     X_train = df.drop("class", axis=1)
-
+    # X_train.drop(columns=["odor"], inplace=True)
+    # breakpoint()
     aml = AutoMLSearch(X_train, y_train, "binary")
     aml.search()
 
@@ -1428,18 +1429,31 @@ def test_bug():
     holdout = pd.read_csv("mushroom_holdout.csv")
     partial_dependence(pipeline, holdout, 3)
 
+strs = ["cats", "are", "the", "best"] * 5
+ints = [0, 1, 2, 3,] * 5
+floats = [0.0, 1.0, 2.0, 3.0] * 5
+bools = [True, True, False, False] * 5
+cols = [strs, ints, floats, bools]
+nones = [[None], [np.nan]]
 
-@pytest.mark.parametrize(
-    "col, holdout",
-    [(["cats", "are", "the", "best", None], ["right?"]), ([0, 1, 2, 3, 4, None], [1])],
-)
-def test_nan_in_feature(col, holdout):
-    X_train = pd.DataFrame({"test_column": col})
-    y_train = pd.DataFrame({"target": np.ones(len(col))})
+@pytest.fixture(params=cols)
+def cols_fixture(request):
+    return request.param
+
+@pytest.fixture(params=nones)
+def nones_fixture(request):
+    return request.param
+
+def test_nan_in_feature(cols_fixture, nones_fixture):
+    col_with_nan = cols_fixture + nones_fixture
+
+    X_train = pd.DataFrame({"test_column": col_with_nan,
+                            "target": ["p" if x % 3 == 0 else "e" for x in range(len(col_with_nan))]})
+    y_train = X_train["target"]
+    X_train.drop(columns=["target"], inplace=True)
 
     aml = AutoMLSearch(X_train, y_train, "binary")
     aml.search()
     pipeline = aml.best_pipeline
 
-    holdout_df = pd.DataFrame({"test_column": col})
-    partial_dependence(pipeline, holdout_df, 3)
+    partial_dependence(pipeline, X_train, features=0)

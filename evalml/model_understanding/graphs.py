@@ -688,11 +688,14 @@ def partial_dependence(
     _raise_value_error_if_any_features_all_nan(feature_list)
 
     if feature_list.isnull().sum().any():
+        feature_list = feature_list.dropna(axis="index")
+        X = X.dropna(axis="index")
         warnings.warn(
             "There are null values in the features, which will cause NaN values in the partial dependence output. "
             "Fill in these values to remove the NaN values.",
             NullsInColumnWarning,
         )
+
 
     _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
     wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
