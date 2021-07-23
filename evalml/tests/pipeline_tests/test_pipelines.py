@@ -29,6 +29,7 @@ from evalml.pipelines import (
     RegressionPipeline,
 )
 from evalml.pipelines.components import (
+    DropNullColumns,
     ElasticNetClassifier,
     Imputer,
     LogisticRegressionClassifier,
@@ -36,7 +37,9 @@ from evalml.pipelines.components import (
     RandomForestClassifier,
     RFClassifierSelectFromModel,
     StandardScaler,
+    TargetImputer,
     Transformer,
+    Undersampler,
 )
 from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,
@@ -1800,9 +1803,9 @@ def test_pipeline_repr(pipeline_class):
     component_graph = ["Imputer", final_estimator]
     component_graph_str = ""
     if pipeline_class == RegressionPipeline:
-        component_graph_str = f"{{'Imputer': ['Imputer'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x']}}"
+        component_graph_str = f"{{'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}}"
     else:
-        component_graph_str = f"{{'Imputer': ['Imputer'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x']}}"
+        component_graph_str = f"{{'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x', 'y']}}"
 
     pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
     expected_repr = (
@@ -1883,7 +1886,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
     pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
     component_graph_str = ""
     if pipeline_class == RegressionPipeline:
-        component_graph_str = "{'Imputer': ['Imputer'], 'OHE_1': ['One Hot Encoder', 'Imputer'], 'OHE_2': ['One Hot Encoder', 'Imputer'], 'Estimator': ['Random Forest Regressor', 'OHE_1', 'OHE_2']}"
+        component_graph_str = "{'Imputer': ['Imputer', 'X', 'y'], 'OHE_1': ['One Hot Encoder', 'Imputer.x', 'y'], 'OHE_2': ['One Hot Encoder', 'Imputer.x', 'y'], 'Estimator': ['Random Forest Regressor', 'OHE_1.x', 'OHE_2.x', 'y']}"
     else:
         component_graph_str = "{'Imputer': ['Imputer'], 'OHE_1': ['One Hot Encoder', 'Imputer'], 'OHE_2': ['One Hot Encoder', 'Imputer'], 'Estimator': ['Random Forest Classifier', 'OHE_1', 'OHE_2']}"
     expected_repr = (
@@ -2303,3 +2306,123 @@ def test_oversampler_component_in_pipeline_predict(oversampler):
     assert len(preds) == 1000
     preds = pipeline.predict_proba(X)
     assert len(preds) == 1000
+
+
+def test_make_component_dict_from_component_list():
+    assert PipelineBase._make_component_dict_from_component_list(
+        [RandomForestClassifier]
+    ) == {"Random Forest Classifier": [RandomForestClassifier, "X", "y"]}
+    assert PipelineBase._make_component_dict_from_component_list([Imputer]) == {
+        "Imputer": [Imputer, "X", "y"]
+    }
+    assert PipelineBase._make_component_dict_from_component_list(
+        [Imputer, OneHotEncoder, DropNullColumns]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+        "Drop Null Columns Transformer": [DropNullColumns, "One Hot Encoder.x", "y"],
+    }
+
+    # Test with component that modifies y (Target Imputer)
+    assert PipelineBase._make_component_dict_from_component_list(
+        [Imputer, OneHotEncoder, TargetImputer, RandomForestClassifier]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+        "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "One Hot Encoder.x",
+            "Target Imputer.y",
+        ],
+    }
+
+    # Test with component that modifies X and y (Undersampler)
+    assert PipelineBase._make_component_dict_from_component_list(
+        [
+            Imputer,
+            OneHotEncoder,
+            TargetImputer,
+            DropNullColumns,
+            Undersampler,
+            RandomForestClassifier,
+        ]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+        "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+        "Drop Null Columns Transformer": [
+            DropNullColumns,
+            "One Hot Encoder.x",
+            "Target Imputer.y",
+        ],
+        "Undersampler": [
+            Undersampler,
+            "Drop Null Columns Transformer.x",
+            "Target Imputer.y",
+        ],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Undersampler.x",
+            "Undersampler.y",
+        ],
+    }
+
+    # Test with component after estimator
+    assert PipelineBase._make_component_dict_from_component_list(
+        [Imputer, RandomForestClassifier, Imputer]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Imputer.x",
+            "y",
+        ],
+        "Imputer_2": [Imputer, "Random Forest Classifier.x", "y"],
+    }
+
+
+def test_make_component_dict_from_component_list_with_duplicate_names():
+    assert PipelineBase._make_component_dict_from_component_list(
+        [RandomForestClassifier, RandomForestClassifier]
+    ) == {
+        "Random Forest Classifier": [RandomForestClassifier, "X", "y"],
+        "Random Forest Classifier_1": [
+            RandomForestClassifier,
+            "Random Forest Classifier.x",
+            "y",
+        ],
+    }
+    assert PipelineBase._make_component_dict_from_component_list(
+        [Imputer, Imputer, RandomForestClassifier]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "Imputer_1": [Imputer, "Imputer.x", "y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Imputer_1.x",
+            "y",
+        ],
+    }
+    assert PipelineBase._make_component_dict_from_component_list(
+        [TargetImputer, TargetImputer, RandomForestClassifier]
+    ) == {
+        "Target Imputer": [TargetImputer, "X", "y"],
+        "Target Imputer_1": [TargetImputer, "X", "Target Imputer.y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "X",
+            "Target Imputer_1.y",
+        ],
+    }
+    assert PipelineBase._make_component_dict_from_component_list(
+        [Undersampler, Undersampler, RandomForestClassifier]
+    ) == {
+        "Undersampler": [Undersampler, "X", "y"],
+        "Undersampler_1": [Undersampler, "Undersampler.x", "Undersampler.y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Undersampler_1.x",
+            "Undersampler_1.y",
+        ],
+    }
