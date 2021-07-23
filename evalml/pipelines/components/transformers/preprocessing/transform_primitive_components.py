@@ -14,6 +14,7 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
     def __init__(self, random_seed=0, **kwargs):
         self._primitives_provenance = {}
         self._columns = None
+        self._features = None
         super().__init__(random_seed=random_seed, **kwargs)
 
     @property
