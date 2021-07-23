@@ -347,6 +347,20 @@ class AUCWeighted(MulticlassClassificationObjective):
         )
 
 
+class Gini(BinaryClassificationObjective):
+    """Gini coefficient for binary classification."""
+
+    name = "Gini"
+    greater_is_better = True
+    score_needs_proba = True
+    perfect_score = 1.0
+    is_bounded_like_percentage = False
+
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        auc = metrics.roc_auc_score(y_true, y_predicted, sample_weight=sample_weight)
+        return 2*auc - 1
+
+
 class LogLossBinary(BinaryClassificationObjective):
     """Log Loss for binary classification."""
 

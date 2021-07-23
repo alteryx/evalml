@@ -294,6 +294,7 @@ Classification Objectives
     evalml.objectives.AUCMacro
     evalml.objectives.AUCMicro
     evalml.objectives.AUCWeighted
+    evalml.objectives.Gini
     evalml.objectives.BalancedAccuracyBinary
     evalml.objectives.BalancedAccuracyMulticlass
     evalml.objectives.F1
