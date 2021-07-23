@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
     * Documentation Changes
     * Testing Changes
 
