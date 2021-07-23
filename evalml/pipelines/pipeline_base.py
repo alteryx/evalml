@@ -691,11 +691,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def get_hyperparameter_ranges(self, custom_hyperparameters):
         """
         Returns hyperparameter ranges from all components as a dictionary.
+
         Arguments:
-            component_graph (list(str, ComponentBase)): The component_graph of the pipeline.
-            custom_hyperparameters (dict): The custom hyperparameters to be passed to the pipeline.
+            custom_hyperparameters (dict): Custom hyperparameters for the pipeline.
+
         Returns:
-            dict: Dictionary of hyperparameter ranges for each component in the component graph.
+            dict: Dictionary of hyperparameter ranges for each component in the pipeline.
         """
         hyperparameter_ranges = dict()
         for (
