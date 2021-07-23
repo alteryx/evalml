@@ -1,6 +1,6 @@
+from abc import abstractmethod
 
 import featuretools as ft
-from abc import abstractmethod
 
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
@@ -39,7 +39,7 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
         # featuretools expects str-type column names
         X_to_transform.rename(columns=str, inplace=True)
         ft_variable_types = self._get_feature_types_for_featuretools(X)
-        #all_email_variable_types =
+        # all_email_variable_types =
         es = ft.EntitySet()
         es.entity_from_dataframe(
             entity_id="X",
@@ -72,17 +72,21 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
             return X_ww
 
         es = self._make_entity_set(X_ww)
-        features = ft.calculate_feature_matrix(
-            features=self._features, entityset=es
-        )
-        if features.isnull().any().any():
-            features.fillna(0, inplace=True)
+        features = ft.calculate_feature_matrix(features=self._features, entityset=es)
 
         features.set_index(X_ww.index, inplace=True)
 
         X_ww = X_ww.ww.drop(self._columns)
         for col in features:
             X_ww.ww[col] = features[col]
+
+        all_created_columns = self._get_feature_provenance().values()
+        to_categorical = {
+            col: "Categorical"
+            for feature_list in all_created_columns
+            for col in feature_list
+        }
+        X_ww.ww.set_types(to_categorical)
         return X_ww
 
     @staticmethod
@@ -119,7 +123,10 @@ class EmailFeaturizer(_ExtractFeaturesWithTransformPrimitives):
         return list(X.ww.select("EmailAddress", return_schema=True).columns)
 
     def _get_feature_types_for_featuretools(self, X):
-        return {col_name: ft.variable_types.EmailAddress.type_string for col_name in self._columns}
+        return {
+            col_name: ft.variable_types.EmailAddress.type_string
+            for col_name in self._columns
+        }
 
     def transform(self, X, y=None):
         """Transforms data X by creating new features using existing email columns
@@ -131,11 +138,7 @@ class EmailFeaturizer(_ExtractFeaturesWithTransformPrimitives):
         Returns:
             pd.DataFrame: Transformed X
         """
-        X_t = super().transform(X, y)
-        all_created_columns = self._get_feature_provenance().values()
-        to_boolean = {col: "Boolean" for feature_list in all_created_columns for col in feature_list}
-        X_t.ww.set_types(to_boolean)
-        return X_t
+        return super().transform(X, y)
 
 
 class URLFeaturizer(_ExtractFeaturesWithTransformPrimitives):
@@ -147,14 +150,18 @@ class URLFeaturizer(_ExtractFeaturesWithTransformPrimitives):
 
     name = "URL Featurizer"
     _transform_primitives = [
-            ft.primitives.URLToTLD, ft.primitives.URLToDomain, ft.primitives.URLToProtocol
-        ]
+        ft.primitives.URLToTLD,
+        ft.primitives.URLToDomain,
+        ft.primitives.URLToProtocol,
+    ]
 
     def _get_columns_to_transform(self, X):
         return list(X.ww.select("URL", return_schema=True).columns)
 
     def _get_feature_types_for_featuretools(self, X):
-        return {col_name: ft.variable_types.URL.type_string for col_name in self._columns}
+        return {
+            col_name: ft.variable_types.URL.type_string for col_name in self._columns
+        }
 
     def transform(self, X, y=None):
         """Transforms data X by creating new features using existing url columns
@@ -166,9 +173,4 @@ class URLFeaturizer(_ExtractFeaturesWithTransformPrimitives):
         Returns:
             pd.DataFrame: Transformed X
         """
-        X_t = super().transform(X, y)
-        all_created_columns = self._get_feature_provenance().values()
-        to_categorical = {col: "Categorical" for feature_list in all_created_columns for col in feature_list}
-        X_t.ww.set_types(to_categorical)
-        return X_t
-
+        return super().transform(X, y)

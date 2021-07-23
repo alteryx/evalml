@@ -1300,3 +1300,42 @@ def tmpdir(tmp_path):
     dir = py.path.local(tmp_path)
     yield dir
     dir.remove(ignore_errors=True)
+
+
+@pytest.fixture
+def df_with_url_and_email():
+    X = pd.DataFrame(
+        {
+            "categorical": ["a", "b", "b", "a", "c"],
+            "numeric": [1, 2, 3, 4, 5],
+            "email": [
+                "abalone_0@gmail.com",
+                "AbaloneRings@yahoo.com",
+                "abalone_2@abalone.com",
+                "$titanic_data%&@hotmail.com",
+                "foo*EMAIL@email.org",
+            ],
+            "integer": [1, 2, 3, 4, 5],
+            "boolean": [True, False, True, False, False],
+            "nat_lang": ["natural", "language", "understanding", "is", "difficult"],
+            "url": [
+                "https://evalml.alteryx.com/en/stable/",
+                "https://woodwork.alteryx.com/en/stable/guides/statistical_insights.html",
+                "https://twitter.com/AlteryxOSS",
+                "https://www.twitter.com/AlteryxOSS",
+                "https://www.evalml.alteryx.com/en/stable/demos/text_input.html",
+            ],
+        }
+    )
+    X.ww.init(
+        logical_types={
+            "categorical": "Categorical",
+            "numeric": "Double",
+            "email": "EmailAddress",
+            "boolean": "Boolean",
+            "nat_lang": "NaturalLanguage",
+            "integer": "Integer",
+            "url": "URL",
+        }
+    )
+    return X

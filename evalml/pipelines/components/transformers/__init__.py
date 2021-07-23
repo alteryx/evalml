@@ -19,5 +19,5 @@ from .preprocessing import (
     DFSTransformer,
     PolynomialDetrender,
     EmailFeaturizer,
-    URLFeaturizer
+    URLFeaturizer,
 )

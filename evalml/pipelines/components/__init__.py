@@ -53,6 +53,6 @@ from .transformers import (
     SMOTENCSampler,
     SMOTENSampler,
     EmailFeaturizer,
-    URLFeaturizer
+    URLFeaturizer,
 )
 from .ensemble import StackedEnsembleClassifier, StackedEnsembleRegressor
