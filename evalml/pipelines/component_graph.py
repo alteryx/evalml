@@ -31,6 +31,10 @@ class ComponentGraph:
     def __init__(self, component_dict=None, random_seed=0):
         self.random_seed = random_seed
         self.component_dict = component_dict or {}
+        if not isinstance(self.component_dict, dict):
+            raise ValueError(
+                "component_dict must be a dictionary which specifies the components and edges between components"
+            )
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():

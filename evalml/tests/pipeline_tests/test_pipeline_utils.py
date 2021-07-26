@@ -27,12 +27,6 @@ from evalml.pipelines.components import (
     TextFeaturizer,
     Transformer,
 )
-from evalml.pipelines.components.estimators.classifiers.rf_classifier import (
-    RandomForestClassifier,
-)
-from evalml.pipelines.components.transformers.samplers.undersampler import (
-    Undersampler,
-)
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_component_list_from_actions,
