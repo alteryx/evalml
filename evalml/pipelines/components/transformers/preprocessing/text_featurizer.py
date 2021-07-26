@@ -1,10 +1,7 @@
-# import re
 import string
 
 import featuretools as ft
 import nlp_primitives
-
-# import numpy as np
 import pandas as pd
 
 from evalml.pipelines.components.transformers.preprocessing import (
