@@ -41,7 +41,7 @@ def test_column_transformer_empty_X(class_to_test):
 
     transformer = class_to_test(columns=["not in data"])
     if class_to_test is SelectByType:
-        with pytest.warns(None, match="No columns of the selected type(s)"):
+        with pytest.raises(ValueError, match="not found in input data"):
             transformer.fit_transform(X)
     else:
         with pytest.raises(ValueError, match="'not in data' not found in input data"):
@@ -200,21 +200,6 @@ def test_drop_column_transformer_input_invalid_col_name(class_to_test):
         transformer.fit_transform(X)
 
 
-def test_select_column_type_warns_missing_types():
-    transformer = SelectByType(columns=["NotAType"])
-    X = pd.DataFrame(
-        {
-            "one": ["1", "2", "3", "4"],
-            "two": [False, True, True, False],
-            "three": [1, 2, 3, 4],
-        }
-    )
-    with pytest.warns(None, match="No columns of the selected type(s)"):
-        transformer.transform(X)
-    with pytest.warns(None, match="No columns of the selected type(s)"):
-        transformer.fit_transform(X)
-
-
 @pytest.mark.parametrize(
     "class_to_test,answers",
     [
@@ -265,9 +250,9 @@ def test_typeortag_column_transformer_ww_logical_and_semantic_types():
     )
 
     transformer = SelectByType(columns=[ww.logical_types.Age])
-    with pytest.warns(None, match="No columns of the selected type(s)"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.transform(X)
-    with pytest.warns(None, match="No columns of the selected type(s)"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.fit_transform(X)
 
     X_t = SelectByType(columns=[ww.logical_types.Integer]).fit_transform(X)

@@ -1,4 +1,3 @@
-import warnings
 from abc import abstractmethod
 
 from evalml.pipelines.components.transformers import Transformer
@@ -148,7 +147,5 @@ class SelectByType(ColumnSelector):
     def _modify_columns(self, cols, X, y=None):
         selected_columns = X.ww.select(cols)
         if len(cols) > 0 and selected_columns.empty:
-            warnings.warn(
-                "No columns of the selected type(s) were found in the input data. SelectByType will return an empty DataFrame"
-            )
+            raise ValueError(f'Column(s) of type {cols} not found in input data')
         return selected_columns
