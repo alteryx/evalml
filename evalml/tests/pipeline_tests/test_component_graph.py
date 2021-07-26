@@ -426,32 +426,32 @@ def test_parents(example_graph):
     graph = example_graph
     component_graph = ComponentGraph(graph)
 
-    assert component_graph.get_parents("Imputer") == []
-    assert component_graph.get_parents("OneHot_RandomForest") == ["Imputer.x"]
-    assert component_graph.get_parents("OneHot_ElasticNet") == ["Imputer.x"]
-    assert component_graph.get_parents("Random Forest") == ["OneHot_RandomForest.x"]
-    assert component_graph.get_parents("Elastic Net") == ["OneHot_ElasticNet.x"]
-    assert component_graph.get_parents("Logistic Regression") == [
+    assert component_graph.get_inputs("Imputer") == []
+    assert component_graph.get_inputs("OneHot_RandomForest") == ["Imputer.x"]
+    assert component_graph.get_inputs("OneHot_ElasticNet") == ["Imputer.x"]
+    assert component_graph.get_inputs("Random Forest") == ["OneHot_RandomForest.x"]
+    assert component_graph.get_inputs("Elastic Net") == ["OneHot_ElasticNet.x"]
+    assert component_graph.get_inputs("Logistic Regression") == [
         "Random Forest",
         "Elastic Net",
     ]
 
     with pytest.raises(ValueError, match="not in the graph"):
-        component_graph.get_parents("Fake component")
+        component_graph.get_inputs("Fake component")
 
     component_graph.instantiate({})
-    assert component_graph.get_parents("Imputer") == []
-    assert component_graph.get_parents("OneHot_RandomForest") == ["Imputer.x"]
-    assert component_graph.get_parents("OneHot_ElasticNet") == ["Imputer.x"]
-    assert component_graph.get_parents("Random Forest") == ["OneHot_RandomForest.x"]
-    assert component_graph.get_parents("Elastic Net") == ["OneHot_ElasticNet.x"]
-    assert component_graph.get_parents("Logistic Regression") == [
+    assert component_graph.get_inputs("Imputer") == []
+    assert component_graph.get_inputs("OneHot_RandomForest") == ["Imputer.x"]
+    assert component_graph.get_inputs("OneHot_ElasticNet") == ["Imputer.x"]
+    assert component_graph.get_inputs("Random Forest") == ["OneHot_RandomForest.x"]
+    assert component_graph.get_inputs("Elastic Net") == ["OneHot_ElasticNet.x"]
+    assert component_graph.get_inputs("Logistic Regression") == [
         "Random Forest",
         "Elastic Net",
     ]
 
     with pytest.raises(ValueError, match="not in the graph"):
-        component_graph.get_parents("Fake component")
+        component_graph.get_inputs("Fake component")
 
 
 def test_get_last_component(example_graph):
@@ -1406,18 +1406,18 @@ def test_component_graph_sampler():
 
     component_graph = ComponentGraph(graph)
     component_graph.instantiate({})
-    assert component_graph.get_parents("Imputer") == []
-    assert component_graph.get_parents("OneHot") == ["Imputer.x"]
-    assert component_graph.get_parents("Undersampler") == ["OneHot.x"]
-    assert component_graph.get_parents("Random Forest") == [
+    assert component_graph.get_inputs("Imputer") == []
+    assert component_graph.get_inputs("OneHot") == ["Imputer.x"]
+    assert component_graph.get_inputs("Undersampler") == ["OneHot.x"]
+    assert component_graph.get_inputs("Random Forest") == [
         "Undersampler.x",
         "Undersampler.y",
     ]
-    assert component_graph.get_parents("Elastic Net") == [
+    assert component_graph.get_inputs("Elastic Net") == [
         "Undersampler.x",
         "Undersampler.y",
     ]
-    assert component_graph.get_parents("Logistic Regression") == [
+    assert component_graph.get_inputs("Logistic Regression") == [
         "Random Forest",
         "Elastic Net",
     ]
@@ -1452,10 +1452,10 @@ def test_component_graph_sampler_list():
             "Undersampler.y",
         ],
     }
-    assert component_graph.get_parents("Imputer") == []
-    assert component_graph.get_parents("One Hot Encoder") == ["Imputer.x"]
-    assert component_graph.get_parents("Undersampler") == ["One Hot Encoder.x"]
-    assert component_graph.get_parents("Random Forest Classifier") == [
+    assert component_graph.get_inputs("Imputer") == []
+    assert component_graph.get_inputs("One Hot Encoder") == ["Imputer.x"]
+    assert component_graph.get_inputs("Undersampler") == ["One Hot Encoder.x"]
+    assert component_graph.get_inputs("Random Forest Classifier") == [
         "Undersampler.x",
         "Undersampler.y",
     ]
@@ -1484,16 +1484,16 @@ def test_component_graph_dataset_with_target_imputer():
 
     component_graph = ComponentGraph(graph)
     component_graph.instantiate({})
-    assert component_graph.get_parents("Target Imputer") == []
-    assert component_graph.get_parents("OneHot") == [
+    assert component_graph.get_inputs("Target Imputer") == []
+    assert component_graph.get_inputs("OneHot") == [
         "Target Imputer.x",
         "Target Imputer.y",
     ]
-    assert component_graph.get_parents("Random Forest") == [
+    assert component_graph.get_inputs("Random Forest") == [
         "OneHot.x",
         "Target Imputer.y",
     ]
-    assert component_graph.get_parents("Elastic Net") == [
+    assert component_graph.get_inputs("Elastic Net") == [
         "OneHot.x",
         "Target Imputer.y",
     ]
@@ -2083,8 +2083,8 @@ def test_component_graph_with_X_y_inputs_X(mock_fit):
     component_graph = ComponentGraph(graph)
     component_graph.instantiate({})
     mock_fit.return_value = X
-    assert component_graph.get_parents("DummyColumnNameTransformer") == ["X", "y"]
-    assert component_graph.get_parents("Imputer") == [
+    assert component_graph.get_inputs("DummyColumnNameTransformer") == ["X", "y"]
+    assert component_graph.get_inputs("Imputer") == [
         "DummyColumnNameTransformer.x",
         "X",
         "y",
@@ -2119,9 +2119,9 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
     mock_fit_transform.return_value = X
     component_graph = ComponentGraph(graph)
     component_graph.instantiate({})
-    assert component_graph.get_parents("Log") == ["X", "y"]
-    assert component_graph.get_parents("Imputer") == ["Log.x", "y"]
-    assert component_graph.get_parents("Random Forest") == ["Imputer.x", "Log.y"]
+    assert component_graph.get_inputs("Log") == ["X", "y"]
+    assert component_graph.get_inputs("Imputer") == ["Log.x", "y"]
+    assert component_graph.get_inputs("Random Forest") == ["Imputer.x", "Log.y"]
 
     component_graph.fit(X, y)
     # Check that we use "y" for Imputer, not "Log.y"

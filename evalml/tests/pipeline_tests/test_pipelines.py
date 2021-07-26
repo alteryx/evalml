@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
+from skopt.space import Categorical, Integer
 
 from evalml.exceptions import (
     MissingComponentError,
@@ -2487,3 +2488,31 @@ def test_make_component_dict_from_component_list_with_duplicate_names():
             "Undersampler_1.y",
         ],
     }
+
+
+def test_get_hyperparameter_ranges():
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Imputer", "Random Forest Classifier"]
+    )
+    custom_hyperparameters = {
+        "One Hot Encoder": {"top_n": 3},
+        "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])},
+        "Random Forest Classifier": {"n_estimators": Integer(150, 160)},
+    }
+
+    expected_ranges = {
+        "Imputer": {
+            "categorical_impute_strategy": ["most_frequent"],
+            "numeric_impute_strategy": Categorical(
+                categories=("most_frequent", "mean"), prior=None
+            ),
+        },
+        "Random Forest Classifier": {
+            "n_estimators": Integer(
+                low=150, high=160, prior="uniform", transform="identity"
+            ),
+            "max_depth": Integer(low=1, high=10, prior="uniform", transform="identity"),
+        },
+    }
+    hyperparameter_ranges = pipeline.get_hyperparameter_ranges(custom_hyperparameters)
+    assert expected_ranges == hyperparameter_ranges

@@ -722,3 +722,24 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             y (pd.Series): Final component features
         """
         return self.component_graph.inverse_transform(y)
+
+    def get_hyperparameter_ranges(self, custom_hyperparameters):
+        """
+        Returns hyperparameter ranges from all components as a dictionary.
+
+        Arguments:
+            custom_hyperparameters (dict): Custom hyperparameters for the pipeline.
+
+        Returns:
+            dict: Dictionary of hyperparameter ranges for each component in the pipeline.
+        """
+        hyperparameter_ranges = dict()
+        for (
+            component_name,
+            component_class,
+        ) in self.component_graph.component_instances.items():
+            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
+            if custom_hyperparameters and component_name in custom_hyperparameters:
+                component_hyperparameters.update(custom_hyperparameters[component_name])
+            hyperparameter_ranges[component_name] = component_hyperparameters
+        return hyperparameter_ranges
