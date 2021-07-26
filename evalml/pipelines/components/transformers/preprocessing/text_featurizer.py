@@ -1,9 +1,10 @@
-import re
+# import re
 import string
 
 import featuretools as ft
 import nlp_primitives
-import numpy as np
+
+# import numpy as np
 import pandas as pd
 
 from evalml.pipelines.components.transformers.preprocessing import (
@@ -124,6 +125,8 @@ class TextFeaturizer(TextTransformer):
             return X_ww
 
         es = self._make_entity_set(X_ww, self._text_columns)
+        nan_mask = X[self._text_columns].isna()
+        any_nans = nan_mask.any().any()
         X_nlp_primitives = ft.calculate_feature_matrix(
             features=self._features, entityset=es
         )
@@ -135,42 +138,23 @@ class TextFeaturizer(TextTransformer):
             {s: "NaturalLanguage" for s in self._text_columns},
         )
         X_lsa = self._lsa.transform(X_ww_altered)
+        if any_nans:
+            primitive_features = self._get_primitives_provenance(self._features)
+            for column, derived_features in primitive_features.items():
+                X_nlp_primitives.loc[nan_mask[column], derived_features] = pd.NA
+
+            lsa_features = self._lsa._get_feature_provenance()
+            for column, derived_features in lsa_features.items():
+                X_lsa.loc[nan_mask[column], derived_features] = pd.NA
+
         X_nlp_primitives.set_index(X_ww.index, inplace=True)
 
         X_ww = X_ww.ww.drop(self._text_columns)
-        all_columns = np.append(X_nlp_primitives.columns.values, X_lsa.columns.values)
         for col in X_nlp_primitives:
             X_ww.ww[col] = X_nlp_primitives[col]
         for col in X_lsa:
             X_ww.ww[col] = X_lsa[col]
-
-        if X.isna().any().any():
-            X_ww = self._empty_to_nan(X_ww, all_columns, X)
         return X_ww
-
-    def _empty_to_nan(self, df, columns, original_df):
-        """Finds the columns with empty values, which were empty strings/NaNs, and converts them to NaNs for the imputer"""
-        mean_char_str = "MEAN_CHARACTERS_PER_WORD"
-        cols_to_search = [col for col in columns if mean_char_str in col]
-
-        def _transform_cols(args):
-            return_value = args.copy()
-            if all(args.values == 0):
-                col_name = re.search(r"\((.+)\)", args.index[0]).group(1)
-                if pd.isnull(original_df.at[args.name, col_name]):
-                    return_value = pd.Series(
-                        [np.nan for i in range(len(args))], index=args.index
-                    )
-            return return_value
-
-        transforming = df.copy()
-        for col in cols_to_search:
-            col_name = col[len(mean_char_str) + 1 : -1]
-            relevant_cols = [c for c in columns if f"({col_name})" in c]
-            transforming[relevant_cols] = transforming[relevant_cols].apply(
-                _transform_cols, axis=1
-            )
-        return infer_feature_types(transforming)
 
     def _get_feature_provenance(self):
         if not self._text_columns:

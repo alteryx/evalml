@@ -1113,3 +1113,22 @@ def test_make_component_dict_from_component_list_with_duplicate_names():
             "Undersampler_1.y",
         ],
     }
+
+
+@pytest.mark.parametrize("value", [None, pd.NA, "", "empty"])
+def test_make_pipelines_natural_language(value):
+    X = pd.DataFrame(
+        {
+            "col": [
+                "Natural language values",
+                "Some value here",
+                "another value for nlp",
+                value,
+            ]
+        }
+    )
+    y = pd.Series([0, 1, 1, 0])
+    X.ww.init(logical_types={"col": "NaturalLanguage"})
+    p = make_pipeline(X, y, estimator=RandomForestClassifier, problem_type="binary")
+    assert p.get_component("Imputer")
+    assert p.get_component("Text Featurization Component")

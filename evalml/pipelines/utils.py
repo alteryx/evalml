@@ -81,7 +81,9 @@ def _get_preprocessing_components(
     if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
 
-    if len(input_logical_types.intersection(types_imputer_handles)) > 0:
+    if len(input_logical_types.intersection(types_imputer_handles)) or len(
+        text_columns
+    ):
         pp_components.append(Imputer)
 
     index_and_unknown_columns = list(

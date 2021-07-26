@@ -498,3 +498,41 @@ def test_nan_allowed(nones):
     # these columns should not have any null values
     assert not X_t[cols].iloc[:4, :].isnull().any().any()
     assert not X_t[X_t.columns.difference(cols)].isnull().any().any()
+
+
+@pytest.mark.parametrize("nones", [np.nan, pd.NA, None])
+def test_multiple_nan_allowed(nones):
+    X = pd.DataFrame(
+        {
+            "col_1": [
+                "I'm singing in the rain! Just singing in the rain, what a glorious feeling, I'm happy again!",
+                "In sleep he sang to me, in dreams he came... That voice which calls to me, and speaks my name.",
+                "",
+                None,
+            ],
+            "col_2": [
+                "do you hear the people sing? Singing the songs of angry men\n\tIt is the music of a people who will NOT be slaves again!",
+                "I dreamed a dream in days gone by, when hope was high and life worth living Red, the blood of angry men - black, the dark of ages past",
+                ":)",
+                nones,
+            ],
+            "col_3": [1, 2, 3, 1],
+        }
+    )
+    X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
+    tf = TextFeaturizer()
+    tf.fit(X)
+    X_t = tf.transform(X)
+    col_names = [
+        "LSA({})[0]",
+        "LSA({})[1]",
+        "DIVERSITY_SCORE({})",
+        "MEAN_CHARACTERS_PER_WORD({})",
+        "POLARITY_SCORE({})",
+    ]
+    cols = [c.format(n) for n in ["col_1", "col_2"] for c in col_names]
+    # find the columns that should be null
+    assert all(X_t[cols].iloc[3, :].isnull())
+    # these columns should not have any null values
+    assert not X_t[cols].iloc[:3, :].isnull().any().any()
+    assert not X_t[X_t.columns.difference(cols)].isnull().any().any()
