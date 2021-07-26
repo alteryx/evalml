@@ -4,12 +4,16 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
+        * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
+        * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
 
 
 **v0.29.0 Jul. 21, 2021**
