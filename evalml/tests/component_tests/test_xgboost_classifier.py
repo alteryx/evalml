@@ -74,3 +74,14 @@ def test_xgboost_multiindex(data_type, X_y_binary, make_data_type):
     y_pred_proba = clf.predict_proba(X)
     assert not y_pred.isnull().values.any()
     assert not y_pred_proba.isnull().values.any().any()
+
+
+def test_xgboost_labelencoder(X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    y = pd.Series(y, dtype="str")
+
+    clf = XGBoostClassifier()
+    clf.fit(X, y)
+    y_pred = clf.predict(X)
+    assert y_pred.dtype == "category"
