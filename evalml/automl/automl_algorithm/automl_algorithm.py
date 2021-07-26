@@ -1,6 +1,5 @@
 from abc import ABC, abstractmethod
 
-from evalml.automl.utils import get_hyperparameter_ranges
 from evalml.exceptions import PipelineNotFoundError
 from evalml.tuners import SKOptTuner
 
@@ -41,8 +40,8 @@ class AutoMLAlgorithm(ABC):
         self._tuner_class = tuner_class or SKOptTuner
         self._tuners = {}
         for pipeline in self.allowed_pipelines:
-            pipeline_hyperparameters = get_hyperparameter_ranges(
-                pipeline.component_graph, custom_hyperparameters
+            pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
+                custom_hyperparameters
             )
             self._tuners[pipeline.name] = self._tuner_class(
                 pipeline_hyperparameters, random_seed=self.random_seed
