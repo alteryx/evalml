@@ -1,5 +1,3 @@
-import warnings
-
 import networkx as nx
 import pandas as pd
 import woodwork as ww
