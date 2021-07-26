@@ -6,13 +6,13 @@ from pandas.testing import assert_frame_equal
 
 from evalml.pipelines.components import (
     DropColumns,
-    SelectByTypeorTag,
+    SelectByType,
     SelectColumns,
 )
 
 
 @pytest.mark.parametrize(
-    "class_to_test", [DropColumns, SelectColumns, SelectByTypeorTag]
+    "class_to_test", [DropColumns, SelectColumns, SelectByType]
 )
 def test_column_transformer_init(class_to_test):
     transformer = class_to_test(columns=None)
@@ -29,7 +29,7 @@ def test_column_transformer_init(class_to_test):
 
 
 @pytest.mark.parametrize(
-    "class_to_test", [DropColumns, SelectColumns, SelectByTypeorTag]
+    "class_to_test", [DropColumns, SelectColumns, SelectByType]
 )
 def test_column_transformer_empty_X(class_to_test):
     X = pd.DataFrame()
@@ -40,7 +40,7 @@ def test_column_transformer_empty_X(class_to_test):
     assert_frame_equal(X, transformer.fit_transform(X))
 
     transformer = class_to_test(columns=["not in data"])
-    if class_to_test is SelectByTypeorTag:
+    if class_to_test is SelectByType:
         with pytest.warns(None, match="No columns of the selected type(s)"):
             transformer.fit_transform(X)
     else:
@@ -73,7 +73,7 @@ def test_column_transformer_empty_X(class_to_test):
             ],
         ),
         (
-            SelectByTypeorTag,
+            SelectByType,
             [
                 lambda X, X_t: X_t.empty,
                 lambda X, X_t: X_t.empty,
@@ -84,7 +84,7 @@ def test_column_transformer_empty_X(class_to_test):
     ],
 )
 def test_column_transformer_transform(class_to_test, checking_functions):
-    if class_to_test is SelectByTypeorTag:
+    if class_to_test is SelectByType:
         X = pd.DataFrame(
             {
                 "one": ["1", "2", "3", "4"],
@@ -104,13 +104,13 @@ def test_column_transformer_transform(class_to_test, checking_functions):
     transformer = class_to_test(columns=[])
     assert check2(X, transformer.transform(X))
 
-    if class_to_test is SelectByTypeorTag:
+    if class_to_test is SelectByType:
         transformer = class_to_test(columns=["integer"])
     else:
         transformer = class_to_test(columns=["one"])
     assert check3(X, transformer.transform(X))
 
-    if class_to_test is SelectByTypeorTag:
+    if class_to_test is SelectByType:
         transformer = class_to_test(columns=["categorical", "Boolean", "Integer"])
     else:
         transformer = class_to_test(columns=list(X.columns))
@@ -137,7 +137,7 @@ def test_column_transformer_transform(class_to_test, checking_functions):
             ],
         ),
         (
-            SelectByTypeorTag,
+            SelectByType,
             [
                 lambda X, X_t: X_t.empty,
                 lambda X, X_t: X_t.equals(X[["three"]].astype("int64")),
@@ -147,7 +147,7 @@ def test_column_transformer_transform(class_to_test, checking_functions):
     ],
 )
 def test_column_transformer_fit_transform(class_to_test, checking_functions):
-    if class_to_test is SelectByTypeorTag:
+    if class_to_test is SelectByType:
         X = pd.DataFrame(
             {
                 "one": ["1", "2", "3", "4"],
@@ -163,12 +163,12 @@ def test_column_transformer_fit_transform(class_to_test, checking_functions):
 
     assert check1(X, class_to_test(columns=[]).fit_transform(X))
 
-    if class_to_test is SelectByTypeorTag:
+    if class_to_test is SelectByType:
         assert check2(X, class_to_test(columns=["integer"]).fit_transform(X))
     else:
         assert check2(X, class_to_test(columns=["one"]).fit_transform(X))
 
-    if class_to_test is SelectByTypeorTag:
+    if class_to_test is SelectByType:
         assert check3(
             X,
             class_to_test(columns=["categorical", "boolean", "integer"]).fit_transform(
@@ -201,7 +201,7 @@ def test_drop_column_transformer_input_invalid_col_name(class_to_test):
 
 
 def test_select_column_type_warns_missing_types():
-    transformer = SelectByTypeorTag(columns=["NotAType"])
+    transformer = SelectByType(columns=["NotAType"])
     X = pd.DataFrame(
         {
             "one": ["1", "2", "3", "4"],
@@ -264,19 +264,19 @@ def test_typeortag_column_transformer_ww_logical_and_semantic_types():
         }
     )
 
-    transformer = SelectByTypeorTag(columns=[ww.logical_types.Age])
+    transformer = SelectByType(columns=[ww.logical_types.Age])
     with pytest.warns(None, match="No columns of the selected type(s)"):
         transformer.transform(X)
     with pytest.warns(None, match="No columns of the selected type(s)"):
         transformer.fit_transform(X)
 
-    X_t = SelectByTypeorTag(columns=[ww.logical_types.Integer]).fit_transform(X)
+    X_t = SelectByType(columns=[ww.logical_types.Integer]).fit_transform(X)
     assert X_t.equals(X[["three"]].astype("int64"))
 
-    X_t = SelectByTypeorTag(columns=["Double"]).fit_transform(X)
+    X_t = SelectByType(columns=["Double"]).fit_transform(X)
     assert X_t.equals(X[["four"]].astype("float64"))
 
-    X_t = SelectByTypeorTag(
+    X_t = SelectByType(
         columns=[
             ww.logical_types.Categorical,
             ww.logical_types.Boolean,
@@ -286,5 +286,5 @@ def test_typeortag_column_transformer_ww_logical_and_semantic_types():
     ).fit_transform(X)
     assert X_t.astype(str).equals(X.astype(str))
 
-    X_t = SelectByTypeorTag(columns=["numeric"]).fit_transform(X)
+    X_t = SelectByType(columns=["numeric"]).fit_transform(X)
     assert X_t.astype(str).equals(X[["three", "four"]].astype(str))

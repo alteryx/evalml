@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
-        * Added ``SelectByTypeorTag`` transformer :pr:`2531`
+        * Added ``SelectByType`` transformer :pr:`2531`
     * Fixes
     * Changes
     * Documentation Changes
