@@ -71,7 +71,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 component = handle_component_class(component)
                 if not component._supported_by_list_API:
                     raise ValueError(
-                        "This component cannot be defined in a list because edges may be ambiguous. Please use a dictionary to specify the appropriate component graph for this pipeline instead."
+                        f"{component.name} cannot be defined in a list because edges may be ambiguous. Please use a dictionary to specify the appropriate component graph for this pipeline instead."
                     )
             self.component_graph = ComponentGraph(
                 component_dict=PipelineBase._make_component_dict_from_component_list(
