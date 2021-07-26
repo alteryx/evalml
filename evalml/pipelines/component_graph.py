@@ -506,7 +506,7 @@ class ComponentGraph:
             component_name (str): Name of the component to look up.
 
         Returns:
-            list[str]: List of inputs to for the component.
+            list[str]: List of inputs for the component to use.
         """
         try:
             component_info = self.component_dict[component_name]
