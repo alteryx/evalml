@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.29.0 Jul. 21, 2021**
+    * Enhancements
         * Updated 1-way partial dependence support for datetime features :pr:`2454`
         * Added details on how to fix error caused by broken ww schema :pr:`2466`
         * Added ability to use built-in pickle for saving AutoMLSearch :pr:`2463`
