@@ -118,7 +118,8 @@ class EmailFeaturizer(_ExtractFeaturesWithTransformPrimitives):
     """
 
     name = "Email Featurizer"
-    _transform_primitives = [ft.primitives.IsFreeEmailDomain]
+    _transform_primitives = [ft.primitives.IsFreeEmailDomain,
+                             ft.primitives.EmailAddressToDomain]
 
     def _get_columns_to_transform(self, X):
         return list(X.ww.select("EmailAddress", return_schema=True).columns)

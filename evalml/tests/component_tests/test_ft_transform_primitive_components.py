@@ -48,6 +48,8 @@ def make_data_url_fit_transform_missing_values(df_with_url_and_email):
 
 def make_answer_email_fit_transform(df_with_url_and_email):
     expected = df_with_url_and_email.ww.copy()
+    expected.ww["EMAIL_ADDRESS_TO_DOMAIN(email)"] = pd.Series(
+        ["gmail.com", "yahoo.com", "abalone.com", "hotmail.com", "email.org"], dtype="category")
     expected.ww["IS_FREE_EMAIL_DOMAIN(email)"] = pd.Series(
         [True, True, False, True, True], dtype="category"
     )
@@ -80,6 +82,10 @@ def make_answer_email_fit_transform_missing_values(df_with_url_and_email):
     expected = df_with_missing_values.ww.copy()
     expected.ww.drop(["email", "email_2"], inplace=True)
     # Missing values in the original features are passed through
+    expected.ww["EMAIL_ADDRESS_TO_DOMAIN(email)"] = pd.Series(
+        [None, None, "abalone.com", "hotmail.com", "email.org"], dtype="category")
+    expected.ww["EMAIL_ADDRESS_TO_DOMAIN(email_2)"] = pd.Series(
+        [None, None, "abalone.com", "hotmail.com", None], dtype="category")
     expected.ww["IS_FREE_EMAIL_DOMAIN(email)"] = pd.Series(
         [None, None, False, True, True], dtype="category"
     )
@@ -124,6 +130,7 @@ def make_expected_logical_types_email_fit_transform():
         "categorical": ww.logical_types.Categorical(),
         "numeric": ww.logical_types.Double(),
         "IS_FREE_EMAIL_DOMAIN(email)": ww.logical_types.Categorical(),
+        "EMAIL_ADDRESS_TO_DOMAIN(email)": ww.logical_types.Categorical(),
         "integer": ww.logical_types.Integer(),
         "boolean": ww.logical_types.Boolean(),
         "nat_lang": ww.logical_types.NaturalLanguage(),
@@ -149,6 +156,8 @@ def make_expected_logical_types_email_fit_transform_missing_values():
     return {
         "categorical": ww.logical_types.Categorical(),
         "numeric": ww.logical_types.Double(),
+        "EMAIL_ADDRESS_TO_DOMAIN(email)": ww.logical_types.Categorical(),
+        "EMAIL_ADDRESS_TO_DOMAIN(email_2)": ww.logical_types.Categorical(),
         "IS_FREE_EMAIL_DOMAIN(email)": ww.logical_types.Categorical(),
         "IS_FREE_EMAIL_DOMAIN(email_2)": ww.logical_types.Categorical(),
         "integer": ww.logical_types.Integer(),

@@ -26,6 +26,8 @@ from evalml.pipelines.components import (
     TargetImputer,
     TextFeaturizer,
     Transformer,
+    EmailFeaturizer,
+    URLFeaturizer
 )
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
@@ -752,6 +754,55 @@ def test_make_pipeline_samplers(
                 assert not any(
                     "sampler" in comp.name for comp in pipeline.component_graph
                 )
+
+
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+@pytest.mark.parametrize("column_to_drop", [["email"], ["url"], [], ["categorical"]])
+def test_make_pipeline_url_email(column_to_drop, problem_type, df_with_url_and_email):
+    X = df_with_url_and_email.ww.drop(column_to_drop)
+    y = np.array([0, 0, 1, 0, 1])
+
+    estimators = get_estimators(problem_type=problem_type)
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    if problem_type == ProblemTypes.MULTICLASS:
+        y = pd.Series([0, 2, 1, 2, 0])
+
+    for estimator_class in estimators:
+        if problem_type in estimator_class.supported_problem_types:
+            parameters = {}
+            if is_time_series(problem_type):
+                parameters = {
+                    "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+                    "Time Series Baseline Estimator": {
+                        "date_index": None,
+                        "gap": 1,
+                        "max_delay": 1,
+                    },
+                }
+
+            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
+            assert isinstance(pipeline, pipeline_class)
+            delayed_features = []
+            if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA:
+                delayed_features = [DelayedFeatureTransformer]
+            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+                estimator_components = [StandardScaler, estimator_class]
+            else:
+                estimator_components = [estimator_class]
+            encoder = [OneHotEncoder]
+            if estimator_class.model_family == ModelFamily.CATBOOST:
+                encoder = []
+            if column_to_drop == ["email"]:
+                expected_components = [URLFeaturizer, Imputer, TextFeaturizer]
+            elif column_to_drop == ["url"]:
+                expected_components = [EmailFeaturizer, Imputer, TextFeaturizer]
+            else:
+                expected_components = [EmailFeaturizer, URLFeaturizer, Imputer, TextFeaturizer]
+
+            expected_components = expected_components + delayed_features + encoder + estimator_components
+            assert pipeline.component_graph.compute_order == [
+                component.name for component in expected_components
+            ]
 
 
 def test_get_estimators(has_minimal_dependencies):
