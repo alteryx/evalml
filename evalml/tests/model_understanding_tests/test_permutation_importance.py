@@ -597,7 +597,8 @@ def test_undersampler(X_y_binary):
     X = pd.DataFrame(X)
     y = pd.Series(y)
     pipeline = BinaryClassificationPipeline(
-        component_graph=["Undersampler", "Elastic Net Classifier"]
+        component_graph={"Undersampler": ["Undersampler", "X", "y"],
+        "Elastic Net Classifier": ["Elastic Net Classifier", "Undersampler.x", "Undersampler.y"]}
     )
     pipeline.fit(X=X, y=y)
     pipeline.predict(X)
