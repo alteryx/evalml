@@ -910,11 +910,11 @@ def test_component_graph_dataset_with_different_types():
     # Also, column_4 will be treated as a datetime feature, but the identical column_5 set as natural language
     # should be treated as natural language, not as datetime.
     graph = {
-        "Imputer": [Imputer, "X", "y"],
+        "Text": [TextFeaturizer, "X", "y"],
+        "Imputer": [Imputer, "Text.x", "y"],
         "OneHot": [OneHotEncoder, "Imputer.x", "y"],
         "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
-        "Text": [TextFeaturizer, "DateTime.x", "y"],
-        "Scaler": [StandardScaler, "Text.x", "y"],
+        "Scaler": [StandardScaler, "DateTime.x", "y"],
         "Random Forest": [RandomForestClassifier, "Scaler.x", "y"],
         "Elastic Net": [ElasticNetClassifier, "Scaler.x", "y"],
         "Logistic Regression": [
@@ -949,52 +949,12 @@ def test_component_graph_dataset_with_different_types():
     component_graph.fit(X, y)
 
     def check_feature_names(input_feature_names):
-        assert input_feature_names["Imputer"] == [
-            "column_1",
-            "column_2",
-            "column_3",
-            "column_4",
-            "column_5",
-        ]
-        assert input_feature_names["OneHot"] == [
-            "column_1",
-            "column_2",
-            "column_3",
-            "column_4",
-            "column_5",
-        ]
-        assert input_feature_names["DateTime"] == [
-            "column_3",
-            "column_4",
-            "column_5",
-            "column_1_a",
-            "column_1_b",
-            "column_1_c",
-            "column_1_d",
-            "column_2_1",
-            "column_2_2",
-            "column_2_3",
-            "column_2_4",
-            "column_2_5",
-            "column_2_6",
-        ]
         assert input_feature_names["Text"] == [
+            "column_1",
+            "column_2",
             "column_3",
+            "column_4",
             "column_5",
-            "column_1_a",
-            "column_1_b",
-            "column_1_c",
-            "column_1_d",
-            "column_2_1",
-            "column_2_2",
-            "column_2_3",
-            "column_2_4",
-            "column_2_5",
-            "column_2_6",
-            "column_4_year",
-            "column_4_month",
-            "column_4_day_of_week",
-            "column_4_hour",
         ]
         text_columns = [
             "DIVERSITY_SCORE(column_5)",
@@ -1003,49 +963,31 @@ def test_component_graph_dataset_with_different_types():
             "LSA(column_5)[0]",
             "LSA(column_5)[1]",
         ]
-        assert input_feature_names["Scaler"] == (
-            [
+
+        assert (
+            input_feature_names["Imputer"]
+            == [
+                "column_1",
+                "column_2",
                 "column_3",
-                "column_1_a",
-                "column_1_b",
-                "column_1_c",
-                "column_1_d",
-                "column_2_1",
-                "column_2_2",
-                "column_2_3",
-                "column_2_4",
-                "column_2_5",
-                "column_2_6",
-                "column_4_year",
-                "column_4_month",
-                "column_4_day_of_week",
-                "column_4_hour",
+                "column_4",
             ]
             + text_columns
         )
-        assert input_feature_names["Random Forest"] == (
-            [
+        assert (
+            input_feature_names["OneHot"]
+            == [
+                "column_1",
+                "column_2",
                 "column_3",
-                "column_1_a",
-                "column_1_b",
-                "column_1_c",
-                "column_1_d",
-                "column_2_1",
-                "column_2_2",
-                "column_2_3",
-                "column_2_4",
-                "column_2_5",
-                "column_2_6",
-                "column_4_year",
-                "column_4_month",
-                "column_4_day_of_week",
-                "column_4_hour",
+                "column_4",
             ]
             + text_columns
         )
-        assert input_feature_names["Elastic Net"] == (
+        assert sorted(input_feature_names["DateTime"]) == sorted(
             [
                 "column_3",
+                "column_4",
                 "column_1_a",
                 "column_1_b",
                 "column_1_c",
@@ -1056,12 +998,74 @@ def test_component_graph_dataset_with_different_types():
                 "column_2_4",
                 "column_2_5",
                 "column_2_6",
-                "column_4_year",
-                "column_4_month",
-                "column_4_day_of_week",
-                "column_4_hour",
             ]
             + text_columns
+        )
+        assert sorted(input_feature_names["Scaler"]) == sorted(
+            (
+                [
+                    "column_3",
+                    "column_1_a",
+                    "column_1_b",
+                    "column_1_c",
+                    "column_1_d",
+                    "column_2_1",
+                    "column_2_2",
+                    "column_2_3",
+                    "column_2_4",
+                    "column_2_5",
+                    "column_2_6",
+                    "column_4_year",
+                    "column_4_month",
+                    "column_4_day_of_week",
+                    "column_4_hour",
+                ]
+                + text_columns
+            )
+        )
+        assert sorted(input_feature_names["Random Forest"]) == sorted(
+            (
+                [
+                    "column_3",
+                    "column_1_a",
+                    "column_1_b",
+                    "column_1_c",
+                    "column_1_d",
+                    "column_2_1",
+                    "column_2_2",
+                    "column_2_3",
+                    "column_2_4",
+                    "column_2_5",
+                    "column_2_6",
+                    "column_4_year",
+                    "column_4_month",
+                    "column_4_day_of_week",
+                    "column_4_hour",
+                ]
+                + text_columns
+            )
+        )
+        assert sorted(input_feature_names["Elastic Net"]) == sorted(
+            (
+                [
+                    "column_3",
+                    "column_1_a",
+                    "column_1_b",
+                    "column_1_c",
+                    "column_1_d",
+                    "column_2_1",
+                    "column_2_2",
+                    "column_2_3",
+                    "column_2_4",
+                    "column_2_5",
+                    "column_2_6",
+                    "column_4_year",
+                    "column_4_month",
+                    "column_4_day_of_week",
+                    "column_4_hour",
+                ]
+                + text_columns
+            )
         )
         assert input_feature_names["Logistic Regression"] == [
             "Random Forest.x",
@@ -1218,6 +1222,9 @@ def test_component_graph_types_merge():
     graph = {
         "Select numeric": [SelectColumns, "X", "y"],
         "Imputer numeric": [Imputer, "Select numeric.x", "y"],
+        "Select text": [SelectColumns, "X", "y"],
+        "Text": [TextFeaturizer, "Select text.x", "y"],
+        "Imputer text": [Imputer, "Text.x", "y"],
         "Scaler": [StandardScaler, "Imputer numeric.x", "y"],
         "Select categorical": [SelectColumns, "X", "y"],
         "Imputer categorical": [Imputer, "Select categorical.x", "y"],
@@ -1225,15 +1232,13 @@ def test_component_graph_types_merge():
         "Select datetime": [SelectColumns, "X", "y"],
         "Imputer datetime": [Imputer, "Select datetime.x", "y"],
         "DateTime": [DateTimeFeaturizer, "Imputer datetime.x", "y"],
-        "Select text": [SelectColumns, "X", "y"],
-        "Text": [TextFeaturizer, "Select text.x", "y"],
         "Select pass through": [SelectColumns, "X", "y"],
         "Random Forest": [
             RandomForestClassifier,
             "Scaler.x",
             "OneHot.x",
             "DateTime.x",
-            "Text.x",
+            "Imputer text.x",
             "Select pass through.x",
             "y",
         ],
