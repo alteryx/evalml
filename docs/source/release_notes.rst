@@ -11,6 +11,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
 
 
 **v0.29.0 Jul. 21, 2021**
