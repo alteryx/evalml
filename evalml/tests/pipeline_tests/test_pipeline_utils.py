@@ -849,7 +849,7 @@ def test_generate_code_pipeline_json_with_objects():
     assert (
         generated_pipeline_code
         == "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer'], 'My Custom Estimator': [CustomEstimator, 'Imputer.x']}, "
+        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'My Custom Estimator': [CustomEstimator, 'Imputer.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'My Custom Estimator':{'random_arg': False, 'numpy_arg': array([0])}}, custom_name='Mock Binary Pipeline with Transformer', random_seed=0)"
     )
@@ -863,7 +863,7 @@ def test_generate_code_pipeline_json_with_objects():
     assert (
         generated_pipeline_code
         == "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer'], 'My Custom Estimator': [CustomEstimator, 'Imputer.x']}, "
+        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'My Custom Estimator': [CustomEstimator, 'Imputer.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'My Custom Estimator':{'random_arg': Imputer(categorical_impute_strategy='most_frequent', numeric_impute_strategy='mean', categorical_fill_value=None, numeric_fill_value=None), 'numpy_arg': []}}, "
         "custom_name='Mock Binary Pipeline with Transformer', random_seed=0)"
@@ -877,7 +877,7 @@ def test_generate_code_pipeline():
     )
     expected_code = (
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x']}, "
+        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, random_seed=0)"
     )
@@ -889,7 +889,7 @@ def test_generate_code_pipeline():
     )
     expected_code = (
         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
-        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x']}, parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
+        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}, parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'Random Forest Regressor':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)"
     )
     pipeline = generate_pipeline_code(regression_pipeline)
@@ -905,7 +905,7 @@ def test_generate_code_pipeline():
     )
     expected_code_params = (
         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
-        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x']}, "
+        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'Random Forest Regressor':{'n_estimators': 50, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)"
     )
@@ -916,15 +916,16 @@ def test_generate_code_pipeline():
 def test_generate_code_nonlinear_pipeline():
     custom_name = "Non Linear Binary Pipeline"
     component_graph = {
-        "Imputer": ["Imputer"],
-        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x"],
-        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x"],
-        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x"],
-        "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x"],
+        "Imputer": ["Imputer", "X", "y"],
+        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "y"],
+        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
+        "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
         "Logistic Regression": [
             "Logistic Regression Classifier",
-            "Random Forest",
-            "Elastic Net",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "y",
         ],
     }
     pipeline = BinaryClassificationPipeline(
@@ -933,12 +934,12 @@ def test_generate_code_nonlinear_pipeline():
     expected = (
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
         "pipeline = BinaryClassificationPipeline("
-        "component_graph={'Imputer': ['Imputer'], "
-        "'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'], "
-        "'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x'], "
-        "'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x'], "
-        "'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'], "
-        "'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']}, "
+        "component_graph={'Imputer': ['Imputer', 'X', 'y'], "
+        "'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x', 'y'], "
+        "'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x', 'y'], "
+        "'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x', 'y'], "
+        "'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x', 'y'], "
+        "'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest.x', 'Elastic Net.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'OneHot_RandomForest':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OneHot_ElasticNet':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
@@ -981,7 +982,7 @@ def test_generate_code_pipeline_with_custom_components():
     )
     expected_code = (
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-        "pipeline = BinaryClassificationPipeline(component_graph={'My Custom Transformer': [CustomTransformer], 'My Custom Estimator': [CustomEstimator, 'My Custom Transformer.x']}, "
+        "pipeline = BinaryClassificationPipeline(component_graph={'My Custom Transformer': [CustomTransformer, 'X', 'y'], 'My Custom Estimator': [CustomEstimator, 'My Custom Transformer.x', 'y']}, "
         "parameters={'My Custom Estimator':{'random_arg': False}}, random_seed=0)"
     )
     pipeline = generate_pipeline_code(mock_pipeline_with_custom_components)
