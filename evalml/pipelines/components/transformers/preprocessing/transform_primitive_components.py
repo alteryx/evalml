@@ -132,18 +132,6 @@ class EmailFeaturizer(_ExtractFeaturesWithTransformPrimitives):
             for col_name in self._columns
         }
 
-    def transform(self, X, y=None):
-        """Transforms data X by creating new features using existing email columns
-
-        Arguments:
-            X (pd.DataFrame): The data to transform.
-            y (pd.Series, optional): Ignored.
-
-        Returns:
-            pd.DataFrame: Transformed X
-        """
-        return super().transform(X, y)
-
 
 class URLFeaturizer(_ExtractFeaturesWithTransformPrimitives):
     """Transformer that can automatically extract features from URL.
@@ -166,15 +154,3 @@ class URLFeaturizer(_ExtractFeaturesWithTransformPrimitives):
         return {
             col_name: ft.variable_types.URL.type_string for col_name in self._columns
         }
-
-    def transform(self, X, y=None):
-        """Transforms data X by creating new features using existing url columns
-
-        Arguments:
-            X (pd.DataFrame): The data to transform.
-            y (pd.Series, optional): Ignored.
-
-        Returns:
-            pd.DataFrame: Transformed X
-        """
-        return super().transform(X, y)
