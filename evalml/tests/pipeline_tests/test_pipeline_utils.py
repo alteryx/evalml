@@ -796,15 +796,15 @@ def test_make_pipeline_url_email(column_to_drop, problem_type, df_with_url_and_e
             if estimator_class.model_family == ModelFamily.CATBOOST:
                 encoder = []
             if column_to_drop == ["email"]:
-                expected_components = [URLFeaturizer, Imputer, TextFeaturizer]
+                expected_components = [URLFeaturizer, TextFeaturizer, Imputer]
             elif column_to_drop == ["url"]:
-                expected_components = [EmailFeaturizer, Imputer, TextFeaturizer]
+                expected_components = [EmailFeaturizer, TextFeaturizer, Imputer]
             else:
                 expected_components = [
                     EmailFeaturizer,
                     URLFeaturizer,
-                    Imputer,
                     TextFeaturizer,
+                    Imputer,
                 ]
 
             expected_components = (
