@@ -70,6 +70,22 @@ def test_init_with_invalid_type_raises_error(pipeline_class):
         pipeline_class(component_graph="this is not a valid component graph")
 
 
+@pytest.mark.parametrize(
+    "pipeline_class",
+    [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+        RegressionPipeline,
+    ],
+)
+def test_init_list_with_component_that_is_not_supported_by_list_API(pipeline_class):
+    with pytest.raises(
+        ValueError,
+        match="This component cannot be defined in a list because edges may be ambiguous",
+    ):
+        pipeline_class(component_graph=["Target Imputer"])
+
+
 def test_allowed_model_families(has_minimal_dependencies):
     families = [
         ModelFamily.RANDOM_FOREST,
