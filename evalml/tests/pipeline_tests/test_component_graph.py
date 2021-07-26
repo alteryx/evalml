@@ -1434,10 +1434,10 @@ def test_component_graph_equality(example_graph):
 
     same_graph_different_order = {
         "Imputer": [Imputer, "X", "y"],
-        "OneHot_ElasticNet": [OneHotEncoder, "Imputer.x"],
-        "OneHot_RandomForest": [OneHotEncoder, "Imputer.x"],
-        "Random Forest": [RandomForestClassifier, "OneHot_RandomForest.x"],
-        "Elastic Net": [ElasticNetClassifier, "OneHot_ElasticNet.x"],
+        "OneHot_ElasticNet": [OneHotEncoder, "Imputer.x", "y"],
+        "OneHot_RandomForest": [OneHotEncoder, "Imputer.x", "y"],
+        "Random Forest": [RandomForestClassifier, "OneHot_RandomForest.x", "y"],
+        "Elastic Net": [ElasticNetClassifier, "OneHot_ElasticNet.x", "y"],
         "Logistic Regression": [
             LogisticRegressionClassifier,
             "Random Forest.x",

@@ -46,6 +46,7 @@ def test_component_graph():
             "Logistic Regression Classifier",
             "Random Forest.x",
             "Elastic Net.x",
+            "y",
         ],
     }
     component_graph = ComponentGraph(graph)
