@@ -5,12 +5,14 @@ Release Notes
         * Added ``LogTransformer`` and ``TargetDistributionDataCheck`` :pr:`2487`
     * Fixes
     * Changes
+        * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
 
 
 **v0.29.0 Jul. 21, 2021**
