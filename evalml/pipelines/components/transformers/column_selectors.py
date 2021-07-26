@@ -1,4 +1,3 @@
-import warnings
 from abc import abstractmethod
 
 from evalml.pipelines.components.transformers import Transformer
@@ -125,7 +124,7 @@ class SelectColumns(ColumnSelector):
         return super().transform(X, y)
 
 
-class SelectByTypeorTag(ColumnSelector):
+class SelectByType(ColumnSelector):
     """
     Selects columns by specified Woodwork logical type or semantic tag in input data.
 
@@ -134,7 +133,7 @@ class SelectByTypeorTag(ColumnSelector):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    name = "Select Columns By Type or Tag Transformer"
+    name = "Select Columns By Type Transformer"
     hyperparameter_ranges = {}
     """{}"""
     needs_fitting = False
@@ -146,21 +145,7 @@ class SelectByTypeorTag(ColumnSelector):
         return
 
     def _modify_columns(self, cols, X, y=None):
-        columns = X.ww.select(cols)
-        if len(cols) > 0 and columns.empty:
-            warnings.warn(
-                "No columns of the selected type(s) were found in the input data. SelectByTypeorTag will return an empty DataFrame"
-            )
-        return X.ww.select(cols)
-
-    def transform(self, X, y=None):
-        """Transforms data X by selecting columns.
-
-        Arguments:
-            X (pd.DataFrame): Data to transform.
-            y (pd.Series, optional): Targets.
-
-        Returns:
-            pd.DataFrame: Transformed X.
-        """
-        return super().transform(X, y)
+        selected_columns = X.ww.select(cols)
+        if len(cols) > 0 and selected_columns.empty:
+            raise ValueError(f"Column(s) of type {cols} not found in input data")
+        return selected_columns

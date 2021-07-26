@@ -146,7 +146,7 @@ Transformers are components that take in data as input and output transformed da
 
     evalml.pipelines.components.DropColumns
     evalml.pipelines.components.SelectColumns
-    evalml.pipelines.components.SelectByTypeorTag
+    evalml.pipelines.components.SelectByType
     evalml.pipelines.components.OneHotEncoder
     evalml.pipelines.components.TargetEncoder
     evalml.pipelines.components.PerColumnImputer
