@@ -6,10 +6,6 @@ on:
       - main
   pull_request:
     types: [ opened, synchronize ]
-    paths:
-      - 'requirements.txt'
-      - 'core-requirements.txt'
-      - 'evalml/tests/dependency_update_check/*.txt'
 
 jobs:
   build_conda_pkg:
