@@ -6,6 +6,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Added test that makes sure ``split_data`` does not shuffle for time series problems :pr:`2552`
 
 .. warning::
 
