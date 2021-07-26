@@ -2251,7 +2251,15 @@ def test_undersampler_component_in_pipeline_fit(mock_fit):
     X = pd.DataFrame({"a": [i for i in range(1000)], "b": [i % 3 for i in range(1000)]})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(
-        ["Imputer", "Undersampler", "Logistic Regression Classifier"]
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Undersampler": ["Undersampler", "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Undersampler.x",
+                "Undersampler.y",
+            ],
+        }
     )
     pipeline.fit(X, y)
     # make sure we undersample to 500 values in the X and y
@@ -2268,7 +2276,15 @@ def test_undersampler_component_in_pipeline_predict():
     X = pd.DataFrame({"a": [i for i in range(1000)], "b": [i % 3 for i in range(1000)]})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(
-        ["Imputer", "Undersampler", "Logistic Regression Classifier"]
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Undersampler": ["Undersampler", "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Undersampler.x",
+                "Undersampler.y",
+            ],
+        }
     )
     pipeline.fit(X, y)
     preds = pipeline.predict(X)
@@ -2297,7 +2313,15 @@ def test_oversampler_component_in_pipeline_fit(mock_fit, oversampler):
     X.ww.init(logical_types={"c": "Categorical"})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(
-        ["Imputer", oversampler, "Logistic Regression Classifier"]
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            oversampler: [oversampler, "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                f"{oversampler}.x",
+                f"{oversampler}.y",
+            ],
+        }
     )
     pipeline.fit(X, y)
     # make sure we oversample 0 to 225 values values in the X and y
@@ -2328,7 +2352,15 @@ def test_oversampler_component_in_pipeline_predict(oversampler):
     X.ww.init(logical_types={"c": "Categorical"})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(
-        ["Imputer", oversampler, "Logistic Regression Classifier"]
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            oversampler: [oversampler, "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                f"{oversampler}.x",
+                f"{oversampler}.y",
+            ],
+        }
     )
     pipeline.fit(X, y)
     preds = pipeline.predict(X)

@@ -612,13 +612,25 @@ def test_permutation_importance_oversampler(fraud_100):
     )
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(
-        component_graph=[
-            "Imputer",
-            "One Hot Encoder",
-            "DateTime Featurization Component",
-            "SMOTENC Oversampler",
-            "Decision Tree Classifier",
-        ]
+        component_graph={
+            "Imputer": ["Imputer", "X", "y"],
+            "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
+            "DateTime Featurization Component": [
+                "DateTime Featurization Component",
+                "One Hot Encoder.x",
+                "y",
+            ],
+            "SMOTENC Oversampler": [
+                "SMOTENC Oversampler",
+                "DateTime Featurization Component.x",
+                "y",
+            ],
+            "Decision Tree Classifier": [
+                "Decision Tree Classifier",
+                "SMOTENC Oversampler.x",
+                "SMOTENC Oversampler.y",
+            ],
+        }
     )
     pipeline.fit(X=X, y=y)
     pipeline.predict(X)
