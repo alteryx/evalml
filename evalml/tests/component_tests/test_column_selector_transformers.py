@@ -11,9 +11,7 @@ from evalml.pipelines.components import (
 )
 
 
-@pytest.mark.parametrize(
-    "class_to_test", [DropColumns, SelectColumns, SelectByType]
-)
+@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns, SelectByType])
 def test_column_transformer_init(class_to_test):
     transformer = class_to_test(columns=None)
     assert transformer.parameters["columns"] is None
@@ -28,9 +26,7 @@ def test_column_transformer_init(class_to_test):
         _ = class_to_test(columns="Column1")
 
 
-@pytest.mark.parametrize(
-    "class_to_test", [DropColumns, SelectColumns, SelectByType]
-)
+@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns, SelectByType])
 def test_column_transformer_empty_X(class_to_test):
     X = pd.DataFrame()
     transformer = class_to_test(columns=[])
