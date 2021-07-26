@@ -4,12 +4,14 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Removed ``ComponentGraph.from_list`` and update PipelineBase implementation for creating pipelines from a list of components :pr:`2549`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Removed ``ComponentGraph.from_list`` and update PipelineBase implementation for creating pipelines from a list of components :pr:`2549`
 
 
 **v0.29.0 Jul. 21, 2021**
