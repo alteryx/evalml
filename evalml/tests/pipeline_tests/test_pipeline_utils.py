@@ -870,47 +870,47 @@ def test_generate_code_pipeline_json_with_objects():
     )
 
 
-# def test_generate_code_pipeline():
+def test_generate_code_pipeline():
 
-#     binary_pipeline = BinaryClassificationPipeline(
-#         ["Imputer", "Random Forest Classifier"]
-#     )
-#     expected_code = (
-#         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-#         "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x']}, "
-#         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
-#         "'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, random_seed=0)"
-#     )
-#     pipeline = generate_pipeline_code(binary_pipeline)
-#     assert expected_code == pipeline
+    binary_pipeline = BinaryClassificationPipeline(
+        ["Imputer", "Random Forest Classifier"]
+    )
+    expected_code = (
+        "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
+        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x', 'y']}, "
+        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
+        "'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, random_seed=0)"
+    )
+    pipeline = generate_pipeline_code(binary_pipeline)
+    assert expected_code == pipeline
 
-#     regression_pipeline = RegressionPipeline(
-#         ["Imputer", "Random Forest Regressor"], custom_name="Mock Regression Pipeline"
-#     )
-#     expected_code = (
-#         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
-#         "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x']}, parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
-#         "'Random Forest Regressor':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)"
-#     )
-#     pipeline = generate_pipeline_code(regression_pipeline)
-#     assert pipeline == expected_code
+    regression_pipeline = RegressionPipeline(
+        ["Imputer", "Random Forest Regressor"], custom_name="Mock Regression Pipeline"
+    )
+    expected_code = (
+        "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
+        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}, parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
+        "'Random Forest Regressor':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)"
+    )
+    pipeline = generate_pipeline_code(regression_pipeline)
+    assert pipeline == expected_code
 
-#     regression_pipeline_with_params = RegressionPipeline(
-#         ["Imputer", "Random Forest Regressor"],
-#         custom_name="Mock Regression Pipeline",
-#         parameters={
-#             "Imputer": {"numeric_impute_strategy": "most_frequent"},
-#             "Random Forest Regressor": {"n_estimators": 50},
-#         },
-#     )
-#     expected_code_params = (
-#         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
-#         "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x']}, "
-#         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
-#         "'Random Forest Regressor':{'n_estimators': 50, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)"
-#     )
-#     pipeline = generate_pipeline_code(regression_pipeline_with_params)
-#     assert pipeline == expected_code_params
+    regression_pipeline_with_params = RegressionPipeline(
+        ["Imputer", "Random Forest Regressor"],
+        custom_name="Mock Regression Pipeline",
+        parameters={
+            "Imputer": {"numeric_impute_strategy": "most_frequent"},
+            "Random Forest Regressor": {"n_estimators": 50},
+        },
+    )
+    expected_code_params = (
+        "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
+        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}, "
+        "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
+        "'Random Forest Regressor':{'n_estimators': 50, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)"
+    )
+    pipeline = generate_pipeline_code(regression_pipeline_with_params)
+    assert pipeline == expected_code_params
 
 
 def test_generate_code_nonlinear_pipeline():

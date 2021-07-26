@@ -95,6 +95,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_seed = random_seed
 
         if isinstance(component_graph, list):  # Backwards compatibility
+            for component in component_graph:
+                component = handle_component_class(component)
+                if not component._supported_by_list_API:
+                    raise ValueError(
+                        f"{component.name} cannot be defined in a list because edges may be ambiguous. Please use a dictionary to specify the appropriate component graph for this pipeline instead."
+                    )
             self.component_graph = ComponentGraph(
                 component_dict=PipelineBase._make_component_dict_from_component_list(
                     component_graph

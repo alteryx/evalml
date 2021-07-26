@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Removed ``ComponentGraph.from_list`` and update PipelineBase implementation for creating pipelines from a list of components :pr:`2549`
         * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
         * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
     * Documentation Changes
@@ -12,6 +13,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Removed ``ComponentGraph.from_list`` and update PipelineBase implementation for creating pipelines from a list of components :pr:`2549`
         * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
         * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
 

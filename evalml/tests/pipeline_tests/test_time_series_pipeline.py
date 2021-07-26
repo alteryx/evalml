@@ -723,6 +723,15 @@ def test_time_series_pipeline_with_detrender(ts_data):
         reason="Skipping polynomial detrending tests because sktime not installed",
     )
     X, y = ts_data
+    component_graph = {
+        "Polynomial Detrender": ["Polynomial Detrender", "X", "y"],
+        "DelayedFeatures": ["Delayed Feature Transformer", "X", "y"],
+        "Regressor": [
+            "Linear Regressor",
+            "DelayedFeatures.x",
+            "Polynomial Detrender.y",
+        ],
+    }
     pipeline = TimeSeriesRegressionPipeline(
         component_graph=component_graph,
         parameters={

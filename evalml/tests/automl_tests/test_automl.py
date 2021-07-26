@@ -2259,9 +2259,7 @@ def test_time_series_regression_with_parameters(ts_data):
 
 
 @pytest.mark.parametrize("graph_type", ["dict", "cg"])
-def test_automl_accepts_component_graphs(
-    graph_type, dummy_classifier_estimator_class, X_y_binary
-):
+def test_automl_accepts_component_graphs(graph_type, X_y_binary):
     X, y = X_y_binary
     if graph_type == "dict":
         component_graph = {

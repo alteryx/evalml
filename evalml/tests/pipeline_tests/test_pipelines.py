@@ -54,6 +54,39 @@ from evalml.problem_types import (
 )
 
 
+@pytest.mark.parametrize(
+    "pipeline_class",
+    [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+        RegressionPipeline,
+    ],
+)
+def test_init_with_invalid_type_raises_error(pipeline_class):
+    with pytest.raises(
+        ValueError,
+        match="component_graph must be a list, dict, or ComponentGraph object",
+    ):
+        pipeline_class(component_graph="this is not a valid component graph")
+
+
+@pytest.mark.parametrize(
+    "pipeline_class",
+    [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+        RegressionPipeline,
+    ],
+)
+def test_init_list_with_component_that_is_not_supported_by_list_API(pipeline_class):
+    assert not TargetImputer._supported_by_list_API
+    with pytest.raises(
+        ValueError,
+        match=f"{TargetImputer.name} cannot be defined in a list because edges may be ambiguous",
+    ):
+        pipeline_class(component_graph=["Target Imputer"])
+
+
 def test_allowed_model_families(has_minimal_dependencies):
     families = [
         ModelFamily.RANDOM_FOREST,
@@ -1865,11 +1898,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
     }
 
     pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
-    component_graph_str = ""
-    if pipeline_class == RegressionPipeline:
-        component_graph_str = "{'Imputer': ['Imputer', 'X', 'y'], 'OHE_1': ['One Hot Encoder', 'Imputer.x', 'y'], 'OHE_2': ['One Hot Encoder', 'Imputer.x', 'y'], 'Estimator': ['Random Forest Regressor', 'OHE_1.x', 'OHE_2.x', 'y']}"
-    else:
-        component_graph_str = "{'Imputer': ['Imputer', 'X', 'y'], 'OHE_1': ['One Hot Encoder', 'Imputer.x', 'y'], 'OHE_2': ['One Hot Encoder', 'Imputer.x', 'y'], 'Estimator': ['Random Forest Classifier', 'OHE_1.x', 'OHE_2.x', 'y']}"
+    component_graph_str = f"{{'Imputer': ['Imputer', 'X', 'y'], 'OHE_1': ['One Hot Encoder', 'Imputer.x', 'y'], 'OHE_2': ['One Hot Encoder', 'Imputer.x', 'y'], 'Estimator': ['{final_estimator}', 'OHE_1.x', 'OHE_2.x', 'y']}}"
     expected_repr = (
         f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
@@ -2203,7 +2232,15 @@ def test_undersampler_component_in_pipeline_fit(mock_fit):
     X = pd.DataFrame({"a": [i for i in range(1000)], "b": [i % 3 for i in range(1000)]})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(
-        ["Imputer", "Undersampler", "Logistic Regression Classifier"]
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Undersampler": ["Undersampler", "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Undersampler.x",
+                "Undersampler.y",
+            ],
+        }
     )
     pipeline.fit(X, y)
     # make sure we undersample to 500 values in the X and y
@@ -2220,7 +2257,15 @@ def test_undersampler_component_in_pipeline_predict():
     X = pd.DataFrame({"a": [i for i in range(1000)], "b": [i % 3 for i in range(1000)]})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(
-        ["Imputer", "Undersampler", "Logistic Regression Classifier"]
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Undersampler": ["Undersampler", "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Undersampler.x",
+                "Undersampler.y",
+            ],
+        }
     )
     pipeline.fit(X, y)
     preds = pipeline.predict(X)
@@ -2249,7 +2294,15 @@ def test_oversampler_component_in_pipeline_fit(mock_fit, oversampler):
     X.ww.init(logical_types={"c": "Categorical"})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(
-        ["Imputer", oversampler, "Logistic Regression Classifier"]
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            oversampler: [oversampler, "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                f"{oversampler}.x",
+                f"{oversampler}.y",
+            ],
+        }
     )
     pipeline.fit(X, y)
     # make sure we oversample 0 to 225 values values in the X and y
@@ -2280,41 +2333,21 @@ def test_oversampler_component_in_pipeline_predict(oversampler):
     X.ww.init(logical_types={"c": "Categorical"})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(
-        ["Imputer", oversampler, "Logistic Regression Classifier"]
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            oversampler: [oversampler, "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                f"{oversampler}.x",
+                f"{oversampler}.y",
+            ],
+        }
     )
     pipeline.fit(X, y)
     preds = pipeline.predict(X)
     assert len(preds) == 1000
     preds = pipeline.predict_proba(X)
     assert len(preds) == 1000
-
-
-def test_get_hyperparameter_ranges():
-    pipeline = BinaryClassificationPipeline(
-        component_graph=["Imputer", "Random Forest Classifier"]
-    )
-    custom_hyperparameters = {
-        "One Hot Encoder": {"top_n": 3},
-        "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])},
-        "Random Forest Classifier": {"n_estimators": Integer(150, 160)},
-    }
-
-    expected_ranges = {
-        "Imputer": {
-            "categorical_impute_strategy": ["most_frequent"],
-            "numeric_impute_strategy": Categorical(
-                categories=("most_frequent", "mean"), prior=None
-            ),
-        },
-        "Random Forest Classifier": {
-            "n_estimators": Integer(
-                low=150, high=160, prior="uniform", transform="identity"
-            ),
-            "max_depth": Integer(low=1, high=10, prior="uniform", transform="identity"),
-        },
-    }
-    hyperparameter_ranges = pipeline.get_hyperparameter_ranges(custom_hyperparameters)
-    assert expected_ranges == hyperparameter_ranges
 
 
 def test_make_component_dict_from_component_list():
@@ -2435,3 +2468,31 @@ def test_make_component_dict_from_component_list_with_duplicate_names():
             "Undersampler_1.y",
         ],
     }
+
+
+def test_get_hyperparameter_ranges():
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Imputer", "Random Forest Classifier"]
+    )
+    custom_hyperparameters = {
+        "One Hot Encoder": {"top_n": 3},
+        "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])},
+        "Random Forest Classifier": {"n_estimators": Integer(150, 160)},
+    }
+
+    expected_ranges = {
+        "Imputer": {
+            "categorical_impute_strategy": ["most_frequent"],
+            "numeric_impute_strategy": Categorical(
+                categories=("most_frequent", "mean"), prior=None
+            ),
+        },
+        "Random Forest Classifier": {
+            "n_estimators": Integer(
+                low=150, high=160, prior="uniform", transform="identity"
+            ),
+            "max_depth": Integer(low=1, high=10, prior="uniform", transform="identity"),
+        },
+    }
+    hyperparameter_ranges = pipeline.get_hyperparameter_ranges(custom_hyperparameters)
+    assert expected_ranges == hyperparameter_ranges
