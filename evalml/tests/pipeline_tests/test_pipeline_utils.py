@@ -15,6 +15,7 @@ from evalml.pipelines.components import (
     DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
+    EmailFeaturizer,
     Estimator,
     Imputer,
     LinearRegressor,
@@ -26,8 +27,7 @@ from evalml.pipelines.components import (
     TargetImputer,
     TextFeaturizer,
     Transformer,
-    EmailFeaturizer,
-    URLFeaturizer
+    URLFeaturizer,
 )
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
@@ -783,7 +783,10 @@ def test_make_pipeline_url_email(column_to_drop, problem_type, df_with_url_and_e
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
             delayed_features = []
-            if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA:
+            if (
+                is_time_series(problem_type)
+                and estimator_class.model_family != ModelFamily.ARIMA
+            ):
                 delayed_features = [DelayedFeatureTransformer]
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [StandardScaler, estimator_class]
@@ -797,9 +800,16 @@ def test_make_pipeline_url_email(column_to_drop, problem_type, df_with_url_and_e
             elif column_to_drop == ["url"]:
                 expected_components = [EmailFeaturizer, Imputer, TextFeaturizer]
             else:
-                expected_components = [EmailFeaturizer, URLFeaturizer, Imputer, TextFeaturizer]
+                expected_components = [
+                    EmailFeaturizer,
+                    URLFeaturizer,
+                    Imputer,
+                    TextFeaturizer,
+                ]
 
-            expected_components = expected_components + delayed_features + encoder + estimator_components
+            expected_components = (
+                expected_components + delayed_features + encoder + estimator_components
+            )
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]

@@ -22,6 +22,7 @@ from evalml.pipelines.components import (  # noqa: F401
     DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
+    EmailFeaturizer,
     Estimator,
     Imputer,
     OneHotEncoder,
@@ -36,7 +37,6 @@ from evalml.pipelines.components import (  # noqa: F401
     TextFeaturizer,
     Undersampler,
     URLFeaturizer,
-    EmailFeaturizer
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import (
@@ -86,7 +86,7 @@ def _get_preprocessing_components(
         logical_types.Double,
         logical_types.Integer,
         logical_types.URL,
-        logical_types.EmailAddress
+        logical_types.EmailAddress,
     }
 
     text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
@@ -117,7 +117,9 @@ def _get_preprocessing_components(
         pp_components.append(DelayedFeatureTransformer)
 
     # The URL and EmailAddress Featurizers will create categorical columns
-    categorical_cols = list(X.ww.select(["category", "URL", "EmailAddress"], return_schema=True).columns)
+    categorical_cols = list(
+        X.ww.select(["category", "URL", "EmailAddress"], return_schema=True).columns
+    )
     if len(categorical_cols) > 0 and estimator_class not in {
         CatBoostClassifier,
         CatBoostRegressor,

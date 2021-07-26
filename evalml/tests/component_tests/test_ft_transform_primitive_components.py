@@ -49,7 +49,9 @@ def make_data_url_fit_transform_missing_values(df_with_url_and_email):
 def make_answer_email_fit_transform(df_with_url_and_email):
     expected = df_with_url_and_email.ww.copy()
     expected.ww["EMAIL_ADDRESS_TO_DOMAIN(email)"] = pd.Series(
-        ["gmail.com", "yahoo.com", "abalone.com", "hotmail.com", "email.org"], dtype="category")
+        ["gmail.com", "yahoo.com", "abalone.com", "hotmail.com", "email.org"],
+        dtype="category",
+    )
     expected.ww["IS_FREE_EMAIL_DOMAIN(email)"] = pd.Series(
         [True, True, False, True, True], dtype="category"
     )
@@ -83,9 +85,11 @@ def make_answer_email_fit_transform_missing_values(df_with_url_and_email):
     expected.ww.drop(["email", "email_2"], inplace=True)
     # Missing values in the original features are passed through
     expected.ww["EMAIL_ADDRESS_TO_DOMAIN(email)"] = pd.Series(
-        [None, None, "abalone.com", "hotmail.com", "email.org"], dtype="category")
+        [None, None, "abalone.com", "hotmail.com", "email.org"], dtype="category"
+    )
     expected.ww["EMAIL_ADDRESS_TO_DOMAIN(email_2)"] = pd.Series(
-        [None, None, "abalone.com", "hotmail.com", None], dtype="category")
+        [None, None, "abalone.com", "hotmail.com", None], dtype="category"
+    )
     expected.ww["IS_FREE_EMAIL_DOMAIN(email)"] = pd.Series(
         [None, None, False, True, True], dtype="category"
     )
