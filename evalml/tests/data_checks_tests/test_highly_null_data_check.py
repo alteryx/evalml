@@ -23,27 +23,41 @@ class SeriesWrap:
 
 def test_highly_null_data_check_init():
     highly_null_check = HighlyNullDataCheck()
-    assert highly_null_check.pct_null_threshold == 0.95
+    assert highly_null_check.pct_null_col_threshold == 0.95
+    assert highly_null_check.pct_null_row_threshold == 0.95
 
-    highly_null_check = HighlyNullDataCheck(pct_null_threshold=0.0)
-    assert highly_null_check.pct_null_threshold == 0
+    highly_null_check = HighlyNullDataCheck(pct_null_col_threshold=0.0)
+    assert highly_null_check.pct_null_col_threshold == 0
+    assert highly_null_check.pct_null_row_threshold == 0.95
 
-    highly_null_check = HighlyNullDataCheck(pct_null_threshold=0.5)
-    assert highly_null_check.pct_null_threshold == 0.5
+    highly_null_check = HighlyNullDataCheck(pct_null_row_threshold=0.5)
+    assert highly_null_check.pct_null_col_threshold == 0.95
+    assert highly_null_check.pct_null_row_threshold == 0.5
 
-    highly_null_check = HighlyNullDataCheck(pct_null_threshold=1.0)
-    assert highly_null_check.pct_null_threshold == 1.0
+    highly_null_check = HighlyNullDataCheck(pct_null_col_threshold=1.0, pct_null_row_threshold=1.0)
+    assert highly_null_check.pct_null_col_threshold == 1.0
+    assert highly_null_check.pct_null_row_threshold == 1.0
 
     with pytest.raises(
         ValueError,
-        match="pct_null_threshold must be a float between 0 and 1, inclusive.",
+        match="pct null thresholds must be a float between 0 and 1, inclusive.",
     ):
-        HighlyNullDataCheck(pct_null_threshold=-0.1)
+        HighlyNullDataCheck(pct_null_col_threshold=-0.1)
     with pytest.raises(
         ValueError,
-        match="pct_null_threshold must be a float between 0 and 1, inclusive.",
+        match="pct null thresholds must be a float between 0 and 1, inclusive.",
     ):
-        HighlyNullDataCheck(pct_null_threshold=1.1)
+        HighlyNullDataCheck(pct_null_col_threshold=1.1)
+    with pytest.raises(
+        ValueError,
+        match="pct null thresholds must be a float between 0 and 1, inclusive.",
+    ):
+        HighlyNullDataCheck(pct_null_row_threshold=-0.5)
+    with pytest.raises(
+        ValueError,
+        match="pct null thresholds must be a float between 0 and 1, inclusive.",
+    ):
+        HighlyNullDataCheck(pct_null_row_threshold=2.1)
 
 
 def test_highly_null_data_check_warnings():
