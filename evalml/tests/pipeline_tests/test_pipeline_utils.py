@@ -27,15 +27,8 @@ from evalml.pipelines.components import (
     TextFeaturizer,
     Transformer,
 )
-from evalml.pipelines.components.estimators.classifiers.rf_classifier import (
-    RandomForestClassifier,
-)
-from evalml.pipelines.components.transformers.samplers.undersampler import (
-    Undersampler,
-)
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
-    _make_component_dict_from_component_list,
     _make_component_list_from_actions,
     generate_pipeline_code,
     get_estimators,
@@ -856,7 +849,7 @@ def test_generate_code_pipeline_json_with_objects():
     assert (
         generated_pipeline_code
         == "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer'], 'My Custom Estimator': [CustomEstimator, 'Imputer.x']}, "
+        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'My Custom Estimator': [CustomEstimator, 'Imputer.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'My Custom Estimator':{'random_arg': False, 'numpy_arg': array([0])}}, custom_name='Mock Binary Pipeline with Transformer', random_seed=0)"
     )
@@ -870,7 +863,7 @@ def test_generate_code_pipeline_json_with_objects():
     assert (
         generated_pipeline_code
         == "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer'], 'My Custom Estimator': [CustomEstimator, 'Imputer.x']}, "
+        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'My Custom Estimator': [CustomEstimator, 'Imputer.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'My Custom Estimator':{'random_arg': Imputer(categorical_impute_strategy='most_frequent', numeric_impute_strategy='mean', categorical_fill_value=None, numeric_fill_value=None), 'numpy_arg': []}}, "
         "custom_name='Mock Binary Pipeline with Transformer', random_seed=0)"
@@ -884,7 +877,7 @@ def test_generate_code_pipeline():
     )
     expected_code = (
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x']}, "
+        "pipeline = BinaryClassificationPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'Random Forest Classifier':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, random_seed=0)"
     )
@@ -896,7 +889,7 @@ def test_generate_code_pipeline():
     )
     expected_code = (
         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
-        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x']}, parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
+        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}, parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'Random Forest Regressor':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)"
     )
     pipeline = generate_pipeline_code(regression_pipeline)
@@ -912,7 +905,7 @@ def test_generate_code_pipeline():
     )
     expected_code_params = (
         "from evalml.pipelines.regression_pipeline import RegressionPipeline\n"
-        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x']}, "
+        "pipeline = RegressionPipeline(component_graph={'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'most_frequent', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'Random Forest Regressor':{'n_estimators': 50, 'max_depth': 6, 'n_jobs': -1}}, custom_name='Mock Regression Pipeline', random_seed=0)"
     )
@@ -923,15 +916,16 @@ def test_generate_code_pipeline():
 def test_generate_code_nonlinear_pipeline():
     custom_name = "Non Linear Binary Pipeline"
     component_graph = {
-        "Imputer": ["Imputer"],
-        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x"],
-        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x"],
-        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x"],
-        "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x"],
+        "Imputer": ["Imputer", "X", "y"],
+        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "y"],
+        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
+        "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
         "Logistic Regression": [
             "Logistic Regression Classifier",
-            "Random Forest",
-            "Elastic Net",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "y",
         ],
     }
     pipeline = BinaryClassificationPipeline(
@@ -940,12 +934,12 @@ def test_generate_code_nonlinear_pipeline():
     expected = (
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
         "pipeline = BinaryClassificationPipeline("
-        "component_graph={'Imputer': ['Imputer'], "
-        "'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x'], "
-        "'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x'], "
-        "'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x'], "
-        "'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x'], "
-        "'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest', 'Elastic Net']}, "
+        "component_graph={'Imputer': ['Imputer', 'X', 'y'], "
+        "'OneHot_RandomForest': ['One Hot Encoder', 'Imputer.x', 'y'], "
+        "'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x', 'y'], "
+        "'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x', 'y'], "
+        "'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x', 'y'], "
+        "'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest.x', 'Elastic Net.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'OneHot_RandomForest':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OneHot_ElasticNet':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
@@ -988,147 +982,8 @@ def test_generate_code_pipeline_with_custom_components():
     )
     expected_code = (
         "from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline\n"
-        "pipeline = BinaryClassificationPipeline(component_graph={'My Custom Transformer': [CustomTransformer], 'My Custom Estimator': [CustomEstimator, 'My Custom Transformer.x']}, "
+        "pipeline = BinaryClassificationPipeline(component_graph={'My Custom Transformer': [CustomTransformer, 'X', 'y'], 'My Custom Estimator': [CustomEstimator, 'My Custom Transformer.x', 'y']}, "
         "parameters={'My Custom Estimator':{'random_arg': False}}, random_seed=0)"
     )
     pipeline = generate_pipeline_code(mock_pipeline_with_custom_components)
     assert pipeline == expected_code
-
-
-def test_make_component_dict_from_component_list():
-    assert _make_component_dict_from_component_list([RandomForestClassifier]) == {
-        "Random Forest Classifier": [RandomForestClassifier, "X", "y"]
-    }
-    assert _make_component_dict_from_component_list([Imputer]) == {
-        "Imputer": [Imputer, "X", "y"]
-    }
-    assert _make_component_dict_from_component_list(
-        [Imputer, OneHotEncoder, DropNullColumns]
-    ) == {
-        "Imputer": [Imputer, "X", "y"],
-        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
-        "Drop Null Columns Transformer": [DropNullColumns, "One Hot Encoder.x", "y"],
-    }
-
-    # Test with component that modifies y (Target Imputer)
-    assert _make_component_dict_from_component_list(
-        [Imputer, OneHotEncoder, TargetImputer, RandomForestClassifier]
-    ) == {
-        "Imputer": [Imputer, "X", "y"],
-        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
-        "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
-        "Random Forest Classifier": [
-            RandomForestClassifier,
-            "One Hot Encoder.x",
-            "Target Imputer.y",
-        ],
-    }
-
-    # Test with component that modifies X and y (Undersampler)
-    assert _make_component_dict_from_component_list(
-        [
-            Imputer,
-            OneHotEncoder,
-            TargetImputer,
-            DropNullColumns,
-            Undersampler,
-            RandomForestClassifier,
-        ]
-    ) == {
-        "Imputer": [Imputer, "X", "y"],
-        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
-        "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
-        "Drop Null Columns Transformer": [
-            DropNullColumns,
-            "One Hot Encoder.x",
-            "Target Imputer.y",
-        ],
-        "Undersampler": [
-            Undersampler,
-            "Drop Null Columns Transformer.x",
-            "Target Imputer.y",
-        ],
-        "Random Forest Classifier": [
-            RandomForestClassifier,
-            "Undersampler.x",
-            "Undersampler.y",
-        ],
-    }
-
-    # Test with component after estimator
-    assert _make_component_dict_from_component_list(
-        [Imputer, RandomForestClassifier, Imputer]
-    ) == {
-        "Imputer": [Imputer, "X", "y"],
-        "Random Forest Classifier": [
-            RandomForestClassifier,
-            "Imputer.x",
-            "y",
-        ],
-        "Imputer_2": [Imputer, "Random Forest Classifier.x", "y"],
-    }
-
-
-def test_make_component_dict_from_component_list_with_duplicate_names():
-    assert _make_component_dict_from_component_list(
-        [RandomForestClassifier, RandomForestClassifier]
-    ) == {
-        "Random Forest Classifier": [RandomForestClassifier, "X", "y"],
-        "Random Forest Classifier_1": [
-            RandomForestClassifier,
-            "Random Forest Classifier.x",
-            "y",
-        ],
-    }
-    assert _make_component_dict_from_component_list(
-        [Imputer, Imputer, RandomForestClassifier]
-    ) == {
-        "Imputer": [Imputer, "X", "y"],
-        "Imputer_1": [Imputer, "Imputer.x", "y"],
-        "Random Forest Classifier": [
-            RandomForestClassifier,
-            "Imputer_1.x",
-            "y",
-        ],
-    }
-    assert _make_component_dict_from_component_list(
-        [TargetImputer, TargetImputer, RandomForestClassifier]
-    ) == {
-        "Target Imputer": [TargetImputer, "X", "y"],
-        "Target Imputer_1": [TargetImputer, "X", "Target Imputer.y"],
-        "Random Forest Classifier": [
-            RandomForestClassifier,
-            "X",
-            "Target Imputer_1.y",
-        ],
-    }
-    assert _make_component_dict_from_component_list(
-        [Undersampler, Undersampler, RandomForestClassifier]
-    ) == {
-        "Undersampler": [Undersampler, "X", "y"],
-        "Undersampler_1": [Undersampler, "Undersampler.x", "Undersampler.y"],
-        "Random Forest Classifier": [
-            RandomForestClassifier,
-            "Undersampler_1.x",
-            "Undersampler_1.y",
-        ],
-    }
-
-
-@pytest.mark.parametrize("value", [None, pd.NA, "", "empty"])
-def test_make_pipelines_natural_language(value):
-    X = pd.DataFrame(
-        {
-            "col": [
-                "Natural language values",
-                "Some value here",
-                "another value for nlp",
-                value,
-            ]
-        }
-    )
-    y = pd.Series([0, 1, 1, 0])
-    X.ww.init(logical_types={"col": "NaturalLanguage"})
-    p = make_pipeline(X, y, estimator=RandomForestClassifier, problem_type="binary")
-    assert p.get_component("Imputer")
-    assert p.get_component("Text Featurization Component")

@@ -240,30 +240,13 @@ def test_order_x_and_y():
     assert component_graph.compute_order == ["Imputer", "OHE", "Random Forest"]
 
 
-def test_from_list():
+def test_list_raises_error():
     component_list = ["Imputer", "One Hot Encoder", RandomForestClassifier]
-
-    component_graph = ComponentGraph.from_list(component_list)
-
-    assert len(component_graph.component_dict) == 3
-    assert component_graph.get_component("Imputer") == Imputer
-    assert component_graph.get_component("One Hot Encoder") == OneHotEncoder
-    assert (
-        component_graph.get_component("Random Forest Classifier")
-        == RandomForestClassifier
-    )
-
-    expected_order = ["Imputer", "One Hot Encoder", "Random Forest Classifier"]
-    assert component_graph.compute_order == expected_order
-    assert component_graph.component_dict == {
-        "Imputer": [Imputer],
-        "One Hot Encoder": [OneHotEncoder, "Imputer.x"],
-        "Random Forest Classifier": [RandomForestClassifier, "One Hot Encoder.x"],
-    }
-
-    bad_component_list = ["Imputer", "Fake Estimator"]
-    with pytest.raises(MissingComponentError, match="was not found"):
-        ComponentGraph.from_list(bad_component_list)
+    with pytest.raises(
+        ValueError,
+        match="component_dict must be a dictionary which specifies the components and edges between components",
+    ):
+        ComponentGraph(component_list)
 
 
 def test_from_list_repeat_component():

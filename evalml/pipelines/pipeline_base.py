@@ -3,7 +3,6 @@ import inspect
 import os
 import sys
 import traceback
-import warnings
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
@@ -68,14 +67,18 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_seed = random_seed
 
         if isinstance(component_graph, list):  # Backwards compatibility
-            with warnings.catch_warnings():
-                warnings.filterwarnings(
-                    "ignore",
-                    message="ComponentGraph.from_list will be deprecated in the next release. Please use a dictionary to specify your graph instead.",
-                )
-                self.component_graph = ComponentGraph().from_list(
-                    component_graph, random_seed=self.random_seed
-                )
+            for component in component_graph:
+                component = handle_component_class(component)
+                if not component._supported_by_list_API:
+                    raise ValueError(
+                        f"{component.name} cannot be defined in a list because edges may be ambiguous. Please use a dictionary to specify the appropriate component graph for this pipeline instead."
+                    )
+            self.component_graph = ComponentGraph(
+                component_dict=PipelineBase._make_component_dict_from_component_list(
+                    component_graph
+                ),
+                random_seed=self.random_seed,
+            )
         elif isinstance(component_graph, dict):
             self.component_graph = ComponentGraph(
                 component_dict=component_graph, random_seed=self.random_seed
@@ -84,6 +87,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             self.component_graph = ComponentGraph(
                 component_dict=component_graph.component_dict,
                 random_seed=self.random_seed,
+            )
+        else:
+            raise ValueError(
+                "component_graph must be a list, dict, or ComponentGraph object"
             )
         self.component_graph.instantiate(parameters)
 
@@ -149,6 +156,34 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def linearized_component_graph(self):
         """A component graph in list form. Note that this is not guaranteed to be in proper component computation order"""
         return ComponentGraph.linearized_component_graph(self.component_graph)
+
+    @staticmethod
+    def _make_component_dict_from_component_list(component_list):
+        """Generates a component dictionary from a list of components."""
+        components_with_names = []
+        seen = set()
+        for idx, component in enumerate(component_list):
+            component_class = handle_component_class(component)
+            component_name = component_class.name
+            if component_name in seen:
+                component_name = f"{component_name}_{idx}"
+            seen.add(component_name)
+            components_with_names.append((component_name, component_class))
+
+        component_dict = {}
+        most_recent_target = "y"
+        most_recent_features = "X"
+        for component_name, component_class in components_with_names:
+            component_dict[component_name] = [
+                component_class,
+                most_recent_features,
+                most_recent_target,
+            ]
+            if component_class.modifies_target:
+                most_recent_target = f"{component_name}.y"
+            if component_class.modifies_features:
+                most_recent_features = f"{component_name}.x"
+        return component_dict
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
