@@ -79,6 +79,7 @@ def test_init_with_invalid_type_raises_error(pipeline_class):
     ],
 )
 def test_init_list_with_component_that_is_not_supported_by_list_API(pipeline_class):
+    assert not TargetImputer._supported_by_list_API
     with pytest.raises(
         ValueError,
         match="This component cannot be defined in a list because edges may be ambiguous",
