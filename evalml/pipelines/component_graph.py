@@ -416,13 +416,13 @@ class ComponentGraph:
         ]
 
     def get_inputs(self, component_name):
-        """Finds all of the inputs for a given component, including the names of all parent nodes of the given component
+        """Retrieves all inputs for a given component.
 
         Arguments:
-            component_name (str): Name of the child component to look up
+            component_name (str): Name of the component to look up.
 
         Returns:
-            list[str]: List of inputs to use
+            list[str]: List of inputs for the component to use.
         """
         try:
             component_info = self.component_dict[component_name]

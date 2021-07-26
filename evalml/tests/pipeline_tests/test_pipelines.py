@@ -2299,7 +2299,7 @@ def test_get_hyperparameter_ranges():
         "Random Forest Classifier": {"n_estimators": Integer(150, 160)},
     }
 
-    algo_ranges = {
+    expected_ranges = {
         "Imputer": {
             "categorical_impute_strategy": ["most_frequent"],
             "numeric_impute_strategy": Categorical(
@@ -2313,9 +2313,8 @@ def test_get_hyperparameter_ranges():
             "max_depth": Integer(low=1, high=10, prior="uniform", transform="identity"),
         },
     }
-    hyper_ranges = pipeline.get_hyperparameter_ranges(custom_hyperparameters)
-
-    assert algo_ranges == hyper_ranges
+    hyperparameter_ranges = pipeline.get_hyperparameter_ranges(custom_hyperparameters)
+    assert expected_ranges == hyperparameter_ranges
 
 
 def test_make_component_dict_from_component_list():
