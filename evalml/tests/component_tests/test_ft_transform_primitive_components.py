@@ -5,14 +5,11 @@ import woodwork as ww
 from evalml.pipelines.components import EmailFeaturizer, URLFeaturizer
 
 
-def test_url_featurizer_init():
-    url = URLFeaturizer()
-    assert url.parameters == {}
-
-
-def test_email_featurizer_init():
-    email = EmailFeaturizer()
-    assert email.parameters == {}
+@pytest.mark.parametrize(
+    "component_class,params", [(URLFeaturizer, {}), (EmailFeaturizer, {})]
+)
+def test_init(component_class, params):
+    assert component_class().parameters == params
 
 
 def make_data_email_fit_transform(df_with_url_and_email):

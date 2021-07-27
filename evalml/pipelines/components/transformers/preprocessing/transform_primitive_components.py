@@ -12,7 +12,6 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
     """{}"""
 
     def __init__(self, random_seed=0, **kwargs):
-        self._primitives_provenance = {}
         self._columns = None
         self._features = None
         super().__init__(random_seed=random_seed, **kwargs)
@@ -40,7 +39,6 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
         # featuretools expects str-type column names
         X_to_transform.rename(columns=str, inplace=True)
         ft_variable_types = self._get_feature_types_for_featuretools(X)
-        # all_email_variable_types =
         es = ft.EntitySet()
         es.entity_from_dataframe(
             entity_id="X",
