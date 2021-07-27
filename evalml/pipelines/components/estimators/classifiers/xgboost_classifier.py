@@ -7,11 +7,11 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils import infer_feature_types
 from evalml.utils.gen_utils import (
     _rename_column_names_to_numeric,
     import_or_raise,
 )
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class XGBoostClassifier(Estimator):
@@ -76,6 +76,7 @@ class XGBoostClassifier(Estimator):
             "min_child_weight": min_child_weight,
             "n_estimators": n_estimators,
             "n_jobs": n_jobs,
+            "use_label_encoder": False,
         }
         parameters.update(kwargs)
         xgb_error_msg = (
@@ -84,7 +85,7 @@ class XGBoostClassifier(Estimator):
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         self._label_encoder = None
         xgb_classifier = xgb.XGBClassifier(
-            random_state=random_seed, use_label_encoder=False, **parameters
+            random_state=random_seed, **parameters
         )
         super().__init__(
             parameters=parameters, component_obj=xgb_classifier, random_seed=random_seed
