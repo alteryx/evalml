@@ -351,7 +351,11 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
     def _transform_parameters(self, pipeline, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
         parameters = {}
-        for name, component_class in pipeline.linearized_component_graph:
+        for (
+            name,
+            component_instance,
+        ) in pipeline.component_graph.component_instances.items():
+            component_class = type(component_instance)
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
             # Inspects each component and adds the following parameters when needed
