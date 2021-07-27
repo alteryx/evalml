@@ -1532,7 +1532,7 @@ def test_automl_search_sampler_k_neighbors_no_error(
                 "Undersampler": {"sampling_ratio": 0.05},
                 "SMOTE Oversampler": {"sampling_ratio": 0.10},
             },
-            {"Undersampler", "SMOTE Oversampler"},
+            {"SMOTE Oversampler", "Undersampler"},
         ),
     ],
 )
