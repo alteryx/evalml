@@ -505,6 +505,7 @@ def test_automl_str_no_param_search(X_y_binary):
             "Accuracy Binary",
             "Balanced Accuracy Binary",
             "F1",
+            "Gini",
             "MCC Binary",
             "Precision",
         ],
