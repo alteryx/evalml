@@ -1888,6 +1888,7 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
     "pipeline_parameters,set_values",
     [
         ({"Logistic Regression Classifier": {"penalty": "l1"}}, {}),
+        ({"Logistic Regression": {"penalty": "l1"}}, {"Logistic Regression"}),
         (
             {"Random Forest Classifier": {"n_estimators": 10}},
             {"Random Forest Classifier"},
@@ -1909,20 +1910,6 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
     ],
 )
 def test_component_graph_instantiate_parameters(pipeline_parameters, set_values):
-    component_list = [
-        "Imputer",
-        "Standard Scaler",
-        "Logistic Regression Classifier",
-    ]
-    component_graph = ComponentGraph.from_list(component_list)
-    with warnings.catch_warnings(record=True) as w:
-        warnings.filterwarnings(
-            "always",
-            message="Parameters for components {} will not be used".format(set_values),
-        )
-        component_graph.instantiate(pipeline_parameters)
-    assert len(w) == (1 if len(set_values) else 0)
-
     graph = {
         "Imputer": ["Imputer", "x", "y"],
         "Scaler": ["Standard Scaler", "Imputer.x", "y"],
