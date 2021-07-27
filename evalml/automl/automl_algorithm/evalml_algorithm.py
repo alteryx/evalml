@@ -33,7 +33,9 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         c. run basic RF pipeline with default preprocessing pipeline
     2. Naive pipelines with feature selection
         a. future pipelines will use the selected features with a SelectedColumns transformer
+
     At this point we have a single pipeline candidate for preprocessing and feature selection
+
     3. Pipelines with preprocessing components:
         a. scan rest of estimators (our current batch 1).
     4. First ensembling run
