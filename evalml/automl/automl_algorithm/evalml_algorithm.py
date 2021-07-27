@@ -5,7 +5,6 @@ from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm
 
-from evalml.automl.utils import get_hyperparameter_ranges
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     RFClassifierSelectFromModel,
@@ -172,8 +171,8 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         return pipelines
 
     def _create_tuner(self, pipeline):
-        pipeline_hyperparameters = get_hyperparameter_ranges(
-            pipeline.component_graph, self._custom_hyperparameters
+        pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
+            self._custom_hyperparameters
         )
         self._tuners[pipeline.name] = self._tuner_class(
             pipeline_hyperparameters, random_seed=self.random_seed
