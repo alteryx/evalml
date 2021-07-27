@@ -364,9 +364,9 @@ def test_get_estimators(example_graph):
         LogisticRegressionClassifier(),
     ]
 
-    # component_graph = ComponentGraph.from_list(["Imputer", "One Hot Encoder"])
-    # component_graph.instantiate({})
-    # assert component_graph.get_estimators() == []
+    component_graph = ComponentGraph({"Imputer": ["Imputer", "X", "y"]})
+    component_graph.instantiate({})
+    assert component_graph.get_estimators() == []
 
 
 def test_parents(example_graph):
@@ -1375,6 +1375,38 @@ def test_component_graph_dataset_with_target_imputer():
     assert not pd.isnull(predictions).any()
 
 
+@patch("evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit")
+def test_component_graph_sampler_y_passes(mock_estimator_fit):
+    pytest.importorskip(
+        "imblearn.over_sampling", reason="Cannot import imblearn, skipping tests"
+    )
+    # makes sure the y value from oversampler gets passed to the estimator
+    X = pd.DataFrame({"a": [i for i in range(100)], "b": [i % 3 for i in range(100)]})
+    y = pd.Series([0] * 90 + [1] * 10)
+    component_graph = {
+        "Imputer": ["Imputer", "X", "y"],
+        "SMOTE Oversampler": ["SMOTE Oversampler", "Imputer.x", "y"],
+        "Standard Scaler": [
+            "Standard Scaler",
+            "SMOTE Oversampler.x",
+            "SMOTE Oversampler.y",
+        ],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            "Standard Scaler.x",
+            "SMOTE Oversampler.y",
+        ],
+    }
+
+    component_graph = ComponentGraph(component_graph)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    assert len(mock_estimator_fit.call_args[0][0]) == len(
+        mock_estimator_fit.call_args[0][1]
+    )
+    assert len(mock_estimator_fit.call_args[0][0]) == int(1.25 * 90)
+
+
 def test_component_graph_equality(example_graph):
     different_graph = {
         "Target Imputer": [TargetImputer, "X", "y"],
@@ -1719,114 +1751,6 @@ def test_component_graph_inverse_transform(
     answer = component_graph.inverse_transform(predictions)
     expected = answer_func(predictions)
     pd.testing.assert_series_equal(answer, expected)
-
-
-# lists = [
-# (
-#     [DoubleTransform, LogTransform, "Imputer", "Linear Regressor"],
-#     ComponentGraph(
-#         {
-#             "Imputer": [Imputer],
-#             "Double Transform": [DoubleTransform],
-#             "Log Transform": [LogTransform, "Double Transform.y"],
-#             "Linear Regressor": [LinearRegressor, "Imputer.x", "Log Transform.y"],
-#         }
-#     ),
-# ),
-# (
-#     [DoubleTransform, "Imputer", "Linear Regressor"],
-#     ComponentGraph(
-#         {
-#             "Imputer": [Imputer],
-#             "Double Transform": [DoubleTransform],
-#             "Linear Regressor": [
-#                 LinearRegressor,
-#                 "Imputer.x",
-#                 "Double Transform.y",
-#             ],
-#         }
-#     ),
-# ),
-# (
-#     [
-#         "Imputer",
-#         DateTimeFeaturizer,
-#         DoubleTransform,
-#         LogTransform,
-#         "Linear Regressor",
-#     ],
-#     ComponentGraph(
-#         {
-#             "Imputer": [Imputer],
-#             "DateTime Featurization Component": [DateTimeFeaturizer, "Imputer.x"],
-#             "Double Transform": [DoubleTransform],
-#             "Log Transform": [LogTransform, "Double Transform.y"],
-#             "Linear Regressor": [
-#                 LinearRegressor,
-#                 "DateTime Featurization Component.x",
-#                 "Log Transform.y",
-#             ],
-#         }
-#     ),
-# ),
-# (
-#     [
-#         "Imputer",
-#         DoubleTransform,
-#         DateTimeFeaturizer,
-#         LogTransform,
-#         "Linear Regressor",
-#     ],
-#     ComponentGraph(
-#         {
-#             "Imputer": [Imputer],
-#             "DateTime Featurization Component": [DateTimeFeaturizer, "Imputer.x"],
-#             "Double Transform": [DoubleTransform],
-#             "Log Transform": [LogTransform, "Double Transform.y"],
-#             "Linear Regressor": [
-#                 LinearRegressor,
-#                 "DateTime Featurization Component.x",
-#                 "Log Transform.y",
-#             ],
-#         }
-#     ),
-# ),
-# (
-#     [
-#         "Imputer",
-#         DoubleTransform,
-#         DateTimeFeaturizer,
-#         LogTransform,
-#         Undersampler,
-#         "Linear Regressor",
-#     ],
-#     ComponentGraph(
-#         {
-#             "Imputer": [Imputer],
-#             "DateTime Featurization Component": [DateTimeFeaturizer, "Imputer.x"],
-#             "Double Transform": [DoubleTransform],
-#             "Log Transform": [LogTransform, "Double Transform.y"],
-#             "Undersampler": [
-#                 Undersampler,
-#                 "DateTime Featurization Component.x",
-#                 "Log Transform.y",
-#             ],
-#             "Linear Regressor": [
-#                 LinearRegressor,
-#                 "Undersampler.x",
-#                 "Undersampler.y",
-#             ],
-#         }
-#     ),
-# ),
-# ]
-
-
-# @pytest.mark.parametrize("component_list,answer", lists)
-# def test_from_list_with_target_transformers(component_list, answer):
-#     assert (
-#         ComponentGraph.from_list(component_list).component_dict == answer.component_dict
-#     )
 
 
 def test_final_component_features_does_not_have_target():
