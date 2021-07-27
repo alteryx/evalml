@@ -57,34 +57,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     problem_type = None
     """None"""
 
-    @staticmethod
-    def _make_component_dict_from_component_list(component_list):
-        """Generates a component dictionary from a list of components."""
-        components_with_names = []
-        seen = set()
-        for idx, component in enumerate(component_list):
-            component_class = handle_component_class(component)
-            component_name = component_class.name
-            if component_name in seen:
-                component_name = f"{component_name}_{idx}"
-            seen.add(component_name)
-            components_with_names.append((component_name, component_class))
-
-        component_dict = {}
-        most_recent_target = "y"
-        most_recent_features = "X"
-        for component_name, component_class in components_with_names:
-            component_dict[component_name] = [
-                component_class,
-                most_recent_features,
-                most_recent_target,
-            ]
-            if component_class.modifies_target:
-                most_recent_target = f"{component_name}.y"
-            if component_class.modifies_features:
-                most_recent_features = f"{component_name}.x"
-        return component_dict
-
     def __init__(
         self,
         component_graph,
@@ -146,6 +118,34 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         self._custom_name = custom_name
 
+    @staticmethod
+    def _make_component_dict_from_component_list(component_list):
+        """Generates a component dictionary from a list of components."""
+        components_with_names = []
+        seen = set()
+        for idx, component in enumerate(component_list):
+            component_class = handle_component_class(component)
+            component_name = component_class.name
+            if component_name in seen:
+                component_name = f"{component_name}_{idx}"
+            seen.add(component_name)
+            components_with_names.append((component_name, component_class))
+
+        component_dict = {}
+        most_recent_target = "y"
+        most_recent_features = "X"
+        for component_name, component_class in components_with_names:
+            component_dict[component_name] = [
+                component_class,
+                most_recent_features,
+                most_recent_target,
+            ]
+            if component_class.modifies_target:
+                most_recent_target = f"{component_name}.y"
+            if component_class.modifies_features:
+                most_recent_features = f"{component_name}.x"
+        return component_dict
+
     @property
     def custom_name(self):
         """Custom name of the pipeline."""
@@ -179,35 +179,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             return summary
         component_names = [component_class.name for component_class in component_graph]
         return "{} w/ {}".format(summary, " + ".join(component_names))
-
-    def _make_component_graph_from_list(self, component_list, random_seed=0):
-        component_list_to_use = []
-        for component in component_list:
-            component_class = handle_component_class(component)
-            component_list_to_use.append(component_class)
-        return self._make_component_dict_from_component_list(component_list_to_use)
-
-    def get_hyperparameter_ranges(self, custom_hyperparameters):
-        """
-        Returns hyperparameter ranges from all components as a dictionary.
-
-        Arguments:
-            component_graph (list(str, ComponentBase)): The component_graph of the pipeline.
-            custom_hyperparameters (dict): The custom hyperparameters to be passed to the pipeline.
-
-        Returns:
-            dict: Dictionary of hyperparameter ranges for each component in the component graph.
-        """
-        hyperparameter_ranges = dict()
-        for (
-            component_name,
-            component_class,
-        ) in self.component_graph.component_instances.items():
-            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
-            if custom_hyperparameters and component_name in custom_hyperparameters:
-                component_hyperparameters.update(custom_hyperparameters[component_name])
-            hyperparameter_ranges[component_name] = component_hyperparameters
-        return hyperparameter_ranges
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
@@ -746,3 +717,25 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             y (pd.Series): Final component features
         """
         return self.component_graph.inverse_transform(y)
+
+    def get_hyperparameter_ranges(self, custom_hyperparameters):
+        """
+        Returns hyperparameter ranges from all components as a dictionary.
+
+        Arguments:
+            component_graph (list(str, ComponentBase)): The component_graph of the pipeline.
+            custom_hyperparameters (dict): The custom hyperparameters to be passed to the pipeline.
+
+        Returns:
+            dict: Dictionary of hyperparameter ranges for each component in the component graph.
+        """
+        hyperparameter_ranges = dict()
+        for (
+            component_name,
+            component_class,
+        ) in self.component_graph.component_instances.items():
+            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
+            if custom_hyperparameters and component_name in custom_hyperparameters:
+                component_hyperparameters.update(custom_hyperparameters[component_name])
+            hyperparameter_ranges[component_name] = component_hyperparameters
+        return hyperparameter_ranges
