@@ -110,7 +110,9 @@ class HighlyNullDataCheck(DataCheck):
         results["warnings"].extend(
             [
                 DataCheckWarning(
-                    message=warning_msg.format(col_name, self.pct_null_col_threshold * 100),
+                    message=warning_msg.format(
+                        col_name, self.pct_null_col_threshold * 100
+                    ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
                     details={
