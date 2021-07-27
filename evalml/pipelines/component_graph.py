@@ -31,6 +31,10 @@ class ComponentGraph:
     def __init__(self, component_dict=None, random_seed=0):
         self.random_seed = random_seed
         self.component_dict = component_dict or {}
+        if not isinstance(self.component_dict, dict):
+            raise ValueError(
+                "component_dict must be a dictionary which specifies the components and edges between components"
+            )
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
@@ -253,7 +257,7 @@ class ComponentGraph:
 
         parent_inputs = [
             parent_input
-            for parent_input in self.get_parents(self.compute_order[-1])
+            for parent_input in self.get_inputs(self.compute_order[-1])
             if parent_input[-2:] != ".y"
         ]
         for parent in parent_inputs:
@@ -320,7 +324,7 @@ class ComponentGraph:
             x_inputs = []
             y_input = None
 
-            for parent_input in self.get_parents(component_name):
+            for parent_input in self.get_inputs(component_name):
                 if parent_input[-2:] == ".y" or parent_input == "y":
                     if y_input is not None:
                         raise ValueError(
@@ -499,14 +503,14 @@ class ComponentGraph:
             if isinstance(component_class, Estimator)
         ]
 
-    def get_parents(self, component_name):
-        """Finds all of the inputs for a given component, including the names of all parent nodes of the given component
+    def get_inputs(self, component_name):
+        """Retrieves all inputs for a given component.
 
         Arguments:
-            component_name (str): Name of the child component to look up
+            component_name (str): Name of the component to look up.
 
         Returns:
-            list[str]: List of inputs to use
+            list[str]: List of inputs for the component to use.
         """
         try:
             component_info = self.component_dict[component_name]
@@ -663,7 +667,7 @@ class ComponentGraph:
 
     def _get_parent_y(self, component_name):
         """Helper for inverse_transform method."""
-        parents = self.get_parents(component_name)
+        parents = self.get_inputs(component_name)
         return next(iter(p[:-2] for p in parents if ".y" in p), None)
 
     def inverse_transform(self, y):
