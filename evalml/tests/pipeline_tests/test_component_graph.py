@@ -2128,3 +2128,61 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
     assert_series_equal(mock_fit_transform.call_args[0][1], y)
     # Check that we use "Log.y" for RF
     assert_series_equal(mock_fit.call_args[0][1], infer_feature_types(np.log(y)))
+
+
+@pytest.mark.parametrize(
+    "pipeline_parameters,set_values",
+    [
+        ({"Logistic Regression Classifier": {"penalty": "l1"}}, {}),
+        (
+            {"Random Forest Classifier": {"n_estimators": 10}},
+            {"Random Forest Classifier"},
+        ),
+        (
+            {
+                "Imputer": {"numeric_impute_strategy": "mean"},
+                "Random Forest Classifier": {"n_estimators": 10},
+            },
+            {"Random Forest Classifier"},
+        ),
+        (
+            {
+                "Undersampler": {"sampling_ratio": 0.05},
+                "Random Forest Classifier": {"n_estimators": 10},
+            },
+            {"Random Forest Classifier", "Undersampler"},
+        ),
+    ],
+)
+def test_component_graph_instantiate_parameters(pipeline_parameters, set_values):
+    component_list = [
+        "Imputer",
+        "Standard Scaler",
+        "Logistic Regression Classifier",
+    ]
+    component_graph = ComponentGraph.from_list(component_list)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.filterwarnings(
+            "always",
+            message="Parameters for components {} will not be used".format(set_values),
+        )
+        component_graph.instantiate(pipeline_parameters)
+    assert len(w) == (1 if len(set_values) else 0)
+
+    graph = {
+        "Imputer": ["Imputer", "x", "y"],
+        "Scaler": ["Standard Scaler", "Imputer.x", "y"],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            "Scaler.x",
+            "Scaler.y",
+        ],
+    }
+    component_graph = ComponentGraph(graph)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.filterwarnings(
+            "always",
+            message="Parameters for components {} will not be used".format(set_values),
+        )
+        component_graph.instantiate(pipeline_parameters)
+    assert len(w) == (1 if len(set_values) else 0)

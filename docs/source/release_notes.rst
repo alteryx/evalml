@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Issue a warning to users when a pipeline parameter passed in isn't used in the pipeline :pr:``
     * Fixes
     * Changes
         * Removed ``ComponentGraph.from_list`` and update PipelineBase implementation for creating pipelines from a list of components :pr:`2549`

@@ -176,8 +176,16 @@ class ComponentGraph:
             raise ValueError(
                 f"Cannot reinstantiate a component graph that was previously instantiated"
             )
-
         parameters = parameters or {}
+        param_set = set(s for s in parameters.keys() if s not in ["pipeline"])
+        diff = param_set.difference(set(self.component_instances.keys()))
+        if len(diff):
+            warnings.warn(
+                "Parameters for components {} will not be used to instantiate the pipeline since they don't appear in the pipeline".format(
+                    diff
+                ),
+                UserWarning,
+            )
         self._is_instantiated = True
         component_instances = {}
         for component_name, component_class in self.component_instances.items():

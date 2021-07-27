@@ -1,5 +1,6 @@
 import copy
 import pickle
+import re
 import sys
 import time
 import traceback
@@ -466,11 +467,11 @@ class AutoMLSearch:
                     self.sampler_method,
                     self.sampler_balanced_ratio,
                 )
-            if self._sampler_name not in parameters:
+            if self._sampler_name not in parameters and self._sampler_name is not None:
                 parameters[self._sampler_name] = {
                     "sampling_ratio": self.sampler_balanced_ratio
                 }
-            else:
+            elif self._sampler_name is not None:
                 parameters[self._sampler_name].update(
                     {"sampling_ratio": self.sampler_balanced_ratio}
                 )
@@ -505,24 +506,32 @@ class AutoMLSearch:
                     logger.info(
                         f"Removing columns {unknown_columns} because they are of 'Unknown' type"
                     )
-            self.allowed_pipelines = [
-                make_pipeline(
-                    self.X_train,
-                    self.y_train,
-                    estimator,
-                    self.problem_type,
-                    parameters=parameters,
-                    sampler_name=self._sampler_name,
-                )
-                for estimator in allowed_estimators
-            ]
+
+            with warnings.catch_warnings(record=True) as w:
+                warnings.filterwarnings("always", message="Parameters for components")
+                self.allowed_pipelines = [
+                    make_pipeline(
+                        self.X_train,
+                        self.y_train,
+                        estimator,
+                        self.problem_type,
+                        parameters=parameters,
+                        sampler_name=self._sampler_name,
+                    )
+                    for estimator in allowed_estimators
+                ]
+            self._catch_warnings(w)
         else:
-            self.allowed_pipelines = get_pipelines_from_component_graphs(
-                self.allowed_component_graphs,
-                self.problem_type,
-                parameters,
-                self.random_seed,
-            )
+
+            with warnings.catch_warnings(record=True) as w:
+                warnings.filterwarnings("always", message="Parameters for components")
+                self.allowed_pipelines = get_pipelines_from_component_graphs(
+                    self.allowed_component_graphs,
+                    self.problem_type,
+                    parameters,
+                    self.random_seed,
+                )
+            self._catch_warnings(w)
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
@@ -626,6 +635,27 @@ class AutoMLSearch:
             pipeline_params=parameters,
             custom_hyperparameters=custom_hyperparameters,
         )
+
+    def _catch_warnings(self, warning_list):
+        if len(warning_list) == len(self.allowed_pipelines) and len(warning_list) > 0:
+            # we find the value(s) that we must throw the warning for
+            final_message = ""
+            for idx, msg in enumerate(warning_list):
+                if idx == 0:
+                    val = re.search(r"\{(.*?)\}", str(msg.message))
+                    params = set(val.group(1).split(", "))
+                    final_message = str(msg.message)
+                else:
+                    params = params.intersection(
+                        set(
+                            re.search(r"\{(.*?)\}", str(msg.message))
+                            .group(1)
+                            .split(", ")
+                        )
+                    )
+            warnings.warn(
+                final_message.replace(val.group(0), str(params).replace('"', ""))
+            )
 
     def _get_batch_number(self):
         batch_number = 1
