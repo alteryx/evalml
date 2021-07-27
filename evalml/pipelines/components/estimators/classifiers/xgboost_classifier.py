@@ -84,9 +84,7 @@ class XGBoostClassifier(Estimator):
         )
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
         self._label_encoder = None
-        xgb_classifier = xgb.XGBClassifier(
-            random_state=random_seed, **parameters
-        )
+        xgb_classifier = xgb.XGBClassifier(random_state=random_seed, **parameters)
         super().__init__(
             parameters=parameters, component_obj=xgb_classifier, random_seed=random_seed
         )
