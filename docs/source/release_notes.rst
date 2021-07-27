@@ -9,6 +9,7 @@ Release Notes
         * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
         * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
         * Removed ``ComponentGraph.linearized_component_graph`` and ``ComponentGraph.from_list`` :pr:`2556`
+        * Updated ``ComponentGraph`` to enforce requiring `.x` and `.y` inputs for each component in the graph :pr:`2563`
     * Documentation Changes
     * Testing Changes
 
@@ -18,6 +19,7 @@ Release Notes
         * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
         * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
         * Removed ``ComponentGraph.linearized_component_graph`` and ``ComponentGraph.from_list`` :pr:`2556`
+        * Updated ``ComponentGraph`` to enforce requiring `.x` and `.y` inputs for each component in the graph :pr:`2563`
 
 
 **v0.29.0 Jul. 21, 2021**
@@ -41,8 +43,6 @@ Release Notes
     * Changes
         * Updated XGBoost dependency to ``>=1.4.2`` :pr:`2484`, :pr:`2498`
         * Added a ``DeprecationWarning`` about deprecating the list API for ``ComponentGraph`` :pr:`2488`
-        * Deprecated the list API for ``ComponentGraph`` :pr:`2490`
-        * Updated ``make_pipeline`` for AutoML to create dictionaries, not lists, to initialize pipelines :pr:`2504`
         * No longer installing graphviz on windows in our CI pipelines because release 0.17 breaks windows 3.7 :pr:`2516`
         * Updated ``make_pipeline`` for AutoML to create dictionaries, not lists, to initialize pipelines :pr:`2504`
     * Documentation Changes
