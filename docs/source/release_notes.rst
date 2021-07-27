@@ -3,6 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
         * Added Gini coefficient as an objective :pr:`2544`
+        * Added ``repr`` to ``ComponentGraph`` :pr:`2565`
     * Fixes
     * Changes
         * Updated ``PipelineBase`` implementation for creating pipelines from a list of components :pr:`2549`
