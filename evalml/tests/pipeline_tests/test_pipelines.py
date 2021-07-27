@@ -7,6 +7,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
+from skopt.space import Categorical, Integer
 
 from evalml.exceptions import (
     MissingComponentError,
@@ -28,15 +29,20 @@ from evalml.pipelines import (
     PipelineBase,
     RegressionPipeline,
 )
+from evalml.pipelines.component_graph import ComponentGraph
 from evalml.pipelines.components import (
+    DropNullColumns,
     ElasticNetClassifier,
     Imputer,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
+    RandomForestRegressor,
     RFClassifierSelectFromModel,
     StandardScaler,
+    TargetImputer,
     Transformer,
+    Undersampler,
 )
 from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,
@@ -49,6 +55,39 @@ from evalml.problem_types import (
     is_multiclass,
     is_time_series,
 )
+
+
+@pytest.mark.parametrize(
+    "pipeline_class",
+    [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+        RegressionPipeline,
+    ],
+)
+def test_init_with_invalid_type_raises_error(pipeline_class):
+    with pytest.raises(
+        ValueError,
+        match="component_graph must be a list, dict, or ComponentGraph object",
+    ):
+        pipeline_class(component_graph="this is not a valid component graph")
+
+
+@pytest.mark.parametrize(
+    "pipeline_class",
+    [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+        RegressionPipeline,
+    ],
+)
+def test_init_list_with_component_that_is_not_supported_by_list_API(pipeline_class):
+    assert not TargetImputer._supported_by_list_API
+    with pytest.raises(
+        ValueError,
+        match=f"{TargetImputer.name} cannot be defined in a list because edges may be ambiguous",
+    ):
+        pipeline_class(component_graph=["Target Imputer"])
 
 
 def test_allowed_model_families(has_minimal_dependencies):
@@ -1800,9 +1839,9 @@ def test_pipeline_repr(pipeline_class):
     component_graph = ["Imputer", final_estimator]
     component_graph_str = ""
     if pipeline_class == RegressionPipeline:
-        component_graph_str = f"{{'Imputer': ['Imputer'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x']}}"
+        component_graph_str = f"{{'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}}"
     else:
-        component_graph_str = f"{{'Imputer': ['Imputer'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x']}}"
+        component_graph_str = f"{{'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x', 'y']}}"
 
     pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
     expected_repr = (
@@ -1874,18 +1913,14 @@ def test_nonlinear_pipeline_repr(pipeline_class):
 
     custom_name = "Mock Pipeline"
     component_graph = {
-        "Imputer": ["Imputer"],
-        "OHE_1": ["One Hot Encoder", "Imputer"],
-        "OHE_2": ["One Hot Encoder", "Imputer"],
-        "Estimator": [final_estimator, "OHE_1", "OHE_2"],
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE_1": ["One Hot Encoder", "Imputer.x", "y"],
+        "OHE_2": ["One Hot Encoder", "Imputer.x", "y"],
+        "Estimator": [final_estimator, "OHE_1.x", "OHE_2.x", "y"],
     }
 
     pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
-    component_graph_str = ""
-    if pipeline_class == RegressionPipeline:
-        component_graph_str = "{'Imputer': ['Imputer'], 'OHE_1': ['One Hot Encoder', 'Imputer'], 'OHE_2': ['One Hot Encoder', 'Imputer'], 'Estimator': ['Random Forest Regressor', 'OHE_1', 'OHE_2']}"
-    else:
-        component_graph_str = "{'Imputer': ['Imputer'], 'OHE_1': ['One Hot Encoder', 'Imputer'], 'OHE_2': ['One Hot Encoder', 'Imputer'], 'Estimator': ['Random Forest Classifier', 'OHE_1', 'OHE_2']}"
+    component_graph_str = f"{{'Imputer': ['Imputer', 'X', 'y'], 'OHE_1': ['One Hot Encoder', 'Imputer.x', 'y'], 'OHE_2': ['One Hot Encoder', 'Imputer.x', 'y'], 'Estimator': ['{final_estimator}', 'OHE_1.x', 'OHE_2.x', 'y']}}"
     expected_repr = (
         f"pipeline = {pipeline_class.__name__}(component_graph={component_graph_str}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
@@ -2219,7 +2254,15 @@ def test_undersampler_component_in_pipeline_fit(mock_fit):
     X = pd.DataFrame({"a": [i for i in range(1000)], "b": [i % 3 for i in range(1000)]})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(
-        ["Imputer", "Undersampler", "Logistic Regression Classifier"]
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Undersampler": ["Undersampler", "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Undersampler.x",
+                "Undersampler.y",
+            ],
+        }
     )
     pipeline.fit(X, y)
     # make sure we undersample to 500 values in the X and y
@@ -2236,7 +2279,15 @@ def test_undersampler_component_in_pipeline_predict():
     X = pd.DataFrame({"a": [i for i in range(1000)], "b": [i % 3 for i in range(1000)]})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(
-        ["Imputer", "Undersampler", "Logistic Regression Classifier"]
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Undersampler": ["Undersampler", "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Undersampler.x",
+                "Undersampler.y",
+            ],
+        }
     )
     pipeline.fit(X, y)
     preds = pipeline.predict(X)
@@ -2265,7 +2316,15 @@ def test_oversampler_component_in_pipeline_fit(mock_fit, oversampler):
     X.ww.init(logical_types={"c": "Categorical"})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(
-        ["Imputer", oversampler, "Logistic Regression Classifier"]
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            oversampler: [oversampler, "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                f"{oversampler}.x",
+                f"{oversampler}.y",
+            ],
+        }
     )
     pipeline.fit(X, y)
     # make sure we oversample 0 to 225 values values in the X and y
@@ -2296,10 +2355,265 @@ def test_oversampler_component_in_pipeline_predict(oversampler):
     X.ww.init(logical_types={"c": "Categorical"})
     y = pd.Series([0] * 100 + [1] * 900)
     pipeline = BinaryClassificationPipeline(
-        ["Imputer", oversampler, "Logistic Regression Classifier"]
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            oversampler: [oversampler, "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                f"{oversampler}.x",
+                f"{oversampler}.y",
+            ],
+        }
     )
     pipeline.fit(X, y)
     preds = pipeline.predict(X)
     assert len(preds) == 1000
     preds = pipeline.predict_proba(X)
     assert len(preds) == 1000
+
+
+@pytest.mark.parametrize(
+    "pipeline_class",
+    [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+        RegressionPipeline,
+    ],
+)
+def test_pipeline_init_from_component_list(pipeline_class):
+    if pipeline_class in [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+    ]:
+        estimator = "Random Forest Classifier"
+        estimator_class = RandomForestClassifier
+    else:
+        estimator = "Random Forest Regressor"
+        estimator_class = RandomForestRegressor
+
+    assert pipeline_class([estimator]).component_graph == ComponentGraph(
+        {estimator: [estimator_class, "X", "y"]}
+    )
+    assert pipeline_class([Imputer]).component_graph == ComponentGraph(
+        {"Imputer": [Imputer, "X", "y"]}
+    )
+    assert pipeline_class(
+        [Imputer, OneHotEncoder, DropNullColumns]
+    ).component_graph == ComponentGraph(
+        {
+            "Imputer": [Imputer, "X", "y"],
+            "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+            "Drop Null Columns Transformer": [
+                DropNullColumns,
+                "One Hot Encoder.x",
+                "y",
+            ],
+        }
+    )
+
+    # Test with component after estimator
+    assert pipeline_class(
+        [Imputer, estimator, Imputer]
+    ).component_graph == ComponentGraph(
+        {
+            "Imputer": [Imputer, "X", "y"],
+            estimator: [
+                estimator_class,
+                "Imputer.x",
+                "y",
+            ],
+            "Imputer_2": [Imputer, f"{estimator}.x", "y"],
+        }
+    )
+
+
+@pytest.mark.parametrize(
+    "pipeline_class",
+    [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+        RegressionPipeline,
+    ],
+)
+def test_pipeline_init_from_component_list_with_duplicate_components(pipeline_class):
+    if pipeline_class in [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+    ]:
+        estimator = "Random Forest Classifier"
+        estimator_class = RandomForestClassifier
+    else:
+        estimator = "Random Forest Regressor"
+        estimator_class = RandomForestRegressor
+
+    assert pipeline_class([estimator, estimator]).component_graph == ComponentGraph(
+        {
+            estimator: [estimator_class, "X", "y"],
+            f"{estimator}_1": [
+                estimator_class,
+                f"{estimator}.x",
+                "y",
+            ],
+        }
+    )
+    assert pipeline_class(
+        [Imputer, Imputer, estimator_class]
+    ).component_graph == ComponentGraph(
+        {
+            "Imputer": [Imputer, "X", "y"],
+            "Imputer_1": [Imputer, "Imputer.x", "y"],
+            estimator: [
+                estimator_class,
+                "Imputer_1.x",
+                "y",
+            ],
+        }
+    )
+
+
+def test_make_component_dict_from_component_list():
+    assert PipelineBase._make_component_dict_from_component_list(
+        [RandomForestClassifier]
+    ) == {"Random Forest Classifier": [RandomForestClassifier, "X", "y"]}
+    assert PipelineBase._make_component_dict_from_component_list([Imputer]) == {
+        "Imputer": [Imputer, "X", "y"]
+    }
+    assert PipelineBase._make_component_dict_from_component_list(
+        [Imputer, OneHotEncoder, DropNullColumns]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+        "Drop Null Columns Transformer": [DropNullColumns, "One Hot Encoder.x", "y"],
+    }
+
+    # Test with component that modifies y (Target Imputer)
+    assert PipelineBase._make_component_dict_from_component_list(
+        [Imputer, OneHotEncoder, TargetImputer, RandomForestClassifier]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+        "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "One Hot Encoder.x",
+            "Target Imputer.y",
+        ],
+    }
+
+    # Test with component that modifies X and y (Undersampler)
+    assert PipelineBase._make_component_dict_from_component_list(
+        [
+            Imputer,
+            OneHotEncoder,
+            TargetImputer,
+            DropNullColumns,
+            Undersampler,
+            RandomForestClassifier,
+        ]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+        "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+        "Drop Null Columns Transformer": [
+            DropNullColumns,
+            "One Hot Encoder.x",
+            "Target Imputer.y",
+        ],
+        "Undersampler": [
+            Undersampler,
+            "Drop Null Columns Transformer.x",
+            "Target Imputer.y",
+        ],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Undersampler.x",
+            "Undersampler.y",
+        ],
+    }
+
+    # Test with component after estimator
+    assert PipelineBase._make_component_dict_from_component_list(
+        [Imputer, RandomForestClassifier, Imputer]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Imputer.x",
+            "y",
+        ],
+        "Imputer_2": [Imputer, "Random Forest Classifier.x", "y"],
+    }
+
+
+def test_make_component_dict_from_component_list_with_duplicate_names():
+    assert PipelineBase._make_component_dict_from_component_list(
+        [RandomForestClassifier, RandomForestClassifier]
+    ) == {
+        "Random Forest Classifier": [RandomForestClassifier, "X", "y"],
+        "Random Forest Classifier_1": [
+            RandomForestClassifier,
+            "Random Forest Classifier.x",
+            "y",
+        ],
+    }
+    assert PipelineBase._make_component_dict_from_component_list(
+        [Imputer, Imputer, RandomForestClassifier]
+    ) == {
+        "Imputer": [Imputer, "X", "y"],
+        "Imputer_1": [Imputer, "Imputer.x", "y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Imputer_1.x",
+            "y",
+        ],
+    }
+    assert PipelineBase._make_component_dict_from_component_list(
+        [TargetImputer, TargetImputer, RandomForestClassifier]
+    ) == {
+        "Target Imputer": [TargetImputer, "X", "y"],
+        "Target Imputer_1": [TargetImputer, "X", "Target Imputer.y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "X",
+            "Target Imputer_1.y",
+        ],
+    }
+    assert PipelineBase._make_component_dict_from_component_list(
+        [Undersampler, Undersampler, RandomForestClassifier]
+    ) == {
+        "Undersampler": [Undersampler, "X", "y"],
+        "Undersampler_1": [Undersampler, "Undersampler.x", "Undersampler.y"],
+        "Random Forest Classifier": [
+            RandomForestClassifier,
+            "Undersampler_1.x",
+            "Undersampler_1.y",
+        ],
+    }
+
+
+def test_get_hyperparameter_ranges():
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Imputer", "Random Forest Classifier"]
+    )
+    custom_hyperparameters = {
+        "One Hot Encoder": {"top_n": 3},
+        "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])},
+        "Random Forest Classifier": {"n_estimators": Integer(150, 160)},
+    }
+
+    expected_ranges = {
+        "Imputer": {
+            "categorical_impute_strategy": ["most_frequent"],
+            "numeric_impute_strategy": Categorical(
+                categories=("most_frequent", "mean"), prior=None
+            ),
+        },
+        "Random Forest Classifier": {
+            "n_estimators": Integer(
+                low=150, high=160, prior="uniform", transform="identity"
+            ),
+            "max_depth": Integer(low=1, high=10, prior="uniform", transform="identity"),
+        },
+    }
+    hyperparameter_ranges = pipeline.get_hyperparameter_ranges(custom_hyperparameters)
+    assert expected_ranges == hyperparameter_ranges
