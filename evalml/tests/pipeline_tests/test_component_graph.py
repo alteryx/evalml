@@ -1881,3 +1881,25 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
     assert_series_equal(mock_fit_transform.call_args[0][1], y)
     # Check that we use "Log.y" for RF
     assert_series_equal(mock_fit.call_args[0][1], infer_feature_types(np.log(y)))
+
+
+def test_component_graph_repr():
+    # Test with component graph defined by strings
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest Regressor": ["Random Forest Regressor", "OHE.x", "y"],
+    }
+    expected_repr = "{'Imputer': ['Imputer', 'X', 'y'], 'OHE': ['One Hot Encoder', 'Imputer.x', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'OHE.x', 'y']}"
+    component_graph = ComponentGraph(component_dict)
+    assert repr(component_graph) == expected_repr
+
+    # Test with component graph defined by strings and objects
+    component_dict_with_objs = {
+        "Imputer": [Imputer, "X", "y"],
+        "OHE": [OneHotEncoder, "Imputer.x", "y"],
+        "Random Forest Classifier": [RandomForestClassifier, "OHE.x", "y"],
+    }
+    expected_repr = "{'Imputer': ['Imputer', 'X', 'y'], 'OHE': ['One Hot Encoder', 'Imputer.x', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'OHE.x', 'y']}"
+    component_graph = ComponentGraph(component_dict_with_objs)
+    assert repr(component_graph) == expected_repr

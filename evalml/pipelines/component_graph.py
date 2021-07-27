@@ -10,12 +10,7 @@ from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import (
-    get_logger,
-    import_or_raise,
-    infer_feature_types,
-    safe_repr,
-)
+from evalml.utils import get_logger, import_or_raise, infer_feature_types
 
 logger = get_logger(__file__)
 
