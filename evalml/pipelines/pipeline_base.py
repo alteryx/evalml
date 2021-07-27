@@ -588,33 +588,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 [f"'{key}': {safe_repr(value)}" for key, value in parameters.items()]
             )
 
-        component_strs = []
-        for (
-            component_name,
-            component_info,
-        ) in self.component_graph.component_dict.items():
-            try:
-                component_key = f"'{component_name}': "
-                if isinstance(component_info[0], str):
-                    component_class = handle_component_class(component_info[0])
-                else:
-                    component_class = handle_component_class(component_info[0].name)
-                component_name = f"'{component_class.name}'"
-            except MissingComponentError:
-                # Not an EvalML component, use component class name
-                component_name = f"{component_info[0].__name__}"
-
-            component_edges_str = ""
-            if len(component_info) > 1:
-                component_edges_str = ", "
-                component_edges_str += ", ".join(
-                    [f"'{info}'" for info in component_info[1:]]
-                )
-
-            component_str = f"{component_key}[{component_name}{component_edges_str}]"
-            component_strs.append(component_str)
-        component_dict_str = f"{{{', '.join(component_strs)}}}"
-
+        component_dict_str = repr(self.component_graph)
         parameters_repr = ", ".join(
             [
                 f"'{component}':{{{repr_component(parameters)}}}"

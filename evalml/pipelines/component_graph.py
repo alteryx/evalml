@@ -4,12 +4,18 @@ import woodwork as ww
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
+from evalml.exceptions.exceptions import MissingComponentError
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import get_logger, import_or_raise, infer_feature_types
+from evalml.utils import (
+    get_logger,
+    import_or_raise,
+    infer_feature_types,
+    safe_repr,
+)
 
 logger = get_logger(__file__)
 
@@ -565,6 +571,35 @@ class ComponentGraph:
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
         return True
+
+    def __repr__(self):
+        component_strs = []
+        for (
+            component_name,
+            component_info,
+        ) in self.component_dict.items():
+            try:
+                component_key = f"'{component_name}': "
+                if isinstance(component_info[0], str):
+                    component_class = handle_component_class(component_info[0])
+                else:
+                    component_class = handle_component_class(component_info[0].name)
+                component_name = f"'{component_class.name}'"
+            except MissingComponentError:
+                # Not an EvalML component, use component class name
+                component_name = f"{component_info[0].__name__}"
+
+            component_edges_str = ""
+            if len(component_info) > 1:
+                component_edges_str = ", "
+                component_edges_str += ", ".join(
+                    [f"'{info}'" for info in component_info[1:]]
+                )
+
+            component_str = f"{component_key}[{component_name}{component_edges_str}]"
+            component_strs.append(component_str)
+        component_dict_str = f"{{{', '.join(component_strs)}}}"
+        return component_dict_str
 
     def _get_parent_y(self, component_name):
         """Helper for inverse_transform method."""
