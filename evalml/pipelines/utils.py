@@ -4,6 +4,7 @@ from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
 )
+from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 from .time_series_classification_pipelines import (
     TimeSeriesBinaryClassificationPipeline,
@@ -13,7 +14,6 @@ from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 
 from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
-from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
@@ -77,12 +77,14 @@ def _get_preprocessing_components(
         logical_types.Integer,
     }
 
-    if len(input_logical_types.intersection(types_imputer_handles)) > 0:
-        pp_components.append(Imputer)
-
     text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
     if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
+
+    if len(input_logical_types.intersection(types_imputer_handles)) or len(
+        text_columns
+    ):
+        pp_components.append(Imputer)
 
     index_and_unknown_columns = list(
         X.ww.select(["index", "unknown"], return_schema=True).columns
@@ -131,31 +133,6 @@ def _get_preprocessing_components(
         pp_components.append(StandardScaler)
 
     return pp_components
-
-
-def _make_component_dict_from_component_list(component_list):
-    """Generates a component dictionary from a list of components."""
-    seen = set()
-    component_dict = {}
-    most_recent_features = "X"
-    most_recent_target = "y"
-
-    for idx, component in enumerate(component_list):
-        component_name = component.name
-        if component_name in seen:
-            component_name = f"{component_name}_{idx}"
-        seen.add(component_name)
-
-        component_dict[component_name] = [
-            component,
-            most_recent_features,
-            most_recent_target,
-        ]
-        if component.modifies_target:
-            most_recent_target = f"{component_name}.y"
-        if component.modifies_features:
-            most_recent_features = f"{component_name}.x"
-    return component_dict
 
 
 def _get_pipeline_base_class(problem_type):
@@ -214,7 +191,9 @@ def make_pipeline(
         X, y, problem_type, estimator, sampler_name
     )
     complete_component_list = preprocessing_components + [estimator]
-    component_graph = _make_component_dict_from_component_list(complete_component_list)
+    component_graph = PipelineBase._make_component_dict_from_component_list(
+        complete_component_list
+    )
     base_class = _get_pipeline_base_class(problem_type)
     return base_class(
         component_graph,
