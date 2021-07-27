@@ -1527,13 +1527,6 @@ def test_automl_search_sampler_k_neighbors_no_error(
             },
             {"Undersampler"},
         ),
-        (
-            {
-                "Undersampler": {"sampling_ratio": 0.05},
-                "SMOTE Oversampler": {"sampling_ratio": 0.10},
-            },
-            {"SMOTE Oversampler", "Undersampler"},
-        ),
     ],
 )
 def test_time_series_pipeline_parameter_warnings(
