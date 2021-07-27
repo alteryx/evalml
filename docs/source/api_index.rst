@@ -95,8 +95,8 @@ Pipeline Base Classes
 .. autoapisummary::
 
     evalml.pipelines.PipelineBase
-    evalml.pipelines.ClassificationPipeline
-    evalml.pipelines.BinaryClassificationPipeline
+    evalml.pipelines.classification_pipeline.ClassificationPipeline
+    evalml.pipelines.binary_classification_pipeline.BinaryClassificationPipeline
     evalml.pipelines.MulticlassClassificationPipeline
     evalml.pipelines.RegressionPipeline
     evalml.pipelines.TimeSeriesClassificationPipeline

@@ -4,12 +4,18 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Removed ``ComponentGraph.from_list`` and update PipelineBase implementation for creating pipelines from a list of components :pr:`2549`
+        * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
+        * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Removed ``ComponentGraph.from_list`` and update PipelineBase implementation for creating pipelines from a list of components :pr:`2549`
+        * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
+        * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
 
 
 **v0.29.0 Jul. 21, 2021**
@@ -24,6 +30,7 @@ Release Notes
         * Updated ``ComponentGraph`` to accept X and y as inputs :pr:`2507`
         * Removed unused ``TARGET_BINARY_INVALID_VALUES`` from ``DataCheckMessageCode`` enum and fixed formatting of objective documentation :pr:`2520`
         * Added ``EvalMLAlgorithm`` :pr:`2525`
+        * Added support for `NaN` values in ``TextFeaturizer`` :pr:`2532`
     * Fixes
         * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
         * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
