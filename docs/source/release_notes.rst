@@ -3,20 +3,22 @@ Release Notes
 **Future Release**
     * Enhancements
         * Issue a warning to users when a pipeline parameter passed in isn't used in the pipeline :pr:`2564`
+        * Added Gini coefficient as an objective :pr:`2544`
     * Fixes
     * Changes
-        * Removed ``ComponentGraph.from_list`` and update PipelineBase implementation for creating pipelines from a list of components :pr:`2549`
+        * Updated ``PipelineBase`` implementation for creating pipelines from a list of components :pr:`2549`
         * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
         * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
+        * Removed ``ComponentGraph.linearized_component_graph`` and ``ComponentGraph.from_list`` :pr:`2556`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
-        * Removed ``ComponentGraph.from_list`` and update PipelineBase implementation for creating pipelines from a list of components :pr:`2549`
         * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
         * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
+        * Removed ``ComponentGraph.linearized_component_graph`` and ``ComponentGraph.from_list`` :pr:`2556`
 
 
 **v0.29.0 Jul. 21, 2021**
@@ -30,6 +32,7 @@ Release Notes
         * Updated our components with an attribute that describes if they modify features or targets and can be used in list API for pipeline initialization :pr:`2504`
         * Updated ``ComponentGraph`` to accept X and y as inputs :pr:`2507`
         * Removed unused ``TARGET_BINARY_INVALID_VALUES`` from ``DataCheckMessageCode`` enum and fixed formatting of objective documentation :pr:`2520`
+        * Added support for `NaN` values in ``TextFeaturizer`` :pr:`2532`
     * Fixes
         * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
         * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
