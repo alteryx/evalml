@@ -134,8 +134,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
         component_graph = [
-            handle_component_class(component_class)
-            for _, component_class in copy.copy(self.linearized_component_graph)
+            type(self.component_graph.component_instances[component])
+            for component in copy.copy(self.component_graph.component_instances)
         ]
         if len(component_graph) == 0:
             return "Empty Pipeline"
@@ -151,11 +151,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             return summary
         component_names = [component_class.name for component_class in component_graph]
         return "{} w/ {}".format(summary, " + ".join(component_names))
-
-    @property
-    def linearized_component_graph(self):
-        """A component graph in list form. Note that this is not guaranteed to be in proper component computation order"""
-        return ComponentGraph.linearized_component_graph(self.component_graph)
 
     @staticmethod
     def _make_component_dict_from_component_list(component_list):
