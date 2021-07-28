@@ -11,6 +11,7 @@ Release Notes
         * Removed ``ComponentGraph.linearized_component_graph`` and ``ComponentGraph.from_list`` :pr:`2556`
     * Documentation Changes
     * Testing Changes
+        * Added test that makes sure ``split_data`` does not shuffle for time series problems :pr:`2552`
 
 .. warning::
 
