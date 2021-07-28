@@ -14,8 +14,8 @@ from evalml.utils import infer_feature_types
 class TextFeaturizer(TextTransformer):
     """Transformer that can automatically featurize text columns using featuretools' nlp_primitives.
 
-    Since models cannot handle non-numeric data, any text must be broken down into features that 
-    provide useful information about that text. This component splits each text column into 
+    Since models cannot handle non-numeric data, any text must be broken down into features that
+    provide useful information about that text. This component splits each text column into
     several informative features: Diversity Score, Mean Characters per Word, Polarity Score, and
     LSA (Latent Semantic Analysis). Calling transform on this component will replace any text columns
     in the given dataset with these numeric columns.
