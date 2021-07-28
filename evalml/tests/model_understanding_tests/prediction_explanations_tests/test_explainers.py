@@ -1623,14 +1623,23 @@ def test_explain_predictions_oversampler(estimator, fraud_100):
     )
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(
-        component_graph=[
-            "Imputer",
-            "One Hot Encoder",
-            "DateTime Featurization Component",
-            "SMOTENC Oversampler",
-            estimator,
-        ]
+        component_graph={
+            "Imputer": ["Imputer", "X", "y"],
+            "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
+            "DateTime Featurization Component": [
+                "DateTime Featurization Component",
+                "One Hot Encoder.x",
+                "y",
+            ],
+            "SMOTENC Oversampler": [
+                "SMOTENC Oversampler",
+                "DateTime Featurization Component.x",
+                "y",
+            ],
+            estimator: [estimator, "SMOTENC Oversampler.x", "SMOTENC Oversampler.y"],
+        }
     )
+
     pipeline.fit(X, y)
     report = explain_predictions(
         pipeline,
@@ -1700,3 +1709,47 @@ def test_explain_predictions_unknown(indices, X_y_binary):
         )
         assert exp["feature_names"].isnull().sum() == 0
         assert exp["feature_values"].isnull().sum() == 0
+
+
+def test_explain_predictions_url_email(df_with_url_and_email):
+    X = df_with_url_and_email.ww.select(["url", "EmailAddress"])
+    y = pd.Series([0, 1, 1, 0, 1])
+
+    pl = BinaryClassificationPipeline(
+        [
+            "URL Featurizer",
+            "Email Featurizer",
+            "One Hot Encoder",
+            "Random Forest Classifier",
+        ]
+    )
+    pl.fit(X, y)
+    explanations = explain_predictions_best_worst(
+        pl, X, y, output_format="dict", num_to_explain=1, top_k_features=2
+    )
+    assert (
+        "email" in explanations["explanations"][0]["explanations"][0]["feature_names"]
+    )
+    assert "url" in explanations["explanations"][0]["explanations"][0]["feature_names"]
+    assert (
+        "email" in explanations["explanations"][1]["explanations"][0]["feature_names"]
+    )
+    assert "url" in explanations["explanations"][1]["explanations"][0]["feature_names"]
+    assert (
+        not pd.Series(
+            explanations["explanations"][0]["explanations"][0][
+                "qualitative_explanation"
+            ]
+        )
+        .isnull()
+        .any()
+    )
+    assert (
+        not pd.Series(
+            explanations["explanations"][1]["explanations"][0][
+                "qualitative_explanation"
+            ]
+        )
+        .isnull()
+        .any()
+    )

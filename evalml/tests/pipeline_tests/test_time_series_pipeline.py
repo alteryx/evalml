@@ -707,27 +707,21 @@ def test_binary_predict_pipeline_use_objective(
     mock_decision_function.assert_called()
 
 
-@pytest.mark.parametrize(
-    "component_graph",
-    [
-        {
-            "Polynomial Detrender": ["Polynomial Detrender"],
-            "DelayedFeatures": ["Delayed Feature Transformer"],
-            "Regressor": [
-                "Linear Regressor",
-                "DelayedFeatures.x",
-                "Polynomial Detrender.y",
-            ],
-        },
-        ["Polynomial Detrender", "Delayed Feature Transformer", "Linear Regressor"],
-    ],
-)
-def test_time_series_pipeline_with_detrender(component_graph, ts_data):
+def test_time_series_pipeline_with_detrender(ts_data):
     pytest.importorskip(
         "sktime",
         reason="Skipping polynomial detrending tests because sktime not installed",
     )
     X, y = ts_data
+    component_graph = {
+        "Polynomial Detrender": ["Polynomial Detrender", "X", "y"],
+        "DelayedFeatures": ["Delayed Feature Transformer", "X", "y"],
+        "Regressor": [
+            "Linear Regressor",
+            "DelayedFeatures.x",
+            "Polynomial Detrender.y",
+        ],
+    }
     pipeline = TimeSeriesRegressionPipeline(
         component_graph=component_graph,
         parameters={

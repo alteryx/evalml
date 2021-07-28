@@ -27,6 +27,7 @@ from .standard_metrics import (
     F1Macro,
     F1Micro,
     F1Weighted,
+    Gini,
     LogLossBinary,
     LogLossMulticlass,
     MaxError,
