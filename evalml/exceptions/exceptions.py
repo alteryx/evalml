@@ -90,6 +90,8 @@ class NoPositiveLabelException(Exception):
 
 
 class ParameterNotUsedWarning(UserWarning):
+    """Warning thrown when a pipeline parameter isn't used in a defined pipeline's component graph during initialization."""
+
     def __init__(self, components):
         self.components = components
 
