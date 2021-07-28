@@ -9,7 +9,7 @@ from sklearn.model_selection import StratifiedKFold
 from evalml import AutoMLSearch
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
-from evalml.exceptions import PipelineNotFoundError
+from evalml.exceptions import ParameterNotUsedWarning, PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
     FraudCost,
@@ -1543,9 +1543,8 @@ def test_time_series_pipeline_parameter_warnings(
         "delay_target": False,
         "delay_features": True,
     }
-    message = "Parameters for components {} will not be used".format(set_values)
     with warnings.catch_warnings(record=True) as w:
-        warnings.filterwarnings("always", message)
+        warnings.filterwarnings("always", category=ParameterNotUsedWarning)
         automl = AutoMLSearch(
             X_train=X,
             y_train=y,
@@ -1561,4 +1560,4 @@ def test_time_series_pipeline_parameter_warnings(
     # We throw a warning about time series being in beta
     assert len(w) == (2 if len(set_values) else 1)
     if len(w) == 2:
-        assert message in str(w[1].message)
+        assert w[1].message.components == set_values

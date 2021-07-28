@@ -1,6 +1,5 @@
 import copy
 import pickle
-import re
 import sys
 import time
 import traceback
@@ -28,6 +27,7 @@ from evalml.automl.utils import (
 from evalml.data_checks import DefaultDataChecks
 from evalml.exceptions import (
     AutoMLSearchException,
+    ParameterNotUsedWarning,
     PipelineNotFoundError,
     PipelineScoreError,
 )
@@ -508,7 +508,7 @@ class AutoMLSearch:
                     )
 
             with warnings.catch_warnings(record=True) as w:
-                warnings.filterwarnings("always", message="Parameters for components")
+                warnings.filterwarnings("always", category=ParameterNotUsedWarning)
                 self.allowed_pipelines = [
                     make_pipeline(
                         self.X_train,
@@ -524,7 +524,7 @@ class AutoMLSearch:
         else:
 
             with warnings.catch_warnings(record=True) as w:
-                warnings.filterwarnings("always", message="Parameters for components")
+                warnings.filterwarnings("always", category=ParameterNotUsedWarning)
                 self.allowed_pipelines = get_pipelines_from_component_graphs(
                     self.allowed_component_graphs,
                     self.problem_type,
@@ -639,23 +639,13 @@ class AutoMLSearch:
     def _catch_warnings(self, warning_list):
         if len(warning_list) == len(self.allowed_pipelines) and len(warning_list) > 0:
             # we find the value(s) that we must throw the warning for
-            final_message = ""
+            final_message = set([])
             for idx, msg in enumerate(warning_list):
                 if idx == 0:
-                    val = re.search(r"\{(.*?)\}", str(msg.message))
-                    params = set(val.group(1).split(", "))
-                    final_message = str(msg.message)
+                    final_message = final_message.union(msg.message.components)
                 else:
-                    params = params.intersection(
-                        set(
-                            re.search(r"\{(.*?)\}", str(msg.message))
-                            .group(1)
-                            .split(", ")
-                        )
-                    )
-            warnings.warn(
-                final_message.replace(val.group(0), str(params).replace('"', ""))
-            )
+                    final_message = final_message.intersection(msg.message.components)
+            warnings.warn(ParameterNotUsedWarning(final_message))
 
     def _get_batch_number(self):
         batch_number = 1

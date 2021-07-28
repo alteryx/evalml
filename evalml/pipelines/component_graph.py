@@ -6,7 +6,10 @@ import woodwork as ww
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
-from evalml.exceptions.exceptions import MissingComponentError
+from evalml.exceptions.exceptions import (
+    MissingComponentError,
+    ParameterNotUsedWarning,
+)
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
@@ -84,12 +87,7 @@ class ComponentGraph:
         param_set = set(s for s in parameters.keys() if s not in ["pipeline"])
         diff = param_set.difference(set(self.component_instances.keys()))
         if len(diff):
-            warnings.warn(
-                "Parameters for components {} will not be used to instantiate the pipeline since they don't appear in the pipeline".format(
-                    diff
-                ),
-                UserWarning,
-            )
+            warnings.warn(ParameterNotUsedWarning(diff))
         self._is_instantiated = True
         component_instances = {}
         for component_name, component_class in self.component_instances.items():

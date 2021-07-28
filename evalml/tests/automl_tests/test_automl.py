@@ -28,6 +28,7 @@ from evalml.automl.utils import (
 )
 from evalml.exceptions import (
     AutoMLSearchException,
+    ParameterNotUsedWarning,
     PipelineNotFoundError,
     PipelineNotYetFittedError,
     PipelineScoreError,
@@ -4939,7 +4940,7 @@ def test_pipeline_parameter_warnings_component_graphs(
     with warnings.catch_warnings(record=True) as w:
         warnings.filterwarnings(
             "always",
-            message="Parameters for components {} will not be used".format(set_values),
+            category=ParameterNotUsedWarning,
         )
         automl = AutoMLSearch(
             X_train=X,
@@ -4954,3 +4955,5 @@ def test_pipeline_parameter_warnings_component_graphs(
         with env.test_context(score_return_value={automl.objective.name: 1.0}):
             automl.search()
     assert len(w) == (1 if len(set_values) else 0)
+    if len(w):
+        assert w[0].message.components == set_values

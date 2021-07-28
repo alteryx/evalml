@@ -12,7 +12,7 @@ from pandas.testing import (
 )
 from woodwork.logical_types import Double, Integer
 
-from evalml.exceptions import MissingComponentError
+from evalml.exceptions import MissingComponentError, ParameterNotUsedWarning
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
@@ -1923,10 +1923,12 @@ def test_component_graph_instantiate_parameters(pipeline_parameters, set_values)
     with warnings.catch_warnings(record=True) as w:
         warnings.filterwarnings(
             "always",
-            message="Parameters for components {} will not be used".format(set_values),
+            category=ParameterNotUsedWarning,
         )
         component_graph.instantiate(pipeline_parameters)
     assert len(w) == (1 if len(set_values) else 0)
+    if len(w):
+        assert w[0].message.components == set_values
 
 
 def test_component_graph_repr():
