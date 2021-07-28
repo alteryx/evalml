@@ -29,6 +29,7 @@ from evalml.pipelines import (
     PipelineBase,
     RegressionPipeline,
 )
+from evalml.pipelines.component_graph import ComponentGraph
 from evalml.pipelines.components import (
     DropNullColumns,
     ElasticNetClassifier,
@@ -36,6 +37,7 @@ from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
+    RandomForestRegressor,
     RFClassifierSelectFromModel,
     StandardScaler,
     TargetImputer,
@@ -2368,6 +2370,105 @@ def test_oversampler_component_in_pipeline_predict(oversampler):
     assert len(preds) == 1000
     preds = pipeline.predict_proba(X)
     assert len(preds) == 1000
+
+
+@pytest.mark.parametrize(
+    "pipeline_class",
+    [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+        RegressionPipeline,
+    ],
+)
+def test_pipeline_init_from_component_list(pipeline_class):
+    if pipeline_class in [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+    ]:
+        estimator = "Random Forest Classifier"
+        estimator_class = RandomForestClassifier
+    else:
+        estimator = "Random Forest Regressor"
+        estimator_class = RandomForestRegressor
+
+    assert pipeline_class([estimator]).component_graph == ComponentGraph(
+        {estimator: [estimator_class, "X", "y"]}
+    )
+    assert pipeline_class([Imputer]).component_graph == ComponentGraph(
+        {"Imputer": [Imputer, "X", "y"]}
+    )
+    assert pipeline_class(
+        [Imputer, OneHotEncoder, DropNullColumns]
+    ).component_graph == ComponentGraph(
+        {
+            "Imputer": [Imputer, "X", "y"],
+            "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+            "Drop Null Columns Transformer": [
+                DropNullColumns,
+                "One Hot Encoder.x",
+                "y",
+            ],
+        }
+    )
+
+    # Test with component after estimator
+    assert pipeline_class(
+        [Imputer, estimator, Imputer]
+    ).component_graph == ComponentGraph(
+        {
+            "Imputer": [Imputer, "X", "y"],
+            estimator: [
+                estimator_class,
+                "Imputer.x",
+                "y",
+            ],
+            "Imputer_2": [Imputer, f"{estimator}.x", "y"],
+        }
+    )
+
+
+@pytest.mark.parametrize(
+    "pipeline_class",
+    [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+        RegressionPipeline,
+    ],
+)
+def test_pipeline_init_from_component_list_with_duplicate_components(pipeline_class):
+    if pipeline_class in [
+        BinaryClassificationPipeline,
+        MulticlassClassificationPipeline,
+    ]:
+        estimator = "Random Forest Classifier"
+        estimator_class = RandomForestClassifier
+    else:
+        estimator = "Random Forest Regressor"
+        estimator_class = RandomForestRegressor
+
+    assert pipeline_class([estimator, estimator]).component_graph == ComponentGraph(
+        {
+            estimator: [estimator_class, "X", "y"],
+            f"{estimator}_1": [
+                estimator_class,
+                f"{estimator}.x",
+                "y",
+            ],
+        }
+    )
+    assert pipeline_class(
+        [Imputer, Imputer, estimator_class]
+    ).component_graph == ComponentGraph(
+        {
+            "Imputer": [Imputer, "X", "y"],
+            "Imputer_1": [Imputer, "Imputer.x", "y"],
+            estimator: [
+                estimator_class,
+                "Imputer_1.x",
+                "y",
+            ],
+        }
+    )
 
 
 def test_make_component_dict_from_component_list():
