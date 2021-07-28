@@ -91,24 +91,6 @@ def dummy_components():
     return TransformerA, TransformerB, TransformerC, EstimatorA, EstimatorB, EstimatorC
 
 
-@pytest.fixture
-def example_graph():
-    graph = {
-        "Imputer": [Imputer, "X", "y"],
-        "OneHot_RandomForest": [OneHotEncoder, "Imputer.x", "y"],
-        "OneHot_ElasticNet": [OneHotEncoder, "Imputer.x", "y"],
-        "Random Forest": [RandomForestClassifier, "OneHot_RandomForest.x", "y"],
-        "Elastic Net": [ElasticNetClassifier, "OneHot_ElasticNet.x", "y"],
-        "Logistic Regression": [
-            LogisticRegressionClassifier,
-            "Random Forest.x",
-            "Elastic Net.x",
-            "y",
-        ],
-    }
-    return graph
-
-
 def test_init(example_graph):
     comp_graph = ComponentGraph()
     assert len(comp_graph.component_dict) == 0
@@ -184,31 +166,15 @@ def test_invalid_init():
 
 
 def test_init_bad_graphs():
-    graph = {
+    graph_with_cycle = {
         "Imputer": [Imputer, "X", "y"],
         "OHE": [OneHotEncoder, "Imputer.x", "Estimator.x", "y"],
         "Estimator": [RandomForestClassifier, "OHE.x", "y"],
     }
     with pytest.raises(ValueError, match="given graph contains a cycle"):
-        ComponentGraph(graph)
+        ComponentGraph(graph_with_cycle)
 
-    # graph = {
-    #     "Imputer": [Imputer, "X", "y"],
-    #     "OneHot_RandomForest": [OneHotEncoder, "Imputer.x", "y"],
-    #     "OneHot_ElasticNet": [OneHotEncoder, "Imputer.x", "y"],
-    #     "Random Forest": [RandomForestClassifier],
-    #     "Elastic Net": [ElasticNetClassifier],
-    #     "Logistic Regression": [
-    #         LogisticRegressionClassifier,
-    #         "Random Forest",
-    #         "Elastic Net",
-    #     ],
-    # }
-    # # not possible now?
-    # with pytest.raises(ValueError, match="graph is not completely connected"):
-    #     ComponentGraph(graph)
-
-    graph = {
+    graph_with_more_than_one_final_component = {
         "Imputer": ["Imputer", "X", "y"],
         "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "y"],
         "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
@@ -222,7 +188,7 @@ def test_init_bad_graphs():
         ],
     }
     with pytest.raises(ValueError, match="graph has more than one final"):
-        ComponentGraph(graph)
+        ComponentGraph(graph_with_more_than_one_final_component)
 
 
 def test_order_x_and_y():

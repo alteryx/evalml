@@ -402,6 +402,24 @@ def dummy_regressor_dict_component_graph(dummy_regressor_estimator_class):
 
 
 @pytest.fixture
+def example_graph():
+    graph = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "y"],
+        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
+        "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
+        "Logistic Regression": [
+            "Logistic Regression Classifier",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "y",
+        ],
+    }
+    return graph
+
+
+@pytest.fixture
 def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
     MockEstimator = dummy_classifier_estimator_class
 
@@ -729,22 +747,10 @@ def decision_tree_classification_pipeline_class(X_y_categorical_classification):
 
 
 @pytest.fixture
-def nonlinear_binary_pipeline_class():
+def nonlinear_binary_pipeline_class(example_graph):
     class NonLinearBinaryPipeline(BinaryClassificationPipeline):
         custom_name = "Non Linear Binary Pipeline"
-        component_graph = {
-            "Imputer": ["Imputer", "X", "y"],
-            "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "y"],
-            "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
-            "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
-            "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
-            "Logistic Regression": [
-                "Logistic Regression Classifier",
-                "Random Forest.x",
-                "Elastic Net.x",
-                "y",
-            ],
-        }
+        component_graph = example_graph
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
@@ -763,21 +769,9 @@ def nonlinear_binary_pipeline_class():
 
 
 @pytest.fixture
-def nonlinear_multiclass_pipeline_class():
+def nonlinear_multiclass_pipeline_class(example_graph):
     class NonLinearMulticlassPipeline(MulticlassClassificationPipeline):
-        component_graph = {
-            "Imputer": ["Imputer", "X", "y"],
-            "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "y"],
-            "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
-            "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
-            "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
-            "Logistic Regression": [
-                "Logistic Regression Classifier",
-                "Random Forest.x",
-                "Elastic Net.x",
-                "y",
-            ],
-        }
+        component_graph = example_graph
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters)

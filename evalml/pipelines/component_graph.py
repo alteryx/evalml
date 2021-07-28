@@ -33,7 +33,7 @@ class ComponentGraph:
             raise ValueError(
                 "component_dict must be a dictionary which specifies the components and edges between components"
             )
-        self.validate_graph()
+        self._validate_component_dict()
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
@@ -44,8 +44,8 @@ class ComponentGraph:
         self._i = 0
         self._compute_order = self.generate_order(self.component_dict)
 
-    def validate_graph(self):
-        for component, component_inputs in self.component_dict.items():
+    def _validate_component_dict(self):
+        for _, component_inputs in self.component_dict.items():
             if not isinstance(component_inputs, list):
                 raise ValueError(
                     "All component information should be passed in as a list"
@@ -60,7 +60,9 @@ class ComponentGraph:
                 for component_input in component_inputs
             )
             if not (has_feature_input and has_target_input):
-                raise ValueError("All edges must be specified")
+                raise ValueError(
+                    "All edges must be specified as either an input feature (.x) or input target (.y)."
+                )
 
     @property
     def compute_order(self):

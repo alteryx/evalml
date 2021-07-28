@@ -383,20 +383,9 @@ def test_describe_pipeline(
         assert component.name in out
 
 
-def test_nonlinear_model_family():
+def test_nonlinear_model_family(example_graph):
     class DummyNonlinearPipeline(BinaryClassificationPipeline):
-        component_graph = {
-            "Imputer": ["Imputer", "X", "y"],
-            "OneHot": ["One Hot Encoder", "Imputer.x", "y"],
-            "Elastic Net": ["Elastic Net Classifier", "OneHot.x", "y"],
-            "Logistic Regression": ["Logistic Regression Classifier", "OneHot.x", "y"],
-            "Random Forest": [
-                "Random Forest Classifier",
-                "Logistic Regression.x",
-                "Elastic Net.x",
-                "y",
-            ],
-        }
+        component_graph = example_graph
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
@@ -429,7 +418,7 @@ def test_nonlinear_model_family():
     nlbp = DummyNonlinearPipeline({})
     nltp = DummyTransformerEndPipeline({})
 
-    assert nlbp.model_family == ModelFamily.RANDOM_FOREST
+    assert nlbp.model_family == ModelFamily.LINEAR_MODEL
     assert nltp.model_family == ModelFamily.NONE
 
 
@@ -581,9 +570,6 @@ def test_multi_format_creation(X_y_binary):
     clf.fit(X, y)
     clf.score(X, y, ["precision"])
     assert not clf.feature_importance.isnull().all().all()
-
-
-#
 
 
 def test_problem_types():
@@ -1780,10 +1766,7 @@ def test_pipeline_str():
 
     class MockRegressionPipeline(RegressionPipeline):
         custom_name = "Mock Regression Pipeline"
-        component_graph = {
-            "Imputer": ["Imputer", "X", "y"],
-            "Random Forest Regressor": ["Random Forest Regressor", "Imputer.x", "y"],
-        }
+        component_graph = ["Imputer", "Random Forest Regressor"]
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
