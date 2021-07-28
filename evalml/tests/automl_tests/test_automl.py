@@ -1052,7 +1052,6 @@ def test_default_objective(X_y_binary):
 
 
 def test_add_to_rankings(
-    dummy_classifier_dict_component_graph,
     AutoMLTestEnv,
     dummy_binary_pipeline_class,
     X_y_binary,
@@ -1134,7 +1133,7 @@ def test_add_to_rankings_no_search(
 def test_add_to_rankings_regression_large(
     AutoMLTestEnv,
     dummy_regression_pipeline_class,
-    dummy_regressor_dict_component_graph,
+    example_regression_graph,
 ):
     X = pd.DataFrame({"col_0": [i for i in range(101000)]})
     y = pd.Series([i for i in range(101000)])
@@ -1142,7 +1141,7 @@ def test_add_to_rankings_regression_large(
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
-        allowed_component_graphs=dummy_regressor_dict_component_graph,
+        allowed_component_graphs={"CG": example_regression_graph},
         problem_type="regression",
         max_time=1,
         max_iterations=1,
@@ -1174,7 +1173,7 @@ def test_add_to_rankings_new_pipeline(dummy_regression_pipeline_class):
 
 
 def test_add_to_rankings_regression(
-    dummy_regressor_dict_component_graph,
+    example_regression_graph,
     dummy_regression_pipeline_class,
     X_y_regression,
     AutoMLTestEnv,
@@ -1184,7 +1183,7 @@ def test_add_to_rankings_regression(
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
-        allowed_component_graphs=dummy_regressor_dict_component_graph,
+        allowed_component_graphs={"CG": example_regression_graph},
         problem_type="regression",
         max_time=1,
         max_iterations=1,
@@ -3804,24 +3803,10 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
         assert row["One Hot Encoder_1"]["top_n"] == 25
 
 
-@pytest.mark.parametrize("graph_type", ["linear", "dict"])
 def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_components(
-    AutoMLTestEnv, graph_type, X_y_binary
+    AutoMLTestEnv, X_y_binary
 ):
     X, y = X_y_binary
-
-    # if graph_type == "linear":
-    #     custom_hyperparameters = {
-    #         "Imputer": {"numeric_impute_strategy": Categorical(["mean"])},
-    #         "Imputer_1": {
-    #             "numeric_impute_strategy": Categorical(["most_frequent", "mean"])
-    #         },
-    #         "Random Forest Classifier": {"n_estimators": Categorical([100, 125])},
-    #     }
-    #     component_graph = {
-    #         "Name_linear": ["Imputer", "Imputer", "Random Forest Classifier"]
-    #     }
-    # else:
     custom_hyperparameters = {
         "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])},
         "Imputer_1": {"numeric_impute_strategy": Categorical(["median", "mean"])},

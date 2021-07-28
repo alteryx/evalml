@@ -996,7 +996,7 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
 def test_automl_component_graphs_search(
     problem_type,
-    dummy_classifier_dict_component_graph,
+    example_graph,
     X_y_binary,
     X_y_multi,
     AutoMLTestEnv,
@@ -1005,12 +1005,11 @@ def test_automl_component_graphs_search(
         X, y = X_y_binary
         score_return_value = {"Log Loss Binary": 1.0}
         expected_mock_class = BinaryClassificationPipeline
-        component_graph = dummy_classifier_dict_component_graph
     else:
         X, y = X_y_multi
         score_return_value = {"Log Loss Multiclass": 1.0}
         expected_mock_class = MulticlassClassificationPipeline
-        component_graph = dummy_classifier_dict_component_graph
+    component_graph = {"CG": example_graph}
 
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(

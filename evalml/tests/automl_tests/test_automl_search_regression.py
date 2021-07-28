@@ -364,11 +364,11 @@ def test_automl_allowed_component_graphs_init_allowed_both_specified(
 
 def test_automl_allowed_component_graphs_search(
     AutoMLTestEnv,
-    dummy_regressor_dict_component_graph,
+    example_regression_graph,
     X_y_regression,
 ):
     X, y = X_y_regression
-    component_graph = dummy_regressor_dict_component_graph
+    component_graph = {"CG": example_regression_graph}
 
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(

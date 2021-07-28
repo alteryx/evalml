@@ -372,38 +372,8 @@ def dummy_classifier_estimator_class():
 
 
 @pytest.fixture
-def dummy_classifier_dict_component_graph(dummy_classifier_estimator_class):
-    component_graph_dict = {
-        "Name": {
-            "Imputer": ["Imputer", "X", "y"],
-            "Random Forest Classifier": [
-                dummy_classifier_estimator_class,
-                "Imputer.x",
-                "y",
-            ],
-        }
-    }
-    return component_graph_dict
-
-
-@pytest.fixture
-def dummy_regressor_dict_component_graph(dummy_regressor_estimator_class):
-    component_graph_dict = {
-        "Name": {
-            "Imputer": ["Imputer", "X", "y"],
-            "Random Forest Classifier": [
-                dummy_regressor_estimator_class,
-                "Imputer.x",
-                "y",
-            ],
-        }
-    }
-    return component_graph_dict
-
-
-@pytest.fixture
 def example_graph():
-    graph = {
+    component_graph = {
         "Imputer": ["Imputer", "X", "y"],
         "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "y"],
         "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
@@ -416,7 +386,24 @@ def example_graph():
             "y",
         ],
     }
-    return graph
+    return component_graph
+
+
+@pytest.fixture
+def example_regression_graph():
+    component_graph = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OneHot": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest": ["Random Forest Regressor", "OneHot.x", "y"],
+        "Elastic Net": ["Elastic Net Regressor", "OneHot.x", "y"],
+        "Linear Regressor": [
+            "Linear Regressor",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "y",
+        ],
+    }
+    return component_graph
 
 
 @pytest.fixture
@@ -786,20 +773,9 @@ def nonlinear_multiclass_pipeline_class(example_graph):
 
 
 @pytest.fixture
-def nonlinear_regression_pipeline_class():
+def nonlinear_regression_pipeline_class(example_regression_graph):
     class NonLinearRegressionPipeline(RegressionPipeline):
-        component_graph = {
-            "Imputer": ["Imputer", "X", "y"],
-            "OneHot": ["One Hot Encoder", "Imputer.x", "y"],
-            "Random Forest": ["Random Forest Regressor", "OneHot.x", "y"],
-            "Elastic Net": ["Elastic Net Regressor", "OneHot.x", "y"],
-            "Linear Regressor": [
-                "Linear Regressor",
-                "Random Forest.x",
-                "Elastic Net.x",
-                "y",
-            ],
-        }
+        component_graph = example_regression_graph
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(self.component_graph, parameters=parameters)

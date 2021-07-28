@@ -306,6 +306,10 @@ def test_get_pipelines_from_component_graphs(problem_type, estimator):
             "Imputer_1": ["Imputer", "Imputer.x", "y"],
             estimator: [estimator, "Imputer_1.x", "y"],
         },
+        "Name_1": {
+            "Imputer": ["Imputer", "X", "y"],
+            estimator: [estimator, "Imputer.x", "y"],
+        },
     }
     if problem_type == "time series regression":
         with pytest.raises(ValueError, match="date_index, gap, and max_delay"):
@@ -315,6 +319,7 @@ def test_get_pipelines_from_component_graphs(problem_type, estimator):
             component_graphs, problem_type
         )
         assert returned_pipelines[0].random_seed == 0
+        assert returned_pipelines[1].random_seed == 0
         if problem_type == "binary":
             assert all(
                 isinstance(pipe_, BinaryClassificationPipeline)
