@@ -1919,3 +1919,25 @@ def test_component_graph_defines_edge_with_invalid_syntax():
                 ],
             }
         )
+
+
+def test_component_graph_repr():
+    # Test with component graph defined by strings
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest Regressor": ["Random Forest Regressor", "OHE.x", "y"],
+    }
+    expected_repr = "{'Imputer': ['Imputer', 'X', 'y'], 'OHE': ['One Hot Encoder', 'Imputer.x', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'OHE.x', 'y']}"
+    component_graph = ComponentGraph(component_dict)
+    assert repr(component_graph) == expected_repr
+
+    # Test with component graph defined by strings and objects
+    component_dict_with_objs = {
+        "Imputer": [Imputer, "X", "y"],
+        "OHE": [OneHotEncoder, "Imputer.x", "y"],
+        "Random Forest Classifier": [RandomForestClassifier, "OHE.x", "y"],
+    }
+    expected_repr = "{'Imputer': ['Imputer', 'X', 'y'], 'OHE': ['One Hot Encoder', 'Imputer.x', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'OHE.x', 'y']}"
+    component_graph = ComponentGraph(component_dict_with_objs)
+    assert repr(component_graph) == expected_repr
