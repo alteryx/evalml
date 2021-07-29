@@ -14,21 +14,21 @@ class HighlyNullDataCheck(DataCheck):
     Arguments:
         pct_null_col_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
             that column will be considered highly-null. Defaults to 0.95.
-        pct_null_row_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
+        pct_null_row_threshold(float): If the percentage of NaN values in an input row exceeds this amount,
             that row will be considered highly-null. Defaults to 0.95.
 
     """
 
     def __init__(self, pct_null_col_threshold=0.95, pct_null_row_threshold=0.95):
-        if (
-            pct_null_col_threshold < 0
-            or pct_null_col_threshold > 1
-            or pct_null_row_threshold < 0
-            or pct_null_row_threshold > 1
-        ):
+        if pct_null_col_threshold < 0 or pct_null_col_threshold > 1:
             raise ValueError(
-                "pct null thresholds must be a float between 0 and 1, inclusive."
+                "pct null column threshold must be a float between 0 and 1, inclusive."
             )
+        if pct_null_row_threshold < 0 or pct_null_row_threshold > 1:
+            raise ValueError(
+                "pct null row threshold must be a float between 0 and 1, inclusive."
+            )
+
         self.pct_null_col_threshold = pct_null_col_threshold
         self.pct_null_row_threshold = pct_null_row_threshold
 

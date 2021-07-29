@@ -42,22 +42,22 @@ def test_highly_null_data_check_init():
 
     with pytest.raises(
         ValueError,
-        match="pct null thresholds must be a float between 0 and 1, inclusive.",
+        match="pct null column threshold must be a float between 0 and 1, inclusive.",
     ):
         HighlyNullDataCheck(pct_null_col_threshold=-0.1)
     with pytest.raises(
         ValueError,
-        match="pct null thresholds must be a float between 0 and 1, inclusive.",
+        match="pct null column threshold must be a float between 0 and 1, inclusive.",
     ):
         HighlyNullDataCheck(pct_null_col_threshold=1.1)
     with pytest.raises(
         ValueError,
-        match="pct null thresholds must be a float between 0 and 1, inclusive.",
+        match="pct null row threshold must be a float between 0 and 1, inclusive.",
     ):
         HighlyNullDataCheck(pct_null_row_threshold=-0.5)
     with pytest.raises(
         ValueError,
-        match="pct null thresholds must be a float between 0 and 1, inclusive.",
+        match="pct null row threshold must be a float between 0 and 1, inclusive.",
     ):
         HighlyNullDataCheck(pct_null_row_threshold=2.1)
 

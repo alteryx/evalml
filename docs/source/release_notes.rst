@@ -3,7 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
         * Added Gini coefficient as an objective :pr:`2544`
-        * Added separate thresholds for pct null rows and columns in ``HighlyNullDataCheck`` :pr:`2562`
+        * Added separate thresholds for percent null rows and columns in ``HighlyNullDataCheck`` :pr:`2562`
     * Fixes
     * Changes
         * Updated ``PipelineBase`` implementation for creating pipelines from a list of components :pr:`2549`
