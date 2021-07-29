@@ -1919,26 +1919,3 @@ def test_component_graph_defines_edge_with_invalid_syntax():
                 ],
             }
         )
-
-
-def test_component_graph_fit_with_invalid_edge():
-    X = pd.DataFrame(
-        {
-            "column_1": [0, 2, 3, 1, 5, 6, 5, 4, 3],
-            "column_2": [1, 2, 3, 4, 5, 6, 5, 4, 3],
-        }
-    )
-    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
-    component_graph = ComponentGraph(
-        {
-            "Imputer": [Imputer, "X", "y"],
-            "One Hot Encoder": [OneHotEncoder, "Imputer.x", "Imputer.y"],
-            "Random Forest Classifier": [
-                RandomForestClassifier,
-                "One Hot Encoder.x",
-                "One Hot Encoder.y",
-            ],
-        }
-    )
-    component_graph.instantiate({})
-    component_graph.fit(X, y)
