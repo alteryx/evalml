@@ -174,9 +174,9 @@ def test_column_transformer_fit_transform(class_to_test, checking_functions):
     if class_to_test is SelectByType:
         assert check3(
             X,
-            class_to_test(column_types=["categorical", "boolean", "integer"]).fit_transform(
-                X
-            ),
+            class_to_test(
+                column_types=["categorical", "boolean", "integer"]
+            ).fit_transform(X),
         )
     else:
         assert check3(X, class_to_test(columns=list(X.columns)).fit_transform(X))

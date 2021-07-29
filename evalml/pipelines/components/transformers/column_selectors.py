@@ -37,7 +37,9 @@ class ColumnSelector(Transformer):
         if col_types:
             missing_cols = X.ww.select(col_types).empty
         if missing_cols:
-            raise ValueError(self._VALIDATION_ERROR_FORMAT_STRING.format(**self.parameters))
+            raise ValueError(
+                self._VALIDATION_ERROR_FORMAT_STRING.format(**self.parameters)
+            )
 
     @abstractmethod
     def _modify_columns(self, cols, X, y=None):
@@ -138,13 +140,18 @@ class SelectByType(ColumnSelector):
     hyperparameter_ranges = {}
     """{}"""
     needs_fitting = False
-    _VALIDATION_ERROR_FORMAT_STRING = "Columns of type {column_types} not found in input data."
+    _VALIDATION_ERROR_FORMAT_STRING = (
+        "Columns of type {column_types} not found in input data."
+    )
 
-    def __init__(self, column_types=None, random_seed=0, **kwargs):        
+    def __init__(self, column_types=None, random_seed=0, **kwargs):
         parameters = {"column_types": column_types}
         parameters.update(kwargs)
         Transformer.__init__(
-            Transformer, parameters=parameters, component_obj=None, random_seed=random_seed
+            Transformer,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
         )
 
     def _modify_columns(self, cols, X, y=None):
