@@ -28,6 +28,7 @@ from evalml.automl.utils import (
 )
 from evalml.exceptions import (
     AutoMLSearchException,
+    ParameterNotUsedWarning,
     PipelineNotFoundError,
     PipelineNotYetFittedError,
     PipelineScoreError,
@@ -4899,3 +4900,60 @@ def test_data_splitter_gives_pipelines_same_data(
         assert all(
             len(data_hash_dictionary[i]) == 1 for i in range(n_splits)
         ), "There should only be one hash per split."
+
+
+@pytest.mark.parametrize(
+    "allowed_component_graphs",
+    [None, {"graph": ["Imputer", "Logistic Regression Classifier"]}],
+)
+@pytest.mark.parametrize(
+    "pipeline_parameters,set_values",
+    [
+        ({"Logistic Regression Classifier": {"penalty": "l1"}}, {}),
+        (
+            {
+                "Imputer": {"numeric_impute_strategy": "mean"},
+                "Logistic Regression Classifier": {"penalty": "l1"},
+            },
+            {},
+        ),
+        (
+            {
+                "Undersampler": {"sampling_ratio": 0.05},
+                "Logistic Regression Classifier": {"penalty": "l1"},
+            },
+            {"Undersampler"},
+        ),
+        (
+            {
+                "Undersampler": {"sampling_ratio": 0.05},
+                "SMOTE Oversampler": {"sampling_ratio": 0.10},
+            },
+            {"Undersampler", "SMOTE Oversampler"},
+        ),
+    ],
+)
+def test_pipeline_parameter_warnings_component_graphs(
+    pipeline_parameters, set_values, allowed_component_graphs, AutoMLTestEnv, X_y_binary
+):
+    X, y = X_y_binary
+    with warnings.catch_warnings(record=True) as w:
+        warnings.filterwarnings(
+            "always",
+            category=ParameterNotUsedWarning,
+        )
+        automl = AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            max_batches=2,
+            n_jobs=1,
+            allowed_component_graphs=allowed_component_graphs,
+            pipeline_parameters=pipeline_parameters,
+        )
+        env = AutoMLTestEnv("binary")
+        with env.test_context(score_return_value={automl.objective.name: 1.0}):
+            automl.search()
+    assert len(w) == (1 if len(set_values) else 0)
+    if len(w):
+        assert w[0].message.components == set_values
