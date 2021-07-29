@@ -525,9 +525,6 @@ class ComponentGraph:
     @classmethod
     def generate_order(cls, component_dict):
         """Regenerated the topologically sorted order of the graph"""
-        import pdb
-
-        pdb.set_trace()
         edges = cls._get_edges(component_dict)
         if len(component_dict) == 1:
             return list(component_dict.keys())

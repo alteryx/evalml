@@ -190,6 +190,18 @@ def test_init_bad_graphs():
     with pytest.raises(ValueError, match="graph has more than one final"):
         ComponentGraph(graph_with_more_than_one_final_component)
 
+    graph_with_unconnected_imputer = {
+        "Imputer": ["Imputer", "X", "y"],
+        "DateTime": ["DateTime Featurization Component", "X", "y"],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            "DateTime.x",
+            "DateTime.y",
+        ],
+    }
+    with pytest.raises(ValueError, match="The given graph is not completely connected"):
+        ComponentGraph(graph_with_unconnected_imputer)
+
 
 def test_order_x_and_y():
     graph = {
@@ -1941,18 +1953,3 @@ def test_component_graph_repr():
     expected_repr = "{'Imputer': ['Imputer', 'X', 'y'], 'OHE': ['One Hot Encoder', 'Imputer.x', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'OHE.x', 'y']}"
     component_graph = ComponentGraph(component_dict_with_objs)
     assert repr(component_graph) == expected_repr
-
-
-def test_component_graph_not_fully_connected():
-    with pytest.raises(ValueError, match="The given graph is not completely connected"):
-        ComponentGraph(
-            {
-                "Imputer": ["Imputer", "X", "y"],
-                "DateTime": ["DateTime Featurization Component", "X", "y"],
-                "Logistic Regression Classifier": [
-                    "Logistic Regression Classifier",
-                    "DateTime.x",
-                    "DateTime.y",
-                ],
-            }
-        )
