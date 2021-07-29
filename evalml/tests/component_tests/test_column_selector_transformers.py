@@ -11,7 +11,7 @@ from evalml.pipelines.components import (
 )
 
 
-@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns, SelectByType])
+@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns])
 def test_column_transformer_init(class_to_test):
     transformer = class_to_test(columns=None)
     assert transformer.parameters["columns"] is None
@@ -26,6 +26,17 @@ def test_column_transformer_init(class_to_test):
         _ = class_to_test(columns="Column1")
 
 
+def test_select_by_type_init():
+    transformer = SelectByType(column_types=None)
+    assert transformer.parameters["column_types"] is None
+
+    transformer = SelectByType(column_types=[])
+    assert transformer.parameters["column_types"] == []
+
+    transformer = SelectByType(column_types=["a", "b"])
+    assert transformer.parameters["column_types"] == ["a", "b"]
+
+
 @pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns, SelectByType])
 def test_column_transformer_empty_X(class_to_test):
     X = pd.DataFrame()
@@ -36,12 +47,8 @@ def test_column_transformer_empty_X(class_to_test):
     assert_frame_equal(X, transformer.fit_transform(X))
 
     transformer = class_to_test(columns=["not in data"])
-    if class_to_test is SelectByType:
-        with pytest.raises(ValueError, match="not found in input data"):
-            transformer.fit_transform(X)
-    else:
-        with pytest.raises(ValueError, match="'not in data' not found in input data"):
-            transformer.fit(X)
+    with pytest.raises(ValueError, match="not found in input data"):
+        transformer.fit(X)
 
     transformer = class_to_test(columns=list(X.columns))
     assert transformer.transform(X).empty
@@ -101,13 +108,13 @@ def test_column_transformer_transform(class_to_test, checking_functions):
     assert check2(X, transformer.transform(X))
 
     if class_to_test is SelectByType:
-        transformer = class_to_test(columns=["integer"])
+        transformer = class_to_test(column_types=["integer"])
     else:
         transformer = class_to_test(columns=["one"])
     assert check3(X, transformer.transform(X))
 
     if class_to_test is SelectByType:
-        transformer = class_to_test(columns=["categorical", "Boolean", "Integer"])
+        transformer = class_to_test(column_types=["categorical", "Boolean", "Integer"])
     else:
         transformer = class_to_test(columns=list(X.columns))
     assert check4(X, transformer.transform(X))
@@ -160,14 +167,14 @@ def test_column_transformer_fit_transform(class_to_test, checking_functions):
     assert check1(X, class_to_test(columns=[]).fit_transform(X))
 
     if class_to_test is SelectByType:
-        assert check2(X, class_to_test(columns=["integer"]).fit_transform(X))
+        assert check2(X, class_to_test(column_types=["integer"]).fit_transform(X))
     else:
         assert check2(X, class_to_test(columns=["one"]).fit_transform(X))
 
     if class_to_test is SelectByType:
         assert check3(
             X,
-            class_to_test(columns=["categorical", "boolean", "integer"]).fit_transform(
+            class_to_test(column_types=["categorical", "boolean", "integer"]).fit_transform(
                 X
             ),
         )
@@ -179,20 +186,20 @@ def test_column_transformer_fit_transform(class_to_test, checking_functions):
 def test_drop_column_transformer_input_invalid_col_name(class_to_test):
     X = pd.DataFrame({"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]})
     transformer = class_to_test(columns=["not in data"])
-    with pytest.raises(ValueError, match="'not in data' not found in input data"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.fit(X)
-    with pytest.raises(ValueError, match="'not in data' not found in input data"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.transform(X)
-    with pytest.raises(ValueError, match="'not in data' not found in input data"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.fit_transform(X)
 
     X = np.arange(12).reshape(3, 4)
     transformer = class_to_test(columns=[5])
-    with pytest.raises(ValueError, match="'5' not found in input data"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.fit(X)
-    with pytest.raises(ValueError, match="'5' not found in input data"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.transform(X)
-    with pytest.raises(ValueError, match="'5' not found in input data"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.fit_transform(X)
 
 
@@ -245,20 +252,20 @@ def test_typeortag_column_transformer_ww_logical_and_semantic_types():
         }
     )
 
-    transformer = SelectByType(columns=[ww.logical_types.Age])
+    transformer = SelectByType(column_types=[ww.logical_types.Age])
     with pytest.raises(ValueError, match="not found in input data"):
         transformer.transform(X)
     with pytest.raises(ValueError, match="not found in input data"):
         transformer.fit_transform(X)
 
-    X_t = SelectByType(columns=[ww.logical_types.Integer]).fit_transform(X)
+    X_t = SelectByType(column_types=[ww.logical_types.Integer]).fit_transform(X)
     assert X_t.equals(X[["three"]].astype("int64"))
 
-    X_t = SelectByType(columns=["Double"]).fit_transform(X)
+    X_t = SelectByType(column_types=["Double"]).fit_transform(X)
     assert X_t.equals(X[["four"]].astype("float64"))
 
     X_t = SelectByType(
-        columns=[
+        column_types=[
             ww.logical_types.Categorical,
             ww.logical_types.Boolean,
             ww.logical_types.Integer,
@@ -267,5 +274,5 @@ def test_typeortag_column_transformer_ww_logical_and_semantic_types():
     ).fit_transform(X)
     assert X_t.astype(str).equals(X.astype(str))
 
-    X_t = SelectByType(columns=["numeric"]).fit_transform(X)
+    X_t = SelectByType(column_types=["numeric"]).fit_transform(X)
     assert X_t.astype(str).equals(X[["three", "four"]].astype(str))

@@ -13,6 +13,8 @@ class ColumnSelector(Transformer):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
+    _VALIDATION_ERROR_FORMAT_STRING = "Columns {columns} not found in input data."
+
     def __init__(self, columns=None, random_seed=0, **kwargs):
         if columns and not isinstance(columns, list):
             raise ValueError(
@@ -27,16 +29,15 @@ class ColumnSelector(Transformer):
 
     def _check_input_for_columns(self, X):
         cols = self.parameters.get("columns") or []
+        col_types = self.parameters.get("column_types")
 
         column_names = X.columns
 
         missing_cols = set(cols) - set(column_names)
+        if col_types:
+            missing_cols = X.ww.select(col_types).empty
         if missing_cols:
-            raise ValueError(
-                "Columns {} not found in input data".format(
-                    ", ".join(f"'{col_name}'" for col_name in missing_cols)
-                )
-            )
+            raise ValueError(self._VALIDATION_ERROR_FORMAT_STRING.format(**self.parameters))
 
     @abstractmethod
     def _modify_columns(self, cols, X, y=None):
@@ -129,7 +130,7 @@ class SelectByType(ColumnSelector):
     Selects columns by specified Woodwork logical type or semantic tag in input data.
 
     Arguments:
-        columns (list(string), list(ww.LogicalType)): List of datatypes, used to determine which columns to select.
+        column_types (string, ww.LogicalType, list(string), list(ww.LogicalType)): List of Woodwork types or tags, used to determine which columns to select.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -137,15 +138,21 @@ class SelectByType(ColumnSelector):
     hyperparameter_ranges = {}
     """{}"""
     needs_fitting = False
+    _VALIDATION_ERROR_FORMAT_STRING = "Columns of type {column_types} not found in input data."
 
-    def _check_input_for_columns(self, X):
-        """
-        This check is not required, since ww.select does not throw an error if the requested types are not in the dataset.
-        """
-        return
+    def __init__(self, column_types=None, random_seed=0, **kwargs):        
+        parameters = {"column_types": column_types}
+        parameters.update(kwargs)
+        Transformer.__init__(
+            Transformer, parameters=parameters, component_obj=None, random_seed=random_seed
+        )
 
     def _modify_columns(self, cols, X, y=None):
-        selected_columns = X.ww.select(cols)
-        if len(cols) > 0 and selected_columns.empty:
-            raise ValueError(f"Column(s) of type {cols} not found in input data")
-        return selected_columns
+        return X.ww.select(cols)
+
+    def transform(self, X, y=None):
+        X = infer_feature_types(X)
+        self._check_input_for_columns(X)
+        cols = self.parameters.get("column_types") or []
+        modified_cols = self._modify_columns(cols, X, y)
+        return infer_feature_types(modified_cols)
