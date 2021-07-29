@@ -14,6 +14,7 @@ Release Notes
         * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
         * Removed ``ComponentGraph.linearized_component_graph`` and ``ComponentGraph.from_list`` :pr:`2556`
     * Documentation Changes
+        * Improved detail of ``TextFeaturizer`` docstring and tutorial :pr:`2568`
     * Testing Changes
         * Added test that makes sure ``split_data`` does not shuffle for time series problems :pr:`2552`
 
