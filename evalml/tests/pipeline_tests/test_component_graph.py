@@ -1424,6 +1424,36 @@ def test_component_graph_equality(example_graph):
     assert component_graph != component_graph_different_order
 
 
+def test_component_graph_equality_same_graph():
+    # Same component nodes and edges, just specified in a different order in the input dictionary
+    component_graph = ComponentGraph(
+        {
+            "Component B": [OneHotEncoder, "X", "y"],
+            "Component A": [DateTimeFeaturizer, "Component B.x", "y"],
+            "Random Forest": [
+                RandomForestClassifier,
+                "Component A.x",
+                "Component B.x",
+                "y",
+            ],
+        }
+    )
+
+    equal_component_graph = ComponentGraph(
+        {
+            "Component B": [OneHotEncoder, "X", "y"],
+            "Component A": [DateTimeFeaturizer, "Component B.x", "y"],
+            "Random Forest": [
+                RandomForestClassifier,
+                "Component B.x",
+                "Component A.x",
+                "y",
+            ],
+        }
+    )
+    component_graph == equal_component_graph
+
+
 @pytest.mark.parametrize("return_dict", [True, False])
 def test_describe_component_graph(return_dict, example_graph, caplog):
     component_graph = ComponentGraph(example_graph, random_seed=0)
@@ -1834,7 +1864,7 @@ def test_component_graph_does_not_define_all_edges():
     with pytest.raises(ValueError, match="All edges must be specified"):
         ComponentGraph(
             {
-                "Imputer": [Imputer, "y"],
+                "Imputer": [Imputer, "y"],  # offending line
                 "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
                 "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
                 "Random Forest Classifier": [
@@ -1848,7 +1878,7 @@ def test_component_graph_does_not_define_all_edges():
     with pytest.raises(ValueError, match="All edges must be specified"):
         ComponentGraph(
             {
-                "Imputer": [Imputer, "X"],
+                "Imputer": [Imputer, "X"],  # offending line
                 "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
                 "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
                 "Random Forest Classifier": [
@@ -1862,7 +1892,7 @@ def test_component_graph_does_not_define_all_edges():
     with pytest.raises(ValueError, match="All edges must be specified"):
         ComponentGraph(
             {
-                "Imputer": [Imputer],
+                "Imputer": [Imputer],  # offending line
                 "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
                 "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
                 "Random Forest Classifier": [
@@ -1872,3 +1902,43 @@ def test_component_graph_does_not_define_all_edges():
                 ],
             }
         )
+
+
+def test_component_graph_defines_edge_with_invalid_syntax():
+    # Graph does not define an X edge using .x
+    with pytest.raises(ValueError, match="All edges must be specified"):
+        ComponentGraph(
+            {
+                "Imputer": [Imputer, "X", "y"],
+                "One Hot Encoder": [OneHotEncoder, "Imputer", "y"],  # offending line
+                "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+                "Random Forest Classifier": [
+                    RandomForestClassifier,
+                    "One Hot Encoder.x",
+                    "Target Imputer.y",
+                ],
+            }
+        )
+
+
+def test_component_graph_fit_with_invalid_edge():
+    X = pd.DataFrame(
+        {
+            "column_1": [0, 2, 3, 1, 5, 6, 5, 4, 3],
+            "column_2": [1, 2, 3, 4, 5, 6, 5, 4, 3],
+        }
+    )
+    y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
+    component_graph = ComponentGraph(
+        {
+            "Imputer": [Imputer, "X", "y"],
+            "One Hot Encoder": [OneHotEncoder, "Imputer.x", "Imputer.y"],
+            "Random Forest Classifier": [
+                RandomForestClassifier,
+                "One Hot Encoder.x",
+                "One Hot Encoder.y",
+            ],
+        }
+    )
+    component_graph.instantiate({})
+    component_graph.fit(X, y)

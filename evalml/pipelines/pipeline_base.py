@@ -65,6 +65,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         random_seed=0,
     ):
         self.random_seed = random_seed
+
         if isinstance(component_graph, list):  # Backwards compatibility
             for component in component_graph:
                 component = handle_component_class(component)
