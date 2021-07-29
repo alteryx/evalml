@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Issue a warning to users when a pipeline parameter passed in isn't used in the pipeline :pr:`2564`
         * Added Gini coefficient as an objective :pr:`2544`
         * Added ``repr`` to ``ComponentGraph`` :pr:`2565`
         * Added components to extract features from ``URL`` and ``EmailAddress`` Logical Types :pr:`2550`

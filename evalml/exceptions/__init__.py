@@ -12,4 +12,5 @@ from .exceptions import (
     NullsInColumnWarning,
     ObjectiveCreationError,
     NoPositiveLabelException,
+    ParameterNotUsedWarning,
 )
