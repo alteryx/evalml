@@ -7,7 +7,7 @@ Release Notes
         * Added components to extract features from ``URL`` and ``EmailAddress`` Logical Types :pr:`2550`
         * Added support for `NaN` values in ``TextFeaturizer`` :pr:`2532`
     * Fixes
-        * Raised error message for types ``URL``, ``NaturalLanguage``, and ``EmailAddress`` in ``partial_dependence`` :pr:``
+        * Raised error message for types ``URL``, ``NaturalLanguage``, and ``EmailAddress`` in ``partial_dependence`` :pr:`2573`
     * Changes
         * Updated ``PipelineBase`` implementation for creating pipelines from a list of components :pr:`2549`
         * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
