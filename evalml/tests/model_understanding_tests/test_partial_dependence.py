@@ -1,3 +1,5 @@
+import re
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -1407,3 +1409,26 @@ def test_partial_dependence_datetime_extra(
         assert len(part_dep["partial_dependence"]) == 10
         assert len(part_dep["feature_values"]) == 10
     assert not part_dep.isnull().any(axis=None)
+
+
+@pytest.mark.parametrize(
+    "cols,expected_cols", [(0, [0]), ([0, 1], [0, 1]), ([0, 2], [0])]
+)
+@pytest.mark.parametrize("types", ["URL", "EmailAddress", "NaturalLanguage"])
+def test_partial_dependence_not_allowed_types(types, cols, expected_cols, X_y_binary):
+    # test to see if we can get partial dependence fine with a dataset that has unknown features
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X.ww.init(logical_types={0: types, 1: "URL"})
+    pl = BinaryClassificationPipeline(["Random Forest Classifier"])
+    pl.fit(X, y)
+    expected_types = (
+        sorted(list(set([types, "URL"]))) if len(expected_cols) == 2 else [types]
+    )
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            f"Columns {expected_cols} are of types {expected_types}, which cannot be used for partial dependence"
+        ),
+    ):
+        partial_dependence(pl, X, cols, grid_resolution=2)

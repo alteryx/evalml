@@ -659,6 +659,16 @@ def partial_dependence(
             f"Columns {X_unknown.columns.values} are of type 'Unknown', which cannot be used for partial dependence"
         )
 
+    X_not_allowed = X_features.ww.select(["URL", "EmailAddress", "NaturalLanguage"])
+    if len(X_not_allowed.columns):
+        # these three logical types aren't allowed for partial dependence
+        types = sorted(
+            list(set(X_not_allowed.ww.types["Logical Type"].astype(str).tolist()))
+        )
+        raise ValueError(
+            f"Columns {X_not_allowed.columns.values.tolist()} are of types {types}, which cannot be used for partial dependence"
+        )
+
     X_cats = X_features.ww.select("categorical")
     if any(is_categorical):
         max_num_cats = max(X_cats.ww.describe().loc["nunique"])
