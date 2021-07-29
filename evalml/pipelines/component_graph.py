@@ -525,13 +525,19 @@ class ComponentGraph:
     @classmethod
     def generate_order(cls, component_dict):
         """Regenerated the topologically sorted order of the graph"""
+        import pdb
+
+        pdb.set_trace()
         edges = cls._get_edges(component_dict)
         if len(component_dict) == 1:
             return list(component_dict.keys())
         if len(edges) == 0:
             return []
         digraph = nx.DiGraph()
+        digraph.add_nodes_from(list(component_dict.keys()))
         digraph.add_edges_from(edges)
+        if not nx.is_weakly_connected(digraph):
+            raise ValueError("The given graph is not completely connected")
         try:
             compute_order = list(topological_sort(digraph))
         except NetworkXUnfeasible:

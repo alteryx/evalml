@@ -1579,162 +1579,162 @@ class SubsetData(Transformer):
 
 
 component_graphs = [
-    (
-        ComponentGraph(
-            {
-                "Imputer": [Imputer, "X", "y"],
-                "Log": [LogTransform, "X", "y"],
-                "Random Forest": ["Random Forest Regressor", "Imputer.x", "Log.y"],
-            }
-        ),
-        lambda y: infer_feature_types(np.exp(y)),
-    ),
-    (
-        ComponentGraph(
-            {
-                "Imputer": [Imputer, "X", "y"],
-                "Log": [LogTransform, "X", "y"],
-                "Double": [DoubleTransform, "X", "Log.y"],
-                "Random Forest": ["Random Forest Regressor", "Imputer.x", "Double.y"],
-            }
-        ),
-        lambda y: infer_feature_types(np.exp(y / 2)),
-    ),
-    (
-        ComponentGraph(
-            {
-                "Imputer": [Imputer, "X", "y"],
-                "Log": [LogTransform, "Imputer.x", "y"],
-                "Double": [DoubleTransform, "Log.x", "Log.y"],
-                "Random Forest": ["Random Forest Regressor", "Double.x", "Double.y"],
-            }
-        ),
-        lambda y: infer_feature_types(np.exp(y / 2)),
-    ),
-    (
-        ComponentGraph(
-            {
-                "Imputer": [Imputer, "X", "y"],
-                "OneHot": [OneHotEncoder, "Imputer.x", "y"],
-                "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
-                "Log": [LogTransform, "X", "y"],
-                "Double": [DoubleTransform, "DateTime.x", "Log.y"],
-                "Random Forest": ["Random Forest Regressor", "DateTime.x", "Double.y"],
-            }
-        ),
-        lambda y: infer_feature_types(np.exp(y / 2)),
-    ),
-    (
-        ComponentGraph(
-            {
-                "Imputer": [Imputer, "X", "y"],
-                "OneHot": [OneHotEncoder, "Imputer.x", "y"],
-                "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
-                "Log": [LogTransform, "X", "y"],
-                "Double": [DoubleTransform, "X", "Log.y"],
-                "Double2": [DoubleTransform, "X", "Double.y"],
-                "Random Forest": ["Random Forest Regressor", "DateTime.x", "Double2.y"],
-            }
-        ),
-        lambda y: infer_feature_types(np.exp(y / 4)),
-    ),
-    (
-        ComponentGraph(
-            {
-                "Imputer": ["Imputer", "X", "y"],
-                "Double": [DoubleTransform, "X", "y"],
-                "DateTime 1": ["DateTime Featurization Component", "Imputer.x", "y"],
-                "ET": ["Extra Trees Regressor", "DateTime 1.x", "Double.y"],
-                "Double 2": [DoubleTransform, "X", "y"],
-                "DateTime 2": ["DateTime Featurization Component", "Imputer.x", "y"],
-                "Double 3": [DoubleTransform, "X", "Double 2.y"],
-                "RandomForest": [
-                    "Random Forest Regressor",
-                    "DateTime 2.x",
-                    "Double 3.y",
-                ],
-                "DateTime 3": ["DateTime Featurization Component", "Imputer.x", "y"],
-                "Double 4": [DoubleTransform, "X", "y"],
-                "Catboost": ["Random Forest Regressor", "DateTime 3.x", "Double 4.y"],
-                "Logistic Regression": [
-                    "Linear Regressor",
-                    "Catboost.x",
-                    "RandomForest.x",
-                    "ET.x",
-                    "Double 3.y",
-                ],
-            }
-        ),
-        lambda y: infer_feature_types(y / 4),
-    ),
-    (
-        ComponentGraph(
-            {
-                "Imputer": [Imputer, "X", "y"],
-                "OneHot": [OneHotEncoder, "Imputer.x", "y"],
-                "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
-                "Log": [LogTransform, "X", "y"],
-                "Double": [DoubleTransform, "X", "Log.y"],
-                "Double2": [DoubleTransform, "X", "Double.y"],
-                "Subset": [SubsetData, "DateTime.x", "Double2.y"],
-                "Random Forest": ["Random Forest Regressor", "Subset.x", "Subset.y"],
-            }
-        ),
-        lambda y: infer_feature_types(np.exp(y / 4)),
-    ),
-    (
-        ComponentGraph(
-            {
-                "Imputer": [Imputer, "X", "y"],
-                "Random Forest": ["Random Forest Regressor", "Imputer.x", "y"],
-            }
-        ),
-        lambda y: y,
-    ),
-    (
-        ComponentGraph(
-            {
-                "Imputer": [Imputer, "X", "y"],
-                "DateTime": [DateTimeFeaturizer, "Imputer.x", "y"],
-                "OneHot": [OneHotEncoder, "DateTime.x", "y"],
-                "Random Forest": ["Random Forest Regressor", "OneHot.x", "y"],
-            }
-        ),
-        lambda y: y,
-    ),
-    (
-        ComponentGraph({"Random Forest": ["Random Forest Regressor", "X", "y"]}),
-        lambda y: y,
-    ),
-    (
-        ComponentGraph(
-            {
-                "Imputer": ["Imputer", "X", "y"],
-                "Double": [DoubleTransform, "X", "y"],
-                "DateTime 1": ["DateTime Featurization Component", "Imputer.x", "y"],
-                "ET": ["Extra Trees Regressor", "DateTime 1.x", "Double.y"],
-                "Double 2": [DoubleTransform, "X", "y"],
-                "DateTime 2": ["DateTime Featurization Component", "Imputer.x", "y"],
-                "Double 3": [DoubleTransform, "X", "Double 2.y"],
-                "RandomForest": [
-                    "Random Forest Regressor",
-                    "DateTime 2.x",
-                    "Double 3.y",
-                ],
-                "DateTime 3": ["DateTime Featurization Component", "Imputer.x", "y"],
-                "Double 4": [DoubleTransform, "X", "y"],
-                "Linear": ["Linear Regressor", "DateTime 3.x", "Double 4.y"],
-                "Logistic Regression": [
-                    "Linear Regressor",
-                    "Linear.x",
-                    "RandomForest.x",
-                    "ET.x",
-                    "y",
-                ],
-            }
-        ),
-        lambda y: y,
-    ),
+    # (
+    #     ComponentGraph(
+    #         {
+    #             "Imputer": [Imputer, "X", "y"],
+    #             "Log": [LogTransform, "X", "y"],
+    #             "Random Forest": ["Random Forest Regressor", "Imputer.x", "Log.y"],
+    #         }
+    #     ),
+    #     lambda y: infer_feature_types(np.exp(y)),
+    # ),
+    # (
+    #     ComponentGraph(
+    #         {
+    #             "Imputer": [Imputer, "X", "y"],
+    #             "Log": [LogTransform, "X", "y"],
+    #             "Double": [DoubleTransform, "X", "Log.y"],
+    #             "Random Forest": ["Random Forest Regressor", "Imputer.x", "Double.y"],
+    #         }
+    #     ),
+    #     lambda y: infer_feature_types(np.exp(y / 2)),
+    # ),
+    # (
+    #     ComponentGraph(
+    #         {
+    #             "Imputer": [Imputer, "X", "y"],
+    #             "Log": [LogTransform, "Imputer.x", "y"],
+    #             "Double": [DoubleTransform, "Log.x", "Log.y"],
+    #             "Random Forest": ["Random Forest Regressor", "Double.x", "Double.y"],
+    #         }
+    #     ),
+    #     lambda y: infer_feature_types(np.exp(y / 2)),
+    # ),
+    # (
+    #     ComponentGraph(
+    #         {
+    #             "Imputer": [Imputer, "X", "y"],
+    #             "OneHot": [OneHotEncoder, "Imputer.x", "y"],
+    #             "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
+    #             "Log": [LogTransform, "X", "y"],
+    #             "Double": [DoubleTransform, "DateTime.x", "Log.y"],
+    #             "Random Forest": ["Random Forest Regressor", "DateTime.x", "Double.y"],
+    #         }
+    #     ),
+    #     lambda y: infer_feature_types(np.exp(y / 2)),
+    # ),
+    # (
+    #     ComponentGraph(
+    #         {
+    #             "Imputer": [Imputer, "X", "y"],
+    #             "OneHot": [OneHotEncoder, "Imputer.x", "y"],
+    #             "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
+    #             "Log": [LogTransform, "X", "y"],
+    #             "Double": [DoubleTransform, "X", "Log.y"],
+    #             "Double2": [DoubleTransform, "X", "Double.y"],
+    #             "Random Forest": ["Random Forest Regressor", "DateTime.x", "Double2.y"],
+    #         }
+    #     ),
+    #     lambda y: infer_feature_types(np.exp(y / 4)),
+    # ),
+    # (
+    #     ComponentGraph(
+    #         {
+    #             "Imputer": ["Imputer", "X", "y"],
+    #             "Double": [DoubleTransform, "X", "y"],
+    #             "DateTime 1": ["DateTime Featurization Component", "Imputer.x", "y"],
+    #             "ET": ["Extra Trees Regressor", "DateTime 1.x", "Double.y"],
+    #             "Double 2": [DoubleTransform, "X", "y"],
+    #             "DateTime 2": ["DateTime Featurization Component", "Imputer.x", "y"],
+    #             "Double 3": [DoubleTransform, "X", "Double 2.y"],
+    #             "RandomForest": [
+    #                 "Random Forest Regressor",
+    #                 "DateTime 2.x",
+    #                 "Double 3.y",
+    #             ],
+    #             "DateTime 3": ["DateTime Featurization Component", "Imputer.x", "y"],
+    #             "Double 4": [DoubleTransform, "X", "y"],
+    #             "Catboost": ["Random Forest Regressor", "DateTime 3.x", "Double 4.y"],
+    #             "Logistic Regression": [
+    #                 "Linear Regressor",
+    #                 "Catboost.x",
+    #                 "RandomForest.x",
+    #                 "ET.x",
+    #                 "Double 3.y",
+    #             ],
+    #         }
+    #     ),
+    #     lambda y: infer_feature_types(y / 4),
+    # ),
+    # (
+    #     ComponentGraph(
+    #         {
+    #             "Imputer": [Imputer, "X", "y"],
+    #             "OneHot": [OneHotEncoder, "Imputer.x", "y"],
+    #             "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
+    #             "Log": [LogTransform, "X", "y"],
+    #             "Double": [DoubleTransform, "X", "Log.y"],
+    #             "Double2": [DoubleTransform, "X", "Double.y"],
+    #             "Subset": [SubsetData, "DateTime.x", "Double2.y"],
+    #             "Random Forest": ["Random Forest Regressor", "Subset.x", "Subset.y"],
+    #         }
+    #     ),
+    #     lambda y: infer_feature_types(np.exp(y / 4)),
+    # ),
+    # (
+    #     ComponentGraph(
+    #         {
+    #             "Imputer": [Imputer, "X", "y"],
+    #             "Random Forest": ["Random Forest Regressor", "Imputer.x", "y"],
+    #         }
+    #     ),
+    #     lambda y: y,
+    # ),
+    # (
+    #     ComponentGraph(
+    #         {
+    #             "Imputer": [Imputer, "X", "y"],
+    #             "DateTime": [DateTimeFeaturizer, "Imputer.x", "y"],
+    #             "OneHot": [OneHotEncoder, "DateTime.x", "y"],
+    #             "Random Forest": ["Random Forest Regressor", "OneHot.x", "y"],
+    #         }
+    #     ),
+    #     lambda y: y,
+    # ),
+    # (
+    #     ComponentGraph({"Random Forest": ["Random Forest Regressor", "X", "y"]}),
+    #     lambda y: y,
+    # ),
+    # (
+    #     ComponentGraph(
+    #         {
+    #             "Imputer": ["Imputer", "X", "y"],
+    #             "Double": [DoubleTransform, "X", "y"],
+    #             "DateTime 1": ["DateTime Featurization Component", "Imputer.x", "y"],
+    #             "ET": ["Extra Trees Regressor", "DateTime 1.x", "Double.y"],
+    #             "Double 2": [DoubleTransform, "X", "y"],
+    #             "DateTime 2": ["DateTime Featurization Component", "Imputer.x", "y"],
+    #             "Double 3": [DoubleTransform, "X", "Double 2.y"],
+    #             "RandomForest": [
+    #                 "Random Forest Regressor",
+    #                 "DateTime 2.x",
+    #                 "Double 3.y",
+    #             ],
+    #             "DateTime 3": ["DateTime Featurization Component", "Imputer.x", "y"],
+    #             "Double 4": [DoubleTransform, "X", "y"],
+    #             "Linear": ["Linear Regressor", "DateTime 3.x", "Double 4.y"],
+    #             "Logistic Regression": [
+    #                 "Linear Regressor",
+    #                 "Linear.x",
+    #                 "RandomForest.x",
+    #                 "ET.x",
+    #                 "y",
+    #             ],
+    #         }
+    #     ),
+    #     lambda y: y,
+    # ),
 ]
 
 
@@ -1941,3 +1941,18 @@ def test_component_graph_repr():
     expected_repr = "{'Imputer': ['Imputer', 'X', 'y'], 'OHE': ['One Hot Encoder', 'Imputer.x', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'OHE.x', 'y']}"
     component_graph = ComponentGraph(component_dict_with_objs)
     assert repr(component_graph) == expected_repr
+
+
+def test_component_graph_not_fully_connected():
+    with pytest.raises(ValueError, match="The given graph is not completely connected"):
+        ComponentGraph(
+            {
+                "Imputer": ["Imputer", "X", "y"],
+                "DateTime": ["DateTime Featurization Component", "X", "y"],
+                "Logistic Regression Classifier": [
+                    "Logistic Regression Classifier",
+                    "DateTime.x",
+                    "DateTime.y",
+                ],
+            }
+        )
