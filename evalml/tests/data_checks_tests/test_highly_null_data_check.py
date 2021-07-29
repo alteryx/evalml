@@ -222,7 +222,6 @@ def test_highly_null_data_check_separate_rows_cols():
     col_null_check = HighlyNullDataCheck(
         pct_null_col_threshold=0.0, pct_null_row_threshold=0.9
     )
-    highly_null_rows = SeriesWrap(pd.Series([2 / 3, 2 / 3, 2 / 3, 2 / 3, 1 / 3]))
     validate_results = col_null_check.validate(data)
     assert validate_results == {
         "warnings": [
