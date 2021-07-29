@@ -1412,7 +1412,7 @@ def test_partial_dependence_datetime_extra(
 
 
 @pytest.mark.parametrize(
-    "cols,expected_cols", [(0, [0]), ([0, 1], [0, 1]), ([0, 2], [0])]
+    "cols,expected_cols", [(0, [0]), ([0, 1], [0, 1]), ([0, 2], [0]), (2, [])]
 )
 @pytest.mark.parametrize("types", ["URL", "EmailAddress", "NaturalLanguage"])
 def test_partial_dependence_not_allowed_types(types, cols, expected_cols, X_y_binary):
@@ -1422,13 +1422,17 @@ def test_partial_dependence_not_allowed_types(types, cols, expected_cols, X_y_bi
     X.ww.init(logical_types={0: types, 1: "URL"})
     pl = BinaryClassificationPipeline(["Random Forest Classifier"])
     pl.fit(X, y)
-    expected_types = (
-        sorted(list(set([types, "URL"]))) if len(expected_cols) == 2 else [types]
-    )
-    with pytest.raises(
-        ValueError,
-        match=re.escape(
-            f"Columns {expected_cols} are of types {expected_types}, which cannot be used for partial dependence"
-        ),
-    ):
-        partial_dependence(pl, X, cols, grid_resolution=2)
+    if len(expected_cols):
+        expected_types = (
+            sorted(list(set([types, "URL"]))) if len(expected_cols) == 2 else [types]
+        )
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                f"Columns {expected_cols} are of types {expected_types}, which cannot be used for partial dependence"
+            ),
+        ):
+            partial_dependence(pl, X, cols, grid_resolution=2)
+        return
+    s = partial_dependence(pl, X, cols, grid_resolution=2)
+    assert not s.isnull().any().any()
