@@ -690,3 +690,22 @@ def test_permutation_importance_unknown(X_y_binary):
     pl.fit(X, y)
     s = calculate_permutation_importance(pl, X, y, objective="Log Loss Binary")
     assert not s.isnull().any().any()
+
+
+def test_permutation_importance_url_email(df_with_url_and_email):
+    X = df_with_url_and_email.ww.select(["numeric", "url", "EmailAddress"])
+    y = pd.Series([0, 1, 1, 0, 1])
+
+    pl = BinaryClassificationPipeline(
+        [
+            "URL Featurizer",
+            "Email Featurizer",
+            "One Hot Encoder",
+            "Random Forest Classifier",
+        ]
+    )
+    pl.fit(X, y)
+    data = calculate_permutation_importance(pl, X, y, objective="Log Loss Binary")
+    assert not data.isnull().any().any()
+    assert "url" in data["feature"].tolist()
+    assert "email" in data["feature"].tolist()
