@@ -244,9 +244,6 @@ class ComponentGraph:
             y_input = None
 
             for parent_input in self.get_inputs(component_name):
-                import pdb
-
-                pdb.set_trace()
                 if parent_input[-2:] == ".y" or parent_input == "y":
                     if y_input is not None:
                         raise ValueError(
