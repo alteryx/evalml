@@ -97,7 +97,6 @@ def _get_preprocessing_components(
         text_columns
     ):
         pp_components.append(Imputer)
-
     index_and_unknown_columns = list(
         X.ww.select(["index", "unknown"], return_schema=True).columns
     )

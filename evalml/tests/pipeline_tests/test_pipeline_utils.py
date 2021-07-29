@@ -1,3 +1,4 @@
+from evalml.pipelines.components.transformers.preprocessing import text_featurizer
 import numpy as np
 import pandas as pd
 import pytest
@@ -141,7 +142,7 @@ def test_make_pipeline(input_type, problem_type):
                     + delayed_features
                     + estimator_components
                 )
-            pipeline.component_graph.compute_order == [
+            assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
 
@@ -198,7 +199,7 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
                     + delayed_features
                     + estimator_components
                 )
-            pipeline.component_graph.compute_order == [
+            assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
 
@@ -253,7 +254,7 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
                 expected_components = (
                     [DropNullColumns, Imputer] + delayed_features + estimator_components
                 )
-            pipeline.component_graph.compute_order == [
+            assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
 
@@ -301,7 +302,7 @@ def test_make_pipeline_no_column_names(input_type, problem_type):
                 expected_components = (
                     [DropNullColumns, Imputer] + delayed_features + estimator_components
                 )
-            pipeline.component_graph.compute_order == [
+            assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
 
@@ -362,7 +363,7 @@ def test_make_pipeline_text_columns(input_type, problem_type):
                 expected_components = (
                     [TextFeaturizer, Imputer] + delayed_features + estimator_components
                 )
-            pipeline.component_graph.compute_order == [
+            assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
 
@@ -390,7 +391,7 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
     )
     y = pd.Series([0, 0, 1, 1, 0])
     if input_type == "ww":
-        X.ww.init()
+        X.ww.init(logical_types={"text": "NaturalLanguage", "another text": "NaturalLanguage"})
         y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
 
@@ -419,18 +420,22 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
             standard_scaler = []
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 standard_scaler = [StandardScaler]
+            if input_type == "ww":
+                text_featurizer = [TextFeaturizer, Imputer]
+            else:
+                text_featurizer = [DropColumns]
             if estimator_class.model_family == ModelFamily.ARIMA:
                 expected_components = (
-                    [TextFeaturizer] + standard_scaler + [estimator_class]
+                    text_featurizer + standard_scaler + [estimator_class]
                 )
             else:
                 expected_components = (
-                    [TextFeaturizer]
+                    text_featurizer
                     + delayed_features
                     + standard_scaler
                     + [estimator_class]
                 )
-            pipeline.component_graph.compute_order == [
+            assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
 
@@ -484,7 +489,7 @@ def test_make_pipeline_only_datetime_columns(input_type, problem_type):
                     + standard_scaler
                     + [estimator_class]
                 )
-            pipeline.component_graph.compute_order == [
+            assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
 
@@ -527,7 +532,7 @@ def test_make_pipeline_numpy_input(problem_type):
                 expected_components = (
                     [DropNullColumns, Imputer] + delayed_features + estimator_components
                 )
-            pipeline.component_graph.compute_order == [
+            assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
 
@@ -583,7 +588,7 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
                     + delayed_features
                     + estimator_components
                 )
-            pipeline.component_graph.compute_order == [
+            assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
 
