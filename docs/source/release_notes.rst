@@ -8,6 +8,7 @@ Release Notes
         * Added ``repr`` to ``ComponentGraph`` :pr:`2565`
         * Added components to extract features from ``URL`` and ``EmailAddress`` Logical Types :pr:`2550`
         * Added support for `NaN` values in ``TextFeaturizer`` :pr:`2532`
+        * Added ``SelectByType`` transformer :pr:`2531`
         * Added separate thresholds for percent null rows and columns in ``HighlyNullDataCheck`` :pr:`2562`
     * Fixes
     * Changes

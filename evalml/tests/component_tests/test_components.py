@@ -48,6 +48,7 @@ from evalml.pipelines.components import (
     RandomForestRegressor,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
+    SelectByType,
     SelectColumns,
     SimpleImputer,
     SMOTENCSampler,
@@ -861,7 +862,9 @@ def test_transformer_transform_output_type(X_y_binary):
             else:
                 assert isinstance(transform_output, pd.DataFrame)
 
-            if isinstance(component, SelectColumns):
+            if isinstance(component, SelectColumns) or isinstance(
+                component, SelectByType
+            ):
                 assert transform_output.shape == (X.shape[0], 0)
             elif isinstance(component, PCA) or isinstance(
                 component, LinearDiscriminantAnalysis
@@ -892,7 +895,9 @@ def test_transformer_transform_output_type(X_y_binary):
             else:
                 assert isinstance(transform_output, pd.DataFrame)
 
-            if isinstance(component, SelectColumns):
+            if isinstance(component, SelectColumns) or isinstance(
+                component, SelectByType
+            ):
                 assert transform_output.shape == (X.shape[0], 0)
             elif isinstance(component, PCA) or isinstance(
                 component, LinearDiscriminantAnalysis
@@ -1069,6 +1074,7 @@ def test_all_transformers_needs_fitting():
         if component_class.__name__ in [
             "DropColumns",
             "SelectColumns",
+            "SelectByType",
             "DelayedFeatureTransformer",
         ]:
             assert not component_class.needs_fitting
