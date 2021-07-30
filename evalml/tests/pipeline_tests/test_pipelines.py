@@ -38,7 +38,6 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     RandomForestClassifier,
     RandomForestRegressor,
-    RFClassifierSelectFromModel,
     StandardScaler,
     TargetImputer,
     Transformer,
@@ -384,19 +383,9 @@ def test_describe_pipeline(
         assert component.name in out
 
 
-def test_nonlinear_model_family():
+def test_nonlinear_model_family(example_graph):
     class DummyNonlinearPipeline(BinaryClassificationPipeline):
-        component_graph = {
-            "Imputer": ["Imputer"],
-            "OneHot": ["One Hot Encoder", "Imputer.x"],
-            "Elastic Net": ["Elastic Net Classifier", "OneHot.x"],
-            "Logistic Regression": ["Logistic Regression Classifier", "OneHot.x"],
-            "Random Forest": [
-                "Random Forest Classifier",
-                "Logistic Regression",
-                "Elastic Net",
-            ],
-        }
+        component_graph = example_graph
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
@@ -407,11 +396,16 @@ def test_nonlinear_model_family():
 
     class DummyTransformerEndPipeline(BinaryClassificationPipeline):
         component_graph = {
-            "Imputer": ["Imputer"],
-            "OneHot": ["One Hot Encoder", "Imputer.x"],
-            "Random Forest": ["Random Forest Classifier", "OneHot.x"],
-            "Logistic Regression": ["Logistic Regression Classifier", "OneHot.x"],
-            "Scaler": ["Standard Scaler", "Random Forest", "Logistic Regression"],
+            "Imputer": ["Imputer", "X", "y"],
+            "OneHot": ["One Hot Encoder", "Imputer.x", "y"],
+            "Random Forest": ["Random Forest Classifier", "OneHot.x", "y"],
+            "Logistic Regression": ["Logistic Regression Classifier", "OneHot.x", "y"],
+            "Scaler": [
+                "Standard Scaler",
+                "Random Forest.x",
+                "Logistic Regression.x",
+                "y",
+            ],
         }
 
         def __init__(self, parameters, random_seed=0):
@@ -424,7 +418,7 @@ def test_nonlinear_model_family():
     nlbp = DummyNonlinearPipeline({})
     nltp = DummyTransformerEndPipeline({})
 
-    assert nlbp.model_family == ModelFamily.RANDOM_FOREST
+    assert nlbp.model_family == ModelFamily.LINEAR_MODEL
     assert nltp.model_family == ModelFamily.NONE
 
 
@@ -544,12 +538,14 @@ def test_name():
 
 def test_multi_format_creation(X_y_binary):
     X, y = X_y_binary
-    component_graph = component_graph = [
-        "Imputer",
-        "One Hot Encoder",
-        StandardScaler,
-        "Logistic Regression Classifier",
-    ]
+    # Test that we can mix and match string and component classes
+
+    component_graph = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OneHot": ["One Hot Encoder", "Imputer.x", "y"],
+        "Scaler": [StandardScaler, "OneHot.x", "y"],
+        "Logistic Regression": ["Logistic Regression Classifier", "Scaler.x", "y"],
+    }
     parameters = {
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
@@ -565,38 +561,6 @@ def test_multi_format_creation(X_y_binary):
         Imputer,
         OneHotEncoder,
         StandardScaler,
-        LogisticRegressionClassifier,
-    ]
-    for component, correct_components in zip(clf, correct_components):
-        assert isinstance(component, correct_components)
-    assert clf.model_family == ModelFamily.LINEAR_MODEL
-
-    clf.fit(X, y)
-    clf.score(X, y, ["precision"])
-    assert not clf.feature_importance.isnull().all().all()
-
-
-def test_multiple_feature_selectors(X_y_binary):
-    X, y = X_y_binary
-    component_graph = [
-        "Imputer",
-        "One Hot Encoder",
-        "RF Classifier Select From Model",
-        StandardScaler,
-        "RF Classifier Select From Model",
-        "Logistic Regression Classifier",
-    ]
-
-    clf = BinaryClassificationPipeline(
-        component_graph=component_graph,
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-    )
-    correct_components = [
-        Imputer,
-        OneHotEncoder,
-        RFClassifierSelectFromModel,
-        StandardScaler,
-        RFClassifierSelectFromModel,
         LogisticRegressionClassifier,
     ]
     for component, correct_components in zip(clf, correct_components):
@@ -907,7 +871,7 @@ def test_compute_estimator_features_nonlinear(
     mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
     mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
     X_expected_df = pd.DataFrame(
-        {"Random Forest": np.zeros(X.shape[0]), "Elastic Net": np.ones(X.shape[0])}
+        {"Random Forest.x": np.zeros(X.shape[0]), "Elastic Net.x": np.ones(X.shape[0])}
     )
 
     pipeline = nonlinear_binary_pipeline_class({})
@@ -1199,7 +1163,10 @@ def test_nonlinear_feature_importance_has_feature_names(
     clf.fit(X, y)
     assert len(clf.feature_importance) == 2
     assert not clf.feature_importance.isnull().all().all()
-    assert sorted(clf.feature_importance["feature"]) == ["Elastic Net", "Random Forest"]
+    assert sorted(clf.feature_importance["feature"]) == [
+        "Elastic Net.x",
+        "Random Forest.x",
+    ]
 
 
 @pytest.mark.parametrize(
@@ -1684,10 +1651,10 @@ def test_nonlinear_pipeline_equality(pipeline_class):
     class MockPipeline(pipeline_class):
         custom_name = "Mock Pipeline"
         component_graph = {
-            "Imputer": ["Imputer"],
-            "OHE_1": ["One Hot Encoder", "Imputer"],
-            "OHE_2": ["One Hot Encoder", "Imputer"],
-            "Estimator": [final_estimator, "OHE_1", "OHE_2"],
+            "Imputer": ["Imputer", "X", "y"],
+            "OHE_1": ["One Hot Encoder", "Imputer.x", "y"],
+            "OHE_2": ["One Hot Encoder", "Imputer.x", "y"],
+            "Estimator": [final_estimator, "OHE_1.x", "OHE_2.x", "y"],
         }
 
         def __init__(self, parameters, random_seed=0):
@@ -1837,11 +1804,7 @@ def test_pipeline_repr(pipeline_class):
 
     custom_name = "Mock Pipeline"
     component_graph = ["Imputer", final_estimator]
-    component_graph_str = ""
-    if pipeline_class == RegressionPipeline:
-        component_graph_str = f"{{'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'Imputer.x', 'y']}}"
-    else:
-        component_graph_str = f"{{'Imputer': ['Imputer', 'X', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'Imputer.x', 'y']}}"
+    component_graph_str = f"{{'Imputer': ['Imputer', 'X', 'y'], '{final_estimator}': ['{final_estimator}', 'Imputer.x', 'y']}}"
 
     pipeline = pipeline_class(component_graph=component_graph, custom_name=custom_name)
     expected_repr = (

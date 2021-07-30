@@ -301,11 +301,14 @@ def test_get_best_sampler_for_data_sampler_method(
 )
 def test_get_pipelines_from_component_graphs(problem_type, estimator):
     component_graphs = {
-        "Name_0": ["Imputer", estimator],
+        "Name_0": {
+            "Imputer": ["Imputer", "X", "y"],
+            "Imputer_1": ["Imputer", "Imputer.x", "y"],
+            estimator: [estimator, "Imputer_1.x", "y"],
+        },
         "Name_1": {
-            "Imputer": ["Imputer"],
-            "Imputer_1": ["Imputer", "Imputer"],
-            estimator: [estimator, "Imputer_1"],
+            "Imputer": ["Imputer", "X", "y"],
+            estimator: [estimator, "Imputer.x", "y"],
         },
     }
     if problem_type == "time series regression":

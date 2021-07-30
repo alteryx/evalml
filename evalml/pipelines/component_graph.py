@@ -39,19 +39,36 @@ class ComponentGraph:
             raise ValueError(
                 "component_dict must be a dictionary which specifies the components and edges between components"
             )
+        self._validate_component_dict()
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
-            if not isinstance(component_info, list):
-                raise ValueError(
-                    "All component information should be passed in as a list"
-                )
             component_class = handle_component_class(component_info[0])
             self.component_instances[component_name] = component_class
         self.input_feature_names = {}
         self._feature_provenance = {}
         self._i = 0
         self._compute_order = self.generate_order(self.component_dict)
+
+    def _validate_component_dict(self):
+        for _, component_inputs in self.component_dict.items():
+            if not isinstance(component_inputs, list):
+                raise ValueError(
+                    "All component information should be passed in as a list"
+                )
+            component_inputs = component_inputs[1:]
+            has_feature_input = any(
+                component_input.endswith(".x") or component_input == "X"
+                for component_input in component_inputs
+            )
+            has_target_input = any(
+                component_input.endswith(".y") or component_input == "y"
+                for component_input in component_inputs
+            )
+            if not (has_feature_input and has_target_input):
+                raise ValueError(
+                    "All edges must be specified as either an input feature (.x) or input target (.y)."
+                )
 
     @property
     def compute_order(self):
@@ -280,7 +297,7 @@ class ComponentGraph:
                     output = component_instance.predict(input_x)
                 else:
                     output = None
-                output_cache[component_name] = output
+                output_cache[f"{component_name}.x"] = output
         return output_cache
 
     def _get_feature_provenance(self, input_feature_names):
@@ -522,6 +539,7 @@ class ComponentGraph:
         if len(edges) == 0:
             return []
         digraph = nx.DiGraph()
+        digraph.add_nodes_from(list(component_dict.keys()))
         digraph.add_edges_from(edges)
         if not nx.is_weakly_connected(digraph):
             raise ValueError("The given graph is not completely connected")

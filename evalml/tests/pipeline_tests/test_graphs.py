@@ -35,20 +35,8 @@ def test_pipeline():
 
 
 @pytest.fixture
-def test_component_graph():
-    graph = {
-        "Imputer": ["Imputer"],
-        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x"],
-        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x"],
-        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x"],
-        "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x"],
-        "Logistic Regression": [
-            "Logistic Regression Classifier",
-            "Random Forest",
-            "Elastic Net",
-        ],
-    }
-    component_graph = ComponentGraph(graph)
+def test_component_graph(example_graph):
+    component_graph = ComponentGraph(example_graph)
     return component_graph
 
 
