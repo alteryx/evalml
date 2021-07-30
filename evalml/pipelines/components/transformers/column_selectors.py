@@ -31,9 +31,7 @@ class ColumnSelector(Transformer):
 
         missing_cols = set(cols) - set(column_names)
         if missing_cols:
-            raise ValueError(
-                "Columns of type {column_types} not found in input data."
-            )
+            raise ValueError("Columns of type {column_types} not found in input data.")
 
     @abstractmethod
     def _modify_columns(self, cols, X, y=None):
@@ -148,9 +146,7 @@ class SelectByType(ColumnSelector):
     def _check_input_for_columns(self, X):
         col_types = self.parameters.get("column_types")
         if col_types and X.ww.select(col_types).empty:
-            raise ValueError(
-                "Columns of type {column_types} not found in input data."
-            )
+            raise ValueError("Columns of type {column_types} not found in input data.")
 
     def _modify_columns(self, cols, X, y=None):
         return X.ww.select(cols)
