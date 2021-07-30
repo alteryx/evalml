@@ -12,7 +12,7 @@ from .time_series_classification_pipelines import (
 )
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 
-from evalml.data_checks import DataCheckActionCode
+from evalml.data_checks import DataCheckActionCode, TargetDistributionDataCheck
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
@@ -25,6 +25,7 @@ from evalml.pipelines.components import (  # noqa: F401
     EmailFeaturizer,
     Estimator,
     Imputer,
+    LogTransformer,
     OneHotEncoder,
     RandomForestClassifier,
     SMOTENCSampler,
@@ -43,6 +44,7 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
+    is_regression,
     is_time_series,
 )
 from evalml.utils import get_logger, import_or_raise, infer_feature_types
@@ -67,6 +69,12 @@ def _get_preprocessing_components(
     """
 
     pp_components = []
+
+    if is_regression(problem_type):
+        for each_action in TargetDistributionDataCheck().validate(X, y)["actions"]:
+            if each_action["metadata"]["transformation_strategy"] == "lognormal":
+                pp_components.append(LogTransformer)
+
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)

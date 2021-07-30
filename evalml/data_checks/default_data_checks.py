@@ -6,6 +6,7 @@ from .id_columns_data_check import IDColumnsDataCheck
 from .invalid_targets_data_check import InvalidTargetDataCheck
 from .natural_language_nan_data_check import NaturalLanguageNaNDataCheck
 from .no_variance_data_check import NoVarianceDataCheck
+from .target_distribution_data_check import TargetDistributionDataCheck
 from .target_leakage_data_check import TargetLeakageDataCheck
 
 from evalml.problem_types import ProblemTypes, handle_problem_types
@@ -24,6 +25,7 @@ class DefaultDataChecks(DataChecks):
         - `ClassImbalanceDataCheck` (for classification problem types)
         - `DateTimeNaNDataCheck`
         - `NaturalLanguageNaNDataCheck`
+        - `TargetDistributionDataCheck`
 
     Arguments:
         problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
@@ -47,12 +49,12 @@ class DefaultDataChecks(DataChecks):
             ProblemTypes.TIME_SERIES_REGRESSION,
         ]:
             super().__init__(
-                self._DEFAULT_DATA_CHECK_CLASSES,
+                self._DEFAULT_DATA_CHECK_CLASSES + [TargetDistributionDataCheck],
                 data_check_params={
                     "InvalidTargetDataCheck": {
                         "problem_type": problem_type,
                         "objective": objective,
-                    }
+                    },
                 },
             )
         else:
