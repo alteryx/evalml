@@ -138,28 +138,28 @@ class LinearPipelineCreateFeatureThenDropIt(BinaryClassificationPipeline):
 
 class DagTwoEncoders(BinaryClassificationPipeline):
     component_graph = {
-        "Imputer": ["Imputer"],
-        "SelectNumeric": ["Select Columns Transformer", "Imputer"],
-        "SelectCategorical1": ["Select Columns Transformer", "Imputer"],
-        "SelectCategorical2": ["Select Columns Transformer", "Imputer"],
-        "OHE_1": ["One Hot Encoder", "SelectCategorical1"],
-        "OHE_2": ["One Hot Encoder", "SelectCategorical2"],
-        "DT": ["DateTime Featurization Component", "SelectNumeric"],
-        "Estimator": ["Random Forest Classifier", "DT", "OHE_1", "OHE_2"],
+        "Imputer": ["Imputer", "X", "y"],
+        "SelectNumeric": ["Select Columns Transformer", "Imputer.x", "y"],
+        "SelectCategorical1": ["Select Columns Transformer", "Imputer.x", "y"],
+        "SelectCategorical2": ["Select Columns Transformer", "Imputer.x", "y"],
+        "OHE_1": ["One Hot Encoder", "SelectCategorical1.x", "y"],
+        "OHE_2": ["One Hot Encoder", "SelectCategorical2.x", "y"],
+        "DT": ["DateTime Featurization Component", "SelectNumeric.x", "y"],
+        "Estimator": ["Random Forest Classifier", "DT.x", "OHE_1.x", "OHE_2.x", "y"],
     }
 
 
 class DagReuseFeatures(BinaryClassificationPipeline):
     component_graph = {
-        "Imputer": ["Imputer"],
-        "SelectDate": ["Select Columns Transformer", "Imputer"],
-        "SelectCategorical1": ["Select Columns Transformer", "Imputer"],
-        "SelectCategorical2": ["Select Columns Transformer", "Imputer"],
-        "OHE_1": ["One Hot Encoder", "SelectCategorical1"],
-        "OHE_2": ["One Hot Encoder", "SelectCategorical2"],
-        "DT": ["DateTime Featurization Component", "SelectDate"],
-        "OHE_3": ["One Hot Encoder", "DT"],
-        "Estimator": ["Random Forest Classifier", "OHE_3", "OHE_1", "OHE_2"],
+        "Imputer": ["Imputer", "X", "y"],
+        "SelectDate": ["Select Columns Transformer", "Imputer.x", "y"],
+        "SelectCategorical1": ["Select Columns Transformer", "Imputer.x", "y"],
+        "SelectCategorical2": ["Select Columns Transformer", "Imputer.x", "y"],
+        "OHE_1": ["One Hot Encoder", "SelectCategorical1.x", "y"],
+        "OHE_2": ["One Hot Encoder", "SelectCategorical2.x", "y"],
+        "DT": ["DateTime Featurization Component", "SelectDate.x", "y"],
+        "OHE_3": ["One Hot Encoder", "DT.x", "y"],
+        "Estimator": ["Random Forest Classifier", "OHE_3.x", "OHE_1.x", "OHE_2.x", "y"],
     }
 
 
@@ -380,15 +380,20 @@ class PipelineWithDimReduction(BinaryClassificationPipeline):
 
 class EnsembleDag(BinaryClassificationPipeline):
     component_graph = {
-        "Imputer_1": ["Imputer"],
-        "Imputer_2": ["Imputer"],
-        "OHE_1": ["One Hot Encoder", "Imputer_1"],
-        "OHE_2": ["One Hot Encoder", "Imputer_2"],
-        "DT_1": ["DateTime Featurization Component", "OHE_1"],
-        "DT_2": ["DateTime Featurization Component", "OHE_2"],
-        "Estimator_1": ["Random Forest Classifier", "DT_1"],
-        "Estimator_2": ["Extra Trees Classifier", "DT_2"],
-        "Ensembler": ["Logistic Regression Classifier", "Estimator_1", "Estimator_2"],
+        "Imputer_1": ["Imputer", "X", "y"],
+        "Imputer_2": ["Imputer", "X", "y"],
+        "OHE_1": ["One Hot Encoder", "Imputer_1.x", "y"],
+        "OHE_2": ["One Hot Encoder", "Imputer_2.x", "y"],
+        "DT_1": ["DateTime Featurization Component", "OHE_1.x", "y"],
+        "DT_2": ["DateTime Featurization Component", "OHE_2.x", "y"],
+        "Estimator_1": ["Random Forest Classifier", "DT_1.x", "y"],
+        "Estimator_2": ["Extra Trees Classifier", "DT_2.x", "y"],
+        "Ensembler": [
+            "Logistic Regression Classifier",
+            "Estimator_1.x",
+            "Estimator_2.x",
+            "y",
+        ],
     }
 
     def __init__(self, parameters, random_seed=0):
