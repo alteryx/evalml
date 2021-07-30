@@ -2,11 +2,13 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Added ``LogTransformer`` and ``TargetDistributionDataCheck`` :pr:`2487`
         * Issue a warning to users when a pipeline parameter passed in isn't used in the pipeline :pr:`2564`
         * Added Gini coefficient as an objective :pr:`2544`
         * Added ``repr`` to ``ComponentGraph`` :pr:`2565`
         * Added components to extract features from ``URL`` and ``EmailAddress`` Logical Types :pr:`2550`
         * Added support for `NaN` values in ``TextFeaturizer`` :pr:`2532`
+        * Added separate thresholds for percent null rows and columns in ``HighlyNullDataCheck`` :pr:`2562`
     * Fixes
         * Raised error message for types ``URL``, ``NaturalLanguage``, and ``EmailAddress`` in ``partial_dependence`` :pr:`2573`
     * Changes

@@ -12,3 +12,6 @@ class DataCheckActionCode(Enum):
 
     IMPUTE_COL = "impute_col"
     """Action code for imputing a column."""
+
+    TRANSFORM_TARGET = "transform_target"
+    """Action code for transforming the target data."""
