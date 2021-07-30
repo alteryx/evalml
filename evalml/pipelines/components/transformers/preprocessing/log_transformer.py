@@ -18,7 +18,7 @@ class LogTransformer(TargetTransformer):
         super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
 
     def fit(self, X, y=None):
-        """Fits the LogTransform.
+        """Fits the LogTransformer.
 
         Arguments:
             X (pd.DataFrame or np.ndarray): Ignored.
