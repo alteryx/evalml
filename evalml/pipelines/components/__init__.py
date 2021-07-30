@@ -41,6 +41,7 @@ from .transformers import (
     DropNullColumns,
     DateTimeFeaturizer,
     SelectColumns,
+    SelectByType,
     TextFeaturizer,
     LinearDiscriminantAnalysis,
     LSA,
