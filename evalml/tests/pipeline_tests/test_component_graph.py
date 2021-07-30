@@ -1961,7 +1961,7 @@ def test_component_graph_defines_edge_with_invalid_syntax():
 )
 def test_component_graph_instantiate_parameters(pipeline_parameters, set_values):
     graph = {
-        "Imputer": ["Imputer", "x", "y"],
+        "Imputer": ["Imputer", "X", "y"],
         "Scaler": ["Standard Scaler", "Imputer.x", "y"],
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
