@@ -13,8 +13,6 @@ class ColumnSelector(Transformer):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    _VALIDATION_ERROR_FORMAT_STRING = "Columns {columns} not found in input data."
-
     def __init__(self, columns=None, random_seed=0, **kwargs):
         if columns and not isinstance(columns, list):
             raise ValueError(
@@ -29,16 +27,12 @@ class ColumnSelector(Transformer):
 
     def _check_input_for_columns(self, X):
         cols = self.parameters.get("columns") or []
-        col_types = self.parameters.get("column_types")
-
         column_names = X.columns
 
         missing_cols = set(cols) - set(column_names)
-        if col_types:
-            missing_cols = X.ww.select(col_types).empty
         if missing_cols:
             raise ValueError(
-                self._VALIDATION_ERROR_FORMAT_STRING.format(**self.parameters)
+                "Columns of type {column_types} not found in input data."
             )
 
     @abstractmethod
@@ -140,9 +134,6 @@ class SelectByType(ColumnSelector):
     hyperparameter_ranges = {}
     """{}"""
     needs_fitting = False
-    _VALIDATION_ERROR_FORMAT_STRING = (
-        "Columns of type {column_types} not found in input data."
-    )
 
     def __init__(self, column_types=None, random_seed=0, **kwargs):
         parameters = {"column_types": column_types}
@@ -153,6 +144,13 @@ class SelectByType(ColumnSelector):
             component_obj=None,
             random_seed=random_seed,
         )
+
+    def _check_input_for_columns(self, X):
+        col_types = self.parameters.get("column_types")
+        if col_types and X.ww.select(col_types).empty:
+            raise ValueError(
+                "Columns of type {column_types} not found in input data."
+            )
 
     def _modify_columns(self, cols, X, y=None):
         return X.ww.select(cols)

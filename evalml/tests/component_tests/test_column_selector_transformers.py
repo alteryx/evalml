@@ -46,7 +46,10 @@ def test_column_transformer_empty_X(class_to_test):
     transformer = class_to_test(columns=[])
     assert_frame_equal(X, transformer.fit_transform(X))
 
-    transformer = class_to_test(columns=["not in data"])
+    if class_to_test is SelectByType:
+        transformer = class_to_test(column_types=["not in data"])
+    else:
+        transformer = class_to_test(columns=["not in data"])
     with pytest.raises(ValueError, match="not found in input data"):
         transformer.fit(X)
 
