@@ -1412,13 +1412,25 @@ def test_partial_dependence_datetime_extra(
 
 
 @pytest.mark.parametrize(
-    "cols,expected_cols", [(0, [0]), ([0, 1], [0, 1]), ([0, 2], [0]), (2, [])]
+    "cols,expected_cols",
+    [
+        (0, ["changing_col"]),
+        ([0, 1], ["changing_col", "URL_col"]),
+        ([0, 2], ["changing_col"]),
+        (2, []),
+    ],
 )
 @pytest.mark.parametrize("types", ["URL", "EmailAddress", "NaturalLanguage"])
-def test_partial_dependence_not_allowed_types(types, cols, expected_cols, X_y_binary):
-    X, y = X_y_binary
-    X = pd.DataFrame(X)
-    X.ww.init(logical_types={0: types, 1: "URL"})
+def test_partial_dependence_not_allowed_types(types, cols, expected_cols):
+    X = pd.DataFrame(
+        {
+            "changing_col": [i for i in range(1000)],
+            "URL_col": [i % 5 for i in range(1000)],
+            "col": [i % 10 for i in range(1000)],
+        }
+    )
+    y = pd.Series([i % 2 for i in range(1000)])
+    X.ww.init(logical_types={"changing_col": types, "URL_col": "URL"})
     pl = BinaryClassificationPipeline(["Random Forest Classifier"])
     pl.fit(X, y)
     if len(expected_cols):
