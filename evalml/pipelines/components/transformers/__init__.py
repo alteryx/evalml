@@ -18,6 +18,7 @@ from .preprocessing import (
     DelayedFeatureTransformer,
     DFSTransformer,
     PolynomialDetrender,
+    LogTransformer,
     EmailFeaturizer,
     URLFeaturizer,
 )

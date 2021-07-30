@@ -52,6 +52,7 @@ from .transformers import (
     SMOTESampler,
     SMOTENCSampler,
     SMOTENSampler,
+    LogTransformer,
     EmailFeaturizer,
     URLFeaturizer,
 )
