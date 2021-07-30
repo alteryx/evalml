@@ -822,11 +822,18 @@ def test_make_pipeline_url_email(column_to_drop, problem_type, df_with_url_and_e
                 ]
             if is_regression(problem_type):
                 expected_components = (
-                    [LogTransformer] + expected_components + delayed_features + encoder + estimator_components
+                    [LogTransformer]
+                    + expected_components
+                    + delayed_features
+                    + encoder
+                    + estimator_components
                 )
             else:
                 expected_components = (
-                    expected_components + delayed_features + encoder + estimator_components
+                    expected_components
+                    + delayed_features
+                    + encoder
+                    + estimator_components
                 )
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
