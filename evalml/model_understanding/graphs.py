@@ -662,11 +662,9 @@ def partial_dependence(
     X_not_allowed = X_features.ww.select(["URL", "EmailAddress", "NaturalLanguage"])
     if len(X_not_allowed.columns):
         # these three logical types aren't allowed for partial dependence
-        types = sorted(
-            list(set(X_not_allowed.ww.types["Logical Type"].astype(str).tolist()))
-        )
+        types = sorted(set(X_not_allowed.ww.types["Logical Type"].astype(str).tolist()))
         raise ValueError(
-            f"Columns {X_not_allowed.columns.values.tolist()} are of types {types}, which cannot be used for partial dependence"
+            f"Columns {X_not_allowed.columns.tolist()} are of types {types}, which cannot be used for partial dependence"
         )
 
     X_cats = X_features.ww.select("categorical")

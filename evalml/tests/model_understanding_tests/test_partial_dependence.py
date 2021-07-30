@@ -1416,7 +1416,6 @@ def test_partial_dependence_datetime_extra(
 )
 @pytest.mark.parametrize("types", ["URL", "EmailAddress", "NaturalLanguage"])
 def test_partial_dependence_not_allowed_types(types, cols, expected_cols, X_y_binary):
-    # test to see if we can get partial dependence fine with a dataset that has unknown features
     X, y = X_y_binary
     X = pd.DataFrame(X)
     X.ww.init(logical_types={0: types, 1: "URL"})
@@ -1424,7 +1423,7 @@ def test_partial_dependence_not_allowed_types(types, cols, expected_cols, X_y_bi
     pl.fit(X, y)
     if len(expected_cols):
         expected_types = (
-            sorted(list(set([types, "URL"]))) if len(expected_cols) == 2 else [types]
+            sorted(set([types, "URL"])) if len(expected_cols) == 2 else [types]
         )
         with pytest.raises(
             ValueError,
