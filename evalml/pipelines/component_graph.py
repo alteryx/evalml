@@ -1,10 +1,15 @@
+import warnings
+
 import networkx as nx
 import pandas as pd
 import woodwork as ww
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
-from evalml.exceptions.exceptions import MissingComponentError
+from evalml.exceptions.exceptions import (
+    MissingComponentError,
+    ParameterNotUsedWarning,
+)
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
@@ -95,8 +100,11 @@ class ComponentGraph:
             raise ValueError(
                 f"Cannot reinstantiate a component graph that was previously instantiated"
             )
-
         parameters = parameters or {}
+        param_set = set(s for s in parameters.keys() if s not in ["pipeline"])
+        diff = param_set.difference(set(self.component_instances.keys()))
+        if len(diff):
+            warnings.warn(ParameterNotUsedWarning(diff))
         self._is_instantiated = True
         component_instances = {}
         for component_name, component_class in self.component_instances.items():
