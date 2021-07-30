@@ -250,7 +250,11 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if "pipeline" in self._pipeline_params:
             parameters["pipeline"] = self._pipeline_params["pipeline"]
 
-        for name, component_class in pipeline.linearized_component_graph:
+        for (
+            name,
+            component_instance,
+        ) in pipeline.component_graph.component_instances.items():
+            component_class = type(component_instance)
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
             # For first batch, pass the pipeline params to the components that need them

@@ -6,6 +6,10 @@ import woodwork as ww
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
+from evalml.exceptions.exceptions import (
+    MissingComponentError,
+    ParameterNotUsedWarning,
+)
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
@@ -31,19 +35,40 @@ class ComponentGraph:
     def __init__(self, component_dict=None, random_seed=0):
         self.random_seed = random_seed
         self.component_dict = component_dict or {}
+        if not isinstance(self.component_dict, dict):
+            raise ValueError(
+                "component_dict must be a dictionary which specifies the components and edges between components"
+            )
+        self._validate_component_dict()
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
-            if not isinstance(component_info, list):
-                raise ValueError(
-                    "All component information should be passed in as a list"
-                )
             component_class = handle_component_class(component_info[0])
             self.component_instances[component_name] = component_class
         self.input_feature_names = {}
         self._feature_provenance = {}
         self._i = 0
         self._compute_order = self.generate_order(self.component_dict)
+
+    def _validate_component_dict(self):
+        for _, component_inputs in self.component_dict.items():
+            if not isinstance(component_inputs, list):
+                raise ValueError(
+                    "All component information should be passed in as a list"
+                )
+            component_inputs = component_inputs[1:]
+            has_feature_input = any(
+                component_input.endswith(".x") or component_input == "X"
+                for component_input in component_inputs
+            )
+            has_target_input = any(
+                component_input.endswith(".y") or component_input == "y"
+                for component_input in component_inputs
+            )
+            if not (has_feature_input and has_target_input):
+                raise ValueError(
+                    "All edges must be specified as either an input feature (.x) or input target (.y)."
+                )
 
     @property
     def compute_order(self):
@@ -63,103 +88,6 @@ class ComponentGraph:
                 defaults[component.name] = component.default_parameters
         return defaults
 
-    @classmethod
-    def linearized_component_graph(cls, components):
-        """Return a list of (component name, component class) tuples from a pre-initialized component graph defined
-        as either a list or a dictionary. The component names are guaranteed to be unique.
-
-        Args:
-            components (list(ComponentBase) or Dict[str, ComponentBase]): Components in the pipeline.
-
-        Returns:
-            list((component name, ComponentBase)) - tuples with the unique component name as the first element and the
-                component class as the second element. When the input is a list, the components will be returned in
-                the order they appear in the input.
-        """
-        names = []
-        if isinstance(components, list):
-            seen = set()
-            for idx, component in enumerate(components):
-                component_class = handle_component_class(component)
-                component_name = component_class.name
-
-                if component_name in seen:
-                    component_name = f"{component_name}_{idx}"
-                seen.add(component_name)
-                names.append((component_name, component_class))
-        elif isinstance(components, dict):
-            for k, v in components.items():
-                names.append((k, handle_component_class(v[0])))
-        else:
-            for k, v in components.component_dict.items():
-                names.append((k, handle_component_class(v[0])))
-        return names
-
-    @classmethod
-    def from_list(cls, component_list, random_seed=0):
-        """Constructs a linear ComponentGraph from a given list, where each component in the list feeds its X transformed output to the next component
-
-        Arguments:
-            component_list (list): String names or ComponentBase subclasses in
-                                   an order that represents a valid linear graph
-        """
-        warnings.warn(
-            "ComponentGraph.from_list will be deprecated in the next release. Please use a dictionary to specify your graph instead.",
-            DeprecationWarning,
-        )
-        component_dict = {}
-        previous_component = None
-
-        component_list = cls.linearized_component_graph(component_list)
-
-        # Logic is as follows: Create the component dict for the non-target transformers as expected.
-        # If there are target transformers present, connect them together and then pass the final output
-        # to the sampler (if present) or the final estimator
-
-        target_transformers = list(
-            filter(lambda tup: issubclass(tup[1], TargetTransformer), component_list)
-        )
-        not_target_transformers = list(
-            filter(
-                lambda tup: not issubclass(tup[1], TargetTransformer), component_list
-            )
-        )
-
-        for component_name, component_class in not_target_transformers:
-            component_dict[component_name] = [component_class]
-            if previous_component is not None:
-                if "sampler" in previous_component:
-                    component_dict[component_name].extend(
-                        [f"{previous_component}.x", f"{previous_component}.y"]
-                    )
-                else:
-                    component_dict[component_name].append(f"{previous_component}.x")
-            previous_component = component_name
-
-        previous_component = None
-        for component_name, component_class in target_transformers:
-            component_dict[component_name] = [component_class]
-            if previous_component is not None:
-                component_dict[component_name].append(f"{previous_component}.y")
-            previous_component = component_name
-
-        if target_transformers:
-            sampler_index = next(
-                iter(
-                    [
-                        i
-                        for i, tup in enumerate(not_target_transformers)
-                        if "sampler" in tup[0]
-                    ]
-                ),
-                -1,
-            )
-            component_dict[not_target_transformers[sampler_index][0]].append(
-                f"{target_transformers[-1][0]}.y"
-            )
-
-        return cls(component_dict, random_seed=random_seed)
-
     def instantiate(self, parameters):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be
         raised if a component is already instantiated but the parameters dict contains arguments for that component.
@@ -172,8 +100,11 @@ class ComponentGraph:
             raise ValueError(
                 f"Cannot reinstantiate a component graph that was previously instantiated"
             )
-
         parameters = parameters or {}
+        param_set = set(s for s in parameters.keys() if s not in ["pipeline"])
+        diff = param_set.difference(set(self.component_instances.keys()))
+        if len(diff):
+            warnings.warn(ParameterNotUsedWarning(diff))
         self._is_instantiated = True
         component_instances = {}
         for component_name, component_class in self.component_instances.items():
@@ -366,7 +297,7 @@ class ComponentGraph:
                     output = component_instance.predict(input_x)
                 else:
                     output = None
-                output_cache[component_name] = output
+                output_cache[f"{component_name}.x"] = output
         return output_cache
 
     def _get_feature_provenance(self, input_feature_names):
@@ -608,6 +539,7 @@ class ComponentGraph:
         if len(edges) == 0:
             return []
         digraph = nx.DiGraph()
+        digraph.add_nodes_from(list(component_dict.keys()))
         digraph.add_edges_from(edges)
         if not nx.is_weakly_connected(digraph):
             raise ValueError("The given graph is not completely connected")
@@ -660,6 +592,35 @@ class ComponentGraph:
             if getattr(self, attribute) != getattr(other, attribute):
                 return False
         return True
+
+    def __repr__(self):
+        component_strs = []
+        for (
+            component_name,
+            component_info,
+        ) in self.component_dict.items():
+            try:
+                component_key = f"'{component_name}': "
+                if isinstance(component_info[0], str):
+                    component_class = handle_component_class(component_info[0])
+                else:
+                    component_class = handle_component_class(component_info[0].name)
+                component_name = f"'{component_class.name}'"
+            except MissingComponentError:
+                # Not an EvalML component, use component class name
+                component_name = f"{component_info[0].__name__}"
+
+            component_edges_str = ""
+            if len(component_info) > 1:
+                component_edges_str = ", "
+                component_edges_str += ", ".join(
+                    [f"'{info}'" for info in component_info[1:]]
+                )
+
+            component_str = f"{component_key}[{component_name}{component_edges_str}]"
+            component_strs.append(component_str)
+        component_dict_str = f"{{{', '.join(component_strs)}}}"
+        return component_dict_str
 
     def _get_parent_y(self, component_name):
         """Helper for inverse_transform method."""

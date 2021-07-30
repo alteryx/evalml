@@ -28,6 +28,7 @@ from evalml.automl.utils import (
 )
 from evalml.exceptions import (
     AutoMLSearchException,
+    ParameterNotUsedWarning,
     PipelineNotFoundError,
     PipelineNotYetFittedError,
     PipelineScoreError,
@@ -505,6 +506,7 @@ def test_automl_str_no_param_search(X_y_binary):
             "Accuracy Binary",
             "Balanced Accuracy Binary",
             "F1",
+            "Gini",
             "MCC Binary",
             "Precision",
         ],
@@ -1051,7 +1053,6 @@ def test_default_objective(X_y_binary):
 
 
 def test_add_to_rankings(
-    dummy_classifier_linear_component_graph,
     AutoMLTestEnv,
     dummy_binary_pipeline_class,
     X_y_binary,
@@ -1063,7 +1064,6 @@ def test_add_to_rankings(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs=dummy_classifier_linear_component_graph,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1.0, "F1": 0.5}):
@@ -1099,7 +1099,6 @@ def test_add_to_rankings(
 
 
 def test_add_to_rankings_no_search(
-    dummy_classifier_linear_component_graph,
     AutoMLTestEnv,
     dummy_binary_pipeline_class,
     X_y_binary,
@@ -1110,7 +1109,6 @@ def test_add_to_rankings_no_search(
         y_train=y,
         problem_type="binary",
         max_iterations=1,
-        allowed_component_graphs=dummy_classifier_linear_component_graph,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.5234}):
@@ -1136,7 +1134,7 @@ def test_add_to_rankings_no_search(
 def test_add_to_rankings_regression_large(
     AutoMLTestEnv,
     dummy_regression_pipeline_class,
-    dummy_regressor_linear_component_graph,
+    example_regression_graph,
 ):
     X = pd.DataFrame({"col_0": [i for i in range(101000)]})
     y = pd.Series([i for i in range(101000)])
@@ -1144,7 +1142,7 @@ def test_add_to_rankings_regression_large(
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
-        allowed_component_graphs=dummy_regressor_linear_component_graph,
+        allowed_component_graphs={"CG": example_regression_graph},
         problem_type="regression",
         max_time=1,
         max_iterations=1,
@@ -1176,7 +1174,7 @@ def test_add_to_rankings_new_pipeline(dummy_regression_pipeline_class):
 
 
 def test_add_to_rankings_regression(
-    dummy_regressor_linear_component_graph,
+    example_regression_graph,
     dummy_regression_pipeline_class,
     X_y_regression,
     AutoMLTestEnv,
@@ -1186,7 +1184,7 @@ def test_add_to_rankings_regression(
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
-        allowed_component_graphs=dummy_regressor_linear_component_graph,
+        allowed_component_graphs={"CG": example_regression_graph},
         problem_type="regression",
         max_time=1,
         max_iterations=1,
@@ -1202,7 +1200,6 @@ def test_add_to_rankings_regression(
 
 
 def test_add_to_rankings_duplicate(
-    dummy_classifier_linear_component_graph,
     AutoMLTestEnv,
     dummy_binary_pipeline_class,
     X_y_binary,
@@ -1215,7 +1212,6 @@ def test_add_to_rankings_duplicate(
         problem_type="binary",
         optimize_thresholds=False,
         max_iterations=1,
-        allowed_component_graphs=dummy_classifier_linear_component_graph,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.1234}):
@@ -2263,30 +2259,35 @@ def test_time_series_regression_with_parameters(ts_data):
     assert automl.allowed_pipelines[0].parameters["pipeline"] == problem_configuration
 
 
-@pytest.mark.parametrize("graph_type", ["linear", "dict", "cg"])
-def test_automl_accepts_component_graphs(
-    graph_type, dummy_classifier_estimator_class, X_y_binary
-):
+@pytest.mark.parametrize("graph_type", ["dict", "cg"])
+def test_automl_accepts_component_graphs(graph_type, X_y_binary):
     X, y = X_y_binary
-    if graph_type == "linear":
-        component_graph = ["Imputer", "Logistic Regression Classifier"]
-        component_graph_obj = ComponentGraph.from_list(component_graph)
-    elif graph_type == "dict":
+    if graph_type == "dict":
         component_graph = {
-            "imputer": ["Imputer"],
-            "ohe": ["One Hot Encoder", "imputer.x"],
-            "estimator_1": ["Random Forest Classifier", "ohe.x"],
-            "estimator_2": ["Decision Tree Classifier", "ohe.x"],
-            "final": ["Logistic Regression Classifier", "estimator_1", "estimator_2"],
+            "imputer": ["Imputer", "X", "y"],
+            "ohe": ["One Hot Encoder", "imputer.x", "y"],
+            "estimator_1": ["Random Forest Classifier", "ohe.x", "y"],
+            "estimator_2": ["Decision Tree Classifier", "ohe.x", "y"],
+            "final": [
+                "Logistic Regression Classifier",
+                "estimator_1.x",
+                "estimator_2.x",
+                "y",
+            ],
         }
         component_graph_obj = ComponentGraph(component_graph)
     else:
         component_dict = {
-            "imputer": ["Imputer"],
-            "ohe": ["One Hot Encoder", "imputer.x"],
-            "estimator_1": ["Random Forest Classifier", "ohe.x"],
-            "estimator_2": ["Decision Tree Classifier", "ohe.x"],
-            "final": ["Logistic Regression Classifier", "estimator_1", "estimator_2"],
+            "imputer": ["Imputer", "X", "y"],
+            "ohe": ["One Hot Encoder", "imputer.x", "y"],
+            "estimator_1": ["Random Forest Classifier", "ohe.x", "y"],
+            "estimator_2": ["Decision Tree Classifier", "ohe.x", "y"],
+            "final": [
+                "Logistic Regression Classifier",
+                "estimator_1.x",
+                "estimator_2.x",
+                "y",
+            ],
         }
         component_graph = ComponentGraph(component_dict)
         component_graph_obj = component_graph
@@ -3748,44 +3749,39 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
     X, y = X_y_binary
     # Pass the input of the first imputer to the second imputer
     component_graph_dict = {
-        "Imputer": ["Imputer"],
-        "Imputer_1": ["Imputer", "Imputer"],
-        "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"],
+        "Imputer": ["Imputer", "X", "y"],
+        "Imputer_1": ["Imputer", "Imputer.x", "y"],
+        "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1.x", "y"],
     }
-    component_graph_linear = ["Imputer", "Imputer", "Random Forest Classifier"]
 
     automl = AutoMLSearch(
         X,
         y,
         problem_type="binary",
-        allowed_component_graphs={
-            "Pipeline from dict": component_graph_dict,
-            "Pipeline from linear": component_graph_linear,
-        },
+        allowed_component_graphs={"Pipeline from dict": component_graph_dict},
         pipeline_parameters={
             "Imputer": {"numeric_impute_strategy": "most_frequent"},
             "Imputer_1": {"numeric_impute_strategy": "median"},
         },
         optimize_thresholds=False,
-        max_batches=3,
+        max_batches=1,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={automl.objective.name: 0.63}):
         automl.search()
-    for row in automl.full_rankings.iloc[1:3].parameters:
+    for row in automl.full_rankings.iloc[1:].parameters:
         assert row["Imputer"]["numeric_impute_strategy"] == "most_frequent"
         assert row["Imputer_1"]["numeric_impute_strategy"] == "median"
 
     component_graph_dict = {
-        "One Hot Encoder": ["One Hot Encoder"],
-        "One Hot Encoder_1": ["One Hot Encoder", "One Hot Encoder"],
-        "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder_1"],
+        "One Hot Encoder": ["One Hot Encoder", "X", "y"],
+        "One Hot Encoder_1": ["One Hot Encoder", "One Hot Encoder.x", "y"],
+        "Random Forest Classifier": [
+            "Random Forest Classifier",
+            "One Hot Encoder_1.x",
+            "y",
+        ],
     }
-    component_graph_linear = [
-        "One Hot Encoder",
-        "One Hot Encoder",
-        "Random Forest Classifier",
-    ]
 
     automl = AutoMLSearch(
         X,
@@ -3793,54 +3789,41 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
         problem_type="binary",
         allowed_component_graphs={
             "Pipeline from dict": component_graph_dict,
-            "Pipeline from linear": component_graph_linear,
         },
         pipeline_parameters={
             "One Hot Encoder": {"top_n": 15},
             "One Hot Encoder_1": {"top_n": 25},
         },
         optimize_thresholds=False,
-        max_batches=3,
+        max_batches=1,
     )
     with env.test_context(score_return_value={automl.objective.name: 0.63}):
         automl.search()
-    for row in automl.full_rankings.iloc[1:3].parameters:
+    for row in automl.full_rankings.iloc[1:].parameters:
         assert row["One Hot Encoder"]["top_n"] == 15
         assert row["One Hot Encoder_1"]["top_n"] == 25
 
 
-@pytest.mark.parametrize("graph_type", ["linear", "dict"])
 def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_components(
-    AutoMLTestEnv, graph_type, X_y_binary
+    AutoMLTestEnv, X_y_binary
 ):
     X, y = X_y_binary
-
-    if graph_type == "linear":
-        custom_hyperparameters = {
-            "Imputer": {"numeric_impute_strategy": Categorical(["mean"])},
-            "Imputer_1": {
-                "numeric_impute_strategy": Categorical(["most_frequent", "mean"])
-            },
-            "Random Forest Classifier": {"n_estimators": Categorical([100, 125])},
+    custom_hyperparameters = {
+        "Imputer": {"numeric_impute_strategy": Categorical(["most_frequent", "mean"])},
+        "Imputer_1": {"numeric_impute_strategy": Categorical(["median", "mean"])},
+        "Random Forest Classifier": {"n_estimators": Categorical([50, 100])},
+    }
+    component_graph = {
+        "Name_dict": {
+            "Imputer": ["Imputer", "X", "y"],
+            "Imputer_1": ["Imputer", "Imputer.x", "y"],
+            "Random Forest Classifier": [
+                "Random Forest Classifier",
+                "Imputer_1.x",
+                "y",
+            ],
         }
-        component_graph = {
-            "Name_linear": ["Imputer", "Imputer", "Random Forest Classifier"]
-        }
-    else:
-        custom_hyperparameters = {
-            "Imputer": {
-                "numeric_impute_strategy": Categorical(["most_frequent", "mean"])
-            },
-            "Imputer_1": {"numeric_impute_strategy": Categorical(["median", "mean"])},
-            "Random Forest Classifier": {"n_estimators": Categorical([50, 100])},
-        }
-        component_graph = {
-            "Name_dict": {
-                "Imputer": ["Imputer"],
-                "Imputer_1": ["Imputer", "Imputer"],
-                "Random Forest Classifier": ["Random Forest Classifier", "Imputer_1"],
-            }
-        }
+    }
 
     automl = AutoMLSearch(
         X,
@@ -3887,35 +3870,25 @@ def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(
 ):
     X, y = X_y_binary
 
-    component_graph_1 = {
-        "Imputer": ["Imputer"],
-        "Imputer_1": ["Imputer", "Imputer"],
-        "One Hot Encoder": ["One Hot Encoder", "Imputer_1"],
-        "Random Forest Classifier": ["Random Forest Classifier", "One Hot Encoder"],
+    component_graph = {
+        "Imputer": ["Imputer", "X", "y"],
+        "Imputer_1": ["Imputer", "Imputer.x", "y"],
+        "One Hot Encoder": ["One Hot Encoder", "Imputer_1.x", "y"],
+        "Random Forest Classifier": [
+            "Random Forest Classifier",
+            "One Hot Encoder.x",
+            "y",
+        ],
     }
-
-    component_graph_2 = [
-        "Imputer",
-        "Imputer",
-        "One Hot Encoder",
-        "Random Forest Classifier",
-    ]
-
-    component_graph_3 = [
-        "Imputer",
-        "Imputer",
-        "One Hot Encoder",
-        "Random Forest Classifier",
-    ]
 
     automl = AutoMLSearch(
         X,
         y,
         problem_type="binary",
         allowed_component_graphs={
-            "Pipe Line One": component_graph_1,
-            "Pipe Line Two": component_graph_2,
-            "Pipe Line Three": component_graph_3,
+            "Pipeline One": component_graph,
+            "Pipeline Two": component_graph,
+            "Pipeline Three": component_graph,
         },
         pipeline_parameters={"Imputer": {"numeric_impute_strategy": "most_frequent"}},
         custom_hyperparameters={
@@ -4903,3 +4876,60 @@ def test_data_splitter_gives_pipelines_same_data(
         assert all(
             len(data_hash_dictionary[i]) == 1 for i in range(n_splits)
         ), "There should only be one hash per split."
+
+
+@pytest.mark.parametrize(
+    "allowed_component_graphs",
+    [None, {"graph": ["Imputer", "Logistic Regression Classifier"]}],
+)
+@pytest.mark.parametrize(
+    "pipeline_parameters,set_values",
+    [
+        ({"Logistic Regression Classifier": {"penalty": "l1"}}, {}),
+        (
+            {
+                "Imputer": {"numeric_impute_strategy": "mean"},
+                "Logistic Regression Classifier": {"penalty": "l1"},
+            },
+            {},
+        ),
+        (
+            {
+                "Undersampler": {"sampling_ratio": 0.05},
+                "Logistic Regression Classifier": {"penalty": "l1"},
+            },
+            {"Undersampler"},
+        ),
+        (
+            {
+                "Undersampler": {"sampling_ratio": 0.05},
+                "SMOTE Oversampler": {"sampling_ratio": 0.10},
+            },
+            {"Undersampler", "SMOTE Oversampler"},
+        ),
+    ],
+)
+def test_pipeline_parameter_warnings_component_graphs(
+    pipeline_parameters, set_values, allowed_component_graphs, AutoMLTestEnv, X_y_binary
+):
+    X, y = X_y_binary
+    with warnings.catch_warnings(record=True) as w:
+        warnings.filterwarnings(
+            "always",
+            category=ParameterNotUsedWarning,
+        )
+        automl = AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            max_batches=2,
+            n_jobs=1,
+            allowed_component_graphs=allowed_component_graphs,
+            pipeline_parameters=pipeline_parameters,
+        )
+        env = AutoMLTestEnv("binary")
+        with env.test_context(score_return_value={automl.objective.name: 1.0}):
+            automl.search()
+    assert len(w) == (1 if len(set_values) else 0)
+    if len(w):
+        assert w[0].message.components == set_values

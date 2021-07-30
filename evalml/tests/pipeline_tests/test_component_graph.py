@@ -12,14 +12,13 @@ from pandas.testing import (
 )
 from woodwork.logical_types import Double, Integer
 
-from evalml.exceptions import MissingComponentError
+from evalml.exceptions import MissingComponentError, ParameterNotUsedWarning
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
     ElasticNetClassifier,
     Estimator,
     Imputer,
-    LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
@@ -93,23 +92,6 @@ def dummy_components():
     return TransformerA, TransformerB, TransformerC, EstimatorA, EstimatorB, EstimatorC
 
 
-@pytest.fixture
-def example_graph():
-    graph = {
-        "Imputer": [Imputer],
-        "OneHot_RandomForest": [OneHotEncoder, "Imputer.x"],
-        "OneHot_ElasticNet": [OneHotEncoder, "Imputer.x"],
-        "Random Forest": [RandomForestClassifier, "OneHot_RandomForest.x"],
-        "Elastic Net": [ElasticNetClassifier, "OneHot_ElasticNet.x"],
-        "Logistic Regression": [
-            LogisticRegressionClassifier,
-            "Random Forest",
-            "Elastic Net",
-        ],
-    }
-    return graph
-
-
 def test_init(example_graph):
     comp_graph = ComponentGraph()
     assert len(comp_graph.component_dict) == 0
@@ -131,15 +113,16 @@ def test_init(example_graph):
 
 def test_init_str_components():
     graph = {
-        "Imputer": ["Imputer"],
-        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x"],
-        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x"],
-        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x"],
-        "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x"],
+        "Imputer": ["Imputer", "X", "y"],
+        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "y"],
+        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
+        "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
         "Logistic Regression": [
             "Logistic Regression Classifier",
-            "Random Forest",
-            "Elastic Net",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "y",
         ],
     }
     comp_graph = ComponentGraph(graph)
@@ -157,24 +140,18 @@ def test_init_str_components():
 
 
 def test_invalid_init():
-    invalid_graph = {"Imputer": [Imputer], "OHE": OneHotEncoder}
+    invalid_graph = {"Imputer": [Imputer, "X", "y"], "OHE": OneHotEncoder}
     with pytest.raises(
         ValueError, match="All component information should be passed in as a list"
     ):
         ComponentGraph(invalid_graph)
 
-    with pytest.raises(
-        ValueError, match="may only contain str or ComponentBase subclasses"
-    ):
-        ComponentGraph(
-            {
-                "Imputer": [Imputer(numeric_impute_strategy="most_frequent")],
-                "OneHot": [OneHotEncoder],
-            }
-        )
-
     graph = {
-        "Imputer": [Imputer(numeric_impute_strategy="constant", numeric_fill_value=0)]
+        "Imputer": [
+            Imputer(numeric_impute_strategy="constant", numeric_fill_value=0),
+            "X",
+            "y",
+        ]
     }
     with pytest.raises(
         ValueError, match="may only contain str or ComponentBase subclasses"
@@ -182,122 +159,68 @@ def test_invalid_init():
         ComponentGraph(graph)
 
     graph = {
-        "Imputer": ["Imputer", "Fake"],
-        "Fake": ["Fake Component", "Estimator"],
-        "Estimator": [ElasticNetClassifier],
+        "Fake": ["Fake Component", "X", "y"],
+        "Estimator": [ElasticNetClassifier, "Fake.x", "y"],
     }
     with pytest.raises(MissingComponentError):
         ComponentGraph(graph)
 
 
 def test_init_bad_graphs():
-    graph = {
-        "Imputer": [Imputer],
-        "OHE": [OneHotEncoder, "Imputer.x", "Estimator"],
-        "Estimator": [RandomForestClassifier, "OHE.x"],
+    graph_with_cycle = {
+        "Imputer": [Imputer, "X", "y"],
+        "OHE": [OneHotEncoder, "Imputer.x", "Estimator.x", "y"],
+        "Estimator": [RandomForestClassifier, "OHE.x", "y"],
     }
     with pytest.raises(ValueError, match="given graph contains a cycle"):
-        ComponentGraph(graph)
+        ComponentGraph(graph_with_cycle)
 
-    graph = {
-        "Imputer": [Imputer],
-        "OneHot_RandomForest": [OneHotEncoder, "Imputer.x"],
-        "OneHot_ElasticNet": [OneHotEncoder, "Imputer.x"],
-        "Random Forest": [RandomForestClassifier],
-        "Elastic Net": [ElasticNetClassifier],
-        "Logistic Regression": [
-            LogisticRegressionClassifier,
-            "Random Forest",
-            "Elastic Net",
-        ],
-    }
-    with pytest.raises(ValueError, match="graph is not completely connected"):
-        ComponentGraph(graph)
-
-    graph = {
-        "Imputer": ["Imputer"],
-        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x"],
-        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x"],
-        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x"],
-        "Elastic Net": ["Elastic Net Classifier"],
+    graph_with_more_than_one_final_component = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "y"],
+        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
+        "Elastic Net": ["Elastic Net Classifier", "X", "y"],
         "Logistic Regression": [
             "Logistic Regression Classifier",
-            "Random Forest",
-            "Elastic Net",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "y",
         ],
     }
     with pytest.raises(ValueError, match="graph has more than one final"):
-        ComponentGraph(graph)
+        ComponentGraph(graph_with_more_than_one_final_component)
+
+    graph_with_unconnected_imputer = {
+        "Imputer": ["Imputer", "X", "y"],
+        "DateTime": ["DateTime Featurization Component", "X", "y"],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            "DateTime.x",
+            "DateTime.y",
+        ],
+    }
+    with pytest.raises(ValueError, match="The given graph is not completely connected"):
+        ComponentGraph(graph_with_unconnected_imputer)
 
 
 def test_order_x_and_y():
     graph = {
-        "Imputer": [Imputer],
+        "Imputer": [Imputer, "X", "y"],
         "OHE": [OneHotEncoder, "Imputer.x", "Imputer.y"],
-        "Random Forest": [RandomForestClassifier, "OHE.x"],
+        "Random Forest": [RandomForestClassifier, "OHE.x", "y"],
     }
     component_graph = ComponentGraph(graph).instantiate({})
     assert component_graph.compute_order == ["Imputer", "OHE", "Random Forest"]
 
 
-def test_from_list():
+def test_list_raises_error():
     component_list = ["Imputer", "One Hot Encoder", RandomForestClassifier]
-
-    component_graph = ComponentGraph.from_list(component_list)
-
-    assert len(component_graph.component_dict) == 3
-    assert component_graph.get_component("Imputer") == Imputer
-    assert component_graph.get_component("One Hot Encoder") == OneHotEncoder
-    assert (
-        component_graph.get_component("Random Forest Classifier")
-        == RandomForestClassifier
-    )
-
-    expected_order = ["Imputer", "One Hot Encoder", "Random Forest Classifier"]
-    assert component_graph.compute_order == expected_order
-    assert component_graph.component_dict == {
-        "Imputer": [Imputer],
-        "One Hot Encoder": [OneHotEncoder, "Imputer.x"],
-        "Random Forest Classifier": [RandomForestClassifier, "One Hot Encoder.x"],
-    }
-
-    bad_component_list = ["Imputer", "Fake Estimator"]
-    with pytest.raises(MissingComponentError, match="was not found"):
-        ComponentGraph.from_list(bad_component_list)
-
-
-def test_from_list_repeat_component():
-    component_list = [
-        "Imputer",
-        "One Hot Encoder",
-        "One Hot Encoder",
-        RandomForestClassifier,
-    ]
-    component_graph = ComponentGraph.from_list(component_list)
-
-    expected_order = [
-        "Imputer",
-        "One Hot Encoder",
-        "One Hot Encoder_2",
-        "Random Forest Classifier",
-    ]
-    assert component_graph.compute_order == expected_order
-
-    component_graph.instantiate(
-        {"One Hot Encoder": {"top_n": 2}, "One Hot Encoder_2": {"top_n": 11}}
-    )
-    assert component_graph.get_component("One Hot Encoder").parameters["top_n"] == 2
-    assert component_graph.get_component("One Hot Encoder_2").parameters["top_n"] == 11
-
-
-def test_component_graph_from_list_deprecation_warning():
-    component_list = ["Imputer", "One Hot Encoder", RandomForestClassifier]
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
-        ComponentGraph.from_list(component_list)
-        assert len(w) == 1
-        assert issubclass(w[-1].category, DeprecationWarning)
-        assert "deprecated" in str(w[-1].message)
+    with pytest.raises(
+        ValueError,
+        match="component_dict must be a dictionary which specifies the components and edges between components",
+    ):
+        ComponentGraph(component_list)
 
 
 def test_instantiate_with_parameters(example_graph):
@@ -362,20 +285,6 @@ def test_instantiate_without_parameters(example_graph):
     assert component_graph.compute_order == expected_order
 
 
-def test_instantiate_from_list():
-    component_list = ["Imputer", "One Hot Encoder", "Random Forest Classifier"]
-    component_graph = ComponentGraph().from_list(component_list)
-
-    parameters = {"One Hot Encoder": {"top_n": 7}}
-    component_graph.instantiate(parameters)
-    assert isinstance(component_graph.get_component("Imputer"), Imputer)
-    assert isinstance(
-        component_graph.get_component("Random Forest Classifier"),
-        RandomForestClassifier,
-    )
-    assert component_graph.get_component("One Hot Encoder").parameters["top_n"] == 7
-
-
 def test_reinstantiate(example_graph):
     component_graph = ComponentGraph(example_graph)
     component_graph.instantiate({})
@@ -434,7 +343,7 @@ def test_get_estimators(example_graph):
         LogisticRegressionClassifier(),
     ]
 
-    component_graph = ComponentGraph.from_list(["Imputer", "One Hot Encoder"])
+    component_graph = ComponentGraph({"Imputer": ["Imputer", "X", "y"]})
     component_graph.instantiate({})
     assert component_graph.get_estimators() == []
 
@@ -443,28 +352,30 @@ def test_parents(example_graph):
     graph = example_graph
     component_graph = ComponentGraph(graph)
 
-    assert component_graph.get_inputs("Imputer") == []
-    assert component_graph.get_inputs("OneHot_RandomForest") == ["Imputer.x"]
-    assert component_graph.get_inputs("OneHot_ElasticNet") == ["Imputer.x"]
-    assert component_graph.get_inputs("Random Forest") == ["OneHot_RandomForest.x"]
-    assert component_graph.get_inputs("Elastic Net") == ["OneHot_ElasticNet.x"]
+    assert component_graph.get_inputs("Imputer") == ["X", "y"]
+    assert component_graph.get_inputs("OneHot_RandomForest") == ["Imputer.x", "y"]
+    assert component_graph.get_inputs("OneHot_ElasticNet") == ["Imputer.x", "y"]
+    assert component_graph.get_inputs("Random Forest") == ["OneHot_RandomForest.x", "y"]
+    assert component_graph.get_inputs("Elastic Net") == ["OneHot_ElasticNet.x", "y"]
     assert component_graph.get_inputs("Logistic Regression") == [
-        "Random Forest",
-        "Elastic Net",
+        "Random Forest.x",
+        "Elastic Net.x",
+        "y",
     ]
 
     with pytest.raises(ValueError, match="not in the graph"):
         component_graph.get_inputs("Fake component")
 
     component_graph.instantiate({})
-    assert component_graph.get_inputs("Imputer") == []
-    assert component_graph.get_inputs("OneHot_RandomForest") == ["Imputer.x"]
-    assert component_graph.get_inputs("OneHot_ElasticNet") == ["Imputer.x"]
-    assert component_graph.get_inputs("Random Forest") == ["OneHot_RandomForest.x"]
-    assert component_graph.get_inputs("Elastic Net") == ["OneHot_ElasticNet.x"]
+    assert component_graph.get_inputs("Imputer") == ["X", "y"]
+    assert component_graph.get_inputs("OneHot_RandomForest") == ["Imputer.x", "y"]
+    assert component_graph.get_inputs("OneHot_ElasticNet") == ["Imputer.x", "y"]
+    assert component_graph.get_inputs("Random Forest") == ["OneHot_RandomForest.x", "y"]
+    assert component_graph.get_inputs("Elastic Net") == ["OneHot_ElasticNet.x", "y"]
     assert component_graph.get_inputs("Logistic Regression") == [
-        "Random Forest",
-        "Elastic Net",
+        "Random Forest.x",
+        "Elastic Net.x",
+        "y",
     ]
 
     with pytest.raises(ValueError, match="not in the graph"):
@@ -484,25 +395,21 @@ def test_get_last_component(example_graph):
     component_graph.instantiate({})
     assert component_graph.get_last_component() == LogisticRegressionClassifier()
 
-    component_graph = ComponentGraph({"Imputer": [Imputer]})
+    component_graph = ComponentGraph({"Imputer": [Imputer, "X", "y"]})
     assert component_graph.get_last_component() == Imputer
 
     component_graph = ComponentGraph(
-        {"Imputer": [Imputer], "OneHot": [OneHotEncoder, "Imputer"]}
+        {"Imputer": [Imputer, "X", "y"], "OneHot": [OneHotEncoder, "Imputer.x", "y"]}
     )
     assert component_graph.get_last_component() == OneHotEncoder
-
-    component_graph = ComponentGraph({"Imputer": [Imputer], "OneHot": [OneHotEncoder]})
-    with pytest.raises(
-        ValueError, match="Cannot get last component from edgeless graph"
-    ):
-        component_graph.get_last_component()
 
 
 @patch("evalml.pipelines.components.Transformer.fit_transform")
 @patch("evalml.pipelines.components.Estimator.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_fit(mock_predict, mock_fit, mock_fit_transform, example_graph, X_y_binary):
+def test_fit_component_graph(
+    mock_predict, mock_fit, mock_fit_transform, example_graph, X_y_binary
+):
     X, y = X_y_binary
     mock_fit_transform.return_value = pd.DataFrame(X)
     mock_predict.return_value = pd.Series(y)
@@ -522,7 +429,10 @@ def test_fit_correct_inputs(
     X, y = X_y_binary
     X = pd.DataFrame(X)
     y = pd.Series(y)
-    graph = {"Imputer": [Imputer], "OHE": [OneHotEncoder, "Imputer.x", "Imputer.y"]}
+    graph = {
+        "Imputer": [Imputer, "X", "y"],
+        "OHE": [OneHotEncoder, "Imputer.x", "Imputer.y"],
+    }
     expected_x = pd.DataFrame(index=X.index, columns=X.columns).fillna(1.0)
     expected_x.ww.init()
 
@@ -538,27 +448,7 @@ def test_fit_correct_inputs(
 @patch("evalml.pipelines.components.Transformer.fit_transform")
 @patch("evalml.pipelines.components.Estimator.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_fit_features(mock_predict, mock_fit, mock_fit_transform, X_y_binary):
-    X, y = X_y_binary
-    component_list = ["Imputer", "One Hot Encoder", "Random Forest Classifier"]
-    component_graph = ComponentGraph.from_list(component_list)
-    component_graph.instantiate({})
-
-    mock_fit_transform.return_value = pd.DataFrame(np.ones(X.shape))
-    mock_fit.return_value = Estimator
-    mock_predict.return_value = pd.Series(y)
-
-    component_graph.fit_features(X, y)
-
-    assert mock_fit_transform.call_count == 2
-    assert mock_fit.call_count == 0
-    assert mock_predict.call_count == 0
-
-
-@patch("evalml.pipelines.components.Transformer.fit_transform")
-@patch("evalml.pipelines.components.Estimator.fit")
-@patch("evalml.pipelines.components.Estimator.predict")
-def test_fit_features_nonlinear(
+def test_component_graph_fit_features(
     mock_predict, mock_fit, mock_fit_transform, example_graph, X_y_binary
 ):
     X, y = X_y_binary
@@ -599,15 +489,16 @@ def test_predict_repeat_estimator(mock_predict, mock_fit, X_y_binary):
     mock_predict.return_value = pd.Series(y)
 
     graph = {
-        "Imputer": [Imputer],
-        "OneHot_RandomForest": [OneHotEncoder, "Imputer.x"],
-        "OneHot_Logistic": [OneHotEncoder, "Imputer.x"],
-        "Random Forest": [RandomForestClassifier, "OneHot_RandomForest.x"],
-        "Logistic Regression": [LogisticRegressionClassifier, "OneHot_Logistic.x"],
+        "Imputer": [Imputer, "X", "y"],
+        "OneHot_RandomForest": [OneHotEncoder, "Imputer.x", "y"],
+        "OneHot_Logistic": [OneHotEncoder, "Imputer.x", "y"],
+        "Random Forest": [RandomForestClassifier, "OneHot_RandomForest.x", "y"],
+        "Logistic Regression": [LogisticRegressionClassifier, "OneHot_Logistic.x", "y"],
         "Final Estimator": [
             LogisticRegressionClassifier,
-            "Random Forest",
-            "Logistic Regression",
+            "Random Forest.x",
+            "Logistic Regression.x",
+            "y",
         ],
     }
     component_graph = ComponentGraph(graph)
@@ -626,29 +517,9 @@ def test_predict_repeat_estimator(mock_predict, mock_fit, X_y_binary):
 
 @patch("evalml.pipelines.components.Imputer.transform")
 @patch("evalml.pipelines.components.OneHotEncoder.transform")
-def test_compute_final_component_features_linear(mock_ohe, mock_imputer, X_y_binary):
-    X, y = X_y_binary
-    X = pd.DataFrame(X)
-    X_expected = X.fillna(0)
-    mock_imputer.return_value = X
-    mock_ohe.return_value = X_expected
-
-    component_list = ["Imputer", "One Hot Encoder", "Random Forest Classifier"]
-    component_graph = ComponentGraph().from_list(component_list)
-    component_graph.instantiate({})
-    component_graph.fit(X, y)
-
-    X_t = component_graph.compute_final_component_features(X)
-    assert_frame_equal(X_expected, X_t)
-    assert mock_imputer.call_count == 2
-    assert mock_ohe.call_count == 2
-
-
-@patch("evalml.pipelines.components.Imputer.transform")
-@patch("evalml.pipelines.components.OneHotEncoder.transform")
 @patch("evalml.pipelines.components.RandomForestClassifier.predict")
 @patch("evalml.pipelines.components.ElasticNetClassifier.predict")
-def test_compute_final_component_features_nonlinear(
+def test_compute_final_component_features(
     mock_en_predict, mock_rf_predict, mock_ohe, mock_imputer, example_graph, X_y_binary
 ):
     X, y = X_y_binary
@@ -657,7 +528,7 @@ def test_compute_final_component_features_nonlinear(
     mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
     mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
     X_expected = pd.DataFrame(
-        {"Random Forest": np.zeros(X.shape[0]), "Elastic Net": np.ones(X.shape[0])}
+        {"Random Forest.x": np.zeros(X.shape[0]), "Elastic Net.x": np.ones(X.shape[0])}
     )
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
@@ -674,7 +545,7 @@ def test_compute_final_component_features_single_component(mock_transform, X_y_b
     X = pd.DataFrame(X)
     mock_transform.return_value = X
     component_graph = ComponentGraph(
-        {"Dummy Component": [DummyTransformer]}
+        {"Dummy Component": [DummyTransformer, "X", "y"]}
     ).instantiate({})
     component_graph.fit(X, y)
 
@@ -686,9 +557,9 @@ def test_compute_final_component_features_single_component(mock_transform, X_y_b
 def test_fit_y_parent(mock_fit_transform, X_y_binary):
     X, y = X_y_binary
     graph = {
-        "Imputer": [Imputer],
-        "OHE": [OneHotEncoder, "Imputer.x", "Imputer.y"],
-        "Random Forest": [RandomForestClassifier, "OHE.x"],
+        "Imputer": [Imputer, "X", "y"],
+        "OHE": [OneHotEncoder, "Imputer.x", "y"],
+        "Random Forest": [RandomForestClassifier, "OHE.x", "y"],
     }
     component_graph = ComponentGraph(graph).instantiate({})
     mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
@@ -712,7 +583,7 @@ def test_predict_empty_graph(X_y_binary):
 @patch("evalml.pipelines.components.OneHotEncoder.transform")
 def test_predict_transformer_end(mock_fit_transform, mock_transform, X_y_binary):
     X, y = X_y_binary
-    graph = {"Imputer": [Imputer], "OHE": [OneHotEncoder, "Imputer.x"]}
+    graph = {"Imputer": [Imputer, "X", "y"], "OHE": [OneHotEncoder, "Imputer.x", "y"]}
     component_graph = ComponentGraph(graph).instantiate({})
     mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
     mock_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
@@ -725,9 +596,9 @@ def test_predict_transformer_end(mock_fit_transform, mock_transform, X_y_binary)
 def test_no_instantiate_before_fit(X_y_binary):
     X, y = X_y_binary
     graph = {
-        "Imputer": [Imputer],
-        "OHE": [OneHotEncoder, "Imputer.x"],
-        "Estimator": [RandomForestClassifier, "OHE.x"],
+        "Imputer": [Imputer, "X", "y"],
+        "OHE": [OneHotEncoder, "Imputer.x", "y"],
+        "Estimator": [RandomForestClassifier, "OHE.x", "y"],
     }
     component_graph = ComponentGraph(graph)
     with pytest.raises(
@@ -741,9 +612,9 @@ def test_no_instantiate_before_fit(X_y_binary):
 def test_multiple_y_parents(mock_fit_transform, X_y_binary):
     X, y = X_y_binary
     graph = {
-        "Imputer": [Imputer],
-        "OHE": [OneHotEncoder, "Imputer.x"],
-        "Estimator": [RandomForestClassifier, "Imputer.y", "OHE.y"],
+        "Imputer": [Imputer, "X", "y"],
+        "TargetImputer": [Imputer, "Imputer.x", "y"],
+        "Estimator": [RandomForestClassifier, "Imputer.x", "y", "TargetImputer.y"],
     }
     component_graph = ComponentGraph(graph)
     component_graph.instantiate({})
@@ -766,7 +637,7 @@ def test_component_graph_order(example_graph):
     ]
     assert expected_order == component_graph.compute_order
 
-    component_graph = ComponentGraph({"Imputer": [Imputer]})
+    component_graph = ComponentGraph({"Imputer": [Imputer, "X", "y"]})
     expected_order = ["Imputer"]
     assert expected_order == component_graph.compute_order
 
@@ -780,24 +651,13 @@ def test_component_graph_order(example_graph):
         pd.date_range("2020-09-08", periods=5),
     ],
 )
-def test_computation_input_custom_index(index):
-    graph = {
-        "OneHot": [OneHotEncoder],
-        "Random Forest": [RandomForestClassifier, "OneHot.x"],
-        "Elastic Net": [ElasticNetClassifier, "OneHot.x"],
-        "Logistic Regression": [
-            LogisticRegressionClassifier,
-            "Random Forest",
-            "Elastic Net",
-        ],
-    }
-
+def test_computation_input_custom_index(index, example_graph):
     X = pd.DataFrame(
         {"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
         index=index,
     )
     y = pd.Series([1, 2, 1, 2, 1])
-    component_graph = ComponentGraph(graph)
+    component_graph = ComponentGraph(example_graph)
     component_graph.instantiate({})
     component_graph.fit(X, y)
 
@@ -838,18 +698,19 @@ def test_component_graph_evaluation_plumbing(
     mock_predb.return_value = pd.Series([0, 0, 0, 0, 1, 0])
     mock_predc.return_value = pd.Series([0, 0, 0, 0, 0, 1])
     graph = {
-        "transformer a": [TransformerA],
-        "transformer b": [TransformerB, "transformer a"],
-        "transformer c": [TransformerC, "transformer a", "transformer b"],
-        "estimator a": [EstimatorA],
-        "estimator b": [EstimatorB, "transformer a"],
+        "transformer a": [TransformerA, "X", "y"],
+        "transformer b": [TransformerB, "transformer a.x", "y"],
+        "transformer c": [TransformerC, "transformer a", "transformer b.x", "y"],
+        "estimator a": [EstimatorA, "X", "y"],
+        "estimator b": [EstimatorB, "transformer a.x", "y"],
         "estimator c": [
             EstimatorC,
-            "transformer a",
-            "estimator a",
-            "transformer b",
-            "estimator b",
-            "transformer c",
+            "transformer a.x",
+            "estimator a.x",
+            "transformer b.x",
+            "estimator b.x",
+            "transformer c.x",
+            "y",
         ],
     }
     component_graph = ComponentGraph(graph)
@@ -898,17 +759,17 @@ def test_component_graph_evaluation_plumbing(
             {
                 "feature trans": pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
                 "feature a": np.ones(6),
-                "estimator a": pd.Series([0, 0, 0, 1, 0, 0], dtype="int64"),
+                "estimator a.x": pd.Series([0, 0, 0, 1, 0, 0], dtype="int64"),
                 "feature b": np.ones(6) * 2,
-                "estimator b": pd.Series([0, 0, 0, 0, 1, 0], dtype="int64"),
+                "estimator b.x": pd.Series([0, 0, 0, 0, 1, 0], dtype="int64"),
                 "feature c": np.ones(6) * 3,
             },
             columns=[
                 "feature trans",
                 "feature a",
-                "estimator a",
+                "estimator a.x",
                 "feature b",
-                "estimator b",
+                "estimator b.x",
                 "feature c",
             ],
         ),
@@ -948,8 +809,8 @@ def test_input_feature_names(example_graph):
         "column_1_c",
     ]
     assert input_feature_names["Logistic Regression"] == [
-        "Random Forest",
-        "Elastic Net",
+        "Random Forest.x",
+        "Elastic Net.x",
     ]
 
 
@@ -1016,8 +877,8 @@ def test_custom_input_feature_types(example_graph):
         "column_2_5",
     ]
     assert input_feature_names["Logistic Regression"] == [
-        "Random Forest",
-        "Elastic Net",
+        "Random Forest.x",
+        "Elastic Net.x",
     ]
 
 
@@ -1028,17 +889,18 @@ def test_component_graph_dataset_with_different_types():
     # Also, column_4 will be treated as a datetime feature, but the identical column_5 set as natural language
     # should be treated as natural language, not as datetime.
     graph = {
-        "Imputer": [Imputer],
-        "OneHot": [OneHotEncoder, "Imputer.x"],
-        "DateTime": [DateTimeFeaturizer, "OneHot.x"],
-        "Text": [TextFeaturizer, "DateTime.x"],
-        "Scaler": [StandardScaler, "Text.x"],
-        "Random Forest": [RandomForestClassifier, "Scaler.x"],
-        "Elastic Net": [ElasticNetClassifier, "Scaler.x"],
+        "Text": [TextFeaturizer, "X", "y"],
+        "Imputer": [Imputer, "Text.x", "y"],
+        "OneHot": [OneHotEncoder, "Imputer.x", "y"],
+        "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
+        "Scaler": [StandardScaler, "DateTime.x", "y"],
+        "Random Forest": [RandomForestClassifier, "Scaler.x", "y"],
+        "Elastic Net": [ElasticNetClassifier, "Scaler.x", "y"],
         "Logistic Regression": [
             LogisticRegressionClassifier,
-            "Random Forest",
-            "Elastic Net",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "y",
         ],
     }
 
@@ -1066,52 +928,12 @@ def test_component_graph_dataset_with_different_types():
     component_graph.fit(X, y)
 
     def check_feature_names(input_feature_names):
-        assert input_feature_names["Imputer"] == [
-            "column_1",
-            "column_2",
-            "column_3",
-            "column_4",
-            "column_5",
-        ]
-        assert input_feature_names["OneHot"] == [
-            "column_1",
-            "column_2",
-            "column_3",
-            "column_4",
-            "column_5",
-        ]
-        assert input_feature_names["DateTime"] == [
-            "column_3",
-            "column_4",
-            "column_5",
-            "column_1_a",
-            "column_1_b",
-            "column_1_c",
-            "column_1_d",
-            "column_2_1",
-            "column_2_2",
-            "column_2_3",
-            "column_2_4",
-            "column_2_5",
-            "column_2_6",
-        ]
         assert input_feature_names["Text"] == [
+            "column_1",
+            "column_2",
             "column_3",
+            "column_4",
             "column_5",
-            "column_1_a",
-            "column_1_b",
-            "column_1_c",
-            "column_1_d",
-            "column_2_1",
-            "column_2_2",
-            "column_2_3",
-            "column_2_4",
-            "column_2_5",
-            "column_2_6",
-            "column_4_year",
-            "column_4_month",
-            "column_4_day_of_week",
-            "column_4_hour",
         ]
         text_columns = [
             "DIVERSITY_SCORE(column_5)",
@@ -1120,49 +942,31 @@ def test_component_graph_dataset_with_different_types():
             "LSA(column_5)[0]",
             "LSA(column_5)[1]",
         ]
-        assert input_feature_names["Scaler"] == (
-            [
+
+        assert (
+            input_feature_names["Imputer"]
+            == [
+                "column_1",
+                "column_2",
                 "column_3",
-                "column_1_a",
-                "column_1_b",
-                "column_1_c",
-                "column_1_d",
-                "column_2_1",
-                "column_2_2",
-                "column_2_3",
-                "column_2_4",
-                "column_2_5",
-                "column_2_6",
-                "column_4_year",
-                "column_4_month",
-                "column_4_day_of_week",
-                "column_4_hour",
+                "column_4",
             ]
             + text_columns
         )
-        assert input_feature_names["Random Forest"] == (
-            [
+        assert (
+            input_feature_names["OneHot"]
+            == [
+                "column_1",
+                "column_2",
                 "column_3",
-                "column_1_a",
-                "column_1_b",
-                "column_1_c",
-                "column_1_d",
-                "column_2_1",
-                "column_2_2",
-                "column_2_3",
-                "column_2_4",
-                "column_2_5",
-                "column_2_6",
-                "column_4_year",
-                "column_4_month",
-                "column_4_day_of_week",
-                "column_4_hour",
+                "column_4",
             ]
             + text_columns
         )
-        assert input_feature_names["Elastic Net"] == (
+        assert sorted(input_feature_names["DateTime"]) == sorted(
             [
                 "column_3",
+                "column_4",
                 "column_1_a",
                 "column_1_b",
                 "column_1_c",
@@ -1173,16 +977,78 @@ def test_component_graph_dataset_with_different_types():
                 "column_2_4",
                 "column_2_5",
                 "column_2_6",
-                "column_4_year",
-                "column_4_month",
-                "column_4_day_of_week",
-                "column_4_hour",
             ]
             + text_columns
+        )
+        assert sorted(input_feature_names["Scaler"]) == sorted(
+            (
+                [
+                    "column_3",
+                    "column_1_a",
+                    "column_1_b",
+                    "column_1_c",
+                    "column_1_d",
+                    "column_2_1",
+                    "column_2_2",
+                    "column_2_3",
+                    "column_2_4",
+                    "column_2_5",
+                    "column_2_6",
+                    "column_4_year",
+                    "column_4_month",
+                    "column_4_day_of_week",
+                    "column_4_hour",
+                ]
+                + text_columns
+            )
+        )
+        assert sorted(input_feature_names["Random Forest"]) == sorted(
+            (
+                [
+                    "column_3",
+                    "column_1_a",
+                    "column_1_b",
+                    "column_1_c",
+                    "column_1_d",
+                    "column_2_1",
+                    "column_2_2",
+                    "column_2_3",
+                    "column_2_4",
+                    "column_2_5",
+                    "column_2_6",
+                    "column_4_year",
+                    "column_4_month",
+                    "column_4_day_of_week",
+                    "column_4_hour",
+                ]
+                + text_columns
+            )
+        )
+        assert sorted(input_feature_names["Elastic Net"]) == sorted(
+            (
+                [
+                    "column_3",
+                    "column_1_a",
+                    "column_1_b",
+                    "column_1_c",
+                    "column_1_d",
+                    "column_2_1",
+                    "column_2_2",
+                    "column_2_3",
+                    "column_2_4",
+                    "column_2_5",
+                    "column_2_6",
+                    "column_4_year",
+                    "column_4_month",
+                    "column_4_day_of_week",
+                    "column_4_hour",
+                ]
+                + text_columns
+            )
         )
         assert input_feature_names["Logistic Regression"] == [
-            "Random Forest",
-            "Elastic Net",
+            "Random Forest.x",
+            "Elastic Net.x",
         ]
 
     check_feature_names(component_graph.input_feature_names)
@@ -1194,18 +1060,19 @@ def test_component_graph_dataset_with_different_types():
 @patch("evalml.pipelines.components.RandomForestClassifier.fit")
 def test_component_graph_types_merge_mock(mock_rf_fit):
     graph = {
-        "Select numeric col_2": [SelectColumns],
-        "Imputer numeric col_2": [Imputer, "Select numeric col_2.x"],
-        "Scaler col_2": [StandardScaler, "Imputer numeric col_2.x"],
-        "Select categorical col_1": [SelectColumns],
-        "Imputer categorical col_1": [Imputer, "Select categorical col_1.x"],
-        "OneHot col_1": [OneHotEncoder, "Imputer categorical col_1.x"],
-        "Pass through col_3": [SelectColumns],
+        "Select numeric col_2": [SelectColumns, "X", "y"],
+        "Imputer numeric col_2": [Imputer, "Select numeric col_2.x", "y"],
+        "Scaler col_2": [StandardScaler, "Imputer numeric col_2.x", "y"],
+        "Select categorical col_1": [SelectColumns, "X", "y"],
+        "Imputer categorical col_1": [Imputer, "Select categorical col_1.x", "y"],
+        "OneHot col_1": [OneHotEncoder, "Imputer categorical col_1.x", "y"],
+        "Pass through col_3": [SelectColumns, "X", "y"],
         "Random Forest": [
             RandomForestClassifier,
             "Scaler col_2.x",
             "OneHot col_1.x",
             "Pass through col_3.x",
+            "y",
         ],
     }
 
@@ -1276,15 +1143,16 @@ def test_component_graph_preserves_ltypes_created_during_pipeline_evaluation():
             return X
 
     graph = {
-        "Select non address": [SelectColumns],
-        "OneHot": [OneHotEncoder, "Select non address.x"],
-        "Select address": [SelectColumns],
-        "Extract ZipCode": [ZipCodeExtractor, "Select address.x"],
-        "Average Price From ZipCode": [ZipCodeToAveragePrice, "Extract ZipCode.x"],
+        "Select non address": [SelectColumns, "X", "y"],
+        "OneHot": [OneHotEncoder, "Select non address.x", "y"],
+        "Select address": [SelectColumns, "X", "y"],
+        "Extract ZipCode": [ZipCodeExtractor, "Select address.x", "y"],
+        "Average Price From ZipCode": [ZipCodeToAveragePrice, "Extract ZipCode.x", "y"],
         "Random Forest": [
             RandomForestClassifier,
             "OneHot.x",
             "Average Price From ZipCode.x",
+            "y",
         ],
     }
 
@@ -1331,25 +1199,27 @@ def test_component_graph_preserves_ltypes_created_during_pipeline_evaluation():
 
 def test_component_graph_types_merge():
     graph = {
-        "Select numeric": [SelectColumns],
-        "Imputer numeric": [Imputer, "Select numeric.x"],
-        "Scaler": [StandardScaler, "Imputer numeric.x"],
-        "Select categorical": [SelectColumns],
-        "Imputer categorical": [Imputer, "Select categorical.x"],
-        "OneHot": [OneHotEncoder, "Imputer categorical.x"],
-        "Select datetime": [SelectColumns],
-        "Imputer datetime": [Imputer, "Select datetime.x"],
-        "DateTime": [DateTimeFeaturizer, "Imputer datetime.x"],
-        "Select text": [SelectColumns],
-        "Text": [TextFeaturizer, "Select text.x"],
-        "Select pass through": [SelectColumns],
+        "Select numeric": [SelectColumns, "X", "y"],
+        "Imputer numeric": [Imputer, "Select numeric.x", "y"],
+        "Select text": [SelectColumns, "X", "y"],
+        "Text": [TextFeaturizer, "Select text.x", "y"],
+        "Imputer text": [Imputer, "Text.x", "y"],
+        "Scaler": [StandardScaler, "Imputer numeric.x", "y"],
+        "Select categorical": [SelectColumns, "X", "y"],
+        "Imputer categorical": [Imputer, "Select categorical.x", "y"],
+        "OneHot": [OneHotEncoder, "Imputer categorical.x", "y"],
+        "Select datetime": [SelectColumns, "X", "y"],
+        "Imputer datetime": [Imputer, "Select datetime.x", "y"],
+        "DateTime": [DateTimeFeaturizer, "Imputer datetime.x", "y"],
+        "Select pass through": [SelectColumns, "X", "y"],
         "Random Forest": [
             RandomForestClassifier,
             "Scaler.x",
             "OneHot.x",
             "DateTime.x",
-            "Text.x",
+            "Imputer text.x",
             "Select pass through.x",
+            "y",
         ],
     }
 
@@ -1409,23 +1279,24 @@ def test_component_graph_types_merge():
 
 def test_component_graph_sampler():
     graph = {
-        "Imputer": [Imputer],
-        "OneHot": [OneHotEncoder, "Imputer.x"],
-        "Undersampler": [Undersampler, "OneHot.x"],
+        "Imputer": [Imputer, "X", "y"],
+        "OneHot": [OneHotEncoder, "Imputer.x", "y"],
+        "Undersampler": [Undersampler, "OneHot.x", "y"],
         "Random Forest": [RandomForestClassifier, "Undersampler.x", "Undersampler.y"],
         "Elastic Net": [ElasticNetClassifier, "Undersampler.x", "Undersampler.y"],
         "Logistic Regression": [
             LogisticRegressionClassifier,
-            "Random Forest",
-            "Elastic Net",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "Undersampler.y",
         ],
     }
 
     component_graph = ComponentGraph(graph)
     component_graph.instantiate({})
-    assert component_graph.get_inputs("Imputer") == []
-    assert component_graph.get_inputs("OneHot") == ["Imputer.x"]
-    assert component_graph.get_inputs("Undersampler") == ["OneHot.x"]
+    assert component_graph.get_inputs("Imputer") == ["X", "y"]
+    assert component_graph.get_inputs("OneHot") == ["Imputer.x", "y"]
+    assert component_graph.get_inputs("Undersampler") == ["OneHot.x", "y"]
     assert component_graph.get_inputs("Random Forest") == [
         "Undersampler.x",
         "Undersampler.y",
@@ -1435,45 +1306,8 @@ def test_component_graph_sampler():
         "Undersampler.y",
     ]
     assert component_graph.get_inputs("Logistic Regression") == [
-        "Random Forest",
-        "Elastic Net",
-    ]
-
-
-def test_component_graph_sampler_list():
-    component_list = [
-        "Imputer",
-        "One Hot Encoder",
-        "Undersampler",
-        "Random Forest Classifier",
-    ]
-    component_graph = ComponentGraph.from_list(component_list)
-
-    assert len(component_graph.component_dict) == 4
-    assert component_graph.get_component("Imputer") == Imputer
-    assert component_graph.get_component("One Hot Encoder") == OneHotEncoder
-    assert component_graph.get_component("Undersampler") == Undersampler
-    assert (
-        component_graph.get_component("Random Forest Classifier")
-        == RandomForestClassifier
-    )
-
-    assert component_graph.compute_order == component_list
-    assert component_graph.component_dict == {
-        "Imputer": [Imputer],
-        "One Hot Encoder": [OneHotEncoder, "Imputer.x"],
-        "Undersampler": [Undersampler, "One Hot Encoder.x"],
-        "Random Forest Classifier": [
-            RandomForestClassifier,
-            "Undersampler.x",
-            "Undersampler.y",
-        ],
-    }
-    assert component_graph.get_inputs("Imputer") == []
-    assert component_graph.get_inputs("One Hot Encoder") == ["Imputer.x"]
-    assert component_graph.get_inputs("Undersampler") == ["One Hot Encoder.x"]
-    assert component_graph.get_inputs("Random Forest Classifier") == [
-        "Undersampler.x",
+        "Random Forest.x",
+        "Elastic Net.x",
         "Undersampler.y",
     ]
 
@@ -1487,21 +1321,21 @@ def test_component_graph_dataset_with_target_imputer():
     )
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, np.nan])
     graph = {
-        "Target Imputer": [TargetImputer],
+        "Target Imputer": [TargetImputer, "X", "y"],
         "OneHot": [OneHotEncoder, "Target Imputer.x", "Target Imputer.y"],
         "Random Forest": [RandomForestClassifier, "OneHot.x", "Target Imputer.y"],
         "Elastic Net": [ElasticNetClassifier, "OneHot.x", "Target Imputer.y"],
         "Logistic Regression": [
             LogisticRegressionClassifier,
-            "Random Forest",
-            "Elastic Net",
+            "Random Forest.x",
+            "Elastic Net.x",
             "Target Imputer.y",
         ],
     }
 
     component_graph = ComponentGraph(graph)
     component_graph.instantiate({})
-    assert component_graph.get_inputs("Target Imputer") == []
+    assert component_graph.get_inputs("Target Imputer") == ["X", "y"]
     assert component_graph.get_inputs("OneHot") == [
         "Target Imputer.x",
         "Target Imputer.y",
@@ -1525,16 +1359,25 @@ def test_component_graph_sampler_y_passes(mock_estimator_fit):
     pytest.importorskip(
         "imblearn.over_sampling", reason="Cannot import imblearn, skipping tests"
     )
-    # makes sure the y value from oversampler gets passed to the estimator, even though StandardScaler has no y output
+    # makes sure the y value from oversampler gets passed to the estimator
     X = pd.DataFrame({"a": [i for i in range(100)], "b": [i % 3 for i in range(100)]})
     y = pd.Series([0] * 90 + [1] * 10)
-    component_list = [
-        "Imputer",
-        "SMOTE Oversampler",
-        "Standard Scaler",
-        "Logistic Regression Classifier",
-    ]
-    component_graph = ComponentGraph.from_list(component_list)
+    component_graph = {
+        "Imputer": ["Imputer", "X", "y"],
+        "SMOTE Oversampler": ["SMOTE Oversampler", "Imputer.x", "y"],
+        "Standard Scaler": [
+            "Standard Scaler",
+            "SMOTE Oversampler.x",
+            "SMOTE Oversampler.y",
+        ],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            "Standard Scaler.x",
+            "SMOTE Oversampler.y",
+        ],
+    }
+
+    component_graph = ComponentGraph(component_graph)
     component_graph.instantiate({})
     component_graph.fit(X, y)
     assert len(mock_estimator_fit.call_args[0][0]) == len(
@@ -1543,55 +1386,31 @@ def test_component_graph_sampler_y_passes(mock_estimator_fit):
     assert len(mock_estimator_fit.call_args[0][0]) == int(1.25 * 90)
 
 
-@patch("evalml.pipelines.components.estimators.RandomForestClassifier.fit")
-@patch("evalml.pipelines.components.estimators.DecisionTreeClassifier.fit")
-def test_component_graph_sampler_same_given_components(mock_dt_fit, mock_rf_fit):
-    pytest.importorskip(
-        "imblearn.over_sampling", reason="Cannot import imblearn, skipping tests"
-    )
-    X = pd.DataFrame({"a": [i for i in range(100)], "b": [i % 3 for i in range(100)]})
-    y = pd.Series([0] * 90 + [1] * 10)
-    component_list = ["Imputer", "SMOTE Oversampler", "Random Forest Classifier"]
-    component_graph = ComponentGraph.from_list(component_list)
-    component_graph.instantiate({})
-    component_graph.fit(X, y)
-
-    component_list2 = ["Imputer", "SMOTE Oversampler", "Decision Tree Classifier"]
-    component_graph2 = ComponentGraph.from_list(component_list2)
-    component_graph2.instantiate({})
-    component_graph2.fit(X, y)
-    pd.testing.assert_frame_equal(
-        mock_dt_fit.call_args[0][0], mock_rf_fit.call_args[0][0]
-    )
-    pd.testing.assert_series_equal(
-        mock_dt_fit.call_args[0][1], mock_rf_fit.call_args[0][1]
-    )
-
-
 def test_component_graph_equality(example_graph):
     different_graph = {
-        "Target Imputer": [TargetImputer],
+        "Target Imputer": [TargetImputer, "X", "y"],
         "OneHot": [OneHotEncoder, "Target Imputer.x", "Target Imputer.y"],
         "Random Forest": [RandomForestClassifier, "OneHot.x", "Target Imputer.y"],
         "Elastic Net": [ElasticNetClassifier, "OneHot.x", "Target Imputer.y"],
         "Logistic Regression": [
             LogisticRegressionClassifier,
-            "Random Forest",
-            "Elastic Net",
+            "Random Forest.x",
+            "Elastic Net.x",
             "Target Imputer.y",
         ],
     }
 
     same_graph_different_order = {
-        "Imputer": [Imputer],
-        "OneHot_ElasticNet": [OneHotEncoder, "Imputer.x"],
-        "OneHot_RandomForest": [OneHotEncoder, "Imputer.x"],
-        "Random Forest": [RandomForestClassifier, "OneHot_RandomForest.x"],
-        "Elastic Net": [ElasticNetClassifier, "OneHot_ElasticNet.x"],
+        "Imputer": [Imputer, "X", "y"],
+        "OneHot_ElasticNet": [OneHotEncoder, "Imputer.x", "y"],
+        "OneHot_RandomForest": [OneHotEncoder, "Imputer.x", "y"],
+        "Random Forest": [RandomForestClassifier, "OneHot_RandomForest.x", "y"],
+        "Elastic Net": [ElasticNetClassifier, "OneHot_ElasticNet.x", "y"],
         "Logistic Regression": [
             LogisticRegressionClassifier,
-            "Random Forest",
-            "Elastic Net",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "y",
         ],
     }
 
@@ -1620,22 +1439,32 @@ def test_component_graph_equality(example_graph):
 
 def test_component_graph_equality_same_graph():
     # Same component nodes and edges, just specified in a different order in the input dictionary
-    cg = ComponentGraph(
+    component_graph = ComponentGraph(
         {
-            "Component A": [DateTimeFeaturizer],
-            "Component B": [OneHotEncoder],
-            "Random Forest": [RandomForestClassifier, "Component A.x", "Component B.x"],
+            "Component B": [OneHotEncoder, "X", "y"],
+            "Component A": [DateTimeFeaturizer, "Component B.x", "y"],
+            "Random Forest": [
+                RandomForestClassifier,
+                "Component A.x",
+                "Component B.x",
+                "y",
+            ],
         }
     )
 
-    cg2 = ComponentGraph(
+    equal_component_graph = ComponentGraph(
         {
-            "Component B": [OneHotEncoder],
-            "Component A": [DateTimeFeaturizer],
-            "Random Forest": [RandomForestClassifier, "Component A.x", "Component B.x"],
+            "Component B": [OneHotEncoder, "X", "y"],
+            "Component A": [DateTimeFeaturizer, "Component B.x", "y"],
+            "Random Forest": [
+                RandomForestClassifier,
+                "Component B.x",
+                "Component A.x",
+                "y",
+            ],
         }
     )
-    cg2 == cg
+    component_graph == equal_component_graph
 
 
 @pytest.mark.parametrize("return_dict", [True, False])
@@ -1766,8 +1595,8 @@ component_graphs = [
     (
         ComponentGraph(
             {
-                "Imputer": [Imputer],
-                "Log": [LogTransform],
+                "Imputer": [Imputer, "X", "y"],
+                "Log": [LogTransform, "X", "y"],
                 "Random Forest": ["Random Forest Regressor", "Imputer.x", "Log.y"],
             }
         ),
@@ -1776,9 +1605,9 @@ component_graphs = [
     (
         ComponentGraph(
             {
-                "Imputer": [Imputer],
-                "Log": [LogTransform],
-                "Double": [DoubleTransform, "Log.y"],
+                "Imputer": [Imputer, "X", "y"],
+                "Log": [LogTransform, "X", "y"],
+                "Double": [DoubleTransform, "X", "Log.y"],
                 "Random Forest": ["Random Forest Regressor", "Imputer.x", "Double.y"],
             }
         ),
@@ -1787,8 +1616,8 @@ component_graphs = [
     (
         ComponentGraph(
             {
-                "Imputer": [Imputer],
-                "Log": [LogTransform, "Imputer.x"],
+                "Imputer": [Imputer, "X", "y"],
+                "Log": [LogTransform, "Imputer.x", "y"],
                 "Double": [DoubleTransform, "Log.x", "Log.y"],
                 "Random Forest": ["Random Forest Regressor", "Double.x", "Double.y"],
             }
@@ -1798,11 +1627,11 @@ component_graphs = [
     (
         ComponentGraph(
             {
-                "Imputer": [Imputer],
-                "OneHot": [OneHotEncoder, "Imputer.x"],
-                "DateTime": [DateTimeFeaturizer, "OneHot.x"],
-                "Log": [LogTransform],
-                "Double": [DoubleTransform, "Log.y"],
+                "Imputer": [Imputer, "X", "y"],
+                "OneHot": [OneHotEncoder, "Imputer.x", "y"],
+                "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
+                "Log": [LogTransform, "X", "y"],
+                "Double": [DoubleTransform, "DateTime.x", "Log.y"],
                 "Random Forest": ["Random Forest Regressor", "DateTime.x", "Double.y"],
             }
         ),
@@ -1811,12 +1640,12 @@ component_graphs = [
     (
         ComponentGraph(
             {
-                "Imputer": [Imputer],
-                "OneHot": [OneHotEncoder, "Imputer.x"],
-                "DateTime": [DateTimeFeaturizer, "OneHot.x"],
-                "Log": [LogTransform],
-                "Double": [DoubleTransform, "Log.y"],
-                "Double2": [DoubleTransform, "Double.y"],
+                "Imputer": [Imputer, "X", "y"],
+                "OneHot": [OneHotEncoder, "Imputer.x", "y"],
+                "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
+                "Log": [LogTransform, "X", "y"],
+                "Double": [DoubleTransform, "X", "Log.y"],
+                "Double2": [DoubleTransform, "X", "Double.y"],
                 "Random Forest": ["Random Forest Regressor", "DateTime.x", "Double2.y"],
             }
         ),
@@ -1825,26 +1654,26 @@ component_graphs = [
     (
         ComponentGraph(
             {
-                "Imputer": ["Imputer"],
-                "Double": [DoubleTransform],
-                "DateTime 1": ["DateTime Featurization Component", "Imputer"],
+                "Imputer": ["Imputer", "X", "y"],
+                "Double": [DoubleTransform, "X", "y"],
+                "DateTime 1": ["DateTime Featurization Component", "Imputer.x", "y"],
                 "ET": ["Extra Trees Regressor", "DateTime 1.x", "Double.y"],
-                "Double 2": [DoubleTransform],
-                "DateTime 2": ["DateTime Featurization Component", "Imputer"],
-                "Double 3": [DoubleTransform, "Double 2.y"],
+                "Double 2": [DoubleTransform, "X", "y"],
+                "DateTime 2": ["DateTime Featurization Component", "Imputer.x", "y"],
+                "Double 3": [DoubleTransform, "X", "Double 2.y"],
                 "RandomForest": [
                     "Random Forest Regressor",
                     "DateTime 2.x",
                     "Double 3.y",
                 ],
-                "DateTime 3": ["DateTime Featurization Component", "Imputer"],
-                "Double 4": [DoubleTransform],
+                "DateTime 3": ["DateTime Featurization Component", "Imputer.x", "y"],
+                "Double 4": [DoubleTransform, "X", "y"],
                 "Catboost": ["Random Forest Regressor", "DateTime 3.x", "Double 4.y"],
                 "Logistic Regression": [
                     "Linear Regressor",
-                    "Catboost",
-                    "RandomForest",
-                    "ET",
+                    "Catboost.x",
+                    "RandomForest.x",
+                    "ET.x",
                     "Double 3.y",
                 ],
             }
@@ -1854,12 +1683,12 @@ component_graphs = [
     (
         ComponentGraph(
             {
-                "Imputer": [Imputer],
-                "OneHot": [OneHotEncoder, "Imputer.x"],
-                "DateTime": [DateTimeFeaturizer, "OneHot.x"],
-                "Log": [LogTransform],
-                "Double": [DoubleTransform, "Log.y"],
-                "Double2": [DoubleTransform, "Double.y"],
+                "Imputer": [Imputer, "X", "y"],
+                "OneHot": [OneHotEncoder, "Imputer.x", "y"],
+                "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
+                "Log": [LogTransform, "X", "y"],
+                "Double": [DoubleTransform, "X", "Log.y"],
+                "Double2": [DoubleTransform, "X", "Double.y"],
                 "Subset": [SubsetData, "DateTime.x", "Double2.y"],
                 "Random Forest": ["Random Forest Regressor", "Subset.x", "Subset.y"],
             }
@@ -1869,8 +1698,8 @@ component_graphs = [
     (
         ComponentGraph(
             {
-                "Imputer": [Imputer],
-                "Random Forest": ["Random Forest Regressor", "Imputer.x"],
+                "Imputer": [Imputer, "X", "y"],
+                "Random Forest": ["Random Forest Regressor", "Imputer.x", "y"],
             }
         ),
         lambda y: y,
@@ -1878,38 +1707,42 @@ component_graphs = [
     (
         ComponentGraph(
             {
-                "Imputer": [Imputer],
-                "DateTime": [DateTimeFeaturizer, "Imputer.x"],
-                "OneHot": [OneHotEncoder, "DateTime.x"],
-                "Random Forest": ["Random Forest Regressor", "OneHot.x"],
+                "Imputer": [Imputer, "X", "y"],
+                "DateTime": [DateTimeFeaturizer, "Imputer.x", "y"],
+                "OneHot": [OneHotEncoder, "DateTime.x", "y"],
+                "Random Forest": ["Random Forest Regressor", "OneHot.x", "y"],
             }
         ),
         lambda y: y,
     ),
-    (ComponentGraph({"Random Forest": ["Random Forest Regressor"]}), lambda y: y),
+    (
+        ComponentGraph({"Random Forest": ["Random Forest Regressor", "X", "y"]}),
+        lambda y: y,
+    ),
     (
         ComponentGraph(
             {
-                "Imputer": ["Imputer"],
-                "Double": [DoubleTransform],
-                "DateTime 1": ["DateTime Featurization Component", "Imputer"],
+                "Imputer": ["Imputer", "X", "y"],
+                "Double": [DoubleTransform, "X", "y"],
+                "DateTime 1": ["DateTime Featurization Component", "Imputer.x", "y"],
                 "ET": ["Extra Trees Regressor", "DateTime 1.x", "Double.y"],
-                "Double 2": [DoubleTransform],
-                "DateTime 2": ["DateTime Featurization Component", "Imputer"],
-                "Double 3": [DoubleTransform, "Double 2.y"],
+                "Double 2": [DoubleTransform, "X", "y"],
+                "DateTime 2": ["DateTime Featurization Component", "Imputer.x", "y"],
+                "Double 3": [DoubleTransform, "X", "Double 2.y"],
                 "RandomForest": [
                     "Random Forest Regressor",
                     "DateTime 2.x",
                     "Double 3.y",
                 ],
-                "DateTime 3": ["DateTime Featurization Component", "Imputer"],
-                "Double 4": [DoubleTransform],
+                "DateTime 3": ["DateTime Featurization Component", "Imputer.x", "y"],
+                "Double 4": [DoubleTransform, "X", "y"],
                 "Linear": ["Linear Regressor", "DateTime 3.x", "Double 4.y"],
                 "Logistic Regression": [
                     "Linear Regressor",
-                    "Linear",
-                    "RandomForest",
-                    "ET",
+                    "Linear.x",
+                    "RandomForest.x",
+                    "ET.x",
+                    "y",
                 ],
             }
         ),
@@ -1933,114 +1766,6 @@ def test_component_graph_inverse_transform(
     pd.testing.assert_series_equal(answer, expected)
 
 
-lists = [
-    (
-        [DoubleTransform, LogTransform, "Imputer", "Linear Regressor"],
-        ComponentGraph(
-            {
-                "Imputer": [Imputer],
-                "Double Transform": [DoubleTransform],
-                "Log Transform": [LogTransform, "Double Transform.y"],
-                "Linear Regressor": [LinearRegressor, "Imputer.x", "Log Transform.y"],
-            }
-        ),
-    ),
-    (
-        [DoubleTransform, "Imputer", "Linear Regressor"],
-        ComponentGraph(
-            {
-                "Imputer": [Imputer],
-                "Double Transform": [DoubleTransform],
-                "Linear Regressor": [
-                    LinearRegressor,
-                    "Imputer.x",
-                    "Double Transform.y",
-                ],
-            }
-        ),
-    ),
-    (
-        [
-            "Imputer",
-            DateTimeFeaturizer,
-            DoubleTransform,
-            LogTransform,
-            "Linear Regressor",
-        ],
-        ComponentGraph(
-            {
-                "Imputer": [Imputer],
-                "DateTime Featurization Component": [DateTimeFeaturizer, "Imputer.x"],
-                "Double Transform": [DoubleTransform],
-                "Log Transform": [LogTransform, "Double Transform.y"],
-                "Linear Regressor": [
-                    LinearRegressor,
-                    "DateTime Featurization Component.x",
-                    "Log Transform.y",
-                ],
-            }
-        ),
-    ),
-    (
-        [
-            "Imputer",
-            DoubleTransform,
-            DateTimeFeaturizer,
-            LogTransform,
-            "Linear Regressor",
-        ],
-        ComponentGraph(
-            {
-                "Imputer": [Imputer],
-                "DateTime Featurization Component": [DateTimeFeaturizer, "Imputer.x"],
-                "Double Transform": [DoubleTransform],
-                "Log Transform": [LogTransform, "Double Transform.y"],
-                "Linear Regressor": [
-                    LinearRegressor,
-                    "DateTime Featurization Component.x",
-                    "Log Transform.y",
-                ],
-            }
-        ),
-    ),
-    (
-        [
-            "Imputer",
-            DoubleTransform,
-            DateTimeFeaturizer,
-            LogTransform,
-            Undersampler,
-            "Linear Regressor",
-        ],
-        ComponentGraph(
-            {
-                "Imputer": [Imputer],
-                "DateTime Featurization Component": [DateTimeFeaturizer, "Imputer.x"],
-                "Double Transform": [DoubleTransform],
-                "Log Transform": [LogTransform, "Double Transform.y"],
-                "Undersampler": [
-                    Undersampler,
-                    "DateTime Featurization Component.x",
-                    "Log Transform.y",
-                ],
-                "Linear Regressor": [
-                    LinearRegressor,
-                    "Undersampler.x",
-                    "Undersampler.y",
-                ],
-            }
-        ),
-    ),
-]
-
-
-@pytest.mark.parametrize("component_list,answer", lists)
-def test_from_list_with_target_transformers(component_list, answer):
-    assert (
-        ComponentGraph.from_list(component_list).component_dict == answer.component_dict
-    )
-
-
 def test_final_component_features_does_not_have_target():
     X = pd.DataFrame(
         {
@@ -2052,9 +1777,9 @@ def test_final_component_features_does_not_have_target():
 
     cg = ComponentGraph(
         {
-            "Imputer": ["Imputer"],
-            "OneHot": ["One Hot Encoder", "Imputer.x"],
-            "TargetImputer": ["Target Imputer", "OneHot.x", "OneHot.y"],
+            "Imputer": ["Imputer", "X", "y"],
+            "OneHot": ["One Hot Encoder", "Imputer.x", "y"],
+            "TargetImputer": ["Target Imputer", "OneHot.x", "y"],
             "Logistic Regression": [
                 "Logistic Regression Classifier",
                 "TargetImputer.x",
@@ -2145,3 +1870,134 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
     assert_series_equal(mock_fit_transform.call_args[0][1], y)
     # Check that we use "Log.y" for RF
     assert_series_equal(mock_fit.call_args[0][1], infer_feature_types(np.log(y)))
+
+
+def test_component_graph_does_not_define_all_edges():
+    # Graph does not define an X edge
+    with pytest.raises(ValueError, match="All edges must be specified"):
+        ComponentGraph(
+            {
+                "Imputer": [Imputer, "y"],  # offending line
+                "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+                "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+                "Random Forest Classifier": [
+                    RandomForestClassifier,
+                    "One Hot Encoder.x",
+                    "Target Imputer.y",
+                ],
+            }
+        )
+    # Graph does not define a y edge
+    with pytest.raises(ValueError, match="All edges must be specified"):
+        ComponentGraph(
+            {
+                "Imputer": [Imputer, "X"],  # offending line
+                "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+                "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+                "Random Forest Classifier": [
+                    RandomForestClassifier,
+                    "One Hot Encoder.x",
+                    "Target Imputer.y",
+                ],
+            }
+        )
+    # Graph does not define X and y edges
+    with pytest.raises(ValueError, match="All edges must be specified"):
+        ComponentGraph(
+            {
+                "Imputer": [Imputer],  # offending line
+                "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+                "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+                "Random Forest Classifier": [
+                    RandomForestClassifier,
+                    "One Hot Encoder.x",
+                    "Target Imputer.y",
+                ],
+            }
+        )
+
+
+def test_component_graph_defines_edge_with_invalid_syntax():
+    # Graph does not define an X edge using .x
+    with pytest.raises(ValueError, match="All edges must be specified"):
+        ComponentGraph(
+            {
+                "Imputer": [Imputer, "X", "y"],
+                "One Hot Encoder": [OneHotEncoder, "Imputer", "y"],  # offending line
+                "Target Imputer": [TargetImputer, "One Hot Encoder.x", "y"],
+                "Random Forest Classifier": [
+                    RandomForestClassifier,
+                    "One Hot Encoder.x",
+                    "Target Imputer.y",
+                ],
+            }
+        )
+
+
+@pytest.mark.parametrize(
+    "pipeline_parameters,set_values",
+    [
+        ({"Logistic Regression Classifier": {"penalty": "l1"}}, {}),
+        ({"Logistic Regression": {"penalty": "l1"}}, {"Logistic Regression"}),
+        (
+            {"Random Forest Classifier": {"n_estimators": 10}},
+            {"Random Forest Classifier"},
+        ),
+        (
+            {
+                "Imputer": {"numeric_impute_strategy": "mean"},
+                "Random Forest Classifier": {"n_estimators": 10},
+            },
+            {"Random Forest Classifier"},
+        ),
+        (
+            {
+                "Undersampler": {"sampling_ratio": 0.05},
+                "Random Forest Classifier": {"n_estimators": 10},
+            },
+            {"Random Forest Classifier", "Undersampler"},
+        ),
+    ],
+)
+def test_component_graph_instantiate_parameters(pipeline_parameters, set_values):
+    graph = {
+        "Imputer": ["Imputer", "X", "y"],
+        "Scaler": ["Standard Scaler", "Imputer.x", "y"],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            "Scaler.x",
+            "Scaler.y",
+        ],
+    }
+    component_graph = ComponentGraph(graph)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.filterwarnings(
+            "always",
+            category=ParameterNotUsedWarning,
+        )
+        component_graph.instantiate(pipeline_parameters)
+    assert len(w) == (1 if len(set_values) else 0)
+    if len(w):
+        assert w[0].message.components == set_values
+
+
+def test_component_graph_repr():
+    # Test with component graph defined by strings
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest Regressor": ["Random Forest Regressor", "OHE.x", "y"],
+    }
+    expected_repr = "{'Imputer': ['Imputer', 'X', 'y'], 'OHE': ['One Hot Encoder', 'Imputer.x', 'y'], 'Random Forest Regressor': ['Random Forest Regressor', 'OHE.x', 'y']}"
+    component_graph = ComponentGraph(component_dict)
+    assert repr(component_graph) == expected_repr
+
+    # Test with component graph defined by strings and objects
+    component_dict_with_objs = {
+        "Imputer": [Imputer, "X", "y"],
+        "OHE": [OneHotEncoder, "Imputer.x", "y"],
+        "Random Forest Classifier": [RandomForestClassifier, "OHE.x", "y"],
+    }
+    expected_repr = "{'Imputer': ['Imputer', 'X', 'y'], 'OHE': ['One Hot Encoder', 'Imputer.x', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'OHE.x', 'y']}"
+    component_graph = ComponentGraph(component_dict_with_objs)
+    assert repr(component_graph) == expected_repr

@@ -3,16 +3,30 @@ Release Notes
 **Future Release**
     * Enhancements
         * Added ``LogTransformer`` and ``TargetDistributionDataCheck`` :pr:`2487`
+        * Issue a warning to users when a pipeline parameter passed in isn't used in the pipeline :pr:`2564`
+        * Added Gini coefficient as an objective :pr:`2544`
+        * Added ``repr`` to ``ComponentGraph`` :pr:`2565`
+        * Added components to extract features from ``URL`` and ``EmailAddress`` Logical Types :pr:`2550`
+        * Added support for `NaN` values in ``TextFeaturizer`` :pr:`2532`
     * Fixes
     * Changes
+        * Updated ``PipelineBase`` implementation for creating pipelines from a list of components :pr:`2549`
+        * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
         * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
+        * Removed ``ComponentGraph.linearized_component_graph`` and ``ComponentGraph.from_list`` :pr:`2556`
+        * Updated ``ComponentGraph`` to enforce requiring `.x` and `.y` inputs for each component in the graph :pr:`2563`
     * Documentation Changes
+        * Improved detail of ``TextFeaturizer`` docstring and tutorial :pr:`2568`
     * Testing Changes
+        * Added test that makes sure ``split_data`` does not shuffle for time series problems :pr:`2552`
 
 .. warning::
 
     **Breaking Changes**
+        * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
         * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
+        * Removed ``ComponentGraph.linearized_component_graph`` and ``ComponentGraph.from_list`` :pr:`2556`
+        * Updated ``ComponentGraph`` to enforce requiring `.x` and `.y` inputs for each component in the graph :pr:`2563`
 
 
 **v0.29.0 Jul. 21, 2021**
