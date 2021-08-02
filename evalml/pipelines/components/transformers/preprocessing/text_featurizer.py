@@ -149,8 +149,8 @@ class TextFeaturizer(TextTransformer):
             lsa_features = self._lsa._get_feature_provenance()
             for column, derived_features in lsa_features.items():
                 X_lsa.loc[nan_mask[column], derived_features] = None
-        X_lsa = X_lsa.astype("float64")
-        X_nlp_primitives = X_nlp_primitives.astype("float64")
+        X_lsa.ww.init(logical_types={col: "Double" for col in X_lsa.columns})
+        X_nlp_primitives.ww.init(logical_types={col: "Double" for col in X_nlp_primitives.columns})
         X_ww = X_ww.ww.drop(self._text_columns)
         for col in X_nlp_primitives:
             X_ww.ww[col] = X_nlp_primitives[col]
