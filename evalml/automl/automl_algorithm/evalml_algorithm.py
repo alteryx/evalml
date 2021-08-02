@@ -63,6 +63,8 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         n_jobs=-1,
         number_features=None,
         text_in_ensembling=None,
+        num_long_explore_pipelines=50,
+        num_long_pipelines_per_batch=10,
     ):
         """
         Arguments:
@@ -99,20 +101,22 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         self._custom_hyperparameters = custom_hyperparameters or {}
         self._selected_cols = None
         self._top_n_pipelines = None
+        self.num_long_explore_pipelines = num_long_explore_pipelines
+        self.num_long_pipelines_per_batch = num_long_pipelines_per_batch
         if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
             raise ValueError(
                 f"If custom_hyperparameters provided, must be of type dict. Received {type(custom_hyperparameters)}"
             )
 
         for param_name_val in self._pipeline_params.values():
-            for _, param_val in param_name_val.items():
+            for param_val in param_name_val.values():
                 if isinstance(param_val, (Integer, Real, Categorical)):
                     raise ValueError(
                         "Pipeline parameters should not contain skopt.Space variables, please pass them "
                         "to custom_hyperparameters instead!"
                     )
         for hyperparam_name_val in self._custom_hyperparameters.values():
-            for _, hyperparam_val in hyperparam_name_val.items():
+            for hyperparam_val in hyperparam_name_val.values():
                 if not isinstance(hyperparam_val, (Integer, Real, Categorical)):
                     raise ValueError(
                         "Custom hyperparameters should only contain skopt.Space variables such as Categorical, Integer,"
@@ -125,39 +129,28 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 "Linear Regressor",
                 "Random Forest Regressor",
             ]
-            estimators = [
-                handle_component_class(estimator) for estimator in naive_estimators
-            ]
         else:
             naive_estimators = [
                 "Logistic Regression Classifier",
                 "Random Forest Classifier",
             ]
-            estimators = [
-                handle_component_class(estimator) for estimator in naive_estimators
-            ]
-
+        estimators = [
+            handle_component_class(estimator) for estimator in naive_estimators
+        ]
         return estimators
 
-    def _create_naive_pipelines(self):
-        estimators = self._naive_estimators()
-        return [
-            make_pipeline(
-                self.X,
-                self.y,
-                estimator,
-                self.problem_type,
-                sampler_name=self._sampler_name,
-            )
-            for estimator in estimators
-        ]
+    def _create_naive_pipelines(self, use_features=True):
+        feature_selector = None
 
-    def _create_naive_pipelines_with_feature_selection(self):
-        feature_selector = (
-            RFRegressorSelectFromModel
-            if is_regression(self.problem_type)
-            else RFClassifierSelectFromModel
-        )
+        if use_features:
+            feature_selector = [
+                (
+                    RFRegressorSelectFromModel
+                    if is_regression(self.problem_type)
+                    else RFClassifierSelectFromModel
+                )
+            ]
+
         estimators = self._naive_estimators()
         pipelines = [
             make_pipeline(
@@ -166,7 +159,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 estimator,
                 self.problem_type,
                 sampler_name=self._sampler_name,
-                extra_components=[feature_selector],
+                extra_components=feature_selector,
             )
             for estimator in estimators
         ]
@@ -193,18 +186,12 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 estimator,
                 self.problem_type,
                 sampler_name=self._sampler_name,
-                extra_components=[SelectColumns],
-            )
-            for estimator in estimators
-        ]
-        pipelines = [
-            pipeline.new(
                 parameters={
                     "Select Columns Transformer": {"columns": self._selected_cols}
                 },
-                random_seed=self.random_seed,
+                extra_components=[SelectColumns],
             )
-            for pipeline in pipelines
+            for estimator in estimators
         ]
 
         for pipeline in pipelines:
@@ -223,11 +210,27 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
         ensemble = _make_stacked_ensemble_pipeline(
             input_pipelines,
-            input_pipelines[0].problem_type,
+            self.problem_type,
             random_seed=self.random_seed,
             n_jobs=n_jobs_ensemble,
         )
         return [ensemble]
+
+    def _create_n_pipelines(self, pipelines, n):
+        next_batch = []
+        for _ in range(n):
+            for pipeline in pipelines:
+                if pipeline.name not in self._tuners:
+                    self._create_tuner(pipeline)
+                proposed_parameters = self._tuners[pipeline.name].propose()
+                parameters = self._transform_parameters(pipeline, proposed_parameters)
+                parameters.update(
+                    {"Select Columns Transformer": {"columns": self._selected_cols}}
+                )
+                next_batch.append(
+                    pipeline.new(parameters=parameters, random_seed=self.random_seed)
+                )
+        return next_batch
 
     def _create_long_top_n(self, n):
         estimators = [
@@ -249,21 +252,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             for estimator in estimators
         ]
         self._top_n_pipelines = pipelines
-        next_batch = []
-        for _ in range(50):
-            for pipeline in pipelines:
-                if pipeline.name not in self._tuners:
-                    self._create_tuner(pipeline)
-                proposed_parameters = self._tuners[pipeline.name].propose()
-                parameters = self._transform_parameters(pipeline, proposed_parameters)
-                parameters.update(
-                    {"Select Columns Transformer": {"columns": self._selected_cols}}
-                )
-                next_batch.append(
-                    pipeline.new(parameters=parameters, random_seed=self.random_seed)
-                )
-
-        return next_batch
+        return self._create_n_pipelines(pipelines, self.num_long_explore_pipelines)
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate
@@ -275,7 +264,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         if self._batch_number == 0:
             next_batch = self._create_naive_pipelines()
         elif self._batch_number == 1:
-            next_batch = self._create_naive_pipelines_with_feature_selection()
+            next_batch = self._create_naive_pipelines(use_features=True)
         elif self._batch_number == 2:
             next_batch = self._create_fast_final()
         elif self.batch_number == 3:
@@ -285,21 +274,9 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         elif self.batch_number % 2 != 0:
             next_batch = self._create_ensemble()
         else:
-            next_batch = []
-            for _ in range(10):
-                for pipeline in self._top_n_pipelines:
-                    proposed_parameters = self._tuners[pipeline.name].propose()
-                    parameters = self._transform_parameters(
-                        pipeline, proposed_parameters
-                    )
-                    parameters.update(
-                        {"Select Columns Transformer": {"columns": self._selected_cols}}
-                    )
-                    next_batch.append(
-                        pipeline.new(
-                            parameters=parameters, random_seed=self.random_seed
-                        )
-                    )
+            next_batch = self._create_n_pipelines(
+                self._top_n_pipelines, self.num_long_pipelines_per_batch
+            )
 
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
@@ -349,7 +326,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             )
 
     def _transform_parameters(self, pipeline, proposed_parameters):
-        """Given a pipeline parameters dict, make sure n_jobs and number_features are set."""
+        """Given a pipeline parameters dict, make sure n_jobs is set."""
         parameters = {}
         for (
             name,
