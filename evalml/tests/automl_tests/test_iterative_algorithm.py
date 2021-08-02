@@ -245,9 +245,9 @@ def test_iterative_algorithm_passes_pipeline_params(
 
         if ensembling_value:
             next_batch = algo.next_batch()
-            input_pipelines = next_batch[0].parameters["Sklearn Stacked Ensemble Classifier"][
-                "input_pipelines"
-            ]
+            input_pipelines = next_batch[0].parameters[
+                "Sklearn Stacked Ensemble Classifier"
+            ]["input_pipelines"]
             assert all(
                 [
                     pl.parameters["pipeline"] == {"gap": 2, "max_delay": 10}
@@ -402,12 +402,16 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(
                 seen_ensemble = True
                 if text_in_ensembling:
                     assert (
-                        pipeline.parameters["Sklearn Stacked Ensemble Classifier"]["n_jobs"]
+                        pipeline.parameters["Sklearn Stacked Ensemble Classifier"][
+                            "n_jobs"
+                        ]
                         == 1
                     )
                 else:
                     assert (
-                        pipeline.parameters["Sklearn Stacked Ensemble Classifier"]["n_jobs"]
+                        pipeline.parameters["Sklearn Stacked Ensemble Classifier"][
+                            "n_jobs"
+                        ]
                         == n_jobs
                     )
     assert seen_ensemble
@@ -440,11 +444,16 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
                 seen_ensemble = True
                 if text_in_ensembling:
                     assert (
-                        pipeline.parameters["Sklearn Stacked Ensemble Regressor"]["n_jobs"] == 1
+                        pipeline.parameters["Sklearn Stacked Ensemble Regressor"][
+                            "n_jobs"
+                        ]
+                        == 1
                     )
                 else:
                     assert (
-                        pipeline.parameters["Sklearn Stacked Ensemble Regressor"]["n_jobs"]
+                        pipeline.parameters["Sklearn Stacked Ensemble Regressor"][
+                            "n_jobs"
+                        ]
                         == n_jobs
                     )
     assert seen_ensemble

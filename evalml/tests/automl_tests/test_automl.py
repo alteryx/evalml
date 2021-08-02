@@ -1505,7 +1505,9 @@ def test_describe_pipeline_with_ensembling(
                 automl_dict["pipeline_name"]
                 == "Sklearn Stacked Ensemble Classification Pipeline"
             )
-            assert automl_dict["pipeline_summary"] == "Sklearn Stacked Ensemble Classifier"
+            assert (
+                automl_dict["pipeline_summary"] == "Sklearn Stacked Ensemble Classifier"
+            )
             assert isinstance(automl_dict["mean_cv_score"], float)
             assert not automl_dict["high_variance_cv"]
             assert isinstance(automl_dict["training_time"], float)

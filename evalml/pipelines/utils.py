@@ -1,9 +1,7 @@
 from woodwork import logical_types
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
-from .multiclass_classification_pipeline import (
-    MulticlassClassificationPipeline,
-)
+from .multiclass_classification_pipeline import MulticlassClassificationPipeline
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 from .time_series_classification_pipelines import (
@@ -28,11 +26,11 @@ from evalml.pipelines.components import (  # noqa: F401
     LogTransformer,
     OneHotEncoder,
     RandomForestClassifier,
+    SklearnStackedEnsembleClassifier,
+    SklearnStackedEnsembleRegressor,
     SMOTENCSampler,
     SMOTENSampler,
     SMOTESampler,
-    SklearnStackedEnsembleClassifier,
-    SklearnStackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
     TextFeaturizer,

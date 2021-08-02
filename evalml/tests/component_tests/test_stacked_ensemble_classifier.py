@@ -10,10 +10,7 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
 )
-from evalml.pipelines.components import (
-    BaselineClassifier,
-    RandomForestClassifier,
-)
+from evalml.pipelines.components import BaselineClassifier, RandomForestClassifier
 from evalml.pipelines.components.ensemble import SklearnStackedEnsembleClassifier
 from evalml.problem_types import ProblemTypes
 
@@ -146,8 +143,13 @@ def test_stacked_ensemble_multilevel(logistic_regression_binary_pipeline_class):
 
 
 def test_stacked_problem_types():
-    assert ProblemTypes.BINARY in SklearnStackedEnsembleClassifier.supported_problem_types
-    assert ProblemTypes.MULTICLASS in SklearnStackedEnsembleClassifier.supported_problem_types
+    assert (
+        ProblemTypes.BINARY in SklearnStackedEnsembleClassifier.supported_problem_types
+    )
+    assert (
+        ProblemTypes.MULTICLASS
+        in SklearnStackedEnsembleClassifier.supported_problem_types
+    )
     assert SklearnStackedEnsembleClassifier.supported_problem_types == [
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,

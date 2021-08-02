@@ -147,7 +147,10 @@ def test_stacked_ensemble_multilevel(linear_regression_pipeline_class):
 
 
 def test_stacked_problem_types():
-    assert ProblemTypes.REGRESSION in SklearnStackedEnsembleRegressor.supported_problem_types
+    assert (
+        ProblemTypes.REGRESSION
+        in SklearnStackedEnsembleRegressor.supported_problem_types
+    )
     assert len(SklearnStackedEnsembleRegressor.supported_problem_types) == 2
 
 

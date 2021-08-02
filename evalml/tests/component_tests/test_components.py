@@ -924,7 +924,8 @@ def test_transformer_transform_output_type(X_y_binary):
     [
         cls
         for cls in all_components()
-        if cls not in [SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier]
+        if cls
+        not in [SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier]
     ],
 )
 def test_default_parameters(cls):
@@ -938,7 +939,8 @@ def test_default_parameters(cls):
     [
         cls
         for cls in all_components()
-        if cls not in [SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier]
+        if cls
+        not in [SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier]
     ],
 )
 def test_default_parameters_raise_no_warnings(cls):

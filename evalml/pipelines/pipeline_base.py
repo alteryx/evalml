@@ -638,7 +638,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         )
         has_dfs = any(isinstance(c, DFSTransformer) for c in self.component_graph)
         has_stacked_ensembler = any(
-            isinstance(c, (SklearnStackedEnsembleClassifier, SklearnStackedEnsembleRegressor))
+            isinstance(
+                c, (SklearnStackedEnsembleClassifier, SklearnStackedEnsembleRegressor)
+            )
             for c in self.component_graph
         )
         return not any(
