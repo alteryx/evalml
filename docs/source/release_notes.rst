@@ -18,6 +18,7 @@ Release Notes
         * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
         * Removed ``ComponentGraph.linearized_component_graph`` and ``ComponentGraph.from_list`` :pr:`2556`
         * Updated ``ComponentGraph`` to enforce requiring `.x` and `.y` inputs for each component in the graph :pr:`2563`
+        * Appended ``Sklearn`` to existing ensembler implementation :pr:`2578`
     * Documentation Changes
         * Added documentation for ``DaskEngine`` and ``CFEngine`` parallel engines :pr:`2560`
         * Improved detail of ``TextFeaturizer`` docstring and tutorial :pr:`2568`
