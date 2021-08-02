@@ -325,7 +325,7 @@ def test_make_pipeline_text_columns(input_type, problem_type):
     )
     y = pd.Series([0, 0, 1, 1, 0])
     if input_type == "ww":
-        X.ww.init()
+        X.ww.init(logical_types={"text": "NaturalLanguage", "categorical": "Categorical"})
         y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
 
@@ -351,6 +351,10 @@ def test_make_pipeline_text_columns(input_type, problem_type):
             delayed_features = []
             if is_time_series(problem_type):
                 delayed_features = [DelayedFeatureTransformer]
+            if input_type == "ww":
+                text_featurizer = [TextFeaturizer, Imputer]
+            else:
+                text_featurizer = [Imputer, DropColumns]
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -358,11 +362,12 @@ def test_make_pipeline_text_columns(input_type, problem_type):
             else:
                 estimator_components = [OneHotEncoder, estimator_class]
             if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = [TextFeaturizer, Imputer] + estimator_components
+                expected_components = text_featurizer + estimator_components
             else:
                 expected_components = (
-                    [TextFeaturizer, Imputer] + delayed_features + estimator_components
+                    text_featurizer + delayed_features + estimator_components
                 )
+            # import pdb; pdb.set_trace()
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
