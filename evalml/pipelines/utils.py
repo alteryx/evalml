@@ -196,6 +196,7 @@ def make_pipeline(
              An empty dictionary or None implies using all default values for component parameters.
          sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
              Defaults to None
+         extra_components (list(ComponentBase)): list of extra components to be added after preprocessing components.
 
      Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator
