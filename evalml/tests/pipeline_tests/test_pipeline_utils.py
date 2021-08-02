@@ -40,34 +40,69 @@ from evalml.pipelines.utils import (
 from evalml.problem_types import ProblemTypes, is_regression, is_time_series
 
 
+@pytest.fixture
+def get_test_data_from_configuration():
+    def _get_test_data_from_configuration(
+        input_type, problem_type, column_names=None, lognormal_distribution=False
+    ):
+        X_all = pd.DataFrame(
+            {
+                "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
+                "numerical": range(7),
+                "categorical": ["a", "b", "a", "c", "c", "a", "b"],
+                "dates": pd.date_range("2000-02-03", periods=7, freq="W"),
+                "some more dates": pd.date_range("2000-05-19", periods=7, freq="W"),
+                "text": [
+                    "this is a string",
+                    "this is another string",
+                    "this is just another string",
+                    "evalml should handle string input",
+                    "cats are gr8",
+                    "hello world",
+                    "evalml is gr8",
+                ],
+            }
+        )
+        y = pd.Series([0, 0, 1, 0, 0, 1, 1])
+        if problem_type == ProblemTypes.MULTICLASS:
+            y = pd.Series([0, 2, 1, 2, 0, 2, 1])
+        elif is_regression(problem_type):
+            if lognormal_distribution:
+                y = pd.Series([1, 1, 1, 2, 3, 6, 9])
+            else:
+                y = pd.Series([1, 2, 3, 3, 3, 4, 5])
+        X = X_all[column_names]
+
+        if input_type == "ww":
+            logical_types = {}
+            if "text" in column_names:
+                logical_types.update({"text": "NaturalLanguage"})
+            if "categorical" in column_names:
+                logical_types.update({"categorical": "Categorical"})
+            X.ww.init(logical_types=logical_types)
+
+            y = ww.init_series(y)
+
+        return X, y
+
+    return _get_test_data_from_configuration
+
+
 @pytest.mark.parametrize("lognormal_distribution", [True, False])
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_all_nan_no_categoricals(
-    problem_type, input_type, lognormal_distribution
+    problem_type, input_type, lognormal_distribution, get_test_data_from_configuration
 ):
     # testing that all_null column is not considered categorical
-    X = pd.DataFrame(
-        {
-            "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan],
-            "num": [1, 2, 3, 4, 5, 6, 7],
-        }
+    X, y = get_test_data_from_configuration(
+        input_type,
+        problem_type,
+        column_names=["all_null", "numerical"],
+        lognormal_distribution=lognormal_distribution,
     )
-    y = pd.Series([0, 1, 1, 0, 1, 1, 0])
-    if input_type == "ww":
-        X.ww.init()
-        y = ww.init_series(y)
-
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
-    if problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2, 0, 2, 1])
-    elif is_regression(problem_type):
-        if lognormal_distribution:
-            y = pd.Series([1, 1, 1, 2, 3, 6, 9])
-        else:
-            y = pd.Series([1, 2, 3, 3, 3, 4, 5])
-
     for estimator_class in estimators:
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
@@ -105,23 +140,10 @@ def test_make_pipeline_all_nan_no_categoricals(
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline(input_type, problem_type):
-    X = pd.DataFrame(
-        {
-            "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
-            "categorical": ["a", "b", "a", "c", "c"],
-            "some dates": pd.date_range("2000-02-03", periods=5, freq="W"),
-        }
+def test_make_pipeline(input_type, problem_type, get_test_data_from_configuration):
+    X, y = get_test_data_from_configuration(
+        input_type, problem_type, column_names=["all_null", "categorical", "dates"]
     )
-    if is_regression(problem_type):
-        y = pd.Series([1, 2, 3, 3, 4])
-
-    else:
-        y = pd.Series([0, 0, 1, 0, 0])
-    if input_type == "ww":
-        X.ww.init()
-        y = ww.init_series(y)
-
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
 
@@ -164,22 +186,12 @@ def test_make_pipeline(input_type, problem_type):
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_no_nulls(input_type, problem_type):
-    X = pd.DataFrame(
-        {
-            "numerical": [1, 2, 3, 1, 2],
-            "categorical": ["a", "b", "a", "c", "c"],
-            "some dates": pd.date_range("2000-02-03", periods=5, freq="W"),
-        }
+def test_make_pipeline_no_nulls(
+    input_type, problem_type, get_test_data_from_configuration
+):
+    X, y = get_test_data_from_configuration(
+        input_type, problem_type, ["numerical", "categorical", "dates"]
     )
-    if is_regression(problem_type):
-        y = pd.Series([0.1, 0.2, 1.2, 1.0, 0])
-    else:
-        y = pd.Series([0, 1, 1, 0, 0])
-    if input_type == "ww":
-        X.ww.init()
-        y = ww.init_series(y)
-
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
 
@@ -222,22 +234,12 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_no_datetimes(input_type, problem_type):
-    X = pd.DataFrame(
-        {
-            "numerical": [1, 2, 3, 1, 2],
-            "categorical": ["a", "b", "a", "c", "c"],
-            "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
-        }
+def test_make_pipeline_no_datetimes(
+    input_type, problem_type, get_test_data_from_configuration
+):
+    X, y = get_test_data_from_configuration(
+        input_type, problem_type, column_names=["all_null", "categorical", "numerical"]
     )
-    if is_regression(problem_type):
-        y = pd.Series([0.1, 1.0, 2, 0.1, 0])
-    else:
-        y = pd.Series([0, 1, 1, 0, 0])
-    if input_type == "ww":
-        X.ww.init()
-        y = ww.init_series(y)
-
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
     if problem_type == ProblemTypes.MULTICLASS:
@@ -280,80 +282,12 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_no_column_names(input_type, problem_type):
-    X = pd.DataFrame([[1, "a", np.nan], [2, "b", np.nan], [5, "b", np.nan]])
-    if is_regression(problem_type):
-        y = pd.Series([0, 0.5, 1])
-    else:
-        y = pd.Series([0, 0, 1])
-    if input_type == "ww":
-        X.ww.init()
-        y = ww.init_series(y)
-    estimators = get_estimators(problem_type=problem_type)
-    pipeline_class = _get_pipeline_base_class(problem_type)
-    if problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2])
-
-    for estimator_class in estimators:
-        if problem_type in estimator_class.supported_problem_types:
-            parameters = {}
-            if is_time_series(problem_type):
-                parameters = {
-                    "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
-                    "Time Series Baseline Estimator": {
-                        "date_index": None,
-                        "gap": 1,
-                        "max_delay": 1,
-                    },
-                }
-
-            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
-            assert isinstance(pipeline, pipeline_class)
-            delayed_features = []
-            if is_time_series(problem_type):
-                delayed_features = [DelayedFeatureTransformer]
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                estimator_components = [estimator_class]
-            else:
-                estimator_components = [OneHotEncoder, estimator_class]
-            if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = [DropNullColumns, Imputer] + estimator_components
-            else:
-                expected_components = (
-                    [DropNullColumns, Imputer] + delayed_features + estimator_components
-                )
-            assert pipeline.component_graph.compute_order == [
-                component.name for component in expected_components
-            ]
-
-
-@pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_text_columns(input_type, problem_type):
-    X = pd.DataFrame(
-        {
-            "numerical": [1, 2, 3, 1, 2],
-            "categorical": ["a", "b", "a", "c", "c"],
-            "text": [
-                "string one",
-                "another",
-                "text for a column, this should be a text column!!",
-                "text string",
-                "hello world",
-            ],
-        }
+def test_make_pipeline_text_columns(
+    input_type, problem_type, get_test_data_from_configuration
+):
+    X, y = get_test_data_from_configuration(
+        input_type, problem_type, column_names=["text", "numerical", "categorical"]
     )
-    if is_regression(problem_type):
-        y = pd.Series([0, 0.1, 0.2, 0.6, 0.1])
-    else:
-        y = pd.Series([0, 0, 1, 1, 0])
-    if input_type == "ww":
-        X.ww.init(
-            logical_types={"text": "NaturalLanguage", "categorical": "Categorical"}
-        )
-        y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
 
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -394,7 +328,6 @@ def test_make_pipeline_text_columns(input_type, problem_type):
                 expected_components = (
                     text_featurizer + delayed_features + estimator_components
                 )
-            # import pdb; pdb.set_trace()
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
@@ -402,39 +335,18 @@ def test_make_pipeline_text_columns(input_type, problem_type):
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_only_text_columns(input_type, problem_type):
-    X = pd.DataFrame(
-        {
-            "text": [
-                "string one",
-                "the evalml team is full of wonderful people",
-                "text for a column, this should be a text column!!",
-                "text string",
-                "hello world",
-            ],
-            "another text": [
-                "ladidididididida",
-                "cats are great",
-                "text for a column, this should be a text column!!",
-                "text string",
-                "goodbye world",
-            ],
-        }
+def test_make_pipeline_only_text_columns(
+    input_type, problem_type, get_test_data_from_configuration
+):
+    X, y = get_test_data_from_configuration(
+        input_type,
+        problem_type,
+        column_names=[
+            "text",
+        ],
     )
-    if is_regression(problem_type):
-        y = pd.Series([0, 0.5, 1, 1, 0.5])
-    else:
-        y = pd.Series([0, 0, 1, 1, 0])
-    if input_type == "ww":
-        X.ww.init(
-            logical_types={"text": "NaturalLanguage", "another text": "NaturalLanguage"}
-        )
-        y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
-
     pipeline_class = _get_pipeline_base_class(problem_type)
-    if problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
         if problem_type in estimator_class.supported_problem_types:
@@ -479,26 +391,14 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_only_datetime_columns(input_type, problem_type):
-    X = pd.DataFrame(
-        {
-            "some dates": pd.date_range("2000-02-03", periods=5, freq="W"),
-            "some other dates": pd.date_range("2000-05-19", periods=5, freq="W"),
-        }
+def test_make_pipeline_only_datetime_columns(
+    input_type, problem_type, get_test_data_from_configuration
+):
+    X, y = get_test_data_from_configuration(
+        input_type, problem_type, column_names=["dates", "some more dates"]
     )
-    if is_regression(problem_type):
-        y = pd.Series([0.1, 0, 2.2, 0, 1])
-    else:
-        y = pd.Series([0, 0, 1, 1, 0])
-
-    if input_type == "ww":
-        X.ww.init()
-        y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
-
     pipeline_class = _get_pipeline_base_class(problem_type)
-    if problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
         if problem_type in estimator_class.supported_problem_types:
@@ -582,28 +482,14 @@ def test_make_pipeline_numpy_input(problem_type):
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
-    X = pd.DataFrame(
-        {
-            "numerical": range(5),
-            "some dates": pd.date_range("2000-02-03", periods=5, freq="W"),
-        }
+def test_make_pipeline_datetime_no_categorical(
+    input_type, problem_type, get_test_data_from_configuration
+):
+    X, y = get_test_data_from_configuration(
+        input_type, problem_type, column_names=["dates", "numerical"]
     )
-
-    if is_regression(problem_type):
-        y = pd.Series([0.1, 0, 2.2, 0, 1])
-    else:
-        y = pd.Series([1, 1, 0, 0, 1])
-
-    if input_type == "ww":
-        X.ww.init()
-        y = ww.init_series(y)
-
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
-    if problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2])
-
     for estimator_class in estimators:
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
