@@ -113,15 +113,17 @@ def test_make_pipeline(input_type, problem_type):
             "some dates": pd.date_range("2000-02-03", periods=5, freq="W"),
         }
     )
-    y = pd.Series([0, 0, 1, 0, 0])
+    if is_regression(problem_type):
+        y = pd.Series([1, 2, 3, 3, 4])
+
+    else:
+        y = pd.Series([0, 0, 1, 0, 0])
     if input_type == "ww":
         X.ww.init()
         y = ww.init_series(y)
 
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
-    if problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
         if problem_type in estimator_class.supported_problem_types:
@@ -170,15 +172,16 @@ def test_make_pipeline_no_nulls(input_type, problem_type):
             "some dates": pd.date_range("2000-02-03", periods=5, freq="W"),
         }
     )
-    y = pd.Series([0, 1, 1, 0, 0])
+    if is_regression(problem_type):
+        y = pd.Series([0.1, 0.2, 1.2, 1.0, 0])
+    else:
+        y = pd.Series([0, 1, 1, 0, 0])
     if input_type == "ww":
         X.ww.init()
         y = ww.init_series(y)
 
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
-    if problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2])
 
     for estimator_class in estimators:
         if problem_type in estimator_class.supported_problem_types:
@@ -227,7 +230,10 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
             "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan],
         }
     )
-    y = pd.Series([0, 1, 1, 0, 0])
+    if is_regression(problem_type):
+        y = pd.Series([0.1, 1.0, 2, 0.1, 0])
+    else:
+        y = pd.Series([0, 1, 1, 0, 0])
     if input_type == "ww":
         X.ww.init()
         y = ww.init_series(y)
@@ -276,7 +282,10 @@ def test_make_pipeline_no_datetimes(input_type, problem_type):
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_make_pipeline_no_column_names(input_type, problem_type):
     X = pd.DataFrame([[1, "a", np.nan], [2, "b", np.nan], [5, "b", np.nan]])
-    y = pd.Series([0, 0, 1])
+    if is_regression(problem_type):
+        y = pd.Series([0, 0.5, 1])
+    else:
+        y = pd.Series([0, 0, 1])
     if input_type == "ww":
         X.ww.init()
         y = ww.init_series(y)
@@ -336,7 +345,10 @@ def test_make_pipeline_text_columns(input_type, problem_type):
             ],
         }
     )
-    y = pd.Series([0, 0, 1, 1, 0])
+    if is_regression(problem_type):
+        y = pd.Series([0, 0.1, 0.2, 0.6, 0.1])
+    else:
+        y = pd.Series([0, 0, 1, 1, 0])
     if input_type == "ww":
         X.ww.init(
             logical_types={"text": "NaturalLanguage", "categorical": "Categorical"}
@@ -409,7 +421,10 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
             ],
         }
     )
-    y = pd.Series([0, 0, 1, 1, 0])
+    if is_regression(problem_type):
+        y = pd.Series([0, 0.5, 1, 1, 0.5])
+    else:
+        y = pd.Series([0, 0, 1, 1, 0])
     if input_type == "ww":
         X.ww.init(
             logical_types={"text": "NaturalLanguage", "another text": "NaturalLanguage"}
@@ -471,7 +486,11 @@ def test_make_pipeline_only_datetime_columns(input_type, problem_type):
             "some other dates": pd.date_range("2000-05-19", periods=5, freq="W"),
         }
     )
-    y = pd.Series([0, 0, 1, 1, 0])
+    if is_regression(problem_type):
+        y = pd.Series([0.1, 0, 2.2, 0, 1])
+    else:
+        y = pd.Series([0, 0, 1, 1, 0])
+
     if input_type == "ww":
         X.ww.init()
         y = ww.init_series(y)
@@ -525,6 +544,8 @@ def test_make_pipeline_numpy_input(problem_type):
     pipeline_class = _get_pipeline_base_class(problem_type)
     if problem_type == ProblemTypes.MULTICLASS:
         y = pd.Series([0, 2, 1, 2])
+    elif is_regression(problem_type):
+        y = pd.Series([0, 1.0, 0.1, 2])
 
     for estimator_class in estimators:
         if problem_type in estimator_class.supported_problem_types:
@@ -564,11 +585,16 @@ def test_make_pipeline_numpy_input(problem_type):
 def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
     X = pd.DataFrame(
         {
-            "numerical": [1, 2, 3, 1, 2],
+            "numerical": range(5),
             "some dates": pd.date_range("2000-02-03", periods=5, freq="W"),
         }
     )
-    y = pd.Series([0, 1, 1, 0, 0])
+
+    if is_regression(problem_type):
+        y = pd.Series([0.1, 0, 2.2, 0, 1])
+    else:
+        y = pd.Series([1, 1, 0, 0, 1])
+
     if input_type == "ww":
         X.ww.init()
         y = ww.init_series(y)
@@ -610,6 +636,7 @@ def test_make_pipeline_datetime_no_categorical(input_type, problem_type):
                     + delayed_features
                     + estimator_components
                 )
+            # import pdb; pdb.set_trace()
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
