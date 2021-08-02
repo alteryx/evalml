@@ -87,3 +87,13 @@ class ObjectiveCreationError(Exception):
 
 class NoPositiveLabelException(Exception):
     """Exception when a particular classification label for the 'positive' class cannot be found in the column index or unique values"""
+
+
+class ParameterNotUsedWarning(UserWarning):
+    """Warning thrown when a pipeline parameter isn't used in a defined pipeline's component graph during initialization."""
+
+    def __init__(self, components):
+        self.components = components
+
+        msg = f"Parameters for components {components} will not be used to instantiate the pipeline since they don't appear in the pipeline"
+        super().__init__(msg)

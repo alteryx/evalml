@@ -4,6 +4,7 @@ from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
 )
+from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 from .time_series_classification_pipelines import (
     TimeSeriesBinaryClassificationPipeline,
@@ -11,9 +12,8 @@ from .time_series_classification_pipelines import (
 )
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 
-from evalml.data_checks import DataCheckActionCode
+from evalml.data_checks import DataCheckActionCode, TargetDistributionDataCheck
 from evalml.model_family import ModelFamily
-from evalml.pipelines import PipelineBase
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
@@ -22,8 +22,10 @@ from evalml.pipelines.components import (  # noqa: F401
     DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
+    EmailFeaturizer,
     Estimator,
     Imputer,
+    LogTransformer,
     OneHotEncoder,
     RandomForestClassifier,
     SMOTENCSampler,
@@ -35,12 +37,14 @@ from evalml.pipelines.components import (  # noqa: F401
     TargetImputer,
     TextFeaturizer,
     Undersampler,
+    URLFeaturizer,
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
+    is_regression,
     is_time_series,
 )
 from evalml.utils import get_logger, import_or_raise, infer_feature_types
@@ -65,9 +69,23 @@ def _get_preprocessing_components(
     """
 
     pp_components = []
+
+    if is_regression(problem_type):
+        for each_action in TargetDistributionDataCheck().validate(X, y)["actions"]:
+            if each_action["metadata"]["transformation_strategy"] == "lognormal":
+                pp_components.append(LogTransformer)
+
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
+
+    email_columns = list(X.ww.select("EmailAddress", return_schema=True).columns)
+    if len(email_columns) > 0:
+        pp_components.append(EmailFeaturizer)
+
+    url_columns = list(X.ww.select("URL", return_schema=True).columns)
+    if len(url_columns) > 0:
+        pp_components.append(URLFeaturizer)
 
     input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
     types_imputer_handles = {
@@ -75,14 +93,18 @@ def _get_preprocessing_components(
         logical_types.Categorical,
         logical_types.Double,
         logical_types.Integer,
+        logical_types.URL,
+        logical_types.EmailAddress,
     }
-
-    if len(input_logical_types.intersection(types_imputer_handles)) > 0:
-        pp_components.append(Imputer)
 
     text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
     if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
+
+    if len(input_logical_types.intersection(types_imputer_handles)) or len(
+        text_columns
+    ):
+        pp_components.append(Imputer)
 
     index_and_unknown_columns = list(
         X.ww.select(["index", "unknown"], return_schema=True).columns
@@ -102,7 +124,10 @@ def _get_preprocessing_components(
     ):
         pp_components.append(DelayedFeatureTransformer)
 
-    categorical_cols = list(X.ww.select("category", return_schema=True).columns)
+    # The URL and EmailAddress Featurizers will create categorical columns
+    categorical_cols = list(
+        X.ww.select(["category", "URL", "EmailAddress"], return_schema=True).columns
+    )
     if len(categorical_cols) > 0 and estimator_class not in {
         CatBoostClassifier,
         CatBoostRegressor,
@@ -131,31 +156,6 @@ def _get_preprocessing_components(
         pp_components.append(StandardScaler)
 
     return pp_components
-
-
-def _make_component_dict_from_component_list(component_list):
-    """Generates a component dictionary from a list of components."""
-    seen = set()
-    component_dict = {}
-    most_recent_features = "X"
-    most_recent_target = "y"
-
-    for idx, component in enumerate(component_list):
-        component_name = component.name
-        if component_name in seen:
-            component_name = f"{component_name}_{idx}"
-        seen.add(component_name)
-
-        component_dict[component_name] = [
-            component,
-            most_recent_features,
-            most_recent_target,
-        ]
-        if component.modifies_target:
-            most_recent_target = f"{component_name}.y"
-        if component.modifies_features:
-            most_recent_features = f"{component_name}.x"
-    return component_dict
 
 
 def _get_pipeline_base_class(problem_type):
@@ -214,7 +214,9 @@ def make_pipeline(
         X, y, problem_type, estimator, sampler_name
     )
     complete_component_list = preprocessing_components + [estimator]
-    component_graph = _make_component_dict_from_component_list(complete_component_list)
+    component_graph = PipelineBase._make_component_dict_from_component_list(
+        complete_component_list
+    )
     base_class = _get_pipeline_base_class(problem_type)
     return base_class(
         component_graph,

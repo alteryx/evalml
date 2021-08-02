@@ -3,7 +3,6 @@ import inspect
 import os
 import sys
 import traceback
-import warnings
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
@@ -21,7 +20,6 @@ from .components import (
 from .components.utils import all_components, handle_component_class
 
 from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
-from evalml.exceptions.exceptions import MissingComponentError
 from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
@@ -68,14 +66,18 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self.random_seed = random_seed
 
         if isinstance(component_graph, list):  # Backwards compatibility
-            with warnings.catch_warnings():
-                warnings.filterwarnings(
-                    "ignore",
-                    message="ComponentGraph.from_list will be deprecated in the next release. Please use a dictionary to specify your graph instead.",
-                )
-                self.component_graph = ComponentGraph().from_list(
-                    component_graph, random_seed=self.random_seed
-                )
+            for component in component_graph:
+                component = handle_component_class(component)
+                if not component._supported_by_list_API:
+                    raise ValueError(
+                        f"{component.name} cannot be defined in a list because edges may be ambiguous. Please use a dictionary to specify the appropriate component graph for this pipeline instead."
+                    )
+            self.component_graph = ComponentGraph(
+                component_dict=PipelineBase._make_component_dict_from_component_list(
+                    component_graph
+                ),
+                random_seed=self.random_seed,
+            )
         elif isinstance(component_graph, dict):
             self.component_graph = ComponentGraph(
                 component_dict=component_graph, random_seed=self.random_seed
@@ -84,6 +86,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             self.component_graph = ComponentGraph(
                 component_dict=component_graph.component_dict,
                 random_seed=self.random_seed,
+            )
+        else:
+            raise ValueError(
+                "component_graph must be a list, dict, or ComponentGraph object"
             )
         self.component_graph.instantiate(parameters)
 
@@ -127,8 +133,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
         component_graph = [
-            handle_component_class(component_class)
-            for _, component_class in copy.copy(self.linearized_component_graph)
+            type(self.component_graph.component_instances[component])
+            for component in copy.copy(self.component_graph.component_instances)
         ]
         if len(component_graph) == 0:
             return "Empty Pipeline"
@@ -145,10 +151,33 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         component_names = [component_class.name for component_class in component_graph]
         return "{} w/ {}".format(summary, " + ".join(component_names))
 
-    @property
-    def linearized_component_graph(self):
-        """A component graph in list form. Note that this is not guaranteed to be in proper component computation order"""
-        return ComponentGraph.linearized_component_graph(self.component_graph)
+    @staticmethod
+    def _make_component_dict_from_component_list(component_list):
+        """Generates a component dictionary from a list of components."""
+        components_with_names = []
+        seen = set()
+        for idx, component in enumerate(component_list):
+            component_class = handle_component_class(component)
+            component_name = component_class.name
+            if component_name in seen:
+                component_name = f"{component_name}_{idx}"
+            seen.add(component_name)
+            components_with_names.append((component_name, component_class))
+
+        component_dict = {}
+        most_recent_target = "y"
+        most_recent_features = "X"
+        for component_name, component_class in components_with_names:
+            component_dict[component_name] = [
+                component_class,
+                most_recent_features,
+                most_recent_target,
+            ]
+            if component_class.modifies_target:
+                most_recent_target = f"{component_name}.y"
+            if component_class.modifies_features:
+                most_recent_features = f"{component_name}.x"
+        return component_dict
 
     def _validate_estimator_problem_type(self):
         """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
@@ -558,33 +587,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 [f"'{key}': {safe_repr(value)}" for key, value in parameters.items()]
             )
 
-        component_strs = []
-        for (
-            component_name,
-            component_info,
-        ) in self.component_graph.component_dict.items():
-            try:
-                component_key = f"'{component_name}': "
-                if isinstance(component_info[0], str):
-                    component_class = handle_component_class(component_info[0])
-                else:
-                    component_class = handle_component_class(component_info[0].name)
-                component_name = f"'{component_class.name}'"
-            except MissingComponentError:
-                # Not an EvalML component, use component class name
-                component_name = f"{component_info[0].__name__}"
-
-            component_edges_str = ""
-            if len(component_info) > 1:
-                component_edges_str = ", "
-                component_edges_str += ", ".join(
-                    [f"'{info}'" for info in component_info[1:]]
-                )
-
-            component_str = f"{component_key}[{component_name}{component_edges_str}]"
-            component_strs.append(component_str)
-        component_dict_str = f"{{{', '.join(component_strs)}}}"
-
+        component_dict_str = repr(self.component_graph)
         parameters_repr = ", ".join(
             [
                 f"'{component}':{{{repr_component(parameters)}}}"
@@ -687,3 +690,24 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             y (pd.Series): Final component features
         """
         return self.component_graph.inverse_transform(y)
+
+    def get_hyperparameter_ranges(self, custom_hyperparameters):
+        """
+        Returns hyperparameter ranges from all components as a dictionary.
+
+        Arguments:
+            custom_hyperparameters (dict): Custom hyperparameters for the pipeline.
+
+        Returns:
+            dict: Dictionary of hyperparameter ranges for each component in the pipeline.
+        """
+        hyperparameter_ranges = dict()
+        for (
+            component_name,
+            component_class,
+        ) in self.component_graph.component_instances.items():
+            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
+            if custom_hyperparameters and component_name in custom_hyperparameters:
+                component_hyperparameters.update(custom_hyperparameters[component_name])
+            hyperparameter_ranges[component_name] = component_hyperparameters
+        return hyperparameter_ranges

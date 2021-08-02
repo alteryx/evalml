@@ -138,28 +138,28 @@ class LinearPipelineCreateFeatureThenDropIt(BinaryClassificationPipeline):
 
 class DagTwoEncoders(BinaryClassificationPipeline):
     component_graph = {
-        "Imputer": ["Imputer"],
-        "SelectNumeric": ["Select Columns Transformer", "Imputer"],
-        "SelectCategorical1": ["Select Columns Transformer", "Imputer"],
-        "SelectCategorical2": ["Select Columns Transformer", "Imputer"],
-        "OHE_1": ["One Hot Encoder", "SelectCategorical1"],
-        "OHE_2": ["One Hot Encoder", "SelectCategorical2"],
-        "DT": ["DateTime Featurization Component", "SelectNumeric"],
-        "Estimator": ["Random Forest Classifier", "DT", "OHE_1", "OHE_2"],
+        "Imputer": ["Imputer", "X", "y"],
+        "SelectNumeric": ["Select Columns Transformer", "Imputer.x", "y"],
+        "SelectCategorical1": ["Select Columns Transformer", "Imputer.x", "y"],
+        "SelectCategorical2": ["Select Columns Transformer", "Imputer.x", "y"],
+        "OHE_1": ["One Hot Encoder", "SelectCategorical1.x", "y"],
+        "OHE_2": ["One Hot Encoder", "SelectCategorical2.x", "y"],
+        "DT": ["DateTime Featurization Component", "SelectNumeric.x", "y"],
+        "Estimator": ["Random Forest Classifier", "DT.x", "OHE_1.x", "OHE_2.x", "y"],
     }
 
 
 class DagReuseFeatures(BinaryClassificationPipeline):
     component_graph = {
-        "Imputer": ["Imputer"],
-        "SelectDate": ["Select Columns Transformer", "Imputer"],
-        "SelectCategorical1": ["Select Columns Transformer", "Imputer"],
-        "SelectCategorical2": ["Select Columns Transformer", "Imputer"],
-        "OHE_1": ["One Hot Encoder", "SelectCategorical1"],
-        "OHE_2": ["One Hot Encoder", "SelectCategorical2"],
-        "DT": ["DateTime Featurization Component", "SelectDate"],
-        "OHE_3": ["One Hot Encoder", "DT"],
-        "Estimator": ["Random Forest Classifier", "OHE_3", "OHE_1", "OHE_2"],
+        "Imputer": ["Imputer", "X", "y"],
+        "SelectDate": ["Select Columns Transformer", "Imputer.x", "y"],
+        "SelectCategorical1": ["Select Columns Transformer", "Imputer.x", "y"],
+        "SelectCategorical2": ["Select Columns Transformer", "Imputer.x", "y"],
+        "OHE_1": ["One Hot Encoder", "SelectCategorical1.x", "y"],
+        "OHE_2": ["One Hot Encoder", "SelectCategorical2.x", "y"],
+        "DT": ["DateTime Featurization Component", "SelectDate.x", "y"],
+        "OHE_3": ["One Hot Encoder", "DT.x", "y"],
+        "Estimator": ["Random Forest Classifier", "OHE_3.x", "OHE_1.x", "OHE_2.x", "y"],
     }
 
 
@@ -380,15 +380,20 @@ class PipelineWithDimReduction(BinaryClassificationPipeline):
 
 class EnsembleDag(BinaryClassificationPipeline):
     component_graph = {
-        "Imputer_1": ["Imputer"],
-        "Imputer_2": ["Imputer"],
-        "OHE_1": ["One Hot Encoder", "Imputer_1"],
-        "OHE_2": ["One Hot Encoder", "Imputer_2"],
-        "DT_1": ["DateTime Featurization Component", "OHE_1"],
-        "DT_2": ["DateTime Featurization Component", "OHE_2"],
-        "Estimator_1": ["Random Forest Classifier", "DT_1"],
-        "Estimator_2": ["Extra Trees Classifier", "DT_2"],
-        "Ensembler": ["Logistic Regression Classifier", "Estimator_1", "Estimator_2"],
+        "Imputer_1": ["Imputer", "X", "y"],
+        "Imputer_2": ["Imputer", "X", "y"],
+        "OHE_1": ["One Hot Encoder", "Imputer_1.x", "y"],
+        "OHE_2": ["One Hot Encoder", "Imputer_2.x", "y"],
+        "DT_1": ["DateTime Featurization Component", "OHE_1.x", "y"],
+        "DT_2": ["DateTime Featurization Component", "OHE_2.x", "y"],
+        "Estimator_1": ["Random Forest Classifier", "DT_1.x", "y"],
+        "Estimator_2": ["Extra Trees Classifier", "DT_2.x", "y"],
+        "Ensembler": [
+            "Logistic Regression Classifier",
+            "Estimator_1.x",
+            "Estimator_2.x",
+            "y",
+        ],
     }
 
     def __init__(self, parameters, random_seed=0):
@@ -597,7 +602,14 @@ def test_undersampler(X_y_binary):
     X = pd.DataFrame(X)
     y = pd.Series(y)
     pipeline = BinaryClassificationPipeline(
-        component_graph=["Undersampler", "Elastic Net Classifier"]
+        component_graph={
+            "Undersampler": ["Undersampler", "X", "y"],
+            "Elastic Net Classifier": [
+                "Elastic Net Classifier",
+                "Undersampler.x",
+                "Undersampler.y",
+            ],
+        }
     )
     pipeline.fit(X=X, y=y)
     pipeline.predict(X)
@@ -612,13 +624,25 @@ def test_permutation_importance_oversampler(fraud_100):
     )
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(
-        component_graph=[
-            "Imputer",
-            "One Hot Encoder",
-            "DateTime Featurization Component",
-            "SMOTENC Oversampler",
-            "Decision Tree Classifier",
-        ]
+        component_graph={
+            "Imputer": ["Imputer", "X", "y"],
+            "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
+            "DateTime Featurization Component": [
+                "DateTime Featurization Component",
+                "One Hot Encoder.x",
+                "y",
+            ],
+            "SMOTENC Oversampler": [
+                "SMOTENC Oversampler",
+                "DateTime Featurization Component.x",
+                "y",
+            ],
+            "Decision Tree Classifier": [
+                "Decision Tree Classifier",
+                "SMOTENC Oversampler.x",
+                "SMOTENC Oversampler.y",
+            ],
+        }
     )
     pipeline.fit(X=X, y=y)
     pipeline.predict(X)
@@ -671,3 +695,22 @@ def test_permutation_importance_unknown(X_y_binary):
     pl.fit(X, y)
     s = calculate_permutation_importance(pl, X, y, objective="Log Loss Binary")
     assert not s.isnull().any().any()
+
+
+def test_permutation_importance_url_email(df_with_url_and_email):
+    X = df_with_url_and_email.ww.select(["numeric", "url", "EmailAddress"])
+    y = pd.Series([0, 1, 1, 0, 1])
+
+    pl = BinaryClassificationPipeline(
+        [
+            "URL Featurizer",
+            "Email Featurizer",
+            "One Hot Encoder",
+            "Random Forest Classifier",
+        ]
+    )
+    pl.fit(X, y)
+    data = calculate_permutation_importance(pl, X, y, objective="Log Loss Binary")
+    assert not data.isnull().any().any()
+    assert "url" in data["feature"].tolist()
+    assert "email" in data["feature"].tolist()

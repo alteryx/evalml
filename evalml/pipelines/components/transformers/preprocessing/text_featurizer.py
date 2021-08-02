@@ -2,6 +2,7 @@ import string
 
 import featuretools as ft
 import nlp_primitives
+import pandas as pd
 
 from evalml.pipelines.components.transformers.preprocessing import (
     LSA,
@@ -12,6 +13,12 @@ from evalml.utils import infer_feature_types
 
 class TextFeaturizer(TextTransformer):
     """Transformer that can automatically featurize text columns using featuretools' nlp_primitives.
+
+    Since models cannot handle non-numeric data, any text must be broken down into features that
+    provide useful information about that text. This component splits each text column into
+    several informative features: Diversity Score, Mean Characters per Word, Polarity Score, and
+    LSA (Latent Semantic Analysis). Calling transform on this component will replace any text columns
+    in the given dataset with these numeric columns.
 
     Arguments:
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -41,6 +48,7 @@ class TextFeaturizer(TextTransformer):
 
         for col_name in X.columns:
             # we assume non-str values will have been filtered out prior to calling TextFeaturizer. casting to str is a safeguard.
+            X[col_name].fillna("", inplace=True)
             col = X[col_name].astype(str)
             X[col_name] = col.apply(normalize)
         return X
@@ -120,13 +128,28 @@ class TextFeaturizer(TextTransformer):
             return X_ww
 
         es = self._make_entity_set(X_ww, self._text_columns)
+        nan_mask = X[self._text_columns].isna()
+        any_nans = nan_mask.any().any()
         X_nlp_primitives = ft.calculate_feature_matrix(
             features=self._features, entityset=es
         )
         if X_nlp_primitives.isnull().any().any():
             X_nlp_primitives.fillna(0, inplace=True)
 
-        X_lsa = self._lsa.transform(X_ww.ww[self._text_columns])
+        X_ww_altered = infer_feature_types(
+            X_ww.ww[self._text_columns].fillna(""),
+            {s: "NaturalLanguage" for s in self._text_columns},
+        )
+        X_lsa = self._lsa.transform(X_ww_altered)
+        if any_nans:
+            primitive_features = self._get_primitives_provenance(self._features)
+            for column, derived_features in primitive_features.items():
+                X_nlp_primitives.loc[nan_mask[column], derived_features] = pd.NA
+
+            lsa_features = self._lsa._get_feature_provenance()
+            for column, derived_features in lsa_features.items():
+                X_lsa.loc[nan_mask[column], derived_features] = pd.NA
+
         X_nlp_primitives.set_index(X_ww.index, inplace=True)
 
         X_ww = X_ww.ww.drop(self._text_columns)

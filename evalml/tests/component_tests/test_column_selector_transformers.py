@@ -1,9 +1,14 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 from pandas.testing import assert_frame_equal
 
-from evalml.pipelines.components import DropColumns, SelectColumns
+from evalml.pipelines.components import (
+    DropColumns,
+    SelectByType,
+    SelectColumns,
+)
 
 
 @pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns])
@@ -21,7 +26,18 @@ def test_column_transformer_init(class_to_test):
         _ = class_to_test(columns="Column1")
 
 
-@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns])
+def test_select_by_type_init():
+    transformer = SelectByType(column_types=None)
+    assert transformer.parameters["column_types"] is None
+
+    transformer = SelectByType(column_types=[])
+    assert transformer.parameters["column_types"] == []
+
+    transformer = SelectByType(column_types=["a", "b"])
+    assert transformer.parameters["column_types"] == ["a", "b"]
+
+
+@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns, SelectByType])
 def test_column_transformer_empty_X(class_to_test):
     X = pd.DataFrame()
     transformer = class_to_test(columns=[])
@@ -30,8 +46,11 @@ def test_column_transformer_empty_X(class_to_test):
     transformer = class_to_test(columns=[])
     assert_frame_equal(X, transformer.fit_transform(X))
 
-    transformer = class_to_test(columns=["not in data"])
-    with pytest.raises(ValueError, match="'not in data' not found in input data"):
+    if class_to_test is SelectByType:
+        transformer = class_to_test(column_types=["not in data"])
+    else:
+        transformer = class_to_test(columns=["not in data"])
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.fit(X)
 
     transformer = class_to_test(columns=list(X.columns))
@@ -59,10 +78,30 @@ def test_column_transformer_empty_X(class_to_test):
                 lambda X, X_t: X_t.equals(X.astype("int64")),
             ],
         ),
+        (
+            SelectByType,
+            [
+                lambda X, X_t: X_t.empty,
+                lambda X, X_t: X_t.empty,
+                lambda X, X_t: X_t.equals(X[["three"]].astype("int64")),
+                lambda X, X_t: X_t.astype(str).equals(X.astype(str)),
+            ],
+        ),
     ],
 )
 def test_column_transformer_transform(class_to_test, checking_functions):
-    X = pd.DataFrame({"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]})
+    if class_to_test is SelectByType:
+        X = pd.DataFrame(
+            {
+                "one": ["1", "2", "3", "4"],
+                "two": [False, True, True, False],
+                "three": [1, 2, 3, 4],
+            }
+        )
+    else:
+        X = pd.DataFrame(
+            {"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]}
+        )
     check1, check2, check3, check4 = checking_functions
 
     transformer = class_to_test(columns=None)
@@ -71,10 +110,16 @@ def test_column_transformer_transform(class_to_test, checking_functions):
     transformer = class_to_test(columns=[])
     assert check2(X, transformer.transform(X))
 
-    transformer = class_to_test(columns=["one"])
+    if class_to_test is SelectByType:
+        transformer = class_to_test(column_types=["integer"])
+    else:
+        transformer = class_to_test(columns=["one"])
     assert check3(X, transformer.transform(X))
 
-    transformer = class_to_test(columns=list(X.columns))
+    if class_to_test is SelectByType:
+        transformer = class_to_test(column_types=["categorical", "Boolean", "Integer"])
+    else:
+        transformer = class_to_test(columns=list(X.columns))
     assert check4(X, transformer.transform(X))
 
 
@@ -97,37 +142,67 @@ def test_column_transformer_transform(class_to_test, checking_functions):
                 lambda X, X_t: X_t.equals(X.astype("int64")),
             ],
         ),
+        (
+            SelectByType,
+            [
+                lambda X, X_t: X_t.empty,
+                lambda X, X_t: X_t.equals(X[["three"]].astype("int64")),
+                lambda X, X_t: X_t.astype(str).equals(X.astype(str)),
+            ],
+        ),
     ],
 )
 def test_column_transformer_fit_transform(class_to_test, checking_functions):
-    X = pd.DataFrame({"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]})
+    if class_to_test is SelectByType:
+        X = pd.DataFrame(
+            {
+                "one": ["1", "2", "3", "4"],
+                "two": [False, True, True, False],
+                "three": [1, 2, 3, 4],
+            }
+        )
+    else:
+        X = pd.DataFrame(
+            {"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]}
+        )
     check1, check2, check3 = checking_functions
 
     assert check1(X, class_to_test(columns=[]).fit_transform(X))
 
-    assert check2(X, class_to_test(columns=["one"]).fit_transform(X))
+    if class_to_test is SelectByType:
+        assert check2(X, class_to_test(column_types=["integer"]).fit_transform(X))
+    else:
+        assert check2(X, class_to_test(columns=["one"]).fit_transform(X))
 
-    assert check3(X, class_to_test(columns=list(X.columns)).fit_transform(X))
+    if class_to_test is SelectByType:
+        assert check3(
+            X,
+            class_to_test(
+                column_types=["categorical", "boolean", "integer"]
+            ).fit_transform(X),
+        )
+    else:
+        assert check3(X, class_to_test(columns=list(X.columns)).fit_transform(X))
 
 
 @pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns])
 def test_drop_column_transformer_input_invalid_col_name(class_to_test):
     X = pd.DataFrame({"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]})
     transformer = class_to_test(columns=["not in data"])
-    with pytest.raises(ValueError, match="'not in data' not found in input data"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.fit(X)
-    with pytest.raises(ValueError, match="'not in data' not found in input data"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.transform(X)
-    with pytest.raises(ValueError, match="'not in data' not found in input data"):
-        transformer.transform(X)
+    with pytest.raises(ValueError, match="not found in input data"):
+        transformer.fit_transform(X)
 
     X = np.arange(12).reshape(3, 4)
     transformer = class_to_test(columns=[5])
-    with pytest.raises(ValueError, match="'5' not found in input data"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.fit(X)
-    with pytest.raises(ValueError, match="'5' not found in input data"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.transform(X)
-    with pytest.raises(ValueError, match="'5' not found in input data"):
+    with pytest.raises(ValueError, match="not found in input data"):
         transformer.fit_transform(X)
 
 
@@ -168,3 +243,39 @@ def test_column_transformer_int_col_names_np_array(class_to_test, answers):
 
     transformer = class_to_test(columns=[])
     assert_frame_equal(answer3, transformer.transform(X))
+
+
+def test_typeortag_column_transformer_ww_logical_and_semantic_types():
+    X = pd.DataFrame(
+        {
+            "one": ["1", "2", "3", "4"],
+            "two": [False, True, True, False],
+            "three": [1, 2, 3, 4],
+            "four": [4.0, 2.3, 6.5, 2.6],
+        }
+    )
+
+    transformer = SelectByType(column_types=[ww.logical_types.Age])
+    with pytest.raises(ValueError, match="not found in input data"):
+        transformer.transform(X)
+    with pytest.raises(ValueError, match="not found in input data"):
+        transformer.fit_transform(X)
+
+    X_t = SelectByType(column_types=[ww.logical_types.Integer]).fit_transform(X)
+    assert X_t.equals(X[["three"]].astype("int64"))
+
+    X_t = SelectByType(column_types=["Double"]).fit_transform(X)
+    assert X_t.equals(X[["four"]].astype("float64"))
+
+    X_t = SelectByType(
+        column_types=[
+            ww.logical_types.Categorical,
+            ww.logical_types.Boolean,
+            ww.logical_types.Integer,
+            ww.logical_types.Double,
+        ]
+    ).fit_transform(X)
+    assert X_t.astype(str).equals(X.astype(str))
+
+    X_t = SelectByType(column_types=["numeric"]).fit_transform(X)
+    assert X_t.astype(str).equals(X[["three", "four"]].astype(str))
