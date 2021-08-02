@@ -2,7 +2,6 @@ import string
 
 import featuretools as ft
 import nlp_primitives
-import pandas as pd
 
 from evalml.pipelines.components.transformers.preprocessing import (
     LSA,
@@ -141,17 +140,17 @@ class TextFeaturizer(TextTransformer):
             {s: "NaturalLanguage" for s in self._text_columns},
         )
         X_lsa = self._lsa.transform(X_ww_altered)
+        X_nlp_primitives.set_index(X_ww.index, inplace=True)
         if any_nans:
             primitive_features = self._get_primitives_provenance(self._features)
             for column, derived_features in primitive_features.items():
-                X_nlp_primitives.loc[nan_mask[column], derived_features] = pd.NA
+                X_nlp_primitives.loc[nan_mask[column], derived_features] = None
 
             lsa_features = self._lsa._get_feature_provenance()
             for column, derived_features in lsa_features.items():
-                X_lsa.loc[nan_mask[column], derived_features] = pd.NA
-
-        X_nlp_primitives.set_index(X_ww.index, inplace=True)
-
+                X_lsa.loc[nan_mask[column], derived_features] = None
+        X_lsa = X_lsa.astype("float64")
+        X_nlp_primitives = X_nlp_primitives.astype("float64")
         X_ww = X_ww.ww.drop(self._text_columns)
         for col in X_nlp_primitives:
             X_ww.ww[col] = X_nlp_primitives[col]

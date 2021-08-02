@@ -10,6 +10,7 @@ Release Notes
         * Added support for `NaN` values in ``TextFeaturizer`` :pr:`2532`
         * Added ``SelectByType`` transformer :pr:`2531`
         * Added separate thresholds for percent null rows and columns in ``HighlyNullDataCheck`` :pr:`2562`
+        * Added support for `NaN` natural language values :pr:``
     * Fixes
     * Changes
         * Updated ``PipelineBase`` implementation for creating pipelines from a list of components :pr:`2549`

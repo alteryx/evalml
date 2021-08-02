@@ -536,3 +536,4 @@ def test_multiple_nan_allowed(nones):
     # these columns should not have any null values
     assert not X_t[cols].iloc[:3, :].isnull().any().any()
     assert not X_t[X_t.columns.difference(cols)].isnull().any().any()
+    assert all([types == "float64" for types in X_t[cols].dtypes])
