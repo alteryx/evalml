@@ -426,8 +426,8 @@ class PipelineWithCustomComponent(BinaryClassificationPipeline):
         )
 
 
-class SKlearnStackedEnsemblePipeline(BinaryClassificationPipeline):
-    component_graph = ["Stacked Ensemble Classifier"]
+class SklearnStackedEnsemblePipeline(BinaryClassificationPipeline):
+    component_graph = ["Sklearn Stacked Ensemble Classifier"]
 
     def __init__(self, parameters, random_seed=0):
         super().__init__(
@@ -442,7 +442,7 @@ pipelines_that_do_not_support_fast_permutation_importance = [
     PipelineWithDFS,
     PipelineWithCustomComponent,
     EnsembleDag,
-    SKlearnStackedEnsemblePipeline,
+    SklearnStackedEnsemblePipeline,
 ]
 
 
@@ -450,7 +450,7 @@ pipelines_that_do_not_support_fast_permutation_importance = [
     "pipeline_class", pipelines_that_do_not_support_fast_permutation_importance
 )
 def test_supports_fast_permutation_importance(pipeline_class):
-    params = {"Stacked Ensemble Classifier": {"input_pipelines": [PipelineWithDFS({})]}}
+    params = {"Sklearn Stacked Ensemble Classifier": {"input_pipelines": [PipelineWithDFS({})]}}
     assert not pipeline_class(params)._supports_fast_permutation_importance
 
 
@@ -675,7 +675,7 @@ def test_get_permutation_importance_one_column_pipeline_does_not_support_fast(
     X_y_binary, pipeline_class
 ):
     X, y = X_y_binary
-    params = {"Stacked Ensemble Classifier": {"input_pipelines": [PipelineWithDFS({})]}}
+    params = {"Sklearn Stacked Ensemble Classifier": {"input_pipelines": [PipelineWithDFS({})]}}
     assert not pipeline_class(params)._supports_fast_permutation_importance
     with pytest.raises(
         ValueError,

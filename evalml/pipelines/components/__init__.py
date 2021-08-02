@@ -57,4 +57,4 @@ from .transformers import (
     EmailFeaturizer,
     URLFeaturizer,
 )
-from .ensemble import SKlearnStackedEnsembleClassifier, SKlearnStackedEnsembleRegressor
+from .ensemble import SklearnStackedEnsembleClassifier, SklearnStackedEnsembleRegressor

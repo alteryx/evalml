@@ -31,8 +31,8 @@ from evalml.pipelines.components import (  # noqa: F401
     SMOTENCSampler,
     SMOTENSampler,
     SMOTESampler,
-    SKlearnStackedEnsembleClassifier,
-    SKlearnStackedEnsembleRegressor,
+    SklearnStackedEnsembleClassifier,
+    SklearnStackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
     TextFeaturizer,
@@ -274,33 +274,33 @@ def _make_stacked_ensemble_pipeline(
     parameters = {}
     if is_classification(problem_type):
         parameters = {
-            "Stacked Ensemble Classifier": {
+            "Sklearn Stacked Ensemble Classifier": {
                 "input_pipelines": input_pipelines,
                 "n_jobs": n_jobs,
             }
         }
-        estimator = SKlearnStackedEnsembleClassifier
+        estimator = SklearnStackedEnsembleClassifier
     else:
         parameters = {
-            "Stacked Ensemble Regressor": {
+            "Sklearn Stacked Ensemble Regressor": {
                 "input_pipelines": input_pipelines,
                 "n_jobs": n_jobs,
             }
         }
-        estimator = SKlearnStackedEnsembleRegressor
+        estimator = SklearnStackedEnsembleRegressor
 
     pipeline_class, pipeline_name = {
         ProblemTypes.BINARY: (
             BinaryClassificationPipeline,
-            "Stacked Ensemble Classification Pipeline",
+            "Sklearn Stacked Ensemble Classification Pipeline",
         ),
         ProblemTypes.MULTICLASS: (
             MulticlassClassificationPipeline,
-            "Stacked Ensemble Classification Pipeline",
+            "Sklearn Stacked Ensemble Classification Pipeline",
         ),
         ProblemTypes.REGRESSION: (
             RegressionPipeline,
-            "Stacked Ensemble Regression Pipeline",
+            "Sklearn Stacked Ensemble Regression Pipeline",
         ),
     }[problem_type]
 

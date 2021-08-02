@@ -3,12 +3,12 @@ from sklearn.model_selection import KFold
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LinearRegressor
-from evalml.pipelines.components.ensemble import SKlearnStackedEnsembleBase
+from evalml.pipelines.components.ensemble import SklearnStackedEnsembleBase
 from evalml.problem_types import ProblemTypes
 
 
-class SKlearnStackedEnsembleRegressor(SKlearnStackedEnsembleBase):
-    """Stacked Ensemble Regressor.
+class SklearnStackedEnsembleRegressor(SklearnStackedEnsembleBase):
+    """Scikit-learn Stacked Ensemble Regressor.
 
     Arguments:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators.
@@ -29,7 +29,7 @@ class SKlearnStackedEnsembleRegressor(SKlearnStackedEnsembleBase):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    name = "Stacked Ensemble Regressor"
+    name = "Sklearn Stacked Ensemble Regressor"
     model_family = ModelFamily.ENSEMBLE
     """ModelFamily.ENSEMBLE"""
     supported_problem_types = [

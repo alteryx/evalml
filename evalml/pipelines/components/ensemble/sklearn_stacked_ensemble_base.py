@@ -7,7 +7,7 @@ from evalml.utils import classproperty
 _nonstackable_model_families = [ModelFamily.BASELINE, ModelFamily.NONE]
 
 
-class SKlearnStackedEnsembleBase(Estimator):
+class SklearnStackedEnsembleBase(Estimator):
     """Stacked Ensemble Base Class.
 
     Arguments:
@@ -94,9 +94,9 @@ class SKlearnStackedEnsembleBase(Estimator):
 
     @property
     def feature_importance(self):
-        """Not implemented for SKlearnStackedEnsembleClassifier and SKlearnStackedEnsembleRegressor"""
+        """Not implemented for SklearnStackedEnsembleClassifier and SklearnStackedEnsembleRegressor"""
         raise NotImplementedError(
-            "feature_importance is not implemented for SKlearnStackedEnsembleClassifier and SKlearnStackedEnsembleRegressor"
+            "feature_importance is not implemented for SklearnStackedEnsembleClassifier and SklearnStackedEnsembleRegressor"
         )
 
     @classproperty

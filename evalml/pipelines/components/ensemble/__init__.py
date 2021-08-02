@@ -1,4 +1,4 @@
 # flake8:noqa
-from .stacked_ensemble_base import SKlearnStackedEnsembleBase
-from .stacked_ensemble_classifier import SKlearnStackedEnsembleClassifier
-from .stacked_ensemble_regressor import SKlearnStackedEnsembleRegressor
+from .sklearn_stacked_ensemble_base import SklearnStackedEnsembleBase
+from .sklearn_stacked_ensemble_classifier import SklearnStackedEnsembleClassifier
+from .sklearn_stacked_ensemble_regressor import SklearnStackedEnsembleRegressor
