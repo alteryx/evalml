@@ -54,7 +54,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     PipelineBase,
     RegressionPipeline,
-    StackedEnsembleClassifier,
+    SKlearnStackedEnsembleClassifier,
 )
 from evalml.pipelines.components.utils import (
     allowed_model_families,
@@ -4201,7 +4201,7 @@ def test_train_batch_works(
         for classifier in stackable_classifiers[:2]
     ]
     ensemble = BinaryClassificationPipeline(
-        [StackedEnsembleClassifier],
+        [SKlearnStackedEnsembleClassifier],
         parameters={
             "Stacked Ensemble Classifier": {
                 "input_pipelines": input_pipelines,
@@ -4342,7 +4342,7 @@ def test_score_batch_works(
         for classifier in stackable_classifiers[:2]
     ]
     ensemble = BinaryClassificationPipeline(
-        [StackedEnsembleClassifier],
+        [SKlearnStackedEnsembleClassifier],
         parameters={
             "Stacked Ensemble Classifier": {
                 "input_pipelines": input_pipelines,

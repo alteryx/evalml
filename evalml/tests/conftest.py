@@ -29,8 +29,8 @@ from evalml.pipelines.components import (
     DecisionTreeRegressor,
     Estimator,
     LogisticRegressionClassifier,
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
+    SKlearnStackedEnsembleClassifier,
+    SKlearnStackedEnsembleRegressor,
 )
 from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
     _nonstackable_model_families,
@@ -122,8 +122,8 @@ def all_pipeline_classes():
     for estimator in [
         estimator
         for estimator in _all_estimators()
-        if estimator != StackedEnsembleClassifier
-        and estimator != StackedEnsembleRegressor
+        if estimator != SKlearnStackedEnsembleClassifier
+        and estimator != SKlearnStackedEnsembleRegressor
     ]:
         for problem_type in estimator.supported_problem_types:
             all_possible_pipeline_classes.append(
@@ -643,7 +643,7 @@ def linear_regression_pipeline_class():
 @pytest.fixture
 def dummy_stacked_ensemble_binary_estimator(logistic_regression_binary_pipeline_class):
     p1 = logistic_regression_binary_pipeline_class({})
-    ensemble_estimator = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
+    ensemble_estimator = SKlearnStackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
     return ensemble_estimator
 
 
@@ -652,14 +652,14 @@ def dummy_stacked_ensemble_multiclass_estimator(
     logistic_regression_multiclass_pipeline_class,
 ):
     p1 = logistic_regression_multiclass_pipeline_class({})
-    ensemble_estimator = StackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
+    ensemble_estimator = SKlearnStackedEnsembleClassifier(input_pipelines=[p1], random_seed=0)
     return ensemble_estimator
 
 
 @pytest.fixture
 def dummy_stacked_ensemble_regressor_estimator(linear_regression_pipeline_class):
     p1 = linear_regression_pipeline_class({})
-    ensemble_estimator = StackedEnsembleRegressor(input_pipelines=[p1], random_seed=0)
+    ensemble_estimator = SKlearnStackedEnsembleRegressor(input_pipelines=[p1], random_seed=0)
     return ensemble_estimator
 
 

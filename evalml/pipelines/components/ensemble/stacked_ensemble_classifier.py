@@ -3,11 +3,11 @@ from sklearn.model_selection import StratifiedKFold
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LogisticRegressionClassifier
-from evalml.pipelines.components.ensemble import StackedEnsembleBase
+from evalml.pipelines.components.ensemble import SKlearnStackedEnsembleBase
 from evalml.problem_types import ProblemTypes
 
 
-class StackedEnsembleClassifier(StackedEnsembleBase):
+class SKlearnStackedEnsembleClassifier(SKlearnStackedEnsembleBase):
     """Stacked Ensemble Classifier.
 
     Arguments:

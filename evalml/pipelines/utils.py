@@ -31,8 +31,8 @@ from evalml.pipelines.components import (  # noqa: F401
     SMOTENCSampler,
     SMOTENSampler,
     SMOTESampler,
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
+    SKlearnStackedEnsembleClassifier,
+    SKlearnStackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
     TextFeaturizer,
@@ -279,7 +279,7 @@ def _make_stacked_ensemble_pipeline(
                 "n_jobs": n_jobs,
             }
         }
-        estimator = StackedEnsembleClassifier
+        estimator = SKlearnStackedEnsembleClassifier
     else:
         parameters = {
             "Stacked Ensemble Regressor": {
@@ -287,7 +287,7 @@ def _make_stacked_ensemble_pipeline(
                 "n_jobs": n_jobs,
             }
         }
-        estimator = StackedEnsembleRegressor
+        estimator = SKlearnStackedEnsembleRegressor
 
     pipeline_class, pipeline_name = {
         ProblemTypes.BINARY: (

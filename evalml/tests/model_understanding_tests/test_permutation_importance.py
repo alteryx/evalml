@@ -426,7 +426,7 @@ class PipelineWithCustomComponent(BinaryClassificationPipeline):
         )
 
 
-class StackedEnsemblePipeline(BinaryClassificationPipeline):
+class SKlearnStackedEnsemblePipeline(BinaryClassificationPipeline):
     component_graph = ["Stacked Ensemble Classifier"]
 
     def __init__(self, parameters, random_seed=0):
@@ -442,7 +442,7 @@ pipelines_that_do_not_support_fast_permutation_importance = [
     PipelineWithDFS,
     PipelineWithCustomComponent,
     EnsembleDag,
-    StackedEnsemblePipeline,
+    SKlearnStackedEnsemblePipeline,
 ]
 
 
