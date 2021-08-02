@@ -28,6 +28,9 @@ class DataCheckMessageCode(Enum):
     TARGET_UNSUPPORTED_TYPE = "target_unsupported_type"
     """Message code for target data that is of an unsupported type."""
 
+    TARGET_UNSUPPORTED_PROBLEM_TYPE = "target_unsupported_problem_type"
+    """Message code for target data that is being checked against an unsupported problem type."""
+
     TARGET_BINARY_NOT_TWO_UNIQUE_VALUES = "target_binary_not_two_unique_values"
     """Message code for target data for a binary classification problem that does not have two unique values."""
 
@@ -41,6 +44,9 @@ class DataCheckMessageCode(Enum):
 
     TARGET_MULTICLASS_HIGH_UNIQUE_CLASS = "target_multiclass_high_unique_class_warning"
     """Message code for target data for a multi classification problem that has an abnormally large number of unique classes relative to the number of target values."""
+
+    TARGET_LOGNORMAL_DISTRIBUTION = "target_lognormal_distribution"
+    """Message code for target data with a lognormal distribution."""
 
     HIGH_VARIANCE = "high_variance"
     """Message code for when high variance is detected for cross-validation."""

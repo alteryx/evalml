@@ -48,6 +48,7 @@ from evalml.pipelines.components import (
     RandomForestRegressor,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
+    SelectByType,
     SelectColumns,
     SimpleImputer,
     SMOTENCSampler,
@@ -67,6 +68,9 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
+)
+from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
+    LogTransformer,
 )
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
     BaseSampler,
@@ -823,8 +827,8 @@ def test_transformer_transform_output_type(X_y_binary):
     ]
 
     for component_class in _all_transformers():
-        if component_class == PolynomialDetrender:
-            # Skipping because this test is handled in test_polynomial_detrender
+        if component_class in [PolynomialDetrender, LogTransformer]:
+            # Skipping because these tests are handled in their respective test files
             continue
         print("Testing transformer {}".format(component_class.name))
         for X, y, X_cols_expected in datatype_combos:
@@ -858,7 +862,9 @@ def test_transformer_transform_output_type(X_y_binary):
             else:
                 assert isinstance(transform_output, pd.DataFrame)
 
-            if isinstance(component, SelectColumns):
+            if isinstance(component, SelectColumns) or isinstance(
+                component, SelectByType
+            ):
                 assert transform_output.shape == (X.shape[0], 0)
             elif isinstance(component, PCA) or isinstance(
                 component, LinearDiscriminantAnalysis
@@ -889,7 +895,9 @@ def test_transformer_transform_output_type(X_y_binary):
             else:
                 assert isinstance(transform_output, pd.DataFrame)
 
-            if isinstance(component, SelectColumns):
+            if isinstance(component, SelectColumns) or isinstance(
+                component, SelectByType
+            ):
                 assert transform_output.shape == (X.shape[0], 0)
             elif isinstance(component, PCA) or isinstance(
                 component, LinearDiscriminantAnalysis
@@ -1066,6 +1074,7 @@ def test_all_transformers_needs_fitting():
         if component_class.__name__ in [
             "DropColumns",
             "SelectColumns",
+            "SelectByType",
             "DelayedFeatureTransformer",
         ]:
             assert not component_class.needs_fitting
@@ -1571,7 +1580,7 @@ def test_transformer_fit_and_transform_respect_custom_indices(
     if "sampler" in transformer.name:
         X_t, y_t = transformer.transform(X, y)
         assert y_t is None
-    elif transformer_class == TargetImputer:
+    elif transformer_class in [TargetImputer, LogTransformer]:
         X_t, y_t = transformer.transform(X, y)
         pd.testing.assert_index_equal(
             y_t.index, y_original_index, check_names=check_names
