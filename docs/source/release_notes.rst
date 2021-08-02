@@ -11,6 +11,7 @@ Release Notes
         * Added ``SelectByType`` transformer :pr:`2531`
         * Added separate thresholds for percent null rows and columns in ``HighlyNullDataCheck`` :pr:`2562`
     * Fixes
+        * Raised error message for types ``URL``, ``NaturalLanguage``, and ``EmailAddress`` in ``partial_dependence`` :pr:`2573`
     * Changes
         * Updated ``PipelineBase`` implementation for creating pipelines from a list of components :pr:`2549`
         * Moved ``get_hyperparameter_ranges`` to ``PipelineBase`` class from automl/utils module :pr:`2546`
@@ -18,6 +19,7 @@ Release Notes
         * Removed ``ComponentGraph.linearized_component_graph`` and ``ComponentGraph.from_list`` :pr:`2556`
         * Updated ``ComponentGraph`` to enforce requiring `.x` and `.y` inputs for each component in the graph :pr:`2563`
     * Documentation Changes
+        * Added documentation for ``DaskEngine`` and ``CFEngine`` parallel engines :pr:`2560`
         * Improved detail of ``TextFeaturizer`` docstring and tutorial :pr:`2568`
     * Testing Changes
         * Added test that makes sure ``split_data`` does not shuffle for time series problems :pr:`2552`
@@ -43,6 +45,8 @@ Release Notes
         * Updated our components with an attribute that describes if they modify features or targets and can be used in list API for pipeline initialization :pr:`2504`
         * Updated ``ComponentGraph`` to accept X and y as inputs :pr:`2507`
         * Removed unused ``TARGET_BINARY_INVALID_VALUES`` from ``DataCheckMessageCode`` enum and fixed formatting of objective documentation :pr:`2520`
+        * Added ``EvalMLAlgorithm`` :pr:`2525`
+        * Added support for `NaN` values in ``TextFeaturizer`` :pr:`2532`
     * Fixes
         * Fixed ``FraudCost`` objective and reverted threshold optimization method for binary classification to ``Golden`` :pr:`2450`
         * Added custom exception message for partial dependence on features with scales that are too small :pr:`2455`
