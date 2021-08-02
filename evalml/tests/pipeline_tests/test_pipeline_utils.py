@@ -1,3 +1,5 @@
+from datetime import date
+from evalml.pipelines.components.estimators import estimator
 import numpy as np
 import pandas as pd
 import pytest
@@ -88,17 +90,27 @@ def get_test_data_from_configuration():
     return _get_test_data_from_configuration
 
 
+
 @pytest.mark.parametrize("lognormal_distribution", [True, False])
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_all_nan_no_categoricals(
-    problem_type, input_type, lognormal_distribution, get_test_data_from_configuration
+@pytest.mark.parametrize("column_names", [
+    ["all_null", "numerical"],
+    ["all_null", "categorical", "dates"],
+    ["numerical", "categorical", "dates"],
+    ["all_null", "categorical", "numerical"],
+    ["text"],
+    ["text", "numerical", "categorical"]    
+])
+
+def test_make_pipeline_master(
+    problem_type, input_type, lognormal_distribution, column_names, get_test_data_from_configuration
 ):
-    # testing that all_null column is not considered categorical
+
     X, y = get_test_data_from_configuration(
         input_type,
         problem_type,
-        column_names=["all_null", "numerical"],
+        column_names=column_names,
         lognormal_distribution=lognormal_distribution,
     )
     estimators = get_estimators(problem_type=problem_type)
@@ -109,287 +121,38 @@ def test_make_pipeline_all_nan_no_categoricals(
             if is_time_series(problem_type):
                 parameters = {
                     "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
-                    "Time Series Baseline Estimator": {
-                        "date_index": None,
-                        "gap": 1,
-                        "max_delay": 1,
-                    },
-                }
-
-            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
-            assert isinstance(pipeline, pipeline_class)
-            delayed_features = []
-            if (
-                is_time_series(problem_type)
-                and estimator_class.model_family != ModelFamily.ARIMA
-            ):
-                delayed_features = [DelayedFeatureTransformer]
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                estimator_components = [StandardScaler, estimator_class]
-            else:
-                estimator_components = [estimator_class]
-            expected_components = (
-                [DropNullColumns, Imputer] + delayed_features + estimator_components
-            )
-            if lognormal_distribution and is_regression(problem_type):
-                expected_components.insert(0, LogTransformer)
-            assert pipeline.component_graph.compute_order == [
-                component.name for component in expected_components
-            ]
-
-
-@pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline(input_type, problem_type, get_test_data_from_configuration):
-    X, y = get_test_data_from_configuration(
-        input_type, problem_type, column_names=["all_null", "categorical", "dates"]
-    )
-    estimators = get_estimators(problem_type=problem_type)
-    pipeline_class = _get_pipeline_base_class(problem_type)
-
-    for estimator_class in estimators:
-        if problem_type in estimator_class.supported_problem_types:
-            parameters = {}
-            if is_time_series(problem_type):
-                parameters = {
-                    "pipeline": {"date_index": "dates", "gap": 1, "max_delay": 1},
-                    "Time Series Baseline Estimator": {
-                        "date_index": "dates",
-                        "gap": 1,
-                        "max_delay": 1,
-                    },
                 }
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
             delayed_features = (
-                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
-            )
-
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                estimator_components = [estimator_class]
-            else:
-                estimator_components = [OneHotEncoder, estimator_class]
-            if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = [DropNullColumns, Imputer] + estimator_components
-            else:
-                expected_components = (
-                    [DropNullColumns, Imputer, DateTimeFeaturizer]
-                    + delayed_features
-                    + estimator_components
-                )
-            assert pipeline.component_graph.compute_order == [
-                component.name for component in expected_components
-            ]
-
-
-@pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_no_nulls(
-    input_type, problem_type, get_test_data_from_configuration
-):
-    X, y = get_test_data_from_configuration(
-        input_type, problem_type, ["numerical", "categorical", "dates"]
-    )
-    estimators = get_estimators(problem_type=problem_type)
-    pipeline_class = _get_pipeline_base_class(problem_type)
-
-    for estimator_class in estimators:
-        if problem_type in estimator_class.supported_problem_types:
-            parameters = {}
-            if is_time_series(problem_type):
-                parameters = {
-                    "pipeline": {"date_index": "dates", "gap": 1, "max_delay": 1},
-                    "Time Series Baseline Estimator": {
-                        "date_index": "dates",
-                        "gap": 1,
-                        "max_delay": 1,
-                    },
-                }
-
-            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
-            assert isinstance(pipeline, pipeline_class)
-            delayed_features = (
-                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
-            )
-
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                estimator_components = [estimator_class]
-            else:
-                estimator_components = [OneHotEncoder, estimator_class]
-            if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = [Imputer] + estimator_components
-            else:
-                expected_components = (
-                    [Imputer, DateTimeFeaturizer]
-                    + delayed_features
-                    + estimator_components
-                )
-            assert pipeline.component_graph.compute_order == [
-                component.name for component in expected_components
-            ]
-
-
-@pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_no_datetimes(
-    input_type, problem_type, get_test_data_from_configuration
-):
-    X, y = get_test_data_from_configuration(
-        input_type, problem_type, column_names=["all_null", "categorical", "numerical"]
-    )
-    estimators = get_estimators(problem_type=problem_type)
-    pipeline_class = _get_pipeline_base_class(problem_type)
-    for estimator_class in estimators:
-        if problem_type in estimator_class.supported_problem_types:
-            parameters = {}
-            if is_time_series(problem_type):
-                parameters = {
-                    "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
-                    "Time Series Baseline Estimator": {
-                        "date_index": None,
-                        "gap": 1,
-                        "max_delay": 1,
-                    },
-                }
-
-            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
-            assert isinstance(pipeline, pipeline_class)
-            delayed_features = (
-                [DelayedFeatureTransformer]
-                if is_time_series(problem_type)
-                and estimator_class.model_family != ModelFamily.ARIMA
-                else []
-            )
+                [DelayedFeatureTransformer] if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA else []
+            )            
             ohe = (
                 [OneHotEncoder]
-                if estimator_class.model_family != ModelFamily.CATBOOST
+                if estimator_class.model_family != ModelFamily.CATBOOST and "categorical" in column_names
                 else []
             )
+            datetime = (
+                [DateTimeFeaturizer] if estimator_class.model_family != ModelFamily.ARIMA and "dates" in column_names else []
+            )
+            delayed_features = (
+                [DelayedFeatureTransformer] if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA else []
+            )     
             standard_scaler = (
                 [StandardScaler]
                 if estimator_class.model_family == ModelFamily.LINEAR_MODEL
                 else []
             )
+            log_transformer = [LogTransformer] if lognormal_distribution and is_regression(problem_type) else []
+            text_featurizer = []
+            if "text" in column_names:
+                text_featurizer = [TextFeaturizer, Imputer] if input_type == "ww" else [DropColumns]
+            imputer = [Imputer] if Imputer not in text_featurizer and "text" in column_names else []
+            drop_null = [DropNullColumns] if "all_null" in column_names else []
             expected_components = (
-                [DropNullColumns, Imputer]
-                + delayed_features
-                + ohe
-                + standard_scaler
-                + [estimator_class]
-            )
-            assert pipeline.component_graph.compute_order == [
-                component.name for component in expected_components
-            ]
-
-
-@pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_text_columns(
-    input_type, problem_type, get_test_data_from_configuration
-):
-    X, y = get_test_data_from_configuration(
-        input_type, problem_type, column_names=["text", "numerical", "categorical"]
-    )
-    estimators = get_estimators(problem_type=problem_type)
-
-    pipeline_class = _get_pipeline_base_class(problem_type)
-    for estimator_class in estimators:
-        if problem_type in estimator_class.supported_problem_types:
-            parameters = {}
-            if is_time_series(problem_type):
-                parameters = {
-                    "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
-                    "Time Series Baseline Estimator": {
-                        "date_index": None,
-                        "gap": 1,
-                        "max_delay": 1,
-                    },
-                }
-
-            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
-            assert isinstance(pipeline, pipeline_class)
-            delayed_features = (
-                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
-            )
-
-            if input_type == "ww":
-                text_featurizer = [TextFeaturizer, Imputer]
-            else:
-                text_featurizer = [Imputer, DropColumns]
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                estimator_components = [estimator_class]
-            else:
-                estimator_components = [OneHotEncoder, estimator_class]
-            if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = text_featurizer + estimator_components
-            else:
-                expected_components = (
-                    text_featurizer + delayed_features + estimator_components
-                )
-            assert pipeline.component_graph.compute_order == [
-                component.name for component in expected_components
-            ]
-
-
-@pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_only_text_columns(
-    input_type, problem_type, get_test_data_from_configuration
-):
-    X, y = get_test_data_from_configuration(
-        input_type,
-        problem_type,
-        column_names=[
-            "text",
-        ],
-    )
-    estimators = get_estimators(problem_type=problem_type)
-    pipeline_class = _get_pipeline_base_class(problem_type)
-
-    for estimator_class in estimators:
-        if problem_type in estimator_class.supported_problem_types:
-            parameters = {}
-            if is_time_series(problem_type):
-                parameters = {
-                    "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
-                    "Time Series Baseline Estimator": {
-                        "date_index": None,
-                        "gap": 1,
-                        "max_delay": 1,
-                    },
-                }
-
-            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
-            assert isinstance(pipeline, pipeline_class)
-            delayed_features = (
-                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
-            )
-            standard_scaler = (
-                [StandardScaler]
-                if estimator_class.model_family == ModelFamily.LINEAR_MODEL
-                else []
-            )
-
-            if input_type == "ww":
-                text_featurizer = [TextFeaturizer, Imputer]
-            else:
-                text_featurizer = [DropColumns]
-            if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = (
-                    text_featurizer + standard_scaler + [estimator_class]
-                )
-            else:
-                expected_components = (
-                    text_featurizer
-                    + delayed_features
-                    + standard_scaler
+                    log_transformer + drop_null + imputer + text_featurizer + datetime
+                    + delayed_features + ohe + standard_scaler
                     + [estimator_class]
                 )
             assert pipeline.component_graph.compute_order == [
@@ -397,52 +160,357 @@ def test_make_pipeline_only_text_columns(
             ]
 
 
-@pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_only_datetime_columns(
-    input_type, problem_type, get_test_data_from_configuration
-):
-    X, y = get_test_data_from_configuration(
-        input_type, problem_type, column_names=["dates", "some more dates"]
-    )
-    estimators = get_estimators(problem_type=problem_type)
-    pipeline_class = _get_pipeline_base_class(problem_type)
+# @pytest.mark.parametrize("lognormal_distribution", [True, False])
+# @pytest.mark.parametrize("input_type", ["pd", "ww"])
+# @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+# def test_make_pipeline_all_nan_no_categoricals(
+#     problem_type, input_type, lognormal_distribution, get_test_data_from_configuration
+# ):
+#     # testing that all_null column is not considered categorical
+#     X, y = get_test_data_from_configuration(
+#         input_type,
+#         problem_type,
+#         column_names=["all_null", "numerical"],
+#         lognormal_distribution=lognormal_distribution,
+#     )
+#     estimators = get_estimators(problem_type=problem_type)
+#     pipeline_class = _get_pipeline_base_class(problem_type)
+#     for estimator_class in estimators:
+#         if problem_type in estimator_class.supported_problem_types:
+#             parameters = {}
+#             if is_time_series(problem_type):
+#                 parameters = {
+#                     "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+#                     "Time Series Baseline Estimator": {
+#                         "date_index": None,
+#                         "gap": 1,
+#                         "max_delay": 1,
+#                     },
+#                 }
 
-    for estimator_class in estimators:
-        if problem_type in estimator_class.supported_problem_types:
-            parameters = {}
-            if is_time_series(problem_type):
-                parameters = {
-                    "pipeline": {"date_index": "dates", "gap": 1, "max_delay": 1},
-                    "Time Series Baseline Estimator": {
-                        "date_index": "dates",
-                        "gap": 1,
-                        "max_delay": 1,
-                    },
-                }
+#             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
+#             assert isinstance(pipeline, pipeline_class)
+#             delayed_features = (
+#                 [DelayedFeatureTransformer] if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA else []
+#             )            
+#             ohe = (
+#                 [OneHotEncoder]
+#                 if estimator_class.model_family != ModelFamily.CATBOOST
+#                 else []
+#             )
+#             standard_scaler = (
+#                 [StandardScaler]
+#                 if estimator_class.model_family == ModelFamily.LINEAR_MODEL
+#                 else []
+#             )
+#             log_transformer = [LogTransformer] if lognormal_distribution and is_regression(problem_type) else []
+#             expected_components = (
+#                 log_transformer + [DropNullColumns, Imputer] + delayed_features + standard_scaler + [estimator_class]
+#             )
+#             assert pipeline.component_graph.compute_order == [
+#                 component.name for component in expected_components
+#             ]
 
-            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
-            assert isinstance(pipeline, pipeline_class)
-            delayed_features = (
-                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
-            )
-            standard_scaler = (
-                [StandardScaler]
-                if estimator_class.model_family == ModelFamily.LINEAR_MODEL
-                else []
-            )
-            if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = standard_scaler + [estimator_class]
-            else:
-                expected_components = (
-                    [DateTimeFeaturizer]
-                    + delayed_features
-                    + standard_scaler
-                    + [estimator_class]
-                )
-            assert pipeline.component_graph.compute_order == [
-                component.name for component in expected_components
-            ]
+
+# @pytest.mark.parametrize("input_type", ["pd", "ww"])
+# @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+# def test_make_pipeline(input_type, problem_type, get_test_data_from_configuration):
+#     X, y = get_test_data_from_configuration(
+#         input_type, problem_type, column_names=["all_null", "categorical", "dates"]
+#     )
+#     estimators = get_estimators(problem_type=problem_type)
+#     pipeline_class = _get_pipeline_base_class(problem_type)
+
+#     for estimator_class in estimators:
+#         if problem_type in estimator_class.supported_problem_types:
+#             parameters = {}
+#             if is_time_series(problem_type):
+#                 parameters = {
+#                     "pipeline": {"date_index": "dates", "gap": 1, "max_delay": 1},
+#                     "Time Series Baseline Estimator": {
+#                         "date_index": "dates",
+#                         "gap": 1,
+#                         "max_delay": 1,
+#                     },
+#                 }
+
+#             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
+#             assert isinstance(pipeline, pipeline_class)
+
+#             datetime = (
+#                 [DateTimeFeaturizer] if estimator_class.model_family != ModelFamily.ARIMA else []
+#             )
+#             delayed_features = (
+#                 [DelayedFeatureTransformer] if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA else []
+#             )            
+#             ohe = (
+#                 [OneHotEncoder]
+#                 if estimator_class.model_family != ModelFamily.CATBOOST
+#                 else []
+#             )
+#             standard_scaler = (
+#                 [StandardScaler]
+#                 if estimator_class.model_family == ModelFamily.LINEAR_MODEL
+#                 else []
+#             )
+#             expected_components = (
+#                     [DropNullColumns, Imputer] + datetime
+#                     + delayed_features + ohe + standard_scaler
+#                     + [estimator_class]
+#                 )
+#             assert pipeline.component_graph.compute_order == [
+#                 component.name for component in expected_components
+# #             ]
+
+
+# @pytest.mark.parametrize("input_type", ["pd", "ww"])
+# @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+# def test_make_pipeline_no_nulls(
+#     input_type, problem_type, get_test_data_from_configuration
+# ):
+#     X, y = get_test_data_from_configuration(
+#         input_type, problem_type, ["numerical", "categorical", "dates"]
+#     )
+#     estimators = get_estimators(problem_type=problem_type)
+#     pipeline_class = _get_pipeline_base_class(problem_type)
+
+#     for estimator_class in estimators:
+#         if problem_type in estimator_class.supported_problem_types:
+#             parameters = {}
+#             if is_time_series(problem_type):
+#                 parameters = {
+#                     "pipeline": {"date_index": "dates", "gap": 1, "max_delay": 1},
+#                     "Time Series Baseline Estimator": {
+#                         "date_index": "dates",
+#                         "gap": 1,
+#                         "max_delay": 1,
+#                     },
+#                 }
+
+#             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
+#             assert isinstance(pipeline, pipeline_class)
+#             delayed_features = (
+#                 [DelayedFeatureTransformer] if is_time_series(problem_type) else []
+#             )
+
+#             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+#                 estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
+#             elif estimator_class.model_family == ModelFamily.CATBOOST:
+#                 estimator_components = [estimator_class]
+#             else:
+#                 estimator_components = [OneHotEncoder, estimator_class]
+#             if estimator_class.model_family == ModelFamily.ARIMA:
+#                 expected_components = [Imputer] + estimator_components
+#             else:
+#                 expected_components = (
+#                     [Imputer, DateTimeFeaturizer]
+#                     + delayed_features
+#                     + estimator_components
+#                 )
+#             assert pipeline.component_graph.compute_order == [
+#                 component.name for component in expected_components
+#             ]
+
+
+# @pytest.mark.parametrize("input_type", ["pd", "ww"])
+# @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+# def test_make_pipeline_no_datetimes(
+#     input_type, problem_type, get_test_data_from_configuration
+# ):
+#     X, y = get_test_data_from_configuration(
+#         input_type, problem_type, column_names=["all_null", "categorical", "numerical"]
+#     )
+#     estimators = get_estimators(problem_type=problem_type)
+#     pipeline_class = _get_pipeline_base_class(problem_type)
+#     for estimator_class in estimators:
+#         if problem_type in estimator_class.supported_problem_types:
+#             parameters = {}
+#             if is_time_series(problem_type):
+#                 parameters = {
+#                     "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+#                     "Time Series Baseline Estimator": {
+#                         "date_index": None,
+#                         "gap": 1,
+#                         "max_delay": 1,
+#                     },
+#                 }
+
+#             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
+#             assert isinstance(pipeline, pipeline_class)
+#             delayed_features = (
+#                 [DelayedFeatureTransformer]
+#                 if is_time_series(problem_type)
+#                 and estimator_class.model_family != ModelFamily.ARIMA
+#                 else []
+#             )
+#             ohe = (
+#                 [OneHotEncoder]
+#                 if estimator_class.model_family != ModelFamily.CATBOOST
+#                 else []
+#             )
+#             standard_scaler = (
+#                 [StandardScaler]
+#                 if estimator_class.model_family == ModelFamily.LINEAR_MODEL
+#                 else []
+#             )
+#             expected_components = (
+#                 [DropNullColumns, Imputer]
+#                 + delayed_features
+#                 + ohe
+#                 + standard_scaler
+#                 + [estimator_class]
+#             )
+#             assert pipeline.component_graph.compute_order == [
+#                 component.name for component in expected_components
+#             ]
+
+
+# @pytest.mark.parametrize("input_type", ["pd", "ww"])
+# @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+# def test_make_pipeline_text_columns(
+#     input_type, problem_type, get_test_data_from_configuration
+# ):
+#     X, y = get_test_data_from_configuration(
+#         input_type, problem_type, column_names=["text", "numerical", "categorical"]
+#     )
+#     estimators = get_estimators(problem_type=problem_type)
+
+#     pipeline_class = _get_pipeline_base_class(problem_type)
+#     for estimator_class in estimators:
+#         if problem_type in estimator_class.supported_problem_types:
+#             parameters = {}
+#             if is_time_series(problem_type):
+#                 parameters = {
+#                     "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+#                     "Time Series Baseline Estimator": {
+#                         "date_index": None,
+#                         "gap": 1,
+#                         "max_delay": 1,
+#                     },
+#                 }
+
+#             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
+#             assert isinstance(pipeline, pipeline_class)
+#             delayed_features = (
+#                 [DelayedFeatureTransformer] if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA else []
+#             )
+#             text_featurizer = [TextFeaturizer, Imputer] if input_type == "ww" else [Imputer, DropColumns]
+#             standard_scaler = (
+#                 [StandardScaler]
+#                 if estimator_class.model_family == ModelFamily.LINEAR_MODEL
+#                 else []
+#             )
+#             ohe = (
+#                 [OneHotEncoder]
+#                 if estimator_class.model_family != ModelFamily.CATBOOST
+#                 else []
+#             )
+
+#             expected_components = (
+#                     text_featurizer + delayed_features + ohe + standard_scaler + [estimator_class]
+#                 )
+#             assert pipeline.component_graph.compute_order == [
+#                 component.name for component in expected_components
+#             ]
+
+
+# @pytest.mark.parametrize("input_type", ["pd", "ww"])
+# @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+# def test_make_pipeline_only_text_columns(
+#     input_type, problem_type, get_test_data_from_configuration
+# ):
+#     X, y = get_test_data_from_configuration(
+#         input_type,
+#         problem_type,
+#         column_names=[
+#             "text",
+#         ],
+#     )
+#     estimators = get_estimators(problem_type=problem_type)
+#     pipeline_class = _get_pipeline_base_class(problem_type)
+
+#     for estimator_class in estimators:
+#         if problem_type in estimator_class.supported_problem_types:
+#             parameters = {}
+#             if is_time_series(problem_type):
+#                 parameters = {
+#                     "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
+#                     "Time Series Baseline Estimator": {
+#                         "date_index": None,
+#                         "gap": 1,
+#                         "max_delay": 1,
+#                     },
+#                 }
+
+#             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
+#             assert isinstance(pipeline, pipeline_class)
+#             delayed_features = (
+#                 [DelayedFeatureTransformer] if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA else []
+#             )
+#             standard_scaler = (
+#                 [StandardScaler]
+#                 if estimator_class.model_family == ModelFamily.LINEAR_MODEL
+#                 else []
+#             )
+#             text_featurizer = [TextFeaturizer, Imputer] if input_type == "ww" else [DropColumns]
+#             expected_components = (
+#                     text_featurizer
+#                     + delayed_features
+#                     + standard_scaler
+#                     + [estimator_class]
+#                 )
+#             assert pipeline.component_graph.compute_order == [
+#                 component.name for component in expected_components
+#             ]
+
+
+# @pytest.mark.parametrize("input_type", ["pd", "ww"])
+# @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+# def test_make_pipeline_only_datetime_columns(
+#     input_type, problem_type, get_test_data_from_configuration
+# ):
+#     X, y = get_test_data_from_configuration(
+#         input_type, problem_type, column_names=["dates", "some more dates"]
+#     )
+#     estimators = get_estimators(problem_type=problem_type)
+#     pipeline_class = _get_pipeline_base_class(problem_type)
+
+#     for estimator_class in estimators:
+#         if problem_type in estimator_class.supported_problem_types:
+#             parameters = {}
+#             if is_time_series(problem_type):
+#                 parameters = {
+#                     "pipeline": {"date_index": "dates", "gap": 1, "max_delay": 1},
+#                     "Time Series Baseline Estimator": {
+#                         "date_index": "dates",
+#                         "gap": 1,
+#                         "max_delay": 1,
+#                     },
+#                 }
+
+#             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
+#             assert isinstance(pipeline, pipeline_class)
+#             datetime = (
+#                 [DateTimeFeaturizer] if estimator_class.model_family != ModelFamily.ARIMA else []
+#             )
+#             delayed_features = (
+#                 [DelayedFeatureTransformer] if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA else []
+#             )
+#             standard_scaler = (
+#                 [StandardScaler]
+#                 if estimator_class.model_family == ModelFamily.LINEAR_MODEL
+#                 else []
+#             )
+
+#             expected_components = (
+#                     datetime
+#                     + delayed_features
+#                     + standard_scaler
+#                     + [estimator_class]
+#                 )
+#             assert pipeline.component_graph.compute_order == [
+#                 component.name for component in expected_components
+#             ]
 
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
@@ -463,29 +531,19 @@ def test_make_pipeline_numpy_input(problem_type):
             if is_time_series(problem_type):
                 parameters = {
                     "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
-                    "Time Series Baseline Estimator": {
-                        "date_index": None,
-                        "gap": 1,
-                        "max_delay": 1,
-                    },
                 }
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
             delayed_features = (
-                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
+                [DelayedFeatureTransformer] if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA else []
             )
             standard_scaler = (
                 [StandardScaler]
                 if estimator_class.model_family == ModelFamily.LINEAR_MODEL
                 else []
             )
-            if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = (
-                    [DropNullColumns, Imputer] + standard_scaler + [estimator_class]
-                )
-            else:
-                expected_components = (
+            expected_components = (
                     [DropNullColumns, Imputer]
                     + delayed_features
                     + standard_scaler
@@ -522,8 +580,11 @@ def test_make_pipeline_datetime_no_categorical(
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
 
-            delayed_features = (
-                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
+            datetime = (
+                [DateTimeFeaturizer] if estimator_class.model_family != ModelFamily.ARIMA else []
+            )
+            delayed = (
+                [DelayedFeatureTransformer] if is_time_series(problem_type) and estimator_class.model_family != ModelFamily.ARIMA else []
             )
             standard_scaler = (
                 [StandardScaler]
@@ -531,18 +592,24 @@ def test_make_pipeline_datetime_no_categorical(
                 else []
             )
 
-            if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = [Imputer] + standard_scaler + [estimator_class]
-            else:
-                expected_components = (
-                    [Imputer, DateTimeFeaturizer]
-                    + delayed_features
+            expected_components = (
+                    [Imputer] 
+                    + datetime
+                    + delayed
                     + standard_scaler
                     + [estimator_class]
                 )
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
+
+
+
+
+
+
+
+
 
 
 def test_make_pipeline_problem_type_mismatch():
