@@ -152,9 +152,9 @@ def test_make_pipeline(input_type, problem_type, get_test_data_from_configuratio
             parameters = {}
             if is_time_series(problem_type):
                 parameters = {
-                    "pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
+                    "pipeline": {"date_index": "dates", "gap": 1, "max_delay": 1},
                     "Time Series Baseline Estimator": {
-                        "date_index": "some dates",
+                        "date_index": "dates",
                         "gap": 1,
                         "max_delay": 1,
                     },
@@ -162,9 +162,10 @@ def test_make_pipeline(input_type, problem_type, get_test_data_from_configuratio
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            delayed_features = []
-            if is_time_series(problem_type):
-                delayed_features = [DelayedFeatureTransformer]
+            delayed_features = (
+                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
+            )
+
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -200,9 +201,9 @@ def test_make_pipeline_no_nulls(
             parameters = {}
             if is_time_series(problem_type):
                 parameters = {
-                    "pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
+                    "pipeline": {"date_index": "dates", "gap": 1, "max_delay": 1},
                     "Time Series Baseline Estimator": {
-                        "date_index": "some dates",
+                        "date_index": "dates",
                         "gap": 1,
                         "max_delay": 1,
                     },
@@ -210,9 +211,10 @@ def test_make_pipeline_no_nulls(
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            delayed_features = []
-            if is_time_series(problem_type):
-                delayed_features = [DelayedFeatureTransformer]
+            delayed_features = (
+                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
+            )
+
             if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
                 estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
             elif estimator_class.model_family == ModelFamily.CATBOOST:
@@ -242,9 +244,6 @@ def test_make_pipeline_no_datetimes(
     )
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
-    if problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2])
-
     for estimator_class in estimators:
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
@@ -260,21 +259,29 @@ def test_make_pipeline_no_datetimes(
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            delayed_features = []
-            if is_time_series(problem_type):
-                delayed_features = [DelayedFeatureTransformer]
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                estimator_components = [OneHotEncoder, StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                estimator_components = [estimator_class]
-            else:
-                estimator_components = [OneHotEncoder, estimator_class]
-            if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = [DropNullColumns, Imputer] + estimator_components
-            else:
-                expected_components = (
-                    [DropNullColumns, Imputer] + delayed_features + estimator_components
-                )
+            delayed_features = (
+                [DelayedFeatureTransformer]
+                if is_time_series(problem_type)
+                and estimator_class.model_family != ModelFamily.ARIMA
+                else []
+            )
+            ohe = (
+                [OneHotEncoder]
+                if estimator_class.model_family != ModelFamily.CATBOOST
+                else []
+            )
+            standard_scaler = (
+                [StandardScaler]
+                if estimator_class.model_family == ModelFamily.LINEAR_MODEL
+                else []
+            )
+            expected_components = (
+                [DropNullColumns, Imputer]
+                + delayed_features
+                + ohe
+                + standard_scaler
+                + [estimator_class]
+            )
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
@@ -291,9 +298,6 @@ def test_make_pipeline_text_columns(
     estimators = get_estimators(problem_type=problem_type)
 
     pipeline_class = _get_pipeline_base_class(problem_type)
-    if problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2])
-
     for estimator_class in estimators:
         if problem_type in estimator_class.supported_problem_types:
             parameters = {}
@@ -309,9 +313,10 @@ def test_make_pipeline_text_columns(
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            delayed_features = []
-            if is_time_series(problem_type):
-                delayed_features = [DelayedFeatureTransformer]
+            delayed_features = (
+                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
+            )
+
             if input_type == "ww":
                 text_featurizer = [TextFeaturizer, Imputer]
             else:
@@ -363,12 +368,15 @@ def test_make_pipeline_only_text_columns(
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            delayed_features = []
-            if is_time_series(problem_type):
-                delayed_features = [DelayedFeatureTransformer]
-            standard_scaler = []
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                standard_scaler = [StandardScaler]
+            delayed_features = (
+                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
+            )
+            standard_scaler = (
+                [StandardScaler]
+                if estimator_class.model_family == ModelFamily.LINEAR_MODEL
+                else []
+            )
+
             if input_type == "ww":
                 text_featurizer = [TextFeaturizer, Imputer]
             else:
@@ -405,9 +413,9 @@ def test_make_pipeline_only_datetime_columns(
             parameters = {}
             if is_time_series(problem_type):
                 parameters = {
-                    "pipeline": {"date_index": "some dates", "gap": 1, "max_delay": 1},
+                    "pipeline": {"date_index": "dates", "gap": 1, "max_delay": 1},
                     "Time Series Baseline Estimator": {
-                        "date_index": "some dates",
+                        "date_index": "dates",
                         "gap": 1,
                         "max_delay": 1,
                     },
@@ -415,12 +423,14 @@ def test_make_pipeline_only_datetime_columns(
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            delayed_features = []
-            if is_time_series(problem_type):
-                delayed_features = [DelayedFeatureTransformer]
-            standard_scaler = []
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                standard_scaler = [StandardScaler]
+            delayed_features = (
+                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
+            )
+            standard_scaler = (
+                [StandardScaler]
+                if estimator_class.model_family == ModelFamily.LINEAR_MODEL
+                else []
+            )
             if estimator_class.model_family == ModelFamily.ARIMA:
                 expected_components = standard_scaler + [estimator_class]
             else:
@@ -462,18 +472,24 @@ def test_make_pipeline_numpy_input(problem_type):
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            delayed_features = []
-            if is_time_series(problem_type):
-                delayed_features = [DelayedFeatureTransformer]
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                estimator_components = [StandardScaler, estimator_class]
-            else:
-                estimator_components = [estimator_class]
+            delayed_features = (
+                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
+            )
+            standard_scaler = (
+                [StandardScaler]
+                if estimator_class.model_family == ModelFamily.LINEAR_MODEL
+                else []
+            )
             if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = [DropNullColumns, Imputer] + estimator_components
+                expected_components = (
+                    [DropNullColumns, Imputer] + standard_scaler + [estimator_class]
+                )
             else:
                 expected_components = (
-                    [DropNullColumns, Imputer] + delayed_features + estimator_components
+                    [DropNullColumns, Imputer]
+                    + delayed_features
+                    + standard_scaler
+                    + [estimator_class]
                 )
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
@@ -495,9 +511,9 @@ def test_make_pipeline_datetime_no_categorical(
             parameters = {}
             if is_time_series(problem_type):
                 parameters = {
-                    "pipeline": {"date_index": "soem dates", "gap": 1, "max_delay": 1},
+                    "pipeline": {"date_index": "dates", "gap": 1, "max_delay": 1},
                     "Time Series Baseline Estimator": {
-                        "date_index": "some dates",
+                        "date_index": "dates",
                         "gap": 1,
                         "max_delay": 1,
                     },
@@ -505,24 +521,25 @@ def test_make_pipeline_datetime_no_categorical(
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
-            delayed_features = []
-            if is_time_series(problem_type):
-                delayed_features = [DelayedFeatureTransformer]
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                estimator_components = [StandardScaler, estimator_class]
-            elif estimator_class.model_family == ModelFamily.CATBOOST:
-                estimator_components = [estimator_class]
-            else:
-                estimator_components = [estimator_class]
+
+            delayed_features = (
+                [DelayedFeatureTransformer] if is_time_series(problem_type) else []
+            )
+            standard_scaler = (
+                [StandardScaler]
+                if estimator_class.model_family == ModelFamily.LINEAR_MODEL
+                else []
+            )
+
             if estimator_class.model_family == ModelFamily.ARIMA:
-                expected_components = [Imputer] + estimator_components
+                expected_components = [Imputer] + standard_scaler + [estimator_class]
             else:
                 expected_components = (
                     [Imputer, DateTimeFeaturizer]
                     + delayed_features
-                    + estimator_components
+                    + standard_scaler
+                    + [estimator_class]
                 )
-            # import pdb; pdb.set_trace()
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ]
