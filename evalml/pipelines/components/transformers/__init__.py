@@ -8,7 +8,7 @@ from .feature_selection import (
 from .imputers import PerColumnImputer, SimpleImputer, Imputer, TargetImputer
 from .scalers import StandardScaler
 from .samplers import Undersampler, SMOTESampler, SMOTENCSampler, SMOTENSampler
-from .column_selectors import DropColumns, SelectColumns
+from .column_selectors import DropColumns, SelectColumns, SelectByType
 from .dimensionality_reduction import LinearDiscriminantAnalysis, PCA
 from .preprocessing import (
     DateTimeFeaturizer,
@@ -18,6 +18,7 @@ from .preprocessing import (
     DelayedFeatureTransformer,
     DFSTransformer,
     PolynomialDetrender,
+    LogTransformer,
     EmailFeaturizer,
     URLFeaturizer,
 )

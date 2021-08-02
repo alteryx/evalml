@@ -1,3 +1,4 @@
+import warnings
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -8,7 +9,7 @@ from sklearn.model_selection import StratifiedKFold
 from evalml import AutoMLSearch
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
-from evalml.exceptions import PipelineNotFoundError
+from evalml.exceptions import ParameterNotUsedWarning, PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
     FraudCost,
@@ -993,13 +994,10 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
     env.mock_score.assert_called()
 
 
-@pytest.mark.parametrize("is_linear", [True, False])
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
 def test_automl_component_graphs_search(
-    is_linear,
     problem_type,
-    dummy_classifier_linear_component_graph,
-    dummy_classifier_dict_component_graph,
+    example_graph,
     X_y_binary,
     X_y_multi,
     AutoMLTestEnv,
@@ -1008,20 +1006,11 @@ def test_automl_component_graphs_search(
         X, y = X_y_binary
         score_return_value = {"Log Loss Binary": 1.0}
         expected_mock_class = BinaryClassificationPipeline
-        component_graph = (
-            dummy_classifier_linear_component_graph
-            if is_linear
-            else dummy_classifier_dict_component_graph
-        )
     else:
         X, y = X_y_multi
         score_return_value = {"Log Loss Multiclass": 1.0}
         expected_mock_class = MulticlassClassificationPipeline
-        component_graph = (
-            dummy_classifier_linear_component_graph
-            if is_linear
-            else dummy_classifier_dict_component_graph
-        )
+    component_graph = {"CG": example_graph}
 
     start_iteration_callback = MagicMock()
     automl = AutoMLSearch(
@@ -1513,3 +1502,50 @@ def test_automl_search_sampler_k_neighbors_no_error(
     )
     # check that the calling this doesn't fail
     automl.search()
+
+
+@pytest.mark.parametrize(
+    "pipeline_parameters,set_values",
+    [
+        ({"Logistic Regression Classifier": {"penalty": "l1"}}, {}),
+        (
+            {
+                "Undersampler": {"sampling_ratio": 0.05},
+                "Random Forest Classifier": {"n_estimators": 10},
+            },
+            {"Undersampler"},
+        ),
+    ],
+)
+def test_time_series_pipeline_parameter_warnings(
+    pipeline_parameters, set_values, AutoMLTestEnv, X_y_binary
+):
+    pipeline_parameters.update(
+        {"pipeline": {"date_index": None, "gap": 0, "max_delay": 0}}
+    )
+    X, y = X_y_binary
+    configuration = {
+        "date_index": None,
+        "gap": 0,
+        "max_delay": 0,
+        "delay_target": False,
+        "delay_features": True,
+    }
+    with warnings.catch_warnings(record=True) as w:
+        warnings.filterwarnings("always", category=ParameterNotUsedWarning)
+        automl = AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="time series binary",
+            max_batches=2,
+            n_jobs=1,
+            pipeline_parameters=pipeline_parameters,
+            problem_configuration=configuration,
+        )
+        env = AutoMLTestEnv("time series binary")
+        with env.test_context(score_return_value={automl.objective.name: 1.0}):
+            automl.search()
+    # We throw a warning about time series being in beta
+    assert len(w) == (2 if len(set_values) else 1)
+    if len(w) == 2:
+        assert w[1].message.components == set_values

@@ -41,6 +41,7 @@ from .transformers import (
     DropNullColumns,
     DateTimeFeaturizer,
     SelectColumns,
+    SelectByType,
     TextFeaturizer,
     LinearDiscriminantAnalysis,
     LSA,
@@ -52,6 +53,7 @@ from .transformers import (
     SMOTESampler,
     SMOTENCSampler,
     SMOTENSampler,
+    LogTransformer,
     EmailFeaturizer,
     URLFeaturizer,
 )
