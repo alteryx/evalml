@@ -150,7 +150,9 @@ class TextFeaturizer(TextTransformer):
             for column, derived_features in lsa_features.items():
                 X_lsa.loc[nan_mask[column], derived_features] = None
         X_lsa.ww.init(logical_types={col: "Double" for col in X_lsa.columns})
-        X_nlp_primitives.ww.init(logical_types={col: "Double" for col in X_nlp_primitives.columns})
+        X_nlp_primitives.ww.init(
+            logical_types={col: "Double" for col in X_nlp_primitives.columns}
+        )
         X_ww = X_ww.ww.drop(self._text_columns)
         for col in X_nlp_primitives:
             X_ww.ww[col] = X_nlp_primitives[col]
