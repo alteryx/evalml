@@ -32,7 +32,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         b. run naive linear model with default preprocessing pipeline
         c. run basic RF pipeline with default preprocessing pipeline
     2. Naive pipelines with feature selection
-        a. future pipelines will use the selected features with a SelectedColumns transformer
+        a. subsequent pipelines will use the selected features with a SelectedColumns transformer
 
     At this point we have a single pipeline candidate for preprocessing and feature selection
 
@@ -55,14 +55,14 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         X,
         y,
         problem_type,
-        _sampler_name,
+        sampler_name,
         tuner_class=None,
         random_seed=0,
         pipeline_params=None,
         custom_hyperparameters=None,
         n_jobs=-1,
-        number_features=None,
         text_in_ensembling=None,
+        top_n=3,
         num_long_explore_pipelines=50,
         num_long_pipelines_per_batch=10,
     ):
@@ -71,13 +71,16 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             X (pd.DataFrame): Training data
             y (pd.Series): Target data
             problem_type (ProblemType): Problem type associated with training data
-            _sampler_name (BaseSampler): Sampler to use for preprocessing
+            sampler_name (BaseSampler): Sampler to use for preprocessing
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
             random_seed (int): Seed for the random number generator. Defaults to 0.
-            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
             pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
             custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
+            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
             text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
+            top_n (int): top n number of pipelines to use for long mode.
+            num_long_explore_pipelines (int): number of pipelines to explore for each top n pipeline at the start of long mode.
+            num_long_pipelines_per_batch (int): number of pipelines per batch for each top n pipeline through long mode.
         """
 
         super().__init__(
@@ -91,10 +94,9 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         self.X = X
         self.y = y
         self.problem_type = problem_type
-        self._sampler_name = _sampler_name
+        self.sampler_name = sampler_name
 
         self.n_jobs = n_jobs
-        self.number_features = number_features
         self._best_pipeline_info = {}
         self.text_in_ensembling = text_in_ensembling
         self._pipeline_params = pipeline_params or {}
@@ -103,6 +105,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         self._top_n_pipelines = None
         self.num_long_explore_pipelines = num_long_explore_pipelines
         self.num_long_pipelines_per_batch = num_long_pipelines_per_batch
+        self.top_n = top_n
         if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
             raise ValueError(
                 f"If custom_hyperparameters provided, must be of type dict. Received {type(custom_hyperparameters)}"
@@ -158,7 +161,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 self.y,
                 estimator,
                 self.problem_type,
-                sampler_name=self._sampler_name,
+                sampler_name=self.sampler_name,
                 extra_components=feature_selector,
             )
             for estimator in estimators
@@ -185,7 +188,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 self.y,
                 estimator,
                 self.problem_type,
-                sampler_name=self._sampler_name,
+                sampler_name=self.sampler_name,
                 parameters={
                     "Select Columns Transformer": {"columns": self._selected_cols}
                 },
@@ -204,6 +207,13 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             pipeline = pipeline_dict["pipeline"]
             pipeline_params = pipeline_dict["parameters"]
             parameters = self._transform_parameters(pipeline, pipeline_params)
+            if (
+                "Select Columns Transformer"
+                in pipeline.component_graph.component_instances
+            ):
+                parameters.update(
+                    {"Select Columns Transformer": {"columns": self._selected_cols}}
+                )
             input_pipelines.append(
                 pipeline.new(parameters=parameters, random_seed=self.random_seed)
             )
@@ -232,12 +242,12 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 )
         return next_batch
 
-    def _create_long_top_n(self, n):
+    def _create_long_exploration(self, n):
         estimators = [
             (pipeline_dict["pipeline"].estimator, pipeline_dict["mean_cv_score"])
             for pipeline_dict in self._best_pipeline_info.values()
         ]
-        estimators.sort(key=lambda pipeline: pipeline[1])
+        estimators.sort(key=lambda x: x[1])
         estimators = estimators[:n]
         estimators = [estimator[0].__class__ for estimator in estimators]
         pipelines = [
@@ -246,7 +256,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 self.y,
                 estimator,
                 self.problem_type,
-                sampler_name=self._sampler_name,
+                sampler_name=self.sampler_name,
                 extra_components=[SelectColumns],
             )
             for estimator in estimators
@@ -270,7 +280,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         elif self.batch_number == 3:
             next_batch = self._create_ensemble()
         elif self.batch_number == 4:
-            next_batch = self._create_long_top_n(n=3)
+            next_batch = self._create_long_exploration(n=self.top_n)
         elif self.batch_number % 2 != 0:
             next_batch = self._create_ensemble()
         else:
@@ -283,7 +293,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         return next_batch
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
-        """Register results from evaluating a pipeline
+        """Register results from evaluating a pipeline. In batch number 2, the selected column names from the feature selector are taken to be used in a column selector. Information regarding the best pipeline is updated here as well.
 
         Arguments:
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.

@@ -181,7 +181,7 @@ def make_pipeline(
     problem_type,
     parameters=None,
     sampler_name=None,
-    extra_components=None,
+    extra_components=[],
 ):
     """Given input data, target data, an estimator class and the problem type,
          generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
@@ -216,11 +216,7 @@ def make_pipeline(
         X, y, problem_type, estimator, sampler_name
     )
 
-    complete_component_list = (
-        preprocessing_components + extra_components + [estimator]
-        if extra_components
-        else preprocessing_components + [estimator]
-    )
+    complete_component_list = preprocessing_components + extra_components + [estimator]
     component_graph = PipelineBase._make_component_dict_from_component_list(
         complete_component_list
     )

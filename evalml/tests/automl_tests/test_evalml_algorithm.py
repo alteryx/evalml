@@ -23,7 +23,7 @@ def test_evalml_algorithm_init(X_y_binary):
     algo = EvalMLAlgorithm(X, y, problem_type, sampler_name)
 
     assert algo.problem_type == problem_type
-    assert algo._sampler_name == sampler_name
+    assert algo.sampler_name == sampler_name
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
@@ -107,18 +107,17 @@ def test_evalml_algorithm(
     problem_type = automl_type
     sampler_name = None
     algo = EvalMLAlgorithm(X, y, problem_type, sampler_name)
-    naive_model_families = [ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST]
+    naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
     first_batch = algo.next_batch()
     assert len(first_batch) == 2
-    for pipeline in first_batch:
-        assert pipeline.model_family in naive_model_families
+    assert {p.model_family for p in first_batch} == naive_model_families
     add_result(algo, first_batch)
 
     second_batch = algo.next_batch()
     assert len(second_batch) == 2
+    assert {p.model_family for p in second_batch} == naive_model_families
     for pipeline in second_batch:
-        assert pipeline.model_family in naive_model_families
         assert pipeline.get_component(fs)
     add_result(algo, second_batch)
 
