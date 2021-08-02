@@ -1,6 +1,3 @@
-from datetime import date
-from typing import Text
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -33,7 +30,6 @@ from evalml.pipelines.components import (
     Transformer,
     URLFeaturizer,
 )
-from evalml.pipelines.components.estimators import estimator
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_component_list_from_actions,
