@@ -15,6 +15,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Added test that makes sure ``split_data`` does not shuffle for time series problems :pr:`2552`
+        * Fixed ``make_pipeline`` tests to assert correct order and address new Woodwork Unknown type inference :pr:`2572`
 
 .. warning::
 

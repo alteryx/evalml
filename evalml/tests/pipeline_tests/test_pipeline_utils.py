@@ -1,4 +1,3 @@
-from evalml.pipelines.components.transformers.preprocessing import text_featurizer
 import numpy as np
 import pandas as pd
 import pytest
@@ -325,7 +324,9 @@ def test_make_pipeline_text_columns(input_type, problem_type):
     )
     y = pd.Series([0, 0, 1, 1, 0])
     if input_type == "ww":
-        X.ww.init(logical_types={"text": "NaturalLanguage", "categorical": "Categorical"})
+        X.ww.init(
+            logical_types={"text": "NaturalLanguage", "categorical": "Categorical"}
+        )
         y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
 
@@ -396,7 +397,9 @@ def test_make_pipeline_only_text_columns(input_type, problem_type):
     )
     y = pd.Series([0, 0, 1, 1, 0])
     if input_type == "ww":
-        X.ww.init(logical_types={"text": "NaturalLanguage", "another text": "NaturalLanguage"})
+        X.ww.init(
+            logical_types={"text": "NaturalLanguage", "another text": "NaturalLanguage"}
+        )
         y = ww.init_series(y)
     estimators = get_estimators(problem_type=problem_type)
 
