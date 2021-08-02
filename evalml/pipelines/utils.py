@@ -12,7 +12,7 @@ from .time_series_classification_pipelines import (
 )
 from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 
-from evalml.data_checks import DataCheckActionCode
+from evalml.data_checks import DataCheckActionCode, TargetDistributionDataCheck
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
@@ -22,8 +22,10 @@ from evalml.pipelines.components import (  # noqa: F401
     DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
+    EmailFeaturizer,
     Estimator,
     Imputer,
+    LogTransformer,
     OneHotEncoder,
     RandomForestClassifier,
     SMOTENCSampler,
@@ -35,12 +37,14 @@ from evalml.pipelines.components import (  # noqa: F401
     TargetImputer,
     TextFeaturizer,
     Undersampler,
+    URLFeaturizer,
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
+    is_regression,
     is_time_series,
 )
 from evalml.utils import get_logger, import_or_raise, infer_feature_types
@@ -65,9 +69,23 @@ def _get_preprocessing_components(
     """
 
     pp_components = []
+
+    if is_regression(problem_type):
+        for each_action in TargetDistributionDataCheck().validate(X, y)["actions"]:
+            if each_action["metadata"]["transformation_strategy"] == "lognormal":
+                pp_components.append(LogTransformer)
+
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
+
+    email_columns = list(X.ww.select("EmailAddress", return_schema=True).columns)
+    if len(email_columns) > 0:
+        pp_components.append(EmailFeaturizer)
+
+    url_columns = list(X.ww.select("URL", return_schema=True).columns)
+    if len(url_columns) > 0:
+        pp_components.append(URLFeaturizer)
 
     input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
     types_imputer_handles = {
@@ -75,6 +93,8 @@ def _get_preprocessing_components(
         logical_types.Categorical,
         logical_types.Double,
         logical_types.Integer,
+        logical_types.URL,
+        logical_types.EmailAddress,
     }
 
     text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
@@ -104,7 +124,10 @@ def _get_preprocessing_components(
     ):
         pp_components.append(DelayedFeatureTransformer)
 
-    categorical_cols = list(X.ww.select("category", return_schema=True).columns)
+    # The URL and EmailAddress Featurizers will create categorical columns
+    categorical_cols = list(
+        X.ww.select(["category", "URL", "EmailAddress"], return_schema=True).columns
+    )
     if len(categorical_cols) > 0 and estimator_class not in {
         CatBoostClassifier,
         CatBoostRegressor,

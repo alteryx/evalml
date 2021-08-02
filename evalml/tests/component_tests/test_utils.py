@@ -29,13 +29,13 @@ def test_all_components(
     has_minimal_dependencies, is_running_py_39_or_above, is_using_conda
 ):
     if has_minimal_dependencies:
-        n_components = 37
+        n_components = 41
     elif is_using_conda:
-        n_components = 48
+        n_components = 52
     elif is_running_py_39_or_above:
-        n_components = 47
+        n_components = 51
     else:
-        n_components = 49
+        n_components = 53
     assert len(all_components()) == n_components
 
 
