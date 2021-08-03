@@ -206,7 +206,7 @@ Regressors are components that output a predicted target value.
     evalml.pipelines.components.XGBoostRegressor
     evalml.pipelines.components.BaselineRegressor
     evalml.pipelines.components.TimeSeriesBaselineEstimator
-    evalml.pipelines.components.StackedEnsembleRegressor
+    evalml.pipelines.components.SklearnStackedEnsembleRegressor
     evalml.pipelines.components.DecisionTreeRegressor
     evalml.pipelines.components.LightGBMRegressor
     evalml.pipelines.components.SVMRegressor
