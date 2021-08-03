@@ -61,14 +61,14 @@ class ComponentGraph:
                 component_input.endswith(".x") or component_input == "X"
                 for component_input in component_inputs
             )
-            has_target_input = any(
-                component_input.endswith(".y") or component_input == "y"
-                for component_input in component_inputs
-            )
-            if not (has_feature_input and has_target_input):
+            has_one_target_input = sum(component_input.endswith(".y") or component_input == "y" for component_input in component_inputs)
+            if not has_feature_input:
                 raise ValueError(
                     "All edges must be specified as either an input feature (.x) or input target (.y)."
                 )
+            # import pdb; pdb.set_trace()
+            if has_one_target_input != 1:
+                raise ValueError("All components must have exactly one target (.y/y) edge.")
 
     @property
     def compute_order(self):
@@ -238,9 +238,10 @@ class ComponentGraph:
         X = infer_feature_types(X)
         if y is not None:
             y = infer_feature_types(y)
-        most_recent_y = y
+
         if len(component_list) == 0:
             return X
+
         output_cache = {}
         for component_name in component_list:
             component_instance = self.get_component(component_name)

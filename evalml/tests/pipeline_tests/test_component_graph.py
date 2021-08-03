@@ -608,21 +608,17 @@ def test_no_instantiate_before_fit(X_y_binary):
         component_graph.fit(X, y)
 
 
-@patch("evalml.pipelines.components.Imputer.fit_transform")
-def test_multiple_y_parents(mock_fit_transform, X_y_binary):
-    X, y = X_y_binary
+def test_multiple_y_parents():
     graph = {
         "Imputer": [Imputer, "X", "y"],
         "TargetImputer": [Imputer, "Imputer.x", "y"],
         "Estimator": [RandomForestClassifier, "Imputer.x", "y", "TargetImputer.y"],
     }
-    component_graph = ComponentGraph(graph)
-    component_graph.instantiate({})
-    mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
     with pytest.raises(
-        ValueError, match="Cannot have multiple `y` parents for a single component"
+        ValueError, match="All components must have exactly one target"
     ):
-        component_graph.fit(X, y)
+        ComponentGraph(graph)
+
 
 
 def test_component_graph_order(example_graph):
