@@ -23,7 +23,7 @@ Release Notes
         * Improved detail of ``TextFeaturizer`` docstring and tutorial :pr:`2568`
     * Testing Changes
         * Added test that makes sure ``split_data`` does not shuffle for time series problems :pr:`2552`
-        * Fixed ``make_pipeline`` tests to assert correct order and address new Woodwork Unknown type inference :pr:`2572`
+        * Refactored and fixed all ``make_pipeline`` tests to assert correct order and address new Woodwork Unknown type inference :pr:`2572`
 
 .. warning::
 
