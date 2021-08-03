@@ -1,3 +1,5 @@
+from typing import Text
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -51,7 +53,6 @@ def get_test_data_from_configuration():
                 "numerical": range(7),
                 "categorical": ["a", "b", "a", "c", "c", "a", "b"],
                 "dates": pd.date_range("2000-02-03", periods=7, freq="W"),
-                "some more dates": pd.date_range("2000-05-19", periods=7, freq="W"),
                 "text": [
                     "this is a string",
                     "this is another string",
@@ -60,6 +61,24 @@ def get_test_data_from_configuration():
                     "cats are gr8",
                     "hello world",
                     "evalml is gr8",
+                ],
+                "email": [
+                    "abalone_0@gmail.com",
+                    "AbaloneRings@yahoo.com",
+                    "abalone_2@abalone.com",
+                    "$titanic_data%&@hotmail.com",
+                    "foo*EMAIL@email.org",
+                    "evalml@evalml.org",
+                    "evalml@alteryx.org",
+                ],
+                "url": [
+                    "https://evalml.alteryx.com/en/stable/",
+                    "https://woodwork.alteryx.com/en/stable/guides/statistical_insights.html",
+                    "https://twitter.com/AlteryxOSS",
+                    "https://www.twitter.com/AlteryxOSS",
+                    "https://www.evalml.alteryx.com/en/stable/demos/text_input.html",
+                    "https://github.com/alteryx/evalml",
+                    "https://github.com/alteryx/featuretools",
                 ],
             }
         )
@@ -79,6 +98,11 @@ def get_test_data_from_configuration():
                 logical_types.update({"text": "NaturalLanguage"})
             if "categorical" in column_names:
                 logical_types.update({"categorical": "Categorical"})
+            if "url" in column_names:
+                logical_types.update({"url": "URL"})
+            if "email" in column_names:
+                logical_types.update({"email": "EmailAddress"})
+
             X.ww.init(logical_types=logical_types)
 
             y = ww.init_series(y)
@@ -104,6 +128,8 @@ def get_test_data_from_configuration():
         ("only all_null", ["all_null"]),
         ("only categorical", ["categorical"]),
         ("text with other features", ["text", "numerical", "categorical"]),
+        ("url with other features", ["url", "numerical", "categorical"]),
+        ("email with other features", ["email", "numerical", "categorical"]),
     ],
 )
 def test_make_pipeline_master(
@@ -142,7 +168,13 @@ def test_make_pipeline_master(
             ohe = (
                 [OneHotEncoder]
                 if estimator_class.model_family != ModelFamily.CATBOOST
-                and "categorical" in column_names
+                and (
+                    "categorical" in column_names
+                    or (
+                        any(ltype in column_names for ltype in ["url", "email"])
+                        and input_type == "ww"
+                    )
+                )
                 else []
             )
             datetime = (
@@ -167,31 +199,43 @@ def test_make_pipeline_master(
                 if lognormal_distribution and is_regression(problem_type)
                 else []
             )
-            text_featurizer = []
-            imputer = [Imputer]
-
-            if column_names == ["text"]:
-                text_featurizer = (
-                    [TextFeaturizer] if input_type == "ww" else [DropColumns]
-                )
-                imputer = [Imputer] if input_type == "ww" else []
-            elif "text" in column_names:
-                text_featurizer = (
-                    [TextFeaturizer, Imputer]
-                    if input_type == "ww"
-                    else [Imputer, DropColumns]
-                )
-                imputer = []
-            if column_names == ["dates"]:
-                imputer = []
-
-            # imputer = [Imputer] if TextFeaturizer not in text_featurizer and "text" not in column_names else []
             drop_null = [DropNullColumns] if "all_null" in column_names else []
+            text_featurizer = (
+                [TextFeaturizer]
+                if "text" in column_names and input_type == "ww"
+                else []
+            )
+            email_featurizer = (
+                [EmailFeaturizer]
+                if "email" in column_names and input_type == "ww"
+                else []
+            )
+            url_featurizer = (
+                [URLFeaturizer] if "url" in column_names and input_type == "ww" else []
+            )
+            imputer = (
+                []
+                if (column_names == ["dates"] and input_type == "ww")
+                or (
+                    (column_names in [["text"], ["dates"]])
+                    and input_type == "pd"
+                )
+                else [Imputer]
+            )
+            drop_col = (
+                [DropColumns]
+                if any(ltype in column_names for ltype in ["url", "email", "text"])
+                and input_type == "pd"
+                else []
+            )
             expected_components = (
                 log_transformer
+                + email_featurizer
+                + url_featurizer
                 + drop_null
                 + text_featurizer
                 + imputer
+                + drop_col
                 + datetime
                 + delayed_features
                 + ohe
@@ -413,76 +457,6 @@ def test_make_pipeline_samplers(
                 assert not any(
                     "sampler" in comp.name for comp in pipeline.component_graph
                 )
-
-
-@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-@pytest.mark.parametrize("column_to_drop", [["email"], ["url"], [], ["categorical"]])
-def test_make_pipeline_url_email(column_to_drop, problem_type, df_with_url_and_email):
-    X = df_with_url_and_email.ww.drop(column_to_drop)
-    y = np.array([0, 0, 1, 0, 1])
-
-    estimators = get_estimators(problem_type=problem_type)
-    pipeline_class = _get_pipeline_base_class(problem_type)
-    if problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2, 0])
-
-    for estimator_class in estimators:
-        if problem_type in estimator_class.supported_problem_types:
-            parameters = {}
-            if is_time_series(problem_type):
-                parameters = {
-                    "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
-                    "Time Series Baseline Estimator": {
-                        "date_index": None,
-                        "gap": 1,
-                        "max_delay": 1,
-                    },
-                }
-
-            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
-            assert isinstance(pipeline, pipeline_class)
-            delayed_features = []
-            if (
-                is_time_series(problem_type)
-                and estimator_class.model_family != ModelFamily.ARIMA
-            ):
-                delayed_features = [DelayedFeatureTransformer]
-            if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-                estimator_components = [StandardScaler, estimator_class]
-            else:
-                estimator_components = [estimator_class]
-            encoder = [OneHotEncoder]
-            if estimator_class.model_family == ModelFamily.CATBOOST:
-                encoder = []
-            if column_to_drop == ["email"]:
-                expected_components = [URLFeaturizer, TextFeaturizer, Imputer]
-            elif column_to_drop == ["url"]:
-                expected_components = [EmailFeaturizer, TextFeaturizer, Imputer]
-            else:
-                expected_components = [
-                    EmailFeaturizer,
-                    URLFeaturizer,
-                    TextFeaturizer,
-                    Imputer,
-                ]
-            if is_regression(problem_type):
-                expected_components = (
-                    [LogTransformer]
-                    + expected_components
-                    + delayed_features
-                    + encoder
-                    + estimator_components
-                )
-            else:
-                expected_components = (
-                    expected_components
-                    + delayed_features
-                    + encoder
-                    + estimator_components
-                )
-            assert pipeline.component_graph.compute_order == [
-                component.name for component in expected_components
-            ]
 
 
 def test_get_estimators(has_minimal_dependencies):

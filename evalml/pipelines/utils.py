@@ -100,7 +100,7 @@ def _get_preprocessing_components(
     text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
     if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
-    # import pdb; pdb.set_trace()
+
     if len(input_logical_types.intersection(types_imputer_handles)) or len(
         text_columns
     ):
