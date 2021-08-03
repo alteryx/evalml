@@ -1,5 +1,3 @@
-from typing import Text
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -216,10 +214,7 @@ def test_make_pipeline_master(
             imputer = (
                 []
                 if (column_names == ["dates"] and input_type == "ww")
-                or (
-                    (column_names in [["text"], ["dates"]])
-                    and input_type == "pd"
-                )
+                or ((column_names in [["text"], ["dates"]]) and input_type == "pd")
                 else [Imputer]
             )
             drop_col = (
