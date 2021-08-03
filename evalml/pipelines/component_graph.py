@@ -66,7 +66,6 @@ class ComponentGraph:
                 raise ValueError(
                     "All edges must be specified as either an input feature (.x) or input target (.y)."
                 )
-            # import pdb; pdb.set_trace()
             if has_one_target_input != 1:
                 raise ValueError("All components must have exactly one target (.y/y) edge.")
 
@@ -250,31 +249,21 @@ class ComponentGraph:
                     "All components must be instantiated before fitting or predicting"
                 )
             x_inputs = []
-            y_input = None
-
+            input_y = None
             for parent_input in self.get_inputs(component_name):
-                if parent_input[-2:] == ".y" or parent_input == "y":
-                    if y_input is not None:
-                        raise ValueError(
-                            f"Cannot have multiple `y` parents for a single component {component_name}"
-                        )
-                    y_input = (
-                        output_cache[parent_input] if parent_input[-2:] == ".y" else y
-                    )
-
-                else:
-                    if parent_input == "X":
-                        x_inputs.append(X)
-                    else:
-                        parent_x = output_cache.get(
-                            parent_input, output_cache.get(f"{parent_input}.x")
-                        )
-                        if isinstance(parent_x, pd.Series):
-                            parent_x = parent_x.rename(parent_input)
+                if parent_input.endswith(".y"):
+                    input_y = parent_input
+                elif parent_input == "y":
+                    input_y = y
+                elif parent_input == "X":
+                    x_inputs.append(X)
+                else: # must end in .x
+                    parent_x = output_cache[parent_input]
+                    if isinstance(parent_x, pd.Series):
+                        parent_x = parent_x.rename(parent_input)
                         x_inputs.append(parent_x)
-            input_x, input_y = self._consolidate_inputs(
-                x_inputs, y_input, X, most_recent_y
-            )
+            input_x = ww.concat_columns(x_inputs)
+
             self.input_feature_names.update({component_name: list(input_x.columns)})
             if isinstance(component_instance, Transformer):
                 if fit:
@@ -283,7 +272,6 @@ class ComponentGraph:
                     output = component_instance.transform(input_x, input_y)
                 if isinstance(output, tuple):
                     output_x, output_y = output[0], output[1]
-                    most_recent_y = output_y
                 else:
                     output_x = output
                     output_y = None
@@ -365,30 +353,30 @@ class ComponentGraph:
             if len(children)
         }
 
-    @staticmethod
-    def _consolidate_inputs(x_inputs, y_input, X, y):
-        """Combines any/all X and y inputs for a component, including handling defaults
+    # @staticmethod
+    # def _consolidate_inputs(x_inputs, y_input, X, y):
+    #     """Combines any/all X and y inputs for a component, including handling defaults
 
-        Arguments:
-            x_inputs (list(pd.DataFrame)): Data to be used as X input for a component
-            y_input (pd.Series, None): If present, the Series to use as y input for a component, different from the original y
-            X (pd.DataFrame): The original X input, to be used if there is no parent X input
-            y (pd.Series): The original y input, to be used if there is no parent y input
+    #     Arguments:
+    #         x_inputs (list(pd.DataFrame)): Data to be used as X input for a component
+    #         y_input (pd.Series, None): If present, the Series to use as y input for a component, different from the original y
+    #         X (pd.DataFrame): The original X input, to be used if there is no parent X input
+    #         y (pd.Series): The original y input, to be used if there is no parent y input
 
-        Returns:
-            pd.DataFrame, pd.Series: The X and y transformed values to evaluate a component with
-        """
-        if len(x_inputs) == 0:
-            return_x = X
-        else:
-            return_x = ww.concat_columns(x_inputs)
-        return_y = y
-        if y_input is not None:
-            return_y = y_input
+    #     Returns:
+    #         pd.DataFrame, pd.Series: The X and y transformed values to evaluate a component with
+    #     """
+    #     if len(x_inputs) == 0:
+    #         return_x = X
+    #     else:
+    #         return_x = ww.concat_columns(x_inputs)
+    #     return_y = y
+    #     if y_input is not None:
+    #         return_y = y_input
 
-        if return_y is not None:
-            return_y = infer_feature_types(return_y)
-        return return_x, return_y
+    #     if return_y is not None:
+    #         return_y = infer_feature_types(return_y)
+    #     return return_x, return_y
 
     def get_component(self, component_name):
         """Retrieves a single component object from the graph.
