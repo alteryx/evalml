@@ -21,6 +21,12 @@ EvalML is an AutoML library which builds, optimizes, and evaluates machine learn
 ```shell
 pip install evalml
 ```
+#### Install with Facebook's Prophet (time series)
+To support the `Prophet` time series estimator, be sure to install it as an extra requirement. Please note that this may take a few minutes.
+Prophet is currently only supported via pip installation in EvalML.
+```
+pip install evalml[prophet]
+```
 
 #### Add-ons
 **Update checker** <br>

@@ -14,7 +14,10 @@ def _get_req_name(name):
 
 
 def test_has_minimal_deps(
-    has_minimal_dependencies, is_running_py_39_or_above, is_using_conda
+    has_minimal_dependencies,
+    is_running_py_39_or_above,
+    is_using_conda,
+    is_using_windows,
 ):
     reqs_path = (
         pathlib.Path(__file__).absolute().parents[3].joinpath("requirements.txt")
