@@ -261,7 +261,8 @@ class ComponentGraph:
                     parent_x = output_cache[parent_input]
                     if isinstance(parent_x, pd.Series):
                         parent_x = parent_x.rename(parent_input)
-                        x_inputs.append(parent_x)
+                    x_inputs.append(parent_x)
+            # import pdb; pdb.set_trace()
             input_x = ww.concat_columns(x_inputs)
 
             self.input_feature_names.update({component_name: list(input_x.columns)})
