@@ -185,7 +185,7 @@ Classifiers are components that output a predicted class label.
     evalml.pipelines.components.LogisticRegressionClassifier
     evalml.pipelines.components.XGBoostClassifier
     evalml.pipelines.components.BaselineClassifier
-    evalml.pipelines.components.StackedEnsembleClassifier
+    evalml.pipelines.components.SklearnStackedEnsembleClassifier
     evalml.pipelines.components.DecisionTreeClassifier
     evalml.pipelines.components.KNeighborsClassifier
     evalml.pipelines.components.SVMClassifier
