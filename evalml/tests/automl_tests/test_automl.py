@@ -4935,3 +4935,28 @@ def test_pipeline_parameter_warnings_component_graphs(
     assert len(w) == (1 if len(set_values) else 0)
     if len(w):
         assert w[0].message.components == set_values
+
+
+@pytest.mark.parametrize("nans", [None, pd.NA, np.nan])
+@patch("evalml.pipelines.components.Estimator.fit")
+@patch(
+    "evalml.pipelines.BinaryClassificationPipeline.score",
+    return_value={"Log Loss Binary": 0.5},
+)
+def test_search_with_text_nans(mock_score, mock_fit, nans):
+    X = pd.DataFrame(
+        {
+            "a": [np.nan] + [i for i in range(99)],
+            "b": [np.nan] + [f"string {i} is valid" for i in range(99)],
+        }
+    )
+    X.ww.init(logical_types={"b": "NaturalLanguage"})
+    y = pd.Series([0] * 25 + [1] * 75)
+    automl = AutoMLSearch(
+        X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False
+    )
+    automl.search()
+    for (x, _), _ in mock_fit.call_args_list:
+        assert all(
+            [str(types) == "Double" for types in x.ww.types["Logical Type"].values]
+        )
