@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Added ``ProphetRegressor`` to estimators :pr:`2242`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.30.0 Aug. 3, 2021**
+    * Enhancements
         * Added ``LogTransformer`` and ``TargetDistributionDataCheck`` :pr:`2487`
         * Issue a warning to users when a pipeline parameter passed in isn't used in the pipeline :pr:`2564`
         * Added Gini coefficient as an objective :pr:`2544`
@@ -456,7 +468,6 @@ Release Notes
         * Addressed bug with ``partial_dependence`` and categorical data with more categories than grid resolution :pr:`1748`
         * Removed ``random_state`` arg from ``get_pipelines`` in ``AutoMLSearch`` :pr:`1719`
         * Pinned pyzmq at less than 22.0.0 till we add support :pr:`1756`
-        * Remove ``ProphetRegressor`` from main as windows tests were flaky :pr:`1764`
     * Changes
         * Updated components and pipelines to return ``Woodwork`` data structures :pr:`1668`
         * Updated ``clone()`` for pipelines and components to copy over random state automatically :pr:`1753`
