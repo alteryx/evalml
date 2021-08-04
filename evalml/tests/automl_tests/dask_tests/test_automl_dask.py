@@ -47,7 +47,7 @@ def process_pool():
 
 # List of tuples indicating which engine types and resource pools to parametrize tests over.
 # Removed '("CFEngine", "process")' as it doesn't work properly on GitHub test runners.
-engine_and_resource_types = [("CFEngine", "thread"), ("DaskEngine", "N/A")]
+engine_and_resource_types = []
 
 
 def _get_engine_support(parallel_engine_type, thread_pool, cluster):

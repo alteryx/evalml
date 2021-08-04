@@ -696,7 +696,7 @@ def test_component_graph_evaluation_plumbing(
     graph = {
         "transformer a": [TransformerA, "X", "y"],
         "transformer b": [TransformerB, "transformer a.x", "y"],
-        "transformer c": [TransformerC, "transformer a", "transformer b.x", "y"],
+        "transformer c": [TransformerC, "transformer a.x", "transformer b.x", "y"],
         "estimator a": [EstimatorA, "X", "y"],
         "estimator b": [EstimatorB, "transformer a.x", "y"],
         "estimator c": [
@@ -1870,7 +1870,7 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
 
 def test_component_graph_does_not_define_all_edges():
     # Graph does not define an X edge
-    with pytest.raises(ValueError, match="All edges must be specified"):
+    with pytest.raises(ValueError, match="All components must have at least one input feature"):
         ComponentGraph(
             {
                 "Imputer": [Imputer, "y"],  # offending line
@@ -1884,7 +1884,7 @@ def test_component_graph_does_not_define_all_edges():
             }
         )
     # Graph does not define a y edge
-    with pytest.raises(ValueError, match="All edges must be specified"):
+    with pytest.raises(ValueError, match="All components must have exactly one target"):
         ComponentGraph(
             {
                 "Imputer": [Imputer, "X"],  # offending line
@@ -1898,7 +1898,7 @@ def test_component_graph_does_not_define_all_edges():
             }
         )
     # Graph does not define X and y edges
-    with pytest.raises(ValueError, match="All edges must be specified"):
+    with pytest.raises(ValueError, match="All components must have at least one input feature"):
         ComponentGraph(
             {
                 "Imputer": [Imputer],  # offending line
@@ -1915,7 +1915,7 @@ def test_component_graph_does_not_define_all_edges():
 
 def test_component_graph_defines_edge_with_invalid_syntax():
     # Graph does not define an X edge using .x
-    with pytest.raises(ValueError, match="All edges must be specified"):
+    with pytest.raises(ValueError, match="All components must have at least one input feature"):
         ComponentGraph(
             {
                 "Imputer": [Imputer, "X", "y"],

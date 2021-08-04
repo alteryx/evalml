@@ -14,6 +14,7 @@ from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
+from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import get_logger, import_or_raise, infer_feature_types
 
@@ -64,11 +65,14 @@ class ComponentGraph:
             has_one_target_input = sum(component_input.endswith(".y") or component_input == "y" for component_input in component_inputs)
             if not has_feature_input:
                 raise ValueError(
-                    "All edges must be specified as either an input feature (.x) or input target (.y)."
+                    "All components must have at least one input feature (.x/X) edge."
                 )
             if has_one_target_input != 1:
                 raise ValueError("All components must have exactly one target (.y/y) edge.")
-
+            def f(i):
+                return not (i.endswith(".y") or i == "y" or i.endswith(".x") or i == "X")
+            if len(list(filter(f, component_inputs))) != 0:
+                raise ValueError("All edges must be specified as either an input feature (.x) or input target (.y).")
     @property
     def compute_order(self):
         """The order that components will be computed or called in."""
@@ -252,7 +256,8 @@ class ComponentGraph:
             input_y = None
             for parent_input in self.get_inputs(component_name):
                 if parent_input.endswith(".y"):
-                    input_y = parent_input
+                    # input_y = parent_input
+                    input_y = output_cache[parent_input]
                 elif parent_input == "y":
                     input_y = y
                 elif parent_input == "X":
@@ -262,13 +267,14 @@ class ComponentGraph:
                     if isinstance(parent_x, pd.Series):
                         parent_x = parent_x.rename(parent_input)
                     x_inputs.append(parent_x)
-            # import pdb; pdb.set_trace()
             input_x = ww.concat_columns(x_inputs)
 
             self.input_feature_names.update({component_name: list(input_x.columns)})
             if isinstance(component_instance, Transformer):
                 if fit:
                     output = component_instance.fit_transform(input_x, input_y)
+                elif isinstance(component_instance, BaseSampler):
+                    output = input_x, input_y
                 else:
                     output = component_instance.transform(input_x, input_y)
                 if isinstance(output, tuple):
