@@ -62,7 +62,7 @@ class BaseSampler(Transformer):
         X = infer_feature_types(X)
         if y is not None:
             y = infer_feature_types(y)
-        return X, None
+        return X, y
 
     def _convert_dictionary(self, sampling_dict, y):
         """Converts the provided sampling dictionary from a dictionary of ratios to a dictionary of number of samples.

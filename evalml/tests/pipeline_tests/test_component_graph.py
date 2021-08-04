@@ -614,11 +614,8 @@ def test_multiple_y_parents():
         "TargetImputer": [Imputer, "Imputer.x", "y"],
         "Estimator": [RandomForestClassifier, "Imputer.x", "y", "TargetImputer.y"],
     }
-    with pytest.raises(
-        ValueError, match="All components must have exactly one target"
-    ):
+    with pytest.raises(ValueError, match="All components must have exactly one target"):
         ComponentGraph(graph)
-
 
 
 def test_component_graph_order(example_graph):
@@ -1870,7 +1867,9 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
 
 def test_component_graph_does_not_define_all_edges():
     # Graph does not define an X edge
-    with pytest.raises(ValueError, match="All components must have at least one input feature"):
+    with pytest.raises(
+        ValueError, match="All components must have at least one input feature"
+    ):
         ComponentGraph(
             {
                 "Imputer": [Imputer, "y"],  # offending line
@@ -1898,7 +1897,9 @@ def test_component_graph_does_not_define_all_edges():
             }
         )
     # Graph does not define X and y edges
-    with pytest.raises(ValueError, match="All components must have at least one input feature"):
+    with pytest.raises(
+        ValueError, match="All components must have at least one input feature"
+    ):
         ComponentGraph(
             {
                 "Imputer": [Imputer],  # offending line
@@ -1913,9 +1914,35 @@ def test_component_graph_does_not_define_all_edges():
         )
 
 
+def test_component_graph_defines_edges_with_bad_syntax():
+    # Graph does not define an X edge
+    with pytest.raises(
+        ValueError, match="All edges must be specified as either an input feature"
+    ):
+        ComponentGraph(
+            {
+                "Imputer": [Imputer, "X", "y"],  # offending line
+                "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+                "Target Imputer": [
+                    TargetImputer,
+                    "Imputer",
+                    "One Hot Encoder.x",
+                    "y",
+                ],  # offending line: Imputer not allowed
+                "Random Forest Classifier": [
+                    RandomForestClassifier,
+                    "One Hot Encoder.x",
+                    "Target Imputer.y",
+                ],
+            }
+        )
+
+
 def test_component_graph_defines_edge_with_invalid_syntax():
     # Graph does not define an X edge using .x
-    with pytest.raises(ValueError, match="All components must have at least one input feature"):
+    with pytest.raises(
+        ValueError, match="All components must have at least one input feature"
+    ):
         ComponentGraph(
             {
                 "Imputer": [Imputer, "X", "y"],
