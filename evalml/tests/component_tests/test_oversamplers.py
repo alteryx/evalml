@@ -4,9 +4,9 @@ import pytest
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import (
-    SMOTENCSampler,
-    SMOTENSampler,
-    SMOTESampler,
+    SMOTENCOversampler,
+    SMOTENOversampler,
+    SMOTEOversampler,
 )
 from evalml.utils.woodwork_utils import infer_feature_types
 
@@ -16,7 +16,9 @@ im = pytest.importorskip(
 )
 
 
-@pytest.mark.parametrize("sampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
+@pytest.mark.parametrize(
+    "sampler", [SMOTEOversampler, SMOTENCOversampler, SMOTENOversampler]
+)
 def test_init(sampler):
     parameters = {
         "sampling_ratio": 0.5,
@@ -31,9 +33,9 @@ def test_init(sampler):
 @pytest.mark.parametrize(
     "sampler",
     [
-        SMOTESampler(sampling_ratio=1),
-        SMOTENCSampler(sampling_ratio=1),
-        SMOTENSampler(sampling_ratio=1),
+        SMOTEOversampler(sampling_ratio=1),
+        SMOTENCOversampler(sampling_ratio=1),
+        SMOTENOversampler(sampling_ratio=1),
     ],
 )
 def test_none_y(sampler):
@@ -51,9 +53,9 @@ def test_none_y(sampler):
 @pytest.mark.parametrize(
     "sampler",
     [
-        SMOTESampler(sampling_ratio=1),
-        SMOTENCSampler(sampling_ratio=1),
-        SMOTENSampler(sampling_ratio=1),
+        SMOTEOversampler(sampling_ratio=1),
+        SMOTENCOversampler(sampling_ratio=1),
+        SMOTENOversampler(sampling_ratio=1),
     ],
 )
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
@@ -78,9 +80,9 @@ def test_no_oversample(data_type, sampler, make_data_type, X_y_binary):
 @pytest.mark.parametrize(
     "sampler",
     [
-        SMOTESampler(sampling_ratio=1),
-        SMOTENCSampler(sampling_ratio=1),
-        SMOTENSampler(sampling_ratio=1),
+        SMOTEOversampler(sampling_ratio=1),
+        SMOTENCOversampler(sampling_ratio=1),
+        SMOTENOversampler(sampling_ratio=1),
     ],
 )
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
@@ -121,7 +123,9 @@ def test_oversample_imbalanced_binary(data_type, sampler, make_data_type):
 
 
 @pytest.mark.parametrize("sampling_ratio", [0.2, 0.5])
-@pytest.mark.parametrize("sampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
+@pytest.mark.parametrize(
+    "sampler", [SMOTEOversampler, SMOTENCOversampler, SMOTENOversampler]
+)
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_oversample_imbalanced_multiclass(
     data_type, sampler, sampling_ratio, make_data_type
@@ -160,7 +164,9 @@ def test_oversample_imbalanced_multiclass(
     np.testing.assert_equal(None, transform_y)
 
 
-@pytest.mark.parametrize("sampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
+@pytest.mark.parametrize(
+    "sampler", [SMOTEOversampler, SMOTENCOversampler, SMOTENOversampler]
+)
 def test_oversample_seed_same_outputs(sampler, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
@@ -181,8 +187,8 @@ def test_oversample_seed_same_outputs(sampler, X_y_binary):
     for s1, s2 in [[0, 1], [1, 1], [1, 2]]:
         X1, y1 = samplers[s1].fit_transform(X, y)
         X2, y2 = samplers[s2].fit_transform(X, y)
-        if s2 == 2 and sampler != SMOTENSampler:
-            # group 3, SMOTENSampler performance doesn't change with different random states
+        if s2 == 2 and sampler != SMOTENOversampler:
+            # group 3, SMOTENOversampler performance doesn't change with different random states
             with pytest.raises(AssertionError):
                 pd.testing.assert_frame_equal(X1, X2)
         else:
@@ -193,9 +199,9 @@ def test_oversample_seed_same_outputs(sampler, X_y_binary):
 @pytest.mark.parametrize(
     "component_sampler,imblearn_sampler",
     [
-        (SMOTESampler, im.SMOTE),
-        (SMOTENCSampler, im.SMOTENC),
-        (SMOTENSampler, im.SMOTEN),
+        (SMOTEOversampler, im.SMOTE),
+        (SMOTENCOversampler, im.SMOTENC),
+        (SMOTENOversampler, im.SMOTEN),
     ],
 )
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
@@ -216,7 +222,7 @@ def test_samplers_perform_equally(
     sampling_dic = {"sampling_ratio": sampling_ratio}
     X2 = X
     random_seed = 1
-    if component_sampler != SMOTENCSampler:
+    if component_sampler != SMOTENCOversampler:
         component = component_sampler(**sampling_dic, random_seed=random_seed)
         imb_sampler = imblearn_sampler(
             sampling_strategy=imb_learn_sampling_ratio, random_state=random_seed
@@ -249,7 +255,7 @@ def test_samplers_perform_equally(
 def test_smotenc_categorical_features(X_y_binary):
     X, y = X_y_binary
     X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
-    snc = SMOTENCSampler()
+    snc = SMOTENCOversampler()
     X_out, y_out = snc.fit_transform(X_ww, y)
     assert snc.categorical_features == [0, 1]
 
@@ -258,9 +264,9 @@ def test_smotenc_output_shape(X_y_binary):
     X, y = X_y_binary
     y_imbalanced = pd.Series([0] * 90 + [1] * 10)
     X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
-    snc = SMOTENCSampler()
+    snc = SMOTENCOversampler()
     with pytest.raises(
-        ComponentNotYetFittedError, match=f"You must fit SMOTENCSampler"
+        ComponentNotYetFittedError, match=f"You must fit SMOTENCOversampler"
     ):
         snc.transform(X_ww, y)
     # test sampling and no sampling
@@ -282,7 +288,9 @@ def test_smotenc_output_shape(X_y_binary):
         ({0: 0.5, 1: 0.1}, {0: 425, 1: 850}),
     ],
 )
-@pytest.mark.parametrize("oversampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
+@pytest.mark.parametrize(
+    "oversampler", [SMOTEOversampler, SMOTENCOversampler, SMOTENOversampler]
+)
 def test_oversampler_sampling_dict(
     oversampler, sampling_ratio_dict, expected_dict_values
 ):
@@ -303,7 +311,9 @@ def test_oversampler_sampling_dict(
     assert overs.random_seed == 12
 
 
-@pytest.mark.parametrize("oversampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
+@pytest.mark.parametrize(
+    "oversampler", [SMOTEOversampler, SMOTENCOversampler, SMOTENOversampler]
+)
 def test_oversampler_dictionary_overrides_ratio(oversampler):
     X = np.array(
         [
@@ -323,7 +333,9 @@ def test_oversampler_dictionary_overrides_ratio(oversampler):
     assert new_y.value_counts().to_dict() == expected_result
 
 
-@pytest.mark.parametrize("oversampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
+@pytest.mark.parametrize(
+    "oversampler", [SMOTEOversampler, SMOTENCOversampler, SMOTENOversampler]
+)
 def test_oversampler_sampling_dict_strings(oversampler):
     X = np.array(
         [
@@ -343,7 +355,9 @@ def test_oversampler_sampling_dict_strings(oversampler):
     assert new_y.value_counts().to_dict() == expected_result
 
 
-@pytest.mark.parametrize("oversampler", [SMOTESampler, SMOTENCSampler, SMOTENSampler])
+@pytest.mark.parametrize(
+    "oversampler", [SMOTEOversampler, SMOTENCOversampler, SMOTENOversampler]
+)
 @pytest.mark.parametrize(
     "minority,expected,fails",
     [(1, 0, True), (2, 1, False), (5, 4, False), (10, 5, False)],

@@ -52,9 +52,9 @@ from evalml.pipelines.components import (
     SelectByType,
     SelectColumns,
     SimpleImputer,
-    SMOTENCSampler,
-    SMOTENSampler,
-    SMOTESampler,
+    SMOTENCOversampler,
+    SMOTENOversampler,
+    SMOTEOversampler,
     StandardScaler,
     SVMClassifier,
     SVMRegressor,
@@ -291,7 +291,7 @@ def test_describe_component():
         },
     }
     try:
-        smote = SMOTESampler()
+        smote = SMOTEOversampler()
         assert smote.describe(return_dict=True) == {
             "name": "SMOTE Oversampler",
             "parameters": {
@@ -301,7 +301,7 @@ def test_describe_component():
                 "n_jobs": -1,
             },
         }
-        smote = SMOTENCSampler()
+        smote = SMOTENCOversampler()
         assert smote.describe(return_dict=True) == {
             "name": "SMOTENC Oversampler",
             "parameters": {
@@ -311,7 +311,7 @@ def test_describe_component():
                 "n_jobs": -1,
             },
         }
-        smote = SMOTENSampler()
+        smote = SMOTENOversampler()
         assert smote.describe(return_dict=True) == {
             "name": "SMOTEN Oversampler",
             "parameters": {
