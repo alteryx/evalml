@@ -193,7 +193,7 @@ def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
             import_or_raise(
                 "imblearn.over_sampling", error_msg="imbalanced-learn is not installed"
             )
-            cat_cols = X.ww.select("Categorical").columns
+            cat_cols = X.ww.select(exclude="numeric").columns
             # Use different samplers depending on the number of categorical columns
             if len(cat_cols) == X.shape[1]:
                 return "SMOTEN Oversampler"
