@@ -178,6 +178,11 @@ def is_using_conda(pytestconfig):
 
 
 @pytest.fixture
+def is_using_windows(pytestconfig):
+    return sys.platform in ["win32", "cygwin"]
+
+
+@pytest.fixture
 def is_running_py_39_or_above():
     return sys.version_info >= (3, 9)
 
