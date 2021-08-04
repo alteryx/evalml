@@ -72,7 +72,7 @@ class ExtraTreesClassifier(Estimator):
         min_weight_fraction_leaf=0.0,
         n_jobs=-1,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "n_estimators": n_estimators,

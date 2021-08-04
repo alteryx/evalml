@@ -94,7 +94,7 @@ class LightGBMClassifier(Estimator):
         bagging_freq=0,
         n_jobs=-1,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "boosting_type": boosting_type,
