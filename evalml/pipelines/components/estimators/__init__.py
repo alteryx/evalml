@@ -25,4 +25,5 @@ from .regressors import (
     DecisionTreeRegressor,
     SVMRegressor,
     ARIMARegressor,
+    ProphetRegressor,
 )
