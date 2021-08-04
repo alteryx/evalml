@@ -3,6 +3,7 @@ Release Notes
 **Future Release**
     * Enhancements
     * Fixes
+        * Updated ``get_best_sampler_for_data`` to consider all non-numeric datatypes as categorical for SMOTE :pr:`2590`
     * Changes
     * Documentation Changes
     * Testing Changes
