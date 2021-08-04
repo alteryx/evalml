@@ -13,24 +13,24 @@ from evalml.utils import infer_feature_types
 
 
 class EqualIntervalDataCheck(DataCheck):
-    """Checks if the datetime column target data contains certain distributions that may need to be transformed prior training to
-    improve model performance."""
+    """Checks if the datetime column has equally squaced intervals throughout the dataset."""
 
     def validate(self, X, y):
-        """Checks if the target data has a certain distribution.
+        """Checks if the target data has equal intervals.
 
         Arguments:
             X (pd.DataFrame, np.ndarray): Features. Ignored.
             y (pd.Series, np.ndarray): Target data to check for underlying distributions.
 
         Returns:
-            dict (DataCheckError): List with DataCheckErrors if certain distributions are found in the target data.
+            dict (DataCheckError): List with DataCheckErrors if unequal intervals are found in the target data.
 
         Example:
-            >>> from scipy.stats import lognorm
+            >>> from pandas as pd
             >>> X = None
-            >>> y = lognorm.rvs(0.1, size=1000)
-            >>> target_checdk = TargetDistributionDataCheck()
+            >>> y = pd.Series(pd.date_range("January 1, 2021", periods=10))
+            >>> y[7] = "January 9, 2021"
+            >>> target_checdk = EqualIntervalDataCheck()
             >>> assert target_check.validate(X, y) == {"errors": [],\
                                                        "warnings": [{"message": "Target may have a lognormal distribution.",\
                                                                     "data_check_name": "TargetDistributionDataCheck",\
