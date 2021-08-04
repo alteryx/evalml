@@ -3,6 +3,17 @@ Release Notes
 **Future Release**
     * Enhancements
         * Added ``ProphetRegressor`` to estimators :pr:`2242`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.30.0 Aug. 3, 2021**
+    * Enhancements
         * Added ``LogTransformer`` and ``TargetDistributionDataCheck`` :pr:`2487`
         * Issue a warning to users when a pipeline parameter passed in isn't used in the pipeline :pr:`2564`
         * Added Gini coefficient as an objective :pr:`2544`
