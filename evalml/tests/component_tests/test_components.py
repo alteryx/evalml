@@ -44,6 +44,7 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     PerColumnImputer,
     PolynomialDetrender,
+    ProphetRegressor,
     RandomForestClassifier,
     RandomForestRegressor,
     RFClassifierSelectFromModel,
@@ -507,6 +508,20 @@ def test_describe_component():
                 "n_jobs": -1,
                 "bagging_fraction": 0.9,
                 "bagging_freq": 0,
+            },
+        }
+    except ImportError:
+        pass
+    try:
+        prophet_regressor = ProphetRegressor()
+        assert prophet_regressor.describe(return_dict=True) == {
+            "name": "Prophet Regressor",
+            "parameters": {
+                "changepoint_prior_scale": 0.05,
+                "holidays_prior_scale": 10,
+                "seasonality_mode": "additive",
+                "seasonality_prior_scale": 10,
+                "stan_backend": "CMDSTANPY",
             },
         }
     except ImportError:
@@ -1297,6 +1312,8 @@ def test_estimators_accept_all_kwargs(
         )
     if estimator_class.model_family == ModelFamily.ENSEMBLE:
         params = estimator.parameters
+    elif estimator_class.model_family == ModelFamily.PROPHET:
+        params = estimator.get_params()
     else:
         params = estimator._component_obj.get_params()
         if "random_state" in params:

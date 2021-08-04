@@ -33,6 +33,7 @@ from .components import (
     SVMClassifier,
     SVMRegressor,
     ARIMARegressor,
+    ProphetRegressor,
 )
 
 from .component_graph import ComponentGraph
