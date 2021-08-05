@@ -868,12 +868,9 @@ def test_transformer_transform_output_type(X_y_binary):
             component.fit(X, y=y)
             transform_output = component.transform(X, y=y)
 
-            if isinstance(component, TargetImputer):
+            if isinstance(component, TargetImputer) or "sampler" in component.name:
                 assert isinstance(transform_output[0], pd.DataFrame)
                 assert isinstance(transform_output[1], pd.Series)
-            elif "sampler" in component.name:
-                assert isinstance(transform_output[0], pd.DataFrame)
-                assert transform_output[1] is None
             else:
                 assert isinstance(transform_output, pd.DataFrame)
 
@@ -1594,10 +1591,10 @@ def test_transformer_fit_and_transform_respect_custom_indices(
     pd.testing.assert_index_equal(X.index, X_original_index)
     pd.testing.assert_index_equal(y.index, y_original_index)
 
-    if "sampler" in transformer.name:
-        X_t, y_t = transformer.transform(X, y)
-        assert y_t is None
-    elif transformer_class in [TargetImputer, LogTransformer]:
+    if "sampler" in transformer.name or transformer_class in [
+        TargetImputer,
+        LogTransformer,
+    ]:
         X_t, y_t = transformer.transform(X, y)
         pd.testing.assert_index_equal(
             y_t.index, y_original_index, check_names=check_names

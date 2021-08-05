@@ -6,6 +6,7 @@ from evalml.pipelines.components.transformers.samplers.base_sampler import (
 from evalml.preprocessing.data_splitters.balanced_classification_sampler import (
     BalancedClassificationSampler,
 )
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class Undersampler(BaseSampler):
@@ -67,6 +68,40 @@ class Undersampler(BaseSampler):
             **param_dic, random_seed=self.random_seed
         )
         self._component_obj = sampler
+
+    def fit(self, X, y):
+        """Resample the data using the sampler. Since our sampler doesn't need to be fit, we do nothing here.
+
+        Arguments:
+            X (pd.DataFrame): Training features
+            y (pd.Series): Target features
+
+        Returns:
+            self
+        """
+        if y is None:
+            raise ValueError("y cannot be none")
+        X_ww, y_ww = self._prepare_data(X, y)
+        self._initialize_undersampler(y_ww)
+
+        return self
+
+    def transform(self, X, y=None):
+        """
+        Arguments:
+            X (pd.DataFrame): Training features. Ignored.
+            y (pd.Series): Target. Ignored.
+
+        Returns:
+            pd.DataFrame, pd.Series: X and y data that was passed in.
+        """
+        X_ww, y_ww = self._prepare_data(X, y)
+        self._initialize_undersampler(y_ww)
+        index_df = pd.Series(y_ww.index)
+        indices = self._component_obj.fit_resample(X_ww, y_ww)
+
+        train_indices = index_df[index_df.isin(indices)].index.values.tolist()
+        return X_ww.iloc[train_indices], y_ww.iloc[train_indices]
 
     def fit_transform(self, X, y):
         """Fit and transform the data using the undersampler. Used during training of the pipeline
