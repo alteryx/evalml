@@ -50,19 +50,17 @@ class BaseSampler(Transformer):
         return X, y
 
     def transform(self, X, y=None):
-        """No transformation needs to be done here.
-
+        """
         Arguments:
             X (pd.DataFrame): Training features. Ignored.
-            y (pd.Series): Target features. Ignored.
+            y (pd.Series): Target. Ignored.
 
         Returns:
             pd.DataFrame, pd.Series: X and y data that was passed in.
         """
-        X = infer_feature_types(X)
-        if y is not None:
-            y = infer_feature_types(y)
-        return X, y
+        X_pd, y_pd = self._prepare_data(X, y)
+        X_new, y_new = self._component_obj.fit_resample(X_pd, y_pd)
+        return infer_feature_types(X_new), infer_feature_types(y_new)
 
     def _convert_dictionary(self, sampling_dict, y):
         """Converts the provided sampling dictionary from a dictionary of ratios to a dictionary of number of samples.
@@ -165,11 +163,11 @@ class BaseOverSampler(BaseSampler):
         )
 
     def fit(self, X, y):
-        """Fits the Oversampler to the data.
+        """Fits the oversampler to the data.
 
         Arguments:
-            X (pd.DataFrame): Training features
-            y (pd.Series): Target features
+            X (pd.DataFrame): Input features
+            y (pd.Series): Target.
 
         Returns:
             self
@@ -182,9 +180,9 @@ class BaseOverSampler(BaseSampler):
         Otherwise, we use will create the sampler_ratio_dict dictionary.
 
         Arguments:
-            X (pd.DataFrame): Training features
-            y (pd.Series): Target features
-            sampler_class (imblearn.BaseSampler): The sampler we want to initialize
+            X (pd.DataFrame): Input features.
+            y (pd.Series): Target.
+            sampler_class (imblearn.BaseSampler): The sampler we want to initialize.
         """
         _, y_pd = self._prepare_data(X, y)
         sampler_params = {
@@ -216,12 +214,13 @@ class BaseOverSampler(BaseSampler):
         sampler = sampler_class(**sampler_params, random_state=self.random_seed)
         self._component_obj = sampler
 
+    # TODO: should be able to remove
     def fit_transform(self, X, y):
-        """Fit and transform the data using the data sampler. Used during training of the pipeline
+        """Fit and transform the data using the data sampler.
 
         Arguments:
-            X (pd.DataFrame): Training features
-            y (pd.Series): Target features
+            X (pd.DataFrame): Input features.
+            y (pd.Series): Target.
 
          Returns:
             pd.DataFrame, pd.Series: Sampled X and y data
