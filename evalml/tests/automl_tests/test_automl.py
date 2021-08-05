@@ -54,7 +54,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     PipelineBase,
     RegressionPipeline,
-    StackedEnsembleClassifier,
+    SklearnStackedEnsembleClassifier,
 )
 from evalml.pipelines.components.utils import (
     allowed_model_families,
@@ -1491,7 +1491,7 @@ def test_describe_pipeline_with_ensembling(
         caplog.clear()
         automl_dict = automl.describe_pipeline(ensemble_id, return_dict=return_dict)
         out = caplog.text
-        assert "Stacked Ensemble Classification Pipeline" in out
+        assert "Sklearn Stacked Ensemble Classification Pipeline" in out
         assert "Problem Type: binary" in out
         assert "Model Family: Ensemble" in out
         assert "* final_estimator : None" in out
@@ -1503,9 +1503,11 @@ def test_describe_pipeline_with_ensembling(
             assert automl_dict["id"] == ensemble_id
             assert (
                 automl_dict["pipeline_name"]
-                == "Stacked Ensemble Classification Pipeline"
+                == "Sklearn Stacked Ensemble Classification Pipeline"
             )
-            assert automl_dict["pipeline_summary"] == "Stacked Ensemble Classifier"
+            assert (
+                automl_dict["pipeline_summary"] == "Sklearn Stacked Ensemble Classifier"
+            )
             assert isinstance(automl_dict["mean_cv_score"], float)
             assert not automl_dict["high_variance_cv"]
             assert isinstance(automl_dict["training_time"], float)
@@ -4201,9 +4203,9 @@ def test_train_batch_works(
         for classifier in stackable_classifiers[:2]
     ]
     ensemble = BinaryClassificationPipeline(
-        [StackedEnsembleClassifier],
+        [SklearnStackedEnsembleClassifier],
         parameters={
-            "Stacked Ensemble Classifier": {
+            "Sklearn Stacked Ensemble Classifier": {
                 "input_pipelines": input_pipelines,
                 "n_jobs": 1,
             }
@@ -4342,9 +4344,9 @@ def test_score_batch_works(
         for classifier in stackable_classifiers[:2]
     ]
     ensemble = BinaryClassificationPipeline(
-        [StackedEnsembleClassifier],
+        [SklearnStackedEnsembleClassifier],
         parameters={
-            "Stacked Ensemble Classifier": {
+            "Sklearn Stacked Ensemble Classifier": {
                 "input_pipelines": input_pipelines,
                 "n_jobs": 1,
             }
