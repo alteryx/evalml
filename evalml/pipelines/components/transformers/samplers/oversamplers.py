@@ -27,7 +27,7 @@ class SMOTESampler(BaseOverSampler):
         k_neighbors_default=5,
         n_jobs=-1,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             "SMOTE",
@@ -35,7 +35,7 @@ class SMOTESampler(BaseOverSampler):
             k_neighbors_default=k_neighbors_default,
             n_jobs=n_jobs,
             random_seed=random_seed,
-            **kwargs
+            **kwargs,
         )
 
 
@@ -63,7 +63,7 @@ class SMOTENCSampler(BaseOverSampler):
         k_neighbors_default=5,
         n_jobs=-1,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         self.categorical_features = None
         super().__init__(
@@ -72,7 +72,7 @@ class SMOTENCSampler(BaseOverSampler):
             k_neighbors_default=k_neighbors_default,
             n_jobs=n_jobs,
             random_seed=random_seed,
-            **kwargs
+            **kwargs,
         )
 
     def _get_categorical(self, X):
@@ -115,7 +115,7 @@ class SMOTENSampler(BaseOverSampler):
         k_neighbors_default=5,
         n_jobs=-1,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(
             "SMOTEN",
@@ -123,5 +123,5 @@ class SMOTENSampler(BaseOverSampler):
             k_neighbors_default=k_neighbors_default,
             n_jobs=n_jobs,
             random_seed=random_seed,
-            **kwargs
+            **kwargs,
         )

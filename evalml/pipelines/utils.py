@@ -28,11 +28,11 @@ from evalml.pipelines.components import (  # noqa: F401
     LogTransformer,
     OneHotEncoder,
     RandomForestClassifier,
+    SklearnStackedEnsembleClassifier,
+    SklearnStackedEnsembleRegressor,
     SMOTENCSampler,
     SMOTENSampler,
     SMOTESampler,
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
     TextFeaturizer,
@@ -181,6 +181,7 @@ def make_pipeline(
     problem_type,
     parameters=None,
     sampler_name=None,
+    extra_components=[],
 ):
     """Given input data, target data, an estimator class and the problem type,
          generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
@@ -195,6 +196,7 @@ def make_pipeline(
              An empty dictionary or None implies using all default values for component parameters.
          sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
              Defaults to None
+         extra_components (list(ComponentBase)): list of extra components to be added after preprocessing components.
 
      Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator
@@ -213,7 +215,8 @@ def make_pipeline(
     preprocessing_components = _get_preprocessing_components(
         X, y, problem_type, estimator, sampler_name
     )
-    complete_component_list = preprocessing_components + [estimator]
+
+    complete_component_list = preprocessing_components + extra_components + [estimator]
     component_graph = PipelineBase._make_component_dict_from_component_list(
         complete_component_list
     )
@@ -271,33 +274,33 @@ def _make_stacked_ensemble_pipeline(
     parameters = {}
     if is_classification(problem_type):
         parameters = {
-            "Stacked Ensemble Classifier": {
+            "Sklearn Stacked Ensemble Classifier": {
                 "input_pipelines": input_pipelines,
                 "n_jobs": n_jobs,
             }
         }
-        estimator = StackedEnsembleClassifier
+        estimator = SklearnStackedEnsembleClassifier
     else:
         parameters = {
-            "Stacked Ensemble Regressor": {
+            "Sklearn Stacked Ensemble Regressor": {
                 "input_pipelines": input_pipelines,
                 "n_jobs": n_jobs,
             }
         }
-        estimator = StackedEnsembleRegressor
+        estimator = SklearnStackedEnsembleRegressor
 
     pipeline_class, pipeline_name = {
         ProblemTypes.BINARY: (
             BinaryClassificationPipeline,
-            "Stacked Ensemble Classification Pipeline",
+            "Sklearn Stacked Ensemble Classification Pipeline",
         ),
         ProblemTypes.MULTICLASS: (
             MulticlassClassificationPipeline,
-            "Stacked Ensemble Classification Pipeline",
+            "Sklearn Stacked Ensemble Classification Pipeline",
         ),
         ProblemTypes.REGRESSION: (
             RegressionPipeline,
-            "Stacked Ensemble Regression Pipeline",
+            "Sklearn Stacked Ensemble Regression Pipeline",
         ),
     }[problem_type]
 

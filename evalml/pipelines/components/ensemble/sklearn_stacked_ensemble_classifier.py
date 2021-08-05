@@ -3,12 +3,12 @@ from sklearn.model_selection import StratifiedKFold
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LogisticRegressionClassifier
-from evalml.pipelines.components.ensemble import StackedEnsembleBase
+from evalml.pipelines.components.ensemble import SklearnStackedEnsembleBase
 from evalml.problem_types import ProblemTypes
 
 
-class StackedEnsembleClassifier(StackedEnsembleBase):
-    """Stacked Ensemble Classifier.
+class SklearnStackedEnsembleClassifier(SklearnStackedEnsembleBase):
+    """Scikit-learn Stacked Ensemble Classifier.
 
     Arguments:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators.
@@ -29,7 +29,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    name = "Stacked Ensemble Classifier"
+    name = "Sklearn Stacked Ensemble Classifier"
     model_family = ModelFamily.ENSEMBLE
     """ModelFamily.ENSEMBLE"""
     supported_problem_types = [

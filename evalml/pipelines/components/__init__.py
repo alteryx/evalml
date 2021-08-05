@@ -21,6 +21,7 @@ from .estimators import (
     DecisionTreeRegressor,
     TimeSeriesBaselineEstimator,
     KNeighborsClassifier,
+    ProphetRegressor,
     SVMClassifier,
     SVMRegressor,
     ARIMARegressor,
@@ -57,4 +58,4 @@ from .transformers import (
     EmailFeaturizer,
     URLFeaturizer,
 )
-from .ensemble import StackedEnsembleClassifier, StackedEnsembleRegressor
+from .ensemble import SklearnStackedEnsembleClassifier, SklearnStackedEnsembleRegressor

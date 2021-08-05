@@ -70,7 +70,7 @@ class DecisionTreeRegressor(Estimator):
         min_samples_split=2,
         min_weight_fraction_leaf=0.0,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "criterion": criterion,
