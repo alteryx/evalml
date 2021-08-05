@@ -74,14 +74,22 @@ class ComponentGraph:
                     "All components must have exactly one target (.y/y) edge."
                 )
 
-            def f(i):
+            def check_all_inputs_have_correct_syntax(edge):
                 return not (
-                    i.endswith(".y") or i == "y" or i.endswith(".x") or i == "X"
+                    edge.endswith(".y")
+                    or edge == "y"
+                    or edge.endswith(".x")
+                    or edge == "X"
                 )
 
-            if len(list(filter(f, component_inputs))) != 0:
+            if (
+                len(
+                    list(filter(check_all_inputs_have_correct_syntax, component_inputs))
+                )
+                != 0
+            ):
                 raise ValueError(
-                    "All edges must be specified as either an input feature (.x) or input target (.y)."
+                    "All edges must be specified as either an input feature ('X'/.x) or input target ('y'/.y)."
                 )
 
     @property
