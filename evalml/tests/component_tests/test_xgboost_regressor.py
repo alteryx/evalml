@@ -58,3 +58,14 @@ def test_xgboost_multiindex(data_type, X_y_regression, make_data_type):
     clf.fit(X, y)
     y_pred = clf.predict(X)
     assert not y_pred.isnull().values.any()
+
+
+def test_xgboost_predict_all_boolean_columns():
+    X = pd.DataFrame({"a": [True, False, True],
+                      "b": [True, False, True]})
+    y = pd.Series([2, 3, 4])
+    xgb = XGBoostRegressor()
+    xgb.fit(X, y)
+    preds = xgb.predict(X)
+    assert isinstance(preds, pd.Series)
+    assert not preds.isna().any()
