@@ -298,7 +298,7 @@ def test_get_best_sampler_for_data_nonnumeric_noncategorical_columns(X_y_binary)
     X = pd.DataFrame(X)
     y = pd.Series([i % 5 == 0 for i in range(100)])
     X[0] = [i % 2 for i in range(100)]
-    X_ww = infer_feature_types(X, feature_types={0: "boolean", 1: "Categorical"})
+    X_ww = infer_feature_types(X, feature_types={0: "boolean", 1: "datetime"})
 
     name_output = get_best_sampler_for_data(X_ww, y, "Oversampler", 0.8)
     assert name_output == "SMOTENC Oversampler"
