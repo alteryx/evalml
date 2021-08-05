@@ -5,12 +5,15 @@ Release Notes
         * Added ``ProphetRegressor`` to estimators :pr:`2242`
     * Fixes
     * Changes
+        * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Renamed SMOTE samplers to SMOTE oversampler. Please use ``SMOTEOversampler``, ``SMOTENCOversampler``, ``SMOTENOversampler`` instead of ``SMOTESampler``, ``SMOTENCSampler``, and ``SMOTENSampler`` :pr:`2595`
+
 
 **v0.30.0 Aug. 3, 2021**
     * Enhancements
@@ -31,6 +34,7 @@ Release Notes
         * Renamed ``ComponentGraph``'s ``get_parents`` to ``get_inputs`` :pr:`2540`
         * Removed ``ComponentGraph.linearized_component_graph`` and ``ComponentGraph.from_list`` :pr:`2556`
         * Updated ``ComponentGraph`` to enforce requiring `.x` and `.y` inputs for each component in the graph :pr:`2563`
+        * Renamed existing ensembler implementation from ``StackedEnsemblers`` to ``SklearnStackedEnsemblers`` :pr:`2578`
     * Documentation Changes
         * Added documentation for ``DaskEngine`` and ``CFEngine`` parallel engines :pr:`2560`
         * Improved detail of ``TextFeaturizer`` docstring and tutorial :pr:`2568`

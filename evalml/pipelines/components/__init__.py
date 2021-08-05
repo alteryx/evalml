@@ -58,4 +58,4 @@ from .transformers import (
     EmailFeaturizer,
     URLFeaturizer,
 )
-from .ensemble import StackedEnsembleClassifier, StackedEnsembleRegressor
+from .ensemble import SklearnStackedEnsembleClassifier, SklearnStackedEnsembleRegressor
