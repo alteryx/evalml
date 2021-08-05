@@ -1925,7 +1925,7 @@ def test_component_graph_defines_edges_with_bad_syntax():
                 "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
                 "Target Imputer": [
                     TargetImputer,
-                    "Imputer",  # offending line: Imputer not allowed
+                    "Imputer",  # offending line: "Imputer" not allowed
                     "One Hot Encoder.x",
                     "y",
                 ],
