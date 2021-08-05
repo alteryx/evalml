@@ -290,6 +290,10 @@ def test_get_best_sampler_for_data_sampler_method(
 
 
 def test_get_best_sampler_for_data_nonnumeric_noncategorical_columns(X_y_binary):
+    pytest.importorskip(
+        "imblearn.over_sampling",
+        reason="Skipping oversampling test because imbalanced-learn is not installed",
+    )
     X, y = X_y_binary
     X = pd.DataFrame(X)
     y = pd.Series([i % 5 == 0 for i in range(100)])
