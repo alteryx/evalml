@@ -1921,14 +1921,14 @@ def test_component_graph_defines_edges_with_bad_syntax():
     ):
         ComponentGraph(
             {
-                "Imputer": [Imputer, "X", "y"],  # offending line
+                "Imputer": [Imputer, "X", "y"],
                 "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
                 "Target Imputer": [
                     TargetImputer,
-                    "Imputer",
+                    "Imputer",  # offending line: "Imputer" not allowed
                     "One Hot Encoder.x",
                     "y",
-                ],  # offending line: Imputer not allowed
+                ],
                 "Random Forest Classifier": [
                     RandomForestClassifier,
                     "One Hot Encoder.x",

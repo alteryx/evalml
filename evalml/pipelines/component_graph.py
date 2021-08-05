@@ -61,7 +61,7 @@ class ComponentGraph:
                 component_input.endswith(".x") or component_input == "X"
                 for component_input in component_inputs
             )
-            has_one_target_input = sum(
+            num_target_inputs = sum(
                 component_input.endswith(".y") or component_input == "y"
                 for component_input in component_inputs
             )
@@ -69,7 +69,7 @@ class ComponentGraph:
                 raise ValueError(
                     "All components must have at least one input feature (.x/X) edge."
                 )
-            if has_one_target_input != 1:
+            if num_target_inputs != 1:
                 raise ValueError(
                     "All components must have exactly one target (.y/y) edge."
                 )
