@@ -46,7 +46,7 @@ class ElasticNetRegressor(Estimator):
         max_iter=1000,
         normalize=False,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "alpha": alpha,

@@ -7,6 +7,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Changed the lint CI job to only check against python 3.9 via the `-t` flag :pr:`2586`
 
 .. warning::
 
