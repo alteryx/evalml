@@ -74,9 +74,15 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         Returns:
             self
         """
+        from woodwork.logical_types import Unknown
+
         if y is None:
             return self
-        y = infer_feature_types(y).to_frame()
+        y = infer_feature_types(y)
+        if isinstance(y.ww.logical_type, Unknown):
+            raise TypeError("Provided target full of pd.NA.")
+        y = y.to_frame()
+        # should y be an un-inited dataframe?
 
         # Convert all bool dtypes to category for fitting
         if (y.dtypes == bool).all():
@@ -110,8 +116,6 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
             )
 
         transformed = self._component_obj.transform(y_df)
-        if transformed.shape[1] == 0:
-            raise RuntimeError("Transformed data is empty")
         y_t = pd.Series(transformed[:, 0], index=y_ww.index)
         return X, _retain_custom_types_and_initalize_woodwork(y_ww.ww.logical_type, y_t)
 

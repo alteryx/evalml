@@ -127,17 +127,17 @@ def test_target_imputer_boolean_dtype(data_type, make_data_type):
     _, y_t = imputer.transform(None, y)
     assert_series_equal(y_expected, y_t)
 
-
-def test_target_imputer_fit_transform_all_nan_empty():
-    y = pd.Series([np.nan, np.nan])
-
-    imputer = TargetImputer()
-    imputer.fit(None, y)
-    with pytest.raises(RuntimeError, match="Transformed data is empty"):
-        imputer.transform(None, y)
+@pytest.mark.parametrize("y", [[np.nan, np.nan], [pd.NA, pd.NA]])
+def test_target_imputer_fit_transform_all_nan_empty(y):
+    y = pd.Series(y)
 
     imputer = TargetImputer()
-    with pytest.raises(RuntimeError, match="Transformed data is empty"):
+
+    with pytest.raises(TypeError, match="Provided target full of pd.NA."):
+        imputer.fit(None, y)
+
+    imputer = TargetImputer()
+    with pytest.raises(TypeError, match="Provided target full of pd.NA."):
         imputer.fit_transform(None, y)
 
 
