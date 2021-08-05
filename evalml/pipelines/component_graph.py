@@ -64,25 +64,11 @@ class ComponentGraph:
                 component_input.endswith(".x") or component_input == "X"
                 for component_input in component_inputs
             )
-            has_one_target_input = sum(
+            has_target_input = any(
                 component_input.endswith(".y") or component_input == "y"
                 for component_input in component_inputs
             )
-            if not has_feature_input:
-                raise ValueError(
-                    "All components must have at least one input feature (.x/X) edge."
-                )
-            if has_one_target_input != 1:
-                raise ValueError(
-                    "All components must have exactly one target (.y/y) edge."
-                )
-
-            def f(i):
-                return not (
-                    i.endswith(".y") or i == "y" or i.endswith(".x") or i == "X"
-                )
-
-            if len(list(filter(f, component_inputs))) != 0:
+            if not (has_feature_input and has_target_input):
                 raise ValueError(
                     "All edges must be specified as either an input feature (.x) or input target (.y)."
                 )
