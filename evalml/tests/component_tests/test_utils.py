@@ -35,8 +35,12 @@ def test_all_components(
         n_components = 41
     elif is_using_conda:
         n_components = 52
-    elif is_running_py_39_or_above or is_using_windows:
+    elif is_using_windows and not is_running_py_39_or_above:
         n_components = 53
+    elif is_using_windows and is_running_py_39_or_above:
+        n_components = 51
+    elif not is_using_windows and is_running_py_39_or_above:
+        n_components = 52
     else:
         n_components = 54
     assert len(all_components()) == n_components
