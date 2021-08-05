@@ -608,21 +608,14 @@ def test_no_instantiate_before_fit(X_y_binary):
         component_graph.fit(X, y)
 
 
-@patch("evalml.pipelines.components.Imputer.fit_transform")
-def test_multiple_y_parents(mock_fit_transform, X_y_binary):
-    X, y = X_y_binary
+def test_multiple_y_parents():
     graph = {
         "Imputer": [Imputer, "X", "y"],
         "TargetImputer": [Imputer, "Imputer.x", "y"],
         "Estimator": [RandomForestClassifier, "Imputer.x", "y", "TargetImputer.y"],
     }
-    component_graph = ComponentGraph(graph)
-    component_graph.instantiate({})
-    mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
-    with pytest.raises(
-        ValueError, match="Cannot have multiple `y` parents for a single component"
-    ):
-        component_graph.fit(X, y)
+    with pytest.raises(ValueError, match="All components must have exactly one target"):
+        ComponentGraph(graph)
 
 
 def test_component_graph_order(example_graph):
@@ -700,7 +693,7 @@ def test_component_graph_evaluation_plumbing(
     graph = {
         "transformer a": [TransformerA, "X", "y"],
         "transformer b": [TransformerB, "transformer a.x", "y"],
-        "transformer c": [TransformerC, "transformer a", "transformer b.x", "y"],
+        "transformer c": [TransformerC, "transformer a.x", "transformer b.x", "y"],
         "estimator a": [EstimatorA, "X", "y"],
         "estimator b": [EstimatorB, "transformer a.x", "y"],
         "estimator c": [
@@ -1874,7 +1867,9 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
 
 def test_component_graph_does_not_define_all_edges():
     # Graph does not define an X edge
-    with pytest.raises(ValueError, match="All edges must be specified"):
+    with pytest.raises(
+        ValueError, match="All components must have at least one input feature"
+    ):
         ComponentGraph(
             {
                 "Imputer": [Imputer, "y"],  # offending line
@@ -1888,7 +1883,7 @@ def test_component_graph_does_not_define_all_edges():
             }
         )
     # Graph does not define a y edge
-    with pytest.raises(ValueError, match="All edges must be specified"):
+    with pytest.raises(ValueError, match="All components must have exactly one target"):
         ComponentGraph(
             {
                 "Imputer": [Imputer, "X"],  # offending line
@@ -1902,7 +1897,9 @@ def test_component_graph_does_not_define_all_edges():
             }
         )
     # Graph does not define X and y edges
-    with pytest.raises(ValueError, match="All edges must be specified"):
+    with pytest.raises(
+        ValueError, match="All components must have at least one input feature"
+    ):
         ComponentGraph(
             {
                 "Imputer": [Imputer],  # offending line
@@ -1917,9 +1914,35 @@ def test_component_graph_does_not_define_all_edges():
         )
 
 
+def test_component_graph_defines_edges_with_bad_syntax():
+    # Graph does not define an X edge
+    with pytest.raises(
+        ValueError, match="All edges must be specified as either an input feature"
+    ):
+        ComponentGraph(
+            {
+                "Imputer": [Imputer, "X", "y"],  # offending line
+                "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+                "Target Imputer": [
+                    TargetImputer,
+                    "Imputer",
+                    "One Hot Encoder.x",
+                    "y",
+                ],  # offending line: Imputer not allowed
+                "Random Forest Classifier": [
+                    RandomForestClassifier,
+                    "One Hot Encoder.x",
+                    "Target Imputer.y",
+                ],
+            }
+        )
+
+
 def test_component_graph_defines_edge_with_invalid_syntax():
     # Graph does not define an X edge using .x
-    with pytest.raises(ValueError, match="All edges must be specified"):
+    with pytest.raises(
+        ValueError, match="All components must have at least one input feature"
+    ):
         ComponentGraph(
             {
                 "Imputer": [Imputer, "X", "y"],
