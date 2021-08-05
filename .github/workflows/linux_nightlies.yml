@@ -3,8 +3,6 @@ name: Nightly unit tests, linux
 on:
   schedule:
       - cron: '0 7 * * *'
-  pull_request:
-    types: [opened, synchronize]
 
 jobs:
   unit_tests:
@@ -24,7 +22,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{ github.repository }}
-          ref: install-prophet-linux-nightlies
+          ref: main
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
       - name: Create virtual environment, upgrade pip
