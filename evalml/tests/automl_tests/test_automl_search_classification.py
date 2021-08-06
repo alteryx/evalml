@@ -1402,6 +1402,7 @@ def test_automl_search_dictionary_oversampler(
         sampler_method="SMOTE Oversampler",
         optimize_thresholds=False,
         pipeline_parameters=pipeline_parameters,
+        error_callback=raise_error_callback,
     )
     # check that the sampling dict got set properly
     pipelines = automl.allowed_pipelines
