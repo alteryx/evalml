@@ -45,7 +45,7 @@ class RFClassifierSelectFromModel(FeatureSelector):
         threshold=-np.inf,
         n_jobs=-1,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "number_features": number_features,
@@ -70,7 +70,7 @@ class RFClassifierSelectFromModel(FeatureSelector):
             estimator=estimator,
             max_features=max_features,
             threshold=threshold,
-            **kwargs
+            **kwargs,
         )
         super().__init__(
             parameters=parameters,

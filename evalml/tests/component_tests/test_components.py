@@ -44,6 +44,7 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     PerColumnImputer,
     PolynomialDetrender,
+    ProphetRegressor,
     RandomForestClassifier,
     RandomForestRegressor,
     RFClassifierSelectFromModel,
@@ -51,9 +52,9 @@ from evalml.pipelines.components import (
     SelectByType,
     SelectColumns,
     SimpleImputer,
-    SMOTENCSampler,
-    SMOTENSampler,
-    SMOTESampler,
+    SMOTENCOversampler,
+    SMOTENOversampler,
+    SMOTEOversampler,
     StandardScaler,
     SVMClassifier,
     SVMRegressor,
@@ -66,8 +67,8 @@ from evalml.pipelines.components import (
     XGBoostRegressor,
 )
 from evalml.pipelines.components.ensemble import (
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
+    SklearnStackedEnsembleClassifier,
+    SklearnStackedEnsembleRegressor,
 )
 from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
     LogTransformer,
@@ -290,7 +291,7 @@ def test_describe_component():
         },
     }
     try:
-        smote = SMOTESampler()
+        smote = SMOTEOversampler()
         assert smote.describe(return_dict=True) == {
             "name": "SMOTE Oversampler",
             "parameters": {
@@ -300,7 +301,7 @@ def test_describe_component():
                 "n_jobs": -1,
             },
         }
-        smote = SMOTENCSampler()
+        smote = SMOTENCOversampler()
         assert smote.describe(return_dict=True) == {
             "name": "SMOTENC Oversampler",
             "parameters": {
@@ -310,7 +311,7 @@ def test_describe_component():
                 "n_jobs": -1,
             },
         }
-        smote = SMOTENSampler()
+        smote = SMOTENOversampler()
         assert smote.describe(return_dict=True) == {
             "name": "SMOTEN Oversampler",
             "parameters": {
@@ -507,6 +508,20 @@ def test_describe_component():
                 "n_jobs": -1,
                 "bagging_fraction": 0.9,
                 "bagging_freq": 0,
+            },
+        }
+    except ImportError:
+        pass
+    try:
+        prophet_regressor = ProphetRegressor()
+        assert prophet_regressor.describe(return_dict=True) == {
+            "name": "Prophet Regressor",
+            "parameters": {
+                "changepoint_prior_scale": 0.05,
+                "holidays_prior_scale": 10,
+                "seasonality_mode": "additive",
+                "seasonality_prior_scale": 10,
+                "stan_backend": "CMDSTANPY",
             },
         }
     except ImportError:
@@ -727,13 +742,13 @@ def test_component_parameters_init(
         try:
             component = component_class()
         except EnsembleMissingPipelinesError:
-            if component_class == StackedEnsembleClassifier:
+            if component_class == SklearnStackedEnsembleClassifier:
                 component = component_class(
                     input_pipelines=[
                         logistic_regression_binary_pipeline_class(parameters={})
                     ]
                 )
-            elif component_class == StackedEnsembleRegressor:
+            elif component_class == SklearnStackedEnsembleRegressor:
                 component = component_class(
                     input_pipelines=[linear_regression_pipeline_class(parameters={})]
                 )
@@ -924,7 +939,8 @@ def test_transformer_transform_output_type(X_y_binary):
     [
         cls
         for cls in all_components()
-        if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]
+        if cls
+        not in [SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier]
     ],
 )
 def test_default_parameters(cls):
@@ -938,7 +954,8 @@ def test_default_parameters(cls):
     [
         cls
         for cls in all_components()
-        if cls not in [StackedEnsembleRegressor, StackedEnsembleClassifier]
+        if cls
+        not in [SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier]
     ],
 )
 def test_default_parameters_raise_no_warnings(cls):
@@ -1119,8 +1136,8 @@ def test_all_estimators_check_fit(
         for estimator in _all_estimators()
         if estimator
         not in [
-            StackedEnsembleClassifier,
-            StackedEnsembleRegressor,
+            SklearnStackedEnsembleClassifier,
+            SklearnStackedEnsembleRegressor,
             TimeSeriesBaselineEstimator,
         ]
     ] + [test_estimator_needs_fitting_false]
@@ -1209,7 +1226,7 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                 component_class
             )
         except EnsembleMissingPipelinesError:
-            if component_class == StackedEnsembleClassifier:
+            if component_class == SklearnStackedEnsembleClassifier:
                 component = component_class(
                     input_pipelines=[
                         BinaryClassificationPipeline(
@@ -1218,7 +1235,7 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                         )
                     ]
                 )
-            elif component_class == StackedEnsembleRegressor:
+            elif component_class == SklearnStackedEnsembleRegressor:
                 component = component_class(
                     input_pipelines=[
                         RegressionPipeline(
@@ -1245,8 +1262,8 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                 return_dict=True
             )
             if issubclass(component_class, Estimator) and not (
-                isinstance(component, StackedEnsembleClassifier)
-                or isinstance(component, StackedEnsembleRegressor)
+                isinstance(component, SklearnStackedEnsembleClassifier)
+                or isinstance(component, SklearnStackedEnsembleRegressor)
             ):
                 assert (
                     component.feature_importance == loaded_component.feature_importance
@@ -1281,13 +1298,13 @@ def test_estimators_accept_all_kwargs(
     try:
         estimator = estimator_class()
     except EnsembleMissingPipelinesError:
-        if estimator_class == StackedEnsembleClassifier:
+        if estimator_class == SklearnStackedEnsembleClassifier:
             estimator = estimator_class(
                 input_pipelines=[
                     logistic_regression_binary_pipeline_class(parameters={})
                 ]
             )
-        elif estimator_class == StackedEnsembleRegressor:
+        elif estimator_class == SklearnStackedEnsembleRegressor:
             estimator = estimator_class(
                 input_pipelines=[linear_regression_pipeline_class(parameters={})]
             )
@@ -1297,6 +1314,8 @@ def test_estimators_accept_all_kwargs(
         )
     if estimator_class.model_family == ModelFamily.ENSEMBLE:
         params = estimator.parameters
+    elif estimator_class.model_family == ModelFamily.PROPHET:
+        params = estimator.get_params()
     else:
         params = estimator._component_obj.get_params()
         if "random_state" in params:
@@ -1378,11 +1397,11 @@ def test_component_equality_all_components(
     logistic_regression_binary_pipeline_class,
     linear_regression_pipeline_class,
 ):
-    if component_class == StackedEnsembleClassifier:
+    if component_class == SklearnStackedEnsembleClassifier:
         component = component_class(
             input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})]
         )
-    elif component_class == StackedEnsembleRegressor:
+    elif component_class == SklearnStackedEnsembleRegressor:
         component = component_class(
             input_pipelines=[linear_regression_pipeline_class(parameters={})]
         )
@@ -1442,13 +1461,13 @@ def test_component_str(
     try:
         component = component_class()
     except EnsembleMissingPipelinesError:
-        if component_class == StackedEnsembleClassifier:
+        if component_class == SklearnStackedEnsembleClassifier:
             component = component_class(
                 input_pipelines=[
                     logistic_regression_binary_pipeline_class(parameters={})
                 ]
             )
-        elif component_class == StackedEnsembleRegressor:
+        elif component_class == SklearnStackedEnsembleRegressor:
             component = component_class(
                 input_pipelines=[linear_regression_pipeline_class(parameters={})]
             )
@@ -1606,13 +1625,13 @@ def test_estimator_fit_respects_custom_indices(
     helper_functions,
 ):
 
-    if estimator_class == StackedEnsembleRegressor:
+    if estimator_class == SklearnStackedEnsembleRegressor:
         input_pipelines = [
             helper_functions.safe_init_pipeline_with_njobs_1(
                 linear_regression_pipeline_class
             )
         ]
-    elif estimator_class == StackedEnsembleClassifier:
+    elif estimator_class == SklearnStackedEnsembleClassifier:
         input_pipelines = [
             helper_functions.safe_init_pipeline_with_njobs_1(
                 logistic_regression_binary_pipeline_class

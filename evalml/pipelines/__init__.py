@@ -25,14 +25,15 @@ from .components import (
     ExtraTreesRegressor,
     DecisionTreeClassifier,
     DecisionTreeRegressor,
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
+    SklearnStackedEnsembleClassifier,
+    SklearnStackedEnsembleRegressor,
     DelayedFeatureTransformer,
     DFSTransformer,
     KNeighborsClassifier,
     SVMClassifier,
     SVMRegressor,
     ARIMARegressor,
+    ProphetRegressor,
 )
 
 from .component_graph import ComponentGraph

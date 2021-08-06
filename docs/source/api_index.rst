@@ -162,9 +162,9 @@ Transformers are components that take in data as input and output transformed da
     evalml.pipelines.components.DFSTransformer
     evalml.pipelines.components.PolynomialDetrender
     evalml.pipelines.components.Undersampler
-    evalml.pipelines.components.SMOTESampler
-    evalml.pipelines.components.SMOTENCSampler
-    evalml.pipelines.components.SMOTENSampler
+    evalml.pipelines.components.SMOTEOversampler
+    evalml.pipelines.components.SMOTENCOversampler
+    evalml.pipelines.components.SMOTENOversampler
 
 
 Estimators
@@ -185,7 +185,7 @@ Classifiers are components that output a predicted class label.
     evalml.pipelines.components.LogisticRegressionClassifier
     evalml.pipelines.components.XGBoostClassifier
     evalml.pipelines.components.BaselineClassifier
-    evalml.pipelines.components.StackedEnsembleClassifier
+    evalml.pipelines.components.SklearnStackedEnsembleClassifier
     evalml.pipelines.components.DecisionTreeClassifier
     evalml.pipelines.components.KNeighborsClassifier
     evalml.pipelines.components.SVMClassifier
@@ -206,7 +206,7 @@ Regressors are components that output a predicted target value.
     evalml.pipelines.components.XGBoostRegressor
     evalml.pipelines.components.BaselineRegressor
     evalml.pipelines.components.TimeSeriesBaselineEstimator
-    evalml.pipelines.components.StackedEnsembleRegressor
+    evalml.pipelines.components.SklearnStackedEnsembleRegressor
     evalml.pipelines.components.DecisionTreeRegressor
     evalml.pipelines.components.LightGBMRegressor
     evalml.pipelines.components.SVMRegressor
