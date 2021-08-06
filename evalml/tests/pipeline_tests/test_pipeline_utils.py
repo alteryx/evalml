@@ -130,7 +130,7 @@ def get_test_data_from_configuration():
         ("email with other features", ["email", "numerical", "categorical"]),
     ],
 )
-def test_make_pipeline_master(
+def test_make_pipeline(
     problem_type,
     input_type,
     lognormal_distribution,
