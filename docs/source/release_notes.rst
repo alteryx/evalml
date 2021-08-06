@@ -4,7 +4,7 @@ Release Notes
     * Enhancements
         * Added ``ProphetRegressor`` to estimators :pr:`2242`
         * Updated ``ComponentGraph`` ``_validate_component_dict`` logic to be stricter about input values :pr:`2599`
-
+        * Patched bug in ``xgboost`` estimators where predicting on a feature matrix of only booleans would throw an exception. :pr:`2602`
     * Fixes
     * Changes
         * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
