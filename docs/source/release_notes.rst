@@ -3,11 +3,15 @@ Release Notes
 **Future Release**
     * Enhancements
         * Added ``ProphetRegressor`` to estimators :pr:`2242`
+        * Updated ``ComponentGraph`` ``_validate_component_dict`` logic to be stricter about input values :pr:`2599`
+
     * Fixes
     * Changes
         * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
     * Documentation Changes
     * Testing Changes
+        * Changed the lint CI job to only check against python 3.9 via the `-t` flag :pr:`2586`
+        * Installed Prophet in linux nightlies test and fixed ``test_all_components`` :pr:`2598`
 
 .. warning::
 

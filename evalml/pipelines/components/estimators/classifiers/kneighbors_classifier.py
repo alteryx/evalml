@@ -76,7 +76,7 @@ class KNeighborsClassifier(Estimator):
         leaf_size=30,
         p=2,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "n_neighbors": n_neighbors,
