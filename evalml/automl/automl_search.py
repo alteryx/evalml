@@ -111,6 +111,7 @@ def search(
     y_train = infer_feature_types(y_train)
     problem_type = handle_problem_types(problem_type)
 
+    datetime_column = None
     if is_time_series(problem_type):
         if problem_configuration:
             if "date_index" in problem_configuration:
