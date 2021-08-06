@@ -14,8 +14,8 @@ from .components import (
     DFSTransformer,
     Estimator,
     LinearDiscriminantAnalysis,
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
+    SklearnStackedEnsembleClassifier,
+    SklearnStackedEnsembleRegressor,
 )
 from .components.utils import all_components, handle_component_class
 
@@ -638,7 +638,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         )
         has_dfs = any(isinstance(c, DFSTransformer) for c in self.component_graph)
         has_stacked_ensembler = any(
-            isinstance(c, (StackedEnsembleClassifier, StackedEnsembleRegressor))
+            isinstance(
+                c, (SklearnStackedEnsembleClassifier, SklearnStackedEnsembleRegressor)
+            )
             for c in self.component_graph
         )
         return not any(

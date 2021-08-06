@@ -5,11 +5,12 @@ with open("README.md", "r") as fh:
 
 extras_require = {
     'update_checker': ['alteryx-open-src-update-checker >= 2.0.0'],
+    'prophet': ['cmdstan-builder == 0.0.4']
 }
 
 setup(
     name='evalml',
-    version='0.29.0',
+    version='0.30.0',
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     description='EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.',

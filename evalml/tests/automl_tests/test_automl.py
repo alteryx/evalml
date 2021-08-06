@@ -54,7 +54,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     PipelineBase,
     RegressionPipeline,
-    StackedEnsembleClassifier,
+    SklearnStackedEnsembleClassifier,
 )
 from evalml.pipelines.components.utils import (
     allowed_model_families,
@@ -1491,7 +1491,7 @@ def test_describe_pipeline_with_ensembling(
         caplog.clear()
         automl_dict = automl.describe_pipeline(ensemble_id, return_dict=return_dict)
         out = caplog.text
-        assert "Stacked Ensemble Classification Pipeline" in out
+        assert "Sklearn Stacked Ensemble Classification Pipeline" in out
         assert "Problem Type: binary" in out
         assert "Model Family: Ensemble" in out
         assert "* final_estimator : None" in out
@@ -1503,9 +1503,11 @@ def test_describe_pipeline_with_ensembling(
             assert automl_dict["id"] == ensemble_id
             assert (
                 automl_dict["pipeline_name"]
-                == "Stacked Ensemble Classification Pipeline"
+                == "Sklearn Stacked Ensemble Classification Pipeline"
             )
-            assert automl_dict["pipeline_summary"] == "Stacked Ensemble Classifier"
+            assert (
+                automl_dict["pipeline_summary"] == "Sklearn Stacked Ensemble Classifier"
+            )
             assert isinstance(automl_dict["mean_cv_score"], float)
             assert not automl_dict["high_variance_cv"]
             assert isinstance(automl_dict["training_time"], float)
@@ -4201,9 +4203,9 @@ def test_train_batch_works(
         for classifier in stackable_classifiers[:2]
     ]
     ensemble = BinaryClassificationPipeline(
-        [StackedEnsembleClassifier],
+        [SklearnStackedEnsembleClassifier],
         parameters={
-            "Stacked Ensemble Classifier": {
+            "Sklearn Stacked Ensemble Classifier": {
                 "input_pipelines": input_pipelines,
                 "n_jobs": 1,
             }
@@ -4342,9 +4344,9 @@ def test_score_batch_works(
         for classifier in stackable_classifiers[:2]
     ]
     ensemble = BinaryClassificationPipeline(
-        [StackedEnsembleClassifier],
+        [SklearnStackedEnsembleClassifier],
         parameters={
-            "Stacked Ensemble Classifier": {
+            "Sklearn Stacked Ensemble Classifier": {
                 "input_pipelines": input_pipelines,
                 "n_jobs": 1,
             }
@@ -4933,3 +4935,28 @@ def test_pipeline_parameter_warnings_component_graphs(
     assert len(w) == (1 if len(set_values) else 0)
     if len(w):
         assert w[0].message.components == set_values
+
+
+@pytest.mark.parametrize("nans", [None, pd.NA, np.nan])
+@patch("evalml.pipelines.components.Estimator.fit")
+@patch(
+    "evalml.pipelines.BinaryClassificationPipeline.score",
+    return_value={"Log Loss Binary": 0.5},
+)
+def test_search_with_text_nans(mock_score, mock_fit, nans):
+    X = pd.DataFrame(
+        {
+            "a": [np.nan] + [i for i in range(99)],
+            "b": [np.nan] + [f"string {i} is valid" for i in range(99)],
+        }
+    )
+    X.ww.init(logical_types={"b": "NaturalLanguage"})
+    y = pd.Series([0] * 25 + [1] * 75)
+    automl = AutoMLSearch(
+        X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False
+    )
+    automl.search()
+    for (x, _), _ in mock_fit.call_args_list:
+        assert all(
+            [str(types) == "Double" for types in x.ww.types["Logical Type"].values]
+        )

@@ -28,11 +28,11 @@ from evalml.pipelines.components import (  # noqa: F401
     LogTransformer,
     OneHotEncoder,
     RandomForestClassifier,
-    SMOTENCSampler,
-    SMOTENSampler,
-    SMOTESampler,
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
+    SklearnStackedEnsembleClassifier,
+    SklearnStackedEnsembleRegressor,
+    SMOTENCOversampler,
+    SMOTENOversampler,
+    SMOTEOversampler,
     StandardScaler,
     TargetImputer,
     TextFeaturizer,
@@ -135,9 +135,9 @@ def _get_preprocessing_components(
 
     sampler_components = {
         "Undersampler": Undersampler,
-        "SMOTE Oversampler": SMOTESampler,
-        "SMOTENC Oversampler": SMOTENCSampler,
-        "SMOTEN Oversampler": SMOTENSampler,
+        "SMOTE Oversampler": SMOTEOversampler,
+        "SMOTENC Oversampler": SMOTENCOversampler,
+        "SMOTEN Oversampler": SMOTENOversampler,
     }
     if sampler_name is not None:
         try:
@@ -273,33 +273,33 @@ def _make_stacked_ensemble_pipeline(
     parameters = {}
     if is_classification(problem_type):
         parameters = {
-            "Stacked Ensemble Classifier": {
+            "Sklearn Stacked Ensemble Classifier": {
                 "input_pipelines": input_pipelines,
                 "n_jobs": n_jobs,
             }
         }
-        estimator = StackedEnsembleClassifier
+        estimator = SklearnStackedEnsembleClassifier
     else:
         parameters = {
-            "Stacked Ensemble Regressor": {
+            "Sklearn Stacked Ensemble Regressor": {
                 "input_pipelines": input_pipelines,
                 "n_jobs": n_jobs,
             }
         }
-        estimator = StackedEnsembleRegressor
+        estimator = SklearnStackedEnsembleRegressor
 
     pipeline_class, pipeline_name = {
         ProblemTypes.BINARY: (
             BinaryClassificationPipeline,
-            "Stacked Ensemble Classification Pipeline",
+            "Sklearn Stacked Ensemble Classification Pipeline",
         ),
         ProblemTypes.MULTICLASS: (
             MulticlassClassificationPipeline,
-            "Stacked Ensemble Classification Pipeline",
+            "Sklearn Stacked Ensemble Classification Pipeline",
         ),
         ProblemTypes.REGRESSION: (
             RegressionPipeline,
-            "Stacked Ensemble Regression Pipeline",
+            "Sklearn Stacked Ensemble Regression Pipeline",
         ),
     }[problem_type]
 

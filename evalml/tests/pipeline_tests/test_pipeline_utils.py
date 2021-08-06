@@ -22,8 +22,8 @@ from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     LogTransformer,
     OneHotEncoder,
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
+    SklearnStackedEnsembleClassifier,
+    SklearnStackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
     TextFeaturizer,
@@ -279,7 +279,7 @@ def test_stacked_estimator_in_pipeline(
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         base_pipeline_class = BinaryClassificationPipeline
-        stacking_component_name = StackedEnsembleClassifier.name
+        stacking_component_name = SklearnStackedEnsembleClassifier.name
         input_pipelines = [
             BinaryClassificationPipeline([classifier])
             for classifier in stackable_classifiers
@@ -291,7 +291,7 @@ def test_stacked_estimator_in_pipeline(
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
         base_pipeline_class = MulticlassClassificationPipeline
-        stacking_component_name = StackedEnsembleClassifier.name
+        stacking_component_name = SklearnStackedEnsembleClassifier.name
         input_pipelines = [
             MulticlassClassificationPipeline([classifier])
             for classifier in stackable_classifiers
@@ -303,7 +303,7 @@ def test_stacked_estimator_in_pipeline(
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         base_pipeline_class = RegressionPipeline
-        stacking_component_name = StackedEnsembleRegressor.name
+        stacking_component_name = SklearnStackedEnsembleRegressor.name
         input_pipelines = [
             RegressionPipeline([regressor]) for regressor in stackable_regressors
         ]
