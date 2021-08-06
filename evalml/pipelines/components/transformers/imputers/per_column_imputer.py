@@ -32,7 +32,7 @@ class PerColumnImputer(Transformer):
         impute_strategies=None,
         default_impute_strategy="most_frequent",
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "impute_strategies": impute_strategies,

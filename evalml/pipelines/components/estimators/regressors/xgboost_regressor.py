@@ -58,7 +58,7 @@ class XGBoostRegressor(Estimator):
         n_estimators=100,
         random_seed=0,
         n_jobs=-1,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "eta": eta,
