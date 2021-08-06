@@ -1,12 +1,6 @@
-import numpy as np
 import pandas as pd
-import woodwork as ww
 
-from evalml.data_checks import (
-    DataCheck,
-    DataCheckError,
-    DataCheckMessageCode,
-)
+from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
 from evalml.utils import infer_feature_types
 
 
@@ -51,22 +45,30 @@ class DateTimeFormatDataCheck(DataCheck):
         X = infer_feature_types(X)
         y = infer_feature_types(y)
 
-        if self.datetime_column != 'index':
+        if self.datetime_column != "index":
             datetime_values = X[self.datetime_column]
         else:
             datetime_values = X.index
             if not isinstance(datetime_values, pd.DatetimeIndex):
                 datetime_values = y.index
             if not isinstance(datetime_values, pd.DatetimeIndex):
-                raise TypeError("Either X or y has to have datetime information in its index.")
+                raise TypeError(
+                    "Either X or y has to have datetime information in its index."
+                )
 
         try:
             inferred_freq = pd.infer_freq(datetime_values)
         except TypeError:
-            raise TypeError("That column does not contain datetime information or is not in a supported datetime format.")
+            raise TypeError(
+                "That column does not contain datetime information or is not in a supported datetime format."
+            )
 
         if not inferred_freq:
-            message = self.datetime_column if self.datetime_column != "index" else "either index"
+            message = (
+                self.datetime_column
+                if self.datetime_column != "index"
+                else "either index"
+            )
             results["errors"].append(
                 DataCheckError(
                     message=f"No frequency could be detected in {message}, possibly due to uneven intervals.",
@@ -75,7 +77,10 @@ class DateTimeFormatDataCheck(DataCheck):
                 ).to_dict()
             )
 
-        if not (pd.DatetimeIndex(datetime_values).is_monotonic_increasing or pd.DatetimeIndex(datetime_values).is_monotonic_decreasing):
+        if not (
+            pd.DatetimeIndex(datetime_values).is_monotonic_increasing
+            or pd.DatetimeIndex(datetime_values).is_monotonic_decreasing
+        ):
             results["errors"].append(
                 DataCheckError(
                     message="Datetime values must be monotonically increasing or decreasing.",

@@ -513,7 +513,9 @@ def test_default_data_checks_across_problem_types(problem_type):
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]:
-        default_data_check_list = default_data_check_list + [TargetDistributionDataCheck]
+        default_data_check_list = default_data_check_list + [
+            TargetDistributionDataCheck
+        ]
     else:
         default_data_check_list = default_data_check_list + [ClassImbalanceDataCheck]
 

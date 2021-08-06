@@ -10,7 +10,11 @@ from .no_variance_data_check import NoVarianceDataCheck
 from .target_distribution_data_check import TargetDistributionDataCheck
 from .target_leakage_data_check import TargetLeakageDataCheck
 
-from evalml.problem_types import ProblemTypes, handle_problem_types, is_time_series
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_time_series,
+)
 
 
 class DefaultDataChecks(DataChecks):
@@ -54,10 +58,12 @@ class DefaultDataChecks(DataChecks):
         if is_time_series(problem_type):
             default_checks = default_checks + [DateTimeFormatDataCheck]
             data_check_params.update(
-                {"DateTimeFormatDataCheck": {
-                    "datetime_column": datetime_column,
+                {
+                    "DateTimeFormatDataCheck": {
+                        "datetime_column": datetime_column,
+                    }
                 }
-                })
+            )
 
         if handle_problem_types(problem_type) in [
             ProblemTypes.REGRESSION,
@@ -65,22 +71,24 @@ class DefaultDataChecks(DataChecks):
         ]:
             default_checks = default_checks + [TargetDistributionDataCheck]
             data_check_params.update(
-                {"InvalidTargetDataCheck": {
-                    "problem_type": problem_type,
-                    "objective": objective,
+                {
+                    "InvalidTargetDataCheck": {
+                        "problem_type": problem_type,
+                        "objective": objective,
+                    }
                 }
-                })
+            )
         else:
             default_checks = default_checks + [ClassImbalanceDataCheck]
             data_check_params.update(
-                {"InvalidTargetDataCheck": {
-                    "problem_type": problem_type,
-                    "objective": objective,
-                },
-                "ClassImbalanceDataCheck": {
-                    "num_cv_folds": n_splits
+                {
+                    "InvalidTargetDataCheck": {
+                        "problem_type": problem_type,
+                        "objective": objective,
+                    },
+                    "ClassImbalanceDataCheck": {"num_cv_folds": n_splits},
                 }
-                })
+            )
 
         super().__init__(
             default_checks,

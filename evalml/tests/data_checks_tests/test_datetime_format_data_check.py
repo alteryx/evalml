@@ -11,7 +11,9 @@ datetime_format_check_name = DateTimeFormatDataCheck.name
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-@pytest.mark.parametrize("uneven,type_errors", [(True, False), (False, True), (False, False)])
+@pytest.mark.parametrize(
+    "uneven,type_errors", [(True, False), (False, True), (False, False)]
+)
 @pytest.mark.parametrize("datetime_loc", ["datetime_feature", "X_index", "y_index"])
 def test_datetime_format_data_check_typeerror_uneven_intervals(
     uneven, input_type, type_errors, datetime_loc
@@ -29,10 +31,10 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
         dates = pd.DatetimeIndex(dates)
 
     datetime_column = "index"
-    if datetime_loc == 'datetime_feature':
+    if datetime_loc == "datetime_feature":
         X[datetime_loc] = dates
         datetime_column = datetime_loc
-    elif datetime_loc == 'X_index':
+    elif datetime_loc == "X_index":
         X.index = dates
     else:
         y.index = dates
@@ -46,12 +48,14 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
     if type_errors:
         if datetime_loc == "datetime_feature":
             with pytest.raises(
-                    TypeError, match="That column does not contain datetime",
+                TypeError,
+                match="That column does not contain datetime",
             ):
                 datetime_format_check.validate(X, y)
         else:
             with pytest.raises(
-                    TypeError, match="Either X or y has to have datetime information in its index.",
+                TypeError,
+                match="Either X or y has to have datetime information in its index.",
             ):
                 datetime_format_check.validate(X, y)
     else:
@@ -62,7 +66,9 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                 "actions": [],
             }
         else:
-            message = datetime_loc if datetime_loc == "datetime_feature" else "either index"
+            message = (
+                datetime_loc if datetime_loc == "datetime_feature" else "either index"
+            )
             assert datetime_format_check.validate(X, y) == {
                 "errors": [
                     DataCheckError(
@@ -88,10 +94,10 @@ def test_datetime_format_data_check_monotonic(datetime_loc, sort_order):
         dates = dates[:5].append(dates[10:]).append(dates[5:10])
 
     datetime_column = "index"
-    if datetime_loc == 'datetime_feature':
+    if datetime_loc == "datetime_feature":
         X[datetime_loc] = dates
-        datetime_column = 'datetime_feature'
-    elif datetime_loc == 'X_index':
+        datetime_column = "datetime_feature"
+    elif datetime_loc == "X_index":
         X.index = dates
     else:
         y.index = dates
@@ -117,7 +123,7 @@ def test_datetime_format_data_check_monotonic(datetime_loc, sort_order):
                     message="Datetime values must be monotonically increasing or decreasing.",
                     data_check_name=datetime_format_check_name,
                     message_code=DataCheckMessageCode.DATETIME_IS_NOT_MONOTONIC,
-                ).to_dict()
+                ).to_dict(),
             ],
             "warnings": [],
             "actions": [],
