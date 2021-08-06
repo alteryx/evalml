@@ -608,21 +608,14 @@ def test_no_instantiate_before_fit(X_y_binary):
         component_graph.fit(X, y)
 
 
-@patch("evalml.pipelines.components.Imputer.fit_transform")
-def test_multiple_y_parents(mock_fit_transform, X_y_binary):
-    X, y = X_y_binary
+def test_multiple_y_parents():
     graph = {
         "Imputer": [Imputer, "X", "y"],
         "TargetImputer": [Imputer, "Imputer.x", "y"],
         "Estimator": [RandomForestClassifier, "Imputer.x", "y", "TargetImputer.y"],
     }
-    component_graph = ComponentGraph(graph)
-    component_graph.instantiate({})
-    mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
-    with pytest.raises(
-        ValueError, match="Cannot have multiple `y` parents for a single component"
-    ):
-        component_graph.fit(X, y)
+    with pytest.raises(ValueError, match="All components must have exactly one target"):
+        ComponentGraph(graph)
 
 
 def test_component_graph_order(example_graph):
@@ -673,12 +666,12 @@ def test_computation_input_custom_index(index, example_graph):
 @patch(f"{__name__}.TransformerB.transform")
 @patch(f"{__name__}.TransformerA.transform")
 def test_component_graph_evaluation_plumbing(
-    mock_transa,
-    mock_transb,
-    mock_transc,
-    mock_preda,
-    mock_predb,
-    mock_predc,
+    mock_transform_a,
+    mock_transform_b,
+    mock_transform_c,
+    mock_predict_a,
+    mock_predict_b,
+    mock_predict_c,
     dummy_components,
 ):
     (
@@ -689,18 +682,18 @@ def test_component_graph_evaluation_plumbing(
         EstimatorB,
         EstimatorC,
     ) = dummy_components
-    mock_transa.return_value = pd.DataFrame(
+    mock_transform_a.return_value = pd.DataFrame(
         {"feature trans": [1, 0, 0, 0, 0, 0], "feature a": np.ones(6)}
     )
-    mock_transb.return_value = pd.DataFrame({"feature b": np.ones(6) * 2})
-    mock_transc.return_value = pd.DataFrame({"feature c": np.ones(6) * 3})
-    mock_preda.return_value = pd.Series([0, 0, 0, 1, 0, 0])
-    mock_predb.return_value = pd.Series([0, 0, 0, 0, 1, 0])
-    mock_predc.return_value = pd.Series([0, 0, 0, 0, 0, 1])
+    mock_transform_b.return_value = pd.DataFrame({"feature b": np.ones(6) * 2})
+    mock_transform_c.return_value = pd.DataFrame({"feature c": np.ones(6) * 3})
+    mock_predict_a.return_value = pd.Series([0, 0, 0, 1, 0, 0])
+    mock_predict_b.return_value = pd.Series([0, 0, 0, 0, 1, 0])
+    mock_predict_c.return_value = pd.Series([0, 0, 0, 0, 0, 1])
     graph = {
         "transformer a": [TransformerA, "X", "y"],
         "transformer b": [TransformerB, "transformer a.x", "y"],
-        "transformer c": [TransformerC, "transformer a", "transformer b.x", "y"],
+        "transformer c": [TransformerC, "transformer a.x", "transformer b.x", "y"],
         "estimator a": [EstimatorA, "X", "y"],
         "estimator b": [EstimatorB, "transformer a.x", "y"],
         "estimator c": [
@@ -720,9 +713,9 @@ def test_component_graph_evaluation_plumbing(
     component_graph.fit(X, y)
     predict_out = component_graph.predict(X)
 
-    assert_frame_equal(mock_transa.call_args[0][0], X)
+    assert_frame_equal(mock_transform_a.call_args[0][0], X)
     assert_frame_equal(
-        mock_transb.call_args[0][0],
+        mock_transform_b.call_args[0][0],
         pd.DataFrame(
             {
                 "feature trans": pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
@@ -732,7 +725,7 @@ def test_component_graph_evaluation_plumbing(
         ),
     )
     assert_frame_equal(
-        mock_transc.call_args[0][0],
+        mock_transform_c.call_args[0][0],
         pd.DataFrame(
             {
                 "feature trans": pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
@@ -742,9 +735,9 @@ def test_component_graph_evaluation_plumbing(
             columns=["feature trans", "feature a", "feature b"],
         ),
     )
-    assert_frame_equal(mock_preda.call_args[0][0], X)
+    assert_frame_equal(mock_predict_a.call_args[0][0], X)
     assert_frame_equal(
-        mock_predb.call_args[0][0],
+        mock_predict_b.call_args[0][0],
         pd.DataFrame(
             {
                 "feature trans": pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
@@ -754,7 +747,7 @@ def test_component_graph_evaluation_plumbing(
         ),
     )
     assert_frame_equal(
-        mock_predc.call_args[0][0],
+        mock_predict_c.call_args[0][0],
         pd.DataFrame(
             {
                 "feature trans": pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
@@ -1874,7 +1867,9 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
 
 def test_component_graph_does_not_define_all_edges():
     # Graph does not define an X edge
-    with pytest.raises(ValueError, match="All edges must be specified"):
+    with pytest.raises(
+        ValueError, match="All components must have at least one input feature"
+    ):
         ComponentGraph(
             {
                 "Imputer": [Imputer, "y"],  # offending line
@@ -1888,7 +1883,7 @@ def test_component_graph_does_not_define_all_edges():
             }
         )
     # Graph does not define a y edge
-    with pytest.raises(ValueError, match="All edges must be specified"):
+    with pytest.raises(ValueError, match="All components must have exactly one target"):
         ComponentGraph(
             {
                 "Imputer": [Imputer, "X"],  # offending line
@@ -1902,7 +1897,9 @@ def test_component_graph_does_not_define_all_edges():
             }
         )
     # Graph does not define X and y edges
-    with pytest.raises(ValueError, match="All edges must be specified"):
+    with pytest.raises(
+        ValueError, match="All components must have at least one input feature"
+    ):
         ComponentGraph(
             {
                 "Imputer": [Imputer],  # offending line
@@ -1917,9 +1914,35 @@ def test_component_graph_does_not_define_all_edges():
         )
 
 
+def test_component_graph_defines_edges_with_bad_syntax():
+    # Graph does not define an X edge
+    with pytest.raises(
+        ValueError, match="All edges must be specified as either an input feature"
+    ):
+        ComponentGraph(
+            {
+                "Imputer": [Imputer, "X", "y"],
+                "One Hot Encoder": [OneHotEncoder, "Imputer.x", "y"],
+                "Target Imputer": [
+                    TargetImputer,
+                    "Imputer",  # offending line: "Imputer" not allowed
+                    "One Hot Encoder.x",
+                    "y",
+                ],
+                "Random Forest Classifier": [
+                    RandomForestClassifier,
+                    "One Hot Encoder.x",
+                    "Target Imputer.y",
+                ],
+            }
+        )
+
+
 def test_component_graph_defines_edge_with_invalid_syntax():
     # Graph does not define an X edge using .x
-    with pytest.raises(ValueError, match="All edges must be specified"):
+    with pytest.raises(
+        ValueError, match="All components must have at least one input feature"
+    ):
         ComponentGraph(
             {
                 "Imputer": [Imputer, "X", "y"],

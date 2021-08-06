@@ -118,7 +118,7 @@ class BaseSampler(Transformer):
         return param_copy
 
 
-class BaseOverSampler(BaseSampler):
+class BaseOversampler(BaseSampler):
     """
     Base Oversampler component. Used as the base class of all imbalance-learn oversampler components.
 
