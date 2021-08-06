@@ -33,6 +33,8 @@ class DefaultDataChecks(DataChecks):
         problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
         objective (str or ObjectiveBase): Name or instance of the objective class.
         n_splits (int): The number of splits as determined by the data splitter being used. Defaults to 3.
+        datetime_column (str): The name of the column containing datetime information to be used for time series problems.
+        Default to "index" indicating that the datetime information is in the index of X or y.
     """
 
     _DEFAULT_DATA_CHECK_CLASSES = [
@@ -45,13 +47,13 @@ class DefaultDataChecks(DataChecks):
         DateTimeNaNDataCheck,
     ]
 
-    def __init__(self, problem_type, objective, datetime_column="index", n_splits=3):
+    def __init__(self, problem_type, objective, n_splits=3, datetime_column="index"):
         default_checks = self._DEFAULT_DATA_CHECK_CLASSES
         data_check_params = {}
 
         if is_time_series(problem_type):
             default_checks = default_checks + [DateTimeFormatDataCheck]
-            data_check_params = data_check_params.update(
+            data_check_params.update(
                 {"DateTimeFormatDataCheck": {
                     "datetime_column": datetime_column,
                 }
@@ -62,7 +64,7 @@ class DefaultDataChecks(DataChecks):
             ProblemTypes.TIME_SERIES_REGRESSION,
         ]:
             default_checks = default_checks + [TargetDistributionDataCheck]
-            data_check_params = data_check_params.update(
+            data_check_params.update(
                 {"InvalidTargetDataCheck": {
                     "problem_type": problem_type,
                     "objective": objective,
@@ -70,7 +72,7 @@ class DefaultDataChecks(DataChecks):
                 })
         else:
             default_checks = default_checks + [ClassImbalanceDataCheck]
-            data_check_params = data_check_params.update(
+            data_check_params.update(
                 {"InvalidTargetDataCheck": {
                     "problem_type": problem_type,
                     "objective": objective,

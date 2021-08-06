@@ -7,6 +7,7 @@ import woodwork as ww
 
 from evalml.automl import get_default_primary_search_objective
 from evalml.data_checks import (
+    ClassImbalanceDataCheck,
     DataCheck,
     DataCheckAction,
     DataCheckActionCode,
@@ -14,10 +15,13 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataChecks,
     DataCheckWarning,
+    DateTimeFormatDataCheck,
     DefaultDataChecks,
     EmptyDataChecks,
+    TargetDistributionDataCheck,
 )
 from evalml.exceptions import DataCheckInitError
+from evalml.problem_types import ProblemTypes, is_time_series
 
 
 def test_data_checks_not_list_error(X_y_binary):
@@ -499,21 +503,28 @@ def test_default_data_checks_null_rows():
     assert validation_results == expected
 
 
-def test_default_data_checks_time_series_regression():
-    regression_data_check_classes = [
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_default_data_checks_across_problem_types(problem_type):
+    default_data_check_list = DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES
+
+    if is_time_series(problem_type):
+        default_data_check_list = default_data_check_list + [DateTimeFormatDataCheck]
+    if problem_type in [
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]:
+        default_data_check_list = default_data_check_list + [TargetDistributionDataCheck]
+    else:
+        default_data_check_list = default_data_check_list + [ClassImbalanceDataCheck]
+
+    data_check_classes = [
         check.__class__
         for check in DefaultDataChecks(
-            "regression", get_default_primary_search_objective("regression")
+            problem_type, get_default_primary_search_objective(problem_type)
         ).data_checks
     ]
-    ts_regression_data_check_classes = [
-        check.__class__
-        for check in DefaultDataChecks(
-            "time series regression",
-            get_default_primary_search_objective("time series regression"),
-        ).data_checks
-    ]
-    assert regression_data_check_classes == ts_regression_data_check_classes
+
+    assert data_check_classes == default_data_check_list
 
 
 def test_data_checks_init_from_classes():

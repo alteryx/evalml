@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -7,7 +6,6 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DateTimeFormatDataCheck,
 )
-from evalml.utils import infer_feature_types
 
 datetime_format_check_name = DateTimeFormatDataCheck.name
 
