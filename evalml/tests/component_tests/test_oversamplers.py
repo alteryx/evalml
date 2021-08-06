@@ -375,7 +375,7 @@ def test_oversampler_nonnumerical_noncategorical_columns(X_y_binary):
     X = pd.DataFrame(X)
     X[0] = [i % 2 for i in range(100)]
     X_ww = infer_feature_types(
-        X, feature_types={0: "boolean", 1: "datetime", 2: "categorical"}
+        X, feature_types={0: "boolean", 1: "categorical"}
     )
     snc = SMOTENCSampler()
     X_out, y_out = snc.fit_transform(X_ww, y)
@@ -383,7 +383,7 @@ def test_oversampler_nonnumerical_noncategorical_columns(X_y_binary):
 
     X = X.drop([i for i in range(2, 20)], axis=1)  # drop all numeric columns
     X_ww = infer_feature_types(
-        X, feature_types={0: "boolean", 1: "datetime", 2: "categorical"}
+        X, feature_types={0: "boolean", 1: "categorical"}
     )
     snc = SMOTENCSampler()
     with pytest.raises(ValueError):
