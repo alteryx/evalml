@@ -13,4 +13,6 @@ from .exceptions import (
     ObjectiveCreationError,
     NoPositiveLabelException,
     ParameterNotUsedWarning,
+    PartialDependenceErrorCode,
+    PartialDependenceError,
 )
