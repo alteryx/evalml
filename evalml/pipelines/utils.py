@@ -214,7 +214,7 @@ def make_pipeline(
     preprocessing_components = _get_preprocessing_components(
         X, y, problem_type, estimator, sampler_name
     )
-    extra_components = extra_components if extra_components is not None else []
+    extra_components = extra_components or []
     complete_component_list = preprocessing_components + extra_components + [estimator]
     component_graph = PipelineBase._make_component_dict_from_component_list(
         complete_component_list

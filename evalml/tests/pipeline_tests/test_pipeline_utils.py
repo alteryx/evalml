@@ -181,12 +181,6 @@ def test_make_pipeline_master(
                 and "dates" in column_names
                 else []
             )
-            delayed_features = (
-                [DelayedFeatureTransformer]
-                if is_time_series(problem_type)
-                and estimator_class.model_family != ModelFamily.ARIMA
-                else []
-            )
             standard_scaler = (
                 [StandardScaler]
                 if estimator_class.model_family == ModelFamily.LINEAR_MODEL
@@ -234,50 +228,6 @@ def test_make_pipeline_master(
                 + datetime
                 + delayed_features
                 + ohe
-                + standard_scaler
-                + [estimator_class]
-            )
-            assert pipeline.component_graph.compute_order == [
-                component.name for component in expected_components
-            ]
-
-
-@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_make_pipeline_numpy_input(problem_type):
-    X = np.array([[1, 2, 0, np.nan], [2, 2, 1, np.nan], [5, 1, np.nan, np.nan]])
-    y = np.array([0, 0, 1, 0])
-
-    estimators = get_estimators(problem_type=problem_type)
-    pipeline_class = _get_pipeline_base_class(problem_type)
-    if problem_type == ProblemTypes.MULTICLASS:
-        y = pd.Series([0, 2, 1, 2])
-    elif is_regression(problem_type):
-        y = pd.Series([0, 1.0, 0.1, 2])
-
-    for estimator_class in estimators:
-        if problem_type in estimator_class.supported_problem_types:
-            parameters = {}
-            if is_time_series(problem_type):
-                parameters = {
-                    "pipeline": {"date_index": None, "gap": 1, "max_delay": 1},
-                }
-
-            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
-            assert isinstance(pipeline, pipeline_class)
-            delayed_features = (
-                [DelayedFeatureTransformer]
-                if is_time_series(problem_type)
-                and estimator_class.model_family != ModelFamily.ARIMA
-                else []
-            )
-            standard_scaler = (
-                [StandardScaler]
-                if estimator_class.model_family == ModelFamily.LINEAR_MODEL
-                else []
-            )
-            expected_components = (
-                [DropNullColumns, Imputer]
-                + delayed_features
                 + standard_scaler
                 + [estimator_class]
             )
