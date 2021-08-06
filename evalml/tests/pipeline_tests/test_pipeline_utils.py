@@ -117,7 +117,7 @@ def get_test_data_from_configuration():
     "test_description, column_names",
     [
         ("all nan is not categorical", ["all_null", "numerical"]),
-        ("all types", ["all_null", "categorical", "dates", "numerical"]),
+        ("mixed types", ["all_null", "categorical", "dates", "numerical"]),
         ("no all_null columns", ["numerical", "categorical", "dates"]),
         ("date, numerical", ["dates", "numerical"]),
         ("only text", ["text"]),
