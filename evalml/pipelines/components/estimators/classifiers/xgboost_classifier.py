@@ -84,7 +84,9 @@ class XGBoostClassifier(Estimator):
 
     @staticmethod
     def _convert_bool_to_int(X):
-        return {col: "Integer" for col in X.ww.select("boolean", return_schema=True).columns}
+        return {
+            col: "Integer" for col in X.ww.select("boolean", return_schema=True).columns
+        }
 
     def fit(self, X, y=None):
         X, y = super()._manage_woodwork(X, y)
