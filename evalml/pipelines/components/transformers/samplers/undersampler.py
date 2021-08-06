@@ -6,7 +6,6 @@ from evalml.pipelines.components.transformers.samplers.base_sampler import (
 from evalml.preprocessing.data_splitters.balanced_classification_sampler import (
     BalancedClassificationSampler,
 )
-from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class Undersampler(BaseSampler):
@@ -70,8 +69,7 @@ class Undersampler(BaseSampler):
         self._component_obj = sampler
 
     def fit(self, X, y):
-        """Resample the data using the sampler. Since our sampler doesn't need to be fit, we do nothing here.
-
+        """
         Arguments:
             X (pd.DataFrame): Training features
             y (pd.Series): Target features
@@ -81,8 +79,8 @@ class Undersampler(BaseSampler):
         """
         if y is None:
             raise ValueError("y cannot be none")
-        X_ww, y_ww = self._prepare_data(X, y)
-        self._initialize_undersampler(y_ww)
+        # X_ww, y_ww = self._prepare_data(X, y)
+        # self._initialize_undersampler(y_ww)
 
         return self
 
