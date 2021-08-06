@@ -12,8 +12,8 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     RegressionPipeline,
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
+    SklearnStackedEnsembleClassifier,
+    SklearnStackedEnsembleRegressor,
 )
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import get_estimators
@@ -116,7 +116,7 @@ def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
 
 @pytest.mark.parametrize("ensembling_value", [True, False])
 @patch(
-    "evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class"
+    "evalml.pipelines.components.ensemble.SklearnStackedEnsembleClassifier._stacking_estimator_class"
 )
 @patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_results(
@@ -207,7 +207,7 @@ def test_iterative_algorithm_results(
 
 @pytest.mark.parametrize("ensembling_value", [True, False])
 @patch(
-    "evalml.pipelines.components.ensemble.StackedEnsembleClassifier._stacking_estimator_class"
+    "evalml.pipelines.components.ensemble.SklearnStackedEnsembleClassifier._stacking_estimator_class"
 )
 @patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_passes_pipeline_params(
@@ -245,9 +245,9 @@ def test_iterative_algorithm_passes_pipeline_params(
 
         if ensembling_value:
             next_batch = algo.next_batch()
-            input_pipelines = next_batch[0].parameters["Stacked Ensemble Classifier"][
-                "input_pipelines"
-            ]
+            input_pipelines = next_batch[0].parameters[
+                "Sklearn Stacked Ensemble Classifier"
+            ]["input_pipelines"]
             assert all(
                 [
                     pl.parameters["pipeline"] == {"gap": 2, "max_delay": 10}
@@ -398,16 +398,20 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(
     for i in range(5):
         next_batch = algo.next_batch()
         for pipeline in next_batch:
-            if isinstance(pipeline.estimator, StackedEnsembleClassifier):
+            if isinstance(pipeline.estimator, SklearnStackedEnsembleClassifier):
                 seen_ensemble = True
                 if text_in_ensembling:
                     assert (
-                        pipeline.parameters["Stacked Ensemble Classifier"]["n_jobs"]
+                        pipeline.parameters["Sklearn Stacked Ensemble Classifier"][
+                            "n_jobs"
+                        ]
                         == 1
                     )
                 else:
                     assert (
-                        pipeline.parameters["Stacked Ensemble Classifier"]["n_jobs"]
+                        pipeline.parameters["Sklearn Stacked Ensemble Classifier"][
+                            "n_jobs"
+                        ]
                         == n_jobs
                     )
     assert seen_ensemble
@@ -436,15 +440,20 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
     for i in range(5):
         next_batch = algo.next_batch()
         for pipeline in next_batch:
-            if isinstance(pipeline.estimator, StackedEnsembleRegressor):
+            if isinstance(pipeline.estimator, SklearnStackedEnsembleRegressor):
                 seen_ensemble = True
                 if text_in_ensembling:
                     assert (
-                        pipeline.parameters["Stacked Ensemble Regressor"]["n_jobs"] == 1
+                        pipeline.parameters["Sklearn Stacked Ensemble Regressor"][
+                            "n_jobs"
+                        ]
+                        == 1
                     )
                 else:
                     assert (
-                        pipeline.parameters["Stacked Ensemble Regressor"]["n_jobs"]
+                        pipeline.parameters["Sklearn Stacked Ensemble Regressor"][
+                            "n_jobs"
+                        ]
                         == n_jobs
                     )
     assert seen_ensemble

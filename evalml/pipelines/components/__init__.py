@@ -51,11 +51,11 @@ from .transformers import (
     Undersampler,
     TargetImputer,
     PolynomialDetrender,
-    SMOTESampler,
-    SMOTENCSampler,
-    SMOTENSampler,
+    SMOTEOversampler,
+    SMOTENCOversampler,
+    SMOTENOversampler,
     LogTransformer,
     EmailFeaturizer,
     URLFeaturizer,
 )
-from .ensemble import StackedEnsembleClassifier, StackedEnsembleRegressor
+from .ensemble import SklearnStackedEnsembleClassifier, SklearnStackedEnsembleRegressor

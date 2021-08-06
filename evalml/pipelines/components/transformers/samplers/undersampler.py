@@ -40,7 +40,7 @@ class Undersampler(BaseSampler):
         min_samples=100,
         min_percentage=0.1,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "sampling_ratio": sampling_ratio,

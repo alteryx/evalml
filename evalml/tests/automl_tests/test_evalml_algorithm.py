@@ -9,8 +9,8 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ElasticNetClassifier,
     ElasticNetRegressor,
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
+    SklearnStackedEnsembleClassifier,
+    SklearnStackedEnsembleRegressor,
 )
 from evalml.problem_types import ProblemTypes
 
@@ -136,7 +136,7 @@ def test_evalml_algorithm(
     final_ensemble = algo.next_batch()
     assert isinstance(
         final_ensemble[0].estimator,
-        (StackedEnsembleRegressor, StackedEnsembleClassifier),
+        (SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier),
     )
     add_result(algo, final_ensemble)
 
@@ -148,7 +148,7 @@ def test_evalml_algorithm(
     long_first_ensemble = algo.next_batch()
     assert isinstance(
         long_first_ensemble[0].estimator,
-        (StackedEnsembleRegressor, StackedEnsembleClassifier),
+        (SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier),
     )
 
     long = algo.next_batch()
@@ -159,7 +159,7 @@ def test_evalml_algorithm(
     long_second_ensemble = algo.next_batch()
     assert isinstance(
         long_second_ensemble[0].estimator,
-        (StackedEnsembleRegressor, StackedEnsembleClassifier),
+        (SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier),
     )
 
     long_2 = algo.next_batch()
