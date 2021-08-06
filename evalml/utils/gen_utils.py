@@ -120,6 +120,7 @@ def get_random_seed(
 
 class classproperty:
     """Allows function to be accessed as a class level property.
+
     Example:
 
     .. code-block::
@@ -175,11 +176,12 @@ _not_used_in_automl = {
     "BaselineClassifier",
     "BaselineRegressor",
     "TimeSeriesBaselineEstimator",
-    "StackedEnsembleClassifier",
-    "StackedEnsembleRegressor",
+    "SklearnStackedEnsembleClassifier",
+    "SklearnStackedEnsembleRegressor",
     "KNeighborsClassifier",
     "SVMClassifier",
     "SVMRegressor",
+    "ProphetRegressor",
 }
 
 
@@ -221,8 +223,8 @@ def get_importable_subclasses(base_class, used_in_automl=True):
 
 def _rename_column_names_to_numeric(X, flatten_tuples=True):
     """Used in LightGBM and XGBoost estimator classes to rename column names
-        when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <)
-        that these estimators cannot natively handle.
+    when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <)
+    that these estimators cannot natively handle.
 
     Arguments:
         X (pd.DataFrame): The input training data of shape [n_samples, n_features]

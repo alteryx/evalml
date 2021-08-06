@@ -18,6 +18,7 @@ def correct_model_families():
         ModelFamily.K_NEIGHBORS,
         ModelFamily.SVM,
         ModelFamily.ARIMA,
+        ModelFamily.PROPHET,
         ModelFamily.NONE,
     ]
     yield correct_model_families
@@ -37,6 +38,7 @@ def test_handle_string(correct_model_families):
         "k_neighbors",
         "svm",
         "ARIMA",
+        "prophet",
         "none",
     ]
     for model_family in zip(model_families, correct_model_families):

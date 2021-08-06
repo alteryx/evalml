@@ -40,7 +40,7 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
         handle_unknown="value",
         handle_missing="value",
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "cols": cols,

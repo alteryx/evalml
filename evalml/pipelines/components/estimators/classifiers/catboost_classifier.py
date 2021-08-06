@@ -66,7 +66,7 @@ class CatBoostClassifier(Estimator):
         allow_writing_files=False,
         random_seed=0,
         n_jobs=-1,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "n_estimators": n_estimators,

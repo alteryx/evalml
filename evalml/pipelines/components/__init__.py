@@ -21,6 +21,7 @@ from .estimators import (
     DecisionTreeRegressor,
     TimeSeriesBaselineEstimator,
     KNeighborsClassifier,
+    ProphetRegressor,
     SVMClassifier,
     SVMRegressor,
     ARIMARegressor,
@@ -50,11 +51,11 @@ from .transformers import (
     Undersampler,
     TargetImputer,
     PolynomialDetrender,
-    SMOTESampler,
-    SMOTENCSampler,
-    SMOTENSampler,
+    SMOTEOversampler,
+    SMOTENCOversampler,
+    SMOTENOversampler,
     LogTransformer,
     EmailFeaturizer,
     URLFeaturizer,
 )
-from .ensemble import StackedEnsembleClassifier, StackedEnsembleRegressor
+from .ensemble import SklearnStackedEnsembleClassifier, SklearnStackedEnsembleRegressor

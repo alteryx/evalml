@@ -64,7 +64,7 @@ class LogisticRegressionClassifier(Estimator):
         solver="lbfgs",
         n_jobs=-1,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "penalty": penalty,

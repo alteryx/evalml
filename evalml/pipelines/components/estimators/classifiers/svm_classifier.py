@@ -55,7 +55,7 @@ class SVMClassifier(Estimator):
         gamma="scale",
         probability=True,
         random_seed=0,
-        **kwargs
+        **kwargs,
     ):
         parameters = {
             "C": C,
