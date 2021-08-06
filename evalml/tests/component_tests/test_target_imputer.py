@@ -127,6 +127,7 @@ def test_target_imputer_boolean_dtype(data_type, make_data_type):
     _, y_t = imputer.transform(None, y)
     assert_series_equal(y_expected, y_t)
 
+
 @pytest.mark.parametrize("y", [[np.nan, np.nan], [pd.NA, pd.NA]])
 def test_target_imputer_fit_transform_all_nan_empty(y):
     y = pd.Series(y)

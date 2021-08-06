@@ -85,6 +85,11 @@ def infer_feature_types(data, feature_types=None):
         return ww.init_series(data, logical_type=feature_types)
     else:
         ww_data = data.copy()
+        all_null_cols = ww_data.columns[ww_data.isnull().all(0)]
+        if len(all_null_cols) > 0:
+            feature_types = {}
+            for col in all_null_cols:
+                feature_types[col] = "Double"
         ww_data.ww.init(logical_types=feature_types)
         return ww_data
 
