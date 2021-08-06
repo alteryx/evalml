@@ -253,12 +253,12 @@ class ComponentGraph:
                     "All components must be instantiated before fitting or predicting"
                 )
             x_inputs = []
-            input_y = None
+            y_input = None
             for parent_input in self.get_inputs(component_name):
                 if parent_input.endswith(".y"):
-                    input_y = output_cache[parent_input]
+                    y_input = output_cache[parent_input]
                 elif parent_input == "y":
-                    input_y = y
+                    y_input = y
                 elif parent_input == "X":
                     x_inputs.append(X)
                 else:  # must end in .x
@@ -266,16 +266,17 @@ class ComponentGraph:
                     if isinstance(parent_x, pd.Series):
                         parent_x = parent_x.rename(parent_input)
                     x_inputs.append(parent_x)
-            input_x = ww.concat_columns(x_inputs)
+            x_inputs = ww.concat_columns(x_inputs)
 
-            self.input_feature_names.update({component_name: list(input_x.columns)})
+            self.input_feature_names.update({component_name: list(x_inputs.columns)})
             if isinstance(component_instance, Transformer):
                 if fit:
-                    output = component_instance.fit_transform(input_x, input_y)
+                    output = component_instance.fit_transform(x_inputs, y_input)
                 elif isinstance(component_instance, BaseSampler):
-                    output = input_x, input_y
+                    output = x_inputs, y_input
                 else:
-                    output = component_instance.transform(input_x, input_y)
+                    output = component_instance.transform(x_inputs, y_input)
+
                 if isinstance(output, tuple):
                     output_x, output_y = output[0], output[1]
                 else:
@@ -285,11 +286,11 @@ class ComponentGraph:
                 output_cache[f"{component_name}.y"] = output_y
             else:
                 if fit:
-                    component_instance.fit(input_x, input_y)
+                    component_instance.fit(x_inputs, y_input)
                 if not (
                     fit and component_name == self.compute_order[-1]
                 ):  # Don't call predict on the final component during fit
-                    output = component_instance.predict(input_x)
+                    output = component_instance.predict(x_inputs)
                 else:
                     output = None
                 output_cache[f"{component_name}.x"] = output

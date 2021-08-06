@@ -68,52 +68,9 @@ class Undersampler(BaseSampler):
         )
         self._component_obj = sampler
 
-    def fit(self, X, y):
-        """
-        Arguments:
-            X (pd.DataFrame): Training features
-            y (pd.Series): Target features
-
-        Returns:
-            self
-        """
-        if y is None:
-            raise ValueError("y cannot be none")
-        # X_ww, y_ww = self._prepare_data(X, y)
-        # self._initialize_undersampler(y_ww)
-
-        return self
-
     def transform(self, X, y=None):
-        """
-        Arguments:
-            X (pd.DataFrame): Training features. Ignored.
-            y (pd.Series): Target. Ignored.
-
-        Returns:
-            pd.DataFrame, pd.Series: X and y data that was passed in.
-        """
         X_ww, y_ww = self._prepare_data(X, y)
         self._initialize_undersampler(y_ww)
-        index_df = pd.Series(y_ww.index)
-        indices = self._component_obj.fit_resample(X_ww, y_ww)
-
-        train_indices = index_df[index_df.isin(indices)].index.values.tolist()
-        return X_ww.iloc[train_indices], y_ww.iloc[train_indices]
-
-    def fit_transform(self, X, y):
-        """Fit and transform the data using the undersampler. Used during training of the pipeline
-
-        Arguments:
-            X (pd.DataFrame): Training features
-            y (pd.Series): Target features
-
-         Returns:
-            pd.DataFrame, pd.Series: Undersampled X and y data
-        """
-        X_ww, y_ww = self._prepare_data(X, y)
-        self._initialize_undersampler(y_ww)
-
         index_df = pd.Series(y_ww.index)
         indices = self._component_obj.fit_resample(X_ww, y_ww)
 

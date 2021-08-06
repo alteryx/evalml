@@ -24,7 +24,7 @@ class BaseSampler(Transformer):
 
         Arguments:
             X (pd.DataFrame): Training features
-            y (pd.Series): Target features
+            y (pd.Series): Target.
 
         Returns:
             self
@@ -37,8 +37,8 @@ class BaseSampler(Transformer):
         """Transforms the input data to pandas data structure that our sampler can ingest.
 
         Arguments:
-            X (pd.DataFrame): Training features
-            y (pd.Series): Target features
+            X (pd.DataFrame): Training features.
+            y (pd.Series): Target.
 
          Returns:
             pd.DataFrame, pd.Series: Prepared X and y data as pandas types
@@ -173,9 +173,9 @@ class BaseOverSampler(BaseSampler):
             self
         """
         super().fit(X, y)
-        self._initialize_oversampler(X, y, self.sampler)
+        self._initialize_sampler(X, y, self.sampler)
 
-    def _initialize_oversampler(self, X, y, sampler_class):
+    def _initialize_sampler(self, X, y, sampler_class):
         """Initializes the oversampler with the given sampler_ratio or sampler_ratio_dict. If a sampler_ratio_dict is provided, we will opt to use that.
         Otherwise, we use will create the sampler_ratio_dict dictionary.
 
@@ -214,18 +214,18 @@ class BaseOverSampler(BaseSampler):
         sampler = sampler_class(**sampler_params, random_state=self.random_seed)
         self._component_obj = sampler
 
-    # TODO: should be able to remove
-    def fit_transform(self, X, y):
-        """Fit and transform the data using the data sampler.
+    # # TODO: should be able to remove
+    # def fit_transform(self, X, y):
+    #     """Fit and transform the data using the data sampler.
 
-        Arguments:
-            X (pd.DataFrame): Input features.
-            y (pd.Series): Target.
+    #     Arguments:
+    #         X (pd.DataFrame): Input features.
+    #         y (pd.Series): Target.
 
-         Returns:
-            pd.DataFrame, pd.Series: Sampled X and y data
-        """
-        self.fit(X, y)
-        X_pd, y_pd = self._prepare_data(X, y)
-        X_new, y_new = self._component_obj.fit_resample(X_pd, y_pd)
-        return infer_feature_types(X_new), infer_feature_types(y_new)
+    #      Returns:
+    #         pd.DataFrame, pd.Series: Sampled X and y data
+    #     """
+    #     self.fit(X, y)
+    #     X_pd, y_pd = self._prepare_data(X, y)
+    #     X_new, y_new = self._component_obj.fit_resample(X_pd, y_pd)
+    #     return infer_feature_types(X_new), infer_feature_types(y_new)
