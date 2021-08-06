@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
-        * Added `DatetimeFormatDataCheck` for time series problems :pr:`2124`
+        * Added `DatetimeFormatDataCheck` for time series problems :pr:`2603`
         * Added ``ProphetRegressor`` to estimators :pr:`2242`
         * Updated ``ComponentGraph`` ``_validate_component_dict`` logic to be stricter about input values :pr:`2599`
     * Fixes
