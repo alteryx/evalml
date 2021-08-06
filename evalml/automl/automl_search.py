@@ -71,7 +71,7 @@ from evalml.utils.logger import (
 logger = get_logger(__file__)
 
 
-def search(X_train=None, y_train=None, problem_type=None, objective="auto", **kwargs):
+def search(X_train=None, y_train=None, problem_type=None, objective="auto", problem_configuration=None, **kwargs):
     """Given data and configuration, run an automl search.
 
     This method will run EvalML's default suite of data checks. If the data checks produce errors, the data check results will be returned before running the automl search. In that case we recommend you alter your data to address these errors and try again.
@@ -100,6 +100,7 @@ def search(X_train=None, y_train=None, problem_type=None, objective="auto", **kw
     X_train = infer_feature_types(X_train)
     y_train = infer_feature_types(y_train)
     problem_type = handle_problem_types(problem_type)
+    datetime_column = problem_configuration["date_index"] if "date_index" in problem_configuration else None
     if objective == "auto":
         objective = get_default_primary_search_objective(problem_type)
     objective = get_objective(objective, return_instance=False)
@@ -115,7 +116,7 @@ def search(X_train=None, y_train=None, problem_type=None, objective="auto", **kw
         }
     )
 
-    data_checks = DefaultDataChecks(problem_type=problem_type, objective=objective)
+    data_checks = DefaultDataChecks(problem_type=problem_type, objective=objective, datetime_column=datetime_column)
     data_check_results = data_checks.validate(X_train, y=y_train)
     if len(data_check_results.get("errors", [])):
         return None, data_check_results
