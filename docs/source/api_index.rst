@@ -162,9 +162,9 @@ Transformers are components that take in data as input and output transformed da
     evalml.pipelines.components.DFSTransformer
     evalml.pipelines.components.PolynomialDetrender
     evalml.pipelines.components.Undersampler
-    evalml.pipelines.components.SMOTESampler
-    evalml.pipelines.components.SMOTENCSampler
-    evalml.pipelines.components.SMOTENSampler
+    evalml.pipelines.components.SMOTEOversampler
+    evalml.pipelines.components.SMOTENCOversampler
+    evalml.pipelines.components.SMOTENOversampler
 
 
 Estimators

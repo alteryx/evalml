@@ -1,10 +1,10 @@
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
-    BaseOverSampler,
+    BaseOversampler,
 )
 from evalml.utils.woodwork_utils import infer_feature_types
 
 
-class SMOTESampler(BaseOverSampler):
+class SMOTEOversampler(BaseOversampler):
     """SMOTE Oversampler component. Works on numerical datasets only. This component is only run during training and not during predict.
 
     Arguments:
@@ -39,7 +39,7 @@ class SMOTESampler(BaseOverSampler):
         )
 
 
-class SMOTENCSampler(BaseOverSampler):
+class SMOTENCOversampler(BaseOversampler):
     """SMOTENC Oversampler component. Uses SMOTENC to generate synthetic samples. Works on a mix of nomerical and categorical columns.
     Input data must be Woodwork type, and this component is only run during training and not during predict.
 
@@ -90,7 +90,7 @@ class SMOTENCSampler(BaseOverSampler):
         super().fit(X, y)
 
 
-class SMOTENSampler(BaseOverSampler):
+class SMOTENOversampler(BaseOversampler):
     """
     SMOTEN Oversampler component. Uses SMOTEN to generate synthetic samples. Works for purely categorical datasets.
     This component is only run during training and not during predict.
