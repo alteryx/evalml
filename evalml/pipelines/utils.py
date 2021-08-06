@@ -79,6 +79,10 @@ def _get_preprocessing_components(
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
 
+    unknown_columns = list(X.ww.select(["unknown"], return_schema=True).columns)
+    if len(unknown_columns) and not set(all_null_cols) == set(unknown_columns):
+        pp_components.append(DropColumns)
+
     email_columns = list(X.ww.select("EmailAddress", return_schema=True).columns)
     if len(email_columns) > 0:
         pp_components.append(EmailFeaturizer)
@@ -105,10 +109,8 @@ def _get_preprocessing_components(
         text_columns
     ):
         pp_components.append(Imputer)
-    index_and_unknown_columns = list(
-        X.ww.select(["index", "unknown"], return_schema=True).columns
-    )
-    if len(index_and_unknown_columns) > 0:
+    index_columns = list(X.ww.select(["index"], return_schema=True).columns)
+    if len(index_columns) > 0:
         pp_components.append(DropColumns)
 
     datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
