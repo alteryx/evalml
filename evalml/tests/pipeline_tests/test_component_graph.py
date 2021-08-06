@@ -666,12 +666,12 @@ def test_computation_input_custom_index(index, example_graph):
 @patch(f"{__name__}.TransformerB.transform")
 @patch(f"{__name__}.TransformerA.transform")
 def test_component_graph_evaluation_plumbing(
-    mock_transa,
-    mock_transb,
-    mock_transc,
-    mock_preda,
-    mock_predb,
-    mock_predc,
+    mock_transform_a,
+    mock_transform_b,
+    mock_transform_c,
+    mock_predict_a,
+    mock_predict_b,
+    mock_predict_c,
     dummy_components,
 ):
     (
@@ -682,14 +682,14 @@ def test_component_graph_evaluation_plumbing(
         EstimatorB,
         EstimatorC,
     ) = dummy_components
-    mock_transa.return_value = pd.DataFrame(
+    mock_transform_a.return_value = pd.DataFrame(
         {"feature trans": [1, 0, 0, 0, 0, 0], "feature a": np.ones(6)}
     )
-    mock_transb.return_value = pd.DataFrame({"feature b": np.ones(6) * 2})
-    mock_transc.return_value = pd.DataFrame({"feature c": np.ones(6) * 3})
-    mock_preda.return_value = pd.Series([0, 0, 0, 1, 0, 0])
-    mock_predb.return_value = pd.Series([0, 0, 0, 0, 1, 0])
-    mock_predc.return_value = pd.Series([0, 0, 0, 0, 0, 1])
+    mock_transform_b.return_value = pd.DataFrame({"feature b": np.ones(6) * 2})
+    mock_transform_c.return_value = pd.DataFrame({"feature c": np.ones(6) * 3})
+    mock_predict_a.return_value = pd.Series([0, 0, 0, 1, 0, 0])
+    mock_predict_b.return_value = pd.Series([0, 0, 0, 0, 1, 0])
+    mock_predict_c.return_value = pd.Series([0, 0, 0, 0, 0, 1])
     graph = {
         "transformer a": [TransformerA, "X", "y"],
         "transformer b": [TransformerB, "transformer a.x", "y"],
@@ -713,9 +713,9 @@ def test_component_graph_evaluation_plumbing(
     component_graph.fit(X, y)
     predict_out = component_graph.predict(X)
 
-    assert_frame_equal(mock_transa.call_args[0][0], X)
+    assert_frame_equal(mock_transform_a.call_args[0][0], X)
     assert_frame_equal(
-        mock_transb.call_args[0][0],
+        mock_transform_b.call_args[0][0],
         pd.DataFrame(
             {
                 "feature trans": pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
@@ -725,7 +725,7 @@ def test_component_graph_evaluation_plumbing(
         ),
     )
     assert_frame_equal(
-        mock_transc.call_args[0][0],
+        mock_transform_c.call_args[0][0],
         pd.DataFrame(
             {
                 "feature trans": pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
@@ -735,9 +735,9 @@ def test_component_graph_evaluation_plumbing(
             columns=["feature trans", "feature a", "feature b"],
         ),
     )
-    assert_frame_equal(mock_preda.call_args[0][0], X)
+    assert_frame_equal(mock_predict_a.call_args[0][0], X)
     assert_frame_equal(
-        mock_predb.call_args[0][0],
+        mock_predict_b.call_args[0][0],
         pd.DataFrame(
             {
                 "feature trans": pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
@@ -747,7 +747,7 @@ def test_component_graph_evaluation_plumbing(
         ),
     )
     assert_frame_equal(
-        mock_predc.call_args[0][0],
+        mock_predict_c.call_args[0][0],
         pd.DataFrame(
             {
                 "feature trans": pd.Series([1, 0, 0, 0, 0, 0], dtype="int64"),
