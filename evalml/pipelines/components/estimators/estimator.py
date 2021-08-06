@@ -45,7 +45,7 @@ class Estimator(ComponentBase):
             parameters=parameters,
             component_obj=component_obj,
             random_seed=random_seed,
-            **kwargs
+            **kwargs,
         )
 
     def _manage_woodwork(self, X, y=None):

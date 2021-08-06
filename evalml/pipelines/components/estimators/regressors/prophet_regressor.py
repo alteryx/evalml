@@ -47,7 +47,7 @@ class ProphetRegressor(Estimator):
         seasonality_mode="additive",
         random_seed=0,
         stan_backend="CMDSTANPY",
-        **kwargs
+        **kwargs,
     ):
         self.date_column = date_column
 
