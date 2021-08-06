@@ -39,7 +39,7 @@ class SMOTEOversampler(BaseOversampler):
         )
 
 
-class SMOTENCOversampler(BaseOverSampler):
+class SMOTENCOversampler(BaseOversampler):
     """SMOTENC Oversampler component. Uses SMOTENC to generate synthetic samples. Works on a mix of numerical and categorical columns.
     Input data must be Woodwork type, and this component is only run during training and not during predict.
 
