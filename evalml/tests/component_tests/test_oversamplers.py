@@ -41,12 +41,12 @@ def test_init(sampler):
 def test_oversampler_raises_error_if_y_is_None(oversampler):
     X = pd.DataFrame({"a": [i for i in range(5)], "b": [1 for i in range(5)]})
     X = infer_feature_types(X, feature_types={"a": "Categorical"})
-    with pytest.raises(ValueError, match="y cannot be none"):
+    with pytest.raises(ValueError, match="y cannot be None"):
         oversampler.fit(X, None)
-    with pytest.raises(ValueError, match="y cannot be none"):
+    with pytest.raises(ValueError, match="y cannot be None"):
         oversampler.fit_transform(X, None)
     oversampler.fit(X, pd.Series([0] * 3 + [1] * 2))
-    with pytest.raises(ValueError, match="y cannot be none"):
+    with pytest.raises(ValueError, match="y cannot be None"):
         oversampler.transform(X, None)
 
 

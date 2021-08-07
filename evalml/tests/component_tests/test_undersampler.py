@@ -19,12 +19,12 @@ def test_init():
 def test_undersampler_raises_error_if_y_is_None():
     X = pd.DataFrame([[i] for i in range(5)])
     undersampler = Undersampler()
-    with pytest.raises(ValueError, match="y cannot be none"):
+    with pytest.raises(ValueError, match="y cannot be None"):
         undersampler.fit(X, None)
-    with pytest.raises(ValueError, match="y cannot be none"):
+    with pytest.raises(ValueError, match="y cannot be None"):
         undersampler.fit_transform(X, None)
     undersampler.fit(X, pd.Series([0] * 4 + [1]))
-    with pytest.raises(ValueError, match="y cannot be none"):
+    with pytest.raises(ValueError, match="y cannot be None"):
         undersampler.transform(X, None)
 
 

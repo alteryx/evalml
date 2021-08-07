@@ -31,7 +31,7 @@ class BaseSampler(Transformer):
         """
         X = infer_feature_types(X)
         if y is None:
-            raise ValueError("y cannot be none")
+            raise ValueError("y cannot be None")
         y = infer_feature_types(y)
         return X, y
 
@@ -114,7 +114,7 @@ class BaseSampler(Transformer):
             self
         """
         if y is None:
-            raise ValueError("y cannot be none")
+            raise ValueError("y cannot be None")
         self._initialize_sampler(X, y, self.sampler)
         return self
 

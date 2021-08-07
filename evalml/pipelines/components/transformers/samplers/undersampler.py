@@ -80,7 +80,7 @@ class Undersampler(BaseSampler):
             self
         """
         if y is None:
-            raise ValueError("y cannot be none")
+            raise ValueError("y cannot be None")
         X_ww, y_ww = self._prepare_data(X, y)
 
         self._initialize_sampler(X, y_ww, None)
