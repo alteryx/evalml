@@ -19,19 +19,6 @@ class BaseSampler(Transformer):
     modifies_features = True
     modifies_target = True
 
-    # def fit(self, X, y):
-    #     """Resample the data using the sampler. Since our sampler doesn't need to be fit, we do nothing here.
-
-    #     Arguments:
-    #         X (pd.DataFrame): Training features
-    #         y (pd.Series): Target.
-
-    #     Returns:
-    #         self
-    #     """
-    #     if y is None:
-    #         raise ValueError("y cannot be none")
-    #     return self
 
     def _prepare_data(self, X, y):
         """Transforms the input data to pandas data structure that our sampler can ingest.
@@ -176,20 +163,6 @@ class BaseOversampler(BaseSampler):
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
-
-    # def fit(self, X, y):
-    #     """Fits the oversampler to the data.
-
-    #     Arguments:
-    #         X (pd.DataFrame): Input features
-    #         y (pd.Series): Target.
-
-    #     Returns:
-    #         self
-    #     """
-    #     super().fit(X, y)
-    #     self._initialize_sampler(X, y, self.sampler)
-    #     return self
 
     def _initialize_sampler(self, X, y, sampler_class):
         """Initializes the oversampler with the given sampler_ratio or sampler_ratio_dict. If a sampler_ratio_dict is provided, we will opt to use that.
