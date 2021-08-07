@@ -63,7 +63,7 @@ class Undersampler(BaseSampler):
         param_dic = self._dictionary_to_params(
             self.parameters["sampling_ratio_dict"], y
         )
-        param_dic.pop('n_jobs', None)
+        param_dic.pop("n_jobs", None)
         sampler = BalancedClassificationSampler(
             **param_dic, random_seed=self.random_seed
         )

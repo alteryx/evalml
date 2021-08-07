@@ -19,7 +19,6 @@ class BaseSampler(Transformer):
     modifies_features = True
     modifies_target = True
 
-
     def _prepare_data(self, X, y):
         """Transforms the input data to pandas data structure that our sampler can ingest.
 
