@@ -233,7 +233,7 @@ def test_make_pipeline(
             )
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
-            ]
+            ], test_description
 
 
 def test_make_pipeline_problem_type_mismatch():
