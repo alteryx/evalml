@@ -1341,6 +1341,7 @@ def test_automl_search_dictionary_undersampler(
         optimize_thresholds=False,
         sampler_method="Undersampler",
         pipeline_parameters=pipeline_parameters,
+        error_callback=raise_error_callback,
     )
     # check that the sampling dict got set properly
     pipelines = automl.allowed_pipelines

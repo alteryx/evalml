@@ -129,7 +129,6 @@ class BaseSampler(Transformer):
         """
         if y is None:
             raise ValueError("y cannot be none")
-        # super().fit(X, y)
         self._initialize_sampler(X, y, self.sampler)
         return self
 
