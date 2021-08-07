@@ -87,7 +87,7 @@ class SMOTENCOversampler(BaseOversampler):
     def fit(self, X, y):
         # get categorical features first
         self._get_categorical(X)
-        super().fit(X, y)
+        return super().fit(X, y)
 
 
 class SMOTENOversampler(BaseOversampler):
