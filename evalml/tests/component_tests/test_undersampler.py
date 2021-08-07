@@ -60,6 +60,8 @@ def test_undersampler_imbalanced_output(data_type, make_data_type):
         value_counts, pd.Series([600, 150], index=[1, 0]), check_dtype=False
     )
 
+    undersampler = Undersampler(sampling_ratio=sampling_ratio)
+    undersampler.fit(X, y)
     transformed_X, transformed_y = undersampler.transform(X, y)
     assert len(transformed_X) == 750
     assert len(transformed_y) == 750

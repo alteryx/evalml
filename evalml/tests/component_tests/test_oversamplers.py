@@ -149,7 +149,7 @@ def test_oversample_imbalanced_multiclass(
         if data_type == "ww":
             X2.ww.set_types({0: "Categorical"})
         oversampler = sampler(sampling_ratio=sampling_ratio)
-
+    # TODO: must reinitalize
     fit_transformed_X, fit_transformed_y = oversampler.fit_transform(X2, y)
 
     num_samples = [800, 800 * sampling_ratio, 800 * sampling_ratio]
