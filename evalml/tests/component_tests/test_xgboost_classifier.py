@@ -74,3 +74,13 @@ def test_xgboost_multiindex(data_type, X_y_binary, make_data_type):
     y_pred_proba = clf.predict_proba(X)
     assert not y_pred.isnull().values.any()
     assert not y_pred_proba.isnull().values.any().any()
+
+
+def test_xgboost_predict_all_boolean_columns():
+    X = pd.DataFrame({"a": [True, False, True], "b": [True, False, True]})
+    y = pd.Series([True, False, False])
+    xgb = XGBoostClassifier()
+    xgb.fit(X, y)
+    preds = xgb.predict(X)
+    assert isinstance(preds, pd.Series)
+    assert not preds.isna().any()
