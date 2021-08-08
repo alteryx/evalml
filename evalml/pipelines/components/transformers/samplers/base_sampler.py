@@ -19,6 +19,22 @@ class BaseSampler(Transformer):
     modifies_features = True
     modifies_target = True
 
+    def fit(self, X, y):
+        """Fits the sampler to the data.
+
+        Arguments:
+            X (pd.DataFrame): Input features.
+            y (pd.Series): Target.
+
+        Returns:
+            self
+        """
+        if y is None:
+            raise ValueError("y cannot be None")
+        X_ww, y_ww = self._prepare_data(X, y)
+        self._initialize_sampler(X_ww, y_ww)
+        return self
+
     def _prepare_data(self, X, y):
         """Transforms the input data to pandas data structure that our sampler can ingest.
 
@@ -103,20 +119,8 @@ class BaseSampler(Transformer):
             param_copy["sampling_ratio_dict"] = new_dic
         return param_copy
 
-    def fit(self, X, y):
-        """Fits the sampler to the data.
-
-        Arguments:
-            X (pd.DataFrame): Input features
-            y (pd.Series): Target.
-
-        Returns:
-            self
-        """
-        if y is None:
-            raise ValueError("y cannot be None")
-        self._initialize_sampler(X, y, self.sampler)
-        return self
+    def fit_transform(self, X, y):
+        return self.fit(X, y).transform(X, y)
 
 
 class BaseOversampler(BaseSampler):
@@ -163,7 +167,7 @@ class BaseOversampler(BaseSampler):
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
 
-    def _initialize_sampler(self, X, y, sampler_class):
+    def _initialize_sampler(self, X, y):
         """Initializes the oversampler with the given sampler_ratio or sampler_ratio_dict. If a sampler_ratio_dict is provided, we will opt to use that.
         Otherwise, we use will create the sampler_ratio_dict dictionary.
 
@@ -172,6 +176,7 @@ class BaseOversampler(BaseSampler):
             y (pd.Series): Target.
             sampler_class (imblearn.BaseSampler): The sampler we want to initialize.
         """
+        sampler_class = self.sampler
         _, y_pd = self._prepare_data(X, y)
         sampler_params = {
             k: v
@@ -201,19 +206,3 @@ class BaseOversampler(BaseSampler):
         self._parameters["k_neighbors"] = neighbors
         sampler = sampler_class(**sampler_params, random_state=self.random_seed)
         self._component_obj = sampler
-
-    # # TODO: should be able to remove
-    # def fit_transform(self, X, y):
-    #     """Fit and transform the data using the data sampler.
-
-    #     Arguments:
-    #         X (pd.DataFrame): Input features.
-    #         y (pd.Series): Target.
-
-    #      Returns:
-    #         pd.DataFrame, pd.Series: Sampled X and y data
-    #     """
-    #     self.fit(X, y)
-    #     X_pd, y_pd = self._prepare_data(X, y)
-    #     X_new, y_new = self._component_obj.fit_resample(X_pd, y_pd)
-    #     return infer_feature_types(X_new), infer_feature_types(y_new)

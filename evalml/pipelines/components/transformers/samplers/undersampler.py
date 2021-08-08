@@ -49,12 +49,11 @@ class Undersampler(BaseSampler):
             "sampling_ratio_dict": sampling_ratio_dict,
         }
         parameters.update(kwargs)
-
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
 
-    def _initialize_sampler(self, X, y, sampler_class=None):
+    def _initialize_sampler(self, X, y):
         """Helper function to initialize the undersampler component object.
 
         Arguments:
@@ -69,22 +68,22 @@ class Undersampler(BaseSampler):
         )
         self._component_obj = sampler
 
-    def fit(self, X, y):
-        """Fits the sampler to the data.
+    # def fit(self, X, y):
+    #     """Fits the sampler to the data.
 
-        Arguments:
-            X (pd.DataFrame): Input features
-            y (pd.Series): Target.
+    #     Arguments:
+    #         X (pd.DataFrame): Input features
+    #         y (pd.Series): Target.
 
-        Returns:
-            self
-        """
-        if y is None:
-            raise ValueError("y cannot be None")
-        X_ww, y_ww = self._prepare_data(X, y)
+    #     Returns:
+    #         self
+    #     """
+    #     if y is None:
+    #         raise ValueError("y cannot be None")
+    #     X_ww, y_ww = self._prepare_data(X, y)
 
-        self._initialize_sampler(X, y_ww, None)
-        return self
+    #     self._initialize_sampler(X, y_ww, None)
+    #     return self
 
     def transform(self, X, y=None):
         X_ww, y_ww = self._prepare_data(X, y)

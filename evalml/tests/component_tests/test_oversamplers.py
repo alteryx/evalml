@@ -142,15 +142,18 @@ def test_oversample_imbalanced_multiclass(
     y = np.array([0] * 800 + [1] * 100 + [2] * 100)
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
-    X2 = X
-    oversampler = sampler(sampling_ratio=sampling_ratio)
-    if sampler.name == "SMOTENC Oversampler":
-        X2 = infer_feature_types(X, feature_types={0: "Categorical"})
-        if data_type == "ww":
-            X2.ww.set_types({0: "Categorical"})
+
+    def initalize_oversampler(X):
         oversampler = sampler(sampling_ratio=sampling_ratio)
-    # TODO: must reinitalize
-    fit_transformed_X, fit_transformed_y = oversampler.fit_transform(X2, y)
+        if sampler.name == "SMOTENC Oversampler":
+            X = infer_feature_types(X, feature_types={0: "Categorical"})
+            if data_type == "ww":
+                X.ww.set_types({0: "Categorical"})
+            oversampler = sampler(sampling_ratio=sampling_ratio)
+        return X, oversampler
+
+    X, oversampler = initalize_oversampler(X)
+    fit_transformed_X, fit_transformed_y = oversampler.fit_transform(X, y)
 
     num_samples = [800, 800 * sampling_ratio, 800 * sampling_ratio]
     # check the lengths and sampled values are as we expect
@@ -160,7 +163,9 @@ def test_oversample_imbalanced_multiclass(
     assert value_counts.values[1] == value_counts.values[2]
     np.testing.assert_equal(value_counts.values, np.array(num_samples))
 
-    transformed_X, transformed_y = oversampler.transform(X2, y)
+    X, oversampler = initalize_oversampler(X)
+    oversampler.fit(X, y)
+    transformed_X, transformed_y = oversampler.transform(X, y)
 
     assert len(transformed_X) == sum(num_samples)
     assert len(transformed_y) == sum(num_samples)
