@@ -5,7 +5,11 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
-from evalml.exceptions import NullsInColumnWarning
+from evalml.exceptions import (
+    NullsInColumnWarning,
+    PartialDependenceError,
+    PartialDependenceErrorCode,
+)
 from evalml.model_understanding import (
     graph_partial_dependence,
     partial_dependence,
@@ -165,10 +169,11 @@ def test_partial_dependence_baseline():
     )
     pipeline.fit(X, y)
     with pytest.raises(
-        ValueError,
+        PartialDependenceError,
         match="Partial dependence plots are not supported for Baseline pipelines",
-    ):
+    ) as e:
         partial_dependence(pipeline, X, features=0, grid_resolution=5)
+    assert e.value.code == PartialDependenceErrorCode.PIPELINE_IS_BASELINE
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -358,9 +363,11 @@ def test_partial_dependence_not_fitted(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )
     with pytest.raises(
-        ValueError, match="Pipeline to calculate partial dependence for must be fitted"
-    ):
+        PartialDependenceError,
+        match="Pipeline to calculate partial dependence for must be fitted",
+    ) as e:
         partial_dependence(pipeline, X, features=0, grid_resolution=5)
+    assert e.value.code == PartialDependenceErrorCode.UNFITTED_PIPELINE
 
 
 def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
@@ -396,16 +403,18 @@ def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
     pipeline.fit(X, y)
 
     with pytest.raises(
-        ValueError,
+        PartialDependenceError,
         match="Too many features given to graph_partial_dependence.  Only one or two-way partial dependence is supported.",
-    ):
+    ) as e:
         partial_dependence(pipeline, X, features=("a", "b", "c"), grid_resolution=5)
+    assert e.value.code == PartialDependenceErrorCode.TOO_MANY_FEATURES
 
     with pytest.raises(
-        ValueError,
+        PartialDependenceError,
         match="Features provided must be a tuple entirely of integers or strings, not a mixture of both.",
-    ):
+    ) as e:
         partial_dependence(pipeline, X, features=(0, "b"))
+    assert e.value.code == PartialDependenceErrorCode.FEATURES_ARGUMENT_INCORRECT_TYPES
 
 
 def test_partial_dependence_more_categories_than_grid_resolution(
@@ -623,8 +632,9 @@ def test_graph_partial_dependence_multiclass(
     assert fig_dict["data"][0]["name"] == "Partial Dependence: class_1"
 
     msg = "Class wine is not one of the classes the pipeline was fit on: class_0, class_1, class_2"
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(PartialDependenceError, match=msg) as e:
         graph_partial_dependence(pipeline, X, features="alcohol", class_label="wine")
+    assert e.value.code == PartialDependenceErrorCode.INVALID_CLASS_LABEL
 
     # Test two-way without class labels
     fig_two_way_no_class_labels = graph_partial_dependence(
@@ -671,8 +681,9 @@ def test_graph_partial_dependence_multiclass(
     assert fig_dict["data"][0]["name"] == "class_1"
 
     msg = "Class wine is not one of the classes the pipeline was fit on: class_0, class_1, class_2"
-    with pytest.raises(ValueError, match=msg):
+    with pytest.raises(PartialDependenceError, match=msg) as e:
         graph_partial_dependence(pipeline, X, features="alcohol", class_label="wine")
+    assert e.value.code == PartialDependenceErrorCode.INVALID_CLASS_LABEL
 
 
 def test_partial_dependence_percentile_errors(
@@ -693,14 +704,16 @@ def test_partial_dependence_percentile_errors(
     )
     pipeline.fit(X, y)
     with pytest.raises(
-        ValueError,
+        PartialDependenceError,
         match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be",
-    ):
+    ) as e:
         partial_dependence(pipeline, X, features="random_col", grid_resolution=5)
+    assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_MOSTLY_ONE_VALUE
+
     with pytest.raises(
-        ValueError,
+        PartialDependenceError,
         match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be",
-    ):
+    ) as e:
         partial_dependence(
             pipeline,
             X,
@@ -708,17 +721,21 @@ def test_partial_dependence_percentile_errors(
             percentiles=(0.01, 0.955),
             grid_resolution=5,
         )
+    assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_MOSTLY_ONE_VALUE
+
     with pytest.raises(
-        ValueError,
+        PartialDependenceError,
         match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be",
-    ):
+    ) as e:
         partial_dependence(
             pipeline, X, features=2, percentiles=(0.01, 0.955), grid_resolution=5
         )
+    assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_MOSTLY_ONE_VALUE
+
     with pytest.raises(
-        ValueError,
+        PartialDependenceError,
         match="Features \\('random_col'\\) are mostly one value, \\(1\\), and cannot be",
-    ):
+    ) as e:
         partial_dependence(
             pipeline,
             X,
@@ -726,8 +743,10 @@ def test_partial_dependence_percentile_errors(
             percentiles=(0.01, 0.955),
             grid_resolution=5,
         )
+    assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_MOSTLY_ONE_VALUE
+
     with pytest.raises(
-        ValueError,
+        PartialDependenceError,
         match="Features \\('random_col', 'random_col_2'\\) are mostly one value, \\(1, 1\\), and cannot be",
     ):
         partial_dependence(
@@ -737,6 +756,7 @@ def test_partial_dependence_percentile_errors(
             percentiles=(0.01, 0.955),
             grid_resolution=5,
         )
+    assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_MOSTLY_ONE_VALUE
 
     part_dep = partial_dependence(
         pipeline, X, features="random_col", percentiles=(0.01, 0.96), grid_resolution=5
@@ -913,18 +933,26 @@ def test_partial_dependence_all_nan_value_error(
 
     pred_df = pd.DataFrame({"a": [None] * 5, "b": [1, 2, 3, 4, 4], "c": [None] * 5})
     message = "The following features have all NaN values and so the partial dependence cannot be computed: {}"
-    with pytest.raises(ValueError, match=message.format("'a'")):
+    with pytest.raises(PartialDependenceError, match=message.format("'a'")) as e:
         partial_dependence(pl, pred_df, features="a", grid_resolution=10)
-    with pytest.raises(ValueError, match=message.format("'a'")):
+    assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_ALL_NANS
+
+    with pytest.raises(PartialDependenceError, match=message.format("'a'")) as e:
         partial_dependence(pl, pred_df, features=0, grid_resolution=10)
-    with pytest.raises(ValueError, match=message.format("'a'")):
+    assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_ALL_NANS
+
+    with pytest.raises(PartialDependenceError, match=message.format("'a'")) as e:
         partial_dependence(pl, pred_df, features=("a", "b"), grid_resolution=10)
-    with pytest.raises(ValueError, match=message.format("'a', 'c'")):
+    assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_ALL_NANS
+
+    with pytest.raises(PartialDependenceError, match=message.format("'a', 'c'")) as e:
         partial_dependence(pl, pred_df, features=("a", "c"), grid_resolution=10)
+    assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_ALL_NANS
 
     pred_df = pred_df.rename(columns={"a": 0})
-    with pytest.raises(ValueError, match=message.format("'0'")):
+    with pytest.raises(PartialDependenceError, match=message.format("'0'")) as e:
         partial_dependence(pl, pred_df, features=0, grid_resolution=10)
+    assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_ALL_NANS
 
 
 @pytest.mark.parametrize("grid", [20, 100])
@@ -1004,15 +1032,18 @@ def test_partial_dependence_datetime(
     assert not part_dep.isnull().any(axis=None)
 
     with pytest.raises(
-        ValueError,
+        PartialDependenceError,
         match="Two-way partial dependence is not supported for datetime columns.",
-    ):
-        part_dep = partial_dependence(pipeline, X, features=("0", "dt_column"))
+    ) as e:
+        partial_dependence(pipeline, X, features=("0", "dt_column"))
+    assert e.value.code == PartialDependenceErrorCode.TWO_WAY_REQUESTED_FOR_DATES
+
     with pytest.raises(
-        ValueError,
+        PartialDependenceError,
         match="Two-way partial dependence is not supported for datetime columns.",
-    ):
-        part_dep = partial_dependence(pipeline, X, features=(0, 20))
+    ) as e:
+        partial_dependence(pipeline, X, features=(0, 20))
+    assert e.value.code == PartialDependenceErrorCode.TWO_WAY_REQUESTED_FOR_DATES
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "regression"])
@@ -1249,9 +1280,9 @@ def test_graph_partial_dependence_ice_plot_two_way_error(
     clf = test_pipeline
     clf.fit(X, y)
     with pytest.raises(
-        ValueError,
+        PartialDependenceError,
         match="Individual conditional expectation plot can only be created with a one-way partial dependence plot",
-    ):
+    ) as e:
         graph_partial_dependence(
             clf,
             X,
@@ -1259,11 +1290,14 @@ def test_graph_partial_dependence_ice_plot_two_way_error(
             grid_resolution=5,
             kind="both",
         )
+    assert (
+        e.value.code == PartialDependenceErrorCode.ICE_PLOT_REQUESTED_FOR_TWO_WAY_PLOT
+    )
 
     with pytest.raises(
-        ValueError,
+        PartialDependenceError,
         match="Individual conditional expectation plot can only be created with a one-way partial dependence plot",
-    ):
+    ) as e:
         graph_partial_dependence(
             clf,
             X,
@@ -1271,6 +1305,9 @@ def test_graph_partial_dependence_ice_plot_two_way_error(
             grid_resolution=5,
             kind="individual",
         )
+    assert (
+        e.value.code == PartialDependenceErrorCode.ICE_PLOT_REQUESTED_FOR_TWO_WAY_PLOT
+    )
 
 
 def test_partial_dependence_scale_error():
@@ -1288,14 +1325,19 @@ def test_partial_dependence_scale_error():
     X_pd["a"] = X["a"] * 1.0e-10
 
     # Catch the intended sklearn error and change the message.
-    with pytest.raises(ValueError, match="scale of these features is too small"):
+    with pytest.raises(
+        PartialDependenceError, match="scale of these features is too small"
+    ) as e:
         partial_dependence(pl, X_pd, "a", grid_resolution=5)
+    assert e.value.code == PartialDependenceErrorCode.COMPUTED_PERCENTILES_TOO_CLOSE
 
     # Ensure that sklearn partial_dependence exceptions are still caught as expected.
     with pytest.raises(
-        ValueError, match="'grid_resolution' must be strictly greater than 1."
-    ):
+        PartialDependenceError,
+        match="'grid_resolution' must be strictly greater than 1.",
+    ) as e:
         partial_dependence(pl, X_pd, "a", grid_resolution=0)
+    assert e.value.code == PartialDependenceErrorCode.ALL_OTHER_ERRORS
 
 
 @pytest.mark.parametrize("indices,error", [(0, True), (1, False)])
@@ -1308,13 +1350,14 @@ def test_partial_dependence_unknown(indices, error, X_y_binary):
     pl.fit(X, y)
     if error:
         with pytest.raises(
-            ValueError,
+            PartialDependenceError,
             match=r"Columns \[0\] are of type 'Unknown', which cannot be used for partial dependence",
-        ):
+        ) as e:
             partial_dependence(pl, X, indices, grid_resolution=2)
-        return
-    s = partial_dependence(pl, X, indices, grid_resolution=2)
-    assert not s.isnull().any().any()
+        assert e.value.code == PartialDependenceErrorCode.INVALID_FEATURE_TYPE
+    else:
+        s = partial_dependence(pl, X, indices, grid_resolution=2)
+        assert not s.isnull().any().any()
 
 
 @pytest.mark.parametrize(
