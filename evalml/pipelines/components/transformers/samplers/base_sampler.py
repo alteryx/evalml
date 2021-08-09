@@ -1,4 +1,5 @@
 import copy
+from abc import abstractmethod
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.utils import make_balancing_dictionary
@@ -20,49 +21,59 @@ class BaseSampler(Transformer):
     modifies_target = True
 
     def fit(self, X, y):
-        """Resample the data using the sampler. Since our sampler doesn't need to be fit, we do nothing here.
+        """Fits the sampler to the data.
 
         Arguments:
-            X (pd.DataFrame): Training features
-            y (pd.Series): Target features
+            X (pd.DataFrame): Input features.
+            y (pd.Series): Target.
 
         Returns:
             self
         """
         if y is None:
-            raise ValueError("y cannot be none")
+            raise ValueError("y cannot be None")
+        X_ww, y_ww = self._prepare_data(X, y)
+        self._initialize_sampler(X_ww, y_ww)
         return self
+
+    @abstractmethod
+    def _initialize_sampler(self, X, y):
+        """Helper function to initialize the sampler component object.
+
+        Arguments:
+            X (pd.DataFrame): Features.
+            y (pd.Series): The target data.
+        """
 
     def _prepare_data(self, X, y):
         """Transforms the input data to pandas data structure that our sampler can ingest.
 
         Arguments:
-            X (pd.DataFrame): Training features
-            y (pd.Series): Target features
+            X (pd.DataFrame): Training features.
+            y (pd.Series): Target.
 
          Returns:
             pd.DataFrame, pd.Series: Prepared X and y data as pandas types
         """
         X = infer_feature_types(X)
         if y is None:
-            raise ValueError("y cannot be none")
+            raise ValueError("y cannot be None")
         y = infer_feature_types(y)
         return X, y
 
     def transform(self, X, y=None):
-        """No transformation needs to be done here.
+        """Transforms the input data by sampling the data.
 
         Arguments:
-            X (pd.DataFrame): Training features. Ignored.
-            y (pd.Series): Target features. Ignored.
+            X (pd.DataFrame): Training features.
+            y (pd.Series): Target.
 
         Returns:
-            pd.DataFrame, pd.Series: X and y data that was passed in.
+            pd.DataFrame, pd.Series: Transformed features and target.
         """
-        X = infer_feature_types(X)
-        if y is not None:
-            y = infer_feature_types(y)
-        return X, None
+        X_pd, y_pd = self._prepare_data(X, y)
+        X_new, y_new = self._component_obj.fit_resample(X_pd, y_pd)
+        return infer_feature_types(X_new), infer_feature_types(y_new)
 
     def _convert_dictionary(self, sampling_dict, y):
         """Converts the provided sampling dictionary from a dictionary of ratios to a dictionary of number of samples.
@@ -70,11 +81,11 @@ class BaseSampler(Transformer):
         Converts and returns a dictionary with the same keys, but changes the values to be the number of samples rather than ratio.
 
         Arguments:
-            sampling_dict (dict): The input sampling dictionary passed in from user
-            y (pd.Series): The target values
+            sampling_dict (dict): The input sampling dictionary passed in from user.
+            y (pd.Series): The target values.
 
         Returns:
-            dict: A dictionary with target values as keys and the number of samples as values
+            dict: A dictionary with target values as keys and the number of samples as values.
         """
         # check that the lengths of the dict and y are equal
         y_unique = y.unique()
@@ -105,11 +116,11 @@ class BaseSampler(Transformer):
         parameters and return the updated parameter dictionary. Otherwise, simply return the current parameters.
 
         Arguments:
-            sampling_dict (dict): The input sampling dictionary passed in from user
-            y (pd.Series): The target values
+            sampling_dict (dict): The input sampling dictionary passed in from user.
+            y (pd.Series): The target values.
 
         Returns:
-            dict: The parameters dictionary with the sampling_ratio_dict value replaced as necessary
+            dict: The parameters dictionary with the sampling_ratio_dict value replaced as necessary.
         """
         param_copy = copy.copy(self.parameters)
         if self.parameters["sampling_ratio_dict"]:
@@ -118,6 +129,9 @@ class BaseSampler(Transformer):
             )
             param_copy["sampling_ratio_dict"] = new_dic
         return param_copy
+
+    def fit_transform(self, X, y):
+        return self.fit(X, y).transform(X, y)
 
 
 class BaseOversampler(BaseSampler):
@@ -164,28 +178,15 @@ class BaseOversampler(BaseSampler):
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
 
-    def fit(self, X, y):
-        """Fits the Oversampler to the data.
-
-        Arguments:
-            X (pd.DataFrame): Training features
-            y (pd.Series): Target features
-
-        Returns:
-            self
-        """
-        super().fit(X, y)
-        self._initialize_oversampler(X, y, self.sampler)
-
-    def _initialize_oversampler(self, X, y, sampler_class):
+    def _initialize_sampler(self, X, y):
         """Initializes the oversampler with the given sampler_ratio or sampler_ratio_dict. If a sampler_ratio_dict is provided, we will opt to use that.
         Otherwise, we use will create the sampler_ratio_dict dictionary.
 
         Arguments:
-            X (pd.DataFrame): Training features
-            y (pd.Series): Target features
-            sampler_class (imblearn.BaseSampler): The sampler we want to initialize
+            X (pd.DataFrame): Input features.
+            y (pd.Series): Target.
         """
+        sampler_class = self.sampler
         _, y_pd = self._prepare_data(X, y)
         sampler_params = {
             k: v
@@ -215,18 +216,3 @@ class BaseOversampler(BaseSampler):
         self._parameters["k_neighbors"] = neighbors
         sampler = sampler_class(**sampler_params, random_state=self.random_seed)
         self._component_obj = sampler
-
-    def fit_transform(self, X, y):
-        """Fit and transform the data using the data sampler. Used during training of the pipeline
-
-        Arguments:
-            X (pd.DataFrame): Training features
-            y (pd.Series): Target features
-
-         Returns:
-            pd.DataFrame, pd.Series: Sampled X and y data
-        """
-        self.fit(X, y)
-        X_pd, y_pd = self._prepare_data(X, y)
-        X_new, y_new = self._component_obj.fit_resample(X_pd, y_pd)
-        return infer_feature_types(X_new), infer_feature_types(y_new)

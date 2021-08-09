@@ -11,6 +11,9 @@ from evalml.exceptions.exceptions import (
     ParameterNotUsedWarning,
 )
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
+from evalml.pipelines.components.transformers.samplers.base_sampler import (
+    BaseSampler,
+)
 from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
@@ -251,7 +254,7 @@ class ComponentGraph:
             component_list (list): The list of component names to compute.
             X (pd.DataFrame): Input data to the pipeline to transform.
             y (pd.Series): The target training data of length [n_samples]
-            fit (bool): Whether to fit the estimators as well as transform it.
+            fit (boolean): Whether to fit the estimators as well as transform it.
                         Defaults to False.
 
         Returns:
@@ -260,9 +263,10 @@ class ComponentGraph:
         X = infer_feature_types(X)
         if y is not None:
             y = infer_feature_types(y)
-        most_recent_y = y
+
         if len(component_list) == 0:
             return X
+
         output_cache = {}
         for component_name in component_list:
             component_instance = self.get_component(component_name)
@@ -272,39 +276,31 @@ class ComponentGraph:
                 )
             x_inputs = []
             y_input = None
-
             for parent_input in self.get_inputs(component_name):
-                if parent_input[-2:] == ".y" or parent_input == "y":
-                    if y_input is not None:
-                        raise ValueError(
-                            f"Cannot have multiple `y` parents for a single component {component_name}"
-                        )
-                    y_input = (
-                        output_cache[parent_input] if parent_input[-2:] == ".y" else y
-                    )
+                if parent_input.endswith(".y"):
+                    y_input = output_cache[parent_input]
+                elif parent_input == "y":
+                    y_input = y
+                elif parent_input == "X":
+                    x_inputs.append(X)
+                else:  # must end in .x
+                    parent_x = output_cache[parent_input]
+                    if isinstance(parent_x, pd.Series):
+                        parent_x = parent_x.rename(parent_input)
+                    x_inputs.append(parent_x)
+            x_inputs = ww.concat_columns(x_inputs)
 
-                else:
-                    if parent_input == "X":
-                        x_inputs.append(X)
-                    else:
-                        parent_x = output_cache.get(
-                            parent_input, output_cache.get(f"{parent_input}.x")
-                        )
-                        if isinstance(parent_x, pd.Series):
-                            parent_x = parent_x.rename(parent_input)
-                        x_inputs.append(parent_x)
-            input_x, input_y = self._consolidate_inputs(
-                x_inputs, y_input, X, most_recent_y
-            )
-            self.input_feature_names.update({component_name: list(input_x.columns)})
+            self.input_feature_names.update({component_name: list(x_inputs.columns)})
             if isinstance(component_instance, Transformer):
                 if fit:
-                    output = component_instance.fit_transform(input_x, input_y)
+                    output = component_instance.fit_transform(x_inputs, y_input)
+                elif isinstance(component_instance, BaseSampler):
+                    output = x_inputs, y_input
                 else:
-                    output = component_instance.transform(input_x, input_y)
+                    output = component_instance.transform(x_inputs, y_input)
+
                 if isinstance(output, tuple):
                     output_x, output_y = output[0], output[1]
-                    most_recent_y = output_y
                 else:
                     output_x = output
                     output_y = None
@@ -312,11 +308,11 @@ class ComponentGraph:
                 output_cache[f"{component_name}.y"] = output_y
             else:
                 if fit:
-                    component_instance.fit(input_x, input_y)
+                    component_instance.fit(x_inputs, y_input)
                 if not (
                     fit and component_name == self.compute_order[-1]
                 ):  # Don't call predict on the final component during fit
-                    output = component_instance.predict(input_x)
+                    output = component_instance.predict(x_inputs)
                 else:
                     output = None
                 output_cache[f"{component_name}.x"] = output
@@ -385,31 +381,6 @@ class ComponentGraph:
             for feature, children in provenance.items()
             if len(children)
         }
-
-    @staticmethod
-    def _consolidate_inputs(x_inputs, y_input, X, y):
-        """Combines any/all X and y inputs for a component, including handling defaults
-
-        Arguments:
-            x_inputs (list(pd.DataFrame)): Data to be used as X input for a component
-            y_input (pd.Series, None): If present, the Series to use as y input for a component, different from the original y
-            X (pd.DataFrame): The original X input, to be used if there is no parent X input
-            y (pd.Series): The original y input, to be used if there is no parent y input
-
-        Returns:
-            pd.DataFrame, pd.Series: The X and y transformed values to evaluate a component with
-        """
-        if len(x_inputs) == 0:
-            return_x = X
-        else:
-            return_x = ww.concat_columns(x_inputs)
-        return_y = y
-        if y_input is not None:
-            return_y = y_input
-
-        if return_y is not None:
-            return_y = infer_feature_types(return_y)
-        return return_x, return_y
 
     def get_component(self, component_name):
         """Retrieves a single component object from the graph.
