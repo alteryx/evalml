@@ -7,6 +7,7 @@ Release Notes
         * Updated ``ComponentGraph`` ``_validate_component_dict`` logic to be stricter about input values :pr:`2599`
         * Patched bug in ``xgboost`` estimators where predicting on a feature matrix of only booleans would throw an exception. :pr:`2602`
     * Fixes
+        * Updated ``get_best_sampler_for_data`` to consider all non-numeric datatypes as categorical for SMOTE :pr:`2590`
     * Changes
         * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
     * Documentation Changes
