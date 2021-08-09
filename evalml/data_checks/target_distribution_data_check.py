@@ -30,14 +30,14 @@ class TargetDistributionDataCheck(DataCheck):
         Example:
             >>> from scipy.stats import lognorm
             >>> X = None
-            >>> y = lognorm.rvs(0.1, size=1000)
-            >>> target_checdk = TargetDistributionDataCheck()
+            >>> y = [0.946, 0.972, 1.154, 0.954, 0.969, 1.222, 1.038, 0.999, 0.973, 0.897]
+            >>> target_check = TargetDistributionDataCheck()
             >>> assert target_check.validate(X, y) == {"errors": [],\
                                                        "warnings": [{"message": "Target may have a lognormal distribution.",\
                                                                     "data_check_name": "TargetDistributionDataCheck",\
                                                                     "level": "warning",\
                                                                     "code": "TARGET_LOGNORMAL_DISTRIBUTION",\
-                                                                    "details": {"shapiro-statistic/pvalue": '0.993/0.0'}}],\
+                                                                    "details": {"shapiro-statistic/pvalue": '0.84/0.045'}}],\
                                                         "actions": [{'code': 'TRANSFORM_TARGET', 'metadata': {'column': None, 'transformation_strategy': 'lognormal', 'is_target': True}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
@@ -78,7 +78,7 @@ class TargetDistributionDataCheck(DataCheck):
         if shapiro(y).pvalue >= 0.05:
             return results
 
-        y_new = y
+        y_new = round(y, 6)
         if any(y <= 0):
             y_new = y + abs(y.min()) + 1
 
@@ -97,7 +97,7 @@ class TargetDistributionDataCheck(DataCheck):
 
         if log_detected:
             details = {
-                "shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 3)}/{round(shapiro_test_og.pvalue, 3)}"
+                "shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 2)}/{round(shapiro_test_og.pvalue, 3)}"
             }
             results["warnings"].append(
                 DataCheckWarning(

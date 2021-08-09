@@ -37,19 +37,17 @@ def test_target_distribution_data_check_no_y(X_y_regression):
 
 
 @pytest.mark.parametrize("target_type", ["boolean", "categorical", "integer", "double"])
-def test_target_distribution_data_check_unsupported_target_type(
-    target_type, X_y_regression
-):
-    X, y = X_y_regression
+def test_target_distribution_data_check_unsupported_target_type(target_type):
+    X = pd.DataFrame(range(5))
 
     if target_type == "boolean":
-        y = pd.Series([True, False] * 50)
+        y = pd.Series([True, False] * 5)
     elif target_type == "categorical":
-        y = pd.Series(["One", "Two", "Three", "Four"] * 25)
+        y = pd.Series(["One", "Two", "Three", "Four", "Five"] * 2)
     elif target_type == "integer":
-        y = pd.Series(np.random.randint(1, 25, 100))
+        y = [-1, -3, -5, 4, -2, 4, -4, 2, 1, 1]
     else:
-        y = np.random.normal(4, 1, 100)
+        y = [9.2, 7.66, 4.93, 3.29, 4.06, -1.28, 4.95, 6.77, 9.07, 7.67]
 
     y = infer_feature_types(y)
 
@@ -94,6 +92,8 @@ def test_target_distribution_data_check_warning_action(
         # This is essentially just checking the = of "shapiro_test_log.pvalue >= shapiro_test_og.pvalue"
         y = lognorm.rvs(s=1, loc=1, scale=1, size=10000)
 
+    y = np.round(y, 6)
+
     if data_type == "negative":
         y = -np.abs(y)
     elif data_type == "mixed":
@@ -114,7 +114,7 @@ def test_target_distribution_data_check_warning_action(
         shapiro_test_og = shapiro(y)
 
         details = {
-            "shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 3)}/{round(shapiro_test_og.pvalue, 3)}"
+            "shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 2)}/{round(shapiro_test_og.pvalue, 3)}"
         }
         assert target_dist_ == {
             "warnings": [
