@@ -357,7 +357,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def model_family(self):
-        """Returns model family of this pipeline"""
+        """Returns model family of this pipeline."""
         component_graph = copy.copy(self.component_graph)
         if isinstance(component_graph, list):
             return handle_component_class(component_graph[-1]).model_family

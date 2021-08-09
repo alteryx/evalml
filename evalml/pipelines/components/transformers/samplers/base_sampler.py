@@ -1,4 +1,5 @@
 import copy
+from abc import abstractmethod
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.utils import make_balancing_dictionary
@@ -35,6 +36,15 @@ class BaseSampler(Transformer):
         self._initialize_sampler(X_ww, y_ww)
         return self
 
+    @abstractmethod
+    def _initialize_sampler(self, X, y):
+        """Helper function to initialize the sampler component object.
+
+        Arguments:
+            X (pd.DataFrame): Features.
+            y (pd.Series): The target data.
+        """
+
     def _prepare_data(self, X, y):
         """Transforms the input data to pandas data structure that our sampler can ingest.
 
@@ -52,13 +62,14 @@ class BaseSampler(Transformer):
         return X, y
 
     def transform(self, X, y=None):
-        """
+        """Transforms the input data by sampling the data.
+
         Arguments:
-            X (pd.DataFrame): Training features. Ignored.
-            y (pd.Series): Target. Ignored.
+            X (pd.DataFrame): Training features.
+            y (pd.Series): Target.
 
         Returns:
-            pd.DataFrame, pd.Series: X and y data that was passed in.
+            pd.DataFrame, pd.Series: Transformed features and target.
         """
         X_pd, y_pd = self._prepare_data(X, y)
         X_new, y_new = self._component_obj.fit_resample(X_pd, y_pd)
@@ -70,11 +81,11 @@ class BaseSampler(Transformer):
         Converts and returns a dictionary with the same keys, but changes the values to be the number of samples rather than ratio.
 
         Arguments:
-            sampling_dict (dict): The input sampling dictionary passed in from user
-            y (pd.Series): The target values
+            sampling_dict (dict): The input sampling dictionary passed in from user.
+            y (pd.Series): The target values.
 
         Returns:
-            dict: A dictionary with target values as keys and the number of samples as values
+            dict: A dictionary with target values as keys and the number of samples as values.
         """
         # check that the lengths of the dict and y are equal
         y_unique = y.unique()
@@ -105,11 +116,11 @@ class BaseSampler(Transformer):
         parameters and return the updated parameter dictionary. Otherwise, simply return the current parameters.
 
         Arguments:
-            sampling_dict (dict): The input sampling dictionary passed in from user
-            y (pd.Series): The target values
+            sampling_dict (dict): The input sampling dictionary passed in from user.
+            y (pd.Series): The target values.
 
         Returns:
-            dict: The parameters dictionary with the sampling_ratio_dict value replaced as necessary
+            dict: The parameters dictionary with the sampling_ratio_dict value replaced as necessary.
         """
         param_copy = copy.copy(self.parameters)
         if self.parameters["sampling_ratio_dict"]:
@@ -174,7 +185,6 @@ class BaseOversampler(BaseSampler):
         Arguments:
             X (pd.DataFrame): Input features.
             y (pd.Series): Target.
-            sampler_class (imblearn.BaseSampler): The sampler we want to initialize.
         """
         sampler_class = self.sampler
         _, y_pd = self._prepare_data(X, y)

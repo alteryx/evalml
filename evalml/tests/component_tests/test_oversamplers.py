@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import (
@@ -77,15 +78,15 @@ def test_no_oversample(data_type, oversampler, make_data_type, X_y_binary):
 
 
 @pytest.mark.parametrize(
-    "oversampler",
+    "oversampler_class",
     [
-        SMOTEOversampler(sampling_ratio=1),
-        SMOTENCOversampler(sampling_ratio=1),
-        SMOTENOversampler(sampling_ratio=1),
+        SMOTEOversampler,
+        SMOTENCOversampler,
+        SMOTENOversampler,
     ],
 )
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-def test_oversample_imbalanced_binary(data_type, oversampler, make_data_type):
+def test_oversample_imbalanced_binary(data_type, oversampler_class, make_data_type):
     X = np.array(
         [
             [i for i in range(1000)],
@@ -96,14 +97,12 @@ def test_oversample_imbalanced_binary(data_type, oversampler, make_data_type):
     y = np.array([0] * 150 + [1] * 850)
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
-
+    oversampler = oversampler_class(sampling_ratio=1)
     if oversampler.name == "SMOTENC Oversampler":
-        X2 = infer_feature_types(X, feature_types={1: "Categorical"})
+        X = infer_feature_types(X, feature_types={1: "Categorical"})
         if data_type == "ww":
-            X2.ww.set_types({0: "Categorical"})
-        fit_transformed_X, fit_transformed_y = oversampler.fit_transform(X2, y)
-    else:
-        fit_transformed_X, fit_transformed_y = oversampler.fit_transform(X, y)
+            X.ww.set_types({0: "Categorical"})
+    fit_transformed_X, fit_transformed_y = oversampler.fit_transform(X, y)
 
     new_length = 1700
     assert len(fit_transformed_X) == new_length
@@ -114,14 +113,11 @@ def test_oversample_imbalanced_binary(data_type, oversampler, make_data_type):
         value_counts, pd.Series([850, 850]), check_dtype=False
     )
 
+    oversampler = oversampler_class(sampling_ratio=1)
+    oversampler.fit(X, y)
     transformed_X, transformed_y = oversampler.transform(X, y)
-    assert len(transformed_X) == new_length
-    assert len(transformed_y) == new_length
-    value_counts = transformed_y.value_counts()
-    assert value_counts.values[0] == value_counts.values[1]
-    pd.testing.assert_series_equal(
-        value_counts, pd.Series([850, 850]), check_dtype=False
-    )
+    assert_frame_equal(transformed_X, fit_transformed_X)
+    assert_series_equal(transformed_y, fit_transformed_y)
 
 
 @pytest.mark.parametrize("sampling_ratio", [0.2, 0.5])
@@ -166,12 +162,8 @@ def test_oversample_imbalanced_multiclass(
     X, oversampler = initalize_oversampler(X)
     oversampler.fit(X, y)
     transformed_X, transformed_y = oversampler.transform(X, y)
-
-    assert len(transformed_X) == sum(num_samples)
-    assert len(transformed_y) == sum(num_samples)
-    value_counts = transformed_y.value_counts()
-    assert value_counts.values[1] == value_counts.values[2]
-    np.testing.assert_equal(value_counts.values, np.array(num_samples))
+    assert_frame_equal(transformed_X, fit_transformed_X)
+    assert_series_equal(transformed_y, fit_transformed_y)
 
 
 @pytest.mark.parametrize(

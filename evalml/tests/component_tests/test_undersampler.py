@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.pipelines.components import Undersampler
 
@@ -63,13 +64,8 @@ def test_undersampler_imbalanced_output(data_type, make_data_type):
     undersampler = Undersampler(sampling_ratio=sampling_ratio)
     undersampler.fit(X, y)
     transformed_X, transformed_y = undersampler.transform(X, y)
-    assert len(transformed_X) == 750
-    assert len(transformed_y) == 750
-    value_counts = transformed_y.value_counts()
-    assert value_counts.values[1] / value_counts.values[0] == sampling_ratio
-    pd.testing.assert_series_equal(
-        value_counts, pd.Series([600, 150], index=[1, 0]), check_dtype=False
-    )
+    assert_frame_equal(transformed_X, fit_transformed_X)
+    assert_series_equal(transformed_y, fit_transformed_y)
 
 
 @pytest.mark.parametrize(
