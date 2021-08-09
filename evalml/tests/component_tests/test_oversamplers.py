@@ -398,3 +398,12 @@ def test_oversampler_nonnumerical_noncategorical_columns(X_y_binary):
     snc = SMOTENCOversampler()
     with pytest.raises(ValueError):
         snc.fit_transform(X_ww, y)
+    sn = SMOTENOversampler()
+    sn.fit_transform(X_ww, y)
+
+    X_ww = infer_feature_types(X, feature_types={0: "boolean", 1: "boolean"})
+    snc = SMOTENCOversampler()
+    with pytest.raises(ValueError):
+        snc.fit_transform(X_ww, y)
+    sn = SMOTENOversampler()
+    sn.fit_transform(X_ww, y)
