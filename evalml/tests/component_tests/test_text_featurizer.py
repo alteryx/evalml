@@ -101,16 +101,14 @@ def test_some_missing_col_names(text_df, caplog):
         ww.logical_types.Double
     }
 
-
-def test_empty_text_column():
-    X = pd.DataFrame({"col_1": []})
+@pytest.mark.parametrize("empty_col", [[], [None, None, None], [pd.NA,pd.NA,pd.NA], [np.nan, np.nan, np.nan]])
+def test_empty_text_column(empty_col):
+    """ Smoke test to make sure that TextFeaturizer handles various empty columns
+    as expected, by returning itself. """
+    X = pd.DataFrame({"col_1": empty_col})
     X = infer_feature_types(X, {"col_1": "NaturalLanguage"})
     tf = TextFeaturizer()
-    with pytest.raises(
-        ValueError,
-        match="empty vocabulary; perhaps the documents only contain stop words",
-    ):
-        tf.fit(X)
+    tf.fit(X)
 
 
 def test_invalid_text_column():

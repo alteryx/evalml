@@ -85,10 +85,13 @@ def infer_feature_types(data, feature_types=None):
         return ww.init_series(data, logical_type=feature_types)
     else:
         ww_data = data.copy()
+        # Revert the inference of all nulls to the unknown type and change it back to double.
         all_null_cols = ww_data.columns[ww_data.isnull().all(0)]
         if len(all_null_cols) > 0:
             feature_types = {}
             for col in all_null_cols:
+                if all([isinstance(x, type(pd.NA)) for x in ww_data[col]]):
+                    ww_data[col] = np.nan
                 feature_types[col] = "Double"
         ww_data.ww.init(logical_types=feature_types)
         return ww_data
