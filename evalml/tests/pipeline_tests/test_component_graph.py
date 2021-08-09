@@ -1270,7 +1270,7 @@ def test_component_graph_types_merge():
     )
 
 
-def test_component_graph_sampler():
+def test_component_graph_get_inputs_with_sampler():
     graph = {
         "Imputer": [Imputer, "X", "y"],
         "OneHot": [OneHotEncoder, "Imputer.x", "y"],
@@ -2024,3 +2024,35 @@ def test_component_graph_repr():
     expected_repr = "{'Imputer': ['Imputer', 'X', 'y'], 'OHE': ['One Hot Encoder', 'Imputer.x', 'y'], 'Random Forest Classifier': ['Random Forest Classifier', 'OHE.x', 'y']}"
     component_graph = ComponentGraph(component_dict_with_objs)
     assert repr(component_graph) == expected_repr
+
+
+@patch("evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit")
+@pytest.mark.parametrize("sampler", ["Undersampler", "SMOTE Oversampler"])
+def test_component_graph_compute_final_component_features_with_sampler(
+    mock_estimator_fit, sampler, has_minimal_dependencies
+):
+    if sampler == "SMOTE Oversampler" and has_minimal_dependencies:
+        pytest.importorskip(
+            "imblearn.over_sampling", reason="Cannot import imblearn, skipping tests"
+        )
+    expected_length = 750 if sampler == "Undersampler" else int(1.25 * 850)
+    X = pd.DataFrame([[i] for i in range(1000)])
+    y = pd.Series([0] * 150 + [1] * 850)
+    component_graph = {
+        sampler: [sampler, "X", "y"],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            f"{sampler}.x",
+            f"{sampler}.y",
+        ],
+    }
+
+    component_graph = ComponentGraph(component_graph)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    assert len(mock_estimator_fit.call_args[0][0]) == len(
+        mock_estimator_fit.call_args[0][1]
+    )
+    assert len(mock_estimator_fit.call_args[0][0]) == expected_length
+    features_for_estimator = component_graph.compute_final_component_features(X, y)
+    assert len(features_for_estimator) == len(y)

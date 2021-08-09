@@ -68,23 +68,6 @@ class Undersampler(BaseSampler):
         )
         self._component_obj = sampler
 
-    # def fit(self, X, y):
-    #     """Fits the sampler to the data.
-
-    #     Arguments:
-    #         X (pd.DataFrame): Input features
-    #         y (pd.Series): Target.
-
-    #     Returns:
-    #         self
-    #     """
-    #     if y is None:
-    #         raise ValueError("y cannot be None")
-    #     X_ww, y_ww = self._prepare_data(X, y)
-
-    #     self._initialize_sampler(X, y_ww, None)
-    #     return self
-
     def transform(self, X, y=None):
         X_ww, y_ww = self._prepare_data(X, y)
         self._initialize_sampler(X, y_ww)

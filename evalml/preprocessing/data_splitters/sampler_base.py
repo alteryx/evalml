@@ -16,9 +16,9 @@ class SamplerBase(ABC):
         """Resample the input data with this sampling strategy.
 
         Arguments:
-            X (pd.DataFrame): Training data to fit and resample
-            y (pd.Series): Training data targets to fit and resample
+            X (pd.DataFrame): Training data to fit and resample.
+            y (pd.Series): Training data targets to fit and resample.
 
         Returns:
-            Tuple(pd.DataFrame, pd.Series) or list: resampled X and y data for oversampling or indices to keep for undersampling
+            Tuple(pd.DataFrame, pd.Series) or list: resampled X and y data for oversampling or indices to keep for undersampling.
         """
