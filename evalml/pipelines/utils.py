@@ -105,7 +105,6 @@ def _get_preprocessing_components(
         text_columns
     ):
         pp_components.append(Imputer)
-
     index_and_unknown_columns = list(
         X.ww.select(["index", "unknown"], return_schema=True).columns
     )
@@ -181,7 +180,7 @@ def make_pipeline(
     problem_type,
     parameters=None,
     sampler_name=None,
-    extra_components=[],
+    extra_components=None,
 ):
     """Given input data, target data, an estimator class and the problem type,
          generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
@@ -196,7 +195,7 @@ def make_pipeline(
              An empty dictionary or None implies using all default values for component parameters.
          sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
              Defaults to None
-         extra_components (list(ComponentBase)): list of extra components to be added after preprocessing components.
+         extra_components (list(ComponentBase)): List of extra components to be added after preprocessing components. Defaults to None.
 
      Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator
@@ -215,7 +214,7 @@ def make_pipeline(
     preprocessing_components = _get_preprocessing_components(
         X, y, problem_type, estimator, sampler_name
     )
-
+    extra_components = extra_components or []
     complete_component_list = preprocessing_components + extra_components + [estimator]
     component_graph = PipelineBase._make_component_dict_from_component_list(
         complete_component_list
