@@ -253,7 +253,6 @@ def test_get_best_sampler_for_data_auto(
 ):
     X, y = mock_imbalanced_data_X_y(problem_type, categorical_columns, size)
     name_output = get_best_sampler_for_data(X, y, "auto", sampler_balanced_ratio)
-    print(size, len(y))
     if sampler_balanced_ratio <= 0.2:
         # the imbalanced data we get has a class ratio of 0.2 minority:majority
         assert name_output is None
@@ -288,6 +287,30 @@ def test_get_best_sampler_for_data_sampler_method(
             assert name_output == "SMOTENC Oversampler"
         else:
             assert name_output == "SMOTEN Oversampler"
+
+
+def test_get_best_sampler_for_data_nonnumeric_noncategorical_columns(X_y_binary):
+    pytest.importorskip(
+        "imblearn.over_sampling",
+        reason="Skipping oversampling test because imbalanced-learn is not installed",
+    )
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    y = pd.Series([i % 5 == 0 for i in range(100)])
+    X[0] = [i % 2 for i in range(100)]
+    X_ww = infer_feature_types(X, feature_types={0: "boolean", 1: "categorical"})
+
+    name_output = get_best_sampler_for_data(X_ww, y, "Oversampler", 0.8)
+    assert name_output == "SMOTENC Oversampler"
+
+    X = X.drop([i for i in range(2, 20)], axis=1)  # remove all numeric columns
+    X_ww = infer_feature_types(X, feature_types={0: "boolean", 1: "categorical"})
+    name_output = get_best_sampler_for_data(X_ww, y, "Oversampler", 0.5)
+    assert name_output == "SMOTEN Oversampler"
+
+    X_ww = infer_feature_types(X, feature_types={0: "boolean", 1: "boolean"})
+    name_output = get_best_sampler_for_data(X_ww, y, "Oversampler", 0.5)
+    assert name_output == "SMOTEN Oversampler"
 
 
 @pytest.mark.parametrize(
