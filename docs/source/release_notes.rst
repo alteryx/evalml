@@ -17,6 +17,7 @@ Release Notes
         * Changed the lint CI job to only check against python 3.9 via the `-t` flag :pr:`2586`
         * Installed Prophet in linux nightlies test and fixed ``test_all_components`` :pr:`2598`
         * Refactored and fixed all ``make_pipeline`` tests to assert correct order and address new Woodwork Unknown type inference :pr:`2572`
+        * Removed ``component_graphs`` as a global variable in ``test_component_graphs.py`` :pr:`2609`
 
 .. warning::
 
