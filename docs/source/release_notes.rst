@@ -3,12 +3,15 @@ Release Notes
 **Future Release**
     * Enhancements
         * Added ``ProphetRegressor`` to estimators :pr:`2242`
+        * Updated ``ComponentGraph`` to handle not calling samplers' transform during predict, and updated samplers' transform methods s.t. ``fit_transform`` is equivalent to ``fit(X, y).transform(X, y)`` :pr:`2583`
         * Updated ``ComponentGraph`` ``_validate_component_dict`` logic to be stricter about input values :pr:`2599`
         * Patched bug in ``xgboost`` estimators where predicting on a feature matrix of only booleans would throw an exception. :pr:`2602`
     * Fixes
         * Updated ``get_best_sampler_for_data`` to consider all non-numeric datatypes as categorical for SMOTE :pr:`2590`
+        * Fixed inconsistent test results from `TargetDistributionDataCheck` :pr:`2608`
     * Changes
         * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
+        * Changed ``partial_dependence`` and ``graph_partial_dependence`` to raise a ``PartialDependenceError`` instead of ``ValueError``. This is not a breaking change because ``PartialDependenceError`` is a subclass of ``ValueError`` :pr:`2604`
     * Documentation Changes
     * Testing Changes
         * Changed the lint CI job to only check against python 3.9 via the `-t` flag :pr:`2586`
