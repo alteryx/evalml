@@ -5,6 +5,7 @@ Release Notes
         * Added `DatetimeFormatDataCheck` for time series problems :pr:`2603`
         * Added ``ProphetRegressor`` to estimators :pr:`2242`
         * Updated ``ComponentGraph`` ``_validate_component_dict`` logic to be stricter about input values :pr:`2599`
+        * Patched bug in ``xgboost`` estimators where predicting on a feature matrix of only booleans would throw an exception. :pr:`2602`
     * Fixes
     * Changes
         * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
@@ -12,6 +13,7 @@ Release Notes
     * Testing Changes
         * Changed the lint CI job to only check against python 3.9 via the `-t` flag :pr:`2586`
         * Installed Prophet in linux nightlies test and fixed ``test_all_components`` :pr:`2598`
+        * Refactored and fixed all ``make_pipeline`` tests to assert correct order and address new Woodwork Unknown type inference :pr:`2572`
 
 .. warning::
 
