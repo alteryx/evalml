@@ -382,3 +382,28 @@ def test_oversampler_sampling_k_neighbors(minority, expected, fails, oversampler
     overs.fit_transform(X_ww, y)
     assert overs._component_obj.k_neighbors == expected
     assert overs.parameters["k_neighbors"] == expected
+
+
+def test_oversampler_nonnumerical_noncategorical_columns(X_y_binary):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X[0] = [i % 2 for i in range(100)]
+    X_ww = infer_feature_types(X, feature_types={0: "boolean", 1: "categorical"})
+    snc = SMOTENCOversampler()
+    X_out, y_out = snc.fit_transform(X_ww, y)
+    assert snc.categorical_features == [0, 1]
+
+    X = X.drop([i for i in range(2, 20)], axis=1)  # drop all numeric columns
+    X_ww = infer_feature_types(X, feature_types={0: "boolean", 1: "categorical"})
+    snc = SMOTENCOversampler()
+    with pytest.raises(ValueError):
+        snc.fit_transform(X_ww, y)
+    sn = SMOTENOversampler()
+    sn.fit_transform(X_ww, y)
+
+    X_ww = infer_feature_types(X, feature_types={0: "boolean", 1: "boolean"})
+    snc = SMOTENCOversampler()
+    with pytest.raises(ValueError):
+        snc.fit_transform(X_ww, y)
+    sn = SMOTENOversampler()
+    sn.fit_transform(X_ww, y)
