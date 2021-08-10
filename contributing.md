@@ -53,6 +53,8 @@ Note that if you're on Mac, there are a few extra steps you'll want to keep trac
   open build/html/index.html
   ```
 
+Note that if you're building docs locally, the warning suppression code at `docs/source/disable-warnings.py` will not run, meaning you'll see python warnings appear in the docs where applicable. To supporess this, add `warnings.filterwarnings('ignore') to `docs/source/conf.py`.
+
 #### 3. Submit your Pull Request
 
 * Once your changes are ready to be submitted, make sure to push your changes to GitHub before creating a pull request. Create a pull request, and our continuous integration will run automatically.
