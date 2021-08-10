@@ -205,20 +205,23 @@ class ComponentGraph:
         component_outputs = self._compute_features(
             self.compute_order[:-1], X, y=y, fit=needs_fitting
         )
-        x_inputs = []
-        for parent_input in self.get_inputs(self.compute_order[-1]):
-            if parent_input == "X":
-                x_inputs.append(X)
-            elif parent_input.endswith(".x"):  # must end in .x
-                parent_x = component_outputs[parent_input]
-                if isinstance(parent_x, pd.Series):
-                    parent_x = parent_x.rename(parent_input)
-                x_inputs.append(parent_x)
-        x_inputs = ww.concat_columns(x_inputs)
-        if needs_fitting:
-            self.input_feature_names.update(
-                {self.compute_order[-1]: list(x_inputs.columns)}
-            )
+        x_inputs, _ = self.consolidate_inputs(
+            component_outputs, self.compute_order[-1], X, y
+        )
+        # x_inputs = []
+        # for parent_input in self.get_inputs(self.compute_order[-1]):
+        #     if parent_input == "X":
+        #         x_inputs.append(X)
+        #     elif parent_input.endswith(".x"):  # must end in .x
+        #         parent_x = component_outputs[parent_input]
+        #         if isinstance(parent_x, pd.Series):
+        #             parent_x = parent_x.rename(parent_input)
+        #         x_inputs.append(parent_x)
+        # x_inputs = ww.concat_columns(x_inputs)
+        # if needs_fitting:
+        #     self.input_feature_names.update(
+        #         {self.compute_order[-1]: list(x_inputs.columns)}
+        #     )
         return x_inputs
 
     def consolidate_inputs(self, component_outputs, component, X, y=None):
