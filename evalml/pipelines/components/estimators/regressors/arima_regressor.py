@@ -152,7 +152,7 @@ class ARIMARegressor(Estimator):
             forecasting_ = import_or_raise(
                 "sktime.forecasting.base", error_msg=arima_model_msg
             )
-            fh_ = forecasting_.ForecastingHorizon(dates, is_relative=False)
+            fh_ = forecasting_.ForecastingHorizon([i+1 for i in range(len(dates))], is_relative=True)
             return X, y, fh_
         else:
             return X, y, None
