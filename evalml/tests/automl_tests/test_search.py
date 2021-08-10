@@ -55,10 +55,9 @@ def test_search_data_check_error_timeseries(problem_config):
     X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
     problem_configuration = None
 
-    dates = pd.date_range("2021-01-01", periods=30)
-    dates = list(dates)
-    dates[-1] = "2021-01-31"
-    dates = pd.DatetimeIndex(dates)
+    dates = pd.date_range("2021-01-01", periods=29).append(
+        pd.date_range("2021-01-31", periods=1)
+    )
     X["dates"] = dates
 
     if problem_config == "missing_date_index":

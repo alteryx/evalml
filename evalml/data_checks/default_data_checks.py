@@ -31,7 +31,7 @@ class DefaultDataChecks(DataChecks):
         - `DateTimeNaNDataCheck`
         - `NaturalLanguageNaNDataCheck`
         - `TargetDistributionDataCheck` (for regression problem types)
-        - `EqualIntervalDataCheck` (for time series problem types)
+        - `DateTimeFormatDataCheck` (for time series problem types)
 
     Arguments:
         problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
@@ -51,7 +51,7 @@ class DefaultDataChecks(DataChecks):
         DateTimeNaNDataCheck,
     ]
 
-    def __init__(self, problem_type, objective, n_splits=3, datetime_column="index"):
+    def __init__(self, problem_type, objective, n_splits=3, datetime_column=None):
         default_checks = self._DEFAULT_DATA_CHECK_CLASSES
         data_check_params = {}
 
@@ -60,7 +60,9 @@ class DefaultDataChecks(DataChecks):
             data_check_params.update(
                 {
                     "DateTimeFormatDataCheck": {
-                        "datetime_column": datetime_column,
+                        "datetime_column": datetime_column
+                        if datetime_column
+                        else "index",
                     }
                 }
             )

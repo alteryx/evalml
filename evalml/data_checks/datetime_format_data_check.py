@@ -9,7 +9,7 @@ class DateTimeFormatDataCheck(DataCheck):
     to be supported by time series estimators.
 
     Arguments:
-        datetime_column (str): The name of the datetime column. If the datetime values are in the index, then pass "index".
+        datetime_column (str, int): The name of the datetime column. If the datetime values are in the index, then pass "index".
 
     """
 
@@ -45,6 +45,8 @@ class DateTimeFormatDataCheck(DataCheck):
         X = infer_feature_types(X)
         y = infer_feature_types(y)
 
+        no_dt_found = False
+
         if self.datetime_column != "index":
             datetime_values = X[self.datetime_column]
         else:
@@ -52,38 +54,40 @@ class DateTimeFormatDataCheck(DataCheck):
             if not isinstance(datetime_values, pd.DatetimeIndex):
                 datetime_values = y.index
             if not isinstance(datetime_values, pd.DatetimeIndex):
-                raise TypeError(
-                    "Either X or y has to have datetime information in its index."
-                )
+                no_dt_found = True
 
         try:
             inferred_freq = pd.infer_freq(datetime_values)
         except TypeError:
-            raise TypeError(
-                "That column does not contain datetime information or is not in a supported datetime format."
+            no_dt_found = True
+
+        if no_dt_found:
+            results["errors"].append(
+                DataCheckError(
+                    message=f"Datetime information could not be found in the data, or was not in a supported datetime format.",
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
+                ).to_dict()
             )
 
         if not inferred_freq:
-            message = (
+            col_name = (
                 self.datetime_column
                 if self.datetime_column != "index"
                 else "either index"
             )
             results["errors"].append(
                 DataCheckError(
-                    message=f"No frequency could be detected in {message}, possibly due to uneven intervals.",
+                    message=f"No frequency could be detected in {col_name}, possibly due to uneven intervals.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
                 ).to_dict()
             )
 
-        if not (
-            pd.DatetimeIndex(datetime_values).is_monotonic_increasing
-            or pd.DatetimeIndex(datetime_values).is_monotonic_decreasing
-        ):
+        if not (pd.DatetimeIndex(datetime_values).is_monotonic_increasing):
             results["errors"].append(
                 DataCheckError(
-                    message="Datetime values must be monotonically increasing or decreasing.",
+                    message="Datetime values must be sorted in ascending order.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_IS_NOT_MONOTONIC,
                 ).to_dict()
