@@ -143,7 +143,7 @@ class ARIMARegressor(Estimator):
                 f" Found {dates.shape[1]} columns."
             )
         freq = "M" if pd.infer_freq(dates) == "MS" else pd.infer_freq(dates)
-        dates = dates.to_period(freq=freq)
+        dates = pd.DatetimeIndex(dates, freq=freq)
         X, y = self._match_indices(X, y, dates)
         if predict:
             arima_model_msg = (
@@ -152,7 +152,9 @@ class ARIMARegressor(Estimator):
             forecasting_ = import_or_raise(
                 "sktime.forecasting.base", error_msg=arima_model_msg
             )
-            fh_ = forecasting_.ForecastingHorizon([i+1 for i in range(len(dates))], is_relative=True)
+            fh_ = forecasting_.ForecastingHorizon(
+                [i + 1 for i in range(len(dates))], is_relative=True
+            )
             return X, y, fh_
         else:
             return X, y, None
