@@ -12,6 +12,7 @@ Release Notes
     * Changes
         * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
         * Changed ``partial_dependence`` and ``graph_partial_dependence`` to raise a ``PartialDependenceError`` instead of ``ValueError``. This is not a breaking change because ``PartialDependenceError`` is a subclass of ``ValueError`` :pr:`2604`
+        * Cleaned up code duplication in ``ComponentGraph`` :pr:`2612`
     * Documentation Changes
     * Testing Changes
         * Changed the lint CI job to only check against python 3.9 via the `-t` flag :pr:`2586`
