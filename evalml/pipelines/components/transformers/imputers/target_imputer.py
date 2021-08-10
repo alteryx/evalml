@@ -74,15 +74,12 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         Returns:
             self
         """
-        from woodwork.logical_types import Unknown
-
         if y is None:
             return self
         y = infer_feature_types(y)
-        if isinstance(y.ww.logical_type, Unknown):
-            raise TypeError("Provided target full of pd.NA.")
+        if all(y.isnull()):
+            raise TypeError("Provided target full of nulls.")
         y = y.to_frame()
-        # should y be an un-inited dataframe?
 
         # Convert all bool dtypes to category for fitting
         if (y.dtypes == bool).all():

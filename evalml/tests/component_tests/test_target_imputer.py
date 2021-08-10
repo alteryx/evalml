@@ -134,11 +134,11 @@ def test_target_imputer_fit_transform_all_nan_empty(y):
 
     imputer = TargetImputer()
 
-    with pytest.raises(TypeError, match="Provided target full of pd.NA."):
+    with pytest.raises(TypeError, match="Provided target full of nulls."):
         imputer.fit(None, y)
 
     imputer = TargetImputer()
-    with pytest.raises(TypeError, match="Provided target full of pd.NA."):
+    with pytest.raises(TypeError, match="Provided target full of nulls."):
         imputer.fit_transform(None, y)
 
 
