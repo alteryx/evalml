@@ -221,6 +221,28 @@ class ComponentGraph:
             )
         return x_inputs
 
+    def consolidate_inputs(self, component_outputs, component, X, y=None):
+        x_inputs = []
+        y_input = None
+        for parent_input in self.get_inputs(component):
+            if parent_input.endswith(".y"):
+                y_input = component_outputs[parent_input]
+            elif parent_input == "y":
+                y_input = y
+            if parent_input == "X":
+                x_inputs.append(X)
+            elif parent_input.endswith(".x"):  # must end in .x
+                parent_x = component_outputs[parent_input]
+                if isinstance(parent_x, pd.Series):
+                    parent_x = parent_x.rename(parent_input)
+                x_inputs.append(parent_x)
+        x_inputs = ww.concat_columns(x_inputs)
+        # if needs_fitting:
+        #     self.input_feature_names.update(
+        #         {self.compute_order[-1]: list(x_inputs.columns)}
+        #     )
+        return x_inputs, y_input
+
     def predict(self, X):
         """Make predictions using selected features.
 
@@ -234,9 +256,7 @@ class ComponentGraph:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
         outputs = self._compute_features(self.compute_order, X)
-        return infer_feature_types(
-            outputs.get(final_component, outputs.get(f"{final_component}.x"))
-        )
+        return infer_feature_types(outputs.get(f"{final_component}.x"))
 
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
@@ -265,22 +285,24 @@ class ComponentGraph:
                 raise ValueError(
                     "All components must be instantiated before fitting or predicting"
                 )
-            x_inputs = []
-            y_input = None
-            for parent_input in self.get_inputs(component_name):
-                if parent_input.endswith(".y"):
-                    y_input = output_cache[parent_input]
-                elif parent_input == "y":
-                    y_input = y
-                elif parent_input == "X":
-                    x_inputs.append(X)
-                else:  # must end in .x
-                    parent_x = output_cache[parent_input]
-                    if isinstance(parent_x, pd.Series):
-                        parent_x = parent_x.rename(parent_input)
-                    x_inputs.append(parent_x)
-            x_inputs = ww.concat_columns(x_inputs)
-
+            # x_inputs = []
+            # y_input = None
+            # for parent_input in self.get_inputs(component_name):
+            #     if parent_input.endswith(".y"):
+            #         y_input = output_cache[parent_input]
+            #     elif parent_input == "y":
+            #         y_input = y
+            #     elif parent_input == "X":
+            #         x_inputs.append(X)
+            #     else:  # must end in .x
+            #         parent_x = output_cache[parent_input]
+            #         if isinstance(parent_x, pd.Series):
+            #             parent_x = parent_x.rename(parent_input)
+            #         x_inputs.append(parent_x)
+            # x_inputs = ww.concat_columns(x_inputs)
+            x_inputs, y_input = self.consolidate_inputs(
+                output_cache, component_name, X, y
+            )
             self.input_feature_names.update({component_name: list(x_inputs.columns)})
             if isinstance(component_instance, Transformer):
                 if fit:
