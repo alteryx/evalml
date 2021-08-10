@@ -205,30 +205,21 @@ class ComponentGraph:
         component_outputs = self._compute_features(
             self.compute_order[:-1], X, y=y, fit=needs_fitting
         )
-        final_component_inputs = []
-
-        parent_inputs = [
-            parent_input
-            for parent_input in self.get_inputs(self.compute_order[-1])
-            if parent_input[-2:] != ".y"
-        ]
-        for parent in parent_inputs:
-            parent_output = component_outputs.get(
-                parent, component_outputs.get(f"{parent}.x")
-            )
-            if isinstance(parent_output, pd.Series):
-                parent_output = pd.DataFrame(parent_output, columns=[parent])
-                parent_output = infer_feature_types(parent_output)
-            if parent_output is not None:
-                final_component_inputs.append(parent_output)
-        concatted = ww.utils.concat_columns(
-            [component_input for component_input in final_component_inputs]
-        )
+        x_inputs = []
+        for parent_input in self.get_inputs(self.compute_order[-1]):
+            if parent_input == "X":
+                x_inputs.append(X)
+            elif parent_input.endswith(".x"):  # must end in .x
+                parent_x = component_outputs[parent_input]
+                if isinstance(parent_x, pd.Series):
+                    parent_x = parent_x.rename(parent_input)
+                x_inputs.append(parent_x)
+        x_inputs = ww.concat_columns(x_inputs)
         if needs_fitting:
             self.input_feature_names.update(
-                {self.compute_order[-1]: list(concatted.columns)}
+                {self.compute_order[-1]: list(x_inputs.columns)}
             )
-        return concatted
+        return x_inputs
 
     def predict(self, X):
         """Make predictions using selected features.
