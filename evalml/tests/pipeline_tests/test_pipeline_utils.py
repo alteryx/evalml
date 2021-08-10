@@ -64,8 +64,8 @@ def get_test_data_from_configuration():
                     "abalone_0@gmail.com",
                     "AbaloneRings@yahoo.com",
                     "abalone_2@abalone.com",
-                    "$titanic_data%&@hotmail.com",
-                    "foo*EMAIL@email.org",
+                    "titanic_data@hotmail.com",
+                    "fooEMAIL@email.org",
                     "evalml@evalml.org",
                     "evalml@alteryx.org",
                 ],
@@ -197,11 +197,7 @@ def test_make_pipeline(
                 if "text" in column_names and input_type == "ww"
                 else []
             )
-            email_featurizer = (
-                [EmailFeaturizer]
-                if "email" in column_names and input_type == "ww"
-                else []
-            )
+            email_featurizer = [EmailFeaturizer] if "email" in column_names else []
             url_featurizer = (
                 [URLFeaturizer] if "url" in column_names and input_type == "ww" else []
             )
@@ -213,7 +209,7 @@ def test_make_pipeline(
             )
             drop_col = (
                 [DropColumns]
-                if any(ltype in column_names for ltype in ["url", "email", "text"])
+                if any(ltype in column_names for ltype in ["url", "text"])
                 and input_type == "pd"
                 else []
             )
@@ -223,8 +219,8 @@ def test_make_pipeline(
                 + url_featurizer
                 + drop_null
                 + text_featurizer
-                + imputer
                 + drop_col
+                + imputer
                 + datetime
                 + delayed_features
                 + ohe

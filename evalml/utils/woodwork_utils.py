@@ -82,6 +82,9 @@ def infer_feature_types(data, feature_types=None):
         return data
 
     if isinstance(data, pd.Series):
+        if all([isinstance(x, type(pd.NA)) for x in data]):
+            data = data.replace(pd.NA, np.nan)
+            feature_types = "Double"
         return ww.init_series(data, logical_type=feature_types)
     else:
         ww_data = data.copy()
