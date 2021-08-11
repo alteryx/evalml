@@ -7,6 +7,7 @@ Release Notes
         * Updated ``ComponentGraph`` to handle not calling samplers' transform during predict, and updated samplers' transform methods s.t. ``fit_transform`` is equivalent to ``fit(X, y).transform(X, y)`` :pr:`2583`
         * Updated ``ComponentGraph`` ``_validate_component_dict`` logic to be stricter about input values :pr:`2599`
         * Patched bug in ``xgboost`` estimators where predicting on a feature matrix of only booleans would throw an exception. :pr:`2602`
+        * Updated ``ARIMARegressor`` to use relative forecasting to predict values :pr:`2613`
     * Fixes
         * Updated ``get_best_sampler_for_data`` to consider all non-numeric datatypes as categorical for SMOTE :pr:`2590`
         * Fixed inconsistent test results from `TargetDistributionDataCheck` :pr:`2608`
