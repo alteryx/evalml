@@ -121,9 +121,7 @@ def test_fit_predict_ts_with_only_datetime_column_in_X(
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
 
-    fh_ = forecasting.ForecastingHorizon(
-        [i + 1 for i in range(len(y_test))], is_relative=True
-    )
+    fh_ = forecasting.ForecastingHorizon(y_test.index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
     clf = a_clf.fit(y=y)
@@ -135,7 +133,7 @@ def test_fit_predict_ts_with_only_datetime_column_in_X(
     m_clf.fit(X=X, y=y)
     y_pred = m_clf.predict(X=X_test)
 
-    assert (y_pred_sk == y_pred).all()
+    assert (y_pred_sk.to_period("D") == y_pred).all()
 
 
 def test_fit_predict_ts_with_X_and_y_index_out_of_sample(
@@ -146,9 +144,7 @@ def test_fit_predict_ts_with_X_and_y_index_out_of_sample(
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
 
-    fh_ = forecasting.ForecastingHorizon(
-        [i + 1 for i in range(len(y_test))], is_relative=True
-    )
+    fh_ = forecasting.ForecastingHorizon(y_test.index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
     clf = a_clf.fit(X=X, y=y)
@@ -158,7 +154,7 @@ def test_fit_predict_ts_with_X_and_y_index_out_of_sample(
     m_clf.fit(X=X, y=y)
     y_pred = m_clf.predict(X=X_test)
 
-    assert (y_pred_sk == y_pred).all()
+    assert (y_pred_sk.to_period("D") == y_pred).all()
 
 
 @patch(
@@ -179,9 +175,7 @@ def test_fit_predict_ts_with_X_and_y_index(
     mock_get_dates.return_value = (X.index, X)
     mock_format_dates.return_value = (X, y, None)
 
-    fh_ = forecasting.ForecastingHorizon(
-        [i + 1 for i in range(len(y))], is_relative=True
-    )
+    fh_ = forecasting.ForecastingHorizon(y.index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
     clf = a_clf.fit(X=X, y=y)
@@ -211,9 +205,7 @@ def test_fit_predict_ts_with_X_not_y_index(
     mock_get_dates.return_value = (X.index, X)
     mock_format_dates.return_value = (X, y, None)
 
-    fh_ = forecasting.ForecastingHorizon(
-        [i + 1 for i in range(len(y))], is_relative=True
-    )
+    fh_ = forecasting.ForecastingHorizon(y.index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
     clf = a_clf.fit(X=X, y=y)
@@ -244,9 +236,7 @@ def test_fit_predict_ts_with_y_not_X_index(
     mock_get_dates.return_value = (y.index, X)
     mock_format_dates.return_value = (X, y, None)
 
-    fh_ = forecasting.ForecastingHorizon(
-        [i + 1 for i in range(len(y))], is_relative=True
-    )
+    fh_ = forecasting.ForecastingHorizon(y.index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
     clf = a_clf.fit(X=X, y=y)
@@ -331,9 +321,7 @@ def test_fit_predict_ts_no_X_out_of_sample(
     X, y = ts_data_seasonal_train
     X_test, y_test = ts_data_seasonal_test
 
-    fh_ = forecasting.ForecastingHorizon(
-        [i + 1 for i in range(len(y_test))], is_relative=True
-    )
+    fh_ = forecasting.ForecastingHorizon(y_test.index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
     a_clf.fit(y=y)
@@ -343,7 +331,7 @@ def test_fit_predict_ts_no_X_out_of_sample(
     m_clf.fit(X=None, y=y)
     y_pred = m_clf.predict(X=None, y=y_test)
 
-    assert (y_pred_sk == y_pred).all()
+    assert (y_pred_sk.to_period("D") == y_pred).all()
 
 
 @pytest.mark.parametrize("X_none", [True, False])
@@ -353,9 +341,7 @@ def test_fit_predict_date_index_named_out_of_sample(
     X, y = ts_data_seasonal_train
     X_test, y_test = ts_data_seasonal_test
 
-    fh_ = forecasting.ForecastingHorizon(
-        [i + 1 for i in range(len(y_test))], is_relative=True
-    )
+    fh_ = forecasting.ForecastingHorizon(y_test.index, is_relative=False)
 
     a_clf = sktime_arima.AutoARIMA()
     if X_none:
@@ -375,27 +361,4 @@ def test_fit_predict_date_index_named_out_of_sample(
         m_clf.fit(X=X, y=y)
         y_pred = m_clf.predict(X=X_test, y=y_test)
 
-    assert (y_pred_sk == y_pred).all()
-
-
-@pytest.mark.parametrize("freq_num", ["1", "2"])
-@pytest.mark.parametrize("freq_str", ["S", "T", "H", "D", "M", "Y"])
-def test_different_time_units_out_of_sample(freq_str, freq_num):
-    datetime_ = pd.date_range("1/1/1870", periods=20, freq=freq_num + freq_str)
-
-    X = pd.DataFrame(range(20), index=datetime_)
-    y = pd.Series(np.sin(np.linspace(-8 * np.pi, 8 * np.pi, 20)), index=datetime_)
-
-    fh_ = forecasting.ForecastingHorizon(
-        [i + 1 for i in range(len(y[15:]))], is_relative=True
-    )
-
-    a_clf = sktime_arima.AutoARIMA(start_p=2, start_q=2, max_p=2, max_q=2)
-    clf = a_clf.fit(X=X[:15], y=y[:15])
-    y_pred_sk = clf.predict(fh=fh_, X=X[15:])
-
-    m_clf = ARIMARegressor(start_p=2, start_q=2, max_p=2, max_q=2, d=None)
-    m_clf.fit(X=X[:15], y=y[:15])
-    y_pred = m_clf.predict(X=X[15:], y=y[15:])
-
-    pd.testing.assert_series_equal(y_pred_sk, y_pred)
+    assert (y_pred_sk.to_period("D") == y_pred).all()
