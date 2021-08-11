@@ -14,6 +14,7 @@ Release Notes
         * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
         * Changed ``partial_dependence`` and ``graph_partial_dependence`` to raise a ``PartialDependenceError`` instead of ``ValueError``. This is not a breaking change because ``PartialDependenceError`` is a subclass of ``ValueError`` :pr:`2604`
     * Documentation Changes
+        * To avoid local docs build error, only add warning disable and download headers on ReadTheDocs builds, not locally :pr:`2617`
     * Testing Changes
         * Changed the lint CI job to only check against python 3.9 via the `-t` flag :pr:`2586`
         * Installed Prophet in linux nightlies test and fixed ``test_all_components`` :pr:`2598`
