@@ -24,7 +24,12 @@ from sklearn.tree import export_graphviz
 from sklearn.utils.multiclass import unique_labels
 
 import evalml
-from evalml.exceptions import NoPositiveLabelException, NullsInColumnWarning
+from evalml.exceptions import (
+    NoPositiveLabelException,
+    NullsInColumnWarning,
+    PartialDependenceError,
+    PartialDependenceErrorCode,
+)
 from evalml.model_family import ModelFamily
 from evalml.model_understanding.permutation_importance import (
     calculate_permutation_importance,
@@ -530,9 +535,10 @@ def _raise_value_error_if_any_features_all_nan(df):
     all_nan = [f"'{name}'" for name in all_nan]
 
     if all_nan:
-        raise ValueError(
+        raise PartialDependenceError(
             "The following features have all NaN values and so the "
-            f"partial dependence cannot be computed: {', '.join(all_nan)}"
+            f"partial dependence cannot be computed: {', '.join(all_nan)}",
+            PartialDependenceErrorCode.FEATURE_IS_ALL_NANS,
         )
 
 
@@ -549,9 +555,10 @@ def _raise_value_error_if_mostly_one_value(df, percentile):
             values.append(str(normalized_counts.index[0]))
 
     if one_value:
-        raise ValueError(
+        raise PartialDependenceError(
             f"Features ({', '.join(one_value)}) are mostly one value, ({', '.join(values)}), "
-            f"and cannot be used to compute partial dependence. Try raising the upper percentage value."
+            f"and cannot be used to compute partial dependence. Try raising the upper percentage value.",
+            PartialDependenceErrorCode.FEATURE_IS_MOSTLY_ONE_VALUE,
         )
 
 
@@ -605,221 +612,250 @@ def partial_dependence(
             feature value pair.
 
     Raises:
-        ValueError: if the user provides a tuple of not exactly two features.
-        ValueError: if the provided pipeline isn't fitted.
-        ValueError: if the provided pipeline is a Baseline pipeline.
-        ValueError: if any of the features passed in are completely NaN
-        ValueError: if any of the features are low-variance. Defined as having one value occurring more than the upper
+        PartialDependenceError: if the user provides a tuple of not exactly two features.
+        PartialDependenceError: if the provided pipeline isn't fitted.
+        PartialDependenceError: if the provided pipeline is a Baseline pipeline.
+        PartialDependenceError: if any of the features passed in are completely NaN
+        PartialDependenceError: if any of the features are low-variance. Defined as having one value occurring more than the upper
             percentile passed by the user. By default 95%.
     """
 
-    # Dynamically set the grid resolution to the maximum number of values
-    # in the categorical/datetime variables if there are more categories/datetime values than resolution cells
-    X = infer_feature_types(X)
-
-    if isinstance(features, (list, tuple)):
-        is_categorical = [
-            _is_feature_of_type(f, X, ww.logical_types.Categorical) for f in features
-        ]
-        is_datetime = [
-            _is_feature_of_type(f, X, ww.logical_types.Datetime) for f in features
-        ]
-    else:
-        is_categorical = [
-            _is_feature_of_type(features, X, ww.logical_types.Categorical)
-        ]
-        is_datetime = [_is_feature_of_type(features, X, ww.logical_types.Datetime)]
-
-    if isinstance(features, (list, tuple)):
-        if len(features) != 2:
-            raise ValueError(
-                "Too many features given to graph_partial_dependence.  Only one or two-way partial "
-                "dependence is supported."
-            )
-        if not (
-            all([isinstance(x, str) for x in features])
-            or all([isinstance(x, int) for x in features])
-        ):
-            raise ValueError(
-                "Features provided must be a tuple entirely of integers or strings, not a mixture of both."
-            )
-        X_features = (
-            X.ww.iloc[:, list(features)]
-            if isinstance(features[0], int)
-            else X.ww[list(features)]
-        )
-    else:
-        X_features = (
-            X.ww.iloc[:, [features]] if isinstance(features, int) else X.ww[[features]]
-        )
-    X_unknown = X_features.ww.select("unknown")
-    if len(X_unknown.columns):
-        # We drop the unknown columns in the pipelines, so we cannot calculate partial dependence for these
-        raise ValueError(
-            f"Columns {X_unknown.columns.values} are of type 'Unknown', which cannot be used for partial dependence"
-        )
-
-    X_not_allowed = X_features.ww.select(["URL", "EmailAddress", "NaturalLanguage"])
-    if len(X_not_allowed.columns):
-        # these three logical types aren't allowed for partial dependence
-        types = sorted(set(X_not_allowed.ww.types["Logical Type"].astype(str).tolist()))
-        raise ValueError(
-            f"Columns {X_not_allowed.columns.tolist()} are of types {types}, which cannot be used for partial dependence"
-        )
-
-    X_cats = X_features.ww.select("categorical")
-    if any(is_categorical):
-        max_num_cats = max(X_cats.ww.describe().loc["nunique"])
-        grid_resolution = max([max_num_cats + 1, grid_resolution])
-
-    X_dt = X_features.ww.select("datetime")
-
-    if isinstance(features, (list, tuple)):
-        feature_names = _get_feature_names_from_str_or_col_index(X, features)
-        if any(is_datetime):
-            raise ValueError(
-                "Two-way partial dependence is not supported for datetime columns."
-            )
-        if any(is_categorical):
-            features = _put_categorical_feature_first(features, is_categorical[0])
-    else:
-        feature_names = _get_feature_names_from_str_or_col_index(X, [features])
-
-    if not pipeline._is_fitted:
-        raise ValueError("Pipeline to calculate partial dependence for must be fitted")
-    if pipeline.model_family == ModelFamily.BASELINE:
-        raise ValueError(
-            "Partial dependence plots are not supported for Baseline pipelines"
-        )
-
-    feature_list = X[feature_names]
-    _raise_value_error_if_any_features_all_nan(feature_list)
-
-    if feature_list.isnull().sum().any():
-        warnings.warn(
-            "There are null values in the features, which will cause NaN values in the partial dependence output. "
-            "Fill in these values to remove the NaN values.",
-            NullsInColumnWarning,
-        )
-
-    _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
-    wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(pipeline)
-
     try:
-        if any(is_datetime):
-            timestamps = np.array(
-                [X_dt - pd.Timestamp("1970-01-01")] // np.timedelta64(1, "s")
-            ).reshape(-1, 1)
-            grid, values = _grid_from_X(
-                timestamps, percentiles=percentiles, grid_resolution=grid_resolution
-            )
-            grid_dates = pd.to_datetime(
-                pd.Series(grid.squeeze()), unit="s"
-            ).values.reshape(-1, 1)
-            # convert values to dates for the output
-            value_dates = pd.to_datetime(pd.Series(values[0]), unit="s")
-            # need to pass in the feature as an int index rather than string
-            feature_index = (
-                X.columns.tolist().index(features)
-                if isinstance(features, str)
-                else features
-            )
-            averaged_predictions, predictions = _partial_dependence_brute(
-                wrapped, grid_dates, [feature_index], X, response_method="auto"
-            )
-            # reshape based on the way scikit-learn reshapes the data
-            predictions = predictions.reshape(
-                -1, X.shape[0], *[val.shape[0] for val in values]
-            )
+        # Dynamically set the grid resolution to the maximum number of values
+        # in the categorical/datetime variables if there are more categories/datetime values than resolution cells
+        X = infer_feature_types(X)
 
-            averaged_predictions = averaged_predictions.reshape(
-                -1, *[val.shape[0] for val in values]
-            )
-            preds = {
-                "average": averaged_predictions,
-                "individual": predictions,
-                "values": [value_dates],
-            }
+        if isinstance(features, (list, tuple)):
+            is_categorical = [
+                _is_feature_of_type(f, X, ww.logical_types.Categorical)
+                for f in features
+            ]
+            is_datetime = [
+                _is_feature_of_type(f, X, ww.logical_types.Datetime) for f in features
+            ]
         else:
-            preds = sk_partial_dependence(
-                wrapped,
-                X=X,
-                features=features,
-                percentiles=percentiles,
-                grid_resolution=grid_resolution,
-                kind=kind,
-            )
-    except ValueError as e:
-        if "percentiles are too close to each other" in str(e):
-            raise ValueError(
-                "The scale of these features is too small and results in"
-                "percentiles that are too close together.  Partial dependence"
-                "cannot be computed for these types of features.  Consider"
-                "scaling the features so that they differ by > 10E-7"
+            is_categorical = [
+                _is_feature_of_type(features, X, ww.logical_types.Categorical)
+            ]
+            is_datetime = [_is_feature_of_type(features, X, ww.logical_types.Datetime)]
+
+        if isinstance(features, (list, tuple)):
+            if len(features) != 2:
+                raise PartialDependenceError(
+                    "Too many features given to graph_partial_dependence.  Only one or two-way partial "
+                    "dependence is supported.",
+                    code=PartialDependenceErrorCode.TOO_MANY_FEATURES,
+                )
+            if not (
+                all([isinstance(x, str) for x in features])
+                or all([isinstance(x, int) for x in features])
+            ):
+                raise PartialDependenceError(
+                    "Features provided must be a tuple entirely of integers or strings, not a mixture of both.",
+                    code=PartialDependenceErrorCode.FEATURES_ARGUMENT_INCORRECT_TYPES,
+                )
+            X_features = (
+                X.ww.iloc[:, list(features)]
+                if isinstance(features[0], int)
+                else X.ww[list(features)]
             )
         else:
-            raise e
+            X_features = (
+                X.ww.iloc[:, [features]]
+                if isinstance(features, int)
+                else X.ww[[features]]
+            )
+        X_unknown = X_features.ww.select("unknown")
+        if len(X_unknown.columns):
+            # We drop the unknown columns in the pipelines, so we cannot calculate partial dependence for these
+            raise PartialDependenceError(
+                f"Columns {X_unknown.columns.values} are of type 'Unknown', which cannot be used for partial dependence",
+                code=PartialDependenceErrorCode.INVALID_FEATURE_TYPE,
+            )
 
-    classes = None
-    if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
-        classes = [pipeline.classes_[1]]
-    elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
-        classes = pipeline.classes_
+        X_not_allowed = X_features.ww.select(["URL", "EmailAddress", "NaturalLanguage"])
+        if len(X_not_allowed.columns):
+            # these three logical types aren't allowed for partial dependence
+            types = sorted(
+                set(X_not_allowed.ww.types["Logical Type"].astype(str).tolist())
+            )
+            raise PartialDependenceError(
+                f"Columns {X_not_allowed.columns.tolist()} are of types {types}, which cannot be used for partial dependence",
+                code=PartialDependenceErrorCode.INVALID_FEATURE_TYPE,
+            )
 
-    values = preds["values"]
-    if kind in ["average", "both"]:
-        avg_pred = preds["average"]
-        if isinstance(features, (int, str)):
-            avg_data = pd.DataFrame(
-                {
-                    "feature_values": np.tile(values[0], avg_pred.shape[0]),
-                    "partial_dependence": np.concatenate([pred for pred in avg_pred]),
+        X_cats = X_features.ww.select("categorical")
+        if any(is_categorical):
+            max_num_cats = max(X_cats.ww.describe().loc["nunique"])
+            grid_resolution = max([max_num_cats + 1, grid_resolution])
+
+        X_dt = X_features.ww.select("datetime")
+
+        if isinstance(features, (list, tuple)):
+            feature_names = _get_feature_names_from_str_or_col_index(X, features)
+            if any(is_datetime):
+                raise PartialDependenceError(
+                    "Two-way partial dependence is not supported for datetime columns.",
+                    code=PartialDependenceErrorCode.TWO_WAY_REQUESTED_FOR_DATES,
+                )
+            if any(is_categorical):
+                features = _put_categorical_feature_first(features, is_categorical[0])
+        else:
+            feature_names = _get_feature_names_from_str_or_col_index(X, [features])
+
+        if not pipeline._is_fitted:
+            raise PartialDependenceError(
+                "Pipeline to calculate partial dependence for must be fitted",
+                code=PartialDependenceErrorCode.UNFITTED_PIPELINE,
+            )
+        if pipeline.model_family == ModelFamily.BASELINE:
+            raise PartialDependenceError(
+                "Partial dependence plots are not supported for Baseline pipelines",
+                code=PartialDependenceErrorCode.PIPELINE_IS_BASELINE,
+            )
+
+        feature_list = X[feature_names]
+        _raise_value_error_if_any_features_all_nan(feature_list)
+
+        if feature_list.isnull().sum().any():
+            warnings.warn(
+                "There are null values in the features, which will cause NaN values in the partial dependence output. "
+                "Fill in these values to remove the NaN values.",
+                NullsInColumnWarning,
+            )
+
+        _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
+        wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(
+            pipeline
+        )
+
+        try:
+            if any(is_datetime):
+                timestamps = np.array(
+                    [X_dt - pd.Timestamp("1970-01-01")] // np.timedelta64(1, "s")
+                ).reshape(-1, 1)
+                grid, values = _grid_from_X(
+                    timestamps, percentiles=percentiles, grid_resolution=grid_resolution
+                )
+                grid_dates = pd.to_datetime(
+                    pd.Series(grid.squeeze()), unit="s"
+                ).values.reshape(-1, 1)
+                # convert values to dates for the output
+                value_dates = pd.to_datetime(pd.Series(values[0]), unit="s")
+                # need to pass in the feature as an int index rather than string
+                feature_index = (
+                    X.columns.tolist().index(features)
+                    if isinstance(features, str)
+                    else features
+                )
+                averaged_predictions, predictions = _partial_dependence_brute(
+                    wrapped, grid_dates, [feature_index], X, response_method="auto"
+                )
+                # reshape based on the way scikit-learn reshapes the data
+                predictions = predictions.reshape(
+                    -1, X.shape[0], *[val.shape[0] for val in values]
+                )
+
+                averaged_predictions = averaged_predictions.reshape(
+                    -1, *[val.shape[0] for val in values]
+                )
+                preds = {
+                    "average": averaged_predictions,
+                    "individual": predictions,
+                    "values": [value_dates],
                 }
-            )
-        elif isinstance(features, (list, tuple)):
-            avg_data = pd.DataFrame(avg_pred.reshape((-1, avg_pred.shape[-1])))
-            avg_data.columns = values[1]
-            avg_data.index = np.tile(values[0], avg_pred.shape[0])
+            else:
+                preds = sk_partial_dependence(
+                    wrapped,
+                    X=X,
+                    features=features,
+                    percentiles=percentiles,
+                    grid_resolution=grid_resolution,
+                    kind=kind,
+                )
+        except ValueError as e:
+            if "percentiles are too close to each other" in str(e):
+                raise PartialDependenceError(
+                    "The scale of these features is too small and results in"
+                    "percentiles that are too close together.  Partial dependence"
+                    "cannot be computed for these types of features.  Consider"
+                    "scaling the features so that they differ by > 10E-7",
+                    code=PartialDependenceErrorCode.COMPUTED_PERCENTILES_TOO_CLOSE,
+                )
+            else:
+                raise e
 
-        if classes is not None:
-            avg_data["class_label"] = np.repeat(classes, len(values[0]))
+        classes = None
+        if isinstance(pipeline, evalml.pipelines.BinaryClassificationPipeline):
+            classes = [pipeline.classes_[1]]
+        elif isinstance(pipeline, evalml.pipelines.MulticlassClassificationPipeline):
+            classes = pipeline.classes_
 
-    if kind in ["individual", "both"]:
-        ind_preds = preds["individual"]
-        if isinstance(features, (int, str)):
-            ind_data = list()
-            for label in ind_preds:
-                ind_data.append(pd.DataFrame(label).T)
-
-            ind_data = pd.concat(ind_data)
-            ind_data.columns = [f"Sample {i}" for i in range(len(ind_preds[0]))]
+        values = preds["values"]
+        if kind in ["average", "both"]:
+            avg_pred = preds["average"]
+            if isinstance(features, (int, str)):
+                avg_data = pd.DataFrame(
+                    {
+                        "feature_values": np.tile(values[0], avg_pred.shape[0]),
+                        "partial_dependence": np.concatenate(
+                            [pred for pred in avg_pred]
+                        ),
+                    }
+                )
+            elif isinstance(features, (list, tuple)):
+                avg_data = pd.DataFrame(avg_pred.reshape((-1, avg_pred.shape[-1])))
+                avg_data.columns = values[1]
+                avg_data.index = np.tile(values[0], avg_pred.shape[0])
 
             if classes is not None:
-                ind_data["class_label"] = np.repeat(classes, len(values[0]))
-            ind_data.insert(0, "feature_values", np.tile(values[0], ind_preds.shape[0]))
+                avg_data["class_label"] = np.repeat(classes, len(values[0]))
 
-        elif isinstance(features, (list, tuple)):
-            ind_data = list()
-            for n, label in enumerate(ind_preds):
-                for i, sample in enumerate(label):
-                    ind_df = pd.DataFrame(sample.reshape((-1, sample.shape[-1])))
-                    ind_df.columns = values[1]
-                    ind_df.index = values[0]
+        if kind in ["individual", "both"]:
+            ind_preds = preds["individual"]
+            if isinstance(features, (int, str)):
+                ind_data = list()
+                for label in ind_preds:
+                    ind_data.append(pd.DataFrame(label).T)
 
-                    if n == 0:
-                        ind_data.append(ind_df)
-                    else:
-                        ind_data[i] = pd.concat([ind_data[i], ind_df])
+                ind_data = pd.concat(ind_data)
+                ind_data.columns = [f"Sample {i}" for i in range(len(ind_preds[0]))]
 
-            for sample in ind_data:
-                sample["class_label"] = np.repeat(classes, len(values[0]))
+                if classes is not None:
+                    ind_data["class_label"] = np.repeat(classes, len(values[0]))
+                ind_data.insert(
+                    0, "feature_values", np.tile(values[0], ind_preds.shape[0])
+                )
 
-    if kind == "both":
-        return (avg_data, ind_data)
-    elif kind == "individual":
-        return ind_data
-    elif kind == "average":
-        return avg_data
+            elif isinstance(features, (list, tuple)):
+                ind_data = list()
+                for n, label in enumerate(ind_preds):
+                    for i, sample in enumerate(label):
+                        ind_df = pd.DataFrame(sample.reshape((-1, sample.shape[-1])))
+                        ind_df.columns = values[1]
+                        ind_df.index = values[0]
+
+                        if n == 0:
+                            ind_data.append(ind_df)
+                        else:
+                            ind_data[i] = pd.concat([ind_data[i], ind_df])
+
+                for sample in ind_data:
+                    sample["class_label"] = np.repeat(classes, len(values[0]))
+
+        if kind == "both":
+            return (avg_data, ind_data)
+        elif kind == "individual":
+            return ind_data
+        elif kind == "average":
+            return avg_data
+    except Exception as e:
+        if isinstance(e, PartialDependenceError):
+            raise e
+        else:
+            raise PartialDependenceError(
+                str(e), PartialDependenceErrorCode.ALL_OTHER_ERRORS
+            ) from e
 
 
 def _update_fig_with_two_way_partial_dependence(
@@ -923,7 +959,8 @@ def graph_partial_dependence(
         plotly.graph_objects.Figure: figure object containing the partial dependence data for plotting
 
     Raises:
-        ValueError: if a graph is requested for a class name that isn't present in the pipeline
+        PartialDependenceError: if a graph is requested for a class name that isn't present in the pipeline.
+        PartialDependenceError: if an ICE plot is requested for a two-way partial dependence.
     """
     X = infer_feature_types(X)
     if isinstance(features, (list, tuple)):
@@ -934,8 +971,9 @@ def graph_partial_dependence(
         if any(is_categorical):
             features = _put_categorical_feature_first(features, is_categorical[0])
         if kind == "individual" or kind == "both":
-            raise ValueError(
-                "Individual conditional expectation plot can only be created with a one-way partial dependence plot"
+            raise PartialDependenceError(
+                "Individual conditional expectation plot can only be created with a one-way partial dependence plot",
+                PartialDependenceErrorCode.ICE_PLOT_REQUESTED_FOR_TWO_WAY_PLOT,
             )
     elif isinstance(features, (int, str)):
         mode = "one-way"
@@ -952,7 +990,9 @@ def graph_partial_dependence(
     ):
         if class_label not in pipeline.classes_:
             msg = f"Class {class_label} is not one of the classes the pipeline was fit on: {', '.join(list(pipeline.classes_))}"
-            raise ValueError(msg)
+            raise PartialDependenceError(
+                msg, code=PartialDependenceErrorCode.INVALID_CLASS_LABEL
+            )
 
     part_dep = partial_dependence(
         pipeline, X, features=features, grid_resolution=grid_resolution, kind=kind

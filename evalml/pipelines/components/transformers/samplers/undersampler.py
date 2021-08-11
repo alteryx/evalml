@@ -49,12 +49,11 @@ class Undersampler(BaseSampler):
             "sampling_ratio_dict": sampling_ratio_dict,
         }
         parameters.update(kwargs)
-
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
 
-    def _initialize_undersampler(self, y):
+    def _initialize_sampler(self, X, y):
         """Helper function to initialize the undersampler component object.
 
         Arguments:
@@ -63,24 +62,15 @@ class Undersampler(BaseSampler):
         param_dic = self._dictionary_to_params(
             self.parameters["sampling_ratio_dict"], y
         )
+        param_dic.pop("n_jobs", None)
         sampler = BalancedClassificationSampler(
             **param_dic, random_seed=self.random_seed
         )
         self._component_obj = sampler
 
-    def fit_transform(self, X, y):
-        """Fit and transform the data using the undersampler. Used during training of the pipeline
-
-        Arguments:
-            X (pd.DataFrame): Training features
-            y (pd.Series): Target features
-
-         Returns:
-            pd.DataFrame, pd.Series: Undersampled X and y data
-        """
+    def transform(self, X, y=None):
         X_ww, y_ww = self._prepare_data(X, y)
-        self._initialize_undersampler(y_ww)
-
+        self._initialize_sampler(X, y_ww)
         index_df = pd.Series(y_ww.index)
         indices = self._component_obj.fit_resample(X_ww, y_ww)
 

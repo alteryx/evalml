@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.pipelines.components import Undersampler
 
@@ -16,15 +17,16 @@ def test_init():
     assert undersampler.parameters == parameters
 
 
-def test_none_y():
+def test_undersampler_raises_error_if_y_is_None():
     X = pd.DataFrame([[i] for i in range(5)])
     undersampler = Undersampler()
-    with pytest.raises(ValueError, match="y cannot be none"):
+    with pytest.raises(ValueError, match="y cannot be None"):
         undersampler.fit(X, None)
-    with pytest.raises(ValueError, match="y cannot be none"):
+    with pytest.raises(ValueError, match="y cannot be None"):
         undersampler.fit_transform(X, None)
     undersampler.fit(X, pd.Series([0] * 4 + [1]))
-    undersampler.transform(X, None)
+    with pytest.raises(ValueError, match="y cannot be None"):
+        undersampler.transform(X, None)
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
@@ -41,7 +43,7 @@ def test_no_undersample(data_type, make_data_type, X_y_binary):
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-def test_undersample_imbalanced(data_type, make_data_type):
+def test_undersampler_imbalanced_output(data_type, make_data_type):
     X = np.array([[i] for i in range(1000)])
     y = np.array([0] * 150 + [1] * 850)
     X = make_data_type(data_type, X)
@@ -49,20 +51,21 @@ def test_undersample_imbalanced(data_type, make_data_type):
 
     sampling_ratio = 0.25
     undersampler = Undersampler(sampling_ratio=sampling_ratio)
-    new_X, new_y = undersampler.fit_transform(X, y)
+    fit_transformed_X, fit_transformed_y = undersampler.fit_transform(X, y)
 
-    assert len(new_X) == 750
-    assert len(new_y) == 750
-    value_counts = new_y.value_counts()
+    assert len(fit_transformed_X) == 750
+    assert len(fit_transformed_y) == 750
+    value_counts = fit_transformed_y.value_counts()
     assert value_counts.values[1] / value_counts.values[0] == sampling_ratio
     pd.testing.assert_series_equal(
         value_counts, pd.Series([600, 150], index=[1, 0]), check_dtype=False
     )
 
-    transform_X, transform_y = undersampler.transform(X, y)
-
-    np.testing.assert_equal(X, transform_X.values)
-    np.testing.assert_equal(None, transform_y)
+    undersampler = Undersampler(sampling_ratio=sampling_ratio)
+    undersampler.fit(X, y)
+    transformed_X, transformed_y = undersampler.transform(X, y)
+    assert_frame_equal(transformed_X, fit_transformed_X)
+    assert_series_equal(transformed_y, fit_transformed_y)
 
 
 @pytest.mark.parametrize(

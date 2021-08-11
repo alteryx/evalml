@@ -1,3 +1,6 @@
+from enum import Enum
+
+
 class MethodPropertyNotFoundError(Exception):
     """Exception to raise when a class is does not have an expected method or property."""
 
@@ -97,3 +100,42 @@ class ParameterNotUsedWarning(UserWarning):
 
         msg = f"Parameters for components {components} will not be used to instantiate the pipeline since they don't appear in the pipeline"
         super().__init__(msg)
+
+
+class PartialDependenceErrorCode(Enum):
+    """Enum identifying the type of error encountered in partial dependence."""
+
+    TOO_MANY_FEATURES = "too_many_features"
+    """too_many_features"""
+    FEATURES_ARGUMENT_INCORRECT_TYPES = "features_argument_incorrect_types"
+    """features_argument_incorrect_types"""
+    UNFITTED_PIPELINE = "unfitted_pipeline"
+    """unfitted_pipeline"""
+    PIPELINE_IS_BASELINE = "pipeline_is_baseline"
+    """pipeline_is_baseline"""
+    TWO_WAY_REQUESTED_FOR_DATES = "two_way_requested_for_dates"
+    """two_way_requested_for_dates"""
+    FEATURE_IS_ALL_NANS = "feature_is_all_nans"
+    """feature_is_all_nans"""
+    FEATURE_IS_MOSTLY_ONE_VALUE = "feature_is_mostly_one_value"
+    """feature_is_mostly_one_value"""
+    COMPUTED_PERCENTILES_TOO_CLOSE = "computed_percentiles_too_close"
+    """computed_percentiles_too_close"""
+    INVALID_FEATURE_TYPE = "invalid_feature_type"
+    """invalid_feature_type"""
+    ICE_PLOT_REQUESTED_FOR_TWO_WAY_PLOT = (
+        "ice_plot_requested_for_two_way_partial_dependence_plot"
+    )
+    """ice_plot_requested_for_two_way_partial_dependence_plot"""
+    INVALID_CLASS_LABEL = "invalid_class_label_requested_for_plot"
+    """invalid_class_label_requested_for_plot"""
+    ALL_OTHER_ERRORS = "all_other_errors"
+    """all_other_errors"""
+
+
+class PartialDependenceError(ValueError):
+    """Exception raised for all errors that partial dependence can raise."""
+
+    def __init__(self, message, code):
+        self.code = code
+        super().__init__(message)
