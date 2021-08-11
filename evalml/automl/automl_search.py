@@ -71,7 +71,14 @@ from evalml.utils.logger import (
 logger = get_logger(__file__)
 
 
-def search(X_train=None, y_train=None, problem_type=None, objective="auto", **kwargs):
+def search(
+    X_train=None,
+    y_train=None,
+    problem_type=None,
+    objective="auto",
+    problem_configuration=None,
+    **kwargs,
+):
     """Given data and configuration, run an automl search.
 
     This method will run EvalML's default suite of data checks. If the data checks produce errors, the data check results will be returned before running the automl search. In that case we recommend you alter your data to address these errors and try again.
@@ -92,6 +99,9 @@ def search(X_train=None, y_train=None, problem_type=None, objective="auto", **kw
             - LogLossMulticlass for multiclass classification problems, and
             - R2 for regression problems.
 
+        problem_configuration (dict): Additional parameters needed to configure the search. For example,
+        in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+
     Other keyword arguments which are provided will be passed to AutoMLSearch.
 
     Returns:
@@ -100,6 +110,22 @@ def search(X_train=None, y_train=None, problem_type=None, objective="auto", **kw
     X_train = infer_feature_types(X_train)
     y_train = infer_feature_types(y_train)
     problem_type = handle_problem_types(problem_type)
+
+    datetime_column = None
+    if is_time_series(problem_type):
+        if problem_configuration:
+            if "date_index" in problem_configuration:
+                datetime_column = problem_configuration["date_index"]
+            else:
+                raise ValueError(
+                    "For the default data checks to run in time series, date_index has to be passed in problem_configuration. "
+                    f"Received {problem_configuration}"
+                )
+        else:
+            raise ValueError(
+                "For the default data checks to run in time series, the problem_configuration parameter must be specified."
+            )
+
     if objective == "auto":
         objective = get_default_primary_search_objective(problem_type)
     objective = get_objective(objective, return_instance=False)
@@ -115,7 +141,9 @@ def search(X_train=None, y_train=None, problem_type=None, objective="auto", **kw
         }
     )
 
-    data_checks = DefaultDataChecks(problem_type=problem_type, objective=objective)
+    data_checks = DefaultDataChecks(
+        problem_type=problem_type, objective=objective, datetime_column=datetime_column
+    )
     data_check_results = data_checks.validate(X_train, y=y_train)
     if len(data_check_results.get("errors", [])):
         return None, data_check_results
@@ -713,7 +741,7 @@ class AutoMLSearch:
         return search_desc + rankings_desc
 
     def _validate_problem_configuration(self, problem_configuration=None):
-        if self.problem_type in [ProblemTypes.TIME_SERIES_REGRESSION]:
+        if is_time_series(self.problem_type):
             required_parameters = {"date_index", "gap", "max_delay"}
             if not problem_configuration or not all(
                 p in problem_configuration for p in required_parameters
