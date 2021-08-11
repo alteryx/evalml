@@ -32,7 +32,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
         )
 
     datetime_column = "index"
-    if datetime_loc == "datetime_feature":
+    if datetime_loc == 1:
         X[datetime_loc] = dates
         datetime_column = datetime_loc
     elif datetime_loc == "X_index":
@@ -66,9 +66,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                 "actions": [],
             }
         else:
-            col_name = (
-                datetime_loc if datetime_loc == "datetime_feature" else "either index"
-            )
+            col_name = datetime_loc if datetime_loc == 1 else "either index"
             assert datetime_format_check.validate(X, y) == {
                 "errors": [
                     DataCheckError(

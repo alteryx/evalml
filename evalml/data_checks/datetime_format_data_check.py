@@ -69,6 +69,7 @@ class DateTimeFormatDataCheck(DataCheck):
                     message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
                 ).to_dict()
             )
+            return results
 
         if not inferred_freq:
             col_name = (
