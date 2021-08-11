@@ -1,4 +1,6 @@
 """Component graph for a pipeline as a directed acyclic graph (DAG)."""
+from evalml.problem_types.problem_types import ProblemTypes
+from evalml.problem_types.utils import detect_problem_type
 import inspect
 import warnings
 
@@ -185,7 +187,7 @@ class ComponentGraph:
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        self._compute_features(self.compute_order, X, y, fit=True)
+        self._compute_features(self.compute_order, X, y, fit=True, use_proba=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
         return self
 
@@ -380,6 +382,7 @@ class ComponentGraph:
             else:
                 if fit:
                     component_instance.fit(x_inputs, y_input)
+
                 if fit and component_name == self.compute_order[-1]:
                     # Don't call predict on the final component during fit
                     output = None
