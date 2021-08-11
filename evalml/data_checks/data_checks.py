@@ -78,6 +78,7 @@ class DataChecks:
 
         Arguments:
             data_checks (list (DataCheck)): List of DataCheck objects
+            data_check_params (dict): Parameters for passed DataCheck objects
         """
         data_check_params = data_check_params or dict()
         self._validate_data_checks(data_checks, data_check_params)

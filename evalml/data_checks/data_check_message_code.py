@@ -98,3 +98,12 @@ class DataCheckMessageCode(Enum):
 
     NATURAL_LANGUAGE_HAS_NAN = "natural_language_has_nan"
     """Message code for when input natural language columns contain NaN values."""
+
+    DATETIME_INFORMATION_NOT_FOUND = "datetime_information_not_found"
+    """Message code for when datetime information can not be found or is in an unaccepted format."""
+
+    DATETIME_HAS_UNEVEN_INTERVALS = "datetime_has_uneven_intervals"
+    """Message code for when the datetime values have uneven intervals."""
+
+    DATETIME_IS_NOT_MONOTONIC = "datetime_is_not_monotonic"
+    """Message code for when the datetime values are not monotonically increasing."""

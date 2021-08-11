@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
+        * Added ``DatetimeFormatDataCheck`` for time series problems :pr:`2603`
         * Added ``ProphetRegressor`` to estimators :pr:`2242`
         * Updated ``ComponentGraph`` to handle not calling samplers' transform during predict, and updated samplers' transform methods s.t. ``fit_transform`` is equivalent to ``fit(X, y).transform(X, y)`` :pr:`2583`
         * Updated ``ComponentGraph`` ``_validate_component_dict`` logic to be stricter about input values :pr:`2599`
