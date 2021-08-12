@@ -46,7 +46,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
             [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
-            ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
+            ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"].
         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
              An empty dictionary or None implies using all default values for component parameters. Defaults to None.
         custom_name (str): Custom name for the pipeline. Defaults to None.
@@ -256,8 +256,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             pd.DataFrame: New transformed features.
         """
-        X_t = self.component_graph.compute_final_component_features(X, y=y)
-        return X_t
+        return self.component_graph.compute_final_component_features(X, y=y)
 
     def _fit(self, X, y):
         self.input_target_name = y.name

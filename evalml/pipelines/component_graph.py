@@ -150,11 +150,11 @@ class ComponentGraph:
         return self
 
     def fit(self, X, y):
-        """Fit each component in the graph
+        """Fit each component in the graph.
 
         Arguments:
-            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
-            y (pd.Series): The target training data of length [n_samples]
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
@@ -163,11 +163,11 @@ class ComponentGraph:
         return self
 
     def fit_features(self, X, y):
-        """Fit all components save the final one, usually an estimator
+        """Fit all components save the final one, usually an estimator.
 
         Arguments:
-            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
-            y (pd.Series): The target training data of length [n_samples]
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
 
         Returns:
             pd.DataFrame: Transformed values.
@@ -176,10 +176,10 @@ class ComponentGraph:
 
     def compute_final_component_features(self, X, y=None):
         """Transform all components save the final one, and gathers the data from any number of parents
-        to get all the information that should be fed to the final component
+        to get all the information that should be fed to the final component.
 
         Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples]. Defaults to None.
 
         Returns:
@@ -188,11 +188,11 @@ class ComponentGraph:
         return self._fit_transform_features_helper(False, X, y)
 
     def _fit_transform_features_helper(self, needs_fitting, X, y=None):
-        """Helper function that transforms the input data based on the component graph components.
+        """Transform all components save the final one, and returns the data that should be fed to the final component, usually an estimator.
 
         Arguments:
             needs_fitting (boolean): Determines if components should be fit.
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples]. Defaults to None.
 
         Returns:
@@ -205,36 +205,40 @@ class ComponentGraph:
         component_outputs = self._compute_features(
             self.compute_order[:-1], X, y=y, fit=needs_fitting
         )
-        final_component_inputs = []
-
-        parent_inputs = [
-            parent_input
-            for parent_input in self.get_inputs(self.compute_order[-1])
-            if parent_input[-2:] != ".y"
-        ]
-        for parent in parent_inputs:
-            parent_output = component_outputs.get(
-                parent, component_outputs.get(f"{parent}.x")
-            )
-            if isinstance(parent_output, pd.Series):
-                parent_output = pd.DataFrame(parent_output, columns=[parent])
-                parent_output = infer_feature_types(parent_output)
-            if parent_output is not None:
-                final_component_inputs.append(parent_output)
-        concatted = ww.utils.concat_columns(
-            [component_input for component_input in final_component_inputs]
+        x_inputs, _ = self._consolidate_inputs_for_component(
+            component_outputs, self.compute_order[-1], X, y
         )
         if needs_fitting:
             self.input_feature_names.update(
-                {self.compute_order[-1]: list(concatted.columns)}
+                {self.compute_order[-1]: list(x_inputs.columns)}
             )
-        return concatted
+        return x_inputs
+
+    def _consolidate_inputs_for_component(
+        self, component_outputs, component, X, y=None
+    ):
+        x_inputs = []
+        y_input = None
+        for parent_input in self.get_inputs(component):
+            if parent_input.endswith(".y"):
+                y_input = component_outputs[parent_input]
+            elif parent_input == "y":
+                y_input = y
+            if parent_input == "X":
+                x_inputs.append(X)
+            elif parent_input.endswith(".x"):  # must end in .x
+                parent_x = component_outputs[parent_input]
+                if isinstance(parent_x, pd.Series):
+                    parent_x = parent_x.rename(parent_input)
+                x_inputs.append(parent_x)
+        x_inputs = ww.concat_columns(x_inputs)
+        return x_inputs, y_input
 
     def predict(self, X):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
 
         Returns:
             pd.Series: Predicted values.
@@ -243,9 +247,7 @@ class ComponentGraph:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
         outputs = self._compute_features(self.compute_order, X)
-        return infer_feature_types(
-            outputs.get(final_component, outputs.get(f"{final_component}.x"))
-        )
+        return infer_feature_types(outputs.get(f"{final_component}.x"))
 
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
@@ -253,12 +255,12 @@ class ComponentGraph:
         Arguments:
             component_list (list): The list of component names to compute.
             X (pd.DataFrame): Input data to the pipeline to transform.
-            y (pd.Series): The target training data of length [n_samples]
+            y (pd.Series): The target training data of length [n_samples].
             fit (boolean): Whether to fit the estimators as well as transform it.
                         Defaults to False.
 
         Returns:
-            dict: Outputs from each component
+            dict: Outputs from each component.
         """
         X = infer_feature_types(X)
         if y is not None:
@@ -274,22 +276,10 @@ class ComponentGraph:
                 raise ValueError(
                     "All components must be instantiated before fitting or predicting"
                 )
-            x_inputs = []
-            y_input = None
-            for parent_input in self.get_inputs(component_name):
-                if parent_input.endswith(".y"):
-                    y_input = output_cache[parent_input]
-                elif parent_input == "y":
-                    y_input = y
-                elif parent_input == "X":
-                    x_inputs.append(X)
-                else:  # must end in .x
-                    parent_x = output_cache[parent_input]
-                    if isinstance(parent_x, pd.Series):
-                        parent_x = parent_x.rename(parent_input)
-                    x_inputs.append(parent_x)
-            x_inputs = ww.concat_columns(x_inputs)
 
+            x_inputs, y_input = self._consolidate_inputs_for_component(
+                output_cache, component_name, X, y
+            )
             self.input_feature_names.update({component_name: list(x_inputs.columns)})
             if isinstance(component_instance, Transformer):
                 if fit:
@@ -408,10 +398,10 @@ class ComponentGraph:
         return self.get_component(last_component_name)
 
     def get_estimators(self):
-        """Gets a list of all the estimator components within this graph
+        """Gets a list of all the estimator components within this graph.
 
         Returns:
-            list: All estimator objects within the graph
+            list: All estimator objects within the graph.
         """
         if not isinstance(self.get_last_component(), ComponentBase):
             raise ValueError(
