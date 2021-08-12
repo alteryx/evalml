@@ -3986,7 +3986,7 @@ def test_automl_pipeline_random_seed(AutoMLTestEnv, random_seed, X_y_multi):
 
 
 @pytest.mark.parametrize(
-    "objectives", ["Log Loss Binary", CustomClassificationObjectiveInf]
+    "objectives", ["Log Loss Binary", CustomClassificationObjectiveInf()]
 )
 def test_automl_check_for_high_variance(
     objectives, X_y_binary, dummy_binary_pipeline_class
@@ -4000,9 +4000,6 @@ def test_automl_check_for_high_variance(
     assert not automl._check_for_high_variance(pipeline, cv_scores)
 
     cv_scores = pd.Series([0, 0, 0])
-    assert not automl._check_for_high_variance(pipeline, cv_scores)
-
-    cv_scores = pd.Series([0, 0, 0.9])
     assert not automl._check_for_high_variance(pipeline, cv_scores)
 
     for cv_scores in [
