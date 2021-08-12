@@ -46,7 +46,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
             [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
-            ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
+            ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"].
         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
              An empty dictionary or None implies using all default values for component parameters. Defaults to None.
         custom_name (str): Custom name for the pipeline. Defaults to None.
@@ -256,8 +256,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             pd.DataFrame: New transformed features.
         """
-        X_t = self.component_graph.compute_final_component_features(X, y=y)
-        return X_t
+        return self.component_graph.compute_final_component_features(X, y=y)
 
     def _fit(self, X, y):
         self.input_target_name = y.name
@@ -266,11 +265,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @abstractmethod
     def fit(self, X, y):
-        """Build a model
+        """Build a model.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (pd.Series, np.ndarray): The target training data of length [n_samples]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
+            y (pd.Series, np.ndarray): The target training data of length [n_samples].
 
         Returns:
             self
@@ -281,8 +280,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
-            objective (Object or string): The objective to use to make predictions
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
+            objective (Object or string): The objective to use to make predictions.
 
         Returns:
             pd.Series: Predicted values.
@@ -294,15 +293,15 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @abstractmethod
     def score(self, X, y, objectives):
-        """Evaluate model performance on current and additional objectives
+        """Evaluate model performance on current and additional objectives.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
-            y (pd.Series, np.ndarray): True labels of length [n_samples]
-            objectives (list): Non-empty list of objectives to score on
+            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
+            y (pd.Series, np.ndarray): True labels of length [n_samples].
+            objectives (list): Non-empty list of objectives to score on.
 
         Returns:
-            dict: Ordered dictionary of objective scores
+            dict: Ordered dictionary of objective scores.
         """
 
     @staticmethod
@@ -357,7 +356,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def model_family(self):
-        """Returns model family of this pipeline template"""
+        """Returns model family of this pipeline."""
         component_graph = copy.copy(self.component_graph)
         if isinstance(component_graph, list):
             return handle_component_class(component_graph[-1]).model_family
@@ -370,10 +369,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @property
     def parameters(self):
-        """Parameter dictionary for this pipeline
+        """Parameter dictionary for this pipeline.
 
         Returns:
-            dict: Dictionary of all component parameters
+            dict: Dictionary of all component parameters.
         """
         components = [
             (component_name, component_class)
@@ -402,7 +401,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return df
 
     def graph(self, filepath=None):
-        """Generate an image representing the pipeline graph
+        """Generate an image representing the pipeline graph.
 
         Arguments:
             filepath (str, optional): Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
