@@ -419,6 +419,8 @@ def test_automl_supports_time_series_regression(AutoMLTestEnv, X_y_regression):
 
     dt = configuration.pop("date_index")
     for result in automl.results["pipeline_results"].values():
+        print(result)
+        print("----------------------------------")
         assert result["pipeline_class"] == TimeSeriesRegressionPipeline
 
         if result["id"] == 0:

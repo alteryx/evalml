@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Release**
     * Enhancements
-        * Add ``ProphetRegressor`` to AutoML :pr:``
+        * Add ``ProphetRegressor`` to AutoML :pr:`2619`
         * Added ``DatetimeFormatDataCheck`` for time series problems :pr:`2603`
         * Added ``ProphetRegressor`` to estimators :pr:`2242`
         * Updated ``ComponentGraph`` to handle not calling samplers' transform during predict, and updated samplers' transform methods s.t. ``fit_transform`` is equivalent to ``fit(X, y).transform(X, y)`` :pr:`2583`
