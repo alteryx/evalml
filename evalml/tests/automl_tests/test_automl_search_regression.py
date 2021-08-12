@@ -420,6 +420,8 @@ def test_automl_supports_time_series_regression(AutoMLTestEnv, X_y_regression):
     dt = configuration.pop("date_index")
     for result in automl.results["pipeline_results"].values():
         print(result)
+        if result["id"] != 0 and "ARIMA Regressor" not in result["parameters"]:
+            assert result == None
         print("----------------------------------")
         assert result["pipeline_class"] == TimeSeriesRegressionPipeline
 
