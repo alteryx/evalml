@@ -621,7 +621,7 @@ def test_time_series_pipeline_not_fitted_error(
         X, y = X_y_regression
         clf = time_series_regression_pipeline_class(
             parameters={
-                "Linear Regressor": {"n_jobs": 1},
+                "Random Forest Regressor": {"n_jobs": 1},
                 "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
             }
         )
