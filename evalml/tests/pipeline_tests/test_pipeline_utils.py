@@ -203,7 +203,7 @@ def test_make_pipeline(
             )
             imputer = (
                 []
-                if (column_names in [["dates"], ["all_null"]] and input_type == "ww")
+                if (column_names == ["dates"] and input_type == "ww")
                 or ((column_names in [["text"], ["dates"]]) and input_type == "pd")
                 else [Imputer]
             )

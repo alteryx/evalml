@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import woodwork as ww
-from woodwork.logical_types import Datetime, Ordinal
+from woodwork.logical_types import Datetime, Ordinal, Unknown
 
 from evalml.utils.gen_utils import is_all_numeric
 
@@ -79,6 +79,22 @@ def infer_feature_types(data, feature_types=None):
                 ww_error = f"{ww_error}. Please initialize ww with df.ww.init() to get rid of this message."
             raise ValueError(ww_error)
         data.ww.init(schema=data.ww.schema)
+
+        def is_column_pd_na(data, col):
+            return all([isinstance(x, type(pd.NA)) for x in data[col]])
+
+        def is_column_unknown(data, col):
+            return isinstance(data.ww.logical_types[col], Unknown)
+
+        if isinstance(data, pd.DataFrame):
+            all_null_unk_cols = [
+                col
+                for col in data.columns
+                if (is_column_pd_na(data, col) and is_column_unknown(data, col))
+            ]
+            if len(all_null_unk_cols):
+                for col in all_null_unk_cols:
+                    data.ww.set_types({col: "Double"})
         return data
 
     if isinstance(data, pd.Series):
