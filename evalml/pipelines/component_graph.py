@@ -220,13 +220,13 @@ class ComponentGraph:
         x_inputs = []
         y_input = None
         for parent_input in self.get_inputs(component):
-            if parent_input.endswith(".y"):
-                y_input = component_outputs[parent_input]
-            elif parent_input == "y":
+            if parent_input == "y":
                 y_input = y
-            if parent_input == "X":
+            elif parent_input == "X":
                 x_inputs.append(X)
-            elif parent_input.endswith(".x"):  # must end in .x
+            elif parent_input.endswith(".y"):
+                y_input = component_outputs[parent_input]
+            elif parent_input.endswith(".x"):
                 parent_x = component_outputs[parent_input]
                 if isinstance(parent_x, pd.Series):
                     parent_x = parent_x.rename(parent_input)
@@ -247,6 +247,22 @@ class ComponentGraph:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
         outputs = self._compute_features(self.compute_order, X)
+        return infer_feature_types(outputs.get(f"{final_component}.x"))
+
+    def transform(self, X, y):
+        """Make predictions using selected features.
+
+        Arguments:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.Series: Predicted values.
+        """
+        if len(self.compute_order) == 0:
+            return infer_feature_types(X)
+        final_component = self.compute_order[-1]
+        # check if final component is estimator. If yes, error out.
+        outputs = self._compute_features(self.compute_order, X, y, False)
         return infer_feature_types(outputs.get(f"{final_component}.x"))
 
     def _compute_features(self, component_list, X, y=None, fit=False):

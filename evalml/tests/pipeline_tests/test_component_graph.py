@@ -2104,3 +2104,15 @@ def test_component_graph_compute_final_component_features_with_sampler(
     assert len(mock_estimator_fit.call_args[0][0]) == expected_length
     features_for_estimator = component_graph.compute_final_component_features(X, y)
     assert len(features_for_estimator) == len(y)
+
+
+def test_component_graph_with_transformer_end(X_y_binary):
+    X, y = X_y_binary
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+    }
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    component_graph.transform(X, y)

@@ -276,6 +276,15 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         """
 
+    def transform(self, X, y):
+        """
+        Arguments:
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
+
+        Returns:
+        """
+        return self.component_graph.transform(X, y)
+
     def predict(self, X, objective=None):
         """Make predictions using selected features.
 

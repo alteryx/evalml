@@ -14,7 +14,7 @@ class PipelineBaseMeta(BaseMeta):
         """
 
         @wraps(method)
-        def _check_for_fit(self, X=None, objective=None):
+        def _check_for_fit(self, X=None, y=None, objective=None):
             klass = type(self).__name__
             if not self._is_fitted:
                 raise PipelineNotYetFittedError(
@@ -26,6 +26,8 @@ class PipelineBaseMeta(BaseMeta):
                 return method(self, X, objective)
             elif method.__name__ == "inverse_transform":
                 return method(self, X)
+            elif method.__name__ == "transform":
+                return method(self, X, y)
             else:
                 return method(self)
 
