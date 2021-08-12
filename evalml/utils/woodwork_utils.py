@@ -64,22 +64,7 @@ def infer_feature_types(data, feature_types=None):
 
     _raise_value_error_if_nullable_types_detected(data)
 
-    if data.ww.schema is not None:
-        if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
-            data, data.ww.schema
-        ):
-            ww_error = ww.get_invalid_schema_message(data, data.ww.schema)
-            if "dtype mismatch" in ww_error:
-                ww_error = (
-                    "Dataframe types are not consistent with logical types. This usually happens "
-                    "when a data transformation does not go through the ww accessor. Call df.ww.init() to "
-                    f"get rid of this message. This is a more detailed message about the mismatch: {ww_error}"
-                )
-            else:
-                ww_error = f"{ww_error}. Please initialize ww with df.ww.init() to get rid of this message."
-            raise ValueError(ww_error)
-        data.ww.init(schema=data.ww.schema)
-
+    def convert_all_nan_unknown_to_double(data):
         def is_column_pd_na(data, col):
             return all([isinstance(x, type(pd.NA)) for x in data[col]])
 
@@ -96,6 +81,23 @@ def infer_feature_types(data, feature_types=None):
                 for col in all_null_unk_cols:
                     data.ww.set_types({col: "Double"})
         return data
+
+    if data.ww.schema is not None:
+        if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
+            data, data.ww.schema
+        ):
+            ww_error = ww.get_invalid_schema_message(data, data.ww.schema)
+            if "dtype mismatch" in ww_error:
+                ww_error = (
+                    "Dataframe types are not consistent with logical types. This usually happens "
+                    "when a data transformation does not go through the ww accessor. Call df.ww.init() to "
+                    f"get rid of this message. This is a more detailed message about the mismatch: {ww_error}"
+                )
+            else:
+                ww_error = f"{ww_error}. Please initialize ww with df.ww.init() to get rid of this message."
+            raise ValueError(ww_error)
+        data.ww.init(schema=data.ww.schema)
+        return convert_all_nan_unknown_to_double(data)
 
     if isinstance(data, pd.Series):
         if all([isinstance(x, type(pd.NA)) for x in data]):
