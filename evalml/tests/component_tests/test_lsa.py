@@ -72,17 +72,15 @@ def test_some_missing_col_names(text_df, caplog):
     }
 
 
-@pytest.mark.parametrize(
-    "empty_col",
-    [[], [None, None, None], [pd.NA, pd.NA, pd.NA], [np.nan, np.nan, np.nan]],
-)
-def test_lsa_empty_text_column(empty_col):
-    """Smoke test to make sure that LSA handles various empty columns
-    as expected, by returning itself."""
-    X = pd.DataFrame({"col_1": empty_col})
+def test_lsa_empty_text_column():
+    X = pd.DataFrame({"col_1": []})
     X = infer_feature_types(X, {"col_1": "NaturalLanguage"})
     lsa = LSA()
-    lsa.fit(X)
+    with pytest.raises(
+        ValueError,
+        match="empty vocabulary; perhaps the documents only contain stop words",
+    ):
+        lsa.fit(X)
 
 
 def test_lsa_text_column_with_nonstring_values():
