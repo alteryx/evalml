@@ -13,6 +13,7 @@ class SensitivityLowAlert(BinaryClassificationObjective):
     score_needs_proba = False
     perfect_score = 1.0
     is_bounded_like_percentage = True
+    expected_range = [0, 1]
 
     def __init__(self, alert_rate=0.01):
         """Create instance of SensitivityLowAlert

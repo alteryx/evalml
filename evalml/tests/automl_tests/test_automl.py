@@ -1918,6 +1918,22 @@ class CustomClassificationObjective(BinaryClassificationObjective):
     score_needs_proba = False
     perfect_score = 1.0
     is_bounded_like_percentage = False
+    expected_range = [0, 1]
+    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+
+    def objective_function(self, y_true, y_predicted, X=None):
+        """Not implementing since mocked in our tests."""
+
+
+class CustomClassificationObjectiveInf(BinaryClassificationObjective):
+    """Accuracy score for binary and multiclass classification."""
+
+    name = "Classification Accuracy"
+    greater_is_better = True
+    score_needs_proba = False
+    perfect_score = 1.0
+    is_bounded_like_percentage = False
+    expected_range = [float("-inf"), float("inf")]
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -1932,6 +1948,7 @@ class CustomRegressionObjective(RegressionObjective):
     score_needs_proba = False
     perfect_score = 1.0
     is_bounded_like_percentage = False
+    expected_range = [0, 1]
     problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -3968,28 +3985,36 @@ def test_automl_pipeline_random_seed(AutoMLTestEnv, random_seed, X_y_multi):
             assert automl.get_pipeline(row["id"]).random_seed == random_seed
 
 
-def test_automl_check_for_high_variance(X_y_binary, dummy_binary_pipeline_class):
+@pytest.mark.parametrize(
+    "objectives", ["Log Loss Binary", CustomClassificationObjectiveInf]
+)
+def test_automl_check_for_high_variance(
+    objectives, X_y_binary, dummy_binary_pipeline_class
+):
     X, y = X_y_binary
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
+    automl = AutoMLSearch(
+        X_train=X, y_train=y, problem_type="binary", objective=objectives
+    )
     cv_scores = pd.Series([1, 1, 1])
     pipeline = dummy_binary_pipeline_class(parameters={})
-    assert not automl._check_for_high_variance(
-        pipeline, cv_scores.mean(), cv_scores.std()
-    )
+    assert not automl._check_for_high_variance(pipeline, cv_scores)
 
     cv_scores = pd.Series([0, 0, 0])
-    assert not automl._check_for_high_variance(
-        pipeline, cv_scores.mean(), cv_scores.std()
-    )
+    assert not automl._check_for_high_variance(pipeline, cv_scores)
 
-    cv_scores = pd.Series([0, 1, np.nan, np.nan])
-    assert automl._check_for_high_variance(pipeline, cv_scores.mean(), cv_scores.std())
+    cv_scores = pd.Series([0, 0, 0.9])
+    assert not automl._check_for_high_variance(pipeline, cv_scores)
 
-    cv_scores = pd.Series([0, 1, 2, 3])
-    assert automl._check_for_high_variance(pipeline, cv_scores.mean(), cv_scores.std())
-
-    cv_scores = pd.Series([0, -1, -1, -1])
-    assert automl._check_for_high_variance(pipeline, cv_scores.mean(), cv_scores.std())
+    for cv_scores in [
+        pd.Series([0, 1, np.nan, np.nan]),
+        pd.Series([0, 1, 2, 3]),
+        pd.Series([0, -1, -1, -1]),
+        pd.Series([10, 0, -1, -10]),
+    ]:
+        if objectives == "Log Loss Binary":
+            assert automl._check_for_high_variance(pipeline, cv_scores)
+        else:
+            assert not automl._check_for_high_variance(pipeline, cv_scores)
 
 
 def test_automl_check_high_variance_logs_warning(AutoMLTestEnv, X_y_binary, caplog):
@@ -4442,19 +4467,9 @@ def test_high_cv_check_no_warning_for_divide_by_zero(
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
     with pytest.warns(None) as warnings:
-        automl._check_for_high_variance(
-            dummy_binary_pipeline_class({}),
-            cv_mean=np.array([0.0]),
-            cv_std=np.array([0.1]),
-        )
-    assert len(warnings) == 0
-
-    with pytest.warns(None) as warnings:
         # mean is 0 but std is not
         automl._check_for_high_variance(
-            dummy_binary_pipeline_class({}),
-            cv_mean=np.array([0.0, 1.0, -1.0]).mean(),
-            cv_std=np.array([0.0, 1.0, -1.0]).std(),
+            dummy_binary_pipeline_class({}), cv_scores=[0.0, 1.0, -1.0]
         )
     assert len(warnings) == 0
 

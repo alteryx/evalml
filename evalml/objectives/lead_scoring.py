@@ -16,6 +16,7 @@ class LeadScoring(BinaryClassificationObjective):
     score_needs_proba = False
     perfect_score = math.inf
     is_bounded_like_percentage = False  # Range (-Inf, Inf)
+    expected_range = [float("-inf"), float("inf")]
 
     def __init__(self, true_positives=1, false_positives=-1):
         self.true_positives = true_positives

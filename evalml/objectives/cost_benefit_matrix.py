@@ -23,6 +23,7 @@ class CostBenefitMatrix(BinaryClassificationObjective):
     score_needs_proba = False
     perfect_score = np.inf
     is_bounded_like_percentage = False  # Range (-Inf, Inf)
+    expected_range = [float("-inf"), float("inf")]
 
     def __init__(self, true_positive, true_negative, false_positive, false_negative):
         if None in {true_positive, true_negative, false_positive, false_negative}:
