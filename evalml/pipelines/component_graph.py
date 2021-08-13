@@ -5,7 +5,6 @@ import pandas as pd
 import woodwork as ww
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
-from typing_extensions import final
 
 from evalml.exceptions.exceptions import (
     MissingComponentError,
