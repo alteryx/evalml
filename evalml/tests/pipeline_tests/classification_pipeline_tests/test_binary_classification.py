@@ -198,7 +198,7 @@ def test_pipeline_thresholding_errors(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )
     pipeline.fit(X, y)
-    pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
+    pred_proba = pipeline.predict_proba(X).iloc[:, 1]
     with pytest.raises(
         ValueError,
         match="Problem type must be binary and objective must be optimizable",

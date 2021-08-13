@@ -2207,7 +2207,11 @@ def test_binary_pipeline_string_target_thresholding(
     )
     pipeline.fit(X, y)
     assert pipeline.threshold is None
-    pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
+    pred_proba = (
+        pipeline.predict_proba(X, y).iloc[:, 1]
+        if is_time_series
+        else pipeline.predict_proba(X).iloc[:, 1]
+    )
     pipeline.optimize_threshold(X, y, pred_proba, objective)
     assert pipeline.threshold is not None
 

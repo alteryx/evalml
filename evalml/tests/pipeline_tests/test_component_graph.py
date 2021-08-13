@@ -580,20 +580,6 @@ def test_predict_empty_graph(X_y_binary):
     assert_frame_equal(X, X_t)
 
 
-@patch("evalml.pipelines.components.OneHotEncoder.fit_transform")
-@patch("evalml.pipelines.components.OneHotEncoder.transform")
-def test_predict_transformer_end(mock_fit_transform, mock_transform, X_y_binary):
-    X, y = X_y_binary
-    graph = {"Imputer": [Imputer, "X", "y"], "OHE": [OneHotEncoder, "Imputer.x", "y"]}
-    component_graph = ComponentGraph(graph).instantiate({})
-    mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
-    mock_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
-
-    component_graph.fit(X, y)
-    output = component_graph.predict(X)
-    assert_frame_equal(pd.DataFrame(X), output)
-
-
 def test_no_instantiate_before_fit(X_y_binary):
     X, y = X_y_binary
     graph = {
@@ -2166,4 +2152,4 @@ def test_component_graph_predict_with_transformer_end(X_y_binary):
             "Cannot call predict() on a component graph because the final component is not a Estimator."
         ),
     ):
-        component_graph.predict(X, y)
+        component_graph.predict(X)
