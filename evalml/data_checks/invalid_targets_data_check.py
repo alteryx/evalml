@@ -80,7 +80,7 @@ class InvalidTargetDataCheck(DataCheck):
 
         y = infer_feature_types(y)
         is_supported_type = y.ww.logical_type.type_string in numeric_and_boolean_ww + [
-            ww.logical_types.Categorical.type_string
+            ww.logical_types.Categorical.type_string,
         ]
         if not is_supported_type:
             results["errors"].append(

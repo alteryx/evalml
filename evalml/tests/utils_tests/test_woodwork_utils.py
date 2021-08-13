@@ -1,8 +1,16 @@
+from itertools import product
+
 import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from woodwork.logical_types import Categorical, Datetime, Ordinal
+from woodwork.logical_types import (
+    Categorical,
+    Datetime,
+    Double,
+    Ordinal,
+    Unknown,
+)
 
 from evalml.utils import (
     _convert_numeric_dataset_pandas,
@@ -257,3 +265,49 @@ def test_ordinal_retains_order_min():
     )
     ltypes = cat_subset.ww.logical_types
     assert not hasattr(ltypes["categorical"], "encoding")
+
+
+@pytest.mark.parametrize(
+    "null_col,already_inited",
+    product(
+        [
+            [None, None, None],
+            [np.nan, np.nan, np.nan],
+            [pd.NA, pd.NA, pd.NA],
+            ["ax23n9ck23l", "1,28&*_%*&&xejc", "xnmvz@@Dcmeods-0"],
+        ],
+        [True, False],
+    ),
+)
+def test_infer_feature_types_NA_to_nan(null_col, already_inited):
+    """A short test to make sure that columns with all null values
+    get converted from woodwork Unknown logical type with string
+    physical type back to the original Double logical type with
+    float physical type.  Other Unknown columns should remain unchanged."""
+
+    df = pd.DataFrame(
+        {
+            "unknown": null_col,
+        },
+    )
+
+    # Check that all null columns are inferred as Unknown type.
+    df.ww.init()
+    assert isinstance(df.ww.logical_types["unknown"], Unknown)
+    if all(df["unknown"].isnull()):
+        assert all([isinstance(x, type(pd.NA)) for x in df["unknown"]])
+    else:
+        assert all([isinstance(x, str) for x in df["unknown"]])
+
+    # Use infer_feature_types() to init the WW accessor and verify that all
+    # null columns are now Double logical types backed by np.nan and that other
+    # columns inferred as Unknown remain untouched.
+    del df.ww
+    if already_inited:
+        df.ww.init()
+    inferred_df = infer_feature_types(df)
+    if all(df["unknown"].isnull()):
+        assert isinstance(inferred_df.ww.logical_types["unknown"], Double)
+        assert all([isinstance(x, type(np.nan)) for x in inferred_df["unknown"]])
+    else:
+        assert all([isinstance(x, str) for x in df["unknown"]])
