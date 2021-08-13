@@ -306,10 +306,16 @@ class ComponentGraph:
                 elif component_name != self.compute_order[-1]:
                     try:
                         output = component_instance.predict_proba(x_inputs)
-                        if len(output.columns) == 2:
-                            # If it is a binary problem, drop the first column since both columns are colinear
-                            output.drop(0, axis=1)
-                        output.ww.rename({col: str(col) + '_' + component_name for col in output.columns}, inplace=True)
+                        if isinstance(output, pd.DataFrame):
+                            if len(output.columns) == 2:
+                                # If it is a binary problem, drop the first column since both columns are colinear
+                                output = output.ww.drop(output.columns[0])
+                            output = output.ww.rename(
+                                {
+                                    col: f"{str(col)}_{component_name}.x"
+                                    for col in output.columns
+                                }
+                            )
                     except MethodPropertyNotFoundError:
                         output = component_instance.predict(x_inputs)
                 else:
