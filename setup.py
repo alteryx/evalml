@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 extras_require = {
     'update_checker': ['alteryx-open-src-update-checker >= 2.0.0'],
-    'prophet': ['cmdstan-builder == 0.0.4']
+    'prophet': ['cmdstan-builder == 0.0.6', 'prophet-builder == 0.0.1']
 }
 
 setup(

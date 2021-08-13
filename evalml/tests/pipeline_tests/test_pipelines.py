@@ -124,7 +124,7 @@ def test_all_estimators(
         if is_using_conda:
             n_estimators = 16
         else:
-            n_estimators = 18 if is_running_py_39_or_above else 19
+            n_estimators = 19 if is_running_py_39_or_above else 20
         assert len(_all_estimators_used_in_search()) == n_estimators
 
 

@@ -39,7 +39,8 @@ jobs:
         name: Install evalml with test dependencies, core dependencies, & optional requirements (Prophet)
         run: |
           source test_python/bin/activate
-          pip install cmdstan-builder==0.0.4
+          pip install cmdstan-builder==0.0.6
+          pip install prophet-builder==0.0.1
           pip install -e . --no-dependencies
           pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
           pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
