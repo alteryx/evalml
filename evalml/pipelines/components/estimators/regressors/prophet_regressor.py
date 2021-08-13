@@ -106,7 +106,7 @@ class ProphetRegressor(Estimator):
             if not prophet_df.empty:
                 y.index = prophet_df.index
             prophet_df["y"] = y
-        prophet_df['ds'] = date_column
+        prophet_df["ds"] = date_column
 
         return prophet_df
 
@@ -158,7 +158,7 @@ class ProphetRegressor(Estimator):
 
         parameters = {
             "changepoint_prior_scale": 0.05,
-            'date_index': None,
+            "date_index": None,
             "seasonality_prior_scale": 10,
             "holidays_prior_scale": 10,
             "seasonality_mode": "additive",

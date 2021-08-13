@@ -115,7 +115,10 @@ def _get_preprocessing_components(
     datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
 
     add_datetime_featurizer = len(datetime_cols) > 0
-    if add_datetime_featurizer and estimator_class.model_family not in [ModelFamily.ARIMA, ModelFamily.PROPHET]:
+    if add_datetime_featurizer and estimator_class.model_family not in [
+        ModelFamily.ARIMA,
+        ModelFamily.PROPHET,
+    ]:
         pp_components.append(DateTimeFeaturizer)
 
     if (

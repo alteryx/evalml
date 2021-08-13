@@ -518,7 +518,7 @@ def test_describe_component():
             "name": "Prophet Regressor",
             "parameters": {
                 "changepoint_prior_scale": 0.05,
-                'date_index': None,
+                "date_index": None,
                 "holidays_prior_scale": 10,
                 "seasonality_mode": "additive",
                 "seasonality_prior_scale": 10,

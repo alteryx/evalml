@@ -35,7 +35,7 @@ def test_init_with_other_params():
     assert clf.parameters == {
         "changepoint_prior_scale": 0.05,
         "daily_seasonality": True,
-        'date_index': None,
+        "date_index": None,
         "holidays_prior_scale": 10,
         "interval_width": 0.8,
         "mcmc_samples": 5,
@@ -57,7 +57,7 @@ def test_get_params(ts_data):
     clf = ProphetRegressor()
     assert clf.get_params() == {
         "changepoint_prior_scale": 0.05,
-        'date_index': None,
+        "date_index": None,
         "seasonality_prior_scale": 10,
         "holidays_prior_scale": 10,
         "seasonality_mode": "additive",
@@ -118,9 +118,14 @@ def test_fit_predict_ts_no_X(ts_data):
 
 
 def test_fit_predict_date_col(ts_data):
-    X = pd.DataFrame({"features": range(100), "these_dates": pd.date_range('1/1/21', periods=100),
-                      'more_dates': pd.date_range('7/4/1987', periods=100)})
-    y = pd.Series(np.random.randint(1, 5, 100), name='y')
+    X = pd.DataFrame(
+        {
+            "features": range(100),
+            "these_dates": pd.date_range("1/1/21", periods=100),
+            "more_dates": pd.date_range("7/4/1987", periods=100),
+        }
+    )
+    y = pd.Series(np.random.randint(1, 5, 100), name="y")
 
     clf = ProphetRegressor(
         date_index="these_dates", uncertainty_samples=False, changepoint_prior_scale=2.0

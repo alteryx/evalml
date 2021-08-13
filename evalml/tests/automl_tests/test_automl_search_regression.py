@@ -419,10 +419,6 @@ def test_automl_supports_time_series_regression(AutoMLTestEnv, X_y_regression):
 
     dt = configuration.pop("date_index")
     for result in automl.results["pipeline_results"].values():
-        print(result)
-        if result["id"] != 0 and "ARIMA Regressor" not in result["parameters"]:
-            assert result == None
-        print("----------------------------------")
         assert result["pipeline_class"] == TimeSeriesRegressionPipeline
 
         if result["id"] == 0:
@@ -431,6 +427,10 @@ def test_automl_supports_time_series_regression(AutoMLTestEnv, X_y_regression):
             dt_ = result["parameters"]["ARIMA Regressor"].pop("date_index")
             assert "DateTime Featurization Component" not in result["parameters"].keys()
             assert "Delayed Feature Transformer" not in result["parameters"].keys()
+        elif "Prophet Regressor" in result["parameters"]:
+            dt_ = result["parameters"]["Prophet Regressor"].pop("date_index")
+            assert "DateTime Featurization Component" not in result["parameters"].keys()
+            assert "Delayed Feature Transformer" in result["parameters"].keys()
         else:
             dt_ = result["parameters"]["Delayed Feature Transformer"].pop("date_index")
         assert dt == dt_
