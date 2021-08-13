@@ -40,7 +40,7 @@ class ProphetRegressor(Estimator):
 
     def __init__(
         self,
-        date_column="ds",
+        date_index=None,
         changepoint_prior_scale=0.05,
         seasonality_prior_scale=10,
         holidays_prior_scale=10,
@@ -49,7 +49,7 @@ class ProphetRegressor(Estimator):
         stan_backend="CMDSTANPY",
         **kwargs,
     ):
-        self.date_column = date_column
+        self.date_column = date_index
 
         parameters = {
             "changepoint_prior_scale": changepoint_prior_scale,
@@ -86,22 +86,28 @@ class ProphetRegressor(Estimator):
             y = copy.deepcopy(y)
 
         if date_column in X.columns:
-            date_col = X[date_column]
-        elif isinstance(X.index, pd.DatetimeIndex):
-            date_col = X.reset_index()
-            date_col = date_col["index"]
-        elif isinstance(y.index, pd.DatetimeIndex):
-            date_col = y.reset_index()
-            date_col = date_col["index"]
+            date_column = X.pop(date_column)
         else:
-            msg = "Prophet estimator requires input data X to have a datetime column specified by the 'date_column' parameter. If it doesn't find one, it will look for the datetime column in the index of X or y."
-            raise ValueError(msg)
+            if isinstance(X.index, pd.DatetimeIndex):
+                X = X.reset_index()
+                date_column = X.pop("index")
+            elif isinstance(y.index, pd.DatetimeIndex):
+                y = y.reset_index()
+                date_column = y.pop("index")
+            else:
+                msg = "Prophet estimator requires input data X to have a datetime column specified by the 'date_column' parameter. If it doesn't find one, it will look for the datetime column in the index of X or y."
+                raise ValueError(msg)
 
-        date_col = date_col.rename("ds")
-        prophet_df = date_col.to_frame()
+        prophet_df = pd.DataFrame()
+        if X is not None:
+            prophet_df = X.copy()
+
         if y is not None:
-            y.index = prophet_df.index
+            if not prophet_df.empty:
+                y.index = prophet_df.index
             prophet_df["y"] = y
+        prophet_df['ds'] = date_column
+
         return prophet_df
 
     def fit(self, X, y=None):
