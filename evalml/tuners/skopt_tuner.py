@@ -1,3 +1,4 @@
+import logging
 import warnings
 
 import pandas as pd
@@ -6,9 +7,7 @@ from skopt import Optimizer
 from .tuner import Tuner
 from .tuner_exceptions import ParameterError
 
-from evalml.utils.logger import get_logger
-
-logger = get_logger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class SKOptTuner(Tuner):

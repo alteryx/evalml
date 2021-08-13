@@ -1,3 +1,4 @@
+import logging
 from woodwork import logical_types
 
 from .binary_classification_pipeline import BinaryClassificationPipeline
@@ -47,9 +48,9 @@ from evalml.problem_types import (
     is_regression,
     is_time_series,
 )
-from evalml.utils import get_logger, import_or_raise, infer_feature_types
+from evalml.utils import import_or_raise, infer_feature_types
 
-logger = get_logger(__file__)
+logger = logging.getLogger(__name__)
 
 
 def _get_preprocessing_components(

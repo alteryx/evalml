@@ -1,5 +1,6 @@
 import copy
 import inspect
+import logging
 import os
 import sys
 import traceback
@@ -25,7 +26,6 @@ from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
 from evalml.utils import (
-    get_logger,
     import_or_raise,
     infer_feature_types,
     jupyter_check,
@@ -34,7 +34,7 @@ from evalml.utils import (
     safe_repr,
 )
 
-logger = get_logger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class PipelineBase(ABC, metaclass=PipelineBaseMeta):

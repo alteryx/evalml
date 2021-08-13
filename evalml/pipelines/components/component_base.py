@@ -1,4 +1,5 @@
 import copy
+import logging
 from abc import ABC, abstractmethod
 
 import cloudpickle
@@ -7,13 +8,12 @@ from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
     classproperty,
-    get_logger,
     infer_feature_types,
     log_subtitle,
     safe_repr,
 )
 
-logger = get_logger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class ComponentBase(ABC, metaclass=ComponentBaseMeta):

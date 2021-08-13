@@ -1,7 +1,8 @@
-from evalml.exceptions import PipelineScoreError
-from evalml.utils.logger import get_logger
+import logging
 
-logger = get_logger(__file__)
+from evalml.exceptions import PipelineScoreError
+
+logger = logging.getLogger(__name__)
 
 
 def silent_error_callback(exception, traceback, automl, **kwargs):

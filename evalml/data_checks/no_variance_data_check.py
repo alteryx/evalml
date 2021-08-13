@@ -1,3 +1,5 @@
+import logging
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckAction,
@@ -7,9 +9,8 @@ from evalml.data_checks import (
     DataCheckWarning,
 )
 from evalml.utils import infer_feature_types
-from evalml.utils.logger import get_logger
 
-logger = get_logger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class NoVarianceDataCheck(DataCheck):

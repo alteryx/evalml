@@ -1,4 +1,5 @@
 import importlib
+import logging
 import os
 import warnings
 from collections import namedtuple
@@ -12,9 +13,8 @@ from evalml.exceptions import (
     EnsembleMissingPipelinesError,
     MissingComponentError,
 )
-from evalml.utils import get_logger
 
-logger = get_logger(__file__)
+logger = logging.getLogger(__name__)
 
 
 def import_or_raise(library, error_msg=None, warning=False):

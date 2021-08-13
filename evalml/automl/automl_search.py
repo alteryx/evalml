@@ -1,4 +1,5 @@
 import copy
+import logging
 import pickle
 import sys
 import time
@@ -68,7 +69,7 @@ from evalml.utils.logger import (
     time_elapsed,
 )
 
-logger = get_logger(__file__)
+logger = logging.getLogger(__name__)
 
 
 def search(

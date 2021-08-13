@@ -1,3 +1,4 @@
+import logging
 import warnings
 
 import networkx as nx
@@ -18,9 +19,9 @@ from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import get_logger, import_or_raise, infer_feature_types
+from evalml.utils import import_or_raise, infer_feature_types
 
-logger = get_logger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class ComponentGraph:

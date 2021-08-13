@@ -1,4 +1,5 @@
 import locale
+import logging
 import os
 import platform
 import struct
@@ -9,9 +10,8 @@ import psutil
 from psutil._common import bytes2human
 
 import evalml
-from evalml.utils import get_logger
 
-logger = get_logger(__file__)
+logger = logging.getLogger(__name__)
 
 
 def print_info():

@@ -1,4 +1,5 @@
 import inspect
+import logging
 
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.multiclass import unique_labels
@@ -10,9 +11,9 @@ from evalml.pipelines.components.component_base import ComponentBase
 from evalml.pipelines.components.estimators.estimator import Estimator
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.problem_types import ProblemTypes, handle_problem_types
-from evalml.utils import get_importable_subclasses, get_logger
+from evalml.utils import get_importable_subclasses
 
-logger = get_logger(__file__)
+logger = logging.getLogger(__name__)
 
 
 def _all_estimators():
