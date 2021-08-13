@@ -14,22 +14,23 @@ class PipelineBaseMeta(BaseMeta):
         """
 
         @wraps(method)
-        def _check_for_fit(self, X=None, y=None, objective=None):
+        def _check_for_fit(self, *args, **kwargs):
             klass = type(self).__name__
             if not self._is_fitted:
                 raise PipelineNotYetFittedError(
                     f"This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}."
                 )
-            if method.__name__ == "predict_proba":
-                return method(self, X)
-            elif method.__name__ == "predict":
-                return method(self, X, objective)
-            elif method.__name__ == "inverse_transform":
-                return method(self, X)
-            elif method.__name__ == "transform":
-                return method(self, X, y)
-            else:
-                return method(self)
+            # if method.__name__ == "predict_proba":
+            return method(self, *args, **kwargs)
+            # elif method.__name__ == "predict":
+            #     import pdb; pdb.set_trace()
+            #     return method(self, *args, **kwargs)
+            # elif method.__name__ == "inverse_transform":
+            #     return method(self, *args, **kwargs)
+            # elif method.__name__ == "transform":
+            #     return method(self, *args, **kwargs)
+            # else:
+            #     return method(self)
 
         return _check_for_fit
 
