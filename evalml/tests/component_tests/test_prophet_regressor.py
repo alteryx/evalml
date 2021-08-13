@@ -35,6 +35,7 @@ def test_init_with_other_params():
     assert clf.parameters == {
         "changepoint_prior_scale": 0.05,
         "daily_seasonality": True,
+        'date_index': None,
         "holidays_prior_scale": 10,
         "interval_width": 0.8,
         "mcmc_samples": 5,
@@ -56,6 +57,7 @@ def test_get_params(ts_data):
     clf = ProphetRegressor()
     assert clf.get_params() == {
         "changepoint_prior_scale": 0.05,
+        'date_index': None,
         "seasonality_prior_scale": 10,
         "holidays_prior_scale": 10,
         "seasonality_mode": "additive",

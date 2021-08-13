@@ -49,7 +49,6 @@ class ProphetRegressor(Estimator):
         stan_backend="CMDSTANPY",
         **kwargs,
     ):
-        self.date_column = date_index
 
         parameters = {
             "changepoint_prior_scale": changepoint_prior_scale,
@@ -72,6 +71,7 @@ class ProphetRegressor(Estimator):
         prophet = import_or_raise("prophet", error_msg=p_error_msg)
 
         prophet_regressor = prophet.Prophet(**parameters)
+        parameters["date_index"] = date_index
         super().__init__(
             parameters=parameters,
             component_obj=prophet_regressor,
@@ -95,7 +95,7 @@ class ProphetRegressor(Estimator):
                 y = y.reset_index()
                 date_column = y.pop("index")
             else:
-                msg = "Prophet estimator requires input data X to have a datetime column specified by the 'date_column' parameter. If it doesn't find one, it will look for the datetime column in the index of X or y."
+                msg = "Prophet estimator requires input data X to have a datetime column specified by the 'date_index' parameter. If it doesn't find one, it will look for the datetime column in the index of X or y."
                 raise ValueError(msg)
 
         prophet_df = pd.DataFrame()
@@ -117,7 +117,7 @@ class ProphetRegressor(Estimator):
         X, y = super()._manage_woodwork(X, y)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, date_column=self.date_column
+            X=X, y=y, date_column=self.parameters["date_index"]
         )
 
         self._component_obj.fit(prophet_df)
@@ -130,7 +130,7 @@ class ProphetRegressor(Estimator):
         X = infer_feature_types(X)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, date_column=self.date_column
+            X=X, y=y, date_column=self.parameters["date_index"]
         )
 
         y_pred = self._component_obj.predict(prophet_df)["yhat"]
@@ -158,6 +158,7 @@ class ProphetRegressor(Estimator):
 
         parameters = {
             "changepoint_prior_scale": 0.05,
+            'date_index': None,
             "seasonality_prior_scale": 10,
             "holidays_prior_scale": 10,
             "seasonality_mode": "additive",
