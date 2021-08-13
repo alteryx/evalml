@@ -7,6 +7,7 @@ from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
 from evalml.exceptions.exceptions import (
+    MethodPropertyNotFoundError,
     MissingComponentError,
     ParameterNotUsedWarning,
 )
@@ -299,12 +300,20 @@ class ComponentGraph:
             else:
                 if fit:
                     component_instance.fit(x_inputs, y_input)
-                if not (
-                    fit and component_name == self.compute_order[-1]
-                ):  # Don't call predict on the final component during fit
-                    output = component_instance.predict(x_inputs)
-                else:
+                if fit and component_name == self.compute_order[-1]:
+                    # Don't call predict on the final component during fit
                     output = None
+                elif component_name != self.compute_order[-1]:
+                    try:
+                        output = component_instance.predict_proba(x_inputs)
+                        if len(output.columns) == 2:
+                            # If it is a binary problem, drop the first column since both columns are colinear
+                            output.drop(0, axis=1)
+                        output.ww.rename({col: str(col) + '_' + component_name for col in output.columns}, inplace=True)
+                    except MethodPropertyNotFoundError:
+                        output = component_instance.predict(x_inputs)
+                else:
+                    output = component_instance.predict(x_inputs)
                 output_cache[f"{component_name}.x"] = output
         return output_cache
 
