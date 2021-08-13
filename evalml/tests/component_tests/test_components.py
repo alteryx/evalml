@@ -973,7 +973,7 @@ def test_estimator_check_for_fit(X_y_binary):
             return self
 
         def predict(self, X):
-            series = pd.Series()
+            series = pd.Series(dtype="string")
             series.ww.init()
             return series
 

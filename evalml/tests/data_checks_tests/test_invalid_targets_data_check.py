@@ -55,11 +55,18 @@ def test_invalid_target_data_check_nan_error():
         "warnings": [],
         "errors": [
             DataCheckError(
+                message="Target is unsupported Unknown type. Valid Woodwork "
+                "logical types include: integer, double, boolean",
+                data_check_name=invalid_targets_data_check_name,
+                message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
+                details={"unsupported_type": "unknown"},
+            ).to_dict(),
+            DataCheckError(
                 message="Target is either empty or fully null.",
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
                 details={},
-            ).to_dict()
+            ).to_dict(),
         ],
         "actions": [],
     }
@@ -788,11 +795,18 @@ def test_invalid_target_data_action_for_all_null(problem_type):
         "warnings": [],
         "errors": [
             DataCheckError(
+                message="Target is unsupported Unknown type. Valid Woodwork "
+                "logical types include: integer, double, boolean",
+                data_check_name=invalid_targets_data_check_name,
+                message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
+                details={"unsupported_type": "unknown"},
+            ).to_dict(),
+            DataCheckError(
                 message="Target is either empty or fully null.",
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
                 details={},
-            ).to_dict()
+            ).to_dict(),
         ],
         "actions": [],
     }
