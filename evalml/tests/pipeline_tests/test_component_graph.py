@@ -1,3 +1,4 @@
+import re
 import warnings
 from datetime import datetime, timedelta
 from unittest.mock import patch
@@ -2106,7 +2107,7 @@ def test_component_graph_compute_final_component_features_with_sampler(
     assert len(features_for_estimator) == len(y)
 
 
-def test_component_graph_with_transformer_end(X_y_binary):
+def test_component_graph_transform(X_y_binary):
     X, y = X_y_binary
     component_dict = {
         "Imputer": ["Imputer", "X", "y"],
@@ -2116,3 +2117,53 @@ def test_component_graph_with_transformer_end(X_y_binary):
     component_graph.instantiate({})
     component_graph.fit(X, y)
     component_graph.transform(X, y)
+
+
+def test_component_graph_transform_with_target_transformer(X_y_binary):
+    X, y = X_y_binary
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        "Target Imputer": ["Target Imputer", "OHE.x", "y"],
+    }
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    component_graph.transform(X, y)
+
+
+def test_component_graph_transform_with_estimator_end(X_y_binary):
+    X, y = X_y_binary
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        "RF": ["Random Forest Classifier", "OHE.x", "y"],
+    }
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot call transform() on a component graph because the final component is not a Transformer."
+        ),
+    ):
+        component_graph.transform(X, y)
+
+
+def test_component_graph_predict_with_transformer_end(X_y_binary):
+    X, y = X_y_binary
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+    }
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot call predict() on a component graph because the final component is not a Estimator."
+        ),
+    ):
+        component_graph.predict(X, y)

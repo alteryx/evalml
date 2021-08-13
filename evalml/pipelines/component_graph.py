@@ -5,6 +5,7 @@ import pandas as pd
 import woodwork as ww
 from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
+from typing_extensions import final
 
 from evalml.exceptions.exceptions import (
     MissingComponentError,
@@ -234,11 +235,39 @@ class ComponentGraph:
         x_inputs = ww.concat_columns(x_inputs)
         return x_inputs, y_input
 
+    def transform(self, X, y):
+        """Transform the input using the component graph.
+
+        Arguments:
+            X (pd.DataFrame): Input features of shape [n_samples, n_features].
+            y (pd.Series): The target data of length [n_samples].
+
+        Returns:
+            pd.Series: Transformed output.
+        """
+        if len(self.compute_order) == 0:
+            return infer_feature_types(X)
+        final_component = self.compute_order[-1]
+
+        final_component_instance = self.get_component(final_component)
+        if not isinstance(final_component_instance, Transformer):
+            raise ValueError(
+                "Cannot call transform() on a component graph because the final component is not a Transformer."
+            )
+        # check if final component is estimator. If yes, error out.
+        outputs = self._compute_features(self.compute_order, X, y, False)
+
+        output_x = infer_feature_types(outputs.get(f"{final_component}.x"))
+        output_y = outputs.get(f"{final_component}.y", None)
+        if output_y is not None:
+            return output_x, output_y
+        return output_x
+
     def predict(self, X):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            X (pd.DataFrame): Input features of shape [n_samples, n_features].
 
         Returns:
             pd.Series: Predicted values.
@@ -246,23 +275,12 @@ class ComponentGraph:
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
+        final_component_instance = self.get_component(final_component)
+        if not isinstance(final_component_instance, Estimator):
+            raise ValueError(
+                "Cannot call predict() on a component graph because the final component is not a Estimator."
+            )
         outputs = self._compute_features(self.compute_order, X)
-        return infer_feature_types(outputs.get(f"{final_component}.x"))
-
-    def transform(self, X, y):
-        """Make predictions using selected features.
-
-        Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features].
-
-        Returns:
-            pd.Series: Predicted values.
-        """
-        if len(self.compute_order) == 0:
-            return infer_feature_types(X)
-        final_component = self.compute_order[-1]
-        # check if final component is estimator. If yes, error out.
-        outputs = self._compute_features(self.compute_order, X, y, False)
         return infer_feature_types(outputs.get(f"{final_component}.x"))
 
     def _compute_features(self, component_list, X, y=None, fit=False):
