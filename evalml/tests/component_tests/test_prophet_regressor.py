@@ -101,7 +101,9 @@ def test_fit_predict_ts_with_y_index(ts_data):
 
 
 def test_fit_predict_ts_no_X(ts_data):
-    X, y = ts_data
+    y = pd.Series(
+        range(1, 32), name="dates", index=pd.date_range("2020-10-01", "2020-10-31")
+    )
 
     p_clf = prophet.Prophet(uncertainty_samples=False, changepoint_prior_scale=2.0)
     prophet_df = ProphetRegressor.build_prophet_df(

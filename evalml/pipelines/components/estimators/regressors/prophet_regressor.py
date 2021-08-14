@@ -94,13 +94,12 @@ class ProphetRegressor(Estimator):
             elif isinstance(y.index, pd.DatetimeIndex):
                 y = y.reset_index()
                 date_column = y.pop("index")
+                y = pd.Series(y.values.flatten())
             else:
                 msg = "Prophet estimator requires input data X to have a datetime column specified by the 'date_index' parameter. If it doesn't find one, it will look for the datetime column in the index of X or y."
                 raise ValueError(msg)
 
-        prophet_df = pd.DataFrame()
-        if X is not None:
-            prophet_df = X.copy()
+        prophet_df = X.copy()
 
         if y is not None:
             if not prophet_df.empty:
