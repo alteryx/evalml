@@ -116,15 +116,20 @@ def test_allowed_model_families(has_minimal_dependencies):
 
 
 def test_all_estimators(
-    has_minimal_dependencies, is_running_py_39_or_above, is_using_conda
+    has_minimal_dependencies,
+    is_running_py_39_or_above,
+    is_using_conda,
+    is_using_windows,
 ):
     if has_minimal_dependencies:
         assert len((_all_estimators_used_in_search())) == 10
     else:
         if is_using_conda:
             n_estimators = 16
+        elif is_using_windows:
+            n_estimators = 17
         else:
-            n_estimators = 19 if is_running_py_39_or_above else 20
+            n_estimators = 17 if is_running_py_39_or_above else 18
         assert len(_all_estimators_used_in_search()) == n_estimators
 
 
