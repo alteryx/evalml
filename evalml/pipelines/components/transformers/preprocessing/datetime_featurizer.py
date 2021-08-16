@@ -112,7 +112,9 @@ class DateTimeFeaturizer(Transformer):
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
-        self._date_time_col_names = list(X.ww.select("datetime", return_schema=True).columns)
+        self._date_time_col_names = list(
+            X.ww.select("datetime", return_schema=True).columns
+        )
         return self
 
     def transform(self, X, y=None):
