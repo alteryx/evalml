@@ -1,4 +1,5 @@
 import woodwork as ww
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckMessageCode,
@@ -49,7 +50,7 @@ class OutliersDataCheck(DataCheck):
         for col in X.columns:
             col_series = ww.init_series(X[col])
             box_plot_dict = col_series.ww.box_plot_dict()
-            if len(box_plot_dict['low_values']) or len(box_plot_dict['high_values']):
+            if len(box_plot_dict["low_values"]) or len(box_plot_dict["high_values"]):
                 has_outliers.append(col)
 
         warning_msg = "Column(s) {} are likely to have outlier data.".format(

@@ -115,7 +115,9 @@ def test_outliers_data_check_string_cols():
 
 
 def test_outlier_score_all_nan():
-    all_nan = pd.DataFrame([[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan]])
+    all_nan = pd.DataFrame(
+        [[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan]]
+    )
     outliers_check = OutliersDataCheck()
     assert outliers_check.validate(all_nan) == {
         "warnings": [],
