@@ -731,7 +731,7 @@ class AutoMLSearch:
                 1
                 + len(self.allowed_pipelines)
                 + len(self.allowed_pipelines) * self._pipelines_per_batch
-                + 1
+                + 2
             )
             if self.max_iterations < first_ensembling_iteration:
                 run_ensembling = False
@@ -763,7 +763,7 @@ class AutoMLSearch:
                     + len(self.allowed_pipelines)
                     + self._pipelines_per_batch
                     * (self.max_batches - 1 - num_ensemble_batches)
-                    + num_ensemble_batches
+                    + num_ensemble_batches * 2
                 )
             else:
                 self.max_iterations = (

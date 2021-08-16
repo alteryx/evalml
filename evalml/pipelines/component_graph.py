@@ -1,4 +1,5 @@
 """Component graph for a pipeline as a directed acyclic graph (DAG)."""
+from evalml.model_family.model_family import ModelFamily
 from evalml.problem_types.problem_types import ProblemTypes
 from evalml.problem_types.utils import detect_problem_type
 import inspect
@@ -137,6 +138,15 @@ class ComponentGraph:
                 defaults[component.name] = component.default_parameters
         return defaults
 
+    @property
+    def is_ensemble_graph(self):
+        """Checks if graph represents an ensemble graph
+
+        Returns:
+            bool: True if there is an ensembler component at the end of the graph
+        """
+        return self.get_component(self.compute_order[-1]).model_family == ModelFamily.ENSEMBLE
+
     def instantiate(self, parameters):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be raised if a component is already instantiated but the parameters dict contains arguments for that component.
 
@@ -193,7 +203,7 @@ class ComponentGraph:
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        self._compute_features(self.compute_order, X, y, fit=True, use_proba=True)
+        self._compute_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
         return self
 
@@ -238,7 +248,7 @@ class ComponentGraph:
             self.input_feature_names.update({self.compute_order[0]: list(X.columns)})
             return X, y
         component_outputs = self._compute_features(
-            self.compute_order[:-1], X, y=y, fit=needs_fitting, use_proba=True
+            self.compute_order[:-1], X, y=y, fit=needs_fitting
         )
         x_inputs, y_output = self._consolidate_inputs_for_component(
             component_outputs, self.compute_order[-1], X, y
@@ -321,7 +331,7 @@ class ComponentGraph:
         outputs = self._compute_features(self.compute_order, X)
         return infer_feature_types(outputs.get(f"{final_component}.x"))
 
-    def _compute_features(self, component_list, X, y=None, fit=False, use_proba=True):
+    def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
 
         Args:
@@ -329,8 +339,6 @@ class ComponentGraph:
             X (pd.DataFrame): Input data to the pipeline to transform.
             y (pd.Series): The target training data of length [n_samples].
             fit (boolean): Whether to fit the estimators as well as transform it.
-                        Defaults to False.
-            use_proba (bool): If true, caches prediction probabilities rather than predictions. 
                         Defaults to False.
 
         Returns:
@@ -370,6 +378,8 @@ class ComponentGraph:
                 output_cache[f"{component_name}.x"] = output_x
                 output_cache[f"{component_name}.y"] = output_y
             else:
+                # if fit and self.is_ensemble_graph and component_instance._is_fitted:
+                #     pass
                 if fit:
                     component_instance.fit(x_inputs, y_input)
 
