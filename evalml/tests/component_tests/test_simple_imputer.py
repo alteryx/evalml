@@ -410,3 +410,18 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(
             assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
                 0: Double
             }
+
+
+def test_component_handles_pre_init_ww():
+    """Test to determine whether SimpleImputer can handle
+    a Woodwork-inited DataFrame with partially null and fully
+    null columns (post Woodwork 0.5.1) and still perform the
+    expected behavior."""
+    df = pd.DataFrame(
+        {"part_null": [0, 1, 2, None], "all_null": [None, None, None, None]}
+    )
+    df.ww.init()
+    imputed = SimpleImputer().fit_transform(df)
+
+    assert "all_null" not in imputed.columns
+    assert [x for x in imputed["part_null"]] == [0, 1, 2, 0]
