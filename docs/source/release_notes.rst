@@ -12,6 +12,10 @@ Release Notes
     **Breaking Changes**
 
 
+**v0.30.2 Aug. 12, 2021**
+    * Fixes
+        * Updated the version numbering to match the release version.
+
 **v0.30.1 Aug. 12, 2021**
     * Enhancements
         * Added ``DatetimeFormatDataCheck`` for time series problems :pr:`2603`

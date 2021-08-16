@@ -10,7 +10,7 @@ extras_require = {
 
 setup(
     name='evalml',
-    version='0.30.1',
+    version='0.30.2',
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     description='EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.',
