@@ -276,12 +276,15 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         """
 
-    def transform(self, X, y):
-        """
+    def transform(self, X, y=None):
+        """Transform the input.
+
         Arguments:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
+            y (pd.Series): The target data of length [n_samples]. Defaults to None.
 
         Returns:
+            pd.DataFrame: Transformed output.
         """
         return self.component_graph.transform(X, y)
 

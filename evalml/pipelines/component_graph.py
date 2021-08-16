@@ -242,7 +242,7 @@ class ComponentGraph:
             y (pd.Series): The target data of length [n_samples]. Defaults to None.
 
         Returns:
-            pd.Series: Transformed output.
+            pd.DataFrame: Transformed output.
         """
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
