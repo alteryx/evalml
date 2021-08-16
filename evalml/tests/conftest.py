@@ -1126,6 +1126,7 @@ class _AutoMLTestEnv:
         self._mock_fit = None
         self._mock_tell = None
         self._mock_score = None
+        self._mock_get_names = None
         self._mock_encode_targets = None
         self._mock_predict_proba = None
         self._mock_optimize_threshold = None
@@ -1157,6 +1158,7 @@ class _AutoMLTestEnv:
         self._mock_fit = None
         self._mock_tell = None
         self._mock_score = None
+        self._mock_get_names = None
         self._mock_encode_targets = None
         self._mock_predict_proba = None
         self._mock_optimize_threshold = None
@@ -1181,6 +1183,10 @@ class _AutoMLTestEnv:
     @property
     def mock_score(self):
         return self._get_mock("score")
+
+    @property
+    def mock_get_names(self):
+        return self._get_mock("get_names")
 
     @property
     def mock_encode_targets(self):
@@ -1222,6 +1228,7 @@ class _AutoMLTestEnv:
         mock_score = self._patch_method(
             "score", side_effect=mock_score_side_effect, return_value=score_return_value
         )
+        mock_get_names = patch("evalml.pipelines.components.FeatureSelector.get_names", return_value=['1', '2', '3'])
 
         # For simplicity, we will always mock predict_proba and _encode_targets even if the problem is not a
         # classification problem. For regression problems, we'll mock BinaryClassificationPipeline but it doesn't
@@ -1261,12 +1268,13 @@ class _AutoMLTestEnv:
             "evalml.automl.AutoMLSearch._sleep_time", new_callable=sleep_time
         )
 
-        with mock_sleep, mock_fit as fit, mock_score as score, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
+        with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
             # Can think of `yield` as blocking this method until the computation finishes running
             yield
             self._mock_fit = fit
             self._mock_tell = tell
             self._mock_score = score
+            self._mock_get_names = get_names
             self._mock_encode_targets = encode
             self._mock_predict_proba = proba
             self._mock_optimize_threshold = optimize
