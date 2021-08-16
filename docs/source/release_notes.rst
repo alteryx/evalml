@@ -1,6 +1,22 @@
 Release Notes
 -------------
-**Future Release**
+**Future Releases**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.30.2 Aug. 16, 2021**
+    * Fixes
+        * Updated changelog and version numbers to match the release.  Release 0.30.1 was release erroneously without a change to the version numbers.  0.30.2 replaces it.
+
+**v0.30.1 Aug. 12, 2021**
     * Enhancements
         * Added ``DatetimeFormatDataCheck`` for time series problems :pr:`2603`
         * Added ``ProphetRegressor`` to estimators :pr:`2242`
