@@ -2581,12 +2581,12 @@ def test_get_hyperparameter_ranges():
 @pytest.mark.parametrize(
     "problem_type",
     [
-        ProblemTypes.TIME_SERIES_BINARY,
-        ProblemTypes.TIME_SERIES_MULTICLASS,
-        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.REGRESSION,
     ],
 )
-def test_ts_pipeline_predict_without_final_estimator(
+def test_pipeline_predict_without_final_estimator(
     problem_type, make_data_type, X_y_binary
 ):
     X, y = X_y_binary
@@ -2610,7 +2610,7 @@ def test_ts_pipeline_predict_without_final_estimator(
                 "Cannot call predict_proba() on a component graph because the final component is not a Estimator."
             ),
         ):
-            pipeline.predict_proba(X, y)
+            pipeline.predict_proba(X)
 
     with pytest.raises(
         ValueError,
@@ -2618,7 +2618,7 @@ def test_ts_pipeline_predict_without_final_estimator(
             "Cannot call predict() on a component graph because the final component is not a Estimator."
         ),
     ):
-        pipeline.predict(X, y)
+        pipeline.predict(X)
 
 
 @patch("evalml.pipelines.components.Imputer.transform")
