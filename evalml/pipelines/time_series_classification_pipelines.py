@@ -83,7 +83,11 @@ class TimeSeriesClassificationPipeline(
 
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
-        self.estimator.fit(X_t, y_shifted)
+
+        if self.estimator is not None:
+            self.estimator.fit(X_t, y_shifted)
+        else:
+            self.component_graph.get_last_component().fit(X_t, y)
         self.input_feature_names = self.component_graph.input_feature_names
         return self
 
@@ -129,6 +133,10 @@ class TimeSeriesClassificationPipeline(
         Returns:
             pd.Series: Predicted values.
         """
+        if self.estimator is None:
+            raise ValueError(
+                "Cannot call predict() on a component graph because the final component is not a Estimator."
+            )
         X, y = self._convert_to_woodwork(X, y)
         y = self._encode_targets(y)
         n_features = max(len(y), X.shape[0])
@@ -150,6 +158,10 @@ class TimeSeriesClassificationPipeline(
         Returns:
             pd.DataFrame: Probability estimates
         """
+        if self.estimator is None:
+            raise ValueError(
+                "Cannot call predict_proba() on a component graph because the final component is not a Estimator."
+            )
         X, y = self._convert_to_woodwork(X, y)
         y = self._encode_targets(y)
         features = self.compute_estimator_features(X, y)

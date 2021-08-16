@@ -576,8 +576,11 @@ def test_predict_empty_graph(X_y_binary):
     component_graph.instantiate({})
 
     component_graph.fit(X, y)
-    X_t = component_graph.predict(X)
+    X_t = component_graph.transform(X, y)
     assert_frame_equal(X, X_t)
+
+    X_pred = component_graph.predict(X)
+    assert_frame_equal(X, X_pred)
 
 
 def test_no_instantiate_before_fit(X_y_binary):

@@ -75,7 +75,10 @@ class TimeSeriesRegressionPipeline(
 
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
-        self.estimator.fit(X_t, y_shifted)
+        if self.estimator is not None:
+            self.estimator.fit(X_t, y_shifted)
+        else:
+            self.component_graph.get_last_component().fit(X_t, y)
         self.input_feature_names = self.component_graph.input_feature_names
 
         return self
@@ -84,13 +87,18 @@ class TimeSeriesRegressionPipeline(
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
-            y (pd.Series, np.ndarray, None): The target training targets of length [n_samples]
-            objective (Object or string): The objective to use to make predictions
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
+            y (pd.Series, np.ndarray, None): The target training targets of length [n_samples].
+            objective (Object or string): The objective to use to make predictions.
 
         Returns:
             pd.Series: Predicted values.
         """
+        if self.estimator is None:
+            raise ValueError(
+                "Cannot call predict() on a component graph because the final component is not a Estimator."
+            )
+
         if X is None:
             X = pd.DataFrame()
         X = infer_feature_types(X)

@@ -20,17 +20,8 @@ class PipelineBaseMeta(BaseMeta):
                 raise PipelineNotYetFittedError(
                     f"This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}."
                 )
-            # if method.__name__ == "predict_proba":
+
             return method(self, *args, **kwargs)
-            # elif method.__name__ == "predict":
-            #     import pdb; pdb.set_trace()
-            #     return method(self, *args, **kwargs)
-            # elif method.__name__ == "inverse_transform":
-            #     return method(self, *args, **kwargs)
-            # elif method.__name__ == "transform":
-            #     return method(self, *args, **kwargs)
-            # else:
-            #     return method(self)
 
         return _check_for_fit
 

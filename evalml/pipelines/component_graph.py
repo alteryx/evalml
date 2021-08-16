@@ -234,12 +234,12 @@ class ComponentGraph:
         x_inputs = ww.concat_columns(x_inputs)
         return x_inputs, y_input
 
-    def transform(self, X, y):
+    def transform(self, X, y=None):
         """Transform the input using the component graph.
 
         Arguments:
             X (pd.DataFrame): Input features of shape [n_samples, n_features].
-            y (pd.Series): The target data of length [n_samples].
+            y (pd.Series): The target data of length [n_samples]. Defaults to None.
 
         Returns:
             pd.Series: Transformed output.
