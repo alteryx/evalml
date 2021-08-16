@@ -21,7 +21,7 @@ Release Notes
     * Documentation Changes
         * To avoid local docs build error, only add warning disable and download headers on ReadTheDocs builds, not locally :pr:`2617`
     * Testing Changes
-        * Updated partial_dependence tests to change the element-wise comparison per the Numpy upgrade :pr:`2638`
+        * Updated partial_dependence tests to change the element-wise comparison per the Plotly 5.2.1 upgrade :pr:`2638`
         * Changed the lint CI job to only check against python 3.9 via the `-t` flag :pr:`2586`
         * Installed Prophet in linux nightlies test and fixed ``test_all_components`` :pr:`2598`
         * Refactored and fixed all ``make_pipeline`` tests to assert correct order and address new Woodwork Unknown type inference :pr:`2572`
