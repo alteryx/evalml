@@ -13,6 +13,7 @@ Release Notes
         * Updated ``get_best_sampler_for_data`` to consider all non-numeric datatypes as categorical for SMOTE :pr:`2590`
         * Fixed inconsistent test results from `TargetDistributionDataCheck` :pr:`2608`
         * Adopted vectorized pd.NA checking for Woodwork 0.5.1 support :pr:`2626`
+        * Pinned upper version of astroid to 2.6.6 to keep ReadTheDocs working. :pr:`2638`
     * Changes
         * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
         * Changed ``partial_dependence`` and ``graph_partial_dependence`` to raise a ``PartialDependenceError`` instead of ``ValueError``. This is not a breaking change because ``PartialDependenceError`` is a subclass of ``ValueError`` :pr:`2604`
@@ -20,6 +21,7 @@ Release Notes
     * Documentation Changes
         * To avoid local docs build error, only add warning disable and download headers on ReadTheDocs builds, not locally :pr:`2617`
     * Testing Changes
+        * Updated partial_dependence tests to change the element-wise comparison per the Plotly 5.2.1 upgrade :pr:`2638`
         * Changed the lint CI job to only check against python 3.9 via the `-t` flag :pr:`2586`
         * Installed Prophet in linux nightlies test and fixed ``test_all_components`` :pr:`2598`
         * Refactored and fixed all ``make_pipeline`` tests to assert correct order and address new Woodwork Unknown type inference :pr:`2572`
