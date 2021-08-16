@@ -42,6 +42,7 @@ Release Notes
         * Added ``SelectByType`` transformer :pr:`2531`
         * Added separate thresholds for percent null rows and columns in ``HighlyNullDataCheck`` :pr:`2562`
         * Added support for `NaN` natural language values :pr:`2577`
+        * Integrate ``EvalMLAlgorithm`` into ``AutoMLSearch`` :pr:`2634`
     * Fixes
         * Raised error message for types ``URL``, ``NaturalLanguage``, and ``EmailAddress`` in ``partial_dependence`` :pr:`2573`
     * Changes
