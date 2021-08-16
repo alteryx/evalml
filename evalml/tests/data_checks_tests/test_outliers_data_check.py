@@ -114,47 +114,37 @@ def test_outliers_data_check_string_cols():
     }
 
 
-def test_outlier_score():
+def test_outlier_score_all_nan():
+    all_nan = pd.DataFrame([[np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan], [np.nan, np.nan, np.nan]])
+    outliers_check = OutliersDataCheck()
+    assert outliers_check.validate(all_nan) == {
+        "warnings": [],
+        "errors": [],
+        "actions": [],
+    }
+
+
+def test_outliers_data_check_warnings_has_nan():
     a = np.arange(10) * 0.01
     data = np.tile(a, (100, 10))
 
     X = pd.DataFrame(data=data)
-    X.iloc[0, 3] = 1000
+    X.iloc[0, 3] = np.nan
     X.iloc[3, 25] = 1000
     X.iloc[5, 55] = 10000
     X.iloc[10, 72] = -1000
+    X.iloc[:, 90] = "string_values"
 
-    for col in X.columns:
-        results = OutliersDataCheck._outlier_score(X[col], convert_column=False)
-        if col in [3, 25, 55, 72]:
-            assert results["score"] != 1.0
-            assert (
-                len(results["values"]["high_values"]) != 0
-                or len(results["values"]["low_values"]) != 0
-            )
-        else:
-            assert results["score"] == 1.0
-            assert (
-                len(results["values"]["high_values"]) == 0
-                and len(results["values"]["low_values"]) == 0
-            )
-
-
-def test_outlier_score_convert_column_to_int():
-    has_outlier = pd.Series(np.append(np.arange(10), 1000)).astype(object)
-    results = OutliersDataCheck._outlier_score(has_outlier, convert_column=True)
-    assert results["score"] != 1.0
-    len(results["values"]["high_values"]) != 0 or len(
-        results["values"]["low_values"]
-    ) != 0
-    no_outlier = pd.Series(np.arange(10)).astype(object)
-    results = OutliersDataCheck._outlier_score(no_outlier, convert_column=True)
-    assert results["score"] == 1.0
-    len(results["values"]["high_values"]) == 0 and len(
-        results["values"]["low_values"]
-    ) == 0
-
-
-def test_outlier_score_all_nan():
-    all_nan = pd.Series([np.nan, np.nan, np.nan])
-    assert OutliersDataCheck._outlier_score(all_nan) is None
+    outliers_check = OutliersDataCheck()
+    assert outliers_check.validate(X) == {
+        "warnings": [
+            DataCheckWarning(
+                message="Column(s) '25', '55', '72' are likely to have outlier data.",
+                data_check_name=outliers_data_check_name,
+                message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                details={"columns": [25, 55, 72]},
+            ).to_dict()
+        ],
+        "errors": [],
+        "actions": [],
+    }
