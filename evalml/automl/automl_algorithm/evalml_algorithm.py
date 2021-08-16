@@ -373,7 +373,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
             # For first batch, pass the pipeline params to the components that need them
-            if name in self._custom_hyperparameters and self._batch_number == 0:
+            if name in self._custom_hyperparameters and self._batch_number == 2:
                 for param_name, value in self._custom_hyperparameters[name].items():
                     if isinstance(value, (Integer, Real)):
                         # get a random value in the space
