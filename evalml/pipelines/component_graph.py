@@ -1,3 +1,4 @@
+import inspect
 import warnings
 
 import networkx as nx
@@ -12,12 +13,8 @@ from evalml.exceptions.exceptions import (
     ParameterNotUsedWarning,
 )
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
-from evalml.pipelines.components.transformers.samplers.base_sampler import (
-    BaseSampler,
-)
-from evalml.pipelines.components.transformers.transformer import (
-    TargetTransformer,
-)
+from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
+from evalml.pipelines.components.transformers.transformer import TargetTransformer
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import get_logger, import_or_raise, infer_feature_types
 
@@ -135,18 +132,20 @@ class ComponentGraph:
         component_instances = {}
         for component_name, component_class in self.component_instances.items():
             component_parameters = parameters.get(component_name, {})
-            try:
-                new_component = component_class(
-                    **component_parameters, random_seed=self.random_seed
-                )
-            except (ValueError, TypeError) as e:
-                self._is_instantiated = False
-                err = "Error received when instantiating component {} with the following arguments {}".format(
-                    component_name, component_parameters
-                )
-                raise ValueError(err) from e
-
-            component_instances[component_name] = new_component
+            if inspect.isclass(component_class):
+                try:
+                    new_component = component_class(
+                        **component_parameters, random_seed=self.random_seed
+                    )
+                except (ValueError, TypeError) as e:
+                    self._is_instantiated = False
+                    err = "Error received when instantiating component {} with the following arguments {}".format(
+                        component_name, component_parameters
+                    )
+                    raise ValueError(err) from e
+                component_instances[component_name] = new_component
+            elif hasattr(component_class, '_is_fitted') and component_class._is_fitted:
+                component_instances[component_name] = component_class
         self.component_instances = component_instances
         return self
 
