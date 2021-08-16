@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Deleted ``_put_into_original_order`` helper function :pr:`2639`
     * Documentation Changes
     * Testing Changes
 
@@ -34,7 +35,6 @@ Release Notes
         * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
         * Changed ``partial_dependence`` and ``graph_partial_dependence`` to raise a ``PartialDependenceError`` instead of ``ValueError``. This is not a breaking change because ``PartialDependenceError`` is a subclass of ``ValueError`` :pr:`2604`
         * Cleaned up code duplication in ``ComponentGraph`` :pr:`2612`
-        * Deleted ``_put_into_original_order`` helper function :pr:`2639`
     * Documentation Changes
         * To avoid local docs build error, only add warning disable and download headers on ReadTheDocs builds, not locally :pr:`2617`
     * Testing Changes
