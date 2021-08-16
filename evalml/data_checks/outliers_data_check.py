@@ -42,7 +42,6 @@ class OutliersDataCheck(DataCheck):
 
         X = infer_feature_types(X)
         X = X.ww.select("numeric")
-        X.ww.drop(X.columns[X.isna().all()].tolist(), inplace=True)
 
         if len(X.columns) == 0:
             return results
@@ -59,6 +58,10 @@ class OutliersDataCheck(DataCheck):
                 and OutliersDataCheck._no_outlier_prob(num_records, pct_outliers) <= 0.9
             ):
                 has_outliers.append(col)
+
+        if not len(has_outliers):
+            return results
+
         warning_msg = "Column(s) {} are likely to have outlier data.".format(
             ", ".join([f"'{col}'" for col in has_outliers])
         )
