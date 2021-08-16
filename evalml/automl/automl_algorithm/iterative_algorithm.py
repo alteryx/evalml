@@ -164,7 +164,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             and self._batch_number != 1
             and (self._batch_number) % (len(self._first_batch_results) + 1) == 0
         ):
-            # Custon Stacked Pipelines
+            # Custom Stacked Pipelines
             ensembler_component_graph = {}
             final_components = []
             problem_type = None
@@ -204,23 +204,23 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             next_batch.append(ensemble)
 
             # Sklearn Stacked Pipelines
-            # input_pipelines = []
-            # for pipeline_dict in self._best_pipeline_info.values():
-            #     pipeline = pipeline_dict["pipeline"]
-            #     pipeline_params = pipeline_dict["parameters"]
-            #     parameters = self._transform_parameters(pipeline, pipeline_params)
-            #     input_pipelines.append(
-            #         pipeline.new(parameters=parameters, random_seed=self.random_seed)
-            #     )
-            # ensemble = _make_stacked_ensemble_pipeline(
-            #     problem_type,
-            #     input_pipelines=input_pipelines,
-            #     random_seed=self.random_seed,
-            #     n_jobs=n_jobs_ensemble,
-            #     use_sklearn=True
-            # )
+            input_pipelines = []
+            for pipeline_dict in self._best_pipeline_info.values():
+                pipeline = pipeline_dict["pipeline"]
+                pipeline_params = pipeline_dict["parameters"]
+                parameters = self._transform_parameters(pipeline, pipeline_params)
+                input_pipelines.append(
+                    pipeline.new(parameters=parameters, random_seed=self.random_seed)
+                )
+            ensemble = _make_stacked_ensemble_pipeline(
+                problem_type,
+                input_pipelines=input_pipelines,
+                random_seed=self.random_seed,
+                n_jobs=n_jobs_ensemble,
+                use_sklearn=True
+            )
 
-            # next_batch.append(ensemble)
+            next_batch.append(ensemble)
         else:
             num_pipelines = (
                 (len(self._first_batch_results) + 1)
