@@ -1,4 +1,5 @@
-from unittest.mock import MagicMock
+from unittest import mock
+from unittest.mock import MagicMock, patch
 
 import pandas as pd
 import pytest
@@ -121,7 +122,8 @@ def test_callback(X_y_regression):
     )
     automl.search()
 
-    assert counts["start_iteration_callback"] == len(get_estimators("regression")) + 1
+    # assert counts["start_iteration_callback"] == len(get_estimators("regression")) + 1
+    assert counts["start_iteration_callback"] == max_iterations
     assert counts["add_result_callback"] == max_iterations
 
 
@@ -390,7 +392,6 @@ def test_automl_allowed_component_graphs_search(
     assert isinstance(
         start_iteration_callback.call_args_list[1][0][0], RegressionPipeline
     )
-
 
 def test_automl_supports_time_series_regression(AutoMLTestEnv, X_y_regression):
     X, y = X_y_regression
