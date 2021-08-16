@@ -511,13 +511,14 @@ class AutoMLSearch:
             )
             if (
                 is_time_series(self.problem_type)
-                and pd.infer_freq(X_train[parameters["pipeline"]["date_index"]]) == "MS"
+                and parameters["pipeline"]["date_index"]
             ):
-                allowed_estimators = [
-                    estimator
-                    for estimator in allowed_estimators
-                    if estimator.name != "ARIMA Regressor"
-                ]
+                if pd.infer_freq(X_train[parameters["pipeline"]["date_index"]]) == "MS":
+                    allowed_estimators = [
+                        estimator
+                        for estimator in allowed_estimators
+                        if estimator.name != "ARIMA Regressor"
+                    ]
             logger.debug(
                 f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}"
             )
