@@ -143,6 +143,18 @@ def test_init_str_components():
     assert comp_graph.compute_order == expected_order
 
 
+def test_init_instantiated():
+    graph = {
+        "Imputer": [
+            Imputer(numeric_impute_strategy="constant", numeric_fill_value=0),
+            "X",
+            "y",
+        ]
+    }
+    cg = ComponentGraph(graph)
+    assert graph['Imputer'][0] == cg.get_component('Imputer')
+
+
 def test_invalid_init():
     invalid_graph = {"Imputer": [Imputer, "X", "y"], "OHE": OneHotEncoder}
     with pytest.raises(
@@ -152,7 +164,7 @@ def test_invalid_init():
 
     graph = {
         "Imputer": [
-            Imputer(numeric_impute_strategy="constant", numeric_fill_value=0),
+            None,
             "X",
             "y",
         ]
