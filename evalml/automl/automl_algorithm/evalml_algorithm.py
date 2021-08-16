@@ -142,7 +142,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         ]
         return estimators
 
-    def _create_naive_pipelines(self, use_features=True):
+    def _create_naive_pipelines(self, use_features=False):
         feature_selector = None
 
         if use_features:
@@ -153,8 +153,11 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                     else RFClassifierSelectFromModel
                 )
             ]
+        else:
+            feature_selector = []
 
         estimators = self._naive_estimators()
+        parameters = self._pipeline_params if self._pipeline_params else None
         pipelines = [
             make_pipeline(
                 self.X,
@@ -162,9 +165,18 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 estimator,
                 self.problem_type,
                 sampler_name=self.sampler_name,
+                parameters=parameters,
                 extra_components=feature_selector,
             )
             for estimator in estimators
+        ]
+
+        pipelines = [
+            pipeline.new(
+                parameters=self._transform_parameters(pipeline, {}),
+                random_seed=self.random_seed,
+            )
+            for pipeline in pipelines
         ]
         return pipelines
 
@@ -182,6 +194,10 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             for estimator in get_estimators(self.problem_type)
             if estimator not in self._naive_estimators()
         ]
+        parameters = self._pipeline_params if self._pipeline_params else {}
+        parameters.update({
+                    "Select Columns Transformer": {"columns": self._selected_cols}
+                })
         pipelines = [
             make_pipeline(
                 self.X,
@@ -189,12 +205,21 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                 estimator,
                 self.problem_type,
                 sampler_name=self.sampler_name,
-                parameters={
-                    "Select Columns Transformer": {"columns": self._selected_cols}
-                },
+                parameters=parameters,
                 extra_components=[SelectColumns],
             )
             for estimator in estimators
+        ]
+
+        pipelines = [
+            pipeline.new(
+                parameters=self._transform_parameters(
+                    pipeline,
+                    {"Select Columns Transformer": {"columns": self._selected_cols}},
+                ),
+                random_seed=self.random_seed,
+            )
+            for pipeline in pipelines
         ]
 
         for pipeline in pipelines:
@@ -270,7 +295,6 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
-
         if self._batch_number == 0:
             next_batch = self._create_naive_pipelines()
         elif self._batch_number == 1:
@@ -338,6 +362,9 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
     def _transform_parameters(self, pipeline, proposed_parameters):
         """Given a pipeline parameters dict, make sure n_jobs is set."""
         parameters = {}
+        if "pipeline" in self._pipeline_params:
+            parameters["pipeline"] = self._pipeline_params["pipeline"]
+
         for (
             name,
             component_instance,
@@ -345,8 +372,28 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             component_class = type(component_instance)
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
+            # For first batch, pass the pipeline params to the components that need them
+            if name in self._custom_hyperparameters and self._batch_number == 0:
+                for param_name, value in self._custom_hyperparameters[name].items():
+                    if isinstance(value, (Integer, Real)):
+                        # get a random value in the space
+                        component_parameters[param_name] = value.rvs(
+                            random_state=self.random_seed
+                        )[0]
+                    # Categorical
+                    else:
+                        component_parameters[param_name] = value.rvs(
+                            random_state=self.random_seed
+                        )
+            if name in self._pipeline_params and self._batch_number == 0:
+                for param_name, value in self._pipeline_params[name].items():
+                    component_parameters[param_name] = value
             # Inspects each component and adds the following parameters when needed
             if "n_jobs" in init_params:
                 component_parameters["n_jobs"] = self.n_jobs
+            if "pipeline" in self._pipeline_params:
+                for param_name, value in self._pipeline_params["pipeline"].items():
+                    if param_name in init_params:
+                        component_parameters[param_name] = value
             parameters[name] = component_parameters
         return parameters
