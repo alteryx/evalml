@@ -108,7 +108,9 @@ def handle_component_class(component_class):
     Returns:
         ComponentBase
     """
-    if isinstance(component_class, ComponentBase) or (inspect.isclass(component_class) and issubclass(component_class, ComponentBase)):
+    if isinstance(component_class, ComponentBase) or (
+        inspect.isclass(component_class) and issubclass(component_class, ComponentBase)
+    ):
         return component_class
     if not isinstance(component_class, str):
         raise ValueError(

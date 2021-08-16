@@ -13,8 +13,12 @@ from evalml.exceptions.exceptions import (
     ParameterNotUsedWarning,
 )
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
-from evalml.pipelines.components.transformers.samplers.base_sampler import BaseSampler
-from evalml.pipelines.components.transformers.transformer import TargetTransformer
+from evalml.pipelines.components.transformers.samplers.base_sampler import (
+    BaseSampler,
+)
+from evalml.pipelines.components.transformers.transformer import (
+    TargetTransformer,
+)
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import get_logger, import_or_raise, infer_feature_types
 
@@ -144,7 +148,7 @@ class ComponentGraph:
                     )
                     raise ValueError(err) from e
                 component_instances[component_name] = new_component
-            elif hasattr(component_class, '_is_fitted') and component_class._is_fitted:
+            elif hasattr(component_class, "_is_fitted") and component_class._is_fitted:
                 component_instances[component_name] = component_class
         self.component_instances = component_instances
         return self

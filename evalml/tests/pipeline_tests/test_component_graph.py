@@ -152,7 +152,7 @@ def test_init_instantiated():
         ]
     }
     cg = ComponentGraph(graph)
-    assert graph['Imputer'][0] == cg.get_component('Imputer')
+    assert graph["Imputer"][0] == cg.get_component("Imputer")
 
 
 def test_invalid_init():
