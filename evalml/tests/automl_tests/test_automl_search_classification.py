@@ -234,6 +234,7 @@ def test_multi_objective(X_y_multi):
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
     assert automl.problem_type == ProblemTypes.BINARY
 
+
 def test_categorical_classification(AutoMLTestEnv, X_y_categorical_classification):
     X, y = X_y_categorical_classification
 
@@ -1349,11 +1350,13 @@ def test_automl_search_dictionary_undersampler(
     # check that the sampling dict got set properly
     automl.search()
     for result in automl.results["pipeline_results"].values():
-        parameters = result['parameters']
+        parameters = result["parameters"]
         if "Undersampler" in parameters:
-            print(result['pipeline_name'])
+            print(result["pipeline_name"])
             print(parameters["Undersampler"])
-            assert parameters["Undersampler"]["sampling_ratio_dict"] == sampling_ratio_dict
+            assert (
+                parameters["Undersampler"]["sampling_ratio_dict"] == sampling_ratio_dict
+            )
     # assert we sample the right number of elements for our estimator
     assert len(mock_est_fit.call_args[0][0]) == length
 

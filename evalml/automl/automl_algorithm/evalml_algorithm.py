@@ -195,9 +195,9 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             if estimator not in self._naive_estimators()
         ]
         parameters = self._pipeline_params if self._pipeline_params else {}
-        parameters.update({
-                    "Select Columns Transformer": {"columns": self._selected_cols}
-                })
+        parameters.update(
+            {"Select Columns Transformer": {"columns": self._selected_cols}}
+        )
         pipelines = [
             make_pipeline(
                 self.X,
@@ -385,7 +385,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value.rvs(
                             random_state=self.random_seed
                         )
-            if name in self._pipeline_params and self._batch_number == 0:
+            if name in self._pipeline_params:
                 for param_name, value in self._pipeline_params[name].items():
                     component_parameters[param_name] = value
             # Inspects each component and adds the following parameters when needed

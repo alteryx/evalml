@@ -13,7 +13,7 @@ from sklearn.model_selection import BaseCrossValidator
 
 from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 
-from evalml.automl.automl_algorithm import IterativeAlgorithm, EvalMLAlgorithm
+from evalml.automl.automl_algorithm import EvalMLAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
 from evalml.automl.utils import (
@@ -650,19 +650,19 @@ class AutoMLSearch:
         )
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
 
-        # self._automl_algorithm = IterativeAlgorithm(
-        #     max_iterations=self.max_iterations,
-        #     allowed_pipelines=self.allowed_pipelines,
-        #     tuner_class=self.tuner_class,
-        #     random_seed=self.random_seed,
-        #     n_jobs=self.n_jobs,
-        #     number_features=self.X_train.shape[1],
-        #     pipelines_per_batch=self._pipelines_per_batch,
-        #     ensembling=run_ensembling,
-        #     text_in_ensembling=text_in_ensembling,
-        #     pipeline_params=parameters,
-        #     custom_hyperparameters=custom_hyperparameters,
-        # )
+        self.__automl_algorithm = IterativeAlgorithm(
+            max_iterations=self.max_iterations,
+            allowed_pipelines=self.allowed_pipelines,
+            tuner_class=self.tuner_class,
+            random_seed=self.random_seed,
+            n_jobs=self.n_jobs,
+            number_features=self.X_train.shape[1],
+            pipelines_per_batch=self._pipelines_per_batch,
+            ensembling=run_ensembling,
+            text_in_ensembling=text_in_ensembling,
+            pipeline_params=parameters,
+            custom_hyperparameters=custom_hyperparameters,
+        )
 
         self._automl_algorithm = EvalMLAlgorithm(
             X=self.X_train,
@@ -671,7 +671,7 @@ class AutoMLSearch:
             sampler_name=self._sampler_name,
             tuner_class=self.tuner_class,
             random_seed=self.random_seed,
-            pipeline_params=self.pipeline_parameters,
+            pipeline_params=parameters,
             custom_hyperparameters=self.custom_hyperparameters,
             text_in_ensembling=text_in_ensembling,
         )

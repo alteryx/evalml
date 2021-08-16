@@ -1228,7 +1228,9 @@ class _AutoMLTestEnv:
         mock_score = self._patch_method(
             "score", side_effect=mock_score_side_effect, return_value=score_return_value
         )
-        mock_get_names = patch("evalml.pipelines.components.FeatureSelector.get_names", return_value=['1', '2', '3'])
+        mock_get_names = patch(
+            "evalml.pipelines.components.FeatureSelector.get_names", return_value=[]
+        )
 
         # For simplicity, we will always mock predict_proba and _encode_targets even if the problem is not a
         # classification problem. For regression problems, we'll mock BinaryClassificationPipeline but it doesn't

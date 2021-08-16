@@ -1,5 +1,4 @@
-from unittest import mock
-from unittest.mock import MagicMock, patch
+from unittest.mock import MagicMock
 
 import pandas as pd
 import pytest
@@ -392,6 +391,7 @@ def test_automl_allowed_component_graphs_search(
     assert isinstance(
         start_iteration_callback.call_args_list[1][0][0], RegressionPipeline
     )
+
 
 def test_automl_supports_time_series_regression(AutoMLTestEnv, X_y_regression):
     X, y = X_y_regression
