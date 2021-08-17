@@ -3,7 +3,7 @@ from unittest.mock import patch
 import pandas as pd
 import pytest
 
-from evalml.automl import AutoMLSearch, search
+from evalml.automl import AutoMLSearch, search_iterative
 from evalml.utils import infer_feature_types
 
 
@@ -11,10 +11,10 @@ from evalml.utils import infer_feature_types
 @patch("evalml.automl.AutoMLSearch.search")
 def test_search(mock_automl_search, mock_data_checks_validate, X_y_binary):
     X, y = X_y_binary
-    # this doesn't exactly match the data check results schema but its enough to trigger the error in search()
+    # this doesn't exactly match the data check results schema but its enough to trigger the error in search_iterative()
     data_check_results_expected = {"warnings": ["Warning 1", "Warning 2"]}
     mock_data_checks_validate.return_value = data_check_results_expected
-    automl, data_check_results = search(X_train=X, y_train=y, problem_type="binary")
+    automl, data_check_results = search_iterative(X_train=X, y_train=y, problem_type="binary")
     assert isinstance(automl, AutoMLSearch)
     assert data_check_results is data_check_results_expected
     mock_data_checks_validate.assert_called_once()
@@ -33,10 +33,10 @@ def test_search_data_check_error(
     mock_automl_search, mock_data_checks_validate, X_y_binary
 ):
     X, y = X_y_binary
-    # this doesn't exactly match the data check results schema but its enough to trigger the error in search()
+    # this doesn't exactly match the data check results schema but its enough to trigger the error in search_iterative()
     data_check_results_expected = {"errors": ["Error 1", "Error 2"]}
     mock_data_checks_validate.return_value = data_check_results_expected
-    automl, data_check_results = search(X_train=X, y_train=y, problem_type="binary")
+    automl, data_check_results = search_iterative(X_train=X, y_train=y, problem_type="binary")
     assert automl is None
     assert data_check_results == data_check_results_expected
     mock_data_checks_validate.assert_called_once()
@@ -66,7 +66,7 @@ def test_search_data_check_error_timeseries(problem_config):
             ValueError,
             match="date_index has to be passed in problem_configuration.",
         ):
-            search(
+            search_iterative(
                 X_train=X,
                 y_train=y,
                 problem_type="time series regression",
@@ -77,7 +77,7 @@ def test_search_data_check_error_timeseries(problem_config):
             ValueError,
             match="the problem_configuration parameter must be specified.",
         ):
-            search(
+            search_iterative(
                 X_train=X,
                 y_train=y,
                 problem_type="time series regression",
@@ -85,7 +85,7 @@ def test_search_data_check_error_timeseries(problem_config):
             )
     else:
         problem_configuration = {"date_index": "dates"}
-        automl, data_check_results = search(
+        automl, data_check_results = search_iterative(
             X_train=X,
             y_train=y,
             problem_type="time series regression",
@@ -99,7 +99,7 @@ def test_search_data_check_error_timeseries(problem_config):
 @patch("evalml.automl.AutoMLSearch.search")
 def test_search_kwargs(mock_automl_search, mock_data_checks_validate, X_y_binary):
     X, y = X_y_binary
-    automl, data_check_results = search(
+    automl, data_check_results = search_iterative(
         X_train=X, y_train=y, problem_type="binary", max_iterations=42
     )
     assert automl.max_iterations == 42

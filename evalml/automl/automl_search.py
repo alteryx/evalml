@@ -71,7 +71,7 @@ from evalml.utils.logger import (
 logger = get_logger(__file__)
 
 
-def search(
+def search_iterative(
     X_train=None,
     y_train=None,
     problem_type=None,
