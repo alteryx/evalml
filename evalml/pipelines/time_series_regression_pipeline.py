@@ -54,31 +54,31 @@ class TimeSeriesRegressionPipeline(
             random_seed=random_seed,
         )
 
-    def fit(self, X, y):
-        """Fit a time series regression pipeline.
+    # def fit(self, X, y):
+    #     """Fit a time series regression pipeline.
 
-        Arguments:
-            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (pd.Series, np.ndarray): The target training targets of length [n_samples]
+    #     Arguments:
+    #         X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
+    #         y (pd.Series, np.ndarray): The target training targets of length [n_samples]
 
-        Returns:
-            self
-        """
-        if X is None:
-            X = pd.DataFrame()
+    #     Returns:
+    #         self
+    #     """
+    #     if X is None:
+    #         X = pd.DataFrame()
 
-        X = infer_feature_types(X)
-        y = infer_feature_types(y)
+    #     X = infer_feature_types(X)
+    #     y = infer_feature_types(y)
 
-        self.input_target_name = y.name
-        X_t = self.component_graph.fit_features(X, y)
+    #     self.input_target_name = y.name
+    #     X_t = self.component_graph.fit_features(X, y)
 
-        y_shifted = y.shift(-self.gap)
-        X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
-        self.estimator.fit(X_t, y_shifted)
-        self.input_feature_names = self.component_graph.input_feature_names
+    #     y_shifted = y.shift(-self.gap)
+    #     X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
+    #     self.estimator.fit(X_t, y_shifted)
+    #     self.input_feature_names = self.component_graph.input_feature_names
 
-        return self
+    #     return self
 
     def predict(self, X, y=None, objective=None):
         """Make predictions using selected features.
