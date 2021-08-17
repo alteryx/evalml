@@ -1,4 +1,4 @@
-from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
+from evalml.pipelines import RegressionPipeline
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
@@ -8,9 +8,7 @@ from evalml.utils import (
 )
 
 
-class TimeSeriesRegressionPipeline(
-    TimeSeriesPipelineBase, metaclass=TimeSeriesPipelineBaseMeta
-):
+class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase, RegressionPipeline):
     """Pipeline base class for time series regression problems.
 
     Arguments:
@@ -27,7 +25,7 @@ class TimeSeriesRegressionPipeline(
     """
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
-    """ProblemTypes.TIME_SERIES_REGRESSIO"""
+    """ProblemTypes.TIME_SERIES_REGRESSION"""
 
     def predict(self, X, y=None, objective=None):
         """Make predictions using selected features.

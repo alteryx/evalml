@@ -143,7 +143,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
 class TimeSeriesBinaryClassificationPipeline(
     BinaryClassificationPipelineMixin,
     TimeSeriesClassificationPipeline,
-    metaclass=TimeSeriesPipelineBaseMeta,
 ):
     """Pipeline base class for time series binary classification problems.
 
