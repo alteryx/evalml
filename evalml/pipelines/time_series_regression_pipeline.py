@@ -1,4 +1,3 @@
-from evalml.pipelines import RegressionPipeline
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
@@ -8,7 +7,7 @@ from evalml.utils import (
 )
 
 
-class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase, RegressionPipeline):
+class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
     """Pipeline base class for time series regression problems.
 
     Arguments:
