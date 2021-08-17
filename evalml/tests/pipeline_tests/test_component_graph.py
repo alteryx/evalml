@@ -542,16 +542,19 @@ def test_compute_final_component_features(
     X, y = X_y_binary
     mock_imputer.return_value = pd.DataFrame(X)
     mock_ohe.return_value = pd.DataFrame(X)
-    mock_en_predict_proba.return_value = pd.DataFrame((
-        {0: np.zeros(X.shape[0]), 1: np.ones(X.shape[0])}
-    ))
+    mock_en_predict_proba.return_value = pd.DataFrame(
+        ({0: np.zeros(X.shape[0]), 1: np.ones(X.shape[0])})
+    )
     mock_en_predict_proba.return_value.ww.init()
-    mock_rf_predict_proba.return_value = pd.DataFrame((
-        {0: np.ones(X.shape[0]), 1: np.zeros(X.shape[0])}
-    ))
+    mock_rf_predict_proba.return_value = pd.DataFrame(
+        ({0: np.ones(X.shape[0]), 1: np.zeros(X.shape[0])})
+    )
     mock_rf_predict_proba.return_value.ww.init()
     X_expected = pd.DataFrame(
-        {"1_Random Forest.x": np.zeros(X.shape[0]), "1_Elastic Net.x": np.ones(X.shape[0])}
+        {
+            "Col 1 Random Forest.x": np.zeros(X.shape[0]),
+            "Col 1 Elastic Net.x": np.ones(X.shape[0]),
+        }
     )
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
@@ -825,8 +828,8 @@ def test_input_feature_names(example_graph):
         "column_1_c",
     ]
     assert input_feature_names["Logistic Regression"] == [
-        "1_Random Forest.x",
-        "1_Elastic Net.x",
+        "Col 1 Random Forest.x",
+        "Col 1 Elastic Net.x",
     ]
 
 
@@ -893,8 +896,8 @@ def test_custom_input_feature_types(example_graph):
         "column_2_5",
     ]
     assert input_feature_names["Logistic Regression"] == [
-        "1_Random Forest.x",
-        "1_Elastic Net.x",
+        "Col 1 Random Forest.x",
+        "Col 1 Elastic Net.x",
     ]
 
 
@@ -1063,8 +1066,8 @@ def test_component_graph_dataset_with_different_types():
             )
         )
         assert input_feature_names["Logistic Regression"] == [
-            "1_Random Forest.x",
-            "1_Elastic Net.x",
+            "Col 1 Random Forest.x",
+            "Col 1 Elastic Net.x",
         ]
 
     check_feature_names(component_graph.input_feature_names)

@@ -312,7 +312,7 @@ class ComponentGraph:
                                 output = output.ww.drop(output.columns[0])
                             output = output.ww.rename(
                                 {
-                                    col: f"{str(col)}_{component_name}.x"
+                                    col: f"Col {str(col)} {component_name}.x"
                                     for col in output.columns
                                 }
                             )

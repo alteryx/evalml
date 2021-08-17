@@ -888,8 +888,8 @@ def test_compute_estimator_features_nonlinear(
 
     X_expected_df = pd.DataFrame(
         {
-            "1_Random Forest.x": np.ones(X.shape[0]),
-            "1_Elastic Net.x": np.zeros(X.shape[0]),
+            "Col 1 Random Forest.x": np.ones(X.shape[0]),
+            "Col 1 Elastic Net.x": np.zeros(X.shape[0]),
         }
     )
 
@@ -1183,8 +1183,8 @@ def test_nonlinear_feature_importance_has_feature_names(
     assert len(clf.feature_importance) == 2
     assert not clf.feature_importance.isnull().all().all()
     assert sorted(clf.feature_importance["feature"]) == [
-        "1_Elastic Net.x",
-        "1_Random Forest.x",
+        "Col 1 Elastic Net.x",
+        "Col 1 Random Forest.x",
     ]
 
 
