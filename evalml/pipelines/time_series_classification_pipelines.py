@@ -32,39 +32,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    # def __init__(
-    #     self,
-    #     component_graph,
-    #     parameters=None,
-    #     custom_name=None,
-    #     random_seed=0,
-    # ):
-    #     self._encoder = LabelEncoder()
-
-    #     # if "pipeline" not in parameters:
-    #     #     raise ValueError(
-    #     #         "date_index, gap, and max_delay parameters cannot be omitted from the parameters dict. "
-    #     #         "Please specify them as a dictionary with the key 'pipeline'."
-    #     #     )
-    #     # pipeline_params = parameters["pipeline"]
-    #     # self.date_index = pipeline_params["date_index"]
-    #     # self.gap = pipeline_params["gap"]
-    #     # self.max_delay = pipeline_params["max_delay"]
-    #     super().__init__(
-    #         component_graph,
-    #         custom_name=custom_name,
-    #         parameters=parameters,
-    #         random_seed=random_seed,
-    #     )
-
-    @staticmethod
-    def _convert_to_woodwork(X, y):
-        if X is None:
-            X = pd.DataFrame()
-        X = infer_feature_types(X)
-        y = infer_feature_types(y)
-        return X, y
-
     def fit(self, X, y):
         """Fit a time series classification pipeline.
 
@@ -156,7 +123,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """
         X, y = self._convert_to_woodwork(X, y)
         objectives = self.create_objectives(objectives)
-
         y_encoded = self._encode_targets(y)
         y_shifted = y_encoded.shift(-self.gap)
         y_predicted, y_predicted_proba = self._compute_predictions(

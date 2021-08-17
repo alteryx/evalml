@@ -41,7 +41,6 @@ class TimeSeriesRegressionPipeline(
             pd.Series: Predicted values.
         """
         X, y = self._convert_to_woodwork(X, y)
-
         features = self.compute_estimator_features(X, y)
         features_no_nan, y = drop_rows_with_nans(features, y)
         predictions = self._estimator_predict(features_no_nan, y)
