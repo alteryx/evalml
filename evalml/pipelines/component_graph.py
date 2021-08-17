@@ -148,7 +148,7 @@ class ComponentGraph:
                     )
                     raise ValueError(err) from e
                 component_instances[component_name] = new_component
-            elif hasattr(component_class, "_is_fitted") and component_class._is_fitted:
+            elif isinstance(component_class, ComponentBase):
                 component_instances[component_name] = component_class
         self.component_instances = component_instances
         return self
