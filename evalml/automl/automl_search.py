@@ -56,11 +56,7 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.tuners import SKOptTuner
-from evalml.utils import (
-    _put_into_original_order,
-    convert_to_seconds,
-    infer_feature_types,
-)
+from evalml.utils import convert_to_seconds, infer_feature_types
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -533,9 +529,7 @@ class AutoMLSearch:
             unknown_columns = list(
                 self.X_train.ww.select("unknown", return_schema=True).columns
             )
-            index_and_unknown_columns = _put_into_original_order(
-                self.X_train, index_and_unknown_columns
-            )
+            index_and_unknown_columns = index_and_unknown_columns
             if len(index_and_unknown_columns) > 0 and drop_columns is None:
                 parameters["Drop Columns Transformer"] = {
                     "columns": index_and_unknown_columns
