@@ -1,4 +1,5 @@
 import copy
+from evalml import automl
 import pickle
 import sys
 import time
@@ -254,6 +255,8 @@ class AutoMLSearch:
         _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
             The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
 
+        _automl_algorithm (str): The automl algorithm to use. Currently the two choices are 'iterative' and 'evalml'.
+
         engine (EngineBase or None): The engine instance used to evaluate pipelines. If None, a SequentialEngine will
             be used.
     """
@@ -292,6 +295,7 @@ class AutoMLSearch:
         sampler_balanced_ratio=0.25,
         _ensembling_split_size=0.2,
         _pipelines_per_batch=5,
+        _automl_algorithm="iterative",
         engine=None,
     ):
         if X_train is None:
@@ -442,7 +446,6 @@ class AutoMLSearch:
                     )
         self.allowed_component_graphs = allowed_component_graphs
         self.allowed_model_families = allowed_model_families
-        self._automl_algorithm = None
         self._start = 0.0
         self._baseline_cv_scores = {}
         self.show_batch_output = False
@@ -644,31 +647,32 @@ class AutoMLSearch:
         )
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
 
-        self.__automl_algorithm = IterativeAlgorithm(
-            max_iterations=self.max_iterations,
-            allowed_pipelines=self.allowed_pipelines,
-            tuner_class=self.tuner_class,
-            random_seed=self.random_seed,
-            n_jobs=self.n_jobs,
-            number_features=self.X_train.shape[1],
-            pipelines_per_batch=self._pipelines_per_batch,
-            ensembling=run_ensembling,
-            text_in_ensembling=text_in_ensembling,
-            pipeline_params=parameters,
-            custom_hyperparameters=custom_hyperparameters,
-        )
-
-        self._automl_algorithm = EvalMLAlgorithm(
-            X=self.X_train,
-            y=self.y_train,
-            problem_type=self.problem_type,
-            sampler_name=self._sampler_name,
-            tuner_class=self.tuner_class,
-            random_seed=self.random_seed,
-            pipeline_params=parameters,
-            custom_hyperparameters=self.custom_hyperparameters,
-            text_in_ensembling=text_in_ensembling,
-        )
+        if _automl_algorithm == 'iterative':
+            self._automl_algorithm = IterativeAlgorithm(
+                max_iterations=self.max_iterations,
+                allowed_pipelines=self.allowed_pipelines,
+                tuner_class=self.tuner_class,
+                random_seed=self.random_seed,
+                n_jobs=self.n_jobs,
+                number_features=self.X_train.shape[1],
+                pipelines_per_batch=self._pipelines_per_batch,
+                ensembling=run_ensembling,
+                text_in_ensembling=text_in_ensembling,
+                pipeline_params=parameters,
+                custom_hyperparameters=custom_hyperparameters,
+            )
+        else:
+            self._automl_algorithm = EvalMLAlgorithm(
+                X=self.X_train,
+                y=self.y_train,
+                problem_type=self.problem_type,
+                sampler_name=self._sampler_name,
+                tuner_class=self.tuner_class,
+                random_seed=self.random_seed,
+                pipeline_params=parameters,
+                custom_hyperparameters=self.custom_hyperparameters,
+                text_in_ensembling=text_in_ensembling,
+            )
 
     def _catch_warnings(self, warning_list):
         if len(warning_list) == len(self.allowed_pipelines) and len(warning_list) > 0:
