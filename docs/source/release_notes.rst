@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Use Woodwork's outlier detection for the ``OutliersDataCheck`` :pr:`2637`
+        * Added ability to utilize instantiated components when creating a pipeline :pr:`2643`
     * Fixes
     * Changes
         * Deleted ``_put_into_original_order`` helper function :pr:`2639`
