@@ -48,11 +48,20 @@ class OutliersDataCheck(DataCheck):
 
         has_outliers = []
         for col in X.columns:
-            outlier_results = OutliersDataCheck._outlier_score(X[col], False)
+            box_plot_dict = X.ww[col].ww.box_plot_dict()
+            num_records = len(X[col])
+            pct_outliers = (
+                len(box_plot_dict["low_values"]) + len(box_plot_dict["high_values"])
+            ) / num_records
             if (
-                outlier_results is not None and outlier_results["score"] <= 0.9
-            ):  # 0.9 is threshold indicating data needs improvement
+                pct_outliers > 0
+                and OutliersDataCheck._no_outlier_prob(num_records, pct_outliers) <= 0.9
+            ):
                 has_outliers.append(col)
+
+        if not len(has_outliers):
+            return results
+
         warning_msg = "Column(s) {} are likely to have outlier data.".format(
             ", ".join([f"'{col}'" for col in has_outliers])
         )
@@ -129,60 +138,3 @@ class OutliersDataCheck(DataCheck):
         # cumulative density function
         prob_val = 1.0 - gamma.cdf(pct_outliers, shape_param, scale=scale_param)
         return prob_val
-
-    @staticmethod
-    def _outlier_score(column, convert_column=False):
-        """Return a dictionary of high and low values of potential numeric outliers using the IQR method.
-
-        Original credit goes to Jad Raad and Dan Putler of Alteryx.
-
-        Arguments:
-            column (pd.Series): A column of data to check for outliers in
-            convert_column (bool): If True, convert column to np.int64, if possible.
-
-        Returns:
-            dict: Dictionary containing outlier information
-        """
-        column_nonan = column.dropna()
-        if column_nonan.shape[0] == 0:
-            return None
-        else:
-            if convert_column:
-                column_nonan = column_nonan.astype(np.int64)
-
-            q1, median, q3 = np.percentile(column_nonan, [25, 50, 75])
-            column_iqr = q3 - q1
-
-            low_bound = q1 - (column_iqr * 1.5)
-            high_bound = q3 + (column_iqr * 1.5)
-
-            low_filter = column_nonan < low_bound
-            high_filter = column_nonan > high_bound
-
-            low_indices = column_nonan[low_filter].index.tolist()
-            high_indices = column_nonan[high_filter].index.tolist()
-
-            low_values = column.filter(low_indices).tolist()
-            high_values = column.filter(high_indices).tolist()
-
-            # calculate outlier probability
-            pct_outliers = (len(low_values) + len(high_values)) / len(column_nonan)
-
-            num_records = len(column_nonan)
-            score = OutliersDataCheck._no_outlier_prob(num_records, pct_outliers)
-            result = {
-                "score": score,
-                "values": {
-                    "q1": q1,
-                    "median": median,
-                    "q3": q1,
-                    "low_bound": low_bound,
-                    "high_bound": high_bound,
-                    "low_values": low_values,
-                    "high_values": high_values,
-                    "low_indices": low_indices,
-                    "high_indices": high_indices,
-                },
-            }
-
-            return result
