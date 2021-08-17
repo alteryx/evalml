@@ -5,6 +5,7 @@ Release Notes
         * Updated the high variance check in AutoMLSearch to be robust to a variety of objectives and cv scores :pr:`2622`
     * Fixes
     * Changes
+        * Deleted ``_put_into_original_order`` helper function :pr:`2639`
     * Documentation Changes
     * Testing Changes
 

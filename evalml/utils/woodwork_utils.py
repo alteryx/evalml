@@ -169,8 +169,3 @@ def _convert_numeric_dataset_pandas(X, y):
         )
     y_ww = infer_feature_types(y)
     return X_ww, y_ww
-
-
-def _put_into_original_order(X, columns_to_subset):
-    """Put the columns returned by X.ww.select(...., return_schema=True) into the original order found in X."""
-    return [col_name for col_name in X.columns if col_name in columns_to_subset]
