@@ -8,6 +8,7 @@ Release Notes
     * Changes
         * Deleted ``_put_into_original_order`` helper function :pr:`2639`
     * Documentation Changes
+        * Add complete install command to README and Install section :pr:`2627`
     * Testing Changes
 
 .. warning::
