@@ -88,26 +88,3 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=TimeSeriesPipelineBaseMeta)
         if self.estimator.predict_uses_y:
             y_arg = y
         return self.estimator.predict(features, y=y_arg)
-
-    def predict(self, X, y=None, objective=None):
-        """Make predictions using selected features.
-
-        Arguments:
-            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
-            y (pd.Series, np.ndarray, None): The target training targets of length [n_samples]
-            objective (Object or string): The objective to use to make predictions
-
-        Returns:
-            pd.Series: Predicted values.
-        """
-        X, y = self._convert_to_woodwork(X, y)
-        y = self._encode_targets(y)
-        n_features = max(len(y), X.shape[0])
-        predictions = self._predict(X, y, objective=objective, pad=False)
-        # In case gap is 0 and this is a baseline pipeline, we drop the nans in the
-        # predictions before decoding them
-        predictions = pd.Series(
-            self._decode_targets(predictions.dropna()), name=self.input_target_name
-        )
-        padded = pad_with_nans(predictions, max(0, n_features - predictions.shape[0]))
-        return infer_feature_types(padded)
