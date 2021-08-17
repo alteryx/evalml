@@ -71,7 +71,7 @@ jobs:
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
-          pip install cmdstan-builder==0.0.4
+          pip install prophet-builder
           make installdeps
           make installdeps-test
           pip freeze
