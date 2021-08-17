@@ -4003,7 +4003,7 @@ def test_automl_check_high_variance_logs_warning(AutoMLTestEnv, X_y_binary, capl
     with env.test_context(score_return_value={"Log Loss Binary": 1}):
         automl.search()
     out = caplog.text
-    assert "High coefficient of variation" not in out
+    assert "High variation range" not in out
 
     caplog.clear()
 
@@ -4018,7 +4018,7 @@ def test_automl_check_high_variance_logs_warning(AutoMLTestEnv, X_y_binary, capl
     with env.test_context(mock_score_side_effect=desired_score_values):
         automl.search()
     out = caplog.text
-    assert "High coefficient of variation" in out
+    assert "High variation range" in out
 
 
 def test_automl_raises_error_with_duplicate_pipeline_names(
