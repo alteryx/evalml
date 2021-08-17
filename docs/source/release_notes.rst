@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Use Woodwork's outlier detection for the ``OutliersDataCheck`` :pr:`2637`
     * Fixes
     * Changes
     * Documentation Changes
