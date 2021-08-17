@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Updated the high variance check in AutoMLSearch to be robust to a variety of objectives and cv scores :pr:`2622`
+        * Use Woodwork's outlier detection for the ``OutliersDataCheck`` :pr:`2637`
     * Fixes
     * Changes
         * Deleted ``_put_into_original_order`` helper function :pr:`2639`
