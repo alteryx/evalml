@@ -2,11 +2,7 @@ import pandas as pd
 
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
-from evalml.utils import (
-    drop_rows_with_nans,
-    infer_feature_types,
-    pad_with_nans,
-)
+from evalml.utils import drop_rows_with_nans, infer_feature_types
 
 
 class TimeSeriesPipelineBase(PipelineBase, metaclass=TimeSeriesPipelineBaseMeta):
@@ -58,11 +54,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=TimeSeriesPipelineBaseMeta)
         return X, y
 
     def fit(self, X, y):
-        """Fit a time series regression pipeline.
+        """Fit a time series pipeline.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (pd.Series, np.ndarray): The target training targets of length [n_samples]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
+            y (pd.Series, np.ndarray): The target training targets of length [n_samples].
 
         Returns:
             self
