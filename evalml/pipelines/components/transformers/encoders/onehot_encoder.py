@@ -5,7 +5,7 @@ from sklearn.preprocessing import OneHotEncoder as SKOneHotEncoder
 
 from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import _put_into_original_order, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 class OneHotEncoderMeta(ComponentBaseMeta):
@@ -89,9 +89,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     @staticmethod
     def _get_cat_cols(X):
         """Get names of categorical columns in the input DataFrame."""
-        return _put_into_original_order(
-            X, list(X.ww.select(include=["category"], return_schema=True).columns)
-        )
+        return list(X.ww.select(include=["category"], return_schema=True).columns)
 
     def fit(self, X, y=None):
         top_n = self.parameters["top_n"]
