@@ -7,6 +7,7 @@ Release Notes
         * Deleted ``_put_into_original_order`` helper function :pr:`2639`
     * Documentation Changes
     * Testing Changes
+        * Speed up CI time by splitting Prophet tests into a separate workflow in GitHUB :pr:`2644`
 
 .. warning::
 
