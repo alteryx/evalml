@@ -1,5 +1,5 @@
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import _put_into_original_order, infer_feature_types
+from evalml.utils import infer_feature_types
 
 
 def _extract_year(col, encode_as_categories=False):
@@ -112,8 +112,9 @@ class DateTimeFeaturizer(Transformer):
 
     def fit(self, X, y=None):
         X = infer_feature_types(X)
-        date_cols = list(X.ww.select("datetime", return_schema=True).columns)
-        self._date_time_col_names = _put_into_original_order(X, date_cols)
+        self._date_time_col_names = list(
+            X.ww.select("datetime", return_schema=True).columns
+        )
         return self
 
     def transform(self, X, y=None):
