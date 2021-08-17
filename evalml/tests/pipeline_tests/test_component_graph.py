@@ -2096,29 +2096,59 @@ def test_component_graph_compute_final_component_features_with_sampler(
     assert len(features_for_estimator) == len(y)
 
 
-def test_component_graph_transform(X_y_binary):
+@patch("evalml.pipelines.components.Imputer.transform")
+@patch("evalml.pipelines.components.OneHotEncoder.transform")
+def test_component_graph_transform(
+    mock_ohe_transform, mock_imputer_transform, X_y_binary, make_data_type
+):
     X, y = X_y_binary
+
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
+    mock_imputer_transform.return_value = X
+    mock_ohe_transform.return_value = X
     component_dict = {
         "Imputer": ["Imputer", "X", "y"],
         "OHE": ["One Hot Encoder", "Imputer.x", "y"],
     }
+
     component_graph = ComponentGraph(component_dict)
     component_graph.instantiate({})
     component_graph.fit(X, y)
-    component_graph.transform(X, y)
+    transformed_X = component_graph.transform(X, y)
+    assert_frame_equal(transformed_X, X)
 
 
-def test_component_graph_transform_with_target_transformer(X_y_binary):
+@patch("evalml.pipelines.components.Imputer.transform")
+@patch("evalml.pipelines.components.OneHotEncoder.transform")
+@patch("evalml.pipelines.components.TargetImputer.transform")
+def test_component_graph_transform_with_target_transformer(
+    mock_target_imputer_transform,
+    mock_ohe_transform,
+    mock_imputer_transform,
+    X_y_binary,
+    make_data_type,
+):
     X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
     component_dict = {
         "Imputer": ["Imputer", "X", "y"],
         "OHE": ["One Hot Encoder", "Imputer.x", "y"],
         "Target Imputer": ["Target Imputer", "OHE.x", "y"],
     }
+    mock_imputer_transform.return_value = X
+    mock_ohe_transform.return_value = X
+    mock_target_imputer_transform.return_value = tuple([X, y])
+
     component_graph = ComponentGraph(component_dict)
     component_graph.instantiate({})
     component_graph.fit(X, y)
-    component_graph.transform(X, y)
+    transformed = component_graph.transform(X, y)
+    assert_frame_equal(transformed[0], X)
+    assert_series_equal(transformed[1], y)
 
 
 def test_component_graph_transform_with_estimator_end(X_y_binary):

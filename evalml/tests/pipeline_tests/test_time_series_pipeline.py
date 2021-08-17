@@ -796,8 +796,8 @@ def test_ts_pipeline_predict_without_final_estimator(
     ],
 )
 def test_ts_pipeline_transform(
-    mock_imputer_transform,
     mock_ohe_transform,
+    mock_imputer_transform,
     problem_type,
     make_data_type,
     X_y_binary,
@@ -842,7 +842,6 @@ def test_ts_pipeline_transform_with_final_estimator(
 ):
     X, y = X_y_binary
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = X_y_binary
         pipeline = time_series_binary_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},

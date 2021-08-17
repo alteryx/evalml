@@ -2632,7 +2632,7 @@ def test_pipeline_predict_without_final_estimator(
     ],
 )
 def test_pipeline_transform(
-    mock_imputer_transform, mock_ohe_transform, problem_type, X_y_binary, make_data_type
+    mock_ohe_transform, mock_imputer_transform, problem_type, X_y_binary, make_data_type
 ):
     component_graph = {
         "Imputer": ["Imputer", "X", "y"],
@@ -2664,7 +2664,6 @@ def test_pipeline_transform_with_final_estimator(
 ):
     X, y = X_y_binary
     if problem_type == ProblemTypes.BINARY:
-        X, y = X_y_binary
         pipeline = BinaryClassificationPipeline(
             component_graph=["Logistic Regression Classifier"],
             parameters={

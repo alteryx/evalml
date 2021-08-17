@@ -246,18 +246,16 @@ class ComponentGraph:
         """
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
-        final_component = self.compute_order[-1]
-
-        final_component_instance = self.get_component(final_component)
+        final_component_name = self.compute_order[-1]
+        final_component_instance = self.get_last_component()
         if not isinstance(final_component_instance, Transformer):
             raise ValueError(
                 "Cannot call transform() on a component graph because the final component is not a Transformer."
             )
-        # check if final component is estimator. If yes, error out.
-        outputs = self._compute_features(self.compute_order, X, y, False)
 
-        output_x = infer_feature_types(outputs.get(f"{final_component}.x"))
-        output_y = outputs.get(f"{final_component}.y", None)
+        outputs = self._compute_features(self.compute_order, X, y, False)
+        output_x = infer_feature_types(outputs.get(f"{final_component_name}.x"))
+        output_y = outputs.get(f"{final_component_name}.y", None)
         if output_y is not None:
             return output_x, output_y
         return output_x
@@ -274,7 +272,7 @@ class ComponentGraph:
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
-        final_component_instance = self.get_component(final_component)
+        final_component_instance = self.get_last_component()
         if not isinstance(final_component_instance, Estimator):
             raise ValueError(
                 "Cannot call predict() on a component graph because the final component is not a Estimator."
