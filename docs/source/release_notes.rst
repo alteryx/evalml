@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Deleted ``_put_into_original_order`` helper function :pr:`2639`
     * Documentation Changes
     * Testing Changes
 
