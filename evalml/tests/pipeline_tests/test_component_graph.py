@@ -412,7 +412,8 @@ def test_fit_component_graph(
 ):
     X, y = X_y_binary
     mock_fit_transform.return_value = pd.DataFrame(X)
-    mock_predict_proba.return_value = pd.Series(y)
+    mock_predict_proba.return_value = pd.DataFrame(y)
+    mock_predict_proba.return_value.ww.init()
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
 
@@ -458,7 +459,8 @@ def test_component_graph_fit_features(
     mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
     mock_fit_transform.return_value = mock_X_t
     mock_fit.return_value = Estimator
-    mock_predict_proba.return_value = pd.Series(y)
+    mock_predict_proba.return_value = pd.DataFrame(y)
+    mock_predict_proba.return_value.ww.init()
 
     component_graph.fit_features(X, y)
 
@@ -472,7 +474,8 @@ def test_component_graph_fit_features(
 @patch("evalml.pipelines.components.Estimator.predict")
 def test_predict(mock_predict, mock_predict_proba, mock_fit, example_graph, X_y_binary):
     X, y = X_y_binary
-    mock_predict_proba.return_value = pd.Series(y)
+    mock_predict_proba.return_value = pd.DataFrame(y)
+    mock_predict_proba.return_value.ww.init()
     mock_predict.return_value = pd.Series(y)
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
@@ -493,7 +496,8 @@ def test_predict_repeat_estimator(
     mock_predict, mock_predict_proba, mock_fit, X_y_binary
 ):
     X, y = X_y_binary
-    mock_predict_proba.return_value = pd.Series(y)
+    mock_predict_proba.return_value = pd.DataFrame(y)
+    mock_predict_proba.return_value.ww.init()
     mock_predict.return_value = pd.Series(y)
     graph = {
         "Imputer": [Imputer, "X", "y"],
@@ -538,10 +542,16 @@ def test_compute_final_component_features(
     X, y = X_y_binary
     mock_imputer.return_value = pd.DataFrame(X)
     mock_ohe.return_value = pd.DataFrame(X)
-    mock_en_predict_proba.return_value = pd.Series(np.ones(X.shape[0]))
-    mock_rf_predict_proba.return_value = pd.Series(np.zeros(X.shape[0]))
+    mock_en_predict_proba.return_value = pd.DataFrame((
+        {0: np.zeros(X.shape[0]), 1: np.ones(X.shape[0])}
+    ))
+    mock_en_predict_proba.return_value.ww.init()
+    mock_rf_predict_proba.return_value = pd.DataFrame((
+        {0: np.ones(X.shape[0]), 1: np.zeros(X.shape[0])}
+    ))
+    mock_rf_predict_proba.return_value.ww.init()
     X_expected = pd.DataFrame(
-        {"Random Forest.x": np.zeros(X.shape[0]), "Elastic Net.x": np.ones(X.shape[0])}
+        {"1_Random Forest.x": np.zeros(X.shape[0]), "1_Elastic Net.x": np.ones(X.shape[0])}
     )
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)

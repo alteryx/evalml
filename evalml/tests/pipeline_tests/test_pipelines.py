@@ -876,20 +876,20 @@ def test_compute_estimator_features_nonlinear(
     mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
 
     mock_en_predict_proba_df = pd.DataFrame(
-        {0: np.zeros(X.shape[0]), 1: np.ones(X.shape[0])}
-    )
-    mock_en_predict_proba_df.ww.init()
-    mock_en_predict_proba.return_value = mock_en_predict_proba_df
-    mock_rf_predict_proba_df = pd.DataFrame(
         {0: np.ones(X.shape[0]), 1: np.zeros(X.shape[0])}
     )
+    mock_en_predict_proba_df.ww.init()
+    mock_rf_predict_proba_df = pd.DataFrame(
+        {0: np.zeros(X.shape[0]), 1: np.ones(X.shape[0])}
+    )
     mock_rf_predict_proba_df.ww.init()
+    mock_en_predict_proba.return_value = mock_en_predict_proba_df
     mock_rf_predict_proba.return_value = mock_rf_predict_proba_df
 
     X_expected_df = pd.DataFrame(
         {
-            "1_Random Forest.x": np.zeros(X.shape[0]),
-            "1_Elastic Net.x": np.ones(X.shape[0]),
+            "1_Random Forest.x": np.ones(X.shape[0]),
+            "1_Elastic Net.x": np.zeros(X.shape[0]),
         }
     )
 
