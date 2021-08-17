@@ -1,9 +1,15 @@
 import pandas as pd
+
 from evalml.pipelines import PipelineBase
+from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
+from evalml.utils import (
+    drop_rows_with_nans,
+    infer_feature_types,
+    pad_with_nans,
+)
 
 
-class TimeSeriesPipelineBase(PipelineBase):
-
+class TimeSeriesPipelineBase(PipelineBase, metaclass=TimeSeriesPipelineBaseMeta):
 
     """Pipeline base class for time series problems.
 
@@ -19,6 +25,7 @@ class TimeSeriesPipelineBase(PipelineBase):
              Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
+
     def __init__(
         self,
         component_graph,
@@ -42,6 +49,14 @@ class TimeSeriesPipelineBase(PipelineBase):
             random_seed=random_seed,
         )
 
+    @staticmethod
+    def _convert_to_woodwork(X, y):
+        if X is None:
+            X = pd.DataFrame()
+        X = infer_feature_types(X)
+        y = infer_feature_types(y)
+        return X, y
+
     def fit(self, X, y):
         """Fit a time series regression pipeline.
 
@@ -52,21 +67,28 @@ class TimeSeriesPipelineBase(PipelineBase):
         Returns:
             self
         """
-        if X is None:
-            X = pd.DataFrame()
+        X, y = self._convert_to_woodwork(X, y)
+        self._fit(X, y)
+        return self
 
-        X = infer_feature_types(X)
-        y = infer_feature_types(y)
-
+    def _fit(self, X, y):
         self.input_target_name = y.name
         X_t = self.component_graph.fit_features(X, y)
-
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
         self.estimator.fit(X_t, y_shifted)
         self.input_feature_names = self.component_graph.input_feature_names
 
-        return self
+    def _estimator_predict(self, features, y):
+        """Get estimator predictions.
+
+        This helper passes y as an argument if needed by the estimator.
+        """
+        y_arg = None
+        if self.estimator.predict_uses_y:
+            y_arg = y
+        return self.estimator.predict(features, y=y_arg)
+
     def predict(self, X, y=None, objective=None):
         """Make predictions using selected features.
 
