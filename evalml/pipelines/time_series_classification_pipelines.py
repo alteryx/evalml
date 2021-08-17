@@ -6,7 +6,6 @@ from .binary_classification_pipeline_mixin import (
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
-from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
