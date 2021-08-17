@@ -298,7 +298,12 @@ class AutoMLSearch:
         _ensembling_split_size=0.2,
         _pipelines_per_batch=5,
         engine=None,
+        verbose=False,
     ):
+        if verbose:
+            logger = get_logger(__name__)
+        else:
+            logger = logging.getLogger(__name__)
         if X_train is None:
             raise ValueError(
                 "Must specify training data as a 2d array using the X_train argument"
