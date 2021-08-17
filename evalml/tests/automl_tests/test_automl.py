@@ -68,6 +68,7 @@ from evalml.problem_types import (
     is_classification,
     is_time_series,
 )
+from evalml.tests.conftest import CustomClassificationObjectiveRanges
 from evalml.tuners import NoParamsException, RandomSearchTuner, SKOptTuner
 
 
@@ -1919,21 +1920,6 @@ class CustomClassificationObjective(BinaryClassificationObjective):
     perfect_score = 1.0
     is_bounded_like_percentage = False
     expected_range = [0, 1]
-    problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
-
-    def objective_function(self, y_true, y_predicted, X=None):
-        """Not implementing since mocked in our tests."""
-
-
-class CustomClassificationObjectiveInf(BinaryClassificationObjective):
-    """Accuracy score for binary and multiclass classification."""
-
-    name = "Classification Accuracy"
-    greater_is_better = True
-    score_needs_proba = False
-    perfect_score = 1.0
-    is_bounded_like_percentage = False
-    expected_range = [float("-inf"), float("inf")]
     problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 
     def objective_function(self, y_true, y_predicted, X=None):
@@ -3986,12 +3972,16 @@ def test_automl_pipeline_random_seed(AutoMLTestEnv, random_seed, X_y_multi):
 
 
 @pytest.mark.parametrize(
-    "objectives", ["Log Loss Binary", CustomClassificationObjectiveInf()]
+    "ranges", [0, [float("-inf"), float("inf")], [float("-inf"), 0], [0, float("inf")]]
 )
 def test_automl_check_for_high_variance(
-    objectives, X_y_binary, dummy_binary_pipeline_class
+    ranges, X_y_binary, dummy_binary_pipeline_class
 ):
     X, y = X_y_binary
+    if ranges == 0:
+        objectives = "Log Loss Binary"
+    else:
+        objectives = CustomClassificationObjectiveRanges(ranges)
     automl = AutoMLSearch(
         X_train=X, y_train=y, problem_type="binary", objective=objectives
     )
