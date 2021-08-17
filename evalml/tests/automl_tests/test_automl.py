@@ -3417,8 +3417,9 @@ def test_automl_woodwork_user_types_preserved(
             )
 
 
-def test_automl_validates_problem_configuration(X_y_binary, ts_data):
-    X, y = X_y_binary
+def test_automl_validates_problem_configuration(ts_data):
+    _, y = ts_data
+    X = pd.DataFrame(pd.date_range("2020-10-01", "2020-10-31"), columns=["Date"])
     assert (
         AutoMLSearch(X_train=X, y_train=y, problem_type="binary").problem_configuration
         == {}
@@ -3452,8 +3453,7 @@ def test_automl_validates_problem_configuration(X_y_binary, ts_data):
             problem_type="time series regression",
             problem_configuration={"max_delay": 2, "gap": 3},
         )
-    _, y = ts_data
-    X = pd.DataFrame(pd.date_range("2020-10-01", "2020-10-31"), columns=["Date"])
+
     problem_config = AutoMLSearch(
         X_train=X,
         y_train=y,
