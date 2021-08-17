@@ -59,7 +59,7 @@ def test_invalid_target_data_check_nan_error():
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
                 details={},
-            ).to_dict()
+            ).to_dict(),
         ],
         "actions": [],
     }
@@ -792,7 +792,7 @@ def test_invalid_target_data_action_for_all_null(problem_type):
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.TARGET_IS_EMPTY_OR_FULLY_NULL,
                 details={},
-            ).to_dict()
+            ).to_dict(),
         ],
         "actions": [],
     }

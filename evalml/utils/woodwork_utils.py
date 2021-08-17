@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import woodwork as ww
-from woodwork.logical_types import Datetime, Ordinal
+from woodwork.logical_types import Datetime, Ordinal, Unknown
 
 from evalml.utils.gen_utils import is_all_numeric
 
@@ -64,6 +64,24 @@ def infer_feature_types(data, feature_types=None):
 
     _raise_value_error_if_nullable_types_detected(data)
 
+    def convert_all_nan_unknown_to_double(data):
+        def is_column_pd_na(data, col):
+            return all(data[col].isna())
+
+        def is_column_unknown(data, col):
+            return isinstance(data.ww.logical_types[col], Unknown)
+
+        if isinstance(data, pd.DataFrame):
+            all_null_unk_cols = [
+                col
+                for col in data.columns
+                if (is_column_pd_na(data, col) and is_column_unknown(data, col))
+            ]
+            if len(all_null_unk_cols):
+                for col in all_null_unk_cols:
+                    data.ww.set_types({col: "Double"})
+        return data
+
     if data.ww.schema is not None:
         if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
             data, data.ww.schema
@@ -79,14 +97,17 @@ def infer_feature_types(data, feature_types=None):
                 ww_error = f"{ww_error}. Please initialize ww with df.ww.init() to get rid of this message."
             raise ValueError(ww_error)
         data.ww.init(schema=data.ww.schema)
-        return data
+        return convert_all_nan_unknown_to_double(data)
 
     if isinstance(data, pd.Series):
+        if all(data.isna()):
+            data = data.replace(pd.NA, np.nan)
+            feature_types = "Double"
         return ww.init_series(data, logical_type=feature_types)
     else:
         ww_data = data.copy()
         ww_data.ww.init(logical_types=feature_types)
-        return ww_data
+        return convert_all_nan_unknown_to_double(ww_data)
 
 
 def _retain_custom_types_and_initalize_woodwork(
@@ -148,8 +169,3 @@ def _convert_numeric_dataset_pandas(X, y):
         )
     y_ww = infer_feature_types(y)
     return X_ww, y_ww
-
-
-def _put_into_original_order(X, columns_to_subset):
-    """Put the columns returned by X.ww.select(...., return_schema=True) into the original order found in X."""
-    return [col_name for col_name in X.columns if col_name in columns_to_subset]
