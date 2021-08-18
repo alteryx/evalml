@@ -1,3 +1,4 @@
+import logging
 import warnings
 from unittest.mock import MagicMock, patch
 
@@ -30,6 +31,9 @@ from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import TimeSeriesSplit, split_data
 from evalml.problem_types import ProblemTypes
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
 
 
 def test_init(X_y_binary):

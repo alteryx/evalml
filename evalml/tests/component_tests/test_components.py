@@ -1,5 +1,6 @@
 import importlib
 import inspect
+import logging
 import os
 import warnings
 from unittest.mock import patch
@@ -86,6 +87,9 @@ from evalml.pipelines.components.utils import (
     generate_component_code,
 )
 from evalml.problem_types import ProblemTypes
+
+logger = logging.getLogger('evalml')
+logger.setLevel(logging.INFO)
 
 
 @pytest.fixture(scope="module")

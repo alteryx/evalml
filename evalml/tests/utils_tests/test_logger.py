@@ -16,6 +16,9 @@ from evalml.utils.logger import (
 
 TEST_LOGGER_NAME = "my_logger"
 
+logger = logging.getLogger('evalml')
+logger.setLevel(logging.INFO)
+
 
 @pytest.fixture()
 def logger_env_cleanup(monkeypatch):
@@ -79,144 +82,15 @@ def test_logger_critical(caplog, logger_env_cleanup):
     assert "CRITICAL" in caplog.text
 
 
-@patch("evalml.utils.logger.RotatingFileHandler")
-def test_get_logger_default(
-    mock_RotatingFileHandler, capsys, caplog, logger_env_cleanup
-):
-    assert os.environ.get("EVALML_LOG_FILE") is None
-    logger = get_logger(TEST_LOGGER_NAME)
-    assert len(logger.handlers) == 2
-    mock_RotatingFileHandler.assert_called_with(filename=Path("evalml_debug.log"))
-    assert len(mock_RotatingFileHandler.mock_calls) == 4
-    assert mock_RotatingFileHandler.mock_calls[1] == call().setLevel(logging.DEBUG)
-
-    stdouterr = capsys.readouterr()
-    assert "Warning: cannot write debug logs" not in caplog.text
-    assert "Exception encountered while setting up debug log file" not in caplog.text
-    assert "Warning: cannot write debug logs" not in stdouterr.out
-    assert "Exception encountered while setting up debug log file" not in stdouterr.out
-    assert "Warning: cannot write debug logs" not in stdouterr.err
-    assert "Exception encountered while setting up debug log file" not in stdouterr.err
-
-
-@patch("evalml.utils.logger.RotatingFileHandler")
-def test_get_logger_path_valid(
-    mock_RotatingFileHandler, monkeypatch, capsys, caplog, logger_env_cleanup
-):
-    assert os.environ.get("EVALML_LOG_FILE") is None
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        log_file_path = str(Path(temp_dir, "evalml_debug_custom.log"))
-        monkeypatch.setenv("EVALML_LOG_FILE", log_file_path)
-        assert os.environ.get("EVALML_LOG_FILE") == log_file_path
-
-        logger = get_logger(TEST_LOGGER_NAME)
-        assert len(logger.handlers) == 2
-        mock_RotatingFileHandler.assert_called_with(filename=Path(log_file_path))
-        assert len(mock_RotatingFileHandler.mock_calls) == 4
-        assert mock_RotatingFileHandler.mock_calls[1] == call().setLevel(logging.DEBUG)
-
-    stdouterr = capsys.readouterr()
-    assert "Warning: cannot write debug logs" not in caplog.text
-    assert "Exception encountered while setting up debug log file" not in caplog.text
-    assert "Warning: cannot write debug logs" not in stdouterr.out
-    assert "Exception encountered while setting up debug log file" not in stdouterr.out
-    assert "Warning: cannot write debug logs" not in stdouterr.err
-    assert "Exception encountered while setting up debug log file" not in stdouterr.err
-
-
-@patch("evalml.utils.logger.RotatingFileHandler")
-def test_get_logger_path_invalid(
-    mock_RotatingFileHandler, monkeypatch, capsys, caplog, logger_env_cleanup
-):
-    assert os.environ.get("EVALML_LOG_FILE") is None
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        log_file_path = str(
-            Path(
-                temp_dir, "INVALID", "PATH", "DOES_NOT_EXIST", "evalml_debug_custom.log"
-            )
-        )
-        monkeypatch.setenv("EVALML_LOG_FILE", log_file_path)
-        assert os.environ.get("EVALML_LOG_FILE") == log_file_path
-
-        logger = get_logger(TEST_LOGGER_NAME)
-        assert len(logger.handlers) == 1
-        assert len(mock_RotatingFileHandler.mock_calls) == 0
-        assert mock_RotatingFileHandler.call_count == 0
-
-    stdouterr = capsys.readouterr()
-    assert "Warning: cannot write debug logs" not in caplog.text
-    assert "Exception encountered while setting up debug log file" not in caplog.text
-    assert "Warning: cannot write debug logs" in stdouterr.out
-    assert "Exception encountered while setting up debug log file" not in stdouterr.out
-    assert "Warning: cannot write debug logs" not in stdouterr.err
-    assert "Exception encountered while setting up debug log file" not in stdouterr.err
-
-
-@patch("evalml.utils.logger.RotatingFileHandler")
-def test_get_logger_path_valid_but_dir(
-    mock_RotatingFileHandler, monkeypatch, capsys, caplog, logger_env_cleanup
-):
-    assert os.environ.get("EVALML_LOG_FILE") is None
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        monkeypatch.setenv("EVALML_LOG_FILE", temp_dir)
-        assert os.environ.get("EVALML_LOG_FILE") == temp_dir
-
-        logger = get_logger(TEST_LOGGER_NAME)
-        assert len(logger.handlers) == 1
-        assert len(mock_RotatingFileHandler.mock_calls) == 0
-        assert mock_RotatingFileHandler.call_count == 0
-
-    stdouterr = capsys.readouterr()
-    assert "Warning: cannot write debug logs" not in caplog.text
-    assert "Exception encountered while setting up debug log file" not in caplog.text
-    assert "Warning: cannot write debug logs" in stdouterr.out
-    assert "Exception encountered while setting up debug log file" not in stdouterr.out
-    assert "Warning: cannot write debug logs" not in stdouterr.err
-    assert "Exception encountered while setting up debug log file" not in stdouterr.err
-
-
-@patch("evalml.utils.logger.RotatingFileHandler")
-def test_get_logger_path_empty(
-    mock_RotatingFileHandler, monkeypatch, capsys, caplog, logger_env_cleanup
-):
-    assert os.environ.get("EVALML_LOG_FILE") is None
-
-    monkeypatch.setenv("EVALML_LOG_FILE", "")
-    assert os.environ.get("EVALML_LOG_FILE") == ""
-
+def test_get_logger_default(capsys, caplog, logger_env_cleanup):
     logger = get_logger(TEST_LOGGER_NAME)
     assert len(logger.handlers) == 1
-    assert len(mock_RotatingFileHandler.mock_calls) == 0
-    assert mock_RotatingFileHandler.call_count == 0
 
     stdouterr = capsys.readouterr()
     assert "Warning: cannot write debug logs" not in caplog.text
     assert "Exception encountered while setting up debug log file" not in caplog.text
     assert "Warning: cannot write debug logs" not in stdouterr.out
     assert "Exception encountered while setting up debug log file" not in stdouterr.out
-    assert "Warning: cannot write debug logs" not in stdouterr.err
-    assert "Exception encountered while setting up debug log file" not in stdouterr.err
-
-
-@patch("evalml.utils.logger.RotatingFileHandler")
-def test_get_logger_exception(
-    mock_RotatingFileHandler, capsys, caplog, logger_env_cleanup
-):
-    mock_RotatingFileHandler.side_effect = Exception("all your log are belong to us")
-    assert os.environ.get("EVALML_LOG_FILE") is None
-    logger = get_logger(TEST_LOGGER_NAME)
-    assert len(logger.handlers) == 1
-    assert len(mock_RotatingFileHandler.mock_calls) == 1
-    assert mock_RotatingFileHandler.call_count == 1
-
-    stdouterr = capsys.readouterr()
-    assert "Warning: cannot write debug logs" not in caplog.text
-    assert "Exception encountered while setting up debug log file" in caplog.text
-    assert "Warning: cannot write debug logs" not in stdouterr.out
-    assert "Exception encountered while setting up debug log file" in stdouterr.out
     assert "Warning: cannot write debug logs" not in stdouterr.err
     assert "Exception encountered while setting up debug log file" not in stdouterr.err
 

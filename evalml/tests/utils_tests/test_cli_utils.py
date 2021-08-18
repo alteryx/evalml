@@ -1,3 +1,4 @@
+import logging
 import os
 import pathlib
 from unittest.mock import patch
@@ -15,6 +16,9 @@ from evalml.utils.cli_utils import (
     print_info,
     print_sys_info,
 )
+
+logger = logging.getLogger('evalml')
+logger.setLevel(logging.INFO)
 
 
 @pytest.fixture

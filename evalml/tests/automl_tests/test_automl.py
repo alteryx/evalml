@@ -1,3 +1,4 @@
+import logging
 import os
 import warnings
 from collections import OrderedDict, defaultdict
@@ -69,6 +70,9 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.tuners import NoParamsException, RandomSearchTuner, SKOptTuner
+
+logger = logging.getLogger('evalml')
+logger.setLevel(logging.DEBUG)
 
 
 @pytest.mark.parametrize(

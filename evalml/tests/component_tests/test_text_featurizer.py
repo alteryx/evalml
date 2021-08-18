@@ -1,3 +1,4 @@
+import logging
 from unittest.mock import patch
 
 import numpy as np
@@ -9,6 +10,9 @@ from woodwork.logical_types import Boolean, Categorical, Double, Integer
 
 from evalml.pipelines.components import TextFeaturizer
 from evalml.utils import infer_feature_types
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
 
 
 def test_featurizer_only_text(text_df):

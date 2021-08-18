@@ -1,3 +1,5 @@
+import logging
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -13,6 +15,9 @@ from woodwork.logical_types import (
 
 from evalml.pipelines.components import LSA
 from evalml.utils import infer_feature_types
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.WARNING)
 
 
 def test_lsa_only_text(text_df):
