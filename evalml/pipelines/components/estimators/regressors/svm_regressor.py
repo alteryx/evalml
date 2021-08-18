@@ -16,7 +16,7 @@ class SVMRegressor(Estimator):
         kernel ({"poly", "rbf", "sigmoid", "precomputed"}): Specifies the kernel type to be used in the algorithm. Defaults to "rbf".
         gamma ({"scale", "auto"} or float): Kernel coefficient for "rbf", "poly" and "sigmoid". Defaults to "auto".
             - If gamma='scale' is passed then it uses 1 / (n_features * X.var()) as value of gamma
-            - if "auto" (default), uses 1 / n_features
+            - If "auto" (default), uses 1 / n_features
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
