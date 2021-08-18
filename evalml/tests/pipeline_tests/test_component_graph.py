@@ -12,7 +12,11 @@ from pandas.testing import (
 )
 from woodwork.logical_types import Double, Integer
 
-from evalml.exceptions import MissingComponentError, ParameterNotUsedWarning
+from evalml.exceptions import (
+    MethodPropertyNotFoundError,
+    MissingComponentError,
+    ParameterNotUsedWarning,
+)
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
@@ -486,6 +490,71 @@ def test_predict(mock_predict, mock_predict_proba, mock_fit, example_graph, X_y_
     )  # Called twice when fitting pipeline, twice when predicting
     assert mock_predict.call_count == 1  # Called once during predict
 
+    assert mock_fit.call_count == 3  # Only called during fit, not predict
+
+
+@patch("evalml.pipelines.components.Estimator.fit")
+@patch("evalml.pipelines.components.Estimator.predict_proba")
+@patch("evalml.pipelines.components.Estimator.predict")
+def test_predict_multiclass(
+    mock_predict, mock_predict_proba, mock_fit, example_graph, X_y_multi
+):
+    X, y = X_y_multi
+    mock_predict_proba.return_value = pd.DataFrame(
+        {
+            0: np.full(X.shape[0], 0.33),
+            1: np.full(X.shape[0], 0.33),
+            2: np.full(X.shape[0], 0.33),
+        }
+    )
+    mock_predict_proba.return_value.ww.init()
+    mock_predict.return_value = pd.Series(y)
+    component_graph = ComponentGraph(example_graph).instantiate({})
+    component_graph.fit(X, y)
+    final_estimator_input = component_graph.compute_final_component_features(X, y)
+    assert final_estimator_input.columns.to_list() == [
+        "Col 0 Random Forest.x",
+        "Col 1 Random Forest.x",
+        "Col 2 Random Forest.x",
+        "Col 0 Elastic Net.x",
+        "Col 1 Elastic Net.x",
+        "Col 2 Elastic Net.x",
+    ]
+    for col in final_estimator_input:
+        assert np.array_equal(
+            final_estimator_input[col].to_numpy(), np.full(X.shape[0], 0.33)
+        )
+    component_graph.predict(X)
+    assert (
+        mock_predict_proba.call_count == 6
+    )  # Called twice when fitting pipeline, twice to compute final features, and twice when predicting
+    assert mock_predict.call_count == 1  # Called once during predict
+    assert mock_fit.call_count == 3  # Only called during fit, not predict
+
+
+@patch("evalml.pipelines.components.Estimator.fit")
+@patch("evalml.pipelines.components.Estimator.predict_proba")
+@patch("evalml.pipelines.components.Estimator.predict")
+def test_predict_regression(
+    mock_predict, mock_predict_proba, mock_fit, example_regression_graph, X_y_multi
+):
+    X, y = X_y_multi
+    mock_predict.return_value = pd.Series(y)
+    mock_predict_proba.side_effect = MethodPropertyNotFoundError
+    component_graph = ComponentGraph(example_regression_graph).instantiate({})
+    component_graph.fit(X, y)
+    final_estimator_input = component_graph.compute_final_component_features(X, y)
+    assert final_estimator_input.columns.to_list() == [
+        "Random Forest.x",
+        "Elastic Net.x",
+    ]
+    component_graph.predict(X)
+    assert (
+        mock_predict_proba.call_count == 6
+    )  # Called twice when fitting pipeline, twice to compute final features, and twice when predicting
+    assert (
+        mock_predict.call_count == 7
+    )  # Called because `predict_proba` does not exist for regresssions
     assert mock_fit.call_count == 3  # Only called during fit, not predict
 
 
