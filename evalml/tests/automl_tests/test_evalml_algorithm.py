@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from skopt.space import Categorical, Real
+from skopt.space import Categorical
 
 from evalml.automl.automl_algorithm import EvalMLAlgorithm
 from evalml.model_family import ModelFamily
