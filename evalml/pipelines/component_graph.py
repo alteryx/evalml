@@ -1,3 +1,4 @@
+import inspect
 import warnings
 
 import networkx as nx
@@ -120,7 +121,8 @@ class ComponentGraph:
 
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                               An empty dictionary {} or None implies using all default values for component parameters.
+                               An empty dictionary {} or None implies using all default values for component parameters. If a component
+                               in the component graph is already instantiated, it will not use any of its parameters defined in this dictionary.
         """
         if self._is_instantiated:
             raise ValueError(
@@ -135,18 +137,20 @@ class ComponentGraph:
         component_instances = {}
         for component_name, component_class in self.component_instances.items():
             component_parameters = parameters.get(component_name, {})
-            try:
-                new_component = component_class(
-                    **component_parameters, random_seed=self.random_seed
-                )
-            except (ValueError, TypeError) as e:
-                self._is_instantiated = False
-                err = "Error received when instantiating component {} with the following arguments {}".format(
-                    component_name, component_parameters
-                )
-                raise ValueError(err) from e
-
-            component_instances[component_name] = new_component
+            if inspect.isclass(component_class):
+                try:
+                    new_component = component_class(
+                        **component_parameters, random_seed=self.random_seed
+                    )
+                except (ValueError, TypeError) as e:
+                    self._is_instantiated = False
+                    err = "Error received when instantiating component {} with the following arguments {}".format(
+                        component_name, component_parameters
+                    )
+                    raise ValueError(err) from e
+                component_instances[component_name] = new_component
+            elif isinstance(component_class, ComponentBase):
+                component_instances[component_name] = component_class
         self.component_instances = component_instances
         return self
 
