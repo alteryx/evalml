@@ -67,6 +67,109 @@ from evalml.utils.logger import (
 logger = get_logger(__file__)
 
 
+def search(
+    X_train=None,
+    y_train=None,
+    problem_type=None,
+    objective="auto",
+    mode="fast",
+    max_time=None,
+    patience=None,
+    tolerance=None,
+    problem_configuration=None,
+):
+    """Given data and configuration, run an automl search.
+
+    This method will run EvalML's default suite of data checks. If the data checks produce errors, the data check results will be returned before running the automl search. In that case we recommend you alter your data to address these errors and try again.
+
+    This method is provided for convenience. If you'd like more control over when each of these steps is run, consider making calls directly to the various pieces like the data checks and AutoMLSearch, instead of using this method.
+
+    Arguments:
+        X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
+
+        y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
+
+        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+
+        objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
+            When set to 'auto', chooses:
+
+            - LogLossBinary for binary classification problems,
+            - LogLossMulticlass for multiclass classification problems, and
+            - R2 for regression problems.
+
+        mode (str): mode for EvalMLAlgorithm. There are two modes: fast and long, where fast is a subset of long. Please look at EvalMLAlgorithm for more details.
+
+        max_time (int, str): Maximum time to search for pipelines.
+            This will not start a new pipeline search after the duration
+            has elapsed. If it is an integer, then the time will be in seconds.
+            For strings, time can be specified as seconds, minutes, or hours.
+
+        patience (int): Number of iterations without improvement to stop search early. Must be positive.
+            If None, early stopping is disabled. Defaults to None.
+
+        tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
+            Only applicable if patience is not None. Defaults to None.
+
+        problem_configuration (dict): Additional parameters needed to configure the search. For example,
+        in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+
+    Returns:
+        (AutoMLSearch, dict): the automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
+    """
+    X_train = infer_feature_types(X_train)
+    y_train = infer_feature_types(y_train)
+    problem_type = handle_problem_types(problem_type)
+
+    datetime_column = None
+    if is_time_series(problem_type):
+        if problem_configuration:
+            if "date_index" in problem_configuration:
+                datetime_column = problem_configuration["date_index"]
+            else:
+                raise ValueError(
+                    "For the default data checks to run in time series, date_index has to be passed in problem_configuration. "
+                    f"Received {problem_configuration}"
+                )
+        else:
+            raise ValueError(
+                "For the default data checks to run in time series, the problem_configuration parameter must be specified."
+            )
+
+    if objective == "auto":
+        objective = get_default_primary_search_objective(problem_type)
+    objective = get_objective(objective, return_instance=False)
+
+    if mode != "fast" and mode != "long":
+        raise ValueError("Mode must be either 'fast' or 'long'")
+
+    max_batches = None
+    if mode == "fast":
+        max_batches = 3
+
+    automl_config = {
+        "X_train": X_train,
+        "y_train": y_train,
+        "problem_type": problem_type,
+        "objective": objective,
+        "max_batches": max_batches,
+        "max_time": max_time,
+        "patience": patience,
+        "tolerance": tolerance,
+    }
+
+    data_checks = DefaultDataChecks(
+        problem_type=problem_type, objective=objective, datetime_column=datetime_column
+    )
+    data_check_results = data_checks.validate(X_train, y=y_train)
+    if len(data_check_results.get("errors", [])):
+        return None, data_check_results
+
+    automl = AutoMLSearch(_automl_algorithm="evalml", **automl_config)
+    automl.search()
+    return automl, data_check_results
+
+
 def search_iterative(
     X_train=None,
     y_train=None,
