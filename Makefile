@@ -63,7 +63,7 @@ git-test-other:
 
 .PHONY: git-test-prophet
 git-test-prophet:
-	pytest evalml/tests/component_tests/test_prophet.py -n 2 --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-other-junit.xml --doctest-continue-on-failure
+	pytest evalml/tests/component_tests/test_prophet_regressor.py -n 2 --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-component-prophet-junit.xml --doctest-continue-on-failure
 	pytest evalml/tests/component_tests/test_utils.py -n 2 --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-other-junit.xml --doctest-continue-on-failure
 	pytest evalml/tests/pipeline_tests/ -n 2 --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-other-junit.xml --doctest-continue-on-failure
 	pytest evalml/tests/objective_tests/ -n 2 --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-other-junit.xml --doctest-continue-on-failure
