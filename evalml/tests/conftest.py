@@ -1185,10 +1185,6 @@ class _AutoMLTestEnv:
         return self._get_mock("score")
 
     @property
-    def mock_get_names(self):
-        return self._get_mock("get_names")
-
-    @property
     def mock_encode_targets(self):
         return self._get_mock("encode_targets")
 
