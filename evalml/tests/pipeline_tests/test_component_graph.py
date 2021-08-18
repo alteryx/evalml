@@ -2098,26 +2098,45 @@ def test_component_graph_compute_final_component_features_with_sampler(
 
 @patch("evalml.pipelines.components.Imputer.transform")
 @patch("evalml.pipelines.components.OneHotEncoder.transform")
+@patch("evalml.pipelines.components.RandomForestClassifier.predict")
 def test_component_graph_transform(
-    mock_ohe_transform, mock_imputer_transform, X_y_binary, make_data_type
+    mock_rf_predict,
+    mock_ohe_transform,
+    mock_imputer_transform,
+    X_y_binary,
+    make_data_type,
 ):
     X, y = X_y_binary
 
     X = make_data_type("ww", X)
     y = make_data_type("ww", y)
 
+    dummy_return_value = pd.DataFrame({"test df": [1, 2]})
     mock_imputer_transform.return_value = X
-    mock_ohe_transform.return_value = X
+    mock_ohe_transform.return_value = dummy_return_value
     component_dict = {
         "Imputer": ["Imputer", "X", "y"],
         "OHE": ["One Hot Encoder", "Imputer.x", "y"],
     }
 
+    mock_rf_predict.return_value = y
+
     component_graph = ComponentGraph(component_dict)
     component_graph.instantiate({})
     component_graph.fit(X, y)
     transformed_X = component_graph.transform(X, y)
-    assert_frame_equal(transformed_X, X)
+    assert_frame_equal(transformed_X, dummy_return_value)
+
+    component_dict_with_estimator = {
+        "Imputer": ["Imputer", "X", "y"],
+        "Random Forest Classifier": ["Random Forest Classifier", "Imputer.x", "y"],
+        "OHE": ["One Hot Encoder", "Random Forest Classifier.x", "y"],
+    }
+    component_graph = ComponentGraph(component_dict_with_estimator)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    transformed_X = component_graph.transform(X, y)
+    assert_frame_equal(transformed_X, dummy_return_value)
 
 
 @patch("evalml.pipelines.components.Imputer.transform")
@@ -2182,7 +2201,7 @@ def test_component_graph_predict_with_transformer_end(X_y_binary):
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Cannot call predict() on a component graph because the final component is not a Estimator."
+            "Cannot call predict() on a component graph because the final component is not an Estimator."
         ),
     ):
         component_graph.predict(X)

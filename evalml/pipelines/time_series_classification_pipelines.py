@@ -81,7 +81,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """
         if self.estimator is None:
             raise ValueError(
-                "Cannot call predict() on a component graph because the final component is not a Estimator."
+                "Cannot call predict() on a component graph because the final component is not an Estimator."
             )
         X, y = self._convert_to_woodwork(X, y)
         y = self._encode_targets(y)
@@ -106,7 +106,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """
         if self.estimator is None:
             raise ValueError(
-                "Cannot call predict_proba() on a component graph because the final component is not a Estimator."
+                "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
             )
         X, y = self._convert_to_woodwork(X, y)
         y = self._encode_targets(y)

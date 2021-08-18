@@ -275,7 +275,7 @@ class ComponentGraph:
         final_component_instance = self.get_last_component()
         if not isinstance(final_component_instance, Estimator):
             raise ValueError(
-                "Cannot call predict() on a component graph because the final component is not a Estimator."
+                "Cannot call predict() on a component graph because the final component is not an Estimator."
             )
         outputs = self._compute_features(self.compute_order, X)
         return infer_feature_types(outputs.get(f"{final_component}.x"))

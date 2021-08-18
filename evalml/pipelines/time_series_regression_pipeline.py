@@ -39,7 +39,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         """
         if self.estimator is None:
             raise ValueError(
-                "Cannot call predict() on a component graph because the final component is not a Estimator."
+                "Cannot call predict() on a component graph because the final component is not an Estimator."
             )
         X, y = self._convert_to_woodwork(X, y)
         features = self.compute_estimator_features(X, y)

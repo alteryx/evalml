@@ -771,7 +771,7 @@ def test_ts_pipeline_predict_without_final_estimator(
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "Cannot call predict_proba() on a component graph because the final component is not a Estimator."
+                "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
             ),
         ):
             pipeline.predict_proba(X, y)
@@ -779,7 +779,7 @@ def test_ts_pipeline_predict_without_final_estimator(
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Cannot call predict() on a component graph because the final component is not a Estimator."
+            "Cannot call predict() on a component graph because the final component is not an Estimator."
         ),
     ):
         pipeline.predict(X, y)

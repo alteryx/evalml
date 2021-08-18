@@ -2598,16 +2598,13 @@ def test_pipeline_predict_without_final_estimator(
             "Imputer": ["Imputer", "X", "y"],
             "OHE": ["One Hot Encoder", "Imputer.x", "y"],
         },
-        parameters={
-            "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
-        },
     )
     pipeline.fit(X, y)
     if is_classification(problem_type):
         with pytest.raises(
             ValueError,
             match=re.escape(
-                "Cannot call predict_proba() on a component graph because the final component is not a Estimator."
+                "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
             ),
         ):
             pipeline.predict_proba(X)
@@ -2615,7 +2612,7 @@ def test_pipeline_predict_without_final_estimator(
     with pytest.raises(
         ValueError,
         match=re.escape(
-            "Cannot call predict() on a component graph because the final component is not a Estimator."
+            "Cannot call predict() on a component graph because the final component is not an Estimator."
         ),
     ):
         pipeline.predict(X)

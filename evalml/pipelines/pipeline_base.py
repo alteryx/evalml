@@ -39,7 +39,7 @@ logger = get_logger(__file__)
 
 class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     """
-    Machine learning pipeline made out of transformers and a estimator.
+    Machine learning pipeline made out of transformers and an Estimator.
 
     Arguments:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
