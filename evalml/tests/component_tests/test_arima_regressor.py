@@ -379,7 +379,7 @@ def test_fit_predict_date_index_named_out_of_sample(
 
 
 @pytest.mark.parametrize("freq_num", ["1", "2"])
-@pytest.mark.parametrize("freq_str", ["S", "T", "H", "D", "M", "Y"])
+@pytest.mark.parametrize("freq_str", ["T", "M", "Y"])
 def test_different_time_units_out_of_sample(freq_str, freq_num):
     datetime_ = pd.date_range("1/1/1870", periods=20, freq=freq_num + freq_str)
 

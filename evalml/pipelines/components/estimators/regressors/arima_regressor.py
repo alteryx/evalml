@@ -142,7 +142,7 @@ class ARIMARegressor(Estimator):
                 f"The dates parameter should not consist of any additional data outside of the datetime information located in the index or in a column."
                 f" Found {dates.shape[1]} columns."
             )
-        freq = "M" if pd.infer_freq(dates) == "MS" else pd.infer_freq(dates)
+        freq = pd.infer_freq(dates)
         dates = pd.DatetimeIndex(dates, freq=freq)
         X, y = self._match_indices(X, y, dates)
         if predict:
