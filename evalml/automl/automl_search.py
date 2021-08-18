@@ -304,6 +304,8 @@ class AutoMLSearch:
             logger = get_logger(__name__)
         else:
             logger = logging.getLogger(__name__)
+            if len(logger.handlers):
+                logger.handlers.pop()
         if X_train is None:
             raise ValueError(
                 "Must specify training data as a 2d array using the X_train argument"
