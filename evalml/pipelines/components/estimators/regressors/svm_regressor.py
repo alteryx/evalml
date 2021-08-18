@@ -13,22 +13,22 @@ class SVMRegressor(Estimator):
     Arguments:
         C (float): The regularization parameter. The strength of the regularization is inversely proportional to C.
             Must be strictly positive. The penalty is a squared l2 penalty. Defaults to 1.0.
-        kernel ({"linear", "poly", "rbf", "sigmoid", "precomputed"}): Specifies the kernel type to be used in the algorithm. Defaults to "rbf".
-        gamma ({"scale", "auto"} or float): Kernel coefficient for "rbf", "poly" and "sigmoid". Defaults to "scale".
-            - If gamma='scale' (default) is passed then it uses 1 / (n_features * X.var()) as value of gamma
-            - if "auto", uses 1 / n_features
+        kernel ({"poly", "rbf", "sigmoid", "precomputed"}): Specifies the kernel type to be used in the algorithm. Defaults to "rbf".
+        gamma ({"scale", "auto"} or float): Kernel coefficient for "rbf", "poly" and "sigmoid". Defaults to "auto".
+            - If gamma='scale' is passed then it uses 1 / (n_features * X.var()) as value of gamma
+            - if "auto" (default), uses 1 / n_features
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
     name = "SVM Regressor"
     hyperparameter_ranges = {
         "C": Real(0, 10),
-        "kernel": ["linear", "poly", "rbf", "sigmoid", "precomputed"],
+        "kernel": ["poly", "rbf", "sigmoid", "precomputed"],
         "gamma": ["scale", "auto"],
     }
     """{
         "C": Real(0, 10),
-        "kernel": ["linear", "poly", "rbf", "sigmoid", "precomputed"],
+        "kernel": ["poly", "rbf", "sigmoid", "precomputed"],
         "gamma": ["scale", "auto"],
     }"""
     model_family = ModelFamily.SVM
@@ -42,7 +42,7 @@ class SVMRegressor(Estimator):
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]"""
 
-    def __init__(self, C=1.0, kernel="rbf", gamma="scale", random_seed=0, **kwargs):
+    def __init__(self, C=1.0, kernel="rbf", gamma="auto", random_seed=0, **kwargs):
         parameters = {"C": C, "kernel": kernel, "gamma": gamma}
         parameters.update(kwargs)
 
