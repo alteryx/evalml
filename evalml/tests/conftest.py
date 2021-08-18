@@ -12,6 +12,7 @@ from sklearn import datasets
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
+from evalml.objectives import BinaryClassificationObjective
 from evalml.objectives.utils import (
     get_core_objectives,
     get_non_core_objectives,
@@ -1321,3 +1322,21 @@ def df_with_url_and_email():
         }
     )
     return X
+
+
+def CustomClassificationObjectiveRanges(ranges):
+    class CustomClassificationObjectiveRanges(BinaryClassificationObjective):
+        """Accuracy score for binary and multiclass classification."""
+
+        name = "Classification Accuracy"
+        greater_is_better = True
+        score_needs_proba = False
+        perfect_score = 1.0
+        is_bounded_like_percentage = False
+        expected_range = ranges
+        problem_types = [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+
+        def objective_function(self, y_true, y_predicted, X=None):
+            """Not implementing since mocked in our tests."""
+
+    return CustomClassificationObjectiveRanges()

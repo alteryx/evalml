@@ -42,6 +42,12 @@ class ObjectiveBase(ABC):
     def is_bounded_like_percentage(cls):
         """Returns whether this objective is bounded between 0 and 1, inclusive."""
 
+    @property
+    @classmethod
+    @abstractmethod
+    def expected_range(cls):
+        """Returns the expected range of the objective, which is not necessarily the possible ranges. For example, our expected R2 range is from [-1, 1], although the actual range is (-inf, 1]."""
+
     @classmethod
     @abstractmethod
     def objective_function(cls, y_true, y_predicted, X=None, sample_weight=None):
