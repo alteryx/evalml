@@ -2,13 +2,15 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from skopt.space import Categorical
+from skopt.space import Categorical, Real
 
 from evalml.automl.automl_algorithm import EvalMLAlgorithm
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ElasticNetClassifier,
     ElasticNetRegressor,
+    LogisticRegressionClassifier,
+    RandomForestClassifier,
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
 )
@@ -166,3 +168,70 @@ def test_evalml_algorithm(
     long_estimators = set([pipeline.estimator.name for pipeline in long_2])
     assert len(long_2) == 30
     assert len(long_estimators) == 3
+
+
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_evalml_algo_pipeline_params(mock_get_names, X_y_binary):
+    X, y = X_y_binary
+    mock_get_names.return_value = ["0", "1", "2"]
+
+    problem_type = ProblemTypes.BINARY
+    sampler_name = None
+    pipeline_params = {
+        "pipeline": {"gap": 2, "max_delay": 10},
+        "Logistic Regression Classifier": {"C": 5},
+    }
+    algo = EvalMLAlgorithm(
+        X,
+        y,
+        problem_type,
+        sampler_name,
+        pipeline_params=pipeline_params,
+        num_long_explore_pipelines=1,
+        num_long_pipelines_per_batch=1,
+    )
+
+    for _ in range(6):
+        batch = algo.next_batch()
+        add_result(algo, batch)
+        for pipeline in batch:
+            if not isinstance(pipeline.estimator, SklearnStackedEnsembleClassifier):
+                assert pipeline.parameters["pipeline"] == {"gap": 2, "max_delay": 10}
+            if isinstance(pipeline.estimator, LogisticRegressionClassifier):
+                assert pipeline.parameters["Logistic Regression Classifier"]["C"] == 5
+
+
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_evalml_algo_custom_hyperparameters(mock_get_names, X_y_binary):
+    X, y = X_y_binary
+    mock_get_names.return_value = ["0", "1", "2"]
+    problem_type = ProblemTypes.BINARY
+    sampler_name = None
+    custom_hyperparameters = {
+        "Random Forest Classifier": {
+            "n_estimators": Categorical([5, 6, 7]),
+            "max_depth": Categorical([5, 6, 7]),
+        }
+    }
+
+    algo = EvalMLAlgorithm(
+        X,
+        y,
+        problem_type,
+        sampler_name,
+        custom_hyperparameters=custom_hyperparameters,
+        num_long_explore_pipelines=3,
+        num_long_pipelines_per_batch=3,
+    )
+
+    for _ in range(10):
+        batch = algo.next_batch()
+        add_result(algo, batch)
+        for pipeline in batch:
+            if isinstance(pipeline.estimator, RandomForestClassifier):
+                assert pipeline.parameters["Random Forest Classifier"][
+                    "n_estimators"
+                ] in Categorical([5, 6, 7])
+                assert pipeline.parameters["Random Forest Classifier"][
+                    "max_depth"
+                ] in Categorical([5, 6, 7])

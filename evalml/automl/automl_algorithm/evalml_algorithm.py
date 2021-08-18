@@ -360,7 +360,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             )
 
     def _transform_parameters(self, pipeline, proposed_parameters):
-        """Given a pipeline parameters dict, make sure n_jobs is set."""
+        """Given a pipeline parameters dict, make sure pipeline_params, custom_hyperparameters, n_jobs are set properly."""
         parameters = {}
         if "pipeline" in self._pipeline_params:
             parameters["pipeline"] = self._pipeline_params["pipeline"]
@@ -373,7 +373,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             component_parameters = proposed_parameters.get(name, {})
             init_params = inspect.signature(component_class.__init__).parameters
             # For first batch, pass the pipeline params to the components that need them
-            if name in self._custom_hyperparameters and self._batch_number == 2:
+            if name in self._custom_hyperparameters and self._batch_number <= 2:
                 for param_name, value in self._custom_hyperparameters[name].items():
                     if isinstance(value, (Integer, Real)):
                         # get a random value in the space
