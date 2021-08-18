@@ -56,11 +56,7 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.tuners import SKOptTuner
-from evalml.utils import (
-    _put_into_original_order,
-    convert_to_seconds,
-    infer_feature_types,
-)
+from evalml.utils import convert_to_seconds, infer_feature_types
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -509,6 +505,16 @@ class AutoMLSearch:
             allowed_estimators = get_estimators(
                 self.problem_type, self.allowed_model_families
             )
+            if (
+                is_time_series(self.problem_type)
+                and parameters["pipeline"]["date_index"]
+            ):
+                if pd.infer_freq(X_train[parameters["pipeline"]["date_index"]]) == "MS":
+                    allowed_estimators = [
+                        estimator
+                        for estimator in allowed_estimators
+                        if estimator.name != "ARIMA Regressor"
+                    ]
             logger.debug(
                 f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}"
             )
@@ -523,9 +529,7 @@ class AutoMLSearch:
             unknown_columns = list(
                 self.X_train.ww.select("unknown", return_schema=True).columns
             )
-            index_and_unknown_columns = _put_into_original_order(
-                self.X_train, index_and_unknown_columns
-            )
+            index_and_unknown_columns = index_and_unknown_columns
             if len(index_and_unknown_columns) > 0 and drop_columns is None:
                 parameters["Drop Columns Transformer"] = {
                     "columns": index_and_unknown_columns

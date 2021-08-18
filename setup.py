@@ -7,6 +7,7 @@ extras_require = {
     'update_checker': ['alteryx-open-src-update-checker >= 2.0.0'],
     'prophet': ['cmdstan-builder == 0.0.4']
 }
+extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
     name='evalml',

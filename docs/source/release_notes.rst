@@ -2,9 +2,12 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Use Woodwork's outlier detection for the ``OutliersDataCheck`` :pr:`2637`
     * Fixes
     * Changes
+        * Deleted ``_put_into_original_order`` helper function :pr:`2639`
     * Documentation Changes
+        * Add complete install command to README and Install section :pr:`2627`
     * Testing Changes
 
 .. warning::
@@ -27,6 +30,7 @@ Release Notes
         * Added support for creating pipelines without an estimator as the final component and added ``transform(X, y)`` method to pipelines and component graphs :pr:`2625`
         * Updated to support Woodwork 0.5.1 :pr:`2610`
     * Fixes
+        * Updated ``AutoMLSearch`` to drop ``ARIMARegressor`` from ``allowed_estimators`` if an incompatible frequency is detected :pr:`2632`
         * Updated ``get_best_sampler_for_data`` to consider all non-numeric datatypes as categorical for SMOTE :pr:`2590`
         * Fixed inconsistent test results from `TargetDistributionDataCheck` :pr:`2608`
         * Adopted vectorized pd.NA checking for Woodwork 0.5.1 support :pr:`2626`
