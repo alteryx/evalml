@@ -646,7 +646,7 @@ class AutoMLSearch:
         )
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
 
-        if _automl_algorithm == 'iterative':
+        if _automl_algorithm == "iterative":
             self._automl_algorithm = IterativeAlgorithm(
                 max_iterations=self.max_iterations,
                 allowed_pipelines=self.allowed_pipelines,
