@@ -2,7 +2,7 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from skopt.space import Categorical
+from skopt.space import Categorical, Integer
 
 from evalml.automl.automl_algorithm import EvalMLAlgorithm
 from evalml.model_family import ModelFamily
@@ -209,7 +209,7 @@ def test_evalml_algo_custom_hyperparameters(mock_get_names, X_y_binary):
     sampler_name = None
     custom_hyperparameters = {
         "Random Forest Classifier": {
-            "n_estimators": Categorical([5, 6, 7]),
+            "n_estimators": Integer(5, 7),
             "max_depth": Categorical([5, 6, 7]),
         }
     }
@@ -231,7 +231,7 @@ def test_evalml_algo_custom_hyperparameters(mock_get_names, X_y_binary):
             if isinstance(pipeline.estimator, RandomForestClassifier):
                 assert pipeline.parameters["Random Forest Classifier"][
                     "n_estimators"
-                ] in Categorical([5, 6, 7])
+                ] in Integer(5, 7)
                 assert pipeline.parameters["Random Forest Classifier"][
                     "max_depth"
                 ] in Categorical([5, 6, 7])
