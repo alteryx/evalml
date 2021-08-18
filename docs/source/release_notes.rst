@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Updated the high variance check in AutoMLSearch to be robust to a variety of objectives and cv scores :pr:`2622`
         * Use Woodwork's outlier detection for the ``OutliersDataCheck`` :pr:`2637`
+        * Added ability to utilize instantiated components when creating a pipeline :pr:`2643`
     * Fixes
     * Changes
         * Deleted ``_put_into_original_order`` helper function :pr:`2639`
@@ -42,6 +43,7 @@ Release Notes
         * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
         * Changed ``partial_dependence`` and ``graph_partial_dependence`` to raise a ``PartialDependenceError`` instead of ``ValueError``. This is not a breaking change because ``PartialDependenceError`` is a subclass of ``ValueError`` :pr:`2604`
         * Cleaned up code duplication in ``ComponentGraph`` :pr:`2612`
+        * Stored predict_proba results in .x for intermediate estimators in ComponentGraph :pr:`2629`
     * Documentation Changes
         * To avoid local docs build error, only add warning disable and download headers on ReadTheDocs builds, not locally :pr:`2617`
     * Testing Changes

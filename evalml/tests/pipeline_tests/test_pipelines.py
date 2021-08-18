@@ -855,11 +855,15 @@ def test_compute_estimator_features(
 
 @patch("evalml.pipelines.components.Imputer.transform")
 @patch("evalml.pipelines.components.OneHotEncoder.transform")
+@patch("evalml.pipelines.components.RandomForestClassifier.predict_proba")
+@patch("evalml.pipelines.components.ElasticNetClassifier.predict_proba")
 @patch("evalml.pipelines.components.RandomForestClassifier.predict")
 @patch("evalml.pipelines.components.ElasticNetClassifier.predict")
 def test_compute_estimator_features_nonlinear(
     mock_en_predict,
     mock_rf_predict,
+    mock_en_predict_proba,
+    mock_rf_predict_proba,
     mock_ohe,
     mock_imputer,
     X_y_binary,
@@ -870,8 +874,23 @@ def test_compute_estimator_features_nonlinear(
     mock_ohe.return_value = pd.DataFrame(X)
     mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
     mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
+
+    mock_en_predict_proba_df = pd.DataFrame(
+        {0: np.ones(X.shape[0]), 1: np.zeros(X.shape[0])}
+    )
+    mock_en_predict_proba_df.ww.init()
+    mock_rf_predict_proba_df = pd.DataFrame(
+        {0: np.zeros(X.shape[0]), 1: np.ones(X.shape[0])}
+    )
+    mock_rf_predict_proba_df.ww.init()
+    mock_en_predict_proba.return_value = mock_en_predict_proba_df
+    mock_rf_predict_proba.return_value = mock_rf_predict_proba_df
+
     X_expected_df = pd.DataFrame(
-        {"Random Forest.x": np.zeros(X.shape[0]), "Elastic Net.x": np.ones(X.shape[0])}
+        {
+            "Col 1 Random Forest.x": np.ones(X.shape[0]),
+            "Col 1 Elastic Net.x": np.zeros(X.shape[0]),
+        }
     )
 
     pipeline = nonlinear_binary_pipeline_class({})
@@ -881,8 +900,8 @@ def test_compute_estimator_features_nonlinear(
     assert_frame_equal(X_expected_df, X_t)
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 4
-    assert mock_en_predict.call_count == 2
-    assert mock_rf_predict.call_count == 2
+    assert mock_en_predict_proba.call_count == 2
+    assert mock_rf_predict_proba.call_count == 2
 
 
 def test_no_default_parameters():
@@ -1164,8 +1183,8 @@ def test_nonlinear_feature_importance_has_feature_names(
     assert len(clf.feature_importance) == 2
     assert not clf.feature_importance.isnull().all().all()
     assert sorted(clf.feature_importance["feature"]) == [
-        "Elastic Net.x",
-        "Random Forest.x",
+        "Col 1 Elastic Net.x",
+        "Col 1 Random Forest.x",
     ]
 
 
