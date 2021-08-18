@@ -9,12 +9,14 @@ from evalml.utils import infer_feature_types
 
 @patch("evalml.data_checks.default_data_checks.DefaultDataChecks.validate")
 @patch("evalml.automl.AutoMLSearch.search")
-def test_search(mock_automl_search, mock_data_checks_validate, X_y_binary):
+def test_search_iterative(mock_automl_search, mock_data_checks_validate, X_y_binary):
     X, y = X_y_binary
     # this doesn't exactly match the data check results schema but its enough to trigger the error in search_iterative()
     data_check_results_expected = {"warnings": ["Warning 1", "Warning 2"]}
     mock_data_checks_validate.return_value = data_check_results_expected
-    automl, data_check_results = search_iterative(X_train=X, y_train=y, problem_type="binary")
+    automl, data_check_results = search_iterative(
+        X_train=X, y_train=y, problem_type="binary"
+    )
     assert isinstance(automl, AutoMLSearch)
     assert data_check_results is data_check_results_expected
     mock_data_checks_validate.assert_called_once()
@@ -29,14 +31,16 @@ def test_search(mock_automl_search, mock_data_checks_validate, X_y_binary):
 
 @patch("evalml.data_checks.default_data_checks.DefaultDataChecks.validate")
 @patch("evalml.automl.AutoMLSearch.search")
-def test_search_data_check_error(
+def test_search_iterative_data_check_error(
     mock_automl_search, mock_data_checks_validate, X_y_binary
 ):
     X, y = X_y_binary
     # this doesn't exactly match the data check results schema but its enough to trigger the error in search_iterative()
     data_check_results_expected = {"errors": ["Error 1", "Error 2"]}
     mock_data_checks_validate.return_value = data_check_results_expected
-    automl, data_check_results = search_iterative(X_train=X, y_train=y, problem_type="binary")
+    automl, data_check_results = search_iterative(
+        X_train=X, y_train=y, problem_type="binary"
+    )
     assert automl is None
     assert data_check_results == data_check_results_expected
     mock_data_checks_validate.assert_called_once()
@@ -51,7 +55,7 @@ def test_search_data_check_error(
 @pytest.mark.parametrize(
     "problem_config", [None, "missing_date_index", "has_date_index"]
 )
-def test_search_data_check_error_timeseries(problem_config):
+def test_search_iterative_data_check_error_timeseries(problem_config):
     X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
     problem_configuration = None
 
@@ -97,7 +101,7 @@ def test_search_data_check_error_timeseries(problem_config):
 
 @patch("evalml.data_checks.default_data_checks.DefaultDataChecks.validate")
 @patch("evalml.automl.AutoMLSearch.search")
-def test_search_kwargs(mock_automl_search, mock_data_checks_validate, X_y_binary):
+def test_search_iterative_kwargs(mock_automl_search, mock_data_checks_validate, X_y_binary):
     X, y = X_y_binary
     automl, data_check_results = search_iterative(
         X_train=X, y_train=y, problem_type="binary", max_iterations=42
