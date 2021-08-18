@@ -392,10 +392,11 @@ def test_automl_allowed_component_graphs_search(
     )
 
 
-def test_automl_supports_time_series_regression(AutoMLTestEnv, X_y_regression):
+@pytest.mark.parametrize("freq", ["D", "MS"])
+def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, X_y_regression):
     X, y = X_y_regression
     X = pd.DataFrame(X, columns=[f"Column_{str(i)}" for i in range(20)])
-    X["Date"] = pd.date_range(start="1/1/2018", periods=X.shape[0])
+    X["Date"] = pd.date_range(start="1/1/2018", periods=X.shape[0], freq=freq)
 
     configuration = {
         "date_index": "Date",
@@ -423,6 +424,8 @@ def test_automl_supports_time_series_regression(AutoMLTestEnv, X_y_regression):
 
         if result["id"] == 0:
             continue
+        if freq == "MS":
+            assert "ARIMA Regressor" not in result["parameters"]
         if "ARIMA Regressor" in result["parameters"]:
             dt_ = result["parameters"]["ARIMA Regressor"].pop("date_index")
             assert "DateTime Featurization Component" not in result["parameters"].keys()
