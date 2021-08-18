@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Use Woodwork's outlier detection for the ``OutliersDataCheck`` :pr:`2637`
-        * Removed SVM ``kernel="linear"`` hyperparameter option, and improved default parameters :pr:`2651`
+        * Removed SVM "linear" and "precomputed" kernel hyperparameter options, and improved default parameters :pr:`2651`
     * Fixes
     * Changes
         * Deleted ``_put_into_original_order`` helper function :pr:`2639`

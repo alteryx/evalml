@@ -14,7 +14,7 @@ class SVMClassifier(Estimator):
     Arguments:
         C (float): The regularization parameter. The strength of the regularization is inversely proportional to C.
             Must be strictly positive. The penalty is a squared l2 penalty. Defaults to 1.0.
-        kernel ({"poly", "rbf", "sigmoid", "precomputed"}): Specifies the kernel type to be used in the algorithm. Defaults to "rbf".
+        kernel ({"poly", "rbf", "sigmoid"}): Specifies the kernel type to be used in the algorithm. Defaults to "rbf".
         gamma ({"scale", "auto"} or float): Kernel coefficient for "rbf", "poly" and "sigmoid". Defaults to "auto".
             - If gamma='scale' is passed then it uses 1 / (n_features * X.var()) as value of gamma
             - If "auto" (default), uses 1 / n_features
@@ -25,12 +25,12 @@ class SVMClassifier(Estimator):
     name = "SVM Classifier"
     hyperparameter_ranges = {
         "C": Real(0, 10),
-        "kernel": ["poly", "rbf", "sigmoid", "precomputed"],
+        "kernel": ["poly", "rbf", "sigmoid"],
         "gamma": ["scale", "auto"],
     }
     """{
         "C": Real(0, 10),
-        "kernel": ["poly", "rbf", "sigmoid", "precomputed"],
+        "kernel": ["poly", "rbf", "sigmoid"],
         "gamma": ["scale", "auto"],
     }"""
     model_family = ModelFamily.SVM
