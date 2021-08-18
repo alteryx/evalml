@@ -142,6 +142,23 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         ]
         return estimators
 
+    def _create_tuner(self, pipeline):
+        pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
+            self._custom_hyperparameters
+        )
+        self._tuners[pipeline.name] = self._tuner_class(
+            pipeline_hyperparameters, random_seed=self.random_seed
+        )
+
+    def _create_pipelines_with_params(self, pipelines, parameters={}):
+        return [
+            pipeline.new(
+                parameters=self._transform_parameters(pipeline, parameters),
+                random_seed=self.random_seed,
+            )
+            for pipeline in pipelines
+        ]
+
     def _create_naive_pipelines(self, use_features=False):
         feature_selector = None
 
@@ -171,22 +188,8 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             for estimator in estimators
         ]
 
-        pipelines = [
-            pipeline.new(
-                parameters=self._transform_parameters(pipeline, {}),
-                random_seed=self.random_seed,
-            )
-            for pipeline in pipelines
-        ]
+        pipelines = self._create_pipelines_with_params(pipelines, parameters={})
         return pipelines
-
-    def _create_tuner(self, pipeline):
-        pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
-            self._custom_hyperparameters
-        )
-        self._tuners[pipeline.name] = self._tuner_class(
-            pipeline_hyperparameters, random_seed=self.random_seed
-        )
 
     def _create_fast_final(self):
         estimators = [
@@ -211,16 +214,9 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
             for estimator in estimators
         ]
 
-        pipelines = [
-            pipeline.new(
-                parameters=self._transform_parameters(
-                    pipeline,
-                    {"Select Columns Transformer": {"columns": self._selected_cols}},
-                ),
-                random_seed=self.random_seed,
-            )
-            for pipeline in pipelines
-        ]
+        pipelines = self._create_pipelines_with_params(
+            pipelines, {"Select Columns Transformer": {"columns": self._selected_cols}}
+        )
 
         for pipeline in pipelines:
             self._create_tuner(pipeline)
