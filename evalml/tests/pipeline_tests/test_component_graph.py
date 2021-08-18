@@ -151,9 +151,14 @@ def test_init_instantiated():
             "y",
         ]
     }
-    cg = ComponentGraph(graph)
-    cg.instantiate({"Imputer": {}})
-    assert graph["Imputer"][0] == cg.get_component("Imputer")
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate(
+        {"Imputer": {"numeric_fill_value": 10, "categorical_fill_value": "Fill"}}
+    )
+    cg_imputer = component_graph.get_component("Imputer")
+    assert graph["Imputer"][0] == cg_imputer
+    assert cg_imputer.parameters["numeric_fill_value"] == 0
+    assert cg_imputer.parameters["categorical_fill_value"] is None
 
 
 def test_invalid_init():

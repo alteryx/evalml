@@ -121,7 +121,8 @@ class ComponentGraph:
 
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                               An empty dictionary {} or None implies using all default values for component parameters.
+                               An empty dictionary {} or None implies using all default values for component parameters. If a component
+                               in the component graph is already instantiated, it will not use any of its parameters defined in this dictionary.
         """
         if self._is_instantiated:
             raise ValueError(
