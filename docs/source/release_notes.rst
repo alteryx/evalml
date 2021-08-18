@@ -2,12 +2,14 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Updated the high variance check in AutoMLSearch to be robust to a variety of objectives and cv scores :pr:`2622`
         * Use Woodwork's outlier detection for the ``OutliersDataCheck`` :pr:`2637`
         * Added ability to utilize instantiated components when creating a pipeline :pr:`2643`
     * Fixes
     * Changes
         * Deleted ``_put_into_original_order`` helper function :pr:`2639`
         * Refactored time series pipeline code using a time series pipeline base class :pr:`2649`
+        * Renamed ``dask_tests`` to ``parallel_tests`` :pr:`2657`
     * Documentation Changes
         * Add complete install command to README and Install section :pr:`2627`
     * Testing Changes

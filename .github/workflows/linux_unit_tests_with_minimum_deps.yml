@@ -15,7 +15,7 @@ jobs:
       fail-fast: false
       matrix:
         python_version: ['3.7']
-        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
+        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-parallel']
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -44,7 +44,7 @@ jobs:
           pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
           pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
           pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
-      - if: ${{ matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-dask' }}
+      - if: ${{ matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-parallel' }}
         name: Install evalml with test dependencies, core dependencies, & optional requirements
         run: |
           source test_python/bin/activate
