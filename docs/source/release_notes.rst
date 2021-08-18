@@ -14,6 +14,8 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * ``TimeSeriesRegressionPipeline`` no longer inherits from ``TimeSeriesRegressionPipeline`` :pr:`2649`
+
 
 
 **v0.30.2 Aug. 16, 2021**
