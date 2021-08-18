@@ -1,5 +1,4 @@
 import copy
-from evalml import automl
 import pickle
 import sys
 import time
