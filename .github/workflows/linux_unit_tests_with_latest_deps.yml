@@ -71,7 +71,9 @@ jobs:
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
+          echo "------------------------------"
           uname -a
+          cat /etc/os-release
           pip install prophet-builder
           make installdeps
           make installdeps-test
