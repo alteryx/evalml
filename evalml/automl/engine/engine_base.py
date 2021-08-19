@@ -11,7 +11,6 @@ import woodwork as ww
 
 from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
-from evalml.model_family import ModelFamily
 from evalml.pipelines.components.ensemble.sklearn_stacked_ensemble_base import (
     SklearnStackedEnsembleBase,
 )

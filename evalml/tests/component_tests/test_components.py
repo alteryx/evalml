@@ -71,9 +71,6 @@ from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
-from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
-    StackedEnsembleBase,
-)
 from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
     LogTransformer,
 )
@@ -754,8 +751,6 @@ def test_components_init_kwargs():
             continue
         if component._component_obj is None:
             continue
-        if isinstance(component, StackedEnsembleBase):
-            continue
 
         obj_class = component._component_obj.__class__.__name__
         module = component._component_obj.__module__
@@ -1196,24 +1191,6 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                     ]
                 )
             elif component_class == SklearnStackedEnsembleRegressor:
-                component = component_class(
-                    input_pipelines=[
-                        RegressionPipeline(
-                            [RandomForestRegressor],
-                            parameters={"Random Forest Regressor": {"n_jobs": 1}},
-                        )
-                    ]
-                )
-            elif component_class == StackedEnsembleClassifier:
-                component = component_class(
-                    input_pipelines=[
-                        BinaryClassificationPipeline(
-                            [RandomForestClassifier],
-                            parameters={"Random Forest Classifier": {"n_jobs": 1}},
-                        )
-                    ]
-                )
-            elif component_class == StackedEnsembleRegressor:
                 component = component_class(
                     input_pipelines=[
                         RegressionPipeline(

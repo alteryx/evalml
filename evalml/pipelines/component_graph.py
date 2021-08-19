@@ -16,8 +16,6 @@ from evalml.exceptions.exceptions import (
 from evalml.model_family.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.problem_types.problem_types import ProblemTypes
-from evalml.problem_types.utils import detect_problem_type
 from evalml.utils import get_logger, import_or_raise, infer_feature_types
 
 logger = get_logger(__file__)
