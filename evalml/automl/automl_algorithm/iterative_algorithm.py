@@ -171,22 +171,26 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
 
             for model_type, best_info in self._best_pipeline_info.items():
-                def _make_new_component_name(component_name):
-                    return str(model_type) + ' Pipeline - ' + component_name
 
-                pipeline = best_info['pipeline']
+                def _make_new_component_name(component_name):
+                    return str(model_type) + " Pipeline - " + component_name
+
+                pipeline = best_info["pipeline"]
                 if problem_type is None:
                     problem_type = pipeline.problem_type
                 final_component = None
 
-                for name, component_list in pipeline.component_graph.component_dict.items():
+                for (
+                    name,
+                    component_list,
+                ) in pipeline.component_graph.component_dict.items():
                     new_component_list = []
                     new_component_name = _make_new_component_name(name)
                     for i, item in enumerate(component_list):
                         if i == 0:
                             fitted_comp = pipeline.component_graph[item.name]
                             new_component_list.append(fitted_comp)
-                        elif isinstance(item, str) and item not in ['X', 'y']:
+                        elif isinstance(item, str) and item not in ["X", "y"]:
                             new_component_list.append(_make_new_component_name(item))
                         else:
                             new_component_list.append(item)
@@ -217,7 +221,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 input_pipelines=input_pipelines,
                 random_seed=self.random_seed,
                 n_jobs=n_jobs_ensemble,
-                use_sklearn=True
+                use_sklearn=True,
             )
 
             next_batch.append(ensemble)

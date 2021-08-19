@@ -259,7 +259,13 @@ def generate_pipeline_code(element):
 
 
 def _make_stacked_ensemble_pipeline(
-    problem_type, input_pipelines=None, component_graph=None, final_components=None, n_jobs=-1, random_seed=0, use_sklearn=False
+    problem_type,
+    input_pipelines=None,
+    component_graph=None,
+    final_components=None,
+    n_jobs=-1,
+    random_seed=0,
+    use_sklearn=False,
 ):
     """Creates a pipeline with a stacked ensemble estimator.
 
@@ -276,12 +282,18 @@ def _make_stacked_ensemble_pipeline(
         Pipeline with appropriate stacked ensemble estimator.
     """
     if use_sklearn and input_pipelines is None:
-        raise ValueError("`input_pipelines` must be set when using the sklearn ensembler.")
+        raise ValueError(
+            "`input_pipelines` must be set when using the sklearn ensembler."
+        )
 
     if not use_sklearn and component_graph is None:
-        raise ValueError("`component_graph` must be set when using the custom ensembler.")
+        raise ValueError(
+            "`component_graph` must be set when using the custom ensembler."
+        )
     if not use_sklearn and final_components is None:
-        raise ValueError("`final_components` must be set when using the custom ensembler.")
+        raise ValueError(
+            "`final_components` must be set when using the custom ensembler."
+        )
 
     parameters = {}
     if is_classification(problem_type):
@@ -320,20 +332,28 @@ def _make_stacked_ensemble_pipeline(
     pipeline_class, pipeline_name = {
         ProblemTypes.BINARY: (
             BinaryClassificationPipeline,
-            "Sklearn Stacked Ensemble Classification Pipeline" if use_sklearn else "Stacked Ensemble Classification Pipeline",
+            "Sklearn Stacked Ensemble Classification Pipeline"
+            if use_sklearn
+            else "Stacked Ensemble Classification Pipeline",
         ),
         ProblemTypes.MULTICLASS: (
             MulticlassClassificationPipeline,
-            "Sklearn Stacked Ensemble Classification Pipeline" if use_sklearn else "Stacked Ensemble Classification Pipeline",
+            "Sklearn Stacked Ensemble Classification Pipeline"
+            if use_sklearn
+            else "Stacked Ensemble Classification Pipeline",
         ),
         ProblemTypes.REGRESSION: (
             RegressionPipeline,
-            "Sklearn Stacked Ensemble Regression Pipeline" if use_sklearn else "Stacked Ensemble Regression Pipeline",
+            "Sklearn Stacked Ensemble Regression Pipeline"
+            if use_sklearn
+            else "Stacked Ensemble Regression Pipeline",
         ),
     }[problem_type]
-    
+
     if not use_sklearn:
-        component_graph[estimator.name] = [estimator] + [comp + '.x' for comp in final_components] + ['y']
+        component_graph[estimator.name] = (
+            [estimator] + [comp + ".x" for comp in final_components] + ["y"]
+        )
 
     return pipeline_class(
         [estimator] if use_sklearn else component_graph,

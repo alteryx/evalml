@@ -1,7 +1,4 @@
 """Component graph for a pipeline as a directed acyclic graph (DAG)."""
-from evalml.model_family.model_family import ModelFamily
-from evalml.problem_types.problem_types import ProblemTypes
-from evalml.problem_types.utils import detect_problem_type
 import inspect
 import warnings
 
@@ -16,10 +13,14 @@ from evalml.exceptions.exceptions import (
     MissingComponentError,
     ParameterNotUsedWarning,
 )
+from evalml.model_family.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import import_or_raise, infer_feature_types
-from evalml.utils.logger import get_logger
+from evalml.problem_types.problem_types import ProblemTypes
+from evalml.problem_types.utils import detect_problem_type
+from evalml.utils import get_logger, import_or_raise, infer_feature_types
+
+logger = get_logger(__file__)
 
 
 class ComponentGraph:
@@ -381,9 +382,9 @@ class ComponentGraph:
                 output_cache[f"{component_name}.x"] = output_x
                 output_cache[f"{component_name}.y"] = output_y
             else:
-                # if fit and self.is_ensemble_graph and component_instance._is_fitted:
-                #     pass
-                if fit:
+                if fit and self.is_ensemble_graph and component_instance._is_fitted:
+                    pass
+                elif fit:
                     component_instance.fit(x_inputs, y_input)
 
                 if fit and component_name == self.compute_order[-1]:
