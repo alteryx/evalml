@@ -22,8 +22,6 @@ from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.problem_types.problem_types import ProblemTypes
-from evalml.problem_types.utils import detect_problem_type
 from evalml.utils import get_logger, import_or_raise, infer_feature_types
 
 logger = get_logger(__file__)

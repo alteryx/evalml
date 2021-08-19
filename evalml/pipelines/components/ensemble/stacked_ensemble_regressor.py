@@ -1,5 +1,3 @@
-from sklearn.model_selection import KFold
-
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import LinearRegressor
 from evalml.pipelines.components.ensemble import StackedEnsembleBase
