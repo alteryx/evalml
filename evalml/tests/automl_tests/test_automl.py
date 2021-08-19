@@ -1521,30 +1521,49 @@ def test_describe_pipeline_with_ensembling(
 
     ensemble_ids = [
         _get_first_stacked_classifier_no() - 1,
+        _get_first_stacked_classifier_no(),
+        len(automl.results["pipeline_results"]) - 2,
         len(automl.results["pipeline_results"]) - 1,
     ]
 
+    num_sklearn_pl = 0
     for i, ensemble_id in enumerate(ensemble_ids):
+        sklearn_pl = (
+            True if "Sklearn" in automl.get_pipeline(ensemble_id).name else False
+        )
         caplog.clear()
         automl_dict = automl.describe_pipeline(ensemble_id, return_dict=return_dict)
         out = caplog.text
-        assert "Sklearn Stacked Ensemble Classification Pipeline" in out
+        if sklearn_pl:
+            assert "Sklearn Stacked Ensemble Classification Pipeline" in out
+            assert "* final_estimator : None" in out
+            num_sklearn_pl += 1
+        else:
+            assert "Stacked Ensemble Classification Pipeline" in out
+            assert "* final_estimator : Logistic Regression Classifier" in out
         assert "Problem Type: binary" in out
         assert "Model Family: Ensemble" in out
-        assert "* final_estimator : None" in out
         assert "Total training time (including CV): " in out
         assert "Log Loss Binary # Training # Validation" in out
         assert "Input for ensembler are pipelines with IDs:" in out
 
         if return_dict:
             assert automl_dict["id"] == ensemble_id
-            assert (
-                automl_dict["pipeline_name"]
-                == "Sklearn Stacked Ensemble Classification Pipeline"
-            )
-            assert (
-                automl_dict["pipeline_summary"] == "Sklearn Stacked Ensemble Classifier"
-            )
+            if sklearn_pl:
+                assert (
+                    automl_dict["pipeline_name"]
+                    == "Sklearn Stacked Ensemble Classification Pipeline"
+                )
+                assert (
+                    automl_dict["pipeline_summary"]
+                    == "Sklearn Stacked Ensemble Classifier"
+                )
+            else:
+                assert (
+                    automl_dict["pipeline_name"]
+                    == "Stacked Ensemble Classification Pipeline"
+                )
+                assert "Stacked Ensemble Classifier" in automl_dict["pipeline_summary"]
             assert isinstance(automl_dict["mean_cv_score"], float)
             assert not automl_dict["high_variance_cv"]
             assert isinstance(automl_dict["training_time"], float)
@@ -1556,7 +1575,7 @@ def test_describe_pipeline_with_ensembling(
             assert len(automl_dict["input_pipeline_ids"]) == len(
                 allowed_model_families("binary")
             )
-            if i == 0:
+            if i < 2:
                 assert all(
                     input_id < ensemble_id
                     for input_id in automl_dict["input_pipeline_ids"]
@@ -2556,7 +2575,7 @@ def test_max_batches_works(
             1
             + len(automl.allowed_pipelines)
             + (5 * (max_batches - 1 - num_ensemble_batches))
-            + num_ensemble_batches
+            + num_ensemble_batches * 2
         )
         n_automl_pipelines = n_results
     assert automl._automl_algorithm.batch_number == max_batches
@@ -2568,8 +2587,8 @@ def test_max_batches_works(
         )  # add one for baseline
     else:
         assert automl.rankings.shape[0] == min(
-            2 + len(automl.allowed_pipelines), n_results
-        )  # add two for baseline and stacked ensemble
+            3 + len(automl.allowed_pipelines), n_results
+        )  # add two for baseline and two for stacked ensemble
     assert automl.full_rankings.shape[0] == n_results
 
 

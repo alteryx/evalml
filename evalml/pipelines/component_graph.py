@@ -1,7 +1,4 @@
 """Component graph for a pipeline as a directed acyclic graph (DAG)."""
-from evalml.model_family.model_family import ModelFamily
-from evalml.problem_types.problem_types import ProblemTypes
-from evalml.problem_types.utils import detect_problem_type
 import inspect
 import warnings
 
@@ -16,6 +13,7 @@ from evalml.exceptions.exceptions import (
     MissingComponentError,
     ParameterNotUsedWarning,
 )
+from evalml.model_family.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
     BaseSampler,
@@ -24,8 +22,11 @@ from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import import_or_raise, infer_feature_types
-from evalml.utils.logger import get_logger
+from evalml.problem_types.problem_types import ProblemTypes
+from evalml.problem_types.utils import detect_problem_type
+from evalml.utils import get_logger, import_or_raise, infer_feature_types
+
+logger = get_logger(__file__)
 
 
 class ComponentGraph:
@@ -145,7 +146,10 @@ class ComponentGraph:
         Returns:
             bool: True if there is an ensembler component at the end of the graph
         """
-        return self.get_component(self.compute_order[-1]).model_family == ModelFamily.ENSEMBLE
+        return (
+            self.get_component(self.compute_order[-1]).model_family
+            == ModelFamily.ENSEMBLE
+        )
 
     def instantiate(self, parameters):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be raised if a component is already instantiated but the parameters dict contains arguments for that component.
@@ -378,9 +382,9 @@ class ComponentGraph:
                 output_cache[f"{component_name}.x"] = output_x
                 output_cache[f"{component_name}.y"] = output_y
             else:
-                # if fit and self.is_ensemble_graph and component_instance._is_fitted:
-                #     pass
-                if fit:
+                if fit and self.is_ensemble_graph and component_instance._is_fitted:
+                    pass
+                elif fit:
                     component_instance.fit(x_inputs, y_input)
 
                 if fit and component_name == self.compute_order[-1]:

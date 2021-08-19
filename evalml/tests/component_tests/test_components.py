@@ -68,6 +68,11 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.ensemble import (
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor,
+)
+from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
+    StackedEnsembleBase,
 )
 from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
     LogTransformer,
@@ -776,6 +781,8 @@ def test_components_init_kwargs():
             continue
         if component._component_obj is None:
             continue
+        if isinstance(component, StackedEnsembleBase):
+            continue
 
         obj_class = component._component_obj.__class__.__name__
         module = component._component_obj.__module__
@@ -913,7 +920,12 @@ def test_transformer_transform_output_type(X_y_binary):
         cls
         for cls in all_components()
         if cls
-        not in [SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier]
+        not in [
+            SklearnStackedEnsembleRegressor,
+            SklearnStackedEnsembleClassifier,
+            StackedEnsembleClassifier,
+            StackedEnsembleRegressor,
+        ]
     ],
 )
 def test_default_parameters(cls):
@@ -1108,6 +1120,8 @@ def test_all_estimators_check_fit(
         not in [
             SklearnStackedEnsembleClassifier,
             SklearnStackedEnsembleRegressor,
+            StackedEnsembleClassifier,
+            StackedEnsembleRegressor,
             TimeSeriesBaselineEstimator,
         ]
     ] + [test_estimator_needs_fitting_false]
@@ -1214,6 +1228,24 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                         )
                     ]
                 )
+            elif component_class == StackedEnsembleClassifier:
+                component = component_class(
+                    input_pipelines=[
+                        BinaryClassificationPipeline(
+                            [RandomForestClassifier],
+                            parameters={"Random Forest Classifier": {"n_jobs": 1}},
+                        )
+                    ]
+                )
+            elif component_class == StackedEnsembleRegressor:
+                component = component_class(
+                    input_pipelines=[
+                        RegressionPipeline(
+                            [RandomForestRegressor],
+                            parameters={"Random Forest Regressor": {"n_jobs": 1}},
+                        )
+                    ]
+                )
         if (
             isinstance(component, Estimator)
             and ProblemTypes.TIME_SERIES_REGRESSION in component.supported_problem_types
@@ -1234,6 +1266,8 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
             if issubclass(component_class, Estimator) and not (
                 isinstance(component, SklearnStackedEnsembleClassifier)
                 or isinstance(component, SklearnStackedEnsembleRegressor)
+                or isinstance(component, StackedEnsembleClassifier)
+                or isinstance(component, StackedEnsembleRegressor)
             ):
                 assert (
                     component.feature_importance == loaded_component.feature_importance

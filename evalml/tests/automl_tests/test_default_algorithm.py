@@ -14,6 +14,12 @@ from evalml.pipelines.components import (
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
 )
+from evalml.pipelines.components.ensemble.stacked_ensemble_classifier import (
+    StackedEnsembleClassifier,
+)
+from evalml.pipelines.components.ensemble.stacked_ensemble_regressor import (
+    StackedEnsembleRegressor,
+)
 from evalml.problem_types import ProblemTypes
 
 
@@ -138,6 +144,10 @@ def test_default_algorithm(
     final_ensemble = algo.next_batch()
     assert isinstance(
         final_ensemble[0].estimator,
+        (StackedEnsembleClassifier, StackedEnsembleRegressor),
+    )
+    assert isinstance(
+        final_ensemble[1].estimator,
         (SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier),
     )
     add_result(algo, final_ensemble)
@@ -150,6 +160,10 @@ def test_default_algorithm(
     long_first_ensemble = algo.next_batch()
     assert isinstance(
         long_first_ensemble[0].estimator,
+        (StackedEnsembleClassifier, StackedEnsembleRegressor),
+    )
+    assert isinstance(
+        long_first_ensemble[1].estimator,
         (SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier),
     )
 
@@ -161,6 +175,10 @@ def test_default_algorithm(
     long_second_ensemble = algo.next_batch()
     assert isinstance(
         long_second_ensemble[0].estimator,
+        (StackedEnsembleClassifier, StackedEnsembleRegressor),
+    )
+    assert isinstance(
+        long_second_ensemble[1].estimator,
         (SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier),
     )
 
