@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+    
+
+**v0.31.0 Aug. 19, 2021**
+    * Enhancements
         * Updated the high variance check in AutoMLSearch to be robust to a variety of objectives and cv scores :pr:`2622`
         * Use Woodwork's outlier detection for the ``OutliersDataCheck`` :pr:`2637`
         * Added ability to utilize instantiated components when creating a pipeline :pr:`2643`
@@ -21,7 +33,6 @@ Release Notes
 
     **Breaking Changes**
         * ``TimeSeriesRegressionPipeline`` no longer inherits from ``TimeSeriesRegressionPipeline`` :pr:`2649`
-
 
 
 **v0.30.2 Aug. 16, 2021**
