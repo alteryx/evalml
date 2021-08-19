@@ -1672,6 +1672,7 @@ class SubsetData(Transformer):
     """To simulate a transformer that modifies the target but is not a target transformer, e.g. a sampler."""
 
     name = "Subset Data"
+    modifies_target = True
 
     def __init__(self, parameters=None, random_seed=0):
         super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
@@ -2326,7 +2327,5 @@ def test_component_graph_with_invalid_y_edge(X_y_binary):
         "OHE": ["One Hot Encoder", "X", "y"],
         "RF": ["Random Forest Classifier", "OHE.x", "OHE.y"],
     }
-    component_graph = ComponentGraph(component_dict)
-    component_graph.instantiate({})
-    with pytest.raises(ValueError, match="OHE.y is not a valid input."):
-        component_graph.fit(X, y)
+    with pytest.raises(ValueError, match="OHE.y is not a valid input edge."):
+        ComponentGraph(component_dict)

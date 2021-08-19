@@ -44,12 +44,14 @@ class ComponentGraph:
             raise ValueError(
                 "component_dict must be a dictionary which specifies the components and edges between components"
             )
-        self._validate_component_dict()
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
             component_class = handle_component_class(component_info[0])
             self.component_instances[component_name] = component_class
+
+        self._validate_component_dict()
+
         self.input_feature_names = {}
         self._feature_provenance = {}
         self._i = 0
@@ -62,6 +64,11 @@ class ComponentGraph:
                     "All component information should be passed in as a list"
                 )
             component_inputs = component_inputs[1:]
+            target_inputs = [
+                component
+                for component in component_inputs
+                if (component.endswith(".y"))
+            ]
             has_feature_input = any(
                 component_input.endswith(".x") or component_input == "X"
                 for component_input in component_inputs
@@ -96,6 +103,13 @@ class ComponentGraph:
                 raise ValueError(
                     "All edges must be specified as either an input feature ('X'/.x) or input target ('y'/.y)."
                 )
+            if target_inputs:
+                component_class = self.get_component(target_inputs[0][:-2])
+                if (
+                    not issubclass(component_class, TargetTransformer)
+                    and not component_class.modifies_target
+                ):
+                    raise ValueError(f"{target_inputs[0]} is not a valid input edge.")
 
     @property
     def compute_order(self):
@@ -230,8 +244,9 @@ class ComponentGraph:
             elif parent_input == "X":
                 x_inputs.append(X)
             elif parent_input.endswith(".y"):
-                if component_outputs[parent_input] is None:
-                    raise ValueError(f"{parent_input} is not a valid input edge.")
+                # if component_outputs[parent_input] is None:
+                #     import pdb; pdb.set_trace()
+                #     raise ValueError(f"{parent_input} is not a valid input edge.")
                 y_input = component_outputs[parent_input]
             elif parent_input.endswith(".x"):
                 parent_x = component_outputs[parent_input]
@@ -314,7 +329,6 @@ class ComponentGraph:
                 raise ValueError(
                     "All components must be instantiated before fitting or predicting"
                 )
-
             x_inputs, y_input = self._consolidate_inputs_for_component(
                 output_cache, component_name, X, y
             )
