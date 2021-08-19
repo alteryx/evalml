@@ -67,11 +67,6 @@ class ComponentGraph:
                 )
         for _, component_inputs in self.component_dict.items():
             component_inputs = component_inputs[1:]
-            target_inputs = [
-                component
-                for component in component_inputs
-                if (component.endswith(".y"))
-            ]
             has_feature_input = any(
                 component_input.endswith(".x") or component_input == "X"
                 for component_input in component_inputs
