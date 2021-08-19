@@ -1,4 +1,5 @@
 import os
+import re
 from unittest.mock import patch
 
 import cloudpickle
@@ -47,6 +48,7 @@ from evalml.pipelines.components.utils import (
     _all_estimators_used_in_search,
     allowed_model_families,
 )
+from evalml.pipelines.utils import _get_pipeline_base_class
 from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import (
     ProblemTypes,
@@ -858,11 +860,15 @@ def test_compute_estimator_features(
 
 @patch("evalml.pipelines.components.Imputer.transform")
 @patch("evalml.pipelines.components.OneHotEncoder.transform")
+@patch("evalml.pipelines.components.RandomForestClassifier.predict_proba")
+@patch("evalml.pipelines.components.ElasticNetClassifier.predict_proba")
 @patch("evalml.pipelines.components.RandomForestClassifier.predict")
 @patch("evalml.pipelines.components.ElasticNetClassifier.predict")
 def test_compute_estimator_features_nonlinear(
     mock_en_predict,
     mock_rf_predict,
+    mock_en_predict_proba,
+    mock_rf_predict_proba,
     mock_ohe,
     mock_imputer,
     X_y_binary,
@@ -873,8 +879,23 @@ def test_compute_estimator_features_nonlinear(
     mock_ohe.return_value = pd.DataFrame(X)
     mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
     mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
+
+    mock_en_predict_proba_df = pd.DataFrame(
+        {0: np.ones(X.shape[0]), 1: np.zeros(X.shape[0])}
+    )
+    mock_en_predict_proba_df.ww.init()
+    mock_rf_predict_proba_df = pd.DataFrame(
+        {0: np.zeros(X.shape[0]), 1: np.ones(X.shape[0])}
+    )
+    mock_rf_predict_proba_df.ww.init()
+    mock_en_predict_proba.return_value = mock_en_predict_proba_df
+    mock_rf_predict_proba.return_value = mock_rf_predict_proba_df
+
     X_expected_df = pd.DataFrame(
-        {"Random Forest.x": np.zeros(X.shape[0]), "Elastic Net.x": np.ones(X.shape[0])}
+        {
+            "Col 1 Random Forest.x": np.ones(X.shape[0]),
+            "Col 1 Elastic Net.x": np.zeros(X.shape[0]),
+        }
     )
 
     pipeline = nonlinear_binary_pipeline_class({})
@@ -884,8 +905,8 @@ def test_compute_estimator_features_nonlinear(
     assert_frame_equal(X_expected_df, X_t)
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 4
-    assert mock_en_predict.call_count == 2
-    assert mock_rf_predict.call_count == 2
+    assert mock_en_predict_proba.call_count == 2
+    assert mock_rf_predict_proba.call_count == 2
 
 
 def test_no_default_parameters():
@@ -1167,8 +1188,8 @@ def test_nonlinear_feature_importance_has_feature_names(
     assert len(clf.feature_importance) == 2
     assert not clf.feature_importance.isnull().all().all()
     assert sorted(clf.feature_importance["feature"]) == [
-        "Elastic Net.x",
-        "Random Forest.x",
+        "Col 1 Elastic Net.x",
+        "Col 1 Random Forest.x",
     ]
 
 
@@ -1949,17 +1970,7 @@ def test_nonlinear_pipeline_repr(pipeline_class):
     assert repr(pipeline_with_nan_parameters) == expected_repr
 
 
-@pytest.mark.parametrize(
-    "problem_type",
-    [
-        ProblemTypes.BINARY,
-        ProblemTypes.MULTICLASS,
-        ProblemTypes.REGRESSION,
-        ProblemTypes.TIME_SERIES_REGRESSION,
-        ProblemTypes.TIME_SERIES_BINARY,
-        ProblemTypes.TIME_SERIES_MULTICLASS,
-    ],
-)
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_predict_has_input_target_name(
     problem_type,
     X_y_binary,
@@ -2210,7 +2221,11 @@ def test_binary_pipeline_string_target_thresholding(
     )
     pipeline.fit(X, y)
     assert pipeline.threshold is None
-    pred_proba = pipeline.predict_proba(X, y).iloc[:, 1]
+    pred_proba = (
+        pipeline.predict_proba(X, y).iloc[:, 1]
+        if is_time_series
+        else pipeline.predict_proba(X).iloc[:, 1]
+    )
     pipeline.optimize_threshold(X, y, pred_proba, objective)
     assert pipeline.threshold is not None
 
@@ -2583,3 +2598,120 @@ def test_get_hyperparameter_ranges():
     }
     hyperparameter_ranges = pipeline.get_hyperparameter_ranges(custom_hyperparameters)
     assert expected_ranges == hyperparameter_ranges
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.REGRESSION,
+    ],
+)
+def test_pipeline_predict_without_final_estimator(
+    problem_type, make_data_type, X_y_binary
+):
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    pipeline = pipeline_class(
+        component_graph={
+            "Imputer": ["Imputer", "X", "y"],
+            "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        },
+    )
+    pipeline.fit(X, y)
+    if is_classification(problem_type):
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
+            ),
+        ):
+            pipeline.predict_proba(X)
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot call predict() on a component graph because the final component is not an Estimator."
+        ),
+    ):
+        pipeline.predict(X)
+
+
+@patch("evalml.pipelines.components.Imputer.transform")
+@patch("evalml.pipelines.components.OneHotEncoder.transform")
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.REGRESSION,
+    ],
+)
+def test_pipeline_transform(
+    mock_ohe_transform, mock_imputer_transform, problem_type, X_y_binary, make_data_type
+):
+    component_graph = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+    }
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    mock_imputer_transform.return_value = X
+    mock_ohe_transform.return_value = X
+    pipeline_class = _get_pipeline_base_class(problem_type)
+
+    pipeline = pipeline_class(component_graph=component_graph)
+    pipeline.fit(X, y)
+    transformed_X = pipeline.transform(X, y)
+    assert_frame_equal(X, transformed_X)
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.BINARY,
+        ProblemTypes.MULTICLASS,
+        ProblemTypes.REGRESSION,
+    ],
+)
+def test_pipeline_transform_with_final_estimator(
+    problem_type, X_y_binary, X_y_multi, X_y_regression
+):
+    X, y = X_y_binary
+    if problem_type == ProblemTypes.BINARY:
+        pipeline = BinaryClassificationPipeline(
+            component_graph=["Logistic Regression Classifier"],
+            parameters={
+                "Logistic Regression Classifier": {"n_jobs": 1},
+            },
+        )
+
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        pipeline = MulticlassClassificationPipeline(
+            component_graph=["Logistic Regression Classifier"],
+            parameters={
+                "Logistic Regression Classifier": {"n_jobs": 1},
+            },
+        )
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        pipeline = RegressionPipeline(
+            component_graph=["Random Forest Regressor"],
+            parameters={
+                "Random Forest Regressor": {"n_jobs": 1},
+            },
+        )
+
+    pipeline.fit(X, y)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot call transform() on a component graph because the final component is not a Transformer."
+        ),
+    ):
+        pipeline.transform(X, y)

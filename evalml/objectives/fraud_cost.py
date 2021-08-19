@@ -19,6 +19,7 @@ class FraudCost(BinaryClassificationObjective):
     score_needs_proba = False
     perfect_score = 0.0
     is_bounded_like_percentage = True
+    expected_range = [0, float("inf")]
 
     def __init__(
         self,

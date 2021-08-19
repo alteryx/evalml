@@ -14,43 +14,37 @@ class PipelineBaseMeta(BaseMeta):
         """
 
         @wraps(method)
-        def _check_for_fit(self, X=None, objective=None):
+        def _check_for_fit(self, *args, **kwargs):
             klass = type(self).__name__
             if not self._is_fitted:
                 raise PipelineNotYetFittedError(
                     f"This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}."
                 )
-            if method.__name__ == "predict_proba":
-                return method(self, X)
-            elif method.__name__ == "predict":
-                return method(self, X, objective)
-            elif method.__name__ == "inverse_transform":
-                return method(self, X)
-            else:
-                return method(self)
+
+            return method(self, *args, **kwargs)
 
         return _check_for_fit
 
 
-class TimeSeriesPipelineBaseMeta(PipelineBaseMeta):
-    """Metaclass that overrides creating a new time series pipeline by wrapping methods with validators and setters"""
+# class TimeSeriesPipelineBaseMeta(PipelineBaseMeta):
+#     """Metaclass that overrides creating a new time series pipeline by wrapping methods with validators and setters"""
 
-    @classmethod
-    def check_for_fit(cls, method):
-        """`check_for_fit` wraps a method that validates if `self._is_fitted` is `True`.
-        It raises an exception if `False` and calls and returns the wrapped method if `True`.
-        """
+#     @classmethod
+#     def check_for_fit(cls, method):
+#         """`check_for_fit` wraps a method that validates if `self._is_fitted` is `True`.
+#         It raises an exception if `False` and calls and returns the wrapped method if `True`.
+#         """
 
-        @wraps(method)
-        def _check_for_fit(self, X=None, y=None, objective=None):
-            klass = type(self).__name__
-            if not self._is_fitted:
-                raise PipelineNotYetFittedError(
-                    f"This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}."
-                )
-            if method.__name__ == "predict_proba":
-                return method(self, X, y)
-            elif method.__name__ == "predict":
-                return method(self, X, y, objective)
+#         @wraps(method)
+#         def _check_for_fit(self, X=None, y=None, objective=None):
+#             klass = type(self).__name__
+#             if not self._is_fitted:
+#                 raise PipelineNotYetFittedError(
+#                     f"This {klass} is not fitted yet. You must fit {klass} before calling {method.__name__}."
+#                 )
+#             if method.__name__ == "predict_proba":
+#                 return method(self, X, y)
+#             elif method.__name__ == "predict":
+#                 return method(self, X, y, objective)
 
-        return _check_for_fit
+#         return _check_for_fit

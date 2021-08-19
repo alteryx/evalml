@@ -114,6 +114,10 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             pd.DataFrame: Probability estimates
         """
+        if self.estimator is None:
+            raise ValueError(
+                "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
+            )
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X)
         proba = proba.ww.rename(
