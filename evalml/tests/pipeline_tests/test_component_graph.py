@@ -2318,3 +2318,15 @@ def test_component_graph_predict_with_transformer_end(X_y_binary):
         ),
     ):
         component_graph.predict(X)
+
+
+def test_component_graph_with_invalid_y_edge(X_y_binary):
+    X, y = X_y_binary
+    component_dict = {
+        "OHE": ["One Hot Encoder", "X", "y"],
+        "RF": ["Random Forest Classifier", "OHE.x", "OHE.y"],
+    }
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    with pytest.raises(ValueError, match="OHE.y is not a valid input."):
+        component_graph.fit(X, y)
