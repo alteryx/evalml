@@ -304,8 +304,6 @@ class AutoMLSearch:
             logger = get_logger(__name__)
         else:
             logger = logging.getLogger(__name__)
-            if len(logger.handlers):
-                logger.handlers.pop()
         if X_train is None:
             raise ValueError(
                 "Must specify training data as a 2d array using the X_train argument"
@@ -924,6 +922,8 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['mean_cv_score']:3f}"
             )
         self._searched = True
+        if self.verbose:
+            logger.handlers.pop()
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings
