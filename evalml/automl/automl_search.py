@@ -300,6 +300,7 @@ class AutoMLSearch:
         engine=None,
         verbose=False,
     ):
+        self.verbose = verbose
         if verbose:
             logger = get_logger(__name__)
         else:
@@ -833,7 +834,7 @@ class AutoMLSearch:
             % ", ".join([model.value for model in self.allowed_model_families])
         )
         self.search_iteration_plot = None
-        if self.plot:
+        if self.plot and self.verbose:
             self.search_iteration_plot = self.plot.search_iteration_plot(
                 interactive_plot=show_iteration_plot
             )
