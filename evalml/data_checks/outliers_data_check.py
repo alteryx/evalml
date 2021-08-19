@@ -30,13 +30,14 @@ class OutliersDataCheck(DataCheck):
             ...     'z': [-1, -2, -3, -1201, -4]
             ... })
             >>> outliers_check = OutliersDataCheck()
-            >>> assert outliers_check.validate(df) == {"warnings": [{"message": "Column(s) 'z' are likely to have outlier data.",\
-                                                                     "data_check_name": "OutliersDataCheck",\
-                                                                     "level": "warning",\
-                                                                     "code": "HAS_OUTLIERS",\
-                                                                     "details": {"columns": ["z"]}}],\
-                                                       "errors": [],\
-                                                       "actions": []}
+            >>> assert outliers_check.validate(df) == {\
+            ...     "warnings": [{"message": "Column(s) 'z' are likely to have outlier data.",\
+            ...                   "data_check_name": "OutliersDataCheck",\
+            ...                   "level": "warning",\
+            ...                   "code": "HAS_OUTLIERS",\
+            ...                   "details": {"columns": ["z"]}}],\
+            ...     "errors": [],\
+            ...     "actions": []}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

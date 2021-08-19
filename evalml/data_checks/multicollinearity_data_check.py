@@ -35,13 +35,13 @@ class MulticollinearityDataCheck(DataCheck):
             >>> y = pd.Series([1, 0, 0, 1, 0])
             >>> multicollinearity_check = MulticollinearityDataCheck(threshold=0.8)
             >>> assert multicollinearity_check.validate(X, y) == {\
-                "errors": [],\
-                "warnings": [{'message': "Columns are likely to be correlated: [('col_1', 'col_2')]",\
-                              "data_check_name": "MulticollinearityDataCheck",\
-                              "level": "warning",\
-                              "code": "IS_MULTICOLLINEAR",\
-                              'details': {'columns': [('col_1', 'col_2')]}}],\
-                              "actions": []}
+            ...     "errors": [],\
+            ...     "warnings": [{'message': "Columns are likely to be correlated: [('col_1', 'col_2')]",\
+            ...                   "data_check_name": "MulticollinearityDataCheck",\
+            ...                   "level": "warning",\
+            ...                   "code": "IS_MULTICOLLINEAR",\
+            ...                   'details': {'columns': [('col_1', 'col_2')]}}],\
+            ...     "actions": []}
 
 
         """
