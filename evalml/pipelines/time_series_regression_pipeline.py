@@ -37,6 +37,10 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         Returns:
             pd.Series: Predicted values.
         """
+        if self.estimator is None:
+            raise ValueError(
+                "Cannot call predict() on a component graph because the final component is not an Estimator."
+            )
         X, y = self._convert_to_woodwork(X, y)
         features = self.compute_estimator_features(X, y)
         features_no_nan, y = drop_rows_with_nans(features, y)

@@ -2,11 +2,16 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Updated the high variance check in AutoMLSearch to be robust to a variety of objectives and cv scores :pr:`2622`
         * Use Woodwork's outlier detection for the ``OutliersDataCheck`` :pr:`2637`
+        * Added ability to utilize instantiated components when creating a pipeline :pr:`2643`
+        * Sped up the all Nan and unknown check in ``infer_feature_types`` :pr:`2661`
     * Fixes
     * Changes
         * Deleted ``_put_into_original_order`` helper function :pr:`2639`
         * Refactored time series pipeline code using a time series pipeline base class :pr:`2649`
+        * Renamed ``dask_tests`` to ``parallel_tests`` :pr:`2657`
+        * Removed commented out code in ``pipeline_meta.py`` :pr:`2659`
     * Documentation Changes
         * Add complete install command to README and Install section :pr:`2627`
     * Testing Changes
@@ -31,6 +36,7 @@ Release Notes
         * Updated ``ComponentGraph`` ``_validate_component_dict`` logic to be stricter about input values :pr:`2599`
         * Patched bug in ``xgboost`` estimators where predicting on a feature matrix of only booleans would throw an exception. :pr:`2602`
         * Updated ``ARIMARegressor`` to use relative forecasting to predict values :pr:`2613`
+        * Added support for creating pipelines without an estimator as the final component and added ``transform(X, y)`` method to pipelines and component graphs :pr:`2625`
         * Updated to support Woodwork 0.5.1 :pr:`2610`
     * Fixes
         * Updated ``AutoMLSearch`` to drop ``ARIMARegressor`` from ``allowed_estimators`` if an incompatible frequency is detected :pr:`2632`
@@ -42,6 +48,7 @@ Release Notes
         * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
         * Changed ``partial_dependence`` and ``graph_partial_dependence`` to raise a ``PartialDependenceError`` instead of ``ValueError``. This is not a breaking change because ``PartialDependenceError`` is a subclass of ``ValueError`` :pr:`2604`
         * Cleaned up code duplication in ``ComponentGraph`` :pr:`2612`
+        * Stored predict_proba results in .x for intermediate estimators in ComponentGraph :pr:`2629`
     * Documentation Changes
         * To avoid local docs build error, only add warning disable and download headers on ReadTheDocs builds, not locally :pr:`2617`
     * Testing Changes

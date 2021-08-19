@@ -29,7 +29,7 @@ jobs:
             command: 'git-test-other'
           - python_version: "3.8"
             core_dependencies: false
-            command: 'git-test-dask'
+            command: 'git-test-parallel'
           - python_version: "3.8"
             core_dependencies: true
             command: 'git-test-automl-core'
@@ -41,7 +41,7 @@ jobs:
             command: 'git-test-other-core'
           - python_version: "3.8"
             core_dependencies: true
-            command: 'git-test-minimal-deps-dask'
+            command: 'git-test-minimal-deps-parallel'
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -68,7 +68,7 @@ jobs:
           # "!" negates return code. exit nonzero if any of these deps are found
           ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
           exit $?
-      - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-dask') }}
+      - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel') }}
         name: Installing Dependencies
         run: |
           pip install virtualenv

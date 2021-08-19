@@ -1,3 +1,4 @@
+import inspect
 import warnings
 
 import networkx as nx
@@ -7,6 +8,7 @@ from networkx.algorithms.dag import topological_sort
 from networkx.exception import NetworkXUnfeasible
 
 from evalml.exceptions.exceptions import (
+    MethodPropertyNotFoundError,
     MissingComponentError,
     ParameterNotUsedWarning,
 )
@@ -119,7 +121,8 @@ class ComponentGraph:
 
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                               An empty dictionary {} or None implies using all default values for component parameters.
+                               An empty dictionary {} or None implies using all default values for component parameters. If a component
+                               in the component graph is already instantiated, it will not use any of its parameters defined in this dictionary.
         """
         if self._is_instantiated:
             raise ValueError(
@@ -134,18 +137,20 @@ class ComponentGraph:
         component_instances = {}
         for component_name, component_class in self.component_instances.items():
             component_parameters = parameters.get(component_name, {})
-            try:
-                new_component = component_class(
-                    **component_parameters, random_seed=self.random_seed
-                )
-            except (ValueError, TypeError) as e:
-                self._is_instantiated = False
-                err = "Error received when instantiating component {} with the following arguments {}".format(
-                    component_name, component_parameters
-                )
-                raise ValueError(err) from e
-
-            component_instances[component_name] = new_component
+            if inspect.isclass(component_class):
+                try:
+                    new_component = component_class(
+                        **component_parameters, random_seed=self.random_seed
+                    )
+                except (ValueError, TypeError) as e:
+                    self._is_instantiated = False
+                    err = "Error received when instantiating component {} with the following arguments {}".format(
+                        component_name, component_parameters
+                    )
+                    raise ValueError(err) from e
+                component_instances[component_name] = new_component
+            elif isinstance(component_class, ComponentBase):
+                component_instances[component_name] = component_class
         self.component_instances = component_instances
         return self
 
@@ -220,13 +225,13 @@ class ComponentGraph:
         x_inputs = []
         y_input = None
         for parent_input in self.get_inputs(component):
-            if parent_input.endswith(".y"):
-                y_input = component_outputs[parent_input]
-            elif parent_input == "y":
+            if parent_input == "y":
                 y_input = y
-            if parent_input == "X":
+            elif parent_input == "X":
                 x_inputs.append(X)
-            elif parent_input.endswith(".x"):  # must end in .x
+            elif parent_input.endswith(".y"):
+                y_input = component_outputs[parent_input]
+            elif parent_input.endswith(".x"):
                 parent_x = component_outputs[parent_input]
                 if isinstance(parent_x, pd.Series):
                     parent_x = parent_x.rename(parent_input)
@@ -234,11 +239,37 @@ class ComponentGraph:
         x_inputs = ww.concat_columns(x_inputs)
         return x_inputs, y_input
 
+    def transform(self, X, y=None):
+        """Transform the input using the component graph.
+
+        Arguments:
+            X (pd.DataFrame): Input features of shape [n_samples, n_features].
+            y (pd.Series): The target data of length [n_samples]. Defaults to None.
+
+        Returns:
+            pd.DataFrame: Transformed output.
+        """
+        if len(self.compute_order) == 0:
+            return infer_feature_types(X)
+        final_component_name = self.compute_order[-1]
+        final_component_instance = self.get_last_component()
+        if not isinstance(final_component_instance, Transformer):
+            raise ValueError(
+                "Cannot call transform() on a component graph because the final component is not a Transformer."
+            )
+
+        outputs = self._compute_features(self.compute_order, X, y, False)
+        output_x = infer_feature_types(outputs.get(f"{final_component_name}.x"))
+        output_y = outputs.get(f"{final_component_name}.y", None)
+        if output_y is not None:
+            return output_x, output_y
+        return output_x
+
     def predict(self, X):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            X (pd.DataFrame): Input features of shape [n_samples, n_features].
 
         Returns:
             pd.Series: Predicted values.
@@ -246,6 +277,11 @@ class ComponentGraph:
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
+        final_component_instance = self.get_last_component()
+        if not isinstance(final_component_instance, Estimator):
+            raise ValueError(
+                "Cannot call predict() on a component graph because the final component is not an Estimator."
+            )
         outputs = self._compute_features(self.compute_order, X)
         return infer_feature_types(outputs.get(f"{final_component}.x"))
 
@@ -299,12 +335,26 @@ class ComponentGraph:
             else:
                 if fit:
                     component_instance.fit(x_inputs, y_input)
-                if not (
-                    fit and component_name == self.compute_order[-1]
-                ):  # Don't call predict on the final component during fit
-                    output = component_instance.predict(x_inputs)
-                else:
+                if fit and component_name == self.compute_order[-1]:
+                    # Don't call predict on the final component during fit
                     output = None
+                elif component_name != self.compute_order[-1]:
+                    try:
+                        output = component_instance.predict_proba(x_inputs)
+                        if isinstance(output, pd.DataFrame):
+                            if len(output.columns) == 2:
+                                # If it is a binary problem, drop the first column since both columns are colinear
+                                output = output.ww.drop(output.columns[0])
+                            output = output.ww.rename(
+                                {
+                                    col: f"Col {str(col)} {component_name}.x"
+                                    for col in output.columns
+                                }
+                            )
+                    except MethodPropertyNotFoundError:
+                        output = component_instance.predict(x_inputs)
+                else:
+                    output = component_instance.predict(x_inputs)
                 output_cache[f"{component_name}.x"] = output
         return output_cache
 
