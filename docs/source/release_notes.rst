@@ -33,6 +33,7 @@ Release Notes
         * Updated ``ComponentGraph`` ``_validate_component_dict`` logic to be stricter about input values :pr:`2599`
         * Patched bug in ``xgboost`` estimators where predicting on a feature matrix of only booleans would throw an exception. :pr:`2602`
         * Updated ``ARIMARegressor`` to use relative forecasting to predict values :pr:`2613`
+        * Added support for creating pipelines without an estimator as the final component and added ``transform(X, y)`` method to pipelines and component graphs :pr:`2625`
         * Updated to support Woodwork 0.5.1 :pr:`2610`
     * Fixes
         * Updated ``AutoMLSearch`` to drop ``ARIMARegressor`` from ``allowed_estimators`` if an incompatible frequency is detected :pr:`2632`

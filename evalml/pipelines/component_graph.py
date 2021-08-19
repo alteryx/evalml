@@ -225,13 +225,13 @@ class ComponentGraph:
         x_inputs = []
         y_input = None
         for parent_input in self.get_inputs(component):
-            if parent_input.endswith(".y"):
-                y_input = component_outputs[parent_input]
-            elif parent_input == "y":
+            if parent_input == "y":
                 y_input = y
-            if parent_input == "X":
+            elif parent_input == "X":
                 x_inputs.append(X)
-            elif parent_input.endswith(".x"):  # must end in .x
+            elif parent_input.endswith(".y"):
+                y_input = component_outputs[parent_input]
+            elif parent_input.endswith(".x"):
                 parent_x = component_outputs[parent_input]
                 if isinstance(parent_x, pd.Series):
                     parent_x = parent_x.rename(parent_input)
@@ -239,11 +239,37 @@ class ComponentGraph:
         x_inputs = ww.concat_columns(x_inputs)
         return x_inputs, y_input
 
+    def transform(self, X, y=None):
+        """Transform the input using the component graph.
+
+        Arguments:
+            X (pd.DataFrame): Input features of shape [n_samples, n_features].
+            y (pd.Series): The target data of length [n_samples]. Defaults to None.
+
+        Returns:
+            pd.DataFrame: Transformed output.
+        """
+        if len(self.compute_order) == 0:
+            return infer_feature_types(X)
+        final_component_name = self.compute_order[-1]
+        final_component_instance = self.get_last_component()
+        if not isinstance(final_component_instance, Transformer):
+            raise ValueError(
+                "Cannot call transform() on a component graph because the final component is not a Transformer."
+            )
+
+        outputs = self._compute_features(self.compute_order, X, y, False)
+        output_x = infer_feature_types(outputs.get(f"{final_component_name}.x"))
+        output_y = outputs.get(f"{final_component_name}.y", None)
+        if output_y is not None:
+            return output_x, output_y
+        return output_x
+
     def predict(self, X):
         """Make predictions using selected features.
 
         Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            X (pd.DataFrame): Input features of shape [n_samples, n_features].
 
         Returns:
             pd.Series: Predicted values.
@@ -251,6 +277,11 @@ class ComponentGraph:
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
         final_component = self.compute_order[-1]
+        final_component_instance = self.get_last_component()
+        if not isinstance(final_component_instance, Estimator):
+            raise ValueError(
+                "Cannot call predict() on a component graph because the final component is not an Estimator."
+            )
         outputs = self._compute_features(self.compute_order, X)
         return infer_feature_types(outputs.get(f"{final_component}.x"))
 

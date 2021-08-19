@@ -1,3 +1,4 @@
+import re
 import warnings
 from datetime import datetime, timedelta
 from unittest.mock import patch
@@ -688,22 +689,11 @@ def test_predict_empty_graph(X_y_binary):
     component_graph.instantiate({})
 
     component_graph.fit(X, y)
-    X_t = component_graph.predict(X)
+    X_t = component_graph.transform(X, y)
     assert_frame_equal(X, X_t)
 
-
-@patch("evalml.pipelines.components.OneHotEncoder.fit_transform")
-@patch("evalml.pipelines.components.OneHotEncoder.transform")
-def test_predict_transformer_end(mock_fit_transform, mock_transform, X_y_binary):
-    X, y = X_y_binary
-    graph = {"Imputer": [Imputer, "X", "y"], "OHE": [OneHotEncoder, "Imputer.x", "y"]}
-    component_graph = ComponentGraph(graph).instantiate({})
-    mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
-    mock_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
-
-    component_graph.fit(X, y)
-    output = component_graph.predict(X)
-    assert_frame_equal(pd.DataFrame(X), output)
+    X_pred = component_graph.predict(X)
+    assert_frame_equal(X, X_pred)
 
 
 def test_no_instantiate_before_fit(X_y_binary):
@@ -2217,3 +2207,114 @@ def test_component_graph_compute_final_component_features_with_sampler(
     assert len(mock_estimator_fit.call_args[0][0]) == expected_length
     features_for_estimator = component_graph.compute_final_component_features(X, y)
     assert len(features_for_estimator) == len(y)
+
+
+@patch("evalml.pipelines.components.Imputer.transform")
+@patch("evalml.pipelines.components.OneHotEncoder.transform")
+@patch("evalml.pipelines.components.RandomForestClassifier.predict")
+def test_component_graph_transform(
+    mock_rf_predict,
+    mock_ohe_transform,
+    mock_imputer_transform,
+    X_y_binary,
+    make_data_type,
+):
+    X, y = X_y_binary
+
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
+    dummy_return_value = pd.DataFrame({"test df": [1, 2]})
+    mock_imputer_transform.return_value = X
+    mock_ohe_transform.return_value = dummy_return_value
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+    }
+
+    mock_rf_predict.return_value = y
+
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    transformed_X = component_graph.transform(X, y)
+    assert_frame_equal(transformed_X, dummy_return_value)
+
+    component_dict_with_estimator = {
+        "Imputer": ["Imputer", "X", "y"],
+        "Random Forest Classifier": ["Random Forest Classifier", "Imputer.x", "y"],
+        "OHE": ["One Hot Encoder", "Random Forest Classifier.x", "y"],
+    }
+    component_graph = ComponentGraph(component_dict_with_estimator)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    transformed_X = component_graph.transform(X, y)
+    assert_frame_equal(transformed_X, dummy_return_value)
+
+
+@patch("evalml.pipelines.components.Imputer.transform")
+@patch("evalml.pipelines.components.OneHotEncoder.transform")
+@patch("evalml.pipelines.components.TargetImputer.transform")
+def test_component_graph_transform_with_target_transformer(
+    mock_target_imputer_transform,
+    mock_ohe_transform,
+    mock_imputer_transform,
+    X_y_binary,
+    make_data_type,
+):
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        "Target Imputer": ["Target Imputer", "OHE.x", "y"],
+    }
+    mock_imputer_transform.return_value = X
+    mock_ohe_transform.return_value = X
+    mock_target_imputer_transform.return_value = tuple([X, y])
+
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    transformed = component_graph.transform(X, y)
+    assert_frame_equal(transformed[0], X)
+    assert_series_equal(transformed[1], y)
+
+
+def test_component_graph_transform_with_estimator_end(X_y_binary):
+    X, y = X_y_binary
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        "RF": ["Random Forest Classifier", "OHE.x", "y"],
+    }
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot call transform() on a component graph because the final component is not a Transformer."
+        ),
+    ):
+        component_graph.transform(X, y)
+
+
+def test_component_graph_predict_with_transformer_end(X_y_binary):
+    X, y = X_y_binary
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+    }
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot call predict() on a component graph because the final component is not an Estimator."
+        ),
+    ):
+        component_graph.predict(X)
