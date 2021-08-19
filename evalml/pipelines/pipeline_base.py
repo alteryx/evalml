@@ -39,7 +39,7 @@ logger = get_logger(__file__)
 
 class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     """
-    Machine learning pipeline made out of transformers and a estimator.
+    Machine learning pipeline made out of transformers and an Estimator.
 
     Arguments:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
@@ -275,6 +275,18 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             self
 
         """
+
+    def transform(self, X, y=None):
+        """Transform the input.
+
+        Arguments:
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
+            y (pd.Series): The target data of length [n_samples]. Defaults to None.
+
+        Returns:
+            pd.DataFrame: Transformed output.
+        """
+        return self.component_graph.transform(X, y)
 
     def predict(self, X, objective=None):
         """Make predictions using selected features.

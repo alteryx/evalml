@@ -1,10 +1,11 @@
+import re
 from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from pandas.testing import assert_series_equal
+from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.exceptions import PipelineNotYetFittedError
 from evalml.objectives import FraudCost, get_objective
@@ -13,6 +14,7 @@ from evalml.pipelines import (
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline,
 )
+from evalml.pipelines.utils import _get_pipeline_base_class
 from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types, pad_with_nans
@@ -738,3 +740,137 @@ def test_time_series_pipeline_with_detrender(ts_data):
     expected = detrender.inverse_transform(preds)
     expected = infer_feature_types(pad_with_nans(expected, 2))
     pd.testing.assert_series_equal(predictions, expected)
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+def test_ts_pipeline_predict_without_final_estimator(
+    problem_type, make_data_type, X_y_binary
+):
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    pipeline = pipeline_class(
+        component_graph={
+            "Imputer": ["Imputer", "X", "y"],
+            "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        },
+        parameters={
+            "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
+        },
+    )
+    pipeline.fit(X, y)
+    if is_classification(problem_type):
+        with pytest.raises(
+            ValueError,
+            match=re.escape(
+                "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
+            ),
+        ):
+            pipeline.predict_proba(X, y)
+
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot call predict() on a component graph because the final component is not an Estimator."
+        ),
+    ):
+        pipeline.predict(X, y)
+
+
+@patch("evalml.pipelines.components.Imputer.transform")
+@patch("evalml.pipelines.components.OneHotEncoder.transform")
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+def test_ts_pipeline_transform(
+    mock_ohe_transform,
+    mock_imputer_transform,
+    problem_type,
+    make_data_type,
+    X_y_binary,
+):
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    mock_imputer_transform.return_value = X
+    mock_ohe_transform.return_value = X
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    pipeline = pipeline_class(
+        component_graph={
+            "Imputer": ["Imputer", "X", "y"],
+            "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        },
+        parameters={
+            "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
+        },
+    )
+
+    pipeline.fit(X, y)
+    transformed_X = pipeline.transform(X, y)
+    assert_frame_equal(X, transformed_X)
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+def test_ts_pipeline_transform_with_final_estimator(
+    problem_type,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
+    time_series_binary_classification_pipeline_class,
+    time_series_multiclass_classification_pipeline_class,
+    time_series_regression_pipeline_class,
+):
+    X, y = X_y_binary
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        pipeline = time_series_binary_classification_pipeline_class(
+            parameters={
+                "Logistic Regression Classifier": {"n_jobs": 1},
+                "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
+            }
+        )
+
+    elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = X_y_multi
+        pipeline = time_series_multiclass_classification_pipeline_class(
+            parameters={
+                "Logistic Regression Classifier": {"n_jobs": 1},
+                "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
+            }
+        )
+    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        X, y = X_y_regression
+        pipeline = time_series_regression_pipeline_class(
+            parameters={
+                "Random Forest Regressor": {"n_jobs": 1},
+                "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
+            }
+        )
+
+    pipeline.fit(X, y)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot call transform() on a component graph because the final component is not a Transformer."
+        ),
+    ):
+        pipeline.transform(X, y)

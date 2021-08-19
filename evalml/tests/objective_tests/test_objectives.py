@@ -160,3 +160,8 @@ def test_is_defined_for_problem_type():
     assert LogLossBinary.is_defined_for_problem_type(ProblemTypes.BINARY)
     assert LogLossBinary.is_defined_for_problem_type("binary")
     assert not LogLossBinary.is_defined_for_problem_type(ProblemTypes.MULTICLASS)
+
+
+@pytest.mark.parametrize("obj", _all_objectives_dict().values())
+def test_get_objectives_all_expected_ranges(obj):
+    assert len(obj.expected_range) == 2
