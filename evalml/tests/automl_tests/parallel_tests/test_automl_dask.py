@@ -328,6 +328,7 @@ def test_automl_convenience(engine_str, X_y_binary_cls):
         assert isinstance(automl._engine, CFEngine)
     elif "dask" in engine_str:
         assert isinstance(automl._engine, DaskEngine)
+    del(automl)
 
 
 def test_automl_convenience_exception(X_y_binary_cls):

@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Allow string for ``engine`` parameter for ``AutoMLSearch``:pr:`2667`
         * Add ``ProphetRegressor`` to AutoML :pr:`2619`
         * Integrated ``DefaultAlgorithm`` into ``AutoMLSearch`` :pr:`2634`
         * Removed SVM "linear" and "precomputed" kernel hyperparameter options, and improved default parameters :pr:`2651`
