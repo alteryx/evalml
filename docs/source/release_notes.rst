@@ -6,6 +6,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
 
 .. warning::
 
