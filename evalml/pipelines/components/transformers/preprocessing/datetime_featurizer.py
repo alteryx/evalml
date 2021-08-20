@@ -56,8 +56,7 @@ def _extract_hour(col, encode_as_categories=False):
 
 
 class DateTimeFeaturizer(Transformer):
-    """
-    Transformer that can automatically extract features from datetime columns.
+    """Transformer that can automatically extract features from datetime columns.
 
     Arguments:
         features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour". Defaults to None.
@@ -118,7 +117,7 @@ class DateTimeFeaturizer(Transformer):
         return self
 
     def transform(self, X, y=None):
-        """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns
+        """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns.
 
         Arguments:
             X (pd.DataFrame): Data to transform

@@ -5,8 +5,7 @@ from evalml.utils import infer_feature_types
 
 
 class ColumnSelector(Transformer):
-    """
-    Initalizes an transformer that drops specified columns in input data.
+    """Initalizes an transformer that drops specified columns in input data.
 
     Arguments:
         columns (list(string)): List of column names, used to determine which columns to select.
@@ -60,8 +59,7 @@ class ColumnSelector(Transformer):
 
 
 class DropColumns(ColumnSelector):
-    """
-    Drops specified columns in input data.
+    """Drops specified columns in input data.
 
     Arguments:
         columns (list(string)): List of column names, used to determine which columns to drop.
@@ -90,8 +88,7 @@ class DropColumns(ColumnSelector):
 
 
 class SelectColumns(ColumnSelector):
-    """
-    Selects specified columns in input data.
+    """Selects specified columns in input data.
 
     Arguments:
         columns (list(string)): List of column names, used to determine which columns to select.
@@ -120,8 +117,7 @@ class SelectColumns(ColumnSelector):
 
 
 class SelectByType(ColumnSelector):
-    """
-    Selects columns by specified Woodwork logical type or semantic tag in input data.
+    """Selects columns by specified Woodwork logical type or semantic tag in input data.
 
     Arguments:
         column_types (string, ww.LogicalType, list(string), list(ww.LogicalType)): List of Woodwork types or tags, used to determine which columns to select.

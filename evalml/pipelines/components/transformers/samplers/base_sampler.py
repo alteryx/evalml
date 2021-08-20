@@ -8,8 +8,7 @@ from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class BaseSampler(Transformer):
-    """
-    Base Sampler component. Used as the base class of all sampler components.
+    """Base Sampler component. Used as the base class of all sampler components.
 
     Arguments:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
@@ -76,9 +75,7 @@ class BaseSampler(Transformer):
         return infer_feature_types(X_new), infer_feature_types(y_new)
 
     def _convert_dictionary(self, sampling_dict, y):
-        """Converts the provided sampling dictionary from a dictionary of ratios to a dictionary of number of samples.
-        Expects the provided dictionary keys to be the target values y, and the associated values to be the min:max ratios.
-        Converts and returns a dictionary with the same keys, but changes the values to be the number of samples rather than ratio.
+        """Converts the provided sampling dictionary from a dictionary of ratios to a dictionary of number of samples. Expects the provided dictionary keys to be the target values y, and the associated values to be the min:max ratios. Converts and returns a dictionary with the same keys, but changes the values to be the number of samples rather than ratio.
 
         Arguments:
             sampling_dict (dict): The input sampling dictionary passed in from user.
@@ -112,8 +109,7 @@ class BaseSampler(Transformer):
         return new_dic
 
     def _dictionary_to_params(self, sampling_dict, y):
-        """If a sampling ratio dictionary is provided, add the updated sampling dictionary to the
-        parameters and return the updated parameter dictionary. Otherwise, simply return the current parameters.
+        """If a sampling ratio dictionary is provided, add the updated sampling dictionary to the parameters and return the updated parameter dictionary. Otherwise, simply return the current parameters.
 
         Arguments:
             sampling_dict (dict): The input sampling dictionary passed in from user.
@@ -135,8 +131,7 @@ class BaseSampler(Transformer):
 
 
 class BaseOversampler(BaseSampler):
-    """
-    Base Oversampler component. Used as the base class of all imbalance-learn oversampler components.
+    """Base Oversampler component. Used as the base class of all imbalance-learn oversampler components.
 
     Arguments:
         sampler (obj): Sampler object to use.
@@ -179,8 +174,7 @@ class BaseOversampler(BaseSampler):
         )
 
     def _initialize_sampler(self, X, y):
-        """Initializes the oversampler with the given sampler_ratio or sampler_ratio_dict. If a sampler_ratio_dict is provided, we will opt to use that.
-        Otherwise, we use will create the sampler_ratio_dict dictionary.
+        """Initializes the oversampler with the given sampler_ratio or sampler_ratio_dict. If a sampler_ratio_dict is provided, we will opt to use that. Otherwise, we use will create the sampler_ratio_dict dictionary.
 
         Arguments:
             X (pd.DataFrame): Input features.

@@ -44,39 +44,48 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     @classmethod
     @abstractmethod
     def name(cls):
-        """Returns string name of this component"""
+        """Returns string name of this component."""
 
     @property
     @classmethod
     @abstractmethod
     def model_family(cls):
-        """Returns ModelFamily of this component"""
+        """Returns ModelFamily of this component."""
 
     @property
     @classmethod
     @abstractmethod
     def modifies_features(cls):
         """Returns whether this component modifies (subsets or transforms) the features variable during transform.
-        For Estimator objects, this attribute determines if the return value from `predict` or `predict_proba` should be used as features or targets."""
+
+        For Estimator objects, this attribute determines if the return
+        value from `predict` or `predict_proba` should be used as
+        features or targets.
+        """
 
     @property
     @classmethod
     @abstractmethod
     def modifies_target(cls):
         """Returns whether this component modifies (subsets or transforms) the target variable during transform.
-        For Estimator objects, this attribute determines if the return value from `predict` or `predict_proba` should be used as features or targets."""
+
+        For Estimator objects, this attribute determines if the return
+        value from `predict` or `predict_proba` should be used as
+        features or targets.
+        """
 
     @classproperty
     def needs_fitting(self):
-        """Returns boolean determining if component needs fitting before
-        calling predict, predict_proba, transform, or feature_importances.
-        This can be overridden to False for components that do not need to be fit
-        or whose fit methods do nothing."""
+        """Returns boolean determining if component needs fitting before calling predict, predict_proba, transform, or feature_importances.
+
+        This can be overridden to False for components that do not need
+        to be fit or whose fit methods do nothing.
+        """
         return True
 
     @property
     def parameters(self):
-        """Returns the parameters which were used to initialize the component"""
+        """Returns the parameters which were used to initialize the component."""
         return copy.copy(self._parameters)
 
     @classproperty
@@ -107,7 +116,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         return self.__class__(**self.parameters, random_seed=self.random_seed)
 
     def fit(self, X, y=None):
-        """Fits component to data
+        """Fits component to data.
 
         Arguments:
             X (list, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
@@ -128,7 +137,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             )
 
     def describe(self, print_name=False, return_dict=False):
-        """Describe a component and its parameters
+        """Describe a component and its parameters.
 
         Arguments:
             print_name(bool, optional): whether to print name of component
@@ -151,7 +160,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             return component_dict
 
     def save(self, file_path, pickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
-        """Saves component at file path
+        """Saves component at file path.
 
         Arguments:
             file_path (str): Location to save file
@@ -165,7 +174,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
     @staticmethod
     def load(file_path):
-        """Loads component at file path
+        """Loads component at file path.
 
         Arguments:
             file_path (str): Location to load file

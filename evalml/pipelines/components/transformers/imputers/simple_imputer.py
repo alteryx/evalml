@@ -38,8 +38,7 @@ class SimpleImputer(Transformer):
         )
 
     def fit(self, X, y=None):
-        """Fits imputer to data. 'None' values are converted to np.nan before imputation and are
-            treated as the same.
+        """Fits imputer to data. 'None' values are converted to np.nan before imputation and are treated as the same.
 
         Arguments:
             X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
@@ -106,7 +105,7 @@ class SimpleImputer(Transformer):
         return _retain_custom_types_and_initalize_woodwork(original_logical_types, X)
 
     def fit_transform(self, X, y=None):
-        """Fits on X and transforms X
+        """Fits on X and transforms X.
 
         Arguments:
             X (pd.DataFrame): Data to fit and transform

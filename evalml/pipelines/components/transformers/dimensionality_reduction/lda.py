@@ -10,8 +10,7 @@ from evalml.utils import (
 
 
 class LinearDiscriminantAnalysis(Transformer):
-    """
-    Reduces the number of features by using Linear Discriminant Analysis.
+    """Reduces the number of features by using Linear Discriminant Analysis.
 
     Arguments:
         n_components (int): The number of features to maintain after computation. Defaults to None.

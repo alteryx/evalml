@@ -116,8 +116,7 @@ class ComponentGraph:
         return defaults
 
     def instantiate(self, parameters):
-        """Instantiates all uninstantiated components within the graph using the given parameters. An error will be
-        raised if a component is already instantiated but the parameters dict contains arguments for that component.
+        """Instantiates all uninstantiated components within the graph using the given parameters. An error will be raised if a component is already instantiated but the parameters dict contains arguments for that component.
 
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
@@ -180,8 +179,7 @@ class ComponentGraph:
         return self._fit_transform_features_helper(True, X, y)
 
     def compute_final_component_features(self, X, y=None):
-        """Transform all components save the final one, and gathers the data from any number of parents
-        to get all the information that should be fed to the final component.
+        """Transform all components save the final one, and gathers the data from any number of parents to get all the information that should be fed to the final component.
 
         Arguments:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
@@ -481,7 +479,7 @@ class ComponentGraph:
         return []
 
     def describe(self, return_dict=False):
-        """Outputs component graph details including component parameters
+        """Outputs component graph details including component parameters.
 
         Arguments:
             return_dict (bool): If True, return dictionary of information about component graph. Defaults to False.
@@ -504,7 +502,7 @@ class ComponentGraph:
             return components
 
     def graph(self, name=None, graph_format=None):
-        """Generate an image representing the component graph
+        """Generate an image representing the component graph.
 
         Arguments:
             name (str): Name of the graph. Defaults to None.
@@ -565,7 +563,7 @@ class ComponentGraph:
 
     @classmethod
     def generate_order(cls, component_dict):
-        """Regenerated the topologically sorted order of the graph"""
+        """Regenerated the topologically sorted order of the graph."""
         edges = cls._get_edges(component_dict)
         if len(component_dict) == 1:
             return list(component_dict.keys())
@@ -602,7 +600,7 @@ class ComponentGraph:
         return self
 
     def __next__(self):
-        """Iterator for graphs, retrieves the components in the graph in order
+        """Iterator for graphs, retrieves the components in the graph in order.
 
         Returns:
             ComponentBase obj: The next component class or instance in the graph

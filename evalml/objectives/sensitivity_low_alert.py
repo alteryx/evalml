@@ -16,11 +16,10 @@ class SensitivityLowAlert(BinaryClassificationObjective):
     expected_range = [0, 1]
 
     def __init__(self, alert_rate=0.01):
-        """Create instance of SensitivityLowAlert
+        """Create instance of SensitivityLowAlert.
 
         Arguments:
             alert_rate (float): percentage of top scores to classify as high risk
-
         """
         if (alert_rate > 1) or (alert_rate < 0):
             raise ValueError("Alert rate is outside of valid range [0,1]")
@@ -28,7 +27,7 @@ class SensitivityLowAlert(BinaryClassificationObjective):
         self.alert_rate = alert_rate
 
     def decision_function(self, ypred_proba, **kwargs):
-        """Determine if an observation is high risk given an alert rate
+        """Determine if an observation is high risk given an alert rate.
 
         Arguments:
             ypred_proba (pd.Series): Predicted probabilities
@@ -47,7 +46,7 @@ class SensitivityLowAlert(BinaryClassificationObjective):
         return ypred_proba.astype(float) >= prob_thresh
 
     def objective_function(self, y_true, y_predicted, **kwargs):
-        """Calculate sensitivity across all predictions, using the top alert_rate percent of observations as the predicted positive class
+        """Calculate sensitivity across all predictions, using the top alert_rate percent of observations as the predicted positive class.
 
         Arguments:
             y_true (pd.Series): True labels

@@ -12,8 +12,7 @@ from evalml.utils import (
 
 
 class Transformer(ComponentBase):
-    """A component that may or may not need fitting that transforms data.
-    These components are used before an estimator.
+    """A component that may or may not need fitting that transforms data. These components are used before an estimator.
 
     To implement a new Transformer, define your own class which is a subclass of Transformer, including
     a name and a list of acceptable ranges for any parameters to be tuned during the automl search (hyperparameters).
@@ -59,7 +58,7 @@ class Transformer(ComponentBase):
         )
 
     def fit_transform(self, X, y=None):
-        """Fits on X and transforms X
+        """Fits on X and transforms X.
 
         Arguments:
             X (pd.DataFrame): Data to fit and transform

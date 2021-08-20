@@ -55,8 +55,7 @@ class GridSearchTuner(Tuner):
         self.curr_params = None
 
     def add(self, pipeline_parameters, score):
-        """Not applicable to grid search tuner as generated parameters are
-        not dependent on scores of previous parameters.
+        """Not applicable to grid search tuner as generated parameters are not dependent on scores of previous parameters.
 
         Arguments:
             pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
@@ -65,7 +64,7 @@ class GridSearchTuner(Tuner):
         pass
 
     def propose(self):
-        """Returns parameters from _grid_points iterations
+        """Returns parameters from _grid_points iterations.
 
         If all possible combinations of parameters have been scored, then ``NoParamsException`` is raised.
 
@@ -79,8 +78,7 @@ class GridSearchTuner(Tuner):
         return self._convert_to_pipeline_parameters(params)
 
     def is_search_space_exhausted(self):
-        """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in
-        ``self.curr_params`` to be returned by ``propose()``.
+        """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in ``self.curr_params`` to be returned by ``propose()``.
 
         Raises:
             NoParamsException: If a search space is exhausted, then this exception is thrown.

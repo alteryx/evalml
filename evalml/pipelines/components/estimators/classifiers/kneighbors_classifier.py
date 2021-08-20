@@ -8,8 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class KNeighborsClassifier(Estimator):
-    """
-    K-Nearest Neighbors Classifier.
+    """K-Nearest Neighbors Classifier.
 
     Arguments:
         n_neighbors (int): Number of neighbors to use by default. Defaults to 5.
@@ -93,9 +92,6 @@ class KNeighborsClassifier(Estimator):
 
     @property
     def feature_importance(self):
-        """
-        Returns array of 0's matching the input number of features as feature_importance is
-        not defined for KNN classifiers.
-        """
+        """Returns array of 0's matching the input number of features as feature_importance is not defined for KNN classifiers."""
         num_features = self._component_obj.n_features_in_
         return np.zeros(num_features)

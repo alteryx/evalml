@@ -11,8 +11,7 @@ from evalml.utils import (
 
 
 class PCA(Transformer):
-    """
-    Reduces the number of features by using Principal Component Analysis (PCA).
+    """Reduces the number of features by using Principal Component Analysis (PCA).
 
     Arguments:
         variance (float): The percentage of the original data variance that should be preserved when reducing the

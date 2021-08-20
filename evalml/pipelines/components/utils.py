@@ -131,8 +131,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
     """Scikit-learn classifier wrapper class."""
 
     def __init__(self, pipeline):
-        """Scikit-learn classifier wrapper class. Takes an EvalML pipeline as input
-            and returns a scikit-learn classifier class wrapping that pipeline.
+        """Scikit-learn classifier wrapper class. Takes an EvalML pipeline as input and returns a scikit-learn classifier class wrapping that pipeline.
 
         Arguments:
             pipeline (PipelineBase or subclass obj): EvalML pipeline
@@ -145,7 +144,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
             self.classes_ = pipeline.classes_
 
     def fit(self, X, y):
-        """Fits component to data
+        """Fits component to data.
 
         Arguments:
             X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
@@ -190,8 +189,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
     """Scikit-learn regressor wrapper class."""
 
     def __init__(self, pipeline):
-        """Scikit-learn regressor wrapper class. Takes an EvalML pipeline as input
-            and returns a scikit-learn regressor class wrapping that pipeline.
+        """Scikit-learn regressor wrapper class. Takes an EvalML pipeline as input and returns a scikit-learn regressor class wrapping that pipeline.
 
         Arguments:
             pipeline (PipelineBase or subclass obj): EvalML pipeline
@@ -203,7 +201,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
             self._is_fitted = True
 
     def fit(self, X, y):
-        """Fits component to data
+        """Fits component to data.
 
         Arguments:
             X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
@@ -295,9 +293,7 @@ def generate_component_code(element):
 
 
 def make_balancing_dictionary(y, sampling_ratio):
-    """Makes dictionary for oversampler components. Find ratio of each class to the majority.
-    If the ratio is smaller than the sampling_ratio, we want to oversample,
-    otherwise, we don't want to sample at all, and we leave the data as is.
+    """Makes dictionary for oversampler components. Find ratio of each class to the majority. If the ratio is smaller than the sampling_ratio, we want to oversample, otherwise, we don't want to sample at all, and we leave the data as is.
 
     Arguments:
         y (pd.Series): Target data

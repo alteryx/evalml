@@ -7,8 +7,7 @@ from .feature_selector import FeatureSelector
 
 
 class RFRegressorSelectFromModel(FeatureSelector):
-    """
-    Selects top features based on importance weights using a Random Forest regressor.
+    """Selects top features based on importance weights using a Random Forest regressor.
 
     Arguments:
         number_features (int): The maximum number of features to select.

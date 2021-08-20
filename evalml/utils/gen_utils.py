@@ -18,8 +18,7 @@ logger = get_logger(__file__)
 
 
 def import_or_raise(library, error_msg=None, warning=False):
-    """Attempts to import the requested library by name.
-    If the import fails, raises an ImportError or warning.
+    """Attempts to import the requested library by name. If the import fails, raises an ImportError or warning.
 
     Arguments:
         library (str): the name of the library
@@ -186,8 +185,7 @@ _not_used_in_automl = {
 
 
 def get_importable_subclasses(base_class, used_in_automl=True):
-    """Get importable subclasses of a base class. Used to list all of our
-    estimators, transformers, components and pipelines dynamically.
+    """Get importable subclasses of a base class. Used to list all of our estimators, transformers, components and pipelines dynamically.
 
     Arguments:
         base_class (abc.ABCMeta): Base class to find all of the subclasses for.
@@ -222,9 +220,7 @@ def get_importable_subclasses(base_class, used_in_automl=True):
 
 
 def _rename_column_names_to_numeric(X, flatten_tuples=True):
-    """Used in LightGBM and XGBoost estimator classes to rename column names
-    when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <)
-    that these estimators cannot natively handle.
+    """Used in LightGBM and XGBoost estimator classes to rename column names when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that these estimators cannot natively handle.
 
     Arguments:
         X (pd.DataFrame): The input training data of shape [n_samples, n_features]
@@ -268,7 +264,7 @@ def jupyter_check():
 
 
 def safe_repr(value):
-    """Convert the given value into a string that can safely be used for repr
+    """Convert the given value into a string that can safely be used for repr.
 
     Arguments:
         value: the item to convert
@@ -285,7 +281,7 @@ def safe_repr(value):
 
 
 def is_all_numeric(df):
-    """Checks if the given DataFrame contains only numeric values
+    """Checks if the given DataFrame contains only numeric values.
 
     Arguments:
         df (pd.DataFrame): The DataFrame to check data types of.

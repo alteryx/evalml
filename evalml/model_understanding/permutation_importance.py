@@ -228,9 +228,10 @@ def _calculate_permutation_scores_fast(
 def _slow_permutation_importance(
     pipeline, X, y, objective, col_name=None, n_repeats=5, n_jobs=None, random_seed=None
 ):
-    """
-    If `col_name` is not None, calculates permutation importance for only the column with that name. Otherwise, calculates the
-    permutation importance for all columns in the input dataframe.
+    """If `col_name` is not None, calculates permutation importance for only the column with that name.
+
+    Otherwise, calculates the permutation importance for all columns in
+    the input dataframe.
     """
     baseline_score = _slow_scorer(pipeline, X, y, objective)
     if col_name is None:

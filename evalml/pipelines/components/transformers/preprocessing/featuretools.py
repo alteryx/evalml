@@ -31,7 +31,7 @@ class DFSTransformer(Transformer):
         super().__init__(parameters=parameters, random_seed=random_seed)
 
     def _make_entity_set(self, X):
-        """Helper method that creates and returns the entity set given the input data"""
+        """Helper method that creates and returns the entity set given the input data."""
         ft_es = EntitySet()
         if self.index not in X.columns:
             es = ft_es.entity_from_dataframe(

@@ -3,7 +3,7 @@ from functools import wraps
 
 
 class BaseMeta(ABCMeta):
-    """Metaclass that overrides creating a new component or pipeline by wrapping methods with validators and setters"""
+    """Metaclass that overrides creating a new component or pipeline by wrapping methods with validators and setters."""
 
     FIT_METHODS = ["fit", "fit_transform"]
     METHODS_TO_CHECK = ["predict", "predict_proba", "transform", "inverse_transform"]

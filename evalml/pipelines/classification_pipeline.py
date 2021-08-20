@@ -36,8 +36,7 @@ class ClassificationPipeline(PipelineBase):
         )
 
     def fit(self, X, y):
-        """Build a classification model. For string and categorical targets, classes are sorted
-            by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
+        """Build a classification model. For string and categorical targets, classes are sorted by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
         Arguments:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
@@ -45,7 +44,6 @@ class ClassificationPipeline(PipelineBase):
 
         Returns:
             self
-
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
@@ -63,9 +61,11 @@ class ClassificationPipeline(PipelineBase):
 
     def _decode_targets(self, y):
         """Converts encoded numerical values to their original target values.
+
         Note: we cast y as ints first to address boolean values that may be returned from
         calculating predictions which we would not be able to otherwise transform if we
-        originally had integer targets."""
+        originally had integer targets.
+        """
         return self._encoder.inverse_transform(y.astype(int))
 
     @property
@@ -129,7 +129,7 @@ class ClassificationPipeline(PipelineBase):
         return infer_feature_types(proba)
 
     def score(self, X, y, objectives):
-        """Evaluate model performance on objectives
+        """Evaluate model performance on objectives.
 
         Arguments:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]

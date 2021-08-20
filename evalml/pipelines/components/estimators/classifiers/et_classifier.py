@@ -7,8 +7,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class ExtraTreesClassifier(Estimator):
-    """
-    Extra Trees Classifier.
+    """Extra Trees Classifier.
 
     Arguments:
         n_estimators (float): The number of trees in the forest. Defaults to 100.

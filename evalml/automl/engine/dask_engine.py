@@ -29,8 +29,7 @@ class DaskComputation(EngineComputation):
         return self.work.done()
 
     def get_result(self):
-        """Gets the computation result.
-        Will block until the computation is finished.
+        """Gets the computation result. Will block until the computation is finished.
 
         Raises:
              Exception: If computation fails. Returns traceback.
@@ -51,7 +50,7 @@ class DaskComputation(EngineComputation):
 
 
 class DaskEngine(EngineBase):
-    """The dask engine"""
+    """The dask engine."""
 
     def __init__(self, client):
         if not isinstance(client, Client):

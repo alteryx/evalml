@@ -10,8 +10,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class ElasticNetClassifier(Estimator):
-    """
-    Elastic Net Classifier. Uses Logistic Regression with elasticnet penalty as the base estimator.
+    """Elastic Net Classifier. Uses Logistic Regression with elasticnet penalty as the base estimator.
 
     Arguments:
         penalty ({"l1", "l2", "elasticnet", "none"}): The norm used in penalization. Defaults to "elasticnet".

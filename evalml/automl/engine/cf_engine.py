@@ -49,8 +49,7 @@ class CFComputation(EngineComputation):
         return self.work.done()
 
     def get_result(self):
-        """Gets the computation result.
-        Will block until the computation is finished.
+        """Gets the computation result. Will block until the computation is finished.
 
         Raises:
             Exception: If computation fails. Returns traceback.
@@ -80,7 +79,7 @@ class CFComputation(EngineComputation):
 
 
 class CFEngine(EngineBase):
-    """The concurrent.futures (CF) engine"""
+    """The concurrent.futures (CF) engine."""
 
     def __init__(self, client):
         if not isinstance(client, CFClient):

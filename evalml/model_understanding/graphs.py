@@ -182,8 +182,7 @@ def graph_confusion_matrix(
 
 
 def precision_recall_curve(y_true, y_pred_proba, pos_label_idx=-1):
-    """
-    Given labels and binary classifier predicted probabilities, compute and return the data representing a precision-recall curve.
+    """Given labels and binary classifier predicted probabilities, compute and return the data representing a precision-recall curve.
 
     Arguments:
         y_true (pd.Series or np.ndarray): True binary labels.
@@ -260,8 +259,7 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
 
 
 def roc_curve(y_true, y_pred_proba):
-    """
-    Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
+    """Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
 
     Arguments:
         y_true (pd.Series or np.ndarray): True labels.
@@ -471,7 +469,6 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     Returns:
         plotly.Figure representing the objective score vs. threshold graph generated
-
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
@@ -505,13 +502,14 @@ def _is_feature_of_type(feature, X, ltype):
 
 
 def _put_categorical_feature_first(features, first_feature_categorical):
-    """If the user is doing a two-way partial dependence plot and one of the features is categorical,
-        we need to make sure the categorical feature is the first element in the tuple that's passed to sklearn.
+    """If the user is doing a two-way partial dependence plot and one of the features is categorical, we need to make sure the categorical feature is the first element in the tuple that's passed to sklearn.
 
-    This is because in the two-way grid calculation, sklearn will try to coerce every element of the grid to the
-    type of the first feature in the tuple. If we put the categorical feature first, the grid will be of type 'object'
-    which can accommodate both categorical and numeric data. If we put the numeric feature first, the grid will be of
-    type float64 and we can't coerce categoricals to float64 dtype.
+    This is because in the two-way grid calculation, sklearn will try to
+    coerce every element of the grid to the type of the first feature in
+    the tuple. If we put the categorical feature first, the grid will be
+    of type 'object' which can accommodate both categorical and numeric
+    data. If we put the numeric feature first, the grid will be of type
+    float64 and we can't coerce categoricals to float64 dtype.
     """
     new_features = features if first_feature_categorical else (features[1], features[0])
     return new_features
@@ -933,11 +931,7 @@ def _update_fig_with_two_way_partial_dependence(
 def graph_partial_dependence(
     pipeline, X, features, class_label=None, grid_resolution=100, kind="average"
 ):
-    """Create an one-way or two-way partial dependence plot. Passing a single integer or
-        string as features will create a one-way partial dependence plot with the feature values
-        plotted against the partial dependence.  Passing features a tuple of int/strings will create
-        a two-way partial dependence plot with a contour of feature[0] in the y-axis, feature[1]
-        in the x-axis and the partial dependence in the z-axis.
+    """Create an one-way or two-way partial dependence plot. Passing a single integer or string as features will create a one-way partial dependence plot with the feature values plotted against the partial dependence.  Passing features a tuple of int/strings will create a two-way partial dependence plot with a contour of feature[0] in the y-axis, feature[1] in the x-axis and the partial dependence in the z-axis.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline.
@@ -1194,7 +1188,6 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
                 * `prediction`: Predicted values from regression model.
                 * `actual`: Real target values.
                 * `outlier`: Colors indicating which values are in the threshold for what is considered an outlier value.
-
     """
     if outlier_threshold and outlier_threshold <= 0:
         raise ValueError(
@@ -1220,7 +1213,7 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
 
 
 def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
-    """Generate a scatter plot comparing the true and predicted values. Used for regression plotting
+    """Generate a scatter plot comparing the true and predicted values. Used for regression plotting.
 
     Arguments:
         y_true (pd.Series): The real target values of the data
@@ -1231,7 +1224,6 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
 
     Returns:
         plotly.Figure representing the predicted vs. actual values graph
-
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
@@ -1304,7 +1296,7 @@ def _tree_parse(est, feature_names):
 
 
 def decision_tree_data_from_estimator(estimator):
-    """Return data for a fitted tree in a restructured format
+    """Return data for a fitted tree in a restructured format.
 
     Arguments:
         estimator (ComponentBase): A fitted DecisionTree-based estimator.
@@ -1599,7 +1591,6 @@ def graph_t_sne(
 
     Returns:
         plotly.Figure representing the transformed data
-
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"

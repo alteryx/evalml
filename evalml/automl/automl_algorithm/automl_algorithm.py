@@ -5,14 +5,13 @@ from evalml.tuners import SKOptTuner
 
 
 class AutoMLAlgorithmException(Exception):
-    """Exception raised when an error is encountered during the computation of the automl algorithm"""
+    """Exception raised when an error is encountered during the computation of the automl algorithm."""
 
     pass
 
 
 class AutoMLAlgorithm(ABC):
-    """
-    Base class for the AutoML algorithms which power EvalML.
+    """Base class for the AutoML algorithms which power EvalML.
 
     This class represents an automated machine learning (AutoML) algorithm. It encapsulates the decision-making logic behind an automl search, by both deciding which pipelines to evaluate next and by deciding what set of parameters to configure the pipeline with.
 
@@ -51,14 +50,14 @@ class AutoMLAlgorithm(ABC):
 
     @abstractmethod
     def next_batch(self):
-        """Get the next batch of pipelines to evaluate
+        """Get the next batch of pipelines to evaluate.
 
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
-        """Register results from evaluating a pipeline
+        """Register results from evaluating a pipeline.
 
         Arguments:
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.

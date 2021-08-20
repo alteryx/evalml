@@ -16,7 +16,6 @@ class HighlyNullDataCheck(DataCheck):
             that column will be considered highly-null. Defaults to 0.95.
         pct_null_row_threshold(float): If the percentage of NaN values in an input row exceeds this amount,
             that row will be considered highly-null. Defaults to 0.95.
-
     """
 
     def __init__(self, pct_null_col_threshold=0.95, pct_null_row_threshold=0.95):
@@ -73,7 +72,6 @@ class HighlyNullDataCheck(DataCheck):
                                             "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [0, 1, 2, 3]}},\
                                                         {"code": "DROP_COL",\
                                                             "metadata": {"column": "lots_of_null"}}]}
-
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

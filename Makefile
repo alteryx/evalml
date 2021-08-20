@@ -14,6 +14,7 @@ lint:
 
 .PHONY: lint-fix
 lint-fix:
+	docformatter --in-place . -r --wrap-summaries 0
 	black -t py39 evalml
 	isort evalml
 	python docs/notebook_version_standardizer.py standardize

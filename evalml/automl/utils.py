@@ -102,7 +102,7 @@ def make_data_splitter(
 def tune_binary_threshold(
     pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning
 ):
-    """Tunes the threshold of a binary pipeline to the X and y thresholding data
+    """Tunes the threshold of a binary pipeline to the X and y thresholding data.
 
     Arguments:
         pipeline (Pipeline): Pipeline instance to threshold.
@@ -208,8 +208,7 @@ def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
 def get_pipelines_from_component_graphs(
     component_graphs_dict, problem_type, parameters=None, random_seed=0
 ):
-    """
-    Returns created pipelines from passed component graphs based on the specified problem type.
+    """Returns created pipelines from passed component graphs based on the specified problem type.
 
     Arguments:
         component_graphs_dict (dict): The dict of component graphs.

@@ -89,6 +89,5 @@ class TimeSeriesBaselineEstimator(Estimator):
 
         Returns:
             np.ndarray (float): an array of zeroes
-
         """
         return np.zeros(self._num_features)

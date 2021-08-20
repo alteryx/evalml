@@ -20,8 +20,7 @@ class EngineComputation(ABC):
 
     @abstractmethod
     def get_result(self):
-        """Gets the computation result.
-        Will block until the computation is finished.
+        """Gets the computation result. Will block until the computation is finished.
 
         Raises Exception: If computation fails. Returns traceback.
         """
@@ -38,8 +37,9 @@ class EngineComputation(ABC):
 class JobLogger:
     """Mimics the behavior of a python logging.Logger but stores all messages rather than actually logging them.
 
-    This is used during engine jobs so that log messages are recorded after the job completes. This is desired so that
-    all of the messages for a single job are grouped together in the log.
+    This is used during engine jobs so that log messages are recorded
+    after the job completes. This is desired so that all of the messages
+    for a single job are grouped together in the log.
     """
 
     def __init__(self):
@@ -62,7 +62,10 @@ class JobLogger:
         self.logs.append(("error", msg))
 
     def write_to_logger(self, logger):
-        """Write all the messages to the logger. First In First Out order."""
+        """Write all the messages to the logger.
+
+        First In First Out order.
+        """
         logger_method = {
             "info": logger.info,
             "debug": logger.debug,
@@ -142,7 +145,7 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True):
 def train_and_score_pipeline(
     pipeline, automl_config, full_X_train, full_y_train, logger
 ):
-    """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores
+    """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores.
 
     Arguments:
         pipeline (PipelineBase): The pipeline to score

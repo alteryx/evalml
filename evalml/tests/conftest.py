@@ -1039,7 +1039,7 @@ def churn_local():
 
 @pytest.fixture
 def mock_imbalanced_data_X_y():
-    """Helper function to return an imbalanced binary or multiclass dataset"""
+    """Helper function to return an imbalanced binary or multiclass dataset."""
 
     def _imbalanced_data_X_y(problem_type, categorical_columns, size):
         """ "Generates a dummy classification dataset with particular amounts of class imbalance and categorical input columns.
@@ -1153,8 +1153,7 @@ class _AutoMLTestEnv:
         return patch(pipeline_class_str + "." + method, **kwargs)
 
     def _reset_mocks(self):
-        """Set the mocks to None before running a computation so that we can prevent users from trying to access
-        them before leaving the context manager."""
+        """Set the mocks to None before running a computation so that we can prevent users from trying to access them before leaving the context manager."""
         self._mock_fit = None
         self._mock_tell = None
         self._mock_score = None
@@ -1205,8 +1204,7 @@ class _AutoMLTestEnv:
         predict_proba_return_value=None,
         optimize_threshold_return_value=0.2,
     ):
-        """A context manager for creating an environment that patches time-consuming pipeline methods.
-        Sets the mock_fit, mock_score, mock_encode_targets, mock_predict_proba, mock_optimize_threshold attributes.
+        """A context manager for creating an environment that patches time-consuming pipeline methods. Sets the mock_fit, mock_score, mock_encode_targets, mock_predict_proba, mock_optimize_threshold attributes.
 
         Arguments:
             score_return_value: Passed as the return_value argument of the pipeline.score patch.

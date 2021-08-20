@@ -5,7 +5,11 @@ from evalml.utils import classproperty
 
 
 class DataCheck(ABC):
-    """Base class for all data checks. Data checks are a set of heuristics used to determine if there are problems with input data."""
+    """Base class for all data checks.
+
+    Data checks are a set of heuristics used to determine if there are
+    problems with input data.
+    """
 
     @classproperty
     def name(cls):
@@ -14,8 +18,7 @@ class DataCheck(ABC):
 
     @abstractmethod
     def validate(self, X, y=None):
-        """
-        Inspects and validates the input data, runs any necessary calculations or algorithms, and returns a list of warnings and errors if applicable.
+        """Inspects and validates the input data, runs any necessary calculations or algorithms, and returns a list of warnings and errors if applicable.
 
         Arguments:
             X (pd.DataFrame): The input data of shape [n_samples, n_features]

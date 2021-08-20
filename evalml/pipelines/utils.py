@@ -159,7 +159,7 @@ def _get_preprocessing_components(
 
 
 def _get_pipeline_base_class(problem_type):
-    """Returns pipeline base class for problem_type"""
+    """Returns pipeline base class for problem_type."""
     if problem_type == ProblemTypes.BINARY:
         return BinaryClassificationPipeline
     elif problem_type == ProblemTypes.MULTICLASS:
@@ -183,9 +183,7 @@ def make_pipeline(
     sampler_name=None,
     extra_components=None,
 ):
-    """Given input data, target data, an estimator class and the problem type,
-         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
-         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
+    """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
     Arguments:
          X (pd.DataFrame): The input data of shape [n_samples, n_features]
@@ -200,7 +198,6 @@ def make_pipeline(
 
      Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator
-
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
@@ -257,8 +254,7 @@ def generate_pipeline_code(element):
 def _make_stacked_ensemble_pipeline(
     input_pipelines, problem_type, n_jobs=-1, random_seed=0
 ):
-    """
-    Creates a pipeline with a stacked ensemble estimator.
+    """Creates a pipeline with a stacked ensemble estimator.
 
     Arguments:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
@@ -313,8 +309,7 @@ def _make_stacked_ensemble_pipeline(
 
 
 def _make_component_list_from_actions(actions):
-    """
-    Creates a list of components from the input DataCheckAction list
+    """Creates a list of components from the input DataCheckAction list.
 
     Arguments:
         actions (list(DataCheckAction)): List of DataCheckAction objects used to create list of components

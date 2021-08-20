@@ -30,7 +30,8 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
     def _get_feature_types_for_featuretools(self, X):
         """Get a mapping from column name to the feature tools type.
 
-        This is needed for dfs. Hopefully, once the ww/ft integration is complete this will be redundant.
+        This is needed for dfs. Hopefully, once the ww/ft integration is
+        complete this will be redundant.
         """
 
     def _make_entity_set(self, X):

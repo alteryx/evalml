@@ -9,8 +9,7 @@ from evalml.preprocessing.data_splitters.balanced_classification_sampler import 
 
 
 class Undersampler(BaseSampler):
-    """
-    Initializes an undersampling transformer to downsample the majority classes in the dataset.
+    """Initializes an undersampling transformer to downsample the majority classes in the dataset.
 
     This component is only run during training and not during predict.
 

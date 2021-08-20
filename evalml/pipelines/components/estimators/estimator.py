@@ -37,7 +37,7 @@ class Estimator(ComponentBase):
     @classmethod
     @abstractmethod
     def supported_problem_types(cls):
-        """Problem types this estimator supports"""
+        """Problem types this estimator supports."""
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         self.input_feature_names = None

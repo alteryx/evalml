@@ -7,8 +7,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class DecisionTreeRegressor(Estimator):
-    """
-    Decision Tree Regressor.
+    """Decision Tree Regressor.
 
     Arguments:
         criterion ({"mse", "friedman_mse", "mae", "poisson"}): The function to measure the quality of a split.

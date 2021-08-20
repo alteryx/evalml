@@ -7,8 +7,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class RandomForestClassifier(Estimator):
-    """
-    Random Forest Classifier.
+    """Random Forest Classifier.
 
     Arguments:
         n_estimators (float): The number of trees in the forest. Defaults to 100.

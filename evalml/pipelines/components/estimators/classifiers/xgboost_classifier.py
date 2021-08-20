@@ -10,8 +10,7 @@ from evalml.utils.gen_utils import (
 
 
 class XGBoostClassifier(Estimator):
-    """
-    XGBoost Classifier.
+    """XGBoost Classifier.
 
     Arguments:
         eta (float): Boosting learning rate. Defaults to 0.1.

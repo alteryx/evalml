@@ -280,10 +280,10 @@ def test_ordinal_retains_order_min():
     ),
 )
 def test_infer_feature_types_NA_to_nan(null_col, already_inited):
-    """A short test to make sure that columns with all null values
-    get converted from woodwork Unknown logical type with string
-    physical type back to the original Double logical type with
-    float physical type.  Other Unknown columns should remain unchanged."""
+    """A short test to make sure that columns with all null values get converted from woodwork Unknown logical type with string physical type back to the original Double logical type with float physical type.
+
+    Other Unknown columns should remain unchanged.
+    """
 
     df = pd.DataFrame(
         {

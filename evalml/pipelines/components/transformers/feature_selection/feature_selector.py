@@ -9,8 +9,7 @@ from evalml.utils import (
 
 
 class FeatureSelector(Transformer):
-    """
-    Selects top features based on importance weights.
+    """Selects top features based on importance weights.
 
     Arguments:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.

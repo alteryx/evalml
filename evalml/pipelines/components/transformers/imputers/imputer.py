@@ -76,8 +76,7 @@ class Imputer(Transformer):
         )
 
     def fit(self, X, y=None):
-        """Fits imputer to data. 'None' values are converted to np.nan before imputation and are
-            treated as the same.
+        """Fits imputer to data. 'None' values are converted to np.nan before imputation and are treated as the same.
 
         Arguments:
             X (pd.DataFrame, np.ndarray): The input training data of shape [n_samples, n_features]
@@ -107,8 +106,7 @@ class Imputer(Transformer):
         return self
 
     def transform(self, X, y=None):
-        """Transforms data X by imputing missing values. 'None' values are converted to np.nan before imputation and are
-            treated as the same.
+        """Transforms data X by imputing missing values. 'None' values are converted to np.nan before imputation and are treated as the same.
 
         Arguments:
             X (pd.DataFrame): Data to transform

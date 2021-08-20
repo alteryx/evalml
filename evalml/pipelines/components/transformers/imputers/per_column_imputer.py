@@ -52,7 +52,7 @@ class PerColumnImputer(Transformer):
         )
 
     def fit(self, X, y=None):
-        """Fits imputers on input data
+        """Fits imputers on input data.
 
         Arguments:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to fit.

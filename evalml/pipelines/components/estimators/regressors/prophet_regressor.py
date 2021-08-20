@@ -12,12 +12,9 @@ from evalml.utils.gen_utils import classproperty
 
 
 class ProphetRegressor(Estimator):
-    """
-    Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects.
-    It works best with time series that have strong seasonal effects and several seasons of historical data. Prophet is robust to missing data and shifts in the trend, and typically handles outliers well.
+    """Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. It works best with time series that have strong seasonal effects and several seasons of historical data. Prophet is robust to missing data and shifts in the trend, and typically handles outliers well.
 
     More information here: https://facebook.github.io/prophet/
-
     """
 
     name = "Prophet Regressor"
@@ -135,9 +132,7 @@ class ProphetRegressor(Estimator):
 
     @property
     def feature_importance(self):
-        """
-        Returns array of 0's with len(1) as feature_importance is not defined for Prophet regressor.
-        """
+        """Returns array of 0's with len(1) as feature_importance is not defined for Prophet regressor."""
         return np.zeros(1)
 
     @classproperty

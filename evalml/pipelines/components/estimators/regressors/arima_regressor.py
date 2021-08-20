@@ -9,10 +9,7 @@ from evalml.utils import import_or_raise, infer_feature_types
 
 
 class ARIMARegressor(Estimator):
-    """
-    Autoregressive Integrated Moving Average Model.
-    The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order.
-    More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima_model.ARIMA.html
+    """Autoregressive Integrated Moving Average Model. The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order. More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima_model.ARIMA.html.
 
     Currently ARIMARegressor isn't supported via conda install. It's recommended that it be installed via PyPI.
 
@@ -196,7 +193,5 @@ class ARIMARegressor(Estimator):
 
     @property
     def feature_importance(self):
-        """
-        Returns array of 0's with a length of 1 as feature_importance is not defined for ARIMA regressor.
-        """
+        """Returns array of 0's with a length of 1 as feature_importance is not defined for ARIMA regressor."""
         return np.zeros(1)

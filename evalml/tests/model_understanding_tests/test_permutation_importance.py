@@ -22,9 +22,10 @@ from evalml.utils import infer_feature_types
 class DoubleColumns(Transformer):
     """Custom transformer for testing permutation importance implementation.
 
-    We don't have any transformers that create features that you can repeatedly "stack" on the previous output.
-    That being said, I want to test that our implementation can handle that case in the event we add a transformer like
-    that in the future.
+    We don't have any transformers that create features that you can
+    repeatedly "stack" on the previous output. That being said, I want
+    to test that our implementation can handle that case in the event we
+    add a transformer like that in the future.
     """
 
     name = "DoubleColumns"

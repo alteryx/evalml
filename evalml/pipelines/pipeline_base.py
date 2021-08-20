@@ -38,8 +38,7 @@ logger = get_logger(__file__)
 
 
 class PipelineBase(ABC, metaclass=PipelineBaseMeta):
-    """
-    Machine learning pipeline made out of transformers and an Estimator.
+    """Machine learning pipeline made out of transformers and an Estimator.
 
     Arguments:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
@@ -130,6 +129,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     @property
     def summary(self):
         """A short summary of the pipeline structure, describing the list of components used.
+
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
         component_graph = [
@@ -202,19 +202,18 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         raise NotImplementedError("Setting pipeline components is not supported.")
 
     def get_component(self, name):
-        """Returns component by name
+        """Returns component by name.
 
         Arguments:
             name (str): Name of component
 
         Returns:
             Component: Component to return
-
         """
         return self.component_graph.get_component(name)
 
     def describe(self, return_dict=False):
-        """Outputs pipeline details including component parameters
+        """Outputs pipeline details including component parameters.
 
         Arguments:
             return_dict (bool): If True, return dictionary of information about pipeline. Defaults to False.
@@ -273,7 +272,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         Returns:
             self
-
         """
 
     def transform(self, X, y=None):
@@ -468,7 +466,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return graph
 
     def graph_feature_importance(self, importance_threshold=0):
-        """Generate a bar graph of the pipeline's feature importance
+        """Generate a bar graph of the pipeline's feature importance.
 
         Arguments:
             importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to zero.
@@ -515,7 +513,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return fig
 
     def save(self, file_path, pickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
-        """Saves pipeline at file path
+        """Saves pipeline at file path.
 
         Arguments:
             file_path (str): location to save file
@@ -529,7 +527,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @staticmethod
     def load(file_path):
-        """Loads pipeline at file path
+        """Loads pipeline at file path.
 
         Arguments:
             file_path (str): location to load file
@@ -554,8 +552,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         )
 
     def new(self, parameters, random_seed=0):
-        """Constructs a new instance of the pipeline with the same component graph but with a different set of parameters.
-            Not to be confused with python's __new__ method.
+        """Constructs a new instance of the pipeline with the same component graph but with a different set of parameters. Not to be confused with python's __new__ method.
 
         Arguments:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
@@ -686,7 +683,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
          Returns:
              bool: True if the pipeline threshold can be tuned.
-
         """
         return (
             is_binary(self.problem_type)
@@ -705,8 +701,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return self.component_graph.inverse_transform(y)
 
     def get_hyperparameter_ranges(self, custom_hyperparameters):
-        """
-        Returns hyperparameter ranges from all components as a dictionary.
+        """Returns hyperparameter ranges from all components as a dictionary.
 
         Arguments:
             custom_hyperparameters (dict): Custom hyperparameters for the pipeline.

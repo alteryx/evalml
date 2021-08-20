@@ -1640,6 +1640,7 @@ class KeyboardInterruptOnKthPipeline:
 
     def __call__(self):
         """Raises KeyboardInterrupt on the kth call.
+
         Arguments are ignored but included to meet the call back API.
         """
         if self.n_calls == self.k:
@@ -2000,7 +2001,7 @@ def test_percent_better_than_baseline_in_rankings(
             return self.__class__(self.parameters, random_seed=self.random_seed)
 
         def fit(self, *args, **kwargs):
-            """Mocking fit"""
+            """Mocking fit."""
 
     class Pipeline1(DummyPipeline):
         custom_name = "Pipeline1"
@@ -2167,7 +2168,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
             return self.__class__(self.parameters, random_seed=self.random_seed)
 
         def fit(self, *args, **kwargs):
-            """Mocking fit"""
+            """Mocking fit."""
 
     additional_objectives = None
     if custom_additional_objective:

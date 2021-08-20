@@ -8,7 +8,7 @@ class MethodPropertyNotFoundError(Exception):
 
 
 class PipelineNotFoundError(Exception):
-    """An exception raised when a particular pipeline is not found in automl search results"""
+    """An exception raised when a particular pipeline is not found in automl search results."""
 
     pass
 
@@ -81,7 +81,7 @@ class DataCheckInitError(Exception):
 
 
 class NullsInColumnWarning(UserWarning):
-    """Warning thrown when there are null values in the column of interest"""
+    """Warning thrown when there are null values in the column of interest."""
 
 
 class ObjectiveCreationError(Exception):
@@ -89,7 +89,7 @@ class ObjectiveCreationError(Exception):
 
 
 class NoPositiveLabelException(Exception):
-    """Exception when a particular classification label for the 'positive' class cannot be found in the column index or unique values"""
+    """Exception when a particular classification label for the 'positive' class cannot be found in the column index or unique values."""
 
 
 class ParameterNotUsedWarning(UserWarning):

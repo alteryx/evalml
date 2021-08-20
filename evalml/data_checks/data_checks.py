@@ -73,8 +73,7 @@ class DataChecks:
         return data_check_instances
 
     def __init__(self, data_checks=None, data_check_params=None):
-        """
-        A collection of data checks.
+        """A collection of data checks.
 
         Arguments:
             data_checks (list (DataCheck)): List of DataCheck objects
@@ -86,8 +85,7 @@ class DataChecks:
         self.data_checks = data_check_instances
 
     def validate(self, X, y=None):
-        """
-        Inspects and validates the input data against data checks and returns a list of warnings and errors if applicable.
+        """Inspects and validates the input data against data checks and returns a list of warnings and errors if applicable.
 
         Arguments:
             X (pd.DataFrame, np.ndarray): The input data of shape [n_samples, n_features]
@@ -95,7 +93,6 @@ class DataChecks:
 
         Returns:
             dict: Dictionary containing DataCheckMessage objects
-
         """
         messages = {"warnings": [], "errors": [], "actions": []}
         X = infer_feature_types(X)

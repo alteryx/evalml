@@ -7,8 +7,7 @@ from .feature_selector import FeatureSelector
 
 
 class RFClassifierSelectFromModel(FeatureSelector):
-    """
-    Selects top features based on importance weights using a Random Forest classifier.
+    """Selects top features based on importance weights using a Random Forest classifier.
 
     Arguments:
         number_features (int): The maximum number of features to select.

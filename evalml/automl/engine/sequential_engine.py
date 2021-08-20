@@ -31,8 +31,7 @@ class SequentialComputation(EngineComputation):
         return True
 
     def get_result(self):
-        """Gets the computation result.
-        Will block until the computation is finished.
+        """Gets the computation result. Will block until the computation is finished.
 
         Raises Exception: If computation fails. Returns traceback.
         """
@@ -43,7 +42,10 @@ class SequentialComputation(EngineComputation):
 
 
 class SequentialEngine(EngineBase):
-    """The default engine for the AutoML search. Trains and scores pipelines locally and sequentially."""
+    """The default engine for the AutoML search.
+
+    Trains and scores pipelines locally and sequentially.
+    """
 
     def submit_evaluation_job(self, automl_config, pipeline, X, y):
         logger = self.setup_job_log()

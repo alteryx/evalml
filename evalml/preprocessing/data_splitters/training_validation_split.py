@@ -33,11 +33,11 @@ class TrainingValidationSplit(BaseCrossValidator):
 
     @staticmethod
     def get_n_splits():
-        """Returns the number of splits of this object"""
+        """Returns the number of splits of this object."""
         return 1
 
     def split(self, X, y=None):
-        """Divides the data into training and testing sets
+        """Divides the data into training and testing sets.
 
         Arguments:
             X (pd.DataFrame): Dataframe of points to split

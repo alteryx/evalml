@@ -5,12 +5,14 @@ from evalml.utils.base_meta import BaseMeta
 
 
 class ComponentBaseMeta(BaseMeta):
-    """Metaclass that overrides creating a new component by wrapping methods with validators and setters"""
+    """Metaclass that overrides creating a new component by wrapping methods with validators and setters."""
 
     @classmethod
     def check_for_fit(cls, method):
         """`check_for_fit` wraps a method that validates if `self._is_fitted` is `True`.
-        It raises an exception if `False` and calls and returns the wrapped method if `True`.
+
+        It raises an exception if `False` and calls and returns the
+        wrapped method if `True`.
         """
 
         @wraps(method)

@@ -19,15 +19,13 @@ warning_too_unique = "Input columns ({}) for {} problem type are too unique."
 
 
 class UniquenessDataCheck(DataCheck):
-    """Checks if there are any columns in the input that are either too unique for classification problems
-    or not unique enough for regression problems.
+    """Checks if there are any columns in the input that are either too unique for classification problems or not unique enough for regression problems.
 
     Arguments:
         problem_type (str or ProblemTypes): The specific problem type to data check for.
             e.g. 'binary', 'multiclass', 'regression, 'time series regression'
         threshold(float): The threshold to set as an upper bound on uniqueness for classification type problems
             or lower bound on for regression type problems.  Defaults to 0.50.
-
     """
 
     def __init__(self, problem_type, threshold=0.50):
@@ -37,8 +35,7 @@ class UniquenessDataCheck(DataCheck):
         self.threshold = threshold
 
     def validate(self, X, y=None):
-        """Checks if there are any columns in the input that are too unique in the case of classification
-        problems or not unique enough in the case of regression problems.
+        """Checks if there are any columns in the input that are too unique in the case of classification problems or not unique enough in the case of regression problems.
 
         Arguments:
             X (pd.DataFrame, np.ndarray): Features.
@@ -126,8 +123,7 @@ class UniquenessDataCheck(DataCheck):
 
     @staticmethod
     def uniqueness_score(col):
-        """This function calculates a uniqueness score for the provided field.  NaN values are
-        not considered as unique values in the calculation.
+        """This function calculates a uniqueness score for the provided field.  NaN values are not considered as unique values in the calculation.
 
         Based on the Herfindahl–Hirschman Index.
 

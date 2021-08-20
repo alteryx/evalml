@@ -39,8 +39,7 @@ class RandomSearchTuner(Tuner):
         self.curr_params = None
 
     def add(self, pipeline_parameters, score):
-        """Not applicable to random search tuner as generated parameters are
-        not dependent on scores of previous parameters.
+        """Not applicable to random search tuner as generated parameters are not dependent on scores of previous parameters.
 
         Arguments:
             pipeline_parameters (dict): A dict of the parameters used to evaluate a pipeline
@@ -71,8 +70,7 @@ class RandomSearchTuner(Tuner):
         return self._convert_to_pipeline_parameters(params)
 
     def is_search_space_exhausted(self):
-        """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in
-        ``self.curr_params`` to be returned by ``propose()``.
+        """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in ``self.curr_params`` to be returned by ``propose()``.
 
         Raises:
             NoParamsException: If a search space is exhausted, then this exception is thrown.

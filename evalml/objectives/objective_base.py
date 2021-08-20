@@ -28,7 +28,13 @@ class ObjectiveBase(ABC):
     @classmethod
     @abstractmethod
     def score_needs_proba(cls):
-        """Returns a boolean determining if the score() method needs probability estimates. This should be true for objectives which work with predicted probabilities, like log loss or AUC, and false for objectives which compare predicted class labels to the actual labels, like F1 or correlation."""
+        """Returns a boolean determining if the score() method needs probability estimates.
+
+        This should be true for objectives which work with predicted
+        probabilities, like log loss or AUC, and false for objectives
+        which compare predicted class labels to the actual labels, like
+        F1 or correlation.
+        """
 
     @property
     @classmethod
@@ -46,12 +52,16 @@ class ObjectiveBase(ABC):
     @classmethod
     @abstractmethod
     def expected_range(cls):
-        """Returns the expected range of the objective, which is not necessarily the possible ranges. For example, our expected R2 range is from [-1, 1], although the actual range is (-inf, 1]."""
+        """Returns the expected range of the objective, which is not necessarily the possible ranges.
+
+        For example, our expected R2 range is from [-1, 1], although the
+        actual range is (-inf, 1].
+        """
 
     @classmethod
     @abstractmethod
     def objective_function(cls, y_true, y_predicted, X=None, sample_weight=None):
-        """Computes the relative value of the provided predictions compared to the actual labels, according a specified metric
+        """Computes the relative value of the provided predictions compared to the actual labels, according a specified metric.
 
          Arguments:
             y_predicted (pd.Series): Predicted values of length [n_samples]
@@ -65,7 +75,10 @@ class ObjectiveBase(ABC):
 
     @classproperty
     def positive_only(cls):
-        """If True, this objective is only valid for positive data. Default False."""
+        """If True, this objective is only valid for positive data.
+
+        Default False.
+        """
         return False
 
     def score(self, y_true, y_predicted, X=None, sample_weight=None):

@@ -14,7 +14,6 @@ class StandardScaler(Transformer):
 
     Arguments:
         random_seed (int): Seed for the random number generator. Defaults to 0.
-
     """
 
     name = "Standard Scaler"

@@ -11,7 +11,11 @@ class DataCheckAction:
         self.metadata = metadata or {}
 
     def __eq__(self, other):
-        """Checks for equality. Two DataCheckAction objs are considered equivalent if all of their attributes are equivalent."""
+        """Checks for equality.
+
+        Two DataCheckAction objs are considered equivalent if all of
+        their attributes are equivalent.
+        """
         return self.action_code == other.action_code and self.metadata == other.metadata
 
     def to_dict(self):

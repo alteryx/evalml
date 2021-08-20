@@ -922,8 +922,7 @@ class AutoMLSearch:
         self._searched = True
 
     def _find_best_pipeline(self):
-        """Finds the best pipeline in the rankings
-        If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding"""
+        """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
         if len(self.rankings) == 0:
             return
         best_pipeline = self.rankings.iloc[0]
@@ -942,7 +941,7 @@ class AutoMLSearch:
             self._best_pipeline = best_pipeline
 
     def _num_pipelines(self):
-        """Return the number of pipeline evaluations which have been made
+        """Return the number of pipeline evaluations which have been made.
 
         Returns:
             int: the number of pipeline evaluations made in the search
@@ -1198,8 +1197,7 @@ class AutoMLSearch:
         return high_variance_cv
 
     def get_pipeline(self, pipeline_id):
-        """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline
-        initialized with the parameters used to train that pipeline during automl search.
+        """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline initialized with the parameters used to train that pipeline during automl search.
 
         Arguments:
             pipeline_id (int): pipeline to retrieve
@@ -1219,7 +1217,7 @@ class AutoMLSearch:
         return pipeline.new(parameters, random_seed=self.random_seed)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
-        """Describe a pipeline
+        """Describe a pipeline.
 
         Arguments:
             pipeline_id (int): pipeline to describe
@@ -1335,7 +1333,7 @@ class AutoMLSearch:
 
     @property
     def full_rankings(self):
-        """Returns a pandas.DataFrame with scoring results from all pipelines searched"""
+        """Returns a pandas.DataFrame with scoring results from all pipelines searched."""
         ascending = True
         if self.objective.greater_is_better:
             ascending = False
@@ -1388,7 +1386,7 @@ class AutoMLSearch:
         pickle_type="cloudpickle",
         pickle_protocol=cloudpickle.DEFAULT_PROTOCOL,
     ):
-        """Saves AutoML object at file path
+        """Saves AutoML object at file path.
 
         Arguments:
             file_path (str): location to save file
@@ -1415,7 +1413,7 @@ class AutoMLSearch:
         file_path,
         pickle_type="cloudpickle",
     ):
-        """Loads AutoML object at file path
+        """Loads AutoML object at file path.
 
         Arguments:
             file_path (str): location to find file to load

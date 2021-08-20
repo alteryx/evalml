@@ -55,6 +55,7 @@ class SVMRegressor(Estimator):
     @property
     def feature_importance(self):
         """Feature importance only works with linear kernels.
+
         If the kernel isn't linear, we return a numpy array of zeros
         """
         if self._parameters["kernel"] != "linear":

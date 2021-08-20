@@ -467,7 +467,8 @@ class RootMeanSquaredError(RegressionObjective):
 class RootMeanSquaredLogError(RegressionObjective):
     """Root mean squared log error for regression.
 
-    Only valid for nonnegative inputs.Otherwise, will throw a ValueError.
+    Only valid for nonnegative inputs.Otherwise, will throw a
+    ValueError.
     """
 
     name = "Root Mean Squared Log Error"
@@ -486,14 +487,18 @@ class RootMeanSquaredLogError(RegressionObjective):
 
     @classproperty
     def positive_only(self):
-        """If True, this objective is only valid for positive data. Default False."""
+        """If True, this objective is only valid for positive data.
+
+        Default False.
+        """
         return True
 
 
 class MeanSquaredLogError(RegressionObjective):
     """Mean squared log error for regression.
 
-    Only valid for nonnegative inputs. Otherwise, will throw a ValueError
+    Only valid for nonnegative inputs. Otherwise, will throw a
+    ValueError
     """
 
     name = "Mean Squared Log Error"
@@ -510,7 +515,10 @@ class MeanSquaredLogError(RegressionObjective):
 
     @classproperty
     def positive_only(self):
-        """If True, this objective is only valid for positive data. Default False."""
+        """If True, this objective is only valid for positive data.
+
+        Default False.
+        """
         return True
 
 
@@ -572,7 +580,10 @@ class MAPE(TimeSeriesRegressionObjective):
 
     @classproperty
     def positive_only(self):
-        """If True, this objective is only valid for positive data. Default False."""
+        """If True, this objective is only valid for positive data.
+
+        Default False.
+        """
         return True
 
 

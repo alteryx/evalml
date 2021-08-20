@@ -182,11 +182,12 @@ class _TableMaker(abc.ABC):
         original_features,
         include_shap_values,
     ):
-        """Format the 'drill_down' section of the explanation report when output_format="dict"
+        """Format the 'drill_down' section of the explanation report when output_format="dict".
 
-        This section will include the feature values, feature names, qualitative explanation
-        and shap values (if include_shap_values=True) for the features created from one of the
-        original features in the data.
+        This section will include the feature values, feature names,
+        qualitative explanation and shap values (if
+        include_shap_values=True) for the features created from one of
+        the original features in the data.
         """
         drill_down = {}
         for parent_feature, children_features in provenance.items():

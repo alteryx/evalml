@@ -22,8 +22,7 @@ _ESTIMATOR_FAMILY_ORDER = [
 
 
 class IterativeAlgorithm(AutoMLAlgorithm):
-    """
-    An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
+    """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
     Arguments:
         allowed_pipelines (list(class)): A list of PipelineBase instances indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
@@ -131,7 +130,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     )
 
     def next_batch(self):
-        """Get the next batch of pipelines to evaluate
+        """Get the next batch of pipelines to evaluate.
 
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
@@ -197,7 +196,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         return next_batch
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
-        """Register results from evaluating a pipeline
+        """Register results from evaluating a pipeline.
 
         Arguments:
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.

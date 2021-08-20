@@ -40,7 +40,7 @@ class RegressionPipeline(PipelineBase):
         return self
 
     def score(self, X, y, objectives):
-        """Evaluate model performance on current and additional objectives
+        """Evaluate model performance on current and additional objectives.
 
         Arguments:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]

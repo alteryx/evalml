@@ -36,8 +36,7 @@ class SparsityDataCheck(DataCheck):
             raise ValueError("Unique count threshold must be positive integer.")
 
     def validate(self, X, y=None):
-        """Calculates what percentage of each column's unique values exceed the count threshold and compare
-        that percentage to the sparsity threshold stored in the class instance.
+        """Calculates what percentage of each column's unique values exceed the count threshold and compare that percentage to the sparsity threshold stored in the class instance.
 
         Arguments:
             X (pd.DataFrame, np.ndarray): Features.
@@ -95,8 +94,7 @@ class SparsityDataCheck(DataCheck):
 
     @staticmethod
     def sparsity_score(col, count_threshold=10):
-        """This function calculates a sparsity score for the given value counts by calculating the percentage of
-        unique values that exceed the count_threshold.
+        """This function calculates a sparsity score for the given value counts by calculating the percentage of unique values that exceed the count_threshold.
 
         Arguments:
             col (pd.Series): Feature values.

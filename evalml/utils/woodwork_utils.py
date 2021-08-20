@@ -45,8 +45,7 @@ def _raise_value_error_if_nullable_types_detected(data):
 
 
 def infer_feature_types(data, feature_types=None):
-    """Create a Woodwork structure from the given list, pandas, or numpy input, with specified types for columns.
-        If a column's type is not specified, it will be inferred by Woodwork.
+    """Create a Woodwork structure from the given list, pandas, or numpy input, with specified types for columns. If a column's type is not specified, it will be inferred by Woodwork.
 
     Arguments:
         data (pd.DataFrame, pd.Series): Input data to convert to a Woodwork data structure.
@@ -113,10 +112,7 @@ def infer_feature_types(data, feature_types=None):
 def _retain_custom_types_and_initalize_woodwork(
     old_logical_types, new_dataframe, ltypes_to_ignore=None
 ):
-    """
-    Helper method which will take an old Woodwork data structure and a new pandas data structure and return a
-    new data structure that will try to retain as many logical types from the old data structure that exist in the new
-    pandas data structure as possible.
+    """Helper method which will take an old Woodwork data structure and a new pandas data structure and return a new data structure that will try to retain as many logical types from the old data structure that exist in the new pandas data structure as possible.
 
     Arguments:
         old_logical_types (Dict): Logical types to try to retain.
@@ -153,15 +149,15 @@ def _retain_custom_types_and_initalize_woodwork(
 
 
 def _convert_numeric_dataset_pandas(X, y):
-    """Convert numeric and non-null data to pandas datatype. Raises ValueError if there is null or non-numeric data.
-    Used with data sampler strategies.
+    """Convert numeric and non-null data to pandas datatype. Raises ValueError if there is null or non-numeric data. Used with data sampler strategies.
 
     Arguments:
         X (pd.DataFrame, np.ndarray): Data to transform
         y (pd.Series, np.ndarray): Target data
 
     Returns:
-        Tuple(pd.DataFrame, pd.Series): Transformed X and y"""
+        Tuple(pd.DataFrame, pd.Series): Transformed X and y
+    """
     X_ww = infer_feature_types(X)
     if not is_all_numeric(X_ww):
         raise ValueError(

@@ -3,7 +3,10 @@ class BinaryClassificationPipelineMixin:
 
     @property
     def threshold(self):
-        """Threshold used to make a prediction. Defaults to None."""
+        """Threshold used to make a prediction.
+
+        Defaults to None.
+        """
         return self._threshold
 
     @threshold.setter

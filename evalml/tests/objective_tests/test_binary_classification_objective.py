@@ -74,7 +74,7 @@ class TestBinaryObjective(metaclass=ABCMeta):
 
     @abstractmethod
     def assign_objective(self, **kwargs):
-        """Get objective object using specified parameters"""
+        """Get objective object using specified parameters."""
 
     def run_pipeline(self, X_y_binary, **kwargs):
         self.X, self.y = X_y_binary
@@ -95,7 +95,7 @@ class TestBinaryObjective(metaclass=ABCMeta):
 
     @abstractmethod
     def test_score(self, y_true, y_predicted, expected_score):
-        """Objective score matches expected score
+        """Objective score matches expected score.
 
         Args:
             y_true (pd.Series): true classes
@@ -105,7 +105,7 @@ class TestBinaryObjective(metaclass=ABCMeta):
 
     @abstractmethod
     def test_all_base_tests(self):
-        """Run all relevant tests from the base class"""
+        """Run all relevant tests from the base class."""
 
     @pytest.fixture(scope="class")
     def fix_y_pred_na(self):

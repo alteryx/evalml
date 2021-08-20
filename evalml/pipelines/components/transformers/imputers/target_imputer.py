@@ -13,12 +13,14 @@ from evalml.utils import (
 
 
 class TargetImputerMeta(ComponentBaseMeta):
-    """A version of the ComponentBaseMeta class which handles when input features is None"""
+    """A version of the ComponentBaseMeta class which handles when input features is None."""
 
     @classmethod
     def check_for_fit(cls, method):
         """`check_for_fit` wraps a method that validates if `self._is_fitted` is `True`.
-        It raises an exception if `False` and calls and returns the wrapped method if `True`.
+
+        It raises an exception if `False` and calls and returns the
+        wrapped method if `True`.
         """
 
         @wraps(method)
@@ -64,8 +66,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         )
 
     def fit(self, X, y):
-        """Fits imputer to target data. 'None' values are converted to np.nan before imputation and are
-            treated as the same.
+        """Fits imputer to target data. 'None' values are converted to np.nan before imputation and are treated as the same.
 
         Arguments:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]. Ignored.

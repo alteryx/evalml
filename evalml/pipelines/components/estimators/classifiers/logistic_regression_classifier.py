@@ -8,8 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class LogisticRegressionClassifier(Estimator):
-    """
-    Logistic Regression Classifier.
+    """Logistic Regression Classifier.
 
     Arguments:
         penalty ({"l1", "l2", "elasticnet", "none"}): The norm used in penalization. Defaults to "l2".

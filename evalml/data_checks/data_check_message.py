@@ -24,7 +24,11 @@ class DataCheckMessage:
         return self.message
 
     def __eq__(self, other):
-        """Checks for equality. Two DataCheckMessage objs are considered equivalent if all of their attributes are equivalent."""
+        """Checks for equality.
+
+        Two DataCheckMessage objs are considered equivalent if all of
+        their attributes are equivalent.
+        """
         return (
             self.message_type == other.message_type
             and self.message == other.message

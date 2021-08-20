@@ -39,7 +39,7 @@ class TextFeaturizer(TextTransformer):
         super().__init__(random_seed=random_seed, **kwargs)
 
     def _clean_text(self, X):
-        """Remove all non-alphanum chars other than spaces, and make lowercase"""
+        """Remove all non-alphanum chars other than spaces, and make lowercase."""
 
         def normalize(text):
             text = text.translate(str.maketrans("", "", string.punctuation))
@@ -73,7 +73,7 @@ class TextFeaturizer(TextTransformer):
         return es
 
     def fit(self, X, y=None):
-        """Fits component to data
+        """Fits component to data.
 
         Arguments:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
@@ -113,7 +113,7 @@ class TextFeaturizer(TextTransformer):
         return provenance
 
     def transform(self, X, y=None):
-        """Transforms data X by creating new features using existing text columns
+        """Transforms data X by creating new features using existing text columns.
 
         Arguments:
             X (pd.DataFrame): The data to transform.

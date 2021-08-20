@@ -14,8 +14,7 @@ from evalml.utils.woodwork_utils import (
 
 
 class TargetLeakageDataCheck(DataCheck):
-    """
-    Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
+    """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
 
     If `method='mutual'`, this data check uses mutual information and supports all target and feature types.
     Otherwise, if `method='pearson'`, it uses Pearson correlation and only supports binary with numeric and boolean dtypes.

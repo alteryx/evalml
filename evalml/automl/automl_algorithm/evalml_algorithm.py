@@ -265,7 +265,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
         return self._create_n_pipelines(pipelines, self.num_long_explore_pipelines)
 
     def next_batch(self):
-        """Get the next batch of pipelines to evaluate
+        """Get the next batch of pipelines to evaluate.
 
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.

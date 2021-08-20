@@ -8,8 +8,7 @@ from evalml.problem_types import ProblemTypes
 
 
 class SVMClassifier(Estimator):
-    """
-    Support Vector Machine Classifier.
+    """Support Vector Machine Classifier.
 
     Arguments:
         C (float): The regularization parameter. The strength of the regularization is inversely proportional to C.
@@ -72,6 +71,7 @@ class SVMClassifier(Estimator):
     @property
     def feature_importance(self):
         """Feature importance only works with linear kernels.
+
         If the kernel isn't linear, we return a numpy array of zeros
         """
         if self._parameters["kernel"] != "linear":

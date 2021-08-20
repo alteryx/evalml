@@ -5,12 +5,10 @@ from evalml.utils import infer_feature_types
 
 
 class DateTimeFormatDataCheck(DataCheck):
-    """Checks if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order
-    to be supported by time series estimators.
+    """Checks if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order to be supported by time series estimators.
 
     Arguments:
         datetime_column (str, int): The name of the datetime column. If the datetime values are in the index, then pass "index".
-
     """
 
     def __init__(self, datetime_column="index"):
