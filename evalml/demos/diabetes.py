@@ -1,3 +1,5 @@
+"""Load the diabetes dataset, which can be used for regression problems."""
+
 import woodwork as ww
 
 import evalml
@@ -5,7 +7,7 @@ from evalml.preprocessing import load_data
 
 
 def load_diabetes():
-    """Load diabetes dataset. Regression problem
+    """Load diabetes dataset. Used for regression problem.
 
     Returns:
         (pd.Dataframe, pd.Series): X and y

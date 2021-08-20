@@ -1,3 +1,5 @@
+"""I'm a docstring."""
+
 import copy
 import os
 import warnings
@@ -63,7 +65,7 @@ def confusion_matrix(y_true, y_predicted, normalize_method="true"):
 
 
 def normalize_confusion_matrix(conf_mat, normalize_method="true"):
-    """Normalizes a confusion matrix.
+    """Normalize a confusion matrix.
 
     Arguments:
         conf_mat (pd.DataFrame or np.ndarray): Confusion matrix to normalize.
@@ -426,8 +428,7 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
 
 
 def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
-    """Computes objective score as a function of potential binary classification
-        decision thresholds for a fitted binary classification pipeline.
+    """Compute objective score as a function of potential binary classification decision thresholds for a fitted binary classification pipeline.
 
     Arguments:
         pipeline (BinaryClassificationPipeline obj): Fitted binary classification pipeline
@@ -438,7 +439,6 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
     Returns:
         pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
-
     """
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(ProblemTypes.BINARY):
@@ -460,7 +460,7 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 
 
 def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
-    """Generates a plot graphing objective score vs. decision thresholds for a fitted binary classification pipeline.
+    """Generate a plot graphing objective score vs. decision thresholds for a fitted binary classification pipeline.
 
     Arguments:
         pipeline (PipelineBase or subclass): Fitted pipeline
@@ -506,7 +506,7 @@ def _is_feature_of_type(feature, X, ltype):
 
 def _put_categorical_feature_first(features, first_feature_categorical):
     """If the user is doing a two-way partial dependence plot and one of the features is categorical,
-    we need to make sure the categorical feature is the first element in the tuple that's passed to sklearn.
+        we need to make sure the categorical feature is the first element in the tuple that's passed to sklearn.
 
     This is because in the two-way grid calculation, sklearn will try to coerce every element of the grid to the
     type of the first feature in the tuple. If we put the categorical feature first, the grid will be of type 'object'
@@ -529,7 +529,7 @@ def _get_feature_names_from_str_or_col_index(X, names_or_col_indices):
 
 
 def _raise_value_error_if_any_features_all_nan(df):
-    """Helper for partial dependence data validation."""
+    """Validate partial dependence data by checking if any features have all NaN values."""
     nan_pct = df.isna().mean()
     all_nan = nan_pct[nan_pct == 1].index.tolist()
     all_nan = [f"'{name}'" for name in all_nan]
@@ -543,7 +543,7 @@ def _raise_value_error_if_any_features_all_nan(df):
 
 
 def _raise_value_error_if_mostly_one_value(df, percentile):
-    """Helper for partial dependence data validation."""
+    """Validate partial dependence data by checking if features are mostly one value."""
     one_value = []
     values = []
 
@@ -565,9 +565,10 @@ def _raise_value_error_if_mostly_one_value(df, percentile):
 def partial_dependence(
     pipeline, X, features, percentiles=(0.05, 0.95), grid_resolution=100, kind="average"
 ):
-    """Calculates one or two-way partial dependence.  If a single integer or
-    string is given for features, one-way partial dependence is calculated. If
-    a tuple of two integers or strings is given, two-way partial dependence
+    """Calculate one or two-way partial dependence.
+
+    If a single integer or string is given for features, one-way partial dependence is calculated.
+    If a tuple of two integers or strings is given, two-way partial dependence
     is calculated with the first feature in the y-axis and second feature in the
     x-axis.
 
@@ -932,16 +933,16 @@ def _update_fig_with_two_way_partial_dependence(
 def graph_partial_dependence(
     pipeline, X, features, class_label=None, grid_resolution=100, kind="average"
 ):
-    """Create an one-way or two-way partial dependence plot.  Passing a single integer or
-    string as features will create a one-way partial dependence plot with the feature values
-    plotted against the partial dependence.  Passing features a tuple of int/strings will create
-    a two-way partial dependence plot with a contour of feature[0] in the y-axis, feature[1]
-    in the x-axis and the partial dependence in the z-axis.
+    """Create an one-way or two-way partial dependence plot. Passing a single integer or
+        string as features will create a one-way partial dependence plot with the feature values
+        plotted against the partial dependence.  Passing features a tuple of int/strings will create
+        a two-way partial dependence plot with a contour of feature[0] in the y-axis, feature[1]
+        in the x-axis and the partial dependence in the z-axis.
 
     Arguments:
-        pipeline (PipelineBase or subclass): Fitted pipeline
+        pipeline (PipelineBase or subclass): Fitted pipeline.
         X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values
-            for feature where partial dependence will be calculated at
+            for feature where partial dependence will be calculated at.
         features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
             If features is an int, it must be the index of the feature to use.
             If features is a string, it must be a valid column name in X.
@@ -1171,7 +1172,7 @@ def _add_ice_plot(_go, fig, ice_data, label=None, row=None, col=None):
 
 
 def _calculate_axis_range(arr):
-    """Helper method to help calculate the appropriate range for an axis based on the data to graph."""
+    """A helper method to help calculate the appropriate range for an axis based on the data to graph."""
     max_value = arr.max()
     min_value = arr.min()
     margins = abs(max_value - min_value) * 0.05
@@ -1179,7 +1180,7 @@ def _calculate_axis_range(arr):
 
 
 def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
-    """Combines y_true and y_pred into a single dataframe and adds a column for outliers. Used in `graph_prediction_vs_actual()`.
+    """Combine y_true and y_pred into a single dataframe and adds a column for outliers. Used in `graph_prediction_vs_actual()`.
 
     Arguments:
         y_true (pd.Series, or np.ndarray): The real target values of the data
@@ -1326,13 +1327,13 @@ def decision_tree_data_from_estimator(estimator):
 
 
 def decision_tree_data_from_pipeline(pipeline_):
-    """Return data for a fitted pipeline with  in a restructured format
+    """Return data for a fitted pipeline with  in a restructured format.
 
     Arguments:
         pipeline_ (PipelineBase): A pipeline with a DecisionTree-based estimator.
 
     Returns:
-        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
+        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure.
     """
     if not pipeline_.model_family == ModelFamily.DECISION_TREE:
         raise ValueError(
@@ -1352,7 +1353,7 @@ def decision_tree_data_from_pipeline(pipeline_):
 def visualize_decision_tree(
     estimator, max_depth=None, rotate=False, filled=False, filepath=None
 ):
-    """Generate an image visualizing the decision tree
+    """Generate an image visualizing the decision tree.
 
     Arguments:
         estimator (ComponentBase): A fitted DecisionTree-based estimator.
@@ -1504,7 +1505,7 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
 
 
 def get_linear_coefficients(estimator, features=None):
-    """Returns a dataframe showing the features with the greatest predictive power for a linear model.
+    """Return a dataframe showing the features with the greatest predictive power for a linear model.
 
     Arguments:
         estimator (Estimator): Fitted linear model family estimator.

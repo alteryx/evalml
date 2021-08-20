@@ -1,3 +1,4 @@
+"""This is a docstring."""
 import warnings
 
 # hack to prevent warnings from skopt

@@ -1,3 +1,4 @@
+"""Load the breast cancer dataset, which can be used for binary classification problems."""
 import woodwork as ww
 
 import evalml
