@@ -5,6 +5,7 @@ import time
 import traceback
 import warnings
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 import cloudpickle
 import numpy as np
@@ -16,6 +17,8 @@ from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
+from evalml.automl.engine.cf_engine import CFClient, CFEngine
+from evalml.automl.engine.dask_engine import DaskEngine
 from evalml.automl.utils import (
     AutoMLConfig,
     check_all_pipeline_names_unique,
@@ -631,6 +634,30 @@ class AutoMLSearch:
         if not engine:
             self._engine = SequentialEngine()
         else:
+            valid_engines = [
+                "cf_threaded",
+                "cf_process",
+                "dask_threaded",
+                "dask_process",
+            ]
+            if isinstance(engine, str):
+                if engine in valid_engines:
+                    if engine == "cf_threaded":
+                        engine = CFEngine(CFClient(ThreadPoolExecutor()))
+                    if engine == "cf_process":
+                        engine = CFEngine(CFClient(ProcessPoolExecutor()))
+                    if engine == "dask_threaded":
+                        from dask.distributed import Client, LocalCluster
+
+                        engine = DaskEngine(Client(LocalCluster(processes=False)))
+                    if engine == "dask_process":
+                        from dask.distributed import Client, LocalCluster
+
+                        engine = DaskEngine(Client(LocalCluster(processes=True)))
+                else:
+                    raise ValueError(
+                        f"Provided Engine {engine} is not valid {valid_engines}"
+                    )
             self._engine = engine
 
         self.automl_config = AutoMLConfig(

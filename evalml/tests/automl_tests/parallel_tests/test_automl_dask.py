@@ -309,3 +309,34 @@ def test_automl_immediate_quit(
         assert DaskPipelineWithFitError.custom_name not in set(
             automl.full_rankings["pipeline_name"]
         )
+
+
+@pytest.mark.parametrize(
+    "engine_str", ["cf_threaded", "cf_process", "dask_threaded", "dask_process"]
+)
+def test_automl_convenience(engine_str, X_y_binary_cls):
+    """Test to assert the proper engine is set for each provided convenience string."""
+    X, y = X_y_binary_cls
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        engine=engine_str,
+        optimize_thresholds=False,
+    )
+    if "cf" in engine_str:
+        assert isinstance(automl._engine, CFEngine)
+    elif "dask" in engine_str:
+        assert isinstance(automl._engine, DaskEngine)
+
+
+def test_automl_convenience_exception(X_y_binary_cls):
+    X, y = X_y_binary_cls
+    with pytest.raises(ValueError, match="Provided Engine"):
+        automl = AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            engine="bad_choice",
+            optimize_thresholds=False,
+        )
