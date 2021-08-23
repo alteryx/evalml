@@ -125,12 +125,12 @@ def test_all_estimators(
     has_minimal_dependencies, is_running_py_39_or_above, is_using_conda
 ):
     if has_minimal_dependencies:
-        assert len((_all_estimators_used_in_search())) == 10
+        assert len((_all_estimators_used_in_search())) == 9
     else:
         if is_using_conda:
-            n_estimators = 16
+            n_estimators = 15
         else:
-            n_estimators = 16 if is_running_py_39_or_above else 17
+            n_estimators = 15 if is_running_py_39_or_above else 16
         assert len(_all_estimators_used_in_search()) == n_estimators
 
 

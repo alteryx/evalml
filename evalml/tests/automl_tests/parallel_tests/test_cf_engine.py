@@ -342,7 +342,7 @@ def test_submit_scoring_jobs_multiple(
         np.testing.assert_allclose(par_scores, seq_scores, rtol=1e-10)
 
 
-@pytest.mark.parametrize("pool_type", ["threads", "processes"])
+@pytest.mark.parametrize("pool_type", ["threads"])
 def test_cancel_job(X_y_binary_cls, pool_type, thread_pool, process_pool):
     """Test that training a single pipeline using the parallel engine produces the
     same results as simply running the train_pipeline function."""
