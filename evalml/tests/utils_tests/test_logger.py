@@ -25,10 +25,6 @@ def logger_env_cleanup(monkeypatch):
     # need to clear out the logger so logger state isn't shared across the unit tests
     if TEST_LOGGER_NAME in logging.Logger.manager.loggerDict:
         del logging.Logger.manager.loggerDict[TEST_LOGGER_NAME]
-    # clean up any patches to the logger env var
-    assert os.environ.get("EVALML_LOG_FILE") is None
-    yield
-    monkeypatch.delenv("EVALML_LOG_FILE", raising=False)
 
 
 def test_get_logger(logger_env_cleanup, capsys, caplog):

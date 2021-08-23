@@ -12,6 +12,7 @@ from evalml.utils import (
     log_subtitle,
     safe_repr,
 )
+from evalml.utils.logger import get_logger
 
 logger = logging.getLogger(__name__)
 
@@ -137,6 +138,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         Returns:
             None or dict: prints and returns dictionary
         """
+        logger = get_logger(f'{__name__}.describe')
         if print_name:
             title = self.name
             log_subtitle(logger, title)

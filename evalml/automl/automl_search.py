@@ -297,7 +297,7 @@ class AutoMLSearch:
         verbose=False,
     ):
         self.verbose = verbose
-        if verbose:
+        if self.verbose:
             logger = get_logger(__name__)
         else:
             logger = logging.getLogger(__name__)
@@ -674,6 +674,9 @@ class AutoMLSearch:
             pipeline_params=parameters,
             custom_hyperparameters=custom_hyperparameters,
         )
+        if self.verbose:
+            logger.handlers.pop()
+            logger.setLevel(logging.WARNING)
 
     def _catch_warnings(self, warning_list):
         if len(warning_list) == len(self.allowed_pipelines) and len(warning_list) > 0:
@@ -798,8 +801,12 @@ class AutoMLSearch:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
         """
+        if self.verbose:
+            logger = get_logger(__name__)
+        else:
+            logger = logging.getLogger(__name__)
         if self._searched:
-            logger.info(
+            logger.error(
                 "AutoMLSearch.search() has already been run and will not run again on the same instance. Re-initialize AutoMLSearch to search again."
             )
             return
@@ -929,6 +936,7 @@ class AutoMLSearch:
         self._searched = True
         if self.verbose:
             logger.handlers.pop()
+            logger.setLevel(logging.WARNING)
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings
@@ -999,11 +1007,18 @@ class AutoMLSearch:
             else:
                 num_without_improvement += 1
             if num_without_improvement >= self.patience:
+                if self.verbose:
+                    logger = get_logger(__name__)
+                else:
+                    logger = logging.getLogger(__name__)
                 logger.info(
                     "\n\n{} iterations without improvement. Stopping search early...".format(
                         self.patience
                     )
                 )
+                if self.verbose:
+                    logger.handlers.pop()
+                    logger.setLevel(logging.WARNING)
                 return False
         return True
 
@@ -1239,6 +1254,7 @@ class AutoMLSearch:
             Description of specified pipeline. Includes information such as
             type of pipeline components, problem, training time, cross validation, etc.
         """
+        logger = get_logger(f'{__name__}.describe_pipeline')
         if pipeline_id not in self._results["pipeline_results"]:
             raise PipelineNotFoundError("Pipeline not found")
 
