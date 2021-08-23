@@ -5,12 +5,14 @@ Release Notes
         * Removed SVM "linear" and "precomputed" kernel hyperparameter options, and improved default parameters :pr:`2651`
     * Fixes
     * Changes
+        * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     
 
 **v0.31.0 Aug. 19, 2021**
@@ -25,7 +27,6 @@ Release Notes
         * Refactored time series pipeline code using a time series pipeline base class :pr:`2649`
         * Renamed ``dask_tests`` to ``parallel_tests`` :pr:`2657`
         * Removed commented out code in ``pipeline_meta.py`` :pr:`2659`
-        * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     * Documentation Changes
         * Add complete install command to README and Install section :pr:`2627`
     * Testing Changes
@@ -34,7 +35,6 @@ Release Notes
 
     **Breaking Changes**
         * ``TimeSeriesRegressionPipeline`` no longer inherits from ``TimeSeriesRegressionPipeline`` :pr:`2649`
-        * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
 
 
 **v0.30.2 Aug. 16, 2021**
