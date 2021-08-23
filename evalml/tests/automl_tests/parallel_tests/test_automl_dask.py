@@ -334,7 +334,7 @@ def test_automl_convenience(engine_str, X_y_binary_cls):
 def test_automl_convenience_exception(X_y_binary_cls):
     X, y = X_y_binary_cls
     with pytest.raises(ValueError, match="Provided Engine"):
-        automl = AutoMLSearch(
+        AutoMLSearch(
             X_train=X,
             y_train=y,
             problem_type="binary",
