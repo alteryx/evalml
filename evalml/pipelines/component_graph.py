@@ -65,6 +65,59 @@ class ComponentGraph:
                 raise ValueError(
                     "All component information should be passed in as a list"
                 )
+        # for _, component_inputs in self.component_dict.items():
+        #     component_inputs = component_inputs[1:]
+        #     has_feature_input = any(
+        #         component_input.endswith(".x") or component_input == "X"
+        #         for component_input in component_inputs
+        #     )
+        #     num_target_inputs = sum(
+        #         component_input.endswith(".y") or component_input == "y"
+        #         for component_input in component_inputs
+        #     )
+        #     if not has_feature_input:
+        #         raise ValueError(
+        #             "All components must have at least one input feature (.x/X) edge."
+        #         )
+        #     if num_target_inputs != 1:
+        #         raise ValueError(
+        #             "All components must have exactly one target (.y/y) edge."
+        #         )
+
+        #     def check_all_inputs_have_correct_syntax(edge):
+        #         return not (
+        #             edge.endswith(".y")
+        #             or edge == "y"
+        #             or edge.endswith(".x")
+        #             or edge == "X"
+        #         )
+
+        #     if (
+        #         len(
+        #             list(filter(check_all_inputs_have_correct_syntax, component_inputs))
+        #         )
+        #         != 0
+        #     ):
+        #         raise ValueError(
+        #             "All edges must be specified as either an input feature ('X'/.x) or input target ('y'/.y)."
+        #         )
+
+    def _validate_component_dict_edges(self):
+        for _, component_inputs in self.component_dict.items():
+            component_inputs = component_inputs[1:]
+            target_inputs = [
+                component
+                for component in component_inputs
+                if (component.endswith(".y"))
+            ]
+            if target_inputs:
+                component_class = self.get_component(target_inputs[0][:-2])
+                if (
+                    not issubclass(component_class, TargetTransformer)
+                    and not component_class.modifies_target
+                ):
+                    raise ValueError(f"{target_inputs[0]} is not a valid input edge.")
+
         for _, component_inputs in self.component_dict.items():
             component_inputs = component_inputs[1:]
             has_feature_input = any(
@@ -101,23 +154,6 @@ class ComponentGraph:
                 raise ValueError(
                     "All edges must be specified as either an input feature ('X'/.x) or input target ('y'/.y)."
                 )
-
-    def _validate_component_dict_edges(self):
-        for _, component_inputs in self.component_dict.items():
-            component_inputs = component_inputs[1:]
-            target_inputs = [
-                component
-                for component in component_inputs
-                if (component.endswith(".y"))
-            ]
-            if target_inputs:
-                component_class = self.get_component(target_inputs[0][:-2])
-                if (
-                    not issubclass(component_class, TargetTransformer)
-                    and not component_class.modifies_target
-                ):
-                    raise ValueError(f"{target_inputs[0]} is not a valid input edge.")
-
     @property
     def compute_order(self):
         """The order that components will be computed or called in."""
