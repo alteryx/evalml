@@ -59,11 +59,11 @@ git-test-other-core:
 
 .PHONY: git-test-other
 git-test-other:
-	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ --ignore evalml/tests/pipeline_tests/ --ignore evalml/tests/objective_tests/ --ignore evalml/tests/utils_tests/ --ignore evalml/tests/component_tests/test_prophet_regressor.py --ignore evalml/tests/component_tests/test_utils.py -n 2 --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-other-junit.xml --doctest-continue-on-failure
+	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ --ignore evalml/tests/pipeline_tests/ --ignore evalml/tests/objective_tests/ --ignore evalml/tests/utils_tests/ --ignore evalml/tests/component_tests/test_prophet_regressor.py --ignore evalml/tests/component_tests/test_components.py --ignore evalml/tests/component_tests/test_utils.py -n 2 --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-other-junit.xml --doctest-continue-on-failure
 
 .PHONY: git-test-prophet
 git-test-prophet:
-	pytest evalml/tests/component_tests/test_prophet_regressor.py evalml/tests/component_tests/test_utils.py evalml/tests/pipeline_tests/ evalml/tests/objective_tests/ evalml/tests/utils_tests/ -n 2 --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-prophet-junit.xml --doctest-continue-on-failure
+	pytest evalml/tests/component_tests/test_prophet_regressor.py evalml/tests/component_tests/test_components.py evalml/tests/component_tests/test_utils.py evalml/tests/pipeline_tests/ evalml/tests/objective_tests/ evalml/tests/utils_tests/ -n 2 --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-prophet-junit.xml --doctest-continue-on-failure
 
 .PHONY: installdeps
 installdeps:
