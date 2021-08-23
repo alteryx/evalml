@@ -25,6 +25,7 @@ from evalml.automl.utils import (
     get_best_sampler_for_data,
     get_default_primary_search_objective,
     get_pipelines_from_component_graphs,
+    import_or_raise,
     make_data_splitter,
 )
 from evalml.data_checks import DefaultDataChecks
@@ -362,8 +363,8 @@ class AutoMLSearch:
 
         _automl_algorithm (str): The automl algorithm to use. Currently the two choices are 'iterative' and 'default'. Defaults to `iterative`.
 
-        engine (EngineBase or None): The engine instance used to evaluate pipelines. If None, a SequentialEngine will
-            be used.
+        engine (EngineBase, list of str, or None): The engine instance used to evaluate pipelines. Dask or concurrent.futures engines can be chosen by providing
+            a string from the list ["cf_threaded", "cf_process", "dask_threaded", "dask_process"]. If None, a SequentialEngine will be used.
     """
 
     _MAX_NAME_LEN = 40
@@ -749,16 +750,14 @@ class AutoMLSearch:
                 if engine in valid_engines:
                     if engine == "cf_threaded":
                         engine = CFEngine(CFClient(ThreadPoolExecutor()))
-                    if engine == "cf_process":
+                    elif engine == "cf_process":
                         engine = CFEngine(CFClient(ProcessPoolExecutor()))
-                    if engine == "dask_threaded":
-                        from dask.distributed import Client, LocalCluster
-
-                        engine = DaskEngine(Client(LocalCluster(processes=False)))
-                    if engine == "dask_process":
-                        from dask.distributed import Client, LocalCluster
-
-                        engine = DaskEngine(Client(LocalCluster(processes=True)))
+                    elif engine == "dask_threaded":
+                        dd = import_or_raise("dask.distributed")
+                        engine = DaskEngine(dd.Client(dd.LocalCluster(processes=False)))
+                    elif engine == "dask_process":
+                        dd = import_or_raise("dask.distributed")
+                        engine = DaskEngine(dd.Client(dd.LocalCluster(processes=True)))
                 else:
                     raise ValueError(
                         f"Provided Engine {engine} is not valid {valid_engines}"
