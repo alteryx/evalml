@@ -21,29 +21,29 @@ lint-fix:
 test:
 	pytest evalml/ --doctest-modules --doctest-continue-on-failure  --timeout 300
 
-.PHONY: test-no-dask
-test-no-dask:
-	pytest evalml/ --doctest-modules --doctest-continue-on-failure --ignore=evalml/tests/automl_tests/dask_tests  --timeout 300
+.PHONY: test-no-parallel
+test-no-parallel:
+	pytest evalml/ --doctest-modules --doctest-continue-on-failure --ignore=evalml/tests/automl_tests/parallel_tests  --timeout 300
 
-.PHONY: test-dask
-test-dask:
-	pytest evalml/tests/automl_tests/dask_tests/ --doctest-modules --doctest-continue-on-failure  --timeout 300 --durations 0
+.PHONY: test-parallel
+test-parallel:
+	pytest evalml/tests/automl_tests/parallel_tests/ --doctest-modules --doctest-continue-on-failure  --timeout 300 --durations 0
 
-.PHONY: git-test-dask
-git-test-dask:
-	pytest evalml/tests/automl_tests/dask_tests/ -n 1 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-dask-junit.xml --doctest-continue-on-failure  --timeout 300 --durations 0
+.PHONY: git-test-parallel
+git-test-parallel:
+	pytest evalml/tests/automl_tests/parallel_tests/ -n 1 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-parallel-junit.xml --doctest-continue-on-failure  --timeout 300 --durations 0
 
-.PHONY: git-test-minimal-deps-dask
-git-test-minimal-deps-dask:
-	pytest evalml/tests/automl_tests/dask_tests/  -n 1 --doctest-modules --cov=evalml  --junitxml=test-reports/git-test-minimal-deps-dask-junit.xml --doctest-continue-on-failure --has-minimal-dependencies --timeout 300 --durations 0
+.PHONY: git-test-minimal-deps-parallel
+git-test-minimal-deps-parallel:
+	pytest evalml/tests/automl_tests/parallel_tests/  -n 1 --doctest-modules --cov=evalml  --junitxml=test-reports/git-test-minimal-deps-parallel-junit.xml --doctest-continue-on-failure --has-minimal-dependencies --timeout 300 --durations 0
 
 .PHONY: git-test-automl-core
 git-test-automl-core:
-	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --ignore=evalml/tests/automl_tests/dask_tests --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-automl-core-junit.xml --doctest-continue-on-failure --has-minimal-dependencies
+	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --ignore=evalml/tests/automl_tests/parallel_tests --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-automl-core-junit.xml --doctest-continue-on-failure --has-minimal-dependencies
 
 .PHONY: git-test-automl
 git-test-automl:
-	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --ignore=evalml/tests/automl_tests/dask_tests --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-automl-junit.xml --doctest-continue-on-failure
+	pytest evalml/tests/automl_tests evalml/tests/tuner_tests -n 2 --ignore=evalml/tests/automl_tests/parallel_tests --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-automl-junit.xml --doctest-continue-on-failure
 
 .PHONY: git-test-modelunderstanding-core
 git-test-modelunderstanding-core:

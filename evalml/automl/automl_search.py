@@ -57,11 +57,7 @@ from evalml.problem_types import (
     is_time_series,
 )
 from evalml.tuners import SKOptTuner
-from evalml.utils import (
-    _put_into_original_order,
-    convert_to_seconds,
-    infer_feature_types,
-)
+from evalml.utils import convert_to_seconds, infer_feature_types
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -516,6 +512,16 @@ class AutoMLSearch:
             allowed_estimators = get_estimators(
                 self.problem_type, self.allowed_model_families
             )
+            if (
+                is_time_series(self.problem_type)
+                and parameters["pipeline"]["date_index"]
+            ):
+                if pd.infer_freq(X_train[parameters["pipeline"]["date_index"]]) == "MS":
+                    allowed_estimators = [
+                        estimator
+                        for estimator in allowed_estimators
+                        if estimator.name != "ARIMA Regressor"
+                    ]
             logger.debug(
                 f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}"
             )
@@ -530,9 +536,7 @@ class AutoMLSearch:
             unknown_columns = list(
                 self.X_train.ww.select("unknown", return_schema=True).columns
             )
-            index_and_unknown_columns = _put_into_original_order(
-                self.X_train, index_and_unknown_columns
-            )
+            index_and_unknown_columns = index_and_unknown_columns
             if len(index_and_unknown_columns) > 0 and drop_columns is None:
                 parameters["Drop Columns Transformer"] = {
                     "columns": index_and_unknown_columns
@@ -1128,7 +1132,7 @@ class AutoMLSearch:
             )
             percent_better_than_baseline[obj_name] = percent_better
 
-        high_variance_cv = self._check_for_high_variance(pipeline, cv_score, cv_sd)
+        high_variance_cv = self._check_for_high_variance(pipeline, cv_scores)
 
         pipeline_id = len(self._results["pipeline_results"])
         self._results["pipeline_results"][pipeline_id] = {
@@ -1184,17 +1188,22 @@ class AutoMLSearch:
             )
         return pipeline_id
 
-    def _check_for_high_variance(self, pipeline, cv_mean, cv_std, threshold=0.2):
+    def _check_for_high_variance(self, pipeline, cv_scores, threshold=0.5):
         """Checks cross-validation scores and logs a warning if variance is higher than specified threshhold."""
         pipeline_name = pipeline.name
 
         high_variance_cv = False
-        if cv_std != 0 and cv_mean != 0:
-            high_variance_cv = bool(abs(cv_std / cv_mean) > threshold)
-        if high_variance_cv:
+        allowed_range = (
+            self.objective.expected_range[1] - self.objective.expected_range[0]
+        )
+        if allowed_range == float("inf"):
+            return high_variance_cv
+        cv_range = max(cv_scores) - min(cv_scores)
+        if cv_range >= threshold * allowed_range:
             logger.warning(
                 f"\tHigh coefficient of variation (cv >= {threshold}) within cross validation scores.\n\t{pipeline_name} may not perform as estimated on unseen data."
             )
+            high_variance_cv = True
         return high_variance_cv
 
     def get_pipeline(self, pipeline_id):

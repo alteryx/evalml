@@ -7,10 +7,11 @@ extras_require = {
     'update_checker': ['alteryx-open-src-update-checker >= 2.0.0'],
     'prophet': ['cmdstan-builder == 0.0.4']
 }
+extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
     name='evalml',
-    version='0.30.0',
+    version='0.31.0',
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     description='EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.',

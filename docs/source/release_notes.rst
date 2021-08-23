@@ -1,6 +1,45 @@
 Release Notes
 -------------
-**Future Release**
+**Future Releases**
+    * Enhancements
+        * Removed SVM "linear" and "precomputed" kernel hyperparameter options, and improved default parameters :pr:`2651`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+    
+
+**v0.31.0 Aug. 19, 2021**
+    * Enhancements
+        * Updated the high variance check in AutoMLSearch to be robust to a variety of objectives and cv scores :pr:`2622`
+        * Use Woodwork's outlier detection for the ``OutliersDataCheck`` :pr:`2637`
+        * Added ability to utilize instantiated components when creating a pipeline :pr:`2643`
+        * Sped up the all Nan and unknown check in ``infer_feature_types`` :pr:`2661`
+    * Fixes
+    * Changes
+        * Deleted ``_put_into_original_order`` helper function :pr:`2639`
+        * Refactored time series pipeline code using a time series pipeline base class :pr:`2649`
+        * Renamed ``dask_tests`` to ``parallel_tests`` :pr:`2657`
+        * Removed commented out code in ``pipeline_meta.py`` :pr:`2659`
+    * Documentation Changes
+        * Add complete install command to README and Install section :pr:`2627`
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * ``TimeSeriesRegressionPipeline`` no longer inherits from ``TimeSeriesRegressionPipeline`` :pr:`2649`
+
+
+**v0.30.2 Aug. 16, 2021**
+    * Fixes
+        * Updated changelog and version numbers to match the release.  Release 0.30.1 was release erroneously without a change to the version numbers.  0.30.2 replaces it.
+
+**v0.30.1 Aug. 12, 2021**
     * Enhancements
         * Added ``DatetimeFormatDataCheck`` for time series problems :pr:`2603`
         * Added ``ProphetRegressor`` to estimators :pr:`2242`
@@ -8,17 +47,23 @@ Release Notes
         * Updated ``ComponentGraph`` ``_validate_component_dict`` logic to be stricter about input values :pr:`2599`
         * Patched bug in ``xgboost`` estimators where predicting on a feature matrix of only booleans would throw an exception. :pr:`2602`
         * Updated ``ARIMARegressor`` to use relative forecasting to predict values :pr:`2613`
+        * Added support for creating pipelines without an estimator as the final component and added ``transform(X, y)`` method to pipelines and component graphs :pr:`2625`
         * Updated to support Woodwork 0.5.1 :pr:`2610`
     * Fixes
+        * Updated ``AutoMLSearch`` to drop ``ARIMARegressor`` from ``allowed_estimators`` if an incompatible frequency is detected :pr:`2632`
         * Updated ``get_best_sampler_for_data`` to consider all non-numeric datatypes as categorical for SMOTE :pr:`2590`
         * Fixed inconsistent test results from `TargetDistributionDataCheck` :pr:`2608`
+        * Adopted vectorized pd.NA checking for Woodwork 0.5.1 support :pr:`2626`
+        * Pinned upper version of astroid to 2.6.6 to keep ReadTheDocs working. :pr:`2638`
     * Changes
         * Renamed SMOTE samplers to SMOTE oversampler :pr:`2595`
         * Changed ``partial_dependence`` and ``graph_partial_dependence`` to raise a ``PartialDependenceError`` instead of ``ValueError``. This is not a breaking change because ``PartialDependenceError`` is a subclass of ``ValueError`` :pr:`2604`
         * Cleaned up code duplication in ``ComponentGraph`` :pr:`2612`
+        * Stored predict_proba results in .x for intermediate estimators in ComponentGraph :pr:`2629`
     * Documentation Changes
         * To avoid local docs build error, only add warning disable and download headers on ReadTheDocs builds, not locally :pr:`2617`
     * Testing Changes
+        * Updated partial_dependence tests to change the element-wise comparison per the Plotly 5.2.1 upgrade :pr:`2638`
         * Changed the lint CI job to only check against python 3.9 via the `-t` flag :pr:`2586`
         * Installed Prophet in linux nightlies test and fixed ``test_all_components`` :pr:`2598`
         * Refactored and fixed all ``make_pipeline`` tests to assert correct order and address new Woodwork Unknown type inference :pr:`2572`

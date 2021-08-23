@@ -66,7 +66,7 @@ def infer_feature_types(data, feature_types=None):
 
     def convert_all_nan_unknown_to_double(data):
         def is_column_pd_na(data, col):
-            return all([isinstance(x, type(pd.NA)) for x in data[col]])
+            return data[col].isna().all()
 
         def is_column_unknown(data, col):
             return isinstance(data.ww.logical_types[col], Unknown)
@@ -75,7 +75,7 @@ def infer_feature_types(data, feature_types=None):
             all_null_unk_cols = [
                 col
                 for col in data.columns
-                if (is_column_pd_na(data, col) and is_column_unknown(data, col))
+                if (is_column_unknown(data, col) and is_column_pd_na(data, col))
             ]
             if len(all_null_unk_cols):
                 for col in all_null_unk_cols:
@@ -100,7 +100,7 @@ def infer_feature_types(data, feature_types=None):
         return convert_all_nan_unknown_to_double(data)
 
     if isinstance(data, pd.Series):
-        if all([isinstance(x, type(pd.NA)) for x in data]):
+        if all(data.isna()):
             data = data.replace(pd.NA, np.nan)
             feature_types = "Double"
         return ww.init_series(data, logical_type=feature_types)
@@ -169,8 +169,3 @@ def _convert_numeric_dataset_pandas(X, y):
         )
     y_ww = infer_feature_types(y)
     return X_ww, y_ww
-
-
-def _put_into_original_order(X, columns_to_subset):
-    """Put the columns returned by X.ww.select(...., return_schema=True) into the original order found in X."""
-    return [col_name for col_name in X.columns if col_name in columns_to_subset]

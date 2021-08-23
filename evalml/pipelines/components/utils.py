@@ -100,8 +100,8 @@ def handle_component_class(component_class):
     """Standardizes input from a string name to a ComponentBase subclass if necessary.
 
     If a str is provided, will attempt to look up a ComponentBase class by that name and
-    return a new instance. Otherwise if a ComponentBase subclass is provided, will return that
-    without modification.
+    return a new instance. Otherwise if a ComponentBase subclass or Component instance is provided,
+    will return that without modification.
 
     Arguments:
         component (str, ComponentBase): input to be standardized
@@ -109,7 +109,9 @@ def handle_component_class(component_class):
     Returns:
         ComponentBase
     """
-    if inspect.isclass(component_class) and issubclass(component_class, ComponentBase):
+    if isinstance(component_class, ComponentBase) or (
+        inspect.isclass(component_class) and issubclass(component_class, ComponentBase)
+    ):
         return component_class
     if not isinstance(component_class, str):
         raise ValueError(

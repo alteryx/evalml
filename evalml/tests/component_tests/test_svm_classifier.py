@@ -24,7 +24,7 @@ def test_fit_predict_binary(X_y_binary):
     X, y = X_y_binary
 
     # we need to set probability to true in order to use `predict_proba`
-    sk_svc = SVC(probability=True, random_state=0)
+    sk_svc = SVC(gamma="auto", probability=True, random_state=0)
     sk_svc.fit(X, y)
     y_pred_sk = sk_svc.predict(X)
     y_pred_proba_sk = sk_svc.predict_proba(X)
@@ -41,7 +41,7 @@ def test_fit_predict_binary(X_y_binary):
 def test_fit_predict_multi(X_y_multi):
     X, y = X_y_multi
 
-    sk_svc = SVC(probability=True, random_state=0)
+    sk_svc = SVC(gamma="auto", probability=True, random_state=0)
     sk_svc.fit(X, y)
     y_pred_sk = sk_svc.predict(X)
     y_pred_proba_sk = sk_svc.predict_proba(X)
