@@ -30,9 +30,10 @@ class DelayedFeatureTransformer(Transformer):
         self,
         date_index=None,
         max_delay=2,
+        gap=0,
+        forecast_horizon=1,
         delay_features=True,
         delay_target=True,
-        gap=1,
         random_seed=0,
         **kwargs,
     ):
@@ -40,15 +41,17 @@ class DelayedFeatureTransformer(Transformer):
         self.max_delay = max_delay
         self.delay_features = delay_features
         self.delay_target = delay_target
+        self.forecast_horizon = forecast_horizon
+        self.gap = gap
 
-        # If 0, start at 1
-        self.start_delay_for_target = int(gap == 0)
+        self.start_delay = self.forecast_horizon + self.gap
 
         parameters = {
             "date_index": date_index,
             "max_delay": max_delay,
             "delay_target": delay_target,
             "delay_features": delay_features,
+            "forecast_horizon": forecast_horizon,
             "gap": gap,
         }
         parameters.update(kwargs)
@@ -74,11 +77,7 @@ class DelayedFeatureTransformer(Transformer):
 
     @staticmethod
     def _get_categorical_columns(X):
-        return [
-            name
-            for name, column in X.ww.columns.items()
-            if isinstance(column.logical_type, logical_types.Categorical)
-        ]
+        return list(X.ww.select(["categorical"], return_schema=True).columns)
 
     @staticmethod
     def _encode_X_while_preserving_index(X_categorical):
@@ -111,6 +110,7 @@ class DelayedFeatureTransformer(Transformer):
         X_ww = infer_feature_types(X)
         X_ww = X_ww.ww.copy()
         categorical_columns = self._get_categorical_columns(X_ww)
+        original_features = list(X_ww.columns)
         if self.delay_features and len(X) > 0:
             X_categorical = self._encode_X_while_preserving_index(
                 X_ww[categorical_columns]
@@ -119,16 +119,16 @@ class DelayedFeatureTransformer(Transformer):
                 col = X_ww[col_name]
                 if col_name in categorical_columns:
                     col = X_categorical[col_name]
-                for t in range(1, self.max_delay + 1):
+                for t in range(self.start_delay, self.start_delay + self.max_delay + 1):
                     X_ww.ww[f"{col_name}_delay_{t}"] = col.shift(t)
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
             y = infer_feature_types(y)
             if type(y.ww.logical_type) == logical_types.Categorical:
                 y = self._encode_y_while_preserving_index(y)
-            for t in range(self.start_delay_for_target, self.max_delay + 1):
+            for t in range(self.start_delay, self.start_delay + self.max_delay + 1):
                 X_ww.ww[f"target_delay_{t}"] = y.shift(t)
-        return X_ww
+        return X_ww.ww.drop(original_features)
 
     def fit_transform(self, X, y):
         return self.fit(X, y).transform(X, y)
