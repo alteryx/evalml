@@ -8,6 +8,7 @@ Release Notes
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     * Documentation Changes
     * Testing Changes
+        * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
 
 .. warning::
 
