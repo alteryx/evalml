@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor
+
 from evalml.automl.engine.engine_base import (
     EngineBase,
     EngineComputation,
@@ -82,11 +84,13 @@ class CFComputation(EngineComputation):
 class CFEngine(EngineBase):
     """The concurrent.futures (CF) engine"""
 
-    def __init__(self, client):
-        if not isinstance(client, CFClient):
+    def __init__(self, client=None):
+        if client is not None and not isinstance(client, CFClient):
             raise TypeError(
                 f"Expected evalml.automl.engine.cf_engine.CFClient, received {type(client)}"
             )
+        elif client is None:
+            client = CFClient(ThreadPoolExecutor())
         self.client = client
         self._data_futures_cache = {}
 
