@@ -40,7 +40,7 @@ from evalml.pipelines.components.transformers.transformer import (
 )
 from evalml.utils import infer_feature_types
 
-logger = logging.getLogger('evalml')
+logger = logging.getLogger("evalml")
 logger.setLevel(logging.INFO)
 
 

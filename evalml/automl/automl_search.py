@@ -1254,7 +1254,7 @@ class AutoMLSearch:
             Description of specified pipeline. Includes information such as
             type of pipeline components, problem, training time, cross validation, etc.
         """
-        logger = get_logger(f'{__name__}.describe_pipeline')
+        logger = get_logger(f"{__name__}.describe_pipeline")
         if pipeline_id not in self._results["pipeline_results"]:
             raise PipelineNotFoundError("Pipeline not found")
 

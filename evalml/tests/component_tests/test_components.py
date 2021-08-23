@@ -88,7 +88,7 @@ from evalml.pipelines.components.utils import (
 )
 from evalml.problem_types import ProblemTypes
 
-logger = logging.getLogger('evalml')
+logger = logging.getLogger("evalml")
 logger.setLevel(logging.INFO)
 
 

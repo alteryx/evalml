@@ -11,7 +11,7 @@ from evalml.automl.utils import AutoMLConfig
 from evalml.objectives import F1, LogLossBinary
 from evalml.preprocessing import split_data
 
-logger = logging.getLogger('evalml')
+logger = logging.getLogger("evalml")
 logger.setLevel(logging.INFO)
 
 

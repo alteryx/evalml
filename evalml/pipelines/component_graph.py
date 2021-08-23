@@ -491,7 +491,7 @@ class ComponentGraph:
         Returns:
             dict: Dictionary of all component parameters if return_dict is True, else None
         """
-        logger = get_logger(f'{__name__}.describe')
+        logger = get_logger(f"{__name__}.describe")
         components = {}
         for number, component in enumerate(self.component_instances.values(), 1):
             component_string = str(number) + ". " + component.name

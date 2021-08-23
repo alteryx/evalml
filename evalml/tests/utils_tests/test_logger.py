@@ -16,7 +16,7 @@ from evalml.utils.logger import (
 
 TEST_LOGGER_NAME = "my_logger"
 
-logger = logging.getLogger('evalml')
+logger = logging.getLogger("evalml")
 logger.setLevel(logging.INFO)
 
 
@@ -106,11 +106,13 @@ def test_time_elapsed(mock_time, time_passed, answer):
     "type_, allowed_families, number_, number_min_dep",
     [("binary", None, 8, 5), ("multiclass", 2, 2, 2), ("regression", 3, 3, 3)],
 )
+@pytest.mark.parametrize("verbose", [True, False])
 def test_pipeline_count(
     type_,
     allowed_families,
     number_,
     number_min_dep,
+    verbose,
     X_y_binary,
     X_y_multi,
     X_y_regression,
@@ -124,7 +126,7 @@ def test_pipeline_count(
     else:
         X, y = X_y_regression
     if not allowed_families:
-        _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_)
+        _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_, verbose=verbose)
     else:
         if allowed_families == 2:
             _ = AutoMLSearch(
@@ -132,6 +134,7 @@ def test_pipeline_count(
                 y_train=y,
                 problem_type=type_,
                 allowed_model_families=["random_forest", "decision_tree"],
+                verbose=verbose,
             )
         elif allowed_families == 3:
             _ = AutoMLSearch(
@@ -143,8 +146,11 @@ def test_pipeline_count(
                     "decision_tree",
                     "extra_trees",
                 ],
+                verbose=verbose,
             )
     if has_minimal_dependencies:
-        assert f"{number_min_dep} pipelines ready for search" in caplog.text
+        assert (
+            f"{number_min_dep} pipelines ready for search" in caplog.text
+        ) == verbose
     else:
-        assert f"{number_} pipelines ready for search" in caplog.text
+        assert (f"{number_} pipelines ready for search" in caplog.text) == verbose

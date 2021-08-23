@@ -361,7 +361,12 @@ def test_pipeline_score_raises(verbose, AutoMLTestEnv, X_y_binary, caplog):
     caplog.clear()
     X, y = X_y_binary
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", max_iterations=1, n_jobs=1, verbose=verbose,
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=1,
+        n_jobs=1,
+        verbose=verbose,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(
@@ -2562,7 +2567,9 @@ def test_early_stopping_negative(X_y_binary):
 
 
 @pytest.mark.parametrize("verbose", [True, False])
-def test_early_stopping(verbose, caplog, logistic_regression_binary_pipeline_class, X_y_binary):
+def test_early_stopping(
+    verbose, caplog, logistic_regression_binary_pipeline_class, X_y_binary
+):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,
@@ -2595,7 +2602,9 @@ def test_early_stopping(verbose, caplog, logistic_regression_binary_pipeline_cla
 
     assert not automl._should_continue()
     out = caplog.text
-    assert ("2 iterations without improvement. Stopping search early." in out) == verbose
+    assert (
+        "2 iterations without improvement. Stopping search early." in out
+    ) == verbose
 
 
 def test_automl_one_allowed_component_graph_ensembling_disabled(
@@ -2739,7 +2748,7 @@ def test_max_batches_output(max_batches, verbose, AutoMLTestEnv, X_y_binary, cap
         max_iterations=None,
         optimize_thresholds=False,
         max_batches=max_batches,
-        verbose=verbose
+        verbose=verbose,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
@@ -3325,7 +3334,9 @@ def test_automl_respects_random_seed(
 )
 @pytest.mark.parametrize("error_type", ["fit", "mean_cv_score", "fit-single"])
 @pytest.mark.parametrize("verbose", [True, False])
-def test_automl_error_callback(error_type, callback, verbose, AutoMLTestEnv, X_y_binary, caplog):
+def test_automl_error_callback(
+    error_type, callback, verbose, AutoMLTestEnv, X_y_binary, caplog
+):
     X, y = X_y_binary
     score_side_effect = None
     fit_side_effect = None
@@ -3348,7 +3359,7 @@ def test_automl_error_callback(error_type, callback, verbose, AutoMLTestEnv, X_y
         train_best_pipeline=False,
         optimize_thresholds=False,
         n_jobs=1,
-        verbose=verbose
+        verbose=verbose,
     )
     if callback in [log_error_callback, silent_error_callback]:
         exception = AutoMLSearchException
@@ -4050,13 +4061,19 @@ def test_automl_check_for_high_variance(
 
 
 @pytest.mark.parametrize("verbose", [True, False])
-def test_automl_check_high_variance_logs_warning(verbose, AutoMLTestEnv, X_y_binary, caplog):
+def test_automl_check_high_variance_logs_warning(
+    verbose, AutoMLTestEnv, X_y_binary, caplog
+):
     X, y = X_y_binary
 
     env = AutoMLTestEnv("binary")
 
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False, verbose=verbose,
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=False,
+        verbose=verbose,
     )
     with env.test_context(score_return_value={"Log Loss Binary": 1}):
         automl.search()
@@ -4821,7 +4838,9 @@ def test_automl_thresholding_train_pipelines(mock_objective, threshold, X_y_bina
 
 @pytest.mark.parametrize("columns", [[], ["unknown_col"], ["unknown1, unknown2"]])
 @pytest.mark.parametrize("verbose", [True, False])
-def test_automl_drop_unknown_columns(columns, verbose, AutoMLTestEnv, X_y_binary, caplog):
+def test_automl_drop_unknown_columns(
+    columns, verbose, AutoMLTestEnv, X_y_binary, caplog
+):
     caplog.clear()
     X, y = X_y_binary
     X = pd.DataFrame(X)

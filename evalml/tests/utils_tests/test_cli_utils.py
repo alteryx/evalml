@@ -17,7 +17,7 @@ from evalml.utils.cli_utils import (
     print_sys_info,
 )
 
-logger = logging.getLogger('evalml')
+logger = logging.getLogger("evalml")
 logger.setLevel(logging.INFO)
 
 

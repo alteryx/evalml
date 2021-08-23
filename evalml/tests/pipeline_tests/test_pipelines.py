@@ -58,7 +58,7 @@ from evalml.problem_types import (
     is_time_series,
 )
 
-logger = logging.getLogger('evalml')
+logger = logging.getLogger("evalml")
 logger.setLevel(logging.INFO)
 
 

@@ -223,7 +223,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             dict: Dictionary of all component parameters if return_dict is True, else None
         """
-        logger = get_logger(f'{__name__}.describe')
+        logger = get_logger(f"{__name__}.describe")
         log_title(logger, self.name)
         logger.info("Problem Type: {}".format(self.problem_type))
         logger.info("Model Family: {}".format(str(self.model_family)))

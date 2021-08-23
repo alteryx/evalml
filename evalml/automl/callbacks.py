@@ -31,7 +31,9 @@ def log_error_callback(exception, traceback, automl, **kwargs):
         trace += f"\n{exception.message}"
     else:
         logger.warning(f"\t\t\t{pipeline.name} fold {fold_num}: Encountered an error.")
-        logger.warning(f"\t\t\t{pipeline.name} fold {fold_num}: All scores will be replaced with nan.")
+        logger.warning(
+            f"\t\t\t{pipeline.name} fold {fold_num}: All scores will be replaced with nan."
+        )
     logger.error(
         f"\t\t\tFold {fold_num}: Exception during automl search: {str(exception)}"
     )
