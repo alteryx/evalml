@@ -251,9 +251,6 @@ class ComponentGraph:
             elif parent_input == "X":
                 x_inputs.append(X)
             elif parent_input.endswith(".y"):
-                # if component_outputs[parent_input] is None:
-                #     import pdb; pdb.set_trace()
-                #     raise ValueError(f"{parent_input} is not a valid input edge.")
                 y_input = component_outputs[parent_input]
             elif parent_input.endswith(".x"):
                 parent_x = component_outputs[parent_input]
