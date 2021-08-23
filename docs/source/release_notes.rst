@@ -5,6 +5,7 @@ Release Notes
         * Removed SVM "linear" and "precomputed" kernel hyperparameter options, and improved default parameters :pr:`2651`
     * Fixes
     * Changes
+        * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     * Documentation Changes
     * Testing Changes
         * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
@@ -12,6 +13,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     
 
 **v0.31.0 Aug. 19, 2021**
