@@ -21,7 +21,7 @@ def test_problem_types():
 def test_fit_predict_regression(X_y_regression):
     X, y = X_y_regression
 
-    sk_svr = SVR()
+    sk_svr = SVR(gamma="auto")
     sk_svr.fit(X, y)
     y_pred_sk = sk_svr.predict(X)
 
