@@ -17,7 +17,7 @@ from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
-from evalml.automl.engine.cf_engine import CFClient, CFEngine
+from evalml.automl.engine.cf_engine import CFEngine
 from evalml.automl.engine.dask_engine import DaskEngine
 from evalml.automl.utils import (
     AutoMLConfig,

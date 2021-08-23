@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import Executor, ThreadPoolExecutor
 
 from evalml.automl.engine.engine_base import (
     EngineBase,
@@ -7,28 +7,6 @@ from evalml.automl.engine.engine_base import (
     score_pipeline,
     train_pipeline,
 )
-
-
-class CFClient:
-    """Custom CFClient API to match Dask's CFClient and allow context management."""
-
-    def __init__(self, pool):
-        """
-        Arguments:
-            pool(cf.ThreadPoolExecutor or cf.ProcessPoolExecutor): the resource pool
-                to execute the futures work on.
-        """
-        self.pool = pool
-
-    def __enter__(self):
-        return self
-
-    def __exit__(self, typ, value, traceback):
-        pass
-
-    def submit(self, *args, **kwargs):
-        """Pass through to imitate Dask's Client API."""
-        return self.pool.submit(*args, **kwargs)
 
 
 class CFComputation(EngineComputation):
@@ -85,12 +63,12 @@ class CFEngine(EngineBase):
     """The concurrent.futures (CF) engine"""
 
     def __init__(self, client=None):
-        if client is not None and not isinstance(client, CFClient):
+        if client is not None and not isinstance(client, Executor):
             raise TypeError(
                 f"Expected evalml.automl.engine.cf_engine.CFClient, received {type(client)}"
             )
         elif client is None:
-            client = CFClient(ThreadPoolExecutor())
+            client = ThreadPoolExecutor()
         self.client = client
         self._data_futures_cache = {}
 

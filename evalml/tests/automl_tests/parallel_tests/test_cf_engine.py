@@ -5,7 +5,7 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
-from evalml.automl.engine.cf_engine import CFClient, CFComputation, CFEngine
+from evalml.automl.engine.cf_engine import CFComputation, CFEngine
 from evalml.automl.engine.engine_base import (
     JobLogger,
     evaluate_pipeline,
@@ -44,7 +44,7 @@ def get_pool(pool_type, thread_pool, process_pool):
 
 
 def test_init(process_pool):
-    with CFClient(process_pool) as client:
+    with process_pool as client:
         engine = CFEngine(client=client)
         assert engine.client == client
 
@@ -63,7 +63,7 @@ def test_submit_training_job_single(
     same results as simply running the train_pipeline function."""
     X, y = X_y_binary_cls
     pool = get_pool(pool_type, thread_pool, process_pool)
-    with CFClient(pool) as client:
+    with pool as client:
         engine = CFEngine(client=client)
         pipeline = BinaryClassificationPipeline(
             component_graph=["Logistic Regression Classifier"],
@@ -95,7 +95,7 @@ def test_submit_training_jobs_multiple(
     same results as the sequential engine."""
     X, y = X_y_binary_cls
     pool = get_pool(pool_type, thread_pool, process_pool)
-    with CFClient(pool) as client:
+    with pool as client:
         pipelines = [
             BinaryClassificationPipeline(
                 component_graph=["Logistic Regression Classifier"],
@@ -143,7 +143,7 @@ def test_submit_evaluate_job_single(
     y = ww.init_series(y)
     pool = get_pool(pool_type, thread_pool, process_pool)
 
-    with CFClient(pool) as client:
+    with pool as client:
 
         pipeline = BinaryClassificationPipeline(
             component_graph=["Logistic Regression Classifier"],
@@ -198,7 +198,7 @@ def test_submit_evaluate_jobs_multiple(
     y = ww.init_series(y)
     pool = get_pool(pool_type, thread_pool, process_pool)
 
-    with CFClient(pool) as client:
+    with pool as client:
 
         pipelines = [
             BinaryClassificationPipeline(
@@ -255,7 +255,7 @@ def test_submit_scoring_job_single(
     y = ww.init_series(y)
     pool = get_pool(pool_type, thread_pool, process_pool)
 
-    with CFClient(pool) as client:
+    with pool as client:
 
         pipeline = BinaryClassificationPipeline(
             component_graph=["Logistic Regression Classifier"],
@@ -295,7 +295,7 @@ def test_submit_scoring_jobs_multiple(
     y = ww.init_series(y)
     pool = get_pool(pool_type, thread_pool, process_pool)
 
-    with CFClient(pool) as client:
+    with pool as client:
 
         pipelines = [
             BinaryClassificationPipeline(
@@ -349,7 +349,7 @@ def test_cancel_job(X_y_binary_cls, pool_type, thread_pool, process_pool):
     X, y = X_y_binary_cls
     pool = get_pool(pool_type, thread_pool, process_pool)
 
-    with CFClient(pool) as client:
+    with pool as client:
         engine = CFEngine(client=client)
         pipeline = DaskPipelineSlow({"Logistic Regression Classifier": {"n_jobs": 1}})
 
@@ -368,7 +368,7 @@ def test_cfengine_sends_woodwork_schema(
     X, y = X_y_binary_cls
     pool = get_pool(pool_type, thread_pool, process_pool)
 
-    with CFClient(pool) as client:
+    with pool as client:
         engine = CFEngine(client=client)
 
         X.ww.init(
@@ -421,16 +421,13 @@ def test_cfengine_convenience():
     explicit client self-initializes a threaded CFClient."""
 
     cf_engine = CFEngine()
-    assert isinstance(cf_engine.client, CFClient)
-    assert isinstance(cf_engine.client.pool, ThreadPoolExecutor)
+    assert isinstance(cf_engine.client, ThreadPoolExecutor)
 
     cf_engine = CFEngine(client=None)
-    assert isinstance(cf_engine.client, CFClient)
-    assert isinstance(cf_engine.client.pool, ThreadPoolExecutor)
+    assert isinstance(cf_engine.client, ThreadPoolExecutor)
 
-    cf_engine = CFEngine(client=CFClient(ProcessPoolExecutor()))
-    assert isinstance(cf_engine.client, CFClient)
-    assert isinstance(cf_engine.client.pool, ProcessPoolExecutor)
+    cf_engine = CFEngine(client=ProcessPoolExecutor())
+    assert isinstance(cf_engine.client, ProcessPoolExecutor)
 
     with pytest.raises(
         TypeError, match="Expected evalml.automl.engine.cf_engine.CFClient, received"
