@@ -79,6 +79,10 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         Returns:
             pd.Series: Predicted values.
         """
+        if self.estimator is None:
+            raise ValueError(
+                "Cannot call predict() on a component graph because the final component is not an Estimator."
+            )
         X, y = self._convert_to_woodwork(X, y)
         y = self._encode_targets(y)
         n_features = max(len(y), X.shape[0])
@@ -100,6 +104,10 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         Returns:
             pd.DataFrame: Probability estimates.
         """
+        if self.estimator is None:
+            raise ValueError(
+                "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
+            )
         X, y = self._convert_to_woodwork(X, y)
         y = self._encode_targets(y)
         features = self.compute_estimator_features(X, y)

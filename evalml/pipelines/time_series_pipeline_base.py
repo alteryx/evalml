@@ -1,11 +1,11 @@
 import pandas as pd
 
 from evalml.pipelines import PipelineBase
-from evalml.pipelines.pipeline_meta import TimeSeriesPipelineBaseMeta
+from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.utils import drop_rows_with_nans, infer_feature_types
 
 
-class TimeSeriesPipelineBase(PipelineBase, metaclass=TimeSeriesPipelineBaseMeta):
+class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
     """Pipeline base class for time series problems.
 
@@ -72,7 +72,12 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=TimeSeriesPipelineBaseMeta)
         X_t = self.component_graph.fit_features(X, y)
         y_shifted = y.shift(-self.gap)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
-        self.estimator.fit(X_t, y_shifted)
+
+        if self.estimator is not None:
+            self.estimator.fit(X_t, y_shifted)
+        else:
+            self.component_graph.get_last_component().fit(X_t, y)
+
         self.input_feature_names = self.component_graph.input_feature_names
 
     def _estimator_predict(self, features, y):
