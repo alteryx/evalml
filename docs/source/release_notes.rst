@@ -3,9 +3,11 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Removed SVM "linear" and "precomputed" kernel hyperparameter options, and improved default parameters :pr:`2651`
+        * Added ``verbose`` flag to ``AutoMLSearch`` to run search in silent mode by default :pr:`2645`
     * Fixes
     * Changes
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
+        * Removed default logging setup and debugging log file :pr:`2645`
     * Documentation Changes
     * Testing Changes
         * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
@@ -13,6 +15,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Removed default logging setup and debugging log file :pr:`2645`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     
 
