@@ -30,6 +30,7 @@ from evalml.pipelines.components import (
     DFSTransformer,
     DropColumns,
     DropNullColumns,
+    DropRowsTransformer,
     ElasticNetClassifier,
     ElasticNetRegressor,
     Estimator,
@@ -1672,7 +1673,7 @@ def test_component_modifies_feature_or_target():
         if (
             issubclass(component_class, BaseSampler)
             or issubclass(component_class, TargetTransformer)
-            or component_class in [TargetImputer]
+            or component_class in [TargetImputer, DropRowsTransformer]
         ):
             assert component_class.modifies_target
         else:
@@ -1690,7 +1691,7 @@ def test_component_parameters_supported_by_list_API():
         if (
             issubclass(component_class, BaseSampler)
             or issubclass(component_class, TargetTransformer)
-            or component_class in [TargetImputer]
+            or component_class in [TargetImputer, DropRowsTransformer]
         ):
             assert not component_class._supported_by_list_API
         else:
