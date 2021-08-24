@@ -2327,5 +2327,5 @@ def test_component_graph_with_invalid_y_edge(X_y_binary):
         "OHE": ["One Hot Encoder", "X", "y"],
         "RF": ["Random Forest Classifier", "OHE.x", "OHE.y"],
     }
-    with pytest.raises(ValueError, match="OHE.y is not a valid input edge."):
+    with pytest.raises(ValueError, match="OHE.y is not a valid input edge"):
         ComponentGraph(component_dict)

@@ -112,11 +112,10 @@ class ComponentGraph:
             if target_inputs:
                 target_component_name = target_inputs[0][:-2]
                 target_component_class = self.get_component(target_component_name)
-                if (
-                    not issubclass(target_component_class, TargetTransformer)
-                    and not target_component_class.modifies_target
-                ):
-                    raise ValueError(f"{target_inputs[0]} is not a valid input edge.")
+                if not target_component_class.modifies_target:
+                    raise ValueError(
+                        f"{target_inputs[0]} is not a valid input edge because {target_component_name} does not return a target."
+                    )
 
     @property
     def compute_order(self):
