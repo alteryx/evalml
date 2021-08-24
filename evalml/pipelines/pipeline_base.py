@@ -288,7 +288,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         return self.component_graph.transform(X, y)
 
-    def predict(self, X, objective=None):
+    def predict(self, X, objective=None, X_train=None, y_train=None):
         """Make predictions using selected features.
 
         Arguments:
@@ -304,7 +304,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return infer_feature_types(predictions)
 
     @abstractmethod
-    def score(self, X, y, objectives):
+    def score(self, X, y, objectives, X_train=None, y_train=None):
         """Evaluate model performance on current and additional objectives.
 
         Arguments:

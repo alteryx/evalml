@@ -89,7 +89,7 @@ class ClassificationPipeline(PipelineBase):
         """
         return self.component_graph.predict(X)
 
-    def predict(self, X, objective=None):
+    def predict(self, X, objective=None, X_train=None, y_train=None):
         """Make predictions using selected features.
 
         Arguments:
@@ -105,7 +105,7 @@ class ClassificationPipeline(PipelineBase):
         )
         return infer_feature_types(predictions)
 
-    def predict_proba(self, X):
+    def predict_proba(self, X, X_train=None, y_train=None):
         """Make probability estimates for labels.
 
         Arguments:
@@ -128,7 +128,7 @@ class ClassificationPipeline(PipelineBase):
         )
         return infer_feature_types(proba)
 
-    def score(self, X, y, objectives):
+    def score(self, X, y, objectives, X_train=None, y_train=None):
         """Evaluate model performance on objectives
 
         Arguments:
@@ -147,16 +147,12 @@ class ClassificationPipeline(PipelineBase):
             X, y, y_predicted, y_predicted_proba, objectives
         )
 
-    def _compute_predictions(self, X, y, objectives, time_series=False):
+    def _compute_predictions(self, X, y, objectives):
         """Compute predictions/probabilities based on objectives."""
         y_predicted = None
         y_predicted_proba = None
         if any(o.score_needs_proba for o in objectives):
-            y_predicted_proba = (
-                self.predict_proba(X, y) if time_series else self.predict_proba(X)
-            )
+            y_predicted_proba = self.predict_proba(X)
         if any(not o.score_needs_proba for o in objectives):
-            y_predicted = (
-                self._predict(X, y, pad=True) if time_series else self._predict(X)
-            )
+            y_predicted = self._predict(X)
         return y_predicted, y_predicted_proba

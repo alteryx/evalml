@@ -37,11 +37,12 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
     if "Delayed Feature Transformer" not in components:
         pl = pipeline_class(
             component_graph=component_graph,
-            parameters={"pipeline": {"date_index": None, "gap": 3, "max_delay": 5}},
+            parameters={"pipeline": {"date_index": None, "gap": 0, "max_delay": 5, "forecast_horizon": 3}},
         )
         assert "Delayed Feature Transformer" not in pl.parameters
         assert pl.parameters["pipeline"] == {
-            "gap": 3,
+            "forecast_horizon": 3,
+            "gap": 0,
             "max_delay": 5,
             "date_index": None,
         }
@@ -49,21 +50,24 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
         parameters = {
             "Delayed Feature Transformer": {
                 "date_index": None,
-                "gap": 3,
+                "gap": 0,
                 "max_delay": 5,
+                "forecast_horizon": 3,
             },
-            "pipeline": {"date_index": None, "gap": 3, "max_delay": 5},
+            "pipeline": {"date_index": None, "gap": 0, "max_delay": 5, "forecast_horizon": 3},
         }
         pl = pipeline_class(component_graph=component_graph, parameters=parameters)
         assert pl.parameters["Delayed Feature Transformer"] == {
             "date_index": None,
-            "gap": 3,
+            "gap": 0,
+            "forecast_horizon": 3,
             "max_delay": 5,
             "delay_features": True,
             "delay_target": True,
         }
         assert pl.parameters["pipeline"] == {
-            "gap": 3,
+            "gap": 0,
+            "forecast_horizon": 3,
             "max_delay": 5,
             "date_index": None,
         }
@@ -82,7 +86,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
 @pytest.mark.parametrize("only_use_y", [True, False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize(
-    "gap,max_delay", [(0, 0), (1, 0), (0, 2), (1, 2), (2, 2), (7, 3), (2, 4)]
+    "forecast_horizon,gap,max_delay", [(1, 0, 1), (1, 1, 2), (2, 0, 2), (3, 1, 2), (1, 2, 2), (2, 7, 3), (3, 2, 4)]
 )
 @pytest.mark.parametrize(
     "pipeline_class,estimator_name",
@@ -104,6 +108,7 @@ def test_fit_drop_nans_before_estimator(
     mock_regressor_fit,
     pipeline_class,
     estimator_name,
+    forecast_horizon,
     gap,
     max_delay,
     include_delayed_features,
@@ -117,11 +122,12 @@ def test_fit_drop_nans_before_estimator(
     X, y = ts_data
 
     if include_delayed_features:
-        train_index = pd.date_range(f"2020-10-{1 + max_delay}", f"2020-10-{31-gap}")
-        expected_target = np.arange(1 + gap + max_delay, 32)
+        train_index = pd.date_range(f"2020-10-{1 + forecast_horizon + gap + max_delay}",
+                                    "2020-10-31")
+        expected_target = np.arange(1 + gap + max_delay + forecast_horizon, 32)
     else:
-        train_index = pd.date_range(f"2020-10-01", f"2020-10-{31-gap}")
-        expected_target = np.arange(1 + gap, 32)
+        train_index = pd.date_range(f"2020-10-01", f"2020-10-31")
+        expected_target = np.arange(1, 32)
 
     pl = pipeline_class(
         component_graph=["Delayed Feature Transformer", estimator_name],
@@ -129,11 +135,13 @@ def test_fit_drop_nans_before_estimator(
             "Delayed Feature Transformer": {
                 "date_index": None,
                 "gap": gap,
+                "forecast_horizon": forecast_horizon,
                 "max_delay": max_delay,
                 "delay_features": include_delayed_features,
                 "delay_target": include_delayed_features,
             },
-            "pipeline": {"date_index": None, "gap": gap, "max_delay": max_delay},
+            "pipeline": {"date_index": None, "gap": gap, "max_delay": max_delay,
+                         "forecast_horizon": forecast_horizon},
         },
     )
 
@@ -162,19 +170,18 @@ def test_fit_drop_nans_before_estimator(
     np.testing.assert_equal(target_passed_to_estimator.values, expected_target)
 
 
-@pytest.mark.parametrize("only_use_y", [True, False])
+@pytest.mark.parametrize("only_use_y", [False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize(
-    "gap,max_delay,date_index",
+    "forecast_horizon,gap,max_delay,date_index",
     [
-        (0, 0, None),
-        (1, 0, None),
-        (0, 2, None),
-        (1, 1, None),
-        (1, 2, None),
-        (2, 2, None),
-        (7, 3, None),
-        (2, 4, None),
+        (1, 0, 1, None),
+        (1, 0, 2, None),
+        (1, 1, 1, None),
+        (2, 1, 2, None),
+        (2, 2, 2, None),
+        (3, 7, 3, None),
+        (2, 2, 4, None),
     ],
 )
 @pytest.mark.parametrize(
@@ -193,7 +200,7 @@ def test_fit_drop_nans_before_estimator(
     "evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets",
     side_effect=lambda y: y,
 )
-def test_predict_pad_nans(
+def test_predict_and_predict_in_sample(
     mock_decode_targets,
     mock_regressor_predict,
     mock_regressor_fit,
@@ -201,6 +208,7 @@ def test_predict_pad_nans(
     mock_classifier_fit,
     pipeline_class,
     estimator_name,
+    forecast_horizon,
     gap,
     max_delay,
     date_index,
@@ -221,10 +229,11 @@ def test_predict_pad_nans(
                 "date_index": None,
                 "gap": gap,
                 "max_delay": max_delay,
+                "forecast_horizon": forecast_horizon,
                 "delay_features": include_delayed_features,
                 "delay_target": include_delayed_features,
             },
-            "pipeline": {"date_index": None, "gap": gap, "max_delay": max_delay},
+            "pipeline": {"date_index": None, "gap": gap, "max_delay": max_delay, "forecast_horizon": forecast_horizon},
         },
     )
 
@@ -237,32 +246,34 @@ def test_predict_pad_nans(
         mock_classifier_predict.side_effect = mock_predict
 
     if only_use_y:
-        pl.fit(None, y)
-        preds = pl.predict(None, y)
+        pl.fit(None, y.iloc[:20])
+        preds_in_sample = pl.predict_in_sample(X=None, y=y.iloc[20:],
+                                               X_train=None, y_train=y.iloc[:20])
+        preds = pl.predict(X.iloc[20:20+forecast_horizon], None, X_train=None, y_train=y.iloc[:20])
     else:
-        pl.fit(X, y)
-        preds = pl.predict(X, y)
+        pl.fit(X.iloc[:20], y.iloc[:20])
+        preds_in_sample = pl.predict_in_sample(X.iloc[20:], y.iloc[20:], X.iloc[:20], y.iloc[:20])
+        preds = pl.predict(X.iloc[20:20+forecast_horizon], None, X_train=X.iloc[:20], y_train=y.iloc[:20])
 
-    # Check that the predictions have NaNs for the first n_delay dates
-    if include_delayed_features:
-        assert np.isnan(preds.values[:max_delay]).all()
-    else:
-        assert not np.isnan(preds.values).any()
+    assert len(preds) == forecast_horizon
+    assert (preds.index == y.iloc[20:20 + forecast_horizon].index).all()
+    assert len(preds_in_sample) == len(y.iloc[20:])
+    assert (preds_in_sample.index == y.iloc[20:].index).all()
 
 
-@pytest.mark.parametrize("only_use_y", [True, False])
+@pytest.mark.parametrize("only_use_y", [False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize(
-    "gap,max_delay,date_index",
+    "forecast_horizon,gap,max_delay,date_index",
     [
-        (0, 0, None),
-        (1, 0, None),
-        (0, 2, None),
-        (1, 1, None),
-        (1, 2, None),
-        (2, 2, None),
-        (7, 3, None),
-        (2, 4, None),
+        (1, 0, 1, None),
+        (3, 1, 1, None),
+        (2, 0, 2, None),
+        (1, 1, 1, None),
+        (1, 1, 2, None),
+        (2, 2, 2, None),
+        (3, 7, 3, None),
+        (1, 2, 4, None),
     ],
 )
 @pytest.mark.parametrize(
@@ -281,18 +292,24 @@ def test_predict_pad_nans(
     "evalml.pipelines.TimeSeriesClassificationPipeline._encode_targets",
     side_effect=lambda y: y,
 )
+@patch(
+    "evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets",
+    side_effect=lambda y: y,
+)
 @patch("evalml.pipelines.PipelineBase._score_all_objectives")
 @patch("evalml.pipelines.TimeSeriesBinaryClassificationPipeline._score_all_objectives")
-def test_score_drops_nans(
+def test_score(
     mock_binary_score,
     mock_score,
     mock_encode_targets,
+    mock_decode_targets,
     mock_classifier_predict,
     mock_classifier_fit,
     mock_regressor_predict,
     mock_regressor_fit,
     pipeline_class,
     estimator_name,
+    forecast_horizon,
     gap,
     max_delay,
     date_index,
@@ -306,13 +323,12 @@ def test_score_drops_nans(
         pytest.skip("This would result in an empty feature dataframe.")
 
     X, y = ts_data
+    last_train_date = X.shape[0] - forecast_horizon - gap
+    X_train, y_train = X.iloc[:last_train_date], y.iloc[:last_train_date]
+    X_holdout, y_holdout = X.iloc[last_train_date:], y.iloc[last_train_date:]
 
-    if include_delayed_features:
-        expected_target = np.arange(1 + gap + max_delay, 32)
-        target_index = pd.date_range(f"2020-10-{1 + max_delay}", f"2020-10-{31 - gap}")
-    else:
-        expected_target = np.arange(1 + gap, 32)
-        target_index = pd.date_range(f"2020-10-01", f"2020-10-{31-gap}")
+    expected_target = np.arange(last_train_date + 1, 32)
+    target_index = pd.date_range(f"2020-10-{last_train_date + 1}", f"2020-10-31")
 
     pl = pipeline_class(
         component_graph=["Delayed Feature Transformer", estimator_name],
@@ -323,8 +339,9 @@ def test_score_drops_nans(
                 "max_delay": max_delay,
                 "delay_features": include_delayed_features,
                 "delay_target": include_delayed_features,
+                "forecast_horizon": forecast_horizon
             },
-            "pipeline": {"date_index": None, "gap": gap, "max_delay": max_delay},
+            "pipeline": {"date_index": None, "gap": gap, "max_delay": max_delay, "forecast_horizon": forecast_horizon},
         },
     )
 
@@ -336,12 +353,8 @@ def test_score_drops_nans(
     else:
         mock_classifier_predict.side_effect = mock_predict
 
-    if only_use_y:
-        pl.fit(None, y)
-        pl.score(X=None, y=y, objectives=["MCC Binary"])
-    else:
-        pl.fit(X, y)
-        pl.score(X, y, objectives=["MCC Binary"])
+    pl.fit(X_train, y_train)
+    pl.score(X_holdout, y_holdout, objectives=["MCC Binary"], X_train=X_train, y_train=y_train)
 
     # Verify that NaNs are dropped before passed to objectives
     _, target, preds = mock_score.call_args[0]
@@ -380,14 +393,16 @@ def test_classification_pipeline_encodes_targets(
     y_series = pd.Series(y)
     df = pd.DataFrame({"negative": y_series, "positive": y_series})
     df.ww.init()
-    mock_predict.return_value = ww.init_series(y_series)
-    mock_predict_proba.return_value = df
+    mock_predict.side_effect = lambda data, y: ww.init_series(y_series.iloc[:len(data)])
+    mock_predict_proba.side_effect = lambda data, y: df.ww.iloc[:len(data)]
 
     X = pd.DataFrame({"feature": range(len(y))})
-    y_encoded = y_series.map(lambda label: "positive" if label == 1 else "negative")
+    y_encoded = y_series.map(lambda label: "positive" if label == 1 else "negative").astype('category')
+    X_train, y_encoded_train = X.iloc[:29], y_encoded.iloc[:29]
+    X_holdout, y_encoded_holdout = X.iloc[29:], y_encoded.iloc[29:]
 
-    mock_encode.return_value = y_series
-    mock_decode.return_value = y_encoded
+    mock_encode.side_effect = lambda series: series
+    mock_decode.side_effect = lambda series: series
 
     pl = pipeline_class(
         component_graph=[
@@ -399,32 +414,41 @@ def test_classification_pipeline_encodes_targets(
                 "date_index": None,
                 "gap": 0,
                 "max_delay": 1,
+                "forecast_horizon": 1
             },
-            "pipeline": {"date_index": None, "gap": 0, "max_delay": 1},
+            "pipeline": {"date_index": None, "gap": 0, "max_delay": 1, "forecast_horizon": 1},
         },
     )
 
     # Check fit encodes target
-    pl.fit(X, y_encoded)
+    pl.fit(X_train, y_encoded_train)
     _, target_passed_to_estimator = mock_fit.call_args[0]
 
     # Check that target is converted to ints. Use .iloc[1:] because the first feature row has NaNs
-    assert_series_equal(target_passed_to_estimator, y_series.iloc[1:])
+    assert_series_equal(target_passed_to_estimator, pl._encode_targets(y_encoded_train.iloc[2:]))
 
     # Check predict encodes target
     mock_encode.reset_mock()
-    pl.predict(X, y_encoded)
-    mock_encode.assert_called_once()
+    pl.predict(X_holdout.iloc[:1], None, X_train, y_encoded_train)
+    assert mock_encode.call_count == 2
+
+    mock_encode.reset_mock()
+    pl.predict_in_sample(X_holdout, y_encoded_holdout, X_train, y_encoded_train, objective=None)
+    assert mock_encode.call_count == 2
 
     # Check predict proba encodes target
     mock_encode.reset_mock()
-    pl.predict_proba(X, y_encoded)
-    mock_encode.assert_called_once()
+    pl.predict_proba(X_holdout.iloc[:1], X_train, y_encoded_train)
+    assert mock_encode.call_count == 2
+
+    mock_encode.reset_mock()
+    pl.predict_proba_in_sample(X_holdout, y_encoded_holdout, X_train, y_encoded_train)
+    assert mock_encode.call_count == 2
 
     # Check score encodes target
     mock_encode.reset_mock()
-    pl.score(X, y_encoded, objectives=["MCC Binary"])
-    mock_encode.assert_called_once()
+    pl.score(X_holdout, y_encoded_holdout, X_train=X_train, y_train=y_encoded_train, objectives=["MCC Binary"])
+    assert mock_encode.call_count == 4
 
 
 @pytest.mark.parametrize(
@@ -466,8 +490,9 @@ def test_score_works(
             "pipeline": {
                 "date_index": None,
                 "gap": 1,
-                "max_delay": 2,
+                "max_delay": 3,
                 "delay_features": False,
+                "forecast_horizon": 10,
             },
             components[-1]: {"n_jobs": 1},
         },
@@ -489,11 +514,14 @@ def test_score_works(
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
-    pl.fit(X, y)
+    X_train, y_train = X.iloc[:80], y.iloc[:80]
+    X_valid, y_valid = X.iloc[80:], y.iloc[80:]
+
+    pl.fit(X_train, y_train)
     if expected_unique_values:
         # NaNs are expected because of padding due to max_delay
-        assert set(pl.predict(X, y).dropna().unique()) == expected_unique_values
-    pl.score(X, y, objectives)
+        assert set(pl.predict(X_valid.iloc[:10], objective=None, X_train=X_train, y_train=y_train).unique()) == expected_unique_values
+    pl.score(X_valid, y_valid, objectives, X_train, y_train)
 
 
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets")
@@ -565,24 +593,20 @@ def test_binary_classification_predictions_thresholded_properly(
     mock_obj_decision.assert_called()
 
 
-@patch("evalml.pipelines.PipelineBase.compute_estimator_features")
-def test_binary_predict_pipeline_objective_mismatch(
-    mock_transform, X_y_binary, dummy_ts_binary_pipeline_class
-):
+def test_binary_predict_pipeline_objective_mismatch(X_y_binary, dummy_ts_binary_pipeline_class):
     X, y = X_y_binary
     binary_pipeline = dummy_ts_binary_pipeline_class(
         parameters={
             "Logistic Regression Classifier": {"n_jobs": 1},
-            "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
+            "pipeline": {"gap": 0, "max_delay": 0, "date_index": None, "forecast_horizon": 2},
         }
     )
-    binary_pipeline.fit(X, y)
+    binary_pipeline.fit(X[:30], y[:30])
     with pytest.raises(
         ValueError,
         match="Objective Precision Micro is not defined for time series binary classification.",
     ):
-        binary_pipeline.predict(X, y, "precision micro")
-    mock_transform.assert_called()
+        binary_pipeline.predict(X[30:32], "precision micro", X[:30], y[:30])
 
 
 @pytest.mark.parametrize(
@@ -607,7 +631,7 @@ def test_time_series_pipeline_not_fitted_error(
         clf = time_series_binary_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
-                "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
+                "pipeline": {"gap": 0, "max_delay": 0, "date_index": None, "forecast_horizon": 20},
             }
         )
 
@@ -616,56 +640,59 @@ def test_time_series_pipeline_not_fitted_error(
         clf = time_series_multiclass_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
-                "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
+                "pipeline": {"gap": 0, "max_delay": 0, "date_index": None, "forecast_horizon": 20},
             }
         )
-    elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+    else:
         X, y = X_y_regression
         clf = time_series_regression_pipeline_class(
             parameters={
                 "Random Forest Regressor": {"n_jobs": 1},
-                "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
+                "pipeline": {"gap": 0, "max_delay": 0, "date_index": None, "forecast_horizon": 20},
             }
         )
 
+    X_train, y_train = X[:80], y[:80]
+    X_holdout, y_holdout = X[80:], y[80:]
+
     with pytest.raises(PipelineNotYetFittedError):
-        clf.predict(X)
+        clf.predict(X_holdout, None, X_train, y_train)
     with pytest.raises(PipelineNotYetFittedError):
         clf.feature_importance
 
     if is_classification(problem_type):
         with pytest.raises(PipelineNotYetFittedError):
-            clf.predict_proba(X)
+            clf.predict_proba(X_holdout, None, X_train, y_train)
 
-    clf.fit(X, y)
+    clf.fit(X_train, y_train)
 
     if is_classification(problem_type):
-        to_patch = "evalml.pipelines.TimeSeriesClassificationPipeline._predict"
+        to_patch = "evalml.pipelines.TimeSeriesClassificationPipeline.predict_in_sample"
         if problem_type == ProblemTypes.TIME_SERIES_BINARY:
             to_patch = (
-                "evalml.pipelines.TimeSeriesBinaryClassificationPipeline._predict"
+                "evalml.pipelines.TimeSeriesBinaryClassificationPipeline.predict_in_sample"
             )
         with patch(to_patch) as mock_predict:
-            clf.predict(X, y)
+            clf.predict(X_holdout, None, X_train, y_train)
             mock_predict.assert_called()
             _, kwargs = mock_predict.call_args
             assert kwargs["objective"] is None
 
             mock_predict.reset_mock()
-            clf.predict(X, y, "Log Loss Binary")
+            clf.predict(X_holdout, "Log Loss Binary", X_train, y_train)
             mock_predict.assert_called()
             _, kwargs = mock_predict.call_args
             assert kwargs["objective"] is not None
 
             mock_predict.reset_mock()
-            clf.predict(X, y, objective="Log Loss Binary")
+            clf.predict(X_holdout, objective="Log Loss Binary", X_train=X_train, y_train=y_train)
             mock_predict.assert_called()
             _, kwargs = mock_predict.call_args
             assert kwargs["objective"] is not None
 
-            clf.predict_proba(X, y)
+            clf.predict_proba(X_holdout, X_train=X_train, y_train=y_train)
     else:
-        clf.predict(X, y)
+        clf.predict(X_holdout, None, X_train, y_train)
     clf.feature_importance
 
 
@@ -680,13 +707,15 @@ def test_ts_binary_pipeline_target_thresholding(
     binary_pipeline = time_series_binary_classification_pipeline_class(
         parameters={
             "Logistic Regression Classifier": {"n_jobs": 1},
-            "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
+            "pipeline": {"gap": 0, "max_delay": 0, "date_index": None, "forecast_horizon": 10},
         }
     )
-    binary_pipeline.fit(X, y)
+    X_train, y_train = X.ww.iloc[:90], y.ww.iloc[:90]
+    X_holdout, y_holdout = X.ww.iloc[90:], y.ww.iloc[90:]
+    binary_pipeline.fit(X_train, y_train)
     assert binary_pipeline.threshold is None
-    pred_proba = binary_pipeline.predict_proba(X, y).iloc[:, 1]
-    binary_pipeline.optimize_threshold(X, y, pred_proba, objective)
+    pred_proba = binary_pipeline.predict_proba(X_holdout, X_train, y_train).iloc[:, 1]
+    binary_pipeline.optimize_threshold(X_holdout, y_holdout, pred_proba, objective)
     assert binary_pipeline.threshold is not None
 
 
