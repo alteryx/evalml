@@ -31,6 +31,7 @@ Release Notes
     * Documentation Changes
         * Add complete install command to README and Install section :pr:`2627`
     * Testing Changes
+        * Speed up CI by splitting Prophet tests into a separate workflow in GitHub :pr:`2644`
 
 .. warning::
 
