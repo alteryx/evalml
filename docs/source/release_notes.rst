@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Removed SVM "linear" and "precomputed" kernel hyperparameter options, and improved default parameters :pr:`2651`
-        * Updated to support Woodwork 0.6.0 :pr:``
+        * Updated to support Woodwork 0.6.0 :pr:`2690`
     * Fixes
     * Changes
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
