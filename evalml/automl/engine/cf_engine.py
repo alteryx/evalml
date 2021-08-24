@@ -86,7 +86,6 @@ class CFEngine(EngineBase):
 
     def __init__(self, client=None):
         """
-
         Args:
             client (None or CFClient): If None, creates a threaded pool for processing.  Defaults to None.
         """
