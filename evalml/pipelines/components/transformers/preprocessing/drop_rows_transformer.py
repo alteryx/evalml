@@ -7,16 +7,18 @@ class DropRowsTransformer(Transformer):
 
 
     Arguments:
-        indices_to_drop (list): List of indices to drop in the input data,
+        indices_to_drop (list): List of indices to drop in the input data.
+        random_seed (int): Seed for the random number generator. Is not used by this component. Defaults to 0.
     """
 
     name = "Drop Rows Transformer"
+    modifies_target = True
     hyperparameter_ranges = {}
     """{}"""
 
-    def __init__(self, indices_to_drop=None):
-        super().__init__(parameters=None, component_obj=None, random_seed=0)
+    def __init__(self, indices_to_drop=None, random_seed=0):
         self.indices_to_drop = indices_to_drop
+        super().__init__(parameters=None, component_obj=None, random_seed=0)
 
     def fit(self, X, y=None):
         X_t = infer_feature_types(X)
