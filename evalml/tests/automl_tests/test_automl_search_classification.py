@@ -32,9 +32,6 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import TimeSeriesSplit, split_data
 from evalml.problem_types import ProblemTypes
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
-
 
 def test_init(X_y_binary):
     X, y = X_y_binary

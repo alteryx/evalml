@@ -1,4 +1,4 @@
-from .logger import log_subtitle, log_title
+from .logger import get_logger, log_subtitle, log_title
 from .gen_utils import (
     classproperty,
     import_or_raise,

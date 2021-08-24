@@ -1,5 +1,3 @@
-import logging
-
 import numpy as np
 import pandas as pd
 import pytest
@@ -15,9 +13,6 @@ from woodwork.logical_types import (
 
 from evalml.pipelines.components import LSA
 from evalml.utils import infer_feature_types
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
 
 
 def test_lsa_only_text(text_df):
@@ -62,7 +57,7 @@ def test_lsa_no_text():
     assert len(X_t.columns) == 2
 
 
-def test_some_missing_col_names(text_df, caplog):
+def test_some_missing_col_names(text_df):
     X = text_df
     expected_col_names = set(
         ["LSA(col_1)[0]", "LSA(col_1)[1]", "LSA(col_2)[0]", "LSA(col_2)[1]"]

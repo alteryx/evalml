@@ -1,4 +1,3 @@
-import logging
 import os
 import re
 from unittest.mock import patch
@@ -57,9 +56,6 @@ from evalml.problem_types import (
     is_multiclass,
     is_time_series,
 )
-
-logger = logging.getLogger("evalml")
-logger.setLevel(logging.INFO)
 
 
 @pytest.mark.parametrize(

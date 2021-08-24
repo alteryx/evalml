@@ -1,4 +1,3 @@
-import logging
 import warnings
 from itertools import product
 from unittest.mock import MagicMock, patch
@@ -30,9 +29,6 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.utils import _all_estimators_used_in_search
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types.problem_types import ProblemTypes
-
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
 
 
 def make_test_pipeline(estimator, base_class):

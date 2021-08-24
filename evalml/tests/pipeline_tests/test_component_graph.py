@@ -1,4 +1,3 @@
-import logging
 import re
 import warnings
 from datetime import datetime, timedelta
@@ -39,9 +38,6 @@ from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
 from evalml.utils import infer_feature_types
-
-logger = logging.getLogger("evalml")
-logger.setLevel(logging.INFO)
 
 
 class DummyTransformer(Transformer):
