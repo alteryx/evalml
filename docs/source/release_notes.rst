@@ -6,12 +6,15 @@ Release Notes
         * Updated ``ComponentGraph`` initalization to raise ``ValueError`` when user attempts to use ``.y`` for a component that does not produce a tuple output :pr:`2662`
     * Fixes
     * Changes
+        * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     * Documentation Changes
     * Testing Changes
+        * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
 
 .. warning::
 
     **Breaking Changes**
+        * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     
 
 **v0.31.0 Aug. 19, 2021**
