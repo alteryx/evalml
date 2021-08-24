@@ -1256,7 +1256,7 @@ def test_automl_search_sampler_method(
     has_minimal_dependencies,
     caplog,
 ):
-    logger = logging.getLogger(__name__)
+    logger = logging.getLogger('evalml')
     logger.setLevel(logging.DEBUG)
     # 0.2 minority:majority class ratios
     X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, "small")
