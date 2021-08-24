@@ -68,6 +68,7 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.ensemble import (
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
+    StackedEnsembleBase,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
@@ -750,6 +751,8 @@ def test_components_init_kwargs():
         except EnsembleMissingPipelinesError:
             continue
         if component._component_obj is None:
+            continue
+        if isinstance(component, StackedEnsembleBase):
             continue
 
         obj_class = component._component_obj.__class__.__name__

@@ -266,6 +266,7 @@ def _make_stacked_ensemble_pipeline(
     n_jobs=-1,
     random_seed=0,
     use_sklearn=False,
+    ensemble_y='y'
 ):
     """Creates a pipeline with a stacked ensemble estimator.
 
@@ -352,7 +353,7 @@ def _make_stacked_ensemble_pipeline(
 
     if not use_sklearn:
         component_graph[estimator.name] = (
-            [estimator] + [comp + ".x" for comp in final_components] + ["y"]
+            [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
         )
 
     return pipeline_class(

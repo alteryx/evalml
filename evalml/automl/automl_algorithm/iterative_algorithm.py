@@ -179,7 +179,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 if problem_type is None:
                     problem_type = pipeline.problem_type
                 final_component = None
-
+                ensemble_y = "y"
                 for (
                     name,
                     component_list,
@@ -194,6 +194,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                             new_component_list.append(_make_new_component_name(item))
                         else:
                             new_component_list.append(item)
+                        if i != 0 and item.endswith(".y"):
+                            ensemble_y = _make_new_component_name(item)
                     ensembler_component_graph[new_component_name] = new_component_list
                     final_component = new_component_name
                 final_components.append(final_component)
@@ -204,6 +206,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 final_components=final_components,
                 random_seed=self.random_seed,
                 n_jobs=n_jobs_ensemble,
+                ensemble_y=ensemble_y
             )
             next_batch.append(ensemble)
 

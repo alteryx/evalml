@@ -33,6 +33,7 @@ from evalml.pipelines.components import (
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_component_list_from_actions,
+    _make_stacked_ensemble_pipeline,
     generate_pipeline_code,
     get_estimators,
     make_pipeline,
@@ -263,6 +264,43 @@ def test_make_pipeline_problem_type_mismatch():
         match=f"{Transformer.name} is not a valid estimator for problem type",
     ):
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
+
+
+def test_make_stacked_ensemble_pipeline_invalid_args():
+    with pytest.raises(
+        ValueError,
+        match="`input_pipelines` must be set when using the sklearn ensembler.",
+    ):
+        _make_stacked_ensemble_pipeline(
+            ProblemTypes.BINARY,
+            component_graph={},
+            final_components=None,
+            n_jobs=-1,
+            random_seed=0,
+            use_sklearn=True,
+        )
+    with pytest.raises(
+        ValueError,
+        match="`component_graph` must be set when using the custom ensembler.",
+    ):
+        _make_stacked_ensemble_pipeline(
+            ProblemTypes.BINARY,
+            input_pipelines=[],
+            final_components=[LogisticRegressionClassifier()],
+            n_jobs=-1,
+            random_seed=0,
+        )
+    with pytest.raises(
+        ValueError,
+        match="`final_components` must be set when using the custom ensembler.",
+    ):
+        _make_stacked_ensemble_pipeline(
+            ProblemTypes.BINARY,
+            component_graph={},
+            n_jobs=-1,
+            random_seed=0,
+            use_sklearn=False,
+        )
 
 
 @pytest.mark.parametrize(
