@@ -2,9 +2,26 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Removed SVM "linear" and "precomputed" kernel hyperparameter options, and improved default parameters :pr:`2651`
+    * Fixes
+    * Changes
+        * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
+    * Documentation Changes
+    * Testing Changes
+        * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
+
+.. warning::
+
+    **Breaking Changes**
+        * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
+    
+
+**v0.31.0 Aug. 19, 2021**
+    * Enhancements
         * Updated the high variance check in AutoMLSearch to be robust to a variety of objectives and cv scores :pr:`2622`
         * Use Woodwork's outlier detection for the ``OutliersDataCheck`` :pr:`2637`
         * Added ability to utilize instantiated components when creating a pipeline :pr:`2643`
+        * Sped up the all Nan and unknown check in ``infer_feature_types`` :pr:`2661`
     * Fixes
     * Changes
         * Deleted ``_put_into_original_order`` helper function :pr:`2639`
@@ -19,7 +36,6 @@ Release Notes
 
     **Breaking Changes**
         * ``TimeSeriesRegressionPipeline`` no longer inherits from ``TimeSeriesRegressionPipeline`` :pr:`2649`
-
 
 
 **v0.30.2 Aug. 16, 2021**

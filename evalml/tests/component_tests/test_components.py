@@ -413,13 +413,13 @@ def test_describe_component():
         "parameters": {
             "C": 1.0,
             "kernel": "rbf",
-            "gamma": "scale",
+            "gamma": "auto",
             "probability": True,
         },
     }
     assert svm_regressor.describe(return_dict=True) == {
         "name": "SVM Regressor",
-        "parameters": {"C": 1.0, "kernel": "rbf", "gamma": "scale"},
+        "parameters": {"C": 1.0, "kernel": "rbf", "gamma": "auto"},
     }
     try:
         xgb_classifier = XGBoostClassifier(

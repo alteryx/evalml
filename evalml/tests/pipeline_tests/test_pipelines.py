@@ -124,12 +124,12 @@ def test_all_estimators(
     is_using_windows,
 ):
     if has_minimal_dependencies:
-        assert len((_all_estimators_used_in_search())) == 10
+        assert len((_all_estimators_used_in_search())) == 9
     else:
         if is_using_conda:
             n_estimators = 16
         else:
-            n_estimators = 17 if is_running_py_39_or_above or is_using_windows else 18
+            n_estimators = 16 if is_running_py_39_or_above or is_using_windows else 17
         assert len(_all_estimators_used_in_search()) == n_estimators
 
 
