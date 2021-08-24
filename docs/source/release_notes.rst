@@ -30,6 +30,7 @@ Release Notes
         * Removed commented out code in ``pipeline_meta.py`` :pr:`2659`
     * Documentation Changes
         * Add complete install command to README and Install section :pr:`2627`
+        * Cleaned up documentation for ``MulticollinearityDataCheck`` :pr:`2664`
     * Testing Changes
         * Speed up CI by splitting Prophet tests into a separate workflow in GitHub :pr:`2644`
 
