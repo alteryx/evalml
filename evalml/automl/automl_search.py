@@ -257,6 +257,8 @@ class AutoMLSearch:
 
         engine (EngineBase or None): The engine instance used to evaluate pipelines. If None, a SequentialEngine will
             be used.
+
+        verbose (boolean): Whether or not to display semi-real-time updates while search is running. Defaults to False.
     """
 
     _MAX_NAME_LEN = 40

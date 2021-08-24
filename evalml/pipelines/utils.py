@@ -1,4 +1,5 @@
 import logging
+
 from woodwork import logical_types
 
 from .binary_classification_pipeline import BinaryClassificationPipeline

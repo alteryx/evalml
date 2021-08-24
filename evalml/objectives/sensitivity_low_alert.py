@@ -1,8 +1,8 @@
 import logging
+
 import numpy as np
 
 from .binary_classification_objective import BinaryClassificationObjective
-
 
 logger = logging.getLogger(__name__)
 
