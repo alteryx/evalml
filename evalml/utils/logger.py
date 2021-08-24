@@ -1,10 +1,6 @@
 import logging
-import os
 import sys
 import time
-import traceback
-from logging.handlers import RotatingFileHandler
-from pathlib import Path
 
 
 def get_logger(name):
