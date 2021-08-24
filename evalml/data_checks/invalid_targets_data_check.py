@@ -57,13 +57,14 @@ class InvalidTargetDataCheck(DataCheck):
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = pd.Series([0, 1, None, None])
             >>> target_check = InvalidTargetDataCheck('binary', 'Log Loss Binary')
-            >>> assert target_check.validate(X, y) == {"errors": [{"message": "2 row(s) (50.0%) of target values are null",\
-                                                                   "data_check_name": "InvalidTargetDataCheck",\
-                                                                   "level": "error",\
-                                                                   "code": "TARGET_HAS_NULL",\
-                                                                   "details": {"num_null_rows": 2, "pct_null_rows": 50}}],\
-                                                       "warnings": [],\
-                                                       "actions": [{'code': 'IMPUTE_COL', 'metadata': {'column': None, 'impute_strategy': 'most_frequent', 'is_target': True}}]}
+            >>> assert target_check.validate(X, y) == {
+            ...     "errors": [{"message": "2 row(s) (50.0%) of target values are null",
+            ...                 "data_check_name": "InvalidTargetDataCheck",
+            ...                 "level": "error",
+            ...                 "code": "TARGET_HAS_NULL",
+            ...                 "details": {"num_null_rows": 2, "pct_null_rows": 50}}],
+            ...     "warnings": [],
+            ...     "actions": [{'code': 'IMPUTE_COL', 'metadata': {'column': None, 'impute_strategy': 'most_frequent', 'is_target': True}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
