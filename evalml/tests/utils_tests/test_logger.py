@@ -116,6 +116,7 @@ def test_pipeline_count(
     caplog,
     has_minimal_dependencies,
 ):
+    caplog.clear()
     if type_ == "binary":
         X, y = X_y_binary
     elif type_ == "multiclass":

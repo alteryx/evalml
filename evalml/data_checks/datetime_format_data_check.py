@@ -32,13 +32,14 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> y = pd.Series([1, 2, 4, 2, 1, 2, 3, 1])
             >>> X.iloc[7] = "January 9, 2021"
             >>> datetime_format_check = DateTimeFormatDataCheck()
-            >>> assert datetime_format_check.validate(X, y) == {"errors": [{"message": "No frequency could be detected in dates, possibly due to uneven intervals.",\
-                                                                    "data_check_name": "EqualIntervalDataCheck",\
-                                                                    "level": "error",\
-                                                                    "code": "DATETIME_HAS_UNEVEN_INTERVALS",\
-                                                                    "details": {}}],\
-                                                        "warnings": [],\
-                                                        "actions": []}
+            >>> assert datetime_format_check.validate(X, y) == {
+            ...     "errors": [{"message": "No frequency could be detected in dates, possibly due to uneven intervals.",
+            ...                 "data_check_name": "EqualIntervalDataCheck",
+            ...                 "level": "error",
+            ...                 "code": "DATETIME_HAS_UNEVEN_INTERVALS",
+            ...                 "details": {}}],
+            ...     "warnings": [],
+            ...     "actions": []}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

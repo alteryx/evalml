@@ -224,7 +224,7 @@ def test_init_bad_graphs():
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "DateTime.x",
-            "DateTime.y",
+            "y",
         ],
     }
     with pytest.raises(ValueError, match="The given graph is not completely connected"):
@@ -234,7 +234,7 @@ def test_init_bad_graphs():
 def test_order_x_and_y():
     graph = {
         "Imputer": [Imputer, "X", "y"],
-        "OHE": [OneHotEncoder, "Imputer.x", "Imputer.y"],
+        "OHE": [OneHotEncoder, "Imputer.x", "y"],
         "Random Forest": [RandomForestClassifier, "OHE.x", "y"],
     }
     component_graph = ComponentGraph(graph).instantiate({})
@@ -449,7 +449,7 @@ def test_fit_component_graph(
     assert mock_predict_proba.call_count == 2
 
 
-@patch("evalml.pipelines.components.Imputer.fit_transform")
+@patch("evalml.pipelines.components.TargetImputer.fit_transform")
 @patch("evalml.pipelines.components.OneHotEncoder.fit_transform")
 def test_fit_correct_inputs(
     mock_ohe_fit_transform, mock_imputer_fit_transform, X_y_binary
@@ -458,8 +458,8 @@ def test_fit_correct_inputs(
     X = pd.DataFrame(X)
     y = pd.Series(y)
     graph = {
-        "Imputer": [Imputer, "X", "y"],
-        "OHE": [OneHotEncoder, "Imputer.x", "Imputer.y"],
+        "Target Imputer": [TargetImputer, "X", "y"],
+        "OHE": [OneHotEncoder, "Target Imputer.x", "Target Imputer.y"],
     }
     expected_x = pd.DataFrame(index=X.index, columns=X.columns).fillna(1.0)
     expected_x.ww.init()
@@ -1676,6 +1676,7 @@ class SubsetData(Transformer):
     """To simulate a transformer that modifies the target but is not a target transformer, e.g. a sampler."""
 
     name = "Subset Data"
+    modifies_target = True
 
     def __init__(self, parameters=None, random_seed=0):
         super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
@@ -2144,7 +2145,7 @@ def test_component_graph_instantiate_parameters(pipeline_parameters, set_values)
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Scaler.x",
-            "Scaler.y",
+            "y",
         ],
     }
     component_graph = ComponentGraph(graph)
@@ -2322,3 +2323,13 @@ def test_component_graph_predict_with_transformer_end(X_y_binary):
         ),
     ):
         component_graph.predict(X)
+
+
+def test_component_graph_with_invalid_y_edge(X_y_binary):
+    X, y = X_y_binary
+    component_dict = {
+        "OHE": ["One Hot Encoder", "X", "y"],
+        "RF": ["Random Forest Classifier", "OHE.x", "OHE.y"],
+    }
+    with pytest.raises(ValueError, match="OHE.y is not a valid input edge"):
+        ComponentGraph(component_dict)
