@@ -20,11 +20,11 @@ from evalml.pipelines.components.ensemble import (
 from evalml.problem_types import ProblemTypes
 
 
-def test_stacked_model_family():
+def test_sklearn_stacked_model_family():
     assert SklearnStackedEnsembleClassifier.model_family == ModelFamily.ENSEMBLE
 
 
-def test_stacked_default_parameters():
+def test_sklearn_stacked_default_parameters():
     assert SklearnStackedEnsembleClassifier.default_parameters == {
         "final_estimator": None,
         "cv": None,
@@ -32,7 +32,7 @@ def test_stacked_default_parameters():
     }
 
 
-def test_stacked_ensemble_init_with_invalid_estimators_parameter():
+def test_sklearn_stacked_ensemble_init_with_invalid_estimators_parameter():
     with pytest.raises(
         EnsembleMissingPipelinesError, match="must not be None or an empty list."
     ):
@@ -43,7 +43,7 @@ def test_stacked_ensemble_init_with_invalid_estimators_parameter():
         SklearnStackedEnsembleClassifier(input_pipelines=[])
 
 
-def test_stacked_ensemble_nonstackable_model_families():
+def test_sklearn_stacked_ensemble_nonstackable_model_families():
     with pytest.raises(
         ValueError,
         match="Pipelines with any of the following model families cannot be used as base pipelines",
@@ -53,7 +53,7 @@ def test_stacked_ensemble_nonstackable_model_families():
         )
 
 
-def test_stacked_different_input_pipelines_classification():
+def test_sklearn_stacked_different_input_pipelines_classification():
     input_pipelines = [
         BinaryClassificationPipeline([RandomForestClassifier]),
         MulticlassClassificationPipeline([RandomForestClassifier]),
@@ -64,7 +64,7 @@ def test_stacked_different_input_pipelines_classification():
         SklearnStackedEnsembleClassifier(input_pipelines=input_pipelines)
 
 
-def test_stacked_ensemble_init_with_multiple_same_estimators(
+def test_sklearn_stacked_ensemble_init_with_multiple_same_estimators(
     X_y_binary, logistic_regression_binary_pipeline_class
 ):
     # Checks that it is okay to pass multiple of the same type of estimator
@@ -90,7 +90,7 @@ def test_stacked_ensemble_init_with_multiple_same_estimators(
     assert not np.isnan(y_pred).all()
 
 
-def test_stacked_ensemble_n_jobs_negative_one(
+def test_sklearn_stacked_ensemble_n_jobs_negative_one(
     X_y_binary, logistic_regression_binary_pipeline_class
 ):
     X, y = X_y_binary
@@ -112,7 +112,7 @@ def test_stacked_ensemble_n_jobs_negative_one(
 @patch(
     "evalml.pipelines.components.ensemble.SklearnStackedEnsembleClassifier._stacking_estimator_class"
 )
-def test_stacked_ensemble_does_not_overwrite_pipeline_random_seed(
+def test_sklearn_stacked_ensemble_does_not_overwrite_pipeline_random_seed(
     mock_stack, logistic_regression_binary_pipeline_class
 ):
     input_pipelines = [
@@ -128,7 +128,7 @@ def test_stacked_ensemble_does_not_overwrite_pipeline_random_seed(
     assert estimators_used_in_ensemble[1][1].pipeline.random_seed == 4
 
 
-def test_stacked_ensemble_multilevel(logistic_regression_binary_pipeline_class):
+def test_sklearn_stacked_ensemble_multilevel(logistic_regression_binary_pipeline_class):
     # checks passing a stacked ensemble classifier as a final estimator
     X = pd.DataFrame(np.random.rand(50, 5))
     y = pd.Series([1, 0] * 25)
@@ -147,7 +147,7 @@ def test_stacked_ensemble_multilevel(logistic_regression_binary_pipeline_class):
     assert not np.isnan(y_pred).all()
 
 
-def test_stacked_problem_types():
+def test_sklearn_stacked_problem_types():
     assert (
         ProblemTypes.BINARY in SklearnStackedEnsembleClassifier.supported_problem_types
     )
@@ -164,7 +164,7 @@ def test_stacked_problem_types():
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_stacked_fit_predict_classification(
+def test_sklearn_stacked_fit_predict_classification(
     X_y_binary, X_y_multi, stackable_classifiers, problem_type
 ):
     if problem_type == ProblemTypes.BINARY:
@@ -209,7 +209,7 @@ def test_stacked_fit_predict_classification(
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 @patch("evalml.pipelines.components.ensemble.SklearnStackedEnsembleClassifier.fit")
-def test_stacked_feature_importance(
+def test_sklearn_stacked_feature_importance(
     mock_fit, X_y_binary, X_y_multi, stackable_classifiers, problem_type
 ):
     if problem_type == ProblemTypes.BINARY:

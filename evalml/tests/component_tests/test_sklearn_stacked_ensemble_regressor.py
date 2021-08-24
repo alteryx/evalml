@@ -16,11 +16,11 @@ from evalml.pipelines.components import (
 from evalml.problem_types import ProblemTypes
 
 
-def test_stacked_model_family():
+def test_sklearn_stacked_model_family():
     assert SklearnStackedEnsembleRegressor.model_family == ModelFamily.ENSEMBLE
 
 
-def test_stacked_default_parameters():
+def test_sklearn_stacked_default_parameters():
     assert SklearnStackedEnsembleRegressor.default_parameters == {
         "final_estimator": None,
         "cv": None,
@@ -28,7 +28,7 @@ def test_stacked_default_parameters():
     }
 
 
-def test_stacked_ensemble_init_with_invalid_estimators_parameter():
+def test_sklearn_stacked_ensemble_init_with_invalid_estimators_parameter():
     with pytest.raises(
         EnsembleMissingPipelinesError, match="must not be None or an empty list."
     ):
@@ -39,7 +39,7 @@ def test_stacked_ensemble_init_with_invalid_estimators_parameter():
         SklearnStackedEnsembleRegressor(input_pipelines=[])
 
 
-def test_stacked_ensemble_nonstackable_model_families():
+def test_sklearn_stacked_ensemble_nonstackable_model_families():
     with pytest.raises(
         ValueError,
         match="Pipelines with any of the following model families cannot be used as base pipelines",
@@ -49,7 +49,7 @@ def test_stacked_ensemble_nonstackable_model_families():
         )
 
 
-def test_stacked_different_input_pipelines_regression():
+def test_sklearn_stacked_different_input_pipelines_regression():
     input_pipelines = [
         RegressionPipeline([RandomForestRegressor]),
         BinaryClassificationPipeline([RandomForestClassifier]),
@@ -60,7 +60,7 @@ def test_stacked_different_input_pipelines_regression():
         SklearnStackedEnsembleRegressor(input_pipelines=input_pipelines)
 
 
-def test_stacked_ensemble_init_with_multiple_same_estimators(
+def test_sklearn_stacked_ensemble_init_with_multiple_same_estimators(
     X_y_regression, linear_regression_pipeline_class
 ):
     # Checks that it is okay to pass multiple of the same type of estimator
@@ -86,7 +86,7 @@ def test_stacked_ensemble_init_with_multiple_same_estimators(
     assert not np.isnan(y_pred).all()
 
 
-def test_stacked_ensemble_n_jobs_negative_one(
+def test_sklearn_stacked_ensemble_n_jobs_negative_one(
     X_y_regression, linear_regression_pipeline_class
 ):
     X, y = X_y_regression
@@ -108,7 +108,7 @@ def test_stacked_ensemble_n_jobs_negative_one(
 @patch(
     "evalml.pipelines.components.ensemble.SklearnStackedEnsembleRegressor._stacking_estimator_class"
 )
-def test_stacked_ensemble_does_not_overwrite_pipeline_random_seed(
+def test_sklearn_stacked_ensemble_does_not_overwrite_pipeline_random_seed(
     mock_stack, linear_regression_pipeline_class
 ):
     input_pipelines = [
@@ -124,7 +124,7 @@ def test_stacked_ensemble_does_not_overwrite_pipeline_random_seed(
     assert estimators_used_in_ensemble[1][1].pipeline.random_seed == 4
 
 
-def test_stacked_ensemble_multilevel(linear_regression_pipeline_class):
+def test_sklearn_stacked_ensemble_multilevel(linear_regression_pipeline_class):
     # checks passing a stacked ensemble classifier as a final estimator
     X = pd.DataFrame(np.random.rand(50, 5))
     y = pd.Series(
@@ -146,7 +146,7 @@ def test_stacked_ensemble_multilevel(linear_regression_pipeline_class):
     assert not np.isnan(y_pred).all()
 
 
-def test_stacked_problem_types():
+def test_sklearn_stacked_problem_types():
     assert (
         ProblemTypes.REGRESSION
         in SklearnStackedEnsembleRegressor.supported_problem_types
@@ -154,7 +154,7 @@ def test_stacked_problem_types():
     assert len(SklearnStackedEnsembleRegressor.supported_problem_types) == 2
 
 
-def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
+def test_sklearn_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
     X, y = X_y_regression
     input_pipelines = [
         RegressionPipeline([regressor]) for regressor in stackable_regressors
@@ -179,7 +179,9 @@ def test_stacked_fit_predict_regression(X_y_regression, stackable_regressors):
 
 
 @patch("evalml.pipelines.components.ensemble.SklearnStackedEnsembleRegressor.fit")
-def test_stacked_feature_importance(mock_fit, X_y_regression, stackable_regressors):
+def test_sklearn_stacked_feature_importance(
+    mock_fit, X_y_regression, stackable_regressors
+):
     X, y = X_y_regression
     input_pipelines = [
         RegressionPipeline([regressor]) for regressor in stackable_regressors

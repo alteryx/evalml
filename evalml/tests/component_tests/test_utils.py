@@ -39,16 +39,16 @@ def test_all_components(
         n_components = 43
     elif is_using_conda:
         # No prophet and no arima
-        n_components = 55
+        n_components = 54
     elif is_using_windows and not is_running_py_39_or_above:
         # No prophet
         n_components = 55
     elif is_using_windows and is_running_py_39_or_above:
         # No detrender, no arima, no prophet
-        n_components = 55
+        n_components = 53
     elif not is_using_windows and is_running_py_39_or_above:
         # No detrender or arima
-        n_components = 51
+        n_components = 54
     else:
         n_components = 56
     assert len(all_components()) == n_components

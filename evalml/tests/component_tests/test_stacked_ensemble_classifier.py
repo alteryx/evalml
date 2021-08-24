@@ -25,6 +25,43 @@ def test_stacked_default_parameters():
     }
 
 
+@patch("evalml.pipelines.components.ensemble.SklearnStackedEnsembleClassifier.fit")
+@patch("evalml.pipelines.components.RandomForestClassifier.predict_proba")
+@patch("evalml.pipelines.components.RandomForestClassifier.fit")
+def test_stacked_ensemble_no_refit_intermediate_estimators(
+    mock_fit, mock_predict_proba, mock_se_fit, X_y_binary
+):
+    # Checks that it is okay to pass multiple of the same type of estimator
+    X, y = X_y_binary
+    rf_predict_proba = pd.DataFrame(np.ones(len(y)))
+    rf_predict_proba.ww.init()
+    mock_predict_proba.return_value = rf_predict_proba
+
+    rf = RandomForestClassifier(n_estimators=5, max_depth=10)
+    rf.fit(X, y)
+    rf._is_fitted = True
+    rf_2 = RandomForestClassifier(n_estimators=15, max_depth=20)
+    rf_2.fit(X, y)
+    rf_2._is_fitted = True
+
+    component_graph = {
+        "Random Forest": [rf, "X", "y"],
+        "Random Forest B": [rf_2, "X", "y"],
+        "Stacked Ensemble": [
+            StackedEnsembleClassifier(
+                n_jobs=1, final_estimator=RandomForestClassifier()
+            ),
+            "Random Forest.x",
+            "Random Forest B.x",
+            "y",
+        ],
+    }
+    pl = BinaryClassificationPipeline(component_graph)
+    pl.fit(X, y)
+    assert rf is pl.get_component("Random Forest")
+    assert rf_2 is pl.get_component("Random Forest B")
+
+
 def test_stacked_ensemble_init_with_final_estimator(X_y_binary):
     # Checks that it is okay to pass multiple of the same type of estimator
     X, y = X_y_binary
