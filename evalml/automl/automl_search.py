@@ -743,17 +743,21 @@ class AutoMLSearch:
             self._engine = SequentialEngine()
         else:
             valid_engines = {
-                "sequential":SequentialEngine(),
-                "cf_threaded":CFEngine(CFClient(ThreadPoolExecutor())),
-                "cf_process":CFEngine(CFClient(ProcessPoolExecutor())),
-                "dask_threaded":DaskEngine(dd.Client(dd.LocalCluster(processes=False))),
-                "dask_process":DaskEngine(dd.Client(dd.LocalCluster(processes=True))),
+                "sequential": SequentialEngine(),
+                "cf_threaded": CFEngine(CFClient(ThreadPoolExecutor())),
+                "cf_process": CFEngine(CFClient(ProcessPoolExecutor())),
+                "dask_threaded": DaskEngine(
+                    dd.Client(dd.LocalCluster(processes=False))
+                ),
+                "dask_process": DaskEngine(dd.Client(dd.LocalCluster(processes=True))),
             }
             if isinstance(engine, str):
                 try:
                     engine = valid_engines[engine]
                 except KeyError:
-                    raise KeyError(f"{engine} not a valid engine {list(valid_engines.keys())}")
+                    raise KeyError(
+                        f"{engine} not a valid engine {list(valid_engines.keys())}"
+                    )
             self._engine = engine
 
         self.automl_config = AutoMLConfig(
