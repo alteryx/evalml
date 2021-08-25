@@ -69,17 +69,28 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         self._fit(X, y)
         return self
 
-    def _compute_holdout_features_and_target(self, X_holdout, y_holdout, X_train, y_train):
+    def _compute_holdout_features_and_target(
+        self, X_holdout, y_holdout, X_train, y_train
+    ):
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         X_holdout, y_holdout = self._convert_to_woodwork(X_holdout, y_holdout)
-        last_row_of_training_needed_for_features = (self.forecast_horizon + self.gap +
-                                                    self.max_delay)
-        padded_features = pd.concat([X_train.iloc[-last_row_of_training_needed_for_features:], X_holdout], axis=0)
-        padded_target = pd.concat([y_train.iloc[-last_row_of_training_needed_for_features:], y_holdout], axis=0)
+        last_row_of_training_needed_for_features = (
+            self.forecast_horizon + self.gap + self.max_delay
+        )
+        padded_features = pd.concat(
+            [X_train.iloc[-last_row_of_training_needed_for_features:], X_holdout],
+            axis=0,
+        )
+        padded_target = pd.concat(
+            [y_train.iloc[-last_row_of_training_needed_for_features:], y_holdout],
+            axis=0,
+        )
         padded_features.ww.init(schema=X_train.ww.schema)
-        padded_target = ww.init_series(padded_target, logical_type=y_train.ww.logical_type)
+        padded_target = ww.init_series(
+            padded_target, logical_type=y_train.ww.logical_type
+        )
         features = self.compute_estimator_features(padded_features, padded_target)
-        features_holdout = features.iloc[-len(y_holdout):]
+        features_holdout = features.iloc[-len(y_holdout) :]
         return features_holdout, y_holdout
 
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):
@@ -87,7 +98,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             raise ValueError(
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
             )
-        features, target = self._compute_holdout_features_and_target(X, y, X_train, y_train)
+        features, target = self._compute_holdout_features_and_target(
+            X, y, X_train, y_train
+        )
         predictions = self._estimator_predict(features, target)
         predictions.index = y.index
         predictions = self.inverse_transform(predictions)
@@ -95,7 +108,10 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         return infer_feature_types(predictions)
 
     def _create_empty_series(self, y_train):
-        return ww.init_series(pd.Series([y_train.iloc[0]] * self.forecast_horizon), logical_type=y_train.ww.logical_type)
+        return ww.init_series(
+            pd.Series([y_train.iloc[0]] * self.forecast_horizon),
+            logical_type=y_train.ww.logical_type,
+        )
 
     def predict(self, X, objective=None, X_train=None, y_train=None):
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
@@ -106,7 +122,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         y_holdout = self._create_empty_series(y_train)
         X, y_holdout = self._convert_to_woodwork(X, y_holdout)
         y_holdout.index = X.index
-        return self.predict_in_sample(X, y_holdout, X_train, y_train, objective=objective)
+        return self.predict_in_sample(
+            X, y_holdout, X_train, y_train, objective=objective
+        )
 
     def _fit(self, X, y):
         self.input_target_name = y.name

@@ -2004,29 +2004,67 @@ def test_predict_has_input_target_name(
 
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
         X, y = ts_data
+        X_validation = X[29:31]
+        X, y = X[:29], y[:29]
         clf = time_series_regression_pipeline_class(
-            parameters={"pipeline": {"gap": 0, "max_delay": 0, "date_index": None}}
+            parameters={
+                "pipeline": {
+                    "gap": 0,
+                    "max_delay": 0,
+                    "date_index": None,
+                    "forecast_horizon": 2,
+                },
+                "Delayed Feature Transformer": {
+                    "gap": 0,
+                    "max_delay": 0,
+                    "forecast_horizon": 2,
+                },
+            }
         )
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
+        X_validation = X[50:52]
+        X, y = X[:50], y[:50]
         clf = time_series_binary_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
-                "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
+                "Delayed Feature Transformer": {
+                    "gap": 0,
+                    "max_delay": 0,
+                    "forecast_horizon": 2,
+                },
+                "pipeline": {
+                    "gap": 0,
+                    "max_delay": 0,
+                    "date_index": None,
+                    "forecast_horizon": 2,
+                },
             }
         )
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         X, y = X_y_multi
+        X_validation = X[50:52]
+        X, y = X[:50], y[:50]
         clf = time_series_multiclass_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
-                "pipeline": {"gap": 0, "max_delay": 0, "date_index": None},
+                "Delayed Feature Transformer": {
+                    "gap": 0,
+                    "max_delay": 0,
+                    "forecast_horizon": 2,
+                },
+                "pipeline": {
+                    "gap": 0,
+                    "max_delay": 0,
+                    "date_index": None,
+                    "forecast_horizon": 2,
+                },
             }
         )
     y = pd.Series(y, name="test target name")
     clf.fit(X, y)
     if is_time_series(problem_type):
-        predictions = clf.predict(X, y)
+        predictions = clf.predict(X_validation, None, X, y)
     else:
         predictions = clf.predict(X)
     assert predictions.name == "test target name"
@@ -2206,6 +2244,8 @@ def test_binary_pipeline_string_target_thresholding(
     X, y = X_y_binary
     X = make_data_type("ww", X)
     y = ww.init_series(pd.Series([f"String value {i}" for i in y]), "Categorical")
+    X_train, y_train = X.ww.iloc[:80], y.ww.iloc[:80]
+    X_validation, y_validation = X.ww.iloc[80:83], y.ww.iloc[80:83]
     objective = get_objective("F1", return_instance=True)
     pipeline_class = (
         time_series_binary_classification_pipeline_class
@@ -2216,17 +2256,22 @@ def test_binary_pipeline_string_target_thresholding(
     pipeline = pipeline_class(
         parameters={
             "Logistic Regression Classifier": {"n_jobs": 1},
-            "pipeline": {"gap": 0, "max_delay": 1, "date_index": None},
+            "pipeline": {
+                "gap": 0,
+                "max_delay": 1,
+                "date_index": None,
+                "forecast_horizon": 3,
+            },
         }
     )
-    pipeline.fit(X, y)
+    pipeline.fit(X_train, y_train)
     assert pipeline.threshold is None
     pred_proba = (
-        pipeline.predict_proba(X, y).iloc[:, 1]
+        pipeline.predict_proba(X_validation, X_train, y_train).iloc[:, 1]
         if is_time_series
-        else pipeline.predict_proba(X).iloc[:, 1]
+        else pipeline.predict_proba(X_validation).iloc[:, 1]
     )
-    pipeline.optimize_threshold(X, y, pred_proba, objective)
+    pipeline.optimize_threshold(X_validation, y_validation, pred_proba, objective)
     assert pipeline.threshold is not None
 
 

@@ -52,7 +52,7 @@ class BinaryClassificationPipeline(
         predictions = self._predict_with_objective(X, ypred_proba, objective)
         return infer_feature_types(predictions)
 
-    def predict_proba(self, X):
+    def predict_proba(self, X, X_train=None, y_train=None):
         """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
 
         Arguments:

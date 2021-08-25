@@ -61,7 +61,9 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
     def predict_proba_in_sample(self, X_holdout, y_holdout, X_train, y_train):
         y_holdout = self._encode_targets(y_holdout)
         y_train = self._encode_targets(y_train)
-        features, target = self._compute_holdout_features_and_target(X_holdout, y_holdout, X_train, y_train)
+        features, target = self._compute_holdout_features_and_target(
+            X_holdout, y_holdout, X_train, y_train
+        )
         proba = self._estimator_predict_proba(features, target)
         proba.index = y_holdout.index
         proba = proba.ww.rename(
@@ -80,12 +82,16 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
 
         y = self._encode_targets(y)
         y_train = self._encode_targets(y_train)
-        features, target = self._compute_holdout_features_and_target(X, y, X_train, y_train)
+        features, target = self._compute_holdout_features_and_target(
+            X, y, X_train, y_train
+        )
         predictions = self._estimator_predict(features, target)
         predictions.index = y.index
         predictions = self.inverse_transform(predictions)
         predictions = pd.Series(
-            self._decode_targets(predictions), name=self.input_target_name, index=y.index
+            self._decode_targets(predictions),
+            name=self.input_target_name,
+            index=y.index,
         )
         return infer_feature_types(predictions)
 
@@ -133,7 +139,11 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         objectives = self.create_objectives(objectives)
         y_predicted, y_predicted_proba = self._compute_predictions(
-            X, y, X_train, y_train, objectives,
+            X,
+            y,
+            X_train,
+            y_train,
+            objectives,
         )
         return self._score_all_objectives(
             X,
@@ -165,6 +175,12 @@ class TimeSeriesBinaryClassificationPipeline(
 
     problem_type = ProblemTypes.TIME_SERIES_BINARY
 
+    def _select_y_pred_for_score(self, X, y, y_pred, y_pred_proba, objective):
+        y_pred_to_use = y_pred
+        if self.threshold is not None and not objective.score_needs_proba:
+            y_pred_to_use = self._predict_with_objective(X, y_pred_proba, objective)
+        return y_pred_to_use
+
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):
 
         if objective is not None:
@@ -173,8 +189,6 @@ class TimeSeriesBinaryClassificationPipeline(
                 raise ValueError(
                     f"Objective {objective.name} is not defined for time series binary classification."
                 )
-
-        predictions = super().predict_in_sample(X, y, X_train, y_train)
 
         if self.threshold is not None:
             proba = self.predict_proba_in_sample(X, y, X_train, y_train)
@@ -185,6 +199,13 @@ class TimeSeriesBinaryClassificationPipeline(
                 predictions = objective.decision_function(
                     proba, threshold=self.threshold, X=X
                 )
+            predictions = pd.Series(
+                self._decode_targets(predictions),
+                name=self.input_target_name,
+                index=y.index,
+            )
+        else:
+            predictions = super().predict_in_sample(X, y, X_train, y_train)
 
         return infer_feature_types(predictions)
 
