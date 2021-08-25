@@ -66,7 +66,7 @@ def infer_feature_types(data, feature_types=None):
 
     def convert_all_nan_unknown_to_double(data):
         def is_column_pd_na(data, col):
-            return all(data[col].isna())
+            return data[col].isna().all()
 
         def is_column_unknown(data, col):
             return isinstance(data.ww.logical_types[col], Unknown)
@@ -75,7 +75,7 @@ def infer_feature_types(data, feature_types=None):
             all_null_unk_cols = [
                 col
                 for col in data.columns
-                if (is_column_pd_na(data, col) and is_column_unknown(data, col))
+                if (is_column_unknown(data, col) and is_column_pd_na(data, col))
             ]
             if len(all_null_unk_cols):
                 for col in all_null_unk_cols:

@@ -12,7 +12,7 @@ jobs:
       fail-fast: false
       matrix:
         python_version: ['3.7', '3.8', '3.9']
-        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-dask']
+        command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-parallel', 'git-test-prophet']
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -31,7 +31,7 @@ jobs:
           virtualenv test_python -q
           source test_python/bin/activate
           python -m pip install --upgrade pip -q
-      - if: ${{ (matrix.command == 'git-test-automl' || matrix.command == 'git-test-other') }}
+      - if: ${{ (matrix.command == 'git-test-automl' || matrix.command == 'git-test-prophet') }}
         name: Installing Latest Dependencies and Prophet
         run: |
           pip install virtualenv
@@ -41,7 +41,7 @@ jobs:
           make installdeps
           make installdeps-test
           pip freeze
-      - if: ${{ (matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-dask') }}
+      - if: ${{ matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel' }}
         name: Installing Latest Dependencies
         run: |
           pip install virtualenv

@@ -682,7 +682,6 @@ def test_iterative_algorithm_first_batch_order(
         assert (
             estimators_in_first_batch
             == [
-                "Linear Regressor",
                 "Elastic Net Regressor",
                 "Decision Tree Regressor",
                 "Extra Trees Regressor",

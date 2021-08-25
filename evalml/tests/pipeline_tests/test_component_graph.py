@@ -1,3 +1,4 @@
+import re
 import warnings
 from datetime import datetime, timedelta
 from unittest.mock import patch
@@ -12,7 +13,11 @@ from pandas.testing import (
 )
 from woodwork.logical_types import Double, Integer
 
-from evalml.exceptions import MissingComponentError, ParameterNotUsedWarning
+from evalml.exceptions import (
+    MethodPropertyNotFoundError,
+    MissingComponentError,
+    ParameterNotUsedWarning,
+)
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
@@ -139,6 +144,24 @@ def test_init_str_components():
     assert comp_graph.compute_order == expected_order
 
 
+def test_init_instantiated():
+    graph = {
+        "Imputer": [
+            Imputer(numeric_impute_strategy="constant", numeric_fill_value=0),
+            "X",
+            "y",
+        ]
+    }
+    component_graph = ComponentGraph(graph)
+    component_graph.instantiate(
+        {"Imputer": {"numeric_fill_value": 10, "categorical_fill_value": "Fill"}}
+    )
+    cg_imputer = component_graph.get_component("Imputer")
+    assert graph["Imputer"][0] == cg_imputer
+    assert cg_imputer.parameters["numeric_fill_value"] == 0
+    assert cg_imputer.parameters["categorical_fill_value"] is None
+
+
 def test_invalid_init():
     invalid_graph = {"Imputer": [Imputer, "X", "y"], "OHE": OneHotEncoder}
     with pytest.raises(
@@ -148,7 +171,7 @@ def test_invalid_init():
 
     graph = {
         "Imputer": [
-            Imputer(numeric_impute_strategy="constant", numeric_fill_value=0),
+            None,
             "X",
             "y",
         ]
@@ -197,7 +220,7 @@ def test_init_bad_graphs():
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "DateTime.x",
-            "DateTime.y",
+            "y",
         ],
     }
     with pytest.raises(ValueError, match="The given graph is not completely connected"):
@@ -207,7 +230,7 @@ def test_init_bad_graphs():
 def test_order_x_and_y():
     graph = {
         "Imputer": [Imputer, "X", "y"],
-        "OHE": [OneHotEncoder, "Imputer.x", "Imputer.y"],
+        "OHE": [OneHotEncoder, "Imputer.x", "y"],
         "Random Forest": [RandomForestClassifier, "OHE.x", "y"],
     }
     component_graph = ComponentGraph(graph).instantiate({})
@@ -406,22 +429,23 @@ def test_get_last_component(example_graph):
 
 @patch("evalml.pipelines.components.Transformer.fit_transform")
 @patch("evalml.pipelines.components.Estimator.fit")
-@patch("evalml.pipelines.components.Estimator.predict")
+@patch("evalml.pipelines.components.Estimator.predict_proba")
 def test_fit_component_graph(
-    mock_predict, mock_fit, mock_fit_transform, example_graph, X_y_binary
+    mock_predict_proba, mock_fit, mock_fit_transform, example_graph, X_y_binary
 ):
     X, y = X_y_binary
     mock_fit_transform.return_value = pd.DataFrame(X)
-    mock_predict.return_value = pd.Series(y)
+    mock_predict_proba.return_value = pd.DataFrame(y)
+    mock_predict_proba.return_value.ww.init()
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
 
     assert mock_fit_transform.call_count == 3
     assert mock_fit.call_count == 3
-    assert mock_predict.call_count == 2
+    assert mock_predict_proba.call_count == 2
 
 
-@patch("evalml.pipelines.components.Imputer.fit_transform")
+@patch("evalml.pipelines.components.TargetImputer.fit_transform")
 @patch("evalml.pipelines.components.OneHotEncoder.fit_transform")
 def test_fit_correct_inputs(
     mock_ohe_fit_transform, mock_imputer_fit_transform, X_y_binary
@@ -430,8 +454,8 @@ def test_fit_correct_inputs(
     X = pd.DataFrame(X)
     y = pd.Series(y)
     graph = {
-        "Imputer": [Imputer, "X", "y"],
-        "OHE": [OneHotEncoder, "Imputer.x", "Imputer.y"],
+        "Target Imputer": [TargetImputer, "X", "y"],
+        "OHE": [OneHotEncoder, "Target Imputer.x", "Target Imputer.y"],
     }
     expected_x = pd.DataFrame(index=X.index, columns=X.columns).fillna(1.0)
     expected_x.ww.init()
@@ -447,9 +471,9 @@ def test_fit_correct_inputs(
 
 @patch("evalml.pipelines.components.Transformer.fit_transform")
 @patch("evalml.pipelines.components.Estimator.fit")
-@patch("evalml.pipelines.components.Estimator.predict")
+@patch("evalml.pipelines.components.Estimator.predict_proba")
 def test_component_graph_fit_features(
-    mock_predict, mock_fit, mock_fit_transform, example_graph, X_y_binary
+    mock_predict_proba, mock_fit, mock_fit_transform, example_graph, X_y_binary
 ):
     X, y = X_y_binary
     component_graph = ComponentGraph(example_graph)
@@ -458,36 +482,111 @@ def test_component_graph_fit_features(
     mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
     mock_fit_transform.return_value = mock_X_t
     mock_fit.return_value = Estimator
-    mock_predict.return_value = pd.Series(y)
+    mock_predict_proba.return_value = pd.DataFrame(y)
+    mock_predict_proba.return_value.ww.init()
 
     component_graph.fit_features(X, y)
 
     assert mock_fit_transform.call_count == 3
     assert mock_fit.call_count == 2
-    assert mock_predict.call_count == 2
+    assert mock_predict_proba.call_count == 2
 
 
 @patch("evalml.pipelines.components.Estimator.fit")
+@patch("evalml.pipelines.components.Estimator.predict_proba")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_predict(mock_predict, mock_fit, example_graph, X_y_binary):
+def test_predict(mock_predict, mock_predict_proba, mock_fit, example_graph, X_y_binary):
     X, y = X_y_binary
+    mock_predict_proba.return_value = pd.DataFrame(y)
+    mock_predict_proba.return_value.ww.init()
     mock_predict.return_value = pd.Series(y)
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
 
     component_graph.predict(X)
     assert (
-        mock_predict.call_count == 5
-    )  # Called twice when fitting pipeline, thrice when predicting
+        mock_predict_proba.call_count == 4
+    )  # Called twice when fitting pipeline, twice when predicting
+    assert mock_predict.call_count == 1  # Called once during predict
+
     assert mock_fit.call_count == 3  # Only called during fit, not predict
 
 
 @patch("evalml.pipelines.components.Estimator.fit")
+@patch("evalml.pipelines.components.Estimator.predict_proba")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_predict_repeat_estimator(mock_predict, mock_fit, X_y_binary):
-    X, y = X_y_binary
+def test_predict_multiclass(
+    mock_predict, mock_predict_proba, mock_fit, example_graph, X_y_multi
+):
+    X, y = X_y_multi
+    mock_predict_proba.return_value = pd.DataFrame(
+        {
+            0: np.full(X.shape[0], 0.33),
+            1: np.full(X.shape[0], 0.33),
+            2: np.full(X.shape[0], 0.33),
+        }
+    )
+    mock_predict_proba.return_value.ww.init()
     mock_predict.return_value = pd.Series(y)
+    component_graph = ComponentGraph(example_graph).instantiate({})
+    component_graph.fit(X, y)
+    final_estimator_input = component_graph.compute_final_component_features(X, y)
+    assert final_estimator_input.columns.to_list() == [
+        "Col 0 Random Forest.x",
+        "Col 1 Random Forest.x",
+        "Col 2 Random Forest.x",
+        "Col 0 Elastic Net.x",
+        "Col 1 Elastic Net.x",
+        "Col 2 Elastic Net.x",
+    ]
+    for col in final_estimator_input:
+        assert np.array_equal(
+            final_estimator_input[col].to_numpy(), np.full(X.shape[0], 0.33)
+        )
+    component_graph.predict(X)
+    assert (
+        mock_predict_proba.call_count == 6
+    )  # Called twice when fitting pipeline, twice to compute final features, and twice when predicting
+    assert mock_predict.call_count == 1  # Called once during predict
+    assert mock_fit.call_count == 3  # Only called during fit, not predict
 
+
+@patch("evalml.pipelines.components.Estimator.fit")
+@patch("evalml.pipelines.components.Estimator.predict_proba")
+@patch("evalml.pipelines.components.Estimator.predict")
+def test_predict_regression(
+    mock_predict, mock_predict_proba, mock_fit, example_regression_graph, X_y_multi
+):
+    X, y = X_y_multi
+    mock_predict.return_value = pd.Series(y)
+    mock_predict_proba.side_effect = MethodPropertyNotFoundError
+    component_graph = ComponentGraph(example_regression_graph).instantiate({})
+    component_graph.fit(X, y)
+    final_estimator_input = component_graph.compute_final_component_features(X, y)
+    assert final_estimator_input.columns.to_list() == [
+        "Random Forest.x",
+        "Elastic Net.x",
+    ]
+    component_graph.predict(X)
+    assert (
+        mock_predict_proba.call_count == 6
+    )  # Called twice when fitting pipeline, twice to compute final features, and twice when predicting
+    assert (
+        mock_predict.call_count == 7
+    )  # Called because `predict_proba` does not exist for regresssions
+    assert mock_fit.call_count == 3  # Only called during fit, not predict
+
+
+@patch("evalml.pipelines.components.Estimator.fit")
+@patch("evalml.pipelines.components.Estimator.predict_proba")
+@patch("evalml.pipelines.components.Estimator.predict")
+def test_predict_repeat_estimator(
+    mock_predict, mock_predict_proba, mock_fit, X_y_binary
+):
+    X, y = X_y_binary
+    mock_predict_proba.return_value = pd.DataFrame(y)
+    mock_predict_proba.return_value.ww.init()
+    mock_predict.return_value = pd.Series(y)
     graph = {
         "Imputer": [Imputer, "X", "y"],
         "OneHot_RandomForest": [OneHotEncoder, "Imputer.x", "y"],
@@ -511,24 +610,39 @@ def test_predict_repeat_estimator(mock_predict, mock_fit, X_y_binary):
     )
 
     component_graph.predict(X)
-    assert mock_predict.call_count == 5
+    assert mock_predict_proba.call_count == 4
+    assert mock_predict.call_count == 1
     assert mock_fit.call_count == 3
 
 
 @patch("evalml.pipelines.components.Imputer.transform")
 @patch("evalml.pipelines.components.OneHotEncoder.transform")
-@patch("evalml.pipelines.components.RandomForestClassifier.predict")
-@patch("evalml.pipelines.components.ElasticNetClassifier.predict")
+@patch("evalml.pipelines.components.RandomForestClassifier.predict_proba")
+@patch("evalml.pipelines.components.ElasticNetClassifier.predict_proba")
 def test_compute_final_component_features(
-    mock_en_predict, mock_rf_predict, mock_ohe, mock_imputer, example_graph, X_y_binary
+    mock_en_predict_proba,
+    mock_rf_predict_proba,
+    mock_ohe,
+    mock_imputer,
+    example_graph,
+    X_y_binary,
 ):
     X, y = X_y_binary
     mock_imputer.return_value = pd.DataFrame(X)
     mock_ohe.return_value = pd.DataFrame(X)
-    mock_en_predict.return_value = pd.Series(np.ones(X.shape[0]))
-    mock_rf_predict.return_value = pd.Series(np.zeros(X.shape[0]))
+    mock_en_predict_proba.return_value = pd.DataFrame(
+        ({0: np.zeros(X.shape[0]), 1: np.ones(X.shape[0])})
+    )
+    mock_en_predict_proba.return_value.ww.init()
+    mock_rf_predict_proba.return_value = pd.DataFrame(
+        ({0: np.ones(X.shape[0]), 1: np.zeros(X.shape[0])})
+    )
+    mock_rf_predict_proba.return_value.ww.init()
     X_expected = pd.DataFrame(
-        {"Random Forest.x": np.zeros(X.shape[0]), "Elastic Net.x": np.ones(X.shape[0])}
+        {
+            "Col 1 Random Forest.x": np.zeros(X.shape[0]),
+            "Col 1 Elastic Net.x": np.ones(X.shape[0]),
+        }
     )
     component_graph = ComponentGraph(example_graph).instantiate({})
     component_graph.fit(X, y)
@@ -575,22 +689,11 @@ def test_predict_empty_graph(X_y_binary):
     component_graph.instantiate({})
 
     component_graph.fit(X, y)
-    X_t = component_graph.predict(X)
+    X_t = component_graph.transform(X, y)
     assert_frame_equal(X, X_t)
 
-
-@patch("evalml.pipelines.components.OneHotEncoder.fit_transform")
-@patch("evalml.pipelines.components.OneHotEncoder.transform")
-def test_predict_transformer_end(mock_fit_transform, mock_transform, X_y_binary):
-    X, y = X_y_binary
-    graph = {"Imputer": [Imputer, "X", "y"], "OHE": [OneHotEncoder, "Imputer.x", "y"]}
-    component_graph = ComponentGraph(graph).instantiate({})
-    mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
-    mock_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
-
-    component_graph.fit(X, y)
-    output = component_graph.predict(X)
-    assert_frame_equal(pd.DataFrame(X), output)
+    X_pred = component_graph.predict(X)
+    assert_frame_equal(X, X_pred)
 
 
 def test_no_instantiate_before_fit(X_y_binary):
@@ -802,8 +905,8 @@ def test_input_feature_names(example_graph):
         "column_1_c",
     ]
     assert input_feature_names["Logistic Regression"] == [
-        "Random Forest.x",
-        "Elastic Net.x",
+        "Col 1 Random Forest.x",
+        "Col 1 Elastic Net.x",
     ]
 
 
@@ -870,8 +973,8 @@ def test_custom_input_feature_types(example_graph):
         "column_2_5",
     ]
     assert input_feature_names["Logistic Regression"] == [
-        "Random Forest.x",
-        "Elastic Net.x",
+        "Col 1 Random Forest.x",
+        "Col 1 Elastic Net.x",
     ]
 
 
@@ -1040,8 +1143,8 @@ def test_component_graph_dataset_with_different_types():
             )
         )
         assert input_feature_names["Logistic Regression"] == [
-            "Random Forest.x",
-            "Elastic Net.x",
+            "Col 1 Random Forest.x",
+            "Col 1 Elastic Net.x",
         ]
 
     check_feature_names(component_graph.input_feature_names)
@@ -1569,6 +1672,7 @@ class SubsetData(Transformer):
     """To simulate a transformer that modifies the target but is not a target transformer, e.g. a sampler."""
 
     name = "Subset Data"
+    modifies_target = True
 
     def __init__(self, parameters=None, random_seed=0):
         super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
@@ -2037,7 +2141,7 @@ def test_component_graph_instantiate_parameters(pipeline_parameters, set_values)
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Scaler.x",
-            "Scaler.y",
+            "y",
         ],
     }
     component_graph = ComponentGraph(graph)
@@ -2104,3 +2208,124 @@ def test_component_graph_compute_final_component_features_with_sampler(
     assert len(mock_estimator_fit.call_args[0][0]) == expected_length
     features_for_estimator = component_graph.compute_final_component_features(X, y)
     assert len(features_for_estimator) == len(y)
+
+
+@patch("evalml.pipelines.components.Imputer.transform")
+@patch("evalml.pipelines.components.OneHotEncoder.transform")
+@patch("evalml.pipelines.components.RandomForestClassifier.predict")
+def test_component_graph_transform(
+    mock_rf_predict,
+    mock_ohe_transform,
+    mock_imputer_transform,
+    X_y_binary,
+    make_data_type,
+):
+    X, y = X_y_binary
+
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
+    dummy_return_value = pd.DataFrame({"test df": [1, 2]})
+    mock_imputer_transform.return_value = X
+    mock_ohe_transform.return_value = dummy_return_value
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+    }
+
+    mock_rf_predict.return_value = y
+
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    transformed_X = component_graph.transform(X, y)
+    assert_frame_equal(transformed_X, dummy_return_value)
+
+    component_dict_with_estimator = {
+        "Imputer": ["Imputer", "X", "y"],
+        "Random Forest Classifier": ["Random Forest Classifier", "Imputer.x", "y"],
+        "OHE": ["One Hot Encoder", "Random Forest Classifier.x", "y"],
+    }
+    component_graph = ComponentGraph(component_dict_with_estimator)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    transformed_X = component_graph.transform(X, y)
+    assert_frame_equal(transformed_X, dummy_return_value)
+
+
+@patch("evalml.pipelines.components.Imputer.transform")
+@patch("evalml.pipelines.components.OneHotEncoder.transform")
+@patch("evalml.pipelines.components.TargetImputer.transform")
+def test_component_graph_transform_with_target_transformer(
+    mock_target_imputer_transform,
+    mock_ohe_transform,
+    mock_imputer_transform,
+    X_y_binary,
+    make_data_type,
+):
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        "Target Imputer": ["Target Imputer", "OHE.x", "y"],
+    }
+    mock_imputer_transform.return_value = X
+    mock_ohe_transform.return_value = X
+    mock_target_imputer_transform.return_value = tuple([X, y])
+
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    transformed = component_graph.transform(X, y)
+    assert_frame_equal(transformed[0], X)
+    assert_series_equal(transformed[1], y)
+
+
+def test_component_graph_transform_with_estimator_end(X_y_binary):
+    X, y = X_y_binary
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+        "RF": ["Random Forest Classifier", "OHE.x", "y"],
+    }
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot call transform() on a component graph because the final component is not a Transformer."
+        ),
+    ):
+        component_graph.transform(X, y)
+
+
+def test_component_graph_predict_with_transformer_end(X_y_binary):
+    X, y = X_y_binary
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OHE": ["One Hot Encoder", "Imputer.x", "y"],
+    }
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({})
+    component_graph.fit(X, y)
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Cannot call predict() on a component graph because the final component is not an Estimator."
+        ),
+    ):
+        component_graph.predict(X)
+
+
+def test_component_graph_with_invalid_y_edge(X_y_binary):
+    X, y = X_y_binary
+    component_dict = {
+        "OHE": ["One Hot Encoder", "X", "y"],
+        "RF": ["Random Forest Classifier", "OHE.x", "OHE.y"],
+    }
+    with pytest.raises(ValueError, match="OHE.y is not a valid input edge"):
+        ComponentGraph(component_dict)

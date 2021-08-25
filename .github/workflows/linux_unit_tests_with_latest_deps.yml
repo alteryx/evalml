@@ -20,13 +20,16 @@ jobs:
             command: 'git-test-automl'
           - python_version: "3.8"
             core_dependencies: false
+            command: 'git-test-prophet'
+          - python_version: "3.8"
+            core_dependencies: false
             command: 'git-test-modelunderstanding'
           - python_version: "3.8"
             core_dependencies: false
             command: 'git-test-other'
           - python_version: "3.8"
             core_dependencies: false
-            command: 'git-test-dask'
+            command: 'git-test-parallel'
           - python_version: "3.8"
             core_dependencies: true
             command: 'git-test-automl-core'
@@ -38,7 +41,7 @@ jobs:
             command: 'git-test-other-core'
           - python_version: "3.8"
             core_dependencies: true
-            command: 'git-test-minimal-deps-dask'
+            command: 'git-test-minimal-deps-parallel'
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
@@ -65,22 +68,22 @@ jobs:
           # "!" negates return code. exit nonzero if any of these deps are found
           ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
           exit $?
-      - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-automl' || matrix.command == 'git-test-other') }}
+      - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel') }}
+        name: Installing Dependencies
+        run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          make installdeps
+          make installdeps-test
+          pip freeze
+      - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-automl' || matrix.command == 'git-test-prophet') }}
         name: Installing Dependencies and Prophet
         run: |
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
           pip install cmdstan-builder==0.0.4
-          make installdeps
-          make installdeps-test
-          pip freeze
-      - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-dask') }}
-        name: Installing Dependencies
-        run: |
-          pip install virtualenv
-          virtualenv test_python -q
-          source test_python/bin/activate
           make installdeps
           make installdeps-test
           pip freeze
