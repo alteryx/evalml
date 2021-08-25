@@ -118,6 +118,7 @@ def test_column_transformer_transform(class_to_test, checking_functions):
 
     if class_to_test is SelectByType:
         transformer = class_to_test(column_types=["categorical", "Boolean", "Integer"])
+        X.ww.init(logical_types={"one": "categorical"})
     else:
         transformer = class_to_test(columns=list(X.columns))
     assert check4(X, transformer.transform(X))
@@ -175,6 +176,7 @@ def test_column_transformer_fit_transform(class_to_test, checking_functions):
         assert check2(X, class_to_test(columns=["one"]).fit_transform(X))
 
     if class_to_test is SelectByType:
+        X.ww.init(logical_types={"one": "categorical"})
         assert check3(
             X,
             class_to_test(
@@ -254,6 +256,7 @@ def test_typeortag_column_transformer_ww_logical_and_semantic_types():
             "four": [4.0, 2.3, 6.5, 2.6],
         }
     )
+    X.ww.init(logical_types={"one": "categorical"})
 
     transformer = SelectByType(column_types=[ww.logical_types.Age])
     with pytest.raises(ValueError, match="not found in input data"):
