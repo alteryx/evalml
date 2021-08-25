@@ -217,12 +217,12 @@ def test_iterative_algorithm_passes_pipeline_params(
     algo = IterativeAlgorithm(
         allowed_pipelines=dummy_binary_pipeline_classes,
         ensembling=ensembling_value,
-        pipeline_params={"pipeline": {"gap": 2, "max_delay": 10}},
+        pipeline_params={"pipeline": {"gap": 2, "max_delay": 10, "forecast_horizon": 3}},
     )
 
     next_batch = algo.next_batch()
     assert all(
-        [p.parameters["pipeline"] == {"gap": 2, "max_delay": 10} for p in next_batch]
+        [p.parameters["pipeline"] == {"gap": 2, "max_delay": 10, "forecast_horizon": 3} for p in next_batch]
     )
 
     # the "best" score will be the 1st dummy pipeline
@@ -235,7 +235,7 @@ def test_iterative_algorithm_passes_pipeline_params(
             next_batch = algo.next_batch()
             assert all(
                 [
-                    p.parameters["pipeline"] == {"gap": 2, "max_delay": 10}
+                    p.parameters["pipeline"] == {"gap": 2, "max_delay": 10, "forecast_horizon": 3}
                     for p in next_batch
                 ]
             )
@@ -250,7 +250,7 @@ def test_iterative_algorithm_passes_pipeline_params(
             ]["input_pipelines"]
             assert all(
                 [
-                    pl.parameters["pipeline"] == {"gap": 2, "max_delay": 10}
+                    pl.parameters["pipeline"] == {"gap": 2, "max_delay": 10, "forecast_horizon": 3}
                     for pl in input_pipelines
                 ]
             )
@@ -478,7 +478,7 @@ def test_iterative_algorithm_pipeline_params(
                 allowed_pipelines=dummy_binary_pipeline_classes,
                 random_seed=0,
                 pipeline_params={
-                    "pipeline": {"gap": 2, "max_delay": 10},
+                    "pipeline": {"gap": 2, "max_delay": 10, "forecast_horizon": 3},
                     "Mock Classifier": {"dummy_parameter": parameters},
                 },
             )
@@ -488,7 +488,7 @@ def test_iterative_algorithm_pipeline_params(
             allowed_pipelines=dummy_binary_pipeline_classes,
             random_seed=0,
             pipeline_params={
-                "pipeline": {"gap": 2, "max_delay": 10},
+                "pipeline": {"gap": 2, "max_delay": 10, "forecast_horizon": 3},
                 "Mock Classifier": {"dummy_parameter": parameters},
             },
         )
@@ -496,7 +496,7 @@ def test_iterative_algorithm_pipeline_params(
     parameter = parameters
     next_batch = algo.next_batch()
     assert all(
-        [p.parameters["pipeline"] == {"gap": 2, "max_delay": 10} for p in next_batch]
+        [p.parameters["pipeline"] == {"gap": 2, "max_delay": 10, "forecast_horizon": 3} for p in next_batch]
     )
     assert all(
         [

@@ -5,6 +5,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types, pad_with_nans
+from evalml.pipelines.components.transformers import DelayedFeatureTransformer
 
 
 class TimeSeriesBaselineEstimator(Estimator):
@@ -32,54 +33,43 @@ class TimeSeriesBaselineEstimator(Estimator):
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]"""
-    predict_uses_y = True
+    predict_uses_y = False
 
-    def __init__(self, gap=1, random_seed=0, **kwargs):
+    def __init__(self, gap=1, forecast_horizon=1, random_seed=0, **kwargs):
         self._prediction_value = None
-        self._num_features = None
-        self.gap = gap
+        self.start_delay = forecast_horizon + gap
+        self._classes = None
 
         if gap < 0:
             raise ValueError(
                 f"gap value must be a positive integer. {gap} was provided."
             )
 
-        parameters = {"gap": gap}
+        parameters = {"gap": gap, "forecast_horizon": forecast_horizon}
         parameters.update(kwargs)
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
 
     def fit(self, X, y=None):
-        if X is None:
-            X = pd.DataFrame()
-        X = infer_feature_types(X)
-        self._num_features = X.shape[1]
+        if y is None:
+            raise ValueError("Cannot fit Time Series Baseline Classifier if y is None")
+        vals, _ = np.unique(y, return_counts=True)
+        self._classes = list(vals)
         return self
 
-    def predict(self, X, y=None):
-        if y is None:
-            raise ValueError(
-                "Cannot predict Time Series Baseline Estimator if y is None"
-            )
-        y = infer_feature_types(y)
+    def predict(self, X):
+        X = infer_feature_types(X)
+        if f'target_delay_{self.start_delay}' not in X.columns:
+            raise ValueError("Time Series Baseline Estimator is meant to be used in a pipeline with "
+                             "a DelayedFeaturesTransformer")
+        return X.ww[f'target_delay_{self.start_delay}']
 
-        if self.gap == 0:
-            y = y.shift(periods=1)
-
-        return infer_feature_types(y)
-
-    def predict_proba(self, X, y=None):
-        if y is None:
-            raise ValueError(
-                "Cannot predict Time Series Baseline Estimator if y is None"
-            )
-        y = infer_feature_types(y)
-        preds = self.predict(X, y).dropna(axis=0, how="any").astype("int")
-        proba_arr = np.zeros((len(preds), y.max() + 1))
+    def predict_proba(self, X):
+        preds = self.predict(X).astype("int")
+        proba_arr = np.zeros((len(preds), len(self._classes)))
         proba_arr[np.arange(len(preds)), preds] = 1
-        padded = pad_with_nans(pd.DataFrame(proba_arr), len(y) - len(preds))
-        return infer_feature_types(padded)
+        return infer_feature_types(proba_arr)
 
     @property
     def feature_importance(self):
@@ -91,4 +81,4 @@ class TimeSeriesBaselineEstimator(Estimator):
             np.ndarray (float): an array of zeroes
 
         """
-        return np.zeros(self._num_features)
+        return np.zeros(1)

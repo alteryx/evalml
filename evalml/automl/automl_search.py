@@ -96,7 +96,7 @@ def search(
             - R2 for regression problems.
 
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
-        in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+        in time series problems, values should be passed in for the date_index, gap, forecast_horizon, and max_delay variables.
 
     Other keyword arguments which are provided will be passed to AutoMLSearch.
 
@@ -228,7 +228,7 @@ class AutoMLSearch:
             max_iterations have precedence over stopping the search.
 
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+            in time series problems, values should be passed in for the date_index, gap, forecast_horizon and, max_delay variables.
 
         train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
@@ -746,13 +746,13 @@ class AutoMLSearch:
 
     def _validate_problem_configuration(self, problem_configuration=None):
         if is_time_series(self.problem_type):
-            required_parameters = {"date_index", "gap", "max_delay"}
+            required_parameters = {"date_index", "gap", "max_delay", "forecast_horizon"}
             if not problem_configuration or not all(
                 p in problem_configuration for p in required_parameters
             ):
                 raise ValueError(
-                    "user_parameters must be a dict containing values for at least the date_index, gap, and max_delay "
-                    f"parameters. Received {problem_configuration}."
+                    "user_parameters must be a dict containing values for at least the date_index, gap, max_delay, "
+                    f"and forecast_horizon parameters. Received {problem_configuration}."
                 )
         return problem_configuration or {}
 
@@ -1045,19 +1045,22 @@ class AutoMLSearch:
             date_index = self.problem_configuration["date_index"]
             gap = self.problem_configuration["gap"]
             max_delay = self.problem_configuration["max_delay"]
+            forecast_horizon = self.problem_configuration["forecast_horizon"]
             baseline = pipeline_class(
-                component_graph=["Time Series Baseline Estimator"],
+                component_graph=["Delayed Feature Transformer", "Time Series Baseline Estimator"],
                 custom_name=pipeline_name,
                 parameters={
                     "pipeline": {
                         "date_index": date_index,
                         "gap": gap,
                         "max_delay": max_delay,
+                        "forecast_horizon": forecast_horizon
                     },
+                    "Delayed Feature Transformer": {"max_delay": 0, "gap": gap, "forecast_horizon": forecast_horizon,
+                                                    "delay_target": True, "delay_features": False},
                     "Time Series Baseline Estimator": {
-                        "date_index": date_index,
                         "gap": gap,
-                        "max_delay": max_delay,
+                        "forecast_horizon": forecast_horizon
                     },
                 },
             )

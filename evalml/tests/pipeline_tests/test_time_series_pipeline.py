@@ -188,7 +188,6 @@ def test_fit_drop_nans_before_estimator(
     np.testing.assert_equal(target_passed_to_estimator.values, expected_target)
 
 
-@pytest.mark.parametrize("only_use_y", [False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize(
     "forecast_horizon,gap,max_delay,date_index",
@@ -236,11 +235,10 @@ def test_predict_and_predict_in_sample(
     max_delay,
     date_index,
     include_delayed_features,
-    only_use_y,
     ts_data,
 ):
 
-    if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
+    if not include_delayed_features or (max_delay == 0 and gap == 0):
         pytest.skip("This would result in an empty feature dataframe.")
 
     X, y = ts_data
@@ -273,25 +271,17 @@ def test_predict_and_predict_in_sample(
     else:
         mock_classifier_predict.side_effect = mock_predict
 
-    if only_use_y:
-        pl.fit(None, y.iloc[:20])
-        preds_in_sample = pl.predict_in_sample(
-            X=None, y=y.iloc[20:], X_train=None, y_train=y.iloc[:20]
-        )
-        preds = pl.predict(
-            X.iloc[20 : 20 + forecast_horizon], None, X_train=None, y_train=y.iloc[:20]
-        )
-    else:
-        pl.fit(X.iloc[:20], y.iloc[:20])
-        preds_in_sample = pl.predict_in_sample(
-            X.iloc[20:], y.iloc[20:], X.iloc[:20], y.iloc[:20]
-        )
-        preds = pl.predict(
-            X.iloc[20 : 20 + forecast_horizon],
-            None,
-            X_train=X.iloc[:20],
-            y_train=y.iloc[:20],
-        )
+
+    pl.fit(X.iloc[:20], y.iloc[:20])
+    preds_in_sample = pl.predict_in_sample(
+        X.iloc[20:], y.iloc[20:], X.iloc[:20], y.iloc[:20]
+    )
+    preds = pl.predict(
+        X.iloc[20: 20 + forecast_horizon],
+        None,
+        X_train=X.iloc[:20],
+        y_train=y.iloc[:20],
+    )
 
     assert len(preds) == forecast_horizon
     assert (preds.index == y.iloc[20 : 20 + forecast_horizon].index).all()

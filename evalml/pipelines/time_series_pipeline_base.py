@@ -69,20 +69,36 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         self._fit(X, y)
         return self
 
+    @staticmethod
+    def _move_index_forward(index, gap):
+        if gap == 0:
+            return index
+        elif isinstance(index, (pd.DatetimeIndex, pd.PeriodIndex, pd.TimedeltaIndex)):
+            return index.shift(gap)
+        else:
+            return index + gap
+
     def _compute_holdout_features_and_target(
         self, X_holdout, y_holdout, X_train, y_train
     ):
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         X_holdout, y_holdout = self._convert_to_woodwork(X_holdout, y_holdout)
         last_row_of_training_needed_for_features = (
-            self.forecast_horizon + self.gap + self.max_delay
+            self.forecast_horizon + self.max_delay
         )
+        gap_features = pd.DataFrame()
+        gap_target = pd.Series()
+        if self.gap:
+            gap_features = X_train.iloc[[-1] * self.gap]
+            gap_features.index = self._move_index_forward(X_train.index[-self.gap:], self.gap)
+            gap_target = y_train.iloc[[-1] * self.gap]
+            gap_target.index = self._move_index_forward(y_train.index[-self.gap:], self.gap)
         padded_features = pd.concat(
-            [X_train.iloc[-last_row_of_training_needed_for_features:], X_holdout],
+            [X_train.iloc[-last_row_of_training_needed_for_features:], gap_features, X_holdout],
             axis=0,
         )
         padded_target = pd.concat(
-            [y_train.iloc[-last_row_of_training_needed_for_features:], y_holdout],
+            [y_train.iloc[-last_row_of_training_needed_for_features:], gap_target, y_holdout],
             axis=0,
         )
         padded_features.ww.init(schema=X_train.ww.schema)
@@ -90,7 +106,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             padded_target, logical_type=y_train.ww.logical_type
         )
         features = self.compute_estimator_features(padded_features, padded_target)
-        features_holdout = features.iloc[-len(y_holdout) :]
+        features_holdout = features.iloc[-len(y_holdout):]
         return features_holdout, y_holdout
 
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):
