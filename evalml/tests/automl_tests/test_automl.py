@@ -699,6 +699,7 @@ def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
         optimize_thresholds=False,
         max_iterations=num_max_iterations,
         n_jobs=1,
+        verbose=True,
     )
     automl.search()
 
