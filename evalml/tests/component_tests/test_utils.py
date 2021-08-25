@@ -36,7 +36,7 @@ def test_all_components(
     # Depending on the environment the detrender/Arima and/or Prophet will not be installed
 
     if has_minimal_dependencies:
-        n_components = 41
+        n_components = 42
     elif is_using_conda:
         # No prophet and no arima
         n_components = 52
