@@ -100,8 +100,8 @@ def infer_feature_types(data, feature_types=None):
         return convert_all_nan_unknown_to_double(data)
 
     if isinstance(data, pd.Series):
+        data = data.replace(pd.NA, np.nan)
         if all(data.isna()):
-            data = data.replace(pd.NA, np.nan)
             feature_types = "Double"
         return ww.init_series(data, logical_type=feature_types)
     else:
