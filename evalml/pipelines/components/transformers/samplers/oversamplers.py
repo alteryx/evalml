@@ -46,6 +46,7 @@ class Oversampler(BaseSampler):
         }
         parameters.update(kwargs)
         self.sampler_options = {"SMOTE": im.SMOTE, "SMOTENC": im.SMOTENC, "SMOTEN": im.SMOTEN}
+        self.sampler = None
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
