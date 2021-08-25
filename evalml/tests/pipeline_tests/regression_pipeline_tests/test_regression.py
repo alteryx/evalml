@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -85,11 +86,10 @@ def test_woodwork_regression_pipeline(diabetes_local, linear_regression_pipeline
 
 def test_custom_indices():
     X = pd.DataFrame(
-        {"a": ["a", "b", "a", "a", "a", "c", "c", "c"], "b": [0, 1, 1, 1, 1, 1, 0, 1]}
+        {"a": ["a", "b", "a", "a", "a", "c", "c", "c"]*3, "b": [0, 1, 1, 1, 1, 1, 0, 1]*3}
     )
-    y = pd.Series([0, 0, 0, 1, 0, 1, 0, 0], index=[7, 2, 1, 4, 5, 3, 6, 8])
+    y = pd.Series([0, 0, 0, 1, 0, 1, 0, 0]*3, index=np.random.choice(24, 24, replace=False))
     x1, x2, y1, y2 = split_data(X, y, problem_type="regression")
-
     pipeline = RegressionPipeline(
         component_graph=["Imputer", "One Hot Encoder", "Linear Regressor"],
         parameters={},
