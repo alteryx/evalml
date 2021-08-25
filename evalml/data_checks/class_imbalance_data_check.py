@@ -58,22 +58,22 @@ class ClassImbalanceDataCheck(DataCheck):
             >>> X = pd.DataFrame()
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
             >>> target_check = ClassImbalanceDataCheck(threshold=0.10)
-            >>> assert target_check.validate(X, y) == {"errors": [{"message": "The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]",\
-                                                                   "data_check_name": "ClassImbalanceDataCheck",\
-                                                                   "level": "error",\
-                                                                   "code": "CLASS_IMBALANCE_BELOW_FOLDS",\
-                                                                   "details": {"target_values": [0]}}],\
-                                                     "warnings": [{"message": "The following labels fall below 10% of the target: [0]",\
-                                                                   "data_check_name": "ClassImbalanceDataCheck",\
-                                                                   "level": "warning",\
-                                                                   "code": "CLASS_IMBALANCE_BELOW_THRESHOLD",\
-                                                                   "details": {"target_values": [0]}},\
-                                                                   {"message": "The following labels in the target have severe class imbalance because they fall under 10% of the target and have less than 100 samples: [0]",\
-                                                                   "data_check_name": "ClassImbalanceDataCheck",\
-                                                                   "level": "warning",\
-                                                                   "code": "CLASS_IMBALANCE_SEVERE",\
-                                                                   "details": {"target_values": [0]}}],\
-                                                     "actions": []}
+            >>> assert target_check.validate(X, y) == {"errors": [{"message": "The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]",
+            ...                                                    "data_check_name": "ClassImbalanceDataCheck",
+            ...                                                    "level": "error",
+            ...                                                    "code": "CLASS_IMBALANCE_BELOW_FOLDS",
+            ...                                                    "details": {"target_values": [0]}}],
+            ...                                      "warnings": [{"message": "The following labels fall below 10% of the target: [0]",
+            ...                                                    "data_check_name": "ClassImbalanceDataCheck",
+            ...                                                    "level": "warning",
+            ...                                                    "code": "CLASS_IMBALANCE_BELOW_THRESHOLD",
+            ...                                                    "details": {"target_values": [0]}},
+            ...                                                    {"message": "The following labels in the target have severe class imbalance because they fall under 10% of the target and have less than 100 samples: [0]",
+            ...                                                    "data_check_name": "ClassImbalanceDataCheck",
+            ...                                                    "level": "warning",
+            ...                                                    "code": "CLASS_IMBALANCE_SEVERE",
+            ...                                                    "details": {"target_values": [0]}}],
+            ...                                      "actions": []}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
