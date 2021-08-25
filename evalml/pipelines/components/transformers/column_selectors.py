@@ -30,8 +30,8 @@ class ColumnSelector(Transformer):
         column_names = X.columns
 
         missing_cols = set(cols) - set(column_names)
-        if missing_cols and len(cols) > 0:
-            raise ValueError("Columns {cols} not found in input data.")
+        if missing_cols:
+            raise ValueError("Columns of type {column_types} not found in input data.")
 
     @abstractmethod
     def _modify_columns(self, cols, X, y=None):
