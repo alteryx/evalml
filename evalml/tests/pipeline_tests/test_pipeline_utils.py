@@ -330,15 +330,13 @@ def test_stacked_estimator_in_pipeline(
 def test_make_component_list_from_actions():
     assert _make_component_list_from_actions([]) == []
 
-    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ["some col"]})]
+    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some col"})]
     assert _make_component_list_from_actions(actions) == [
         DropColumns(columns=["some col"])
     ]
 
     actions = [
-        DataCheckAction(
-            DataCheckActionCode.DROP_COL, metadata={"columns": ["some col"]}
-        ),
+        DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "some col"}),
         DataCheckAction(
             DataCheckActionCode.IMPUTE_COL,
             metadata={
@@ -349,8 +347,8 @@ def test_make_component_list_from_actions():
         ),
     ]
     assert _make_component_list_from_actions(actions) == [
-        DropColumns(columns=["some col"]),
         TargetImputer(impute_strategy="most_frequent"),
+        DropColumns(columns=["some col"]),
     ]
 
 
