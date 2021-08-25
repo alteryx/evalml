@@ -89,7 +89,7 @@ def search(
 
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
 
-        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+        problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
             When set to 'auto', chooses:
@@ -189,7 +189,7 @@ def search_iterative(
 
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
 
-        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+        problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
             When set to 'auto', chooses:
@@ -260,7 +260,7 @@ class AutoMLSearch:
 
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
 
-        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+        problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
             When set to 'auto', chooses:
