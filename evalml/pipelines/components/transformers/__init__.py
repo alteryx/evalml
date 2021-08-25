@@ -24,4 +24,5 @@ from .preprocessing import (
     LogTransformer,
     EmailFeaturizer,
     URLFeaturizer,
+    DropRowsTransformer,
 )

@@ -55,5 +55,6 @@ from .transformers import (
     LogTransformer,
     EmailFeaturizer,
     URLFeaturizer,
+    DropRowsTransformer,
 )
 from .ensemble import SklearnStackedEnsembleClassifier, SklearnStackedEnsembleRegressor
