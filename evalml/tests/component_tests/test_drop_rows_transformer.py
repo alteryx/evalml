@@ -15,6 +15,11 @@ def test_drop_rows_transformer_init():
     assert drop_rows_transformer.indices_to_drop == [0, 1]
 
 
+def test_drop_rows_transformer_init_with_duplicate_indices():
+    with pytest.raises(ValueError, match="All input indices must be unique."):
+        DropRowsTransformer(indices_to_drop=[0, 0])
+
+
 def test_drop_rows_transformer_fit_transform():
     X = pd.DataFrame({"a column": [1, 2, 3], "another col": [4, 5, 6]})
     X_expected = X.copy()
@@ -39,6 +44,20 @@ def test_drop_rows_transformer_fit_transform():
     assert fit_transformed[1] is None
 
 
+def test_drop_rows_transformer_fit_transform_with_empty_indices_to_drop():
+    X = pd.DataFrame({"a column": [1, 2, 3], "another col": [4, 5, 6]})
+    y = pd.Series([1, 0, 1])
+
+    drop_rows_transformer = DropRowsTransformer(indices_to_drop=[])
+    fit_transformed = drop_rows_transformer.fit_transform(X)
+    assert_frame_equal(X, fit_transformed[0])
+    assert fit_transformed[1] is None
+
+    fit_transformed = drop_rows_transformer.fit_transform(X, y)
+    assert_frame_equal(X, fit_transformed[0])
+    assert_series_equal(y, fit_transformed[1])
+
+
 def test_drop_rows_transformer_fit_transform_with_target():
     X = pd.DataFrame({"a column": [1, 2, 3], "another col": [4, 5, 6]})
     y = pd.Series([1, 0, 1])
@@ -59,20 +78,20 @@ def test_drop_rows_transformer_fit_transform_with_target():
     assert_series_equal(y_expected, transformed[1])
 
     drop_rows_transformer = DropRowsTransformer(indices_to_drop=indices_to_drop)
-    fit_transformed = drop_rows_transformer.fit_transform(X)
+    fit_transformed = drop_rows_transformer.fit_transform(X, y)
     assert_frame_equal(fit_transformed[0], transformed[0])
-    assert fit_transformed[1] is None
+    assert_series_equal(y_expected, fit_transformed[1])
 
 
 def test_drop_rows_transformer_index_not_in_input():
     X = pd.DataFrame({"numerical col": [1, 2]})
     y = pd.Series([0, 1], index=["a", "b"])
     drop_rows_transformer = DropRowsTransformer(indices_to_drop=[100, 1])
-    with pytest.raises(ValueError, match="Index does not exist in input features."):
+    with pytest.raises(ValueError, match="do not exist in input features"):
         drop_rows_transformer.fit(X)
 
     drop_rows_transformer = DropRowsTransformer(indices_to_drop=[0])
-    with pytest.raises(ValueError, match="Index does not exist in input target."):
+    with pytest.raises(ValueError, match="do not exist in input target"):
         drop_rows_transformer.fit(X, y)
 
 
