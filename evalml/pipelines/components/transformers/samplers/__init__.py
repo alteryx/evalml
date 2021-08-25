@@ -1,2 +1,2 @@
 from .undersampler import Undersampler
-from .oversamplers import Oversampler
+from .oversampler import Oversampler
