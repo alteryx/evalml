@@ -22,6 +22,7 @@ from evalml.pipelines.components import (  # noqa: F401
     DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
+    DropRowsTransformer,
     EmailFeaturizer,
     Estimator,
     Imputer,
@@ -326,10 +327,13 @@ def _make_component_list_from_actions(actions):
     for action in actions:
         if action.action_code == DataCheckActionCode.DROP_COL:
             components.append(DropColumns(columns=action.metadata["columns"]))
-        if action.action_code == DataCheckActionCode.IMPUTE_COL:
+        elif action.action_code == DataCheckActionCode.IMPUTE_COL:
             metadata = action.metadata
             if metadata["is_target"]:
                 components.append(
                     TargetImputer(impute_strategy=metadata["impute_strategy"])
                 )
+        elif action.action_code == DataCheckActionCode.DROP_ROWS:
+            indices = action.metadata["indices"]
+            components.append(DropRowsTransformer(indices_to_drop=indices))
     return components
