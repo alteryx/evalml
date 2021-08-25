@@ -15,6 +15,7 @@ from evalml.pipelines.components import (
     DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
+    DropRowsTransformer,
     EmailFeaturizer,
     Estimator,
     Imputer,
@@ -29,7 +30,6 @@ from evalml.pipelines.components import (
     TextFeaturizer,
     Transformer,
     URLFeaturizer,
-    DropRowsTransformer
 )
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
@@ -346,13 +346,14 @@ def test_make_component_list_from_actions():
                 "impute_strategy": "most_frequent",
             },
         ),
-        DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [1, 2]})
+        DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [1, 2]}),
     ]
     assert _make_component_list_from_actions(actions) == [
         TargetImputer(impute_strategy="most_frequent"),
         DropRowsTransformer(indices_to_drop=[1, 2]),
         DropColumns(columns=["some col"]),
     ]
+
 
 @pytest.mark.parametrize(
     "samplers",
