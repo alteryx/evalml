@@ -9,9 +9,7 @@ from .imputers import PerColumnImputer, SimpleImputer, Imputer, TargetImputer
 from .scalers import StandardScaler
 from .samplers import (
     Undersampler,
-    SMOTEOversampler,
-    SMOTENCOversampler,
-    SMOTENOversampler,
+    Oversampler,
 )
 from .column_selectors import DropColumns, SelectColumns, SelectByType
 from .dimensionality_reduction import LinearDiscriminantAnalysis, PCA
