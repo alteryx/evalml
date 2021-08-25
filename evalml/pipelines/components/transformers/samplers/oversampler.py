@@ -23,6 +23,7 @@ class Oversampler(BaseSampler):
         n_jobs (int): The number of CPU cores to use. Defaults to -1.
         random_seed (int): The seed to use for random sampling. Defaults to 0.
     """
+
     name = "Oversampler"
     hyperparameter_ranges = {}
     """{}"""
@@ -45,7 +46,11 @@ class Oversampler(BaseSampler):
             "sampling_ratio_dict": sampling_ratio_dict,
         }
         parameters.update(kwargs)
-        self.sampler_options = {"SMOTE": im.SMOTE, "SMOTENC": im.SMOTENC, "SMOTEN": im.SMOTEN}
+        self.sampler_options = {
+            "SMOTE": im.SMOTE,
+            "SMOTENC": im.SMOTENC,
+            "SMOTEN": im.SMOTEN,
+        }
         self.sampler = None
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed

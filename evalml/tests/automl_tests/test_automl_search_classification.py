@@ -1202,10 +1202,7 @@ def test_automl_search_sampler_ratio(
             )
         else:
             assert all(
-                any(
-                    "Oversampler" in comp.name
-                    for comp in pipeline.component_graph
-                )
+                any("Oversampler" in comp.name for comp in pipeline.component_graph)
                 for pipeline in pipelines
             )
         for comp in pipelines[0].component_graph:
@@ -1376,9 +1373,7 @@ def test_automl_search_dictionary_oversampler(
     else:
         y = pd.Series([0] * 900 + [1] * 150 + [2] * 150)
 
-    pipeline_parameters = {
-        "Oversampler": {"sampling_ratio_dict": sampling_ratio_dict}
-    }
+    pipeline_parameters = {"Oversampler": {"sampling_ratio_dict": sampling_ratio_dict}}
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,

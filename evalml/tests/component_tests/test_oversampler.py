@@ -159,9 +159,7 @@ def test_oversample_imbalanced_multiclass(
     assert_series_equal(transformed_y, fit_transformed_y)
 
 
-@pytest.mark.parametrize(
-    "sampler", ["SMOTE", "SMOTEN", "SMOTENC"]
-)
+@pytest.mark.parametrize("sampler", ["SMOTE", "SMOTEN", "SMOTENC"])
 def test_oversample_seed_same_outputs(sampler, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
@@ -171,7 +169,9 @@ def test_oversample_seed_same_outputs(sampler, X_y_binary):
     for seed in [0, 0, 1]:
         oversampler = Oversampler(sampling_ratio=1, random_seed=seed)
         if "N" in sampler:
-            X = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
+            X = infer_feature_types(
+                X, feature_types={0: "Categorical", 1: "Categorical"}
+            )
             if sampler == "SMOTEN" and X.shape[1] > 2:
                 X = X = X.drop([i for i in range(2, 20)], axis=1)
         samplers.append(oversampler)
@@ -262,9 +262,7 @@ def test_smotenc_output_shape(X_y_binary):
     y_imbalanced = pd.Series([0] * 90 + [1] * 10)
     X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
     snc = Oversampler()
-    with pytest.raises(
-        ComponentNotYetFittedError, match=f"You must fit Oversampler"
-    ):
+    with pytest.raises(ComponentNotYetFittedError, match=f"You must fit Oversampler"):
         snc.transform(X_ww, y)
     # test sampling and no sampling
     for y_value in [y, y_imbalanced]:
@@ -286,9 +284,7 @@ def test_smotenc_output_shape(X_y_binary):
         ({0: 0.5, 1: 0.1}, {0: 425, 1: 850}),
     ],
 )
-def test_oversampler_sampling_dict(
-    sampling_ratio_dict, expected_dict_values
-):
+def test_oversampler_sampling_dict(sampling_ratio_dict, expected_dict_values):
     X = np.array(
         [
             [i for i in range(1000)],
@@ -298,9 +294,7 @@ def test_oversampler_sampling_dict(
     ).T
     X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
     y = np.array([0] * 150 + [1] * 850)
-    oversampler = Oversampler(
-        sampling_ratio_dict=sampling_ratio_dict, random_seed=12
-    )
+    oversampler = Oversampler(sampling_ratio_dict=sampling_ratio_dict, random_seed=12)
     new_X, new_y = oversampler.fit_transform(X_ww, y)
 
     assert len(new_X) == sum(expected_dict_values.values())
