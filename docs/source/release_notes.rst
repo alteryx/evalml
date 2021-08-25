@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Add ``ProphetRegressor`` to AutoML :pr:`2619`
         * Removed SVM "linear" and "precomputed" kernel hyperparameter options, and improved default parameters :pr:`2651`
         * Updated ``ComponentGraph`` initalization to raise ``ValueError`` when user attempts to use ``.y`` for a component that does not produce a tuple output :pr:`2662`
     * Fixes
@@ -47,7 +48,6 @@ Release Notes
 
 **v0.30.1 Aug. 12, 2021**
     * Enhancements
-        * Add ``ProphetRegressor`` to AutoML :pr:`2619`
         * Added ``DatetimeFormatDataCheck`` for time series problems :pr:`2603`
         * Added ``ProphetRegressor`` to estimators :pr:`2242`
         * Updated ``ComponentGraph`` to handle not calling samplers' transform during predict, and updated samplers' transform methods s.t. ``fit_transform`` is equivalent to ``fit(X, y).transform(X, y)`` :pr:`2583`
