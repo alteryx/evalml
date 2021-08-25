@@ -26,7 +26,6 @@ from evalml.automl.utils import (
     get_best_sampler_for_data,
     get_default_primary_search_objective,
     get_pipelines_from_component_graphs,
-    import_or_raise,
     make_data_splitter,
 )
 from evalml.data_checks import DefaultDataChecks
