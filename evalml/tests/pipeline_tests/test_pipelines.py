@@ -2274,11 +2274,8 @@ def test_undersampler_component_in_pipeline_predict():
     assert len(preds) == 1000
 
 
-@pytest.mark.parametrize(
-    "oversampler", ["SMOTE Oversampler", "SMOTENC Oversampler", "SMOTEN Oversampler"]
-)
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
-def test_oversampler_component_in_pipeline_fit(mock_fit, oversampler):
+def test_oversampler_component_in_pipeline_fit(mock_fit):
     pytest.importorskip(
         "imblearn.over_sampling",
         reason="Skipping test because imbalanced-learn not installed",
@@ -2296,11 +2293,11 @@ def test_oversampler_component_in_pipeline_fit(mock_fit, oversampler):
     pipeline = BinaryClassificationPipeline(
         {
             "Imputer": ["Imputer", "X", "y"],
-            oversampler: [oversampler, "Imputer.x", "y"],
+            "Oversampler": ["Oversampler", "Imputer.x", "y"],
             "Logistic Regression Classifier": [
                 "Logistic Regression Classifier",
-                f"{oversampler}.x",
-                f"{oversampler}.y",
+                "Oversampler.x",
+                "Oversampler.y",
             ],
         }
     )
@@ -2315,10 +2312,7 @@ def test_oversampler_component_in_pipeline_fit(mock_fit, oversampler):
     assert len(mock_fit.call_args[0][0]) == 1000
 
 
-@pytest.mark.parametrize(
-    "oversampler", ["SMOTE Oversampler", "SMOTENC Oversampler", "SMOTEN Oversampler"]
-)
-def test_oversampler_component_in_pipeline_predict(oversampler):
+def test_oversampler_component_in_pipeline_predict():
     pytest.importorskip(
         "imblearn.over_sampling",
         reason="Skipping test because imbalanced-learn not installed",
@@ -2335,11 +2329,11 @@ def test_oversampler_component_in_pipeline_predict(oversampler):
     pipeline = BinaryClassificationPipeline(
         {
             "Imputer": ["Imputer", "X", "y"],
-            oversampler: [oversampler, "Imputer.x", "y"],
+            "Oversampler": ["Oversampler", "Imputer.x", "y"],
             "Logistic Regression Classifier": [
                 "Logistic Regression Classifier",
-                f"{oversampler}.x",
-                f"{oversampler}.y",
+                "Oversampler.x",
+                "Oversampler.y",
             ],
         }
     )

@@ -4908,9 +4908,9 @@ def test_data_splitter_gives_pipelines_same_data(
         (
             {
                 "Undersampler": {"sampling_ratio": 0.05},
-                "SMOTE Oversampler": {"sampling_ratio": 0.10},
+                "Oversampler": {"sampling_ratio": 0.10},
             },
-            {"Undersampler", "SMOTE Oversampler"},
+            {"Undersampler", "Oversampler"},
         ),
     ],
 )

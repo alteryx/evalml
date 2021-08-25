@@ -359,9 +359,7 @@ def test_make_component_list_from_actions():
     [
         None,
         "Undersampler",
-        "SMOTE Oversampler",
-        "SMOTENC Oversampler",
-        "SMOTEN Oversampler",
+        "Oversampler",
     ],
 )
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])

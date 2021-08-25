@@ -4,11 +4,7 @@ import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.exceptions import ComponentNotYetFittedError
-from evalml.pipelines.components import (
-    SMOTENCOversampler,
-    SMOTENOversampler,
-    SMOTEOversampler,
-)
+from evalml.pipelines.components import Oversampler
 from evalml.utils.woodwork_utils import infer_feature_types
 
 im = pytest.importorskip(
@@ -17,10 +13,7 @@ im = pytest.importorskip(
 )
 
 
-@pytest.mark.parametrize(
-    "sampler", [SMOTEOversampler, SMOTENCOversampler, SMOTENOversampler]
-)
-def test_init(sampler):
+def test_init():
     parameters = {
         "sampling_ratio": 0.5,
         "k_neighbors_default": 2,
