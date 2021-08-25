@@ -357,7 +357,7 @@ class AutoMLSearch:
         _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
             The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
 
-        _automl_algorithm (str): The automl algorithm to use. Currently the two choices are 'iterative' and 'evalml'.
+        _automl_algorithm (str): The automl algorithm to use. Currently the two choices are 'iterative' and 'evalml'. Defaults to `iterative`.
 
         engine (EngineBase or None): The engine instance used to evaluate pipelines. If None, a SequentialEngine will
             be used.
@@ -773,7 +773,7 @@ class AutoMLSearch:
                 pipeline_params=parameters,
                 custom_hyperparameters=custom_hyperparameters,
             )
-        else:
+        elif _automl_algorithm == "evalml":
             self._automl_algorithm = EvalMLAlgorithm(
                 X=self.X_train,
                 y=self.y_train,
@@ -785,6 +785,8 @@ class AutoMLSearch:
                 custom_hyperparameters=self.custom_hyperparameters,
                 text_in_ensembling=text_in_ensembling,
             )
+        else:
+            raise ValueError("Please specify a valid automl algorithm.")
 
     def _catch_warnings(self, warning_list):
         if len(warning_list) == len(self.allowed_pipelines) and len(warning_list) > 0:

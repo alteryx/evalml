@@ -4,6 +4,7 @@ import pandas as pd
 import pytest
 
 from evalml import AutoMLSearch
+from evalml.automl.automl_algorithm import EvalMLAlgorithm, IterativeAlgorithm
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
@@ -31,6 +32,7 @@ def test_init(X_y_regression):
     )
     automl.search()
 
+    assert isinstance(automl._automl_algorithm, IterativeAlgorithm)
     assert automl.n_jobs == 1
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
@@ -52,6 +54,29 @@ def test_init(X_y_regression):
     assert isinstance(automl.best_pipeline, PipelineBase)
     automl.best_pipeline.predict(X)
     assert isinstance(automl.get_pipeline(0), PipelineBase)
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="regression",
+        objective="R2",
+        max_iterations=3,
+        n_jobs=1,
+        _automl_algorithm="evalml",
+    )
+
+    assert isinstance(automl._automl_algorithm, EvalMLAlgorithm)
+
+    with pytest.raises(ValueError, match="Please specify a valid automl algorithm."):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="regression",
+            objective="R2",
+            max_iterations=3,
+            n_jobs=1,
+            _automl_algorithm="not_valid",
+        )
 
 
 def test_random_seed(X_y_regression):

@@ -7,6 +7,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoMLSearch
+from evalml.automl.automl_algorithm import EvalMLAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
 from evalml.exceptions import ParameterNotUsedWarning, PipelineNotFoundError
@@ -41,6 +42,7 @@ def test_init(X_y_binary):
     automl.search()
 
     assert automl.n_jobs == 1
+    assert isinstance(automl._automl_algorithm, IterativeAlgorithm)
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
     automl.best_pipeline.predict(X)
@@ -57,6 +59,26 @@ def test_init(X_y_binary):
     assert isinstance(automl.get_pipeline(0), PipelineBase)
     assert automl.objective.name == "Log Loss Binary"
     automl.best_pipeline.predict(X)
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=1,
+        n_jobs=1,
+        _automl_algorithm="evalml",
+    )
+    assert isinstance(automl._automl_algorithm, EvalMLAlgorithm)
+
+    with pytest.raises(ValueError, match="Please specify a valid automl algorithm."):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            max_iterations=1,
+            n_jobs=1,
+            _automl_algorithm="not_valid",
+        )
 
 
 def test_init_objective(X_y_binary):
