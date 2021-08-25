@@ -336,7 +336,7 @@ def test_engine_can_use_str_name_for_convenience(engine_str, X_y_binary_cls):
 
 def test_automl_convenience_exception(X_y_binary_cls):
     X, y = X_y_binary_cls
-    with pytest.raises(ValueError, match="Provided Engine"):
+    with pytest.raises(KeyError, match="not a valid engine"):
         AutoMLSearch(
             X_train=X,
             y_train=y,
