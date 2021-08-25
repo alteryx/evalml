@@ -1,5 +1,5 @@
 import joblib
-from dask.distributed import Client
+from dask.distributed import Client, LocalCluster
 
 from evalml.automl.engine.engine_base import (
     EngineBase,
@@ -53,11 +53,17 @@ class DaskComputation(EngineComputation):
 class DaskEngine(EngineBase):
     """The dask engine"""
 
-    def __init__(self, client):
-        if not isinstance(client, Client):
+    def __init__(self, client=None):
+        """
+        Args:
+            client (None or dd.Client): If None, creates a threaded Dask client for procesing. Defaults to None.
+        """
+        if client is not None and not isinstance(client, Client):
             raise TypeError(
                 f"Expected dask.distributed.Client, received {type(client)}"
             )
+        elif client is None:
+            client = Client(LocalCluster(processes=False))
         self.client = client
         self._data_futures_cache = {}
 

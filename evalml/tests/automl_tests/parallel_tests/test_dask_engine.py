@@ -370,3 +370,27 @@ def test_dask_sends_woodwork_schema(X_y_binary_cls, cluster):
 
         future = engine.submit_evaluation_job(new_config, pipeline, X, y)
         future.get_result()
+
+
+def test_daskengine_convenience():
+    """The purpose of this test is to ensure that a DaskEngine initialized without an
+    explicit client self-initializes a threaded Client."""
+
+    dask_engine = DaskEngine()
+    assert isinstance(dask_engine.client, Client)
+    assert len(dask_engine.client.ncores()) == 1
+
+    dask_engine = DaskEngine(client=None)
+    assert isinstance(dask_engine.client, Client)
+    assert len(dask_engine.client.ncores()) == 1
+
+    dask_engine = DaskEngine(client=Client(LocalCluster(processes=False)))
+    assert isinstance(dask_engine.client, Client)
+    assert len(dask_engine.client.ncores()) == 1
+
+    dask_engine = DaskEngine(client=Client(LocalCluster(processes=True)))
+    assert isinstance(dask_engine.client, Client)
+    assert len(dask_engine.client.ncores()) > 1
+
+    with pytest.raises(TypeError, match="Expected dask.distributed.Client, received"):
+        dask_engine = DaskEngine(client="Processes!")

@@ -10,6 +10,7 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import cloudpickle
 import numpy as np
 import pandas as pd
+from dask import distributed as dd
 from sklearn.model_selection import BaseCrossValidator
 
 from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
@@ -364,7 +365,8 @@ class AutoMLSearch:
         _automl_algorithm (str): The automl algorithm to use. Currently the two choices are 'iterative' and 'default'. Defaults to `iterative`.
 
         engine (EngineBase, list of str, or None): The engine instance used to evaluate pipelines. Dask or concurrent.futures engines can be chosen by providing
-            a string from the list ["cf_threaded", "cf_process", "dask_threaded", "dask_process"]. If None, a SequentialEngine will be used.
+            a string from the list ["sequential", "cf_threaded", "cf_process", "dask_threaded", "dask_process"]. If a parallel engine is selected,
+            the maximum amount of paralellism, as determined by the engine, will be used. If None, a SequentialEngine will be used.
     """
 
     _MAX_NAME_LEN = 40
@@ -741,6 +743,7 @@ class AutoMLSearch:
             self._engine = SequentialEngine()
         else:
             valid_engines = [
+                "sequential",
                 "cf_threaded",
                 "cf_process",
                 "dask_threaded",
@@ -753,10 +756,8 @@ class AutoMLSearch:
                     elif engine == "cf_process":
                         engine = CFEngine(CFClient(ProcessPoolExecutor()))
                     elif engine == "dask_threaded":
-                        dd = import_or_raise("dask.distributed")
                         engine = DaskEngine(dd.Client(dd.LocalCluster(processes=False)))
                     elif engine == "dask_process":
-                        dd = import_or_raise("dask.distributed")
                         engine = DaskEngine(dd.Client(dd.LocalCluster(processes=True)))
                 else:
                     raise ValueError(

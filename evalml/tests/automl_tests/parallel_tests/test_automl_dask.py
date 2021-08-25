@@ -312,9 +312,10 @@ def test_automl_immediate_quit(
 
 
 @pytest.mark.parametrize(
-    "engine_str", ["cf_threaded", "cf_process", "dask_threaded", "dask_process"]
+    "engine_str",
+    ["sequential", "cf_threaded", "cf_process", "dask_threaded", "dask_process"],
 )
-def test_automl_convenience(engine_str, X_y_binary_cls):
+def test_engine_can_use_str_name_for_convenience(engine_str, X_y_binary_cls):
     """Test to assert the proper engine is set for each provided convenience string."""
     X, y = X_y_binary_cls
     automl = AutoMLSearch(
@@ -324,7 +325,9 @@ def test_automl_convenience(engine_str, X_y_binary_cls):
         engine=engine_str,
         optimize_thresholds=False,
     )
-    if "cf" in engine_str:
+    if "sequential" in engine_str:
+        assert isinstance(automl._engine, SequentialEngine)
+    elif "cf" in engine_str:
         assert isinstance(automl._engine, CFEngine)
     elif "dask" in engine_str:
         assert isinstance(automl._engine, DaskEngine)
