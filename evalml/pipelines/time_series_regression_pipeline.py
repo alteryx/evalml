@@ -28,6 +28,8 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series): True labels of length [n_samples].
             objectives (list): Non-empty list of objectives to score on.
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
 
         Returns:
             dict: Ordered dictionary of objective scores.

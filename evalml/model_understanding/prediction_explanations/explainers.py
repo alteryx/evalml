@@ -59,6 +59,8 @@ def explain_predictions(
         include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
         include_expected_value (bool): Whether the expected value should be included in the table. Default is False.
         output_format (str): Either "text", "dict", or "dataframe". Default is "text".
+        training_data (pd.DataFrame, np.ndarray): Data the pipeline was trained on. Required and only used for time series pipelines.
+        training_target (pd.Series, np.ndarray): Targets used to train the pipeline. Required and only used for time series pipelines.
 
     Returns:
         str, dict, or pd.DataFrame - A report explaining the top contributing features to each prediction for each row of input_features.
@@ -167,6 +169,8 @@ def explain_predictions_best_worst(
         callback (callable): Function to be called with incremental updates. Has the following parameters:
             - progress_stage: stage of computation
             - time_elapsed: total time in seconds that has elapsed since start of call
+        training_data (pd.DataFrame, np.ndarray): Data the pipeline was trained on. Required and only used for time series pipelines.
+        training_target (pd.Series, np.ndarray): Targets used to train the pipeline. Required and only used for time series pipelines.
     Returns:
         str, dict, or pd.DataFrame - A report explaining the top contributing features for the best/worst predictions in the input_features.
             For each of the best/worst rows of input_features, the predicted values, true labels, metric value,

@@ -54,6 +54,17 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         return self.estimator.predict_proba(features, y=y_arg)
 
     def predict_proba_in_sample(self, X_holdout, y_holdout, X_train, y_train):
+        """Predict on future data where the target is known, e.g. cross validation.
+
+        Arguments:
+            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
+            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples]
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
+
+        Returns:
+            pd.Series: Estimated probabilities
+        """
         y_holdout = self._encode_targets(y_holdout)
         y_train = self._encode_targets(y_train)
         features, target = self._compute_holdout_features_and_target(
@@ -70,6 +81,18 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         return infer_feature_types(proba)
 
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):
+        """Predict on future data where the target is known, e.g. cross validation.
+
+        Arguments:
+            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
+            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples]
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
+            objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
+
+        Returns:
+            pd.Series: Estimated labels
+        """
         if self.estimator is None:
             raise ValueError(
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
@@ -91,13 +114,15 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         return infer_feature_types(predictions)
 
     def predict_proba(self, X, X_train=None, y_train=None):
-        """Make probability estimates for labels.
+        """Predict on future data where the target is unknown.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
+            X (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
 
         Returns:
-            pd.DataFrame: Probability estimates.
+            pd.Series: Estimated probabilities
         """
         if self.estimator is None:
             raise ValueError(
@@ -126,6 +151,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series): True labels of length [n_samples].
             objectives (list): Non-empty list of objectives to score on.
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
 
         Returns:
             dict: Ordered dictionary of objective scores.
@@ -177,7 +204,18 @@ class TimeSeriesBinaryClassificationPipeline(
         return y_pred_to_use
 
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):
+        """Predict on future data where the target is known, e.g. cross validation.
 
+        Arguments:
+            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
+            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples]
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
+            objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
+
+        Returns:
+            pd.Series: Estimated labels
+        """
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
             if not objective.is_defined_for_problem_type(self.problem_type):
