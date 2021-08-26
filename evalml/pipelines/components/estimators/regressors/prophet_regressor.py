@@ -99,7 +99,7 @@ class ProphetRegressor(Estimator):
                 msg = "Prophet estimator requires input data X to have a datetime column specified by the 'date_index' parameter. If it doesn't find one, it will look for the datetime column in the index of X or y."
                 raise ValueError(msg)
 
-        prophet_df = X.copy()
+        prophet_df = X
 
         if y is not None:
             if not prophet_df.empty:
@@ -133,6 +133,7 @@ class ProphetRegressor(Estimator):
         )
 
         y_pred = self._component_obj.predict(prophet_df)["yhat"]
+        y_pred = y_pred.rename(None)
         return y_pred
 
     def get_params(self):
