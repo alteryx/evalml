@@ -112,7 +112,7 @@ def search(
             Only applicable if patience is not None. Defaults to None.
 
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
-        in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+            in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
 
     Returns:
         (AutoMLSearch, dict): the automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
