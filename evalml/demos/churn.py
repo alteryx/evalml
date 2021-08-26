@@ -10,7 +10,8 @@ def load_churn(n_rows=None, verbose=True):
         n_rows (int): Number of rows from the dataset to return
         verbose (bool): Whether to print information about features and labels
 
-    Returns:
+    Return:
+    ------
         (pd.Dataframe, pd.Series): X and y
     """
     churn_data_path = (

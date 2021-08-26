@@ -9,7 +9,7 @@ clean:
 .PHONY: lint
 lint:
 	flake8 evalml && isort --check-only evalml && python docs/notebook_version_standardizer.py check-versions
-	pydocstyle evalml
+	pydocstyle evalml --ignore=D107
 	black evalml -t py39 --check
 
 .PHONY: lint-fix

@@ -1,3 +1,4 @@
+"""Rolling Origin Cross Validation for time series problems."""
 import numpy as np
 from sklearn.model_selection import TimeSeriesSplit as SkTimeSeriesSplit
 from sklearn.model_selection._split import BaseCrossValidator
@@ -12,6 +13,7 @@ class TimeSeriesSplit(BaseCrossValidator):
     then set max_delay and gap to 0.
 
     Arguments:
+    ---------
         max_delay (int): Max delay value for feature engineering. Time series pipelines create delayed features
             from existing features. This process will introduce NaNs into the first max_delay number of rows. The
             splitter uses the last max_delay number of rows from the previous split as the first max_delay number
@@ -44,11 +46,13 @@ class TimeSeriesSplit(BaseCrossValidator):
         at the same time.
 
         Arguments:
+        ---------
             X (pd.DataFrame, None): Features to split.
             y (pd.DataFrame, None): Target variable to split.
-            groups: Ignored but kept for compatibility with sklearn api.
+            groups: Ignored but kept for compatibility with sklearn API.
 
-        Returns:
+        Return:
+        ------
             Iterator of (train, test) indices tuples.
         """
         # Sklearn splitters always assume a valid X is passed but we need to support the

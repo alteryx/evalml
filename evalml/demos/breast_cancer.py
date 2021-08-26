@@ -8,7 +8,8 @@ from evalml.preprocessing import load_data
 def load_breast_cancer():
     """Load breast cancer dataset. Binary classification problem.
 
-    Returns:
+    Return:
+    ------
         (pd.Dataframe, pd.Series): X and y
     """
     filepath = (
