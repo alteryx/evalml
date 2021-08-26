@@ -53,19 +53,26 @@ class DaskComputation(EngineComputation):
 class DaskEngine(EngineBase):
     """The dask engine"""
 
-    def __init__(self, client=None):
+    def __init__(self, cluster=None):
         """
         Args:
             client (None or dd.Client): If None, creates a threaded Dask client for procesing. Defaults to None.
         """
-        if client is not None and not isinstance(client, Client):
+        if cluster is not None and not isinstance(cluster, (LocalCluster)):
             raise TypeError(
-                f"Expected dask.distributed.Client, received {type(client)}"
+                f"Expected dask.distributed.Client, received {type(cluster)}"
             )
-        elif client is None:
-            client = Client(LocalCluster(processes=False))
-        self.client = client
+        elif cluster is None:
+            cluster = LocalCluster(processes=False)
+        self.cluster = cluster
+        self.client = Client(self.cluster)
         self._data_futures_cache = {}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def send_data_to_cluster(self, X, y):
         """Send data to the cluster.
@@ -161,3 +168,7 @@ class DaskEngine(EngineBase):
         computation = DaskComputation(dask_future)
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation
+
+    def close(self):
+        self.cluster.close()
+        self.client.close()
