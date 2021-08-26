@@ -356,6 +356,24 @@ def test_make_component_list_from_actions():
     ]
 
 
+def test_make_component_list_from_actions_with_duplicate_actions():
+    actions = [
+        DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some col"}),
+        DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some other col"}),
+    ]
+    assert _make_component_list_from_actions(actions) == [
+        DropColumns(columns=["some col", "some other col"])
+    ]
+    actions = [
+        DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [0, 3]}),
+        DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [1, 2]}),
+    ]
+    assert _make_component_list_from_actions(actions) == [
+        DropRowsTransformer(indices_to_drop=[0, 3]),
+        DropRowsTransformer(indices_to_drop=[1, 2]),
+    ]
+
+
 @pytest.mark.parametrize(
     "samplers",
     [
