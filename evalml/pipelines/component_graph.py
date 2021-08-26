@@ -580,9 +580,9 @@ class ComponentGraph:
                     y_edges.append(("y", component_name))
 
         for edge in x_edges:
-            graph.edge(edge[0], edge[1], xlabel="X", color="black")
+            graph.edge(edge[0], edge[1], color="black")
         for edge in y_edges:
-            graph.edge(edge[0], edge[1], xlabel="y", color="blue")
+            graph.edge(edge[0], edge[1], style="dotted")
 
         return graph
 
