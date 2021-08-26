@@ -116,7 +116,7 @@ Pipeline Utils
 
 
 Component Graphs
-=========
+================
 
 .. autoapisummary::
 
