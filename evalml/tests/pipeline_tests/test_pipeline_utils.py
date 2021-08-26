@@ -178,7 +178,8 @@ def test_make_pipeline(
             )
             datetime = (
                 [DateTimeFeaturizer]
-                if estimator_class.model_family != ModelFamily.ARIMA
+                if estimator_class.model_family
+                not in [ModelFamily.ARIMA, ModelFamily.PROPHET]
                 and "dates" in column_names
                 else []
             )
