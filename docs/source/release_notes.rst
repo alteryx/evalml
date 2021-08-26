@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Added user guide documentation for using ``ComponentGraph`` :pr:`2673`
     * Testing Changes
 
 .. warning::
