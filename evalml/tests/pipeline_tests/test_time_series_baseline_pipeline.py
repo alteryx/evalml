@@ -65,6 +65,15 @@ def test_time_series_baseline_gap_negative():
         TimeSeriesBaselineEstimator(gap=-1)
 
 
+def test_time_series_baseline_estimator_y_is_none(X_y_regression):
+    X, y = X_y_regression
+
+    estimator = TimeSeriesBaselineEstimator(gap=0, forecast_horizon=2)
+
+    with pytest.raises(ValueError, match="if y is None"):
+        estimator.fit(X, None)
+
+
 def test_time_series_baseline_outside_of_pipeline(X_y_regression):
     X, y = X_y_regression
 
@@ -75,7 +84,7 @@ def test_time_series_baseline_outside_of_pipeline(X_y_regression):
 
 
 @pytest.mark.parametrize("forecast_horizon,gap", [[3, 0], [10, 1], [3, 2]])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.TIME_SERIES_REGRESSION])
+@pytest.mark.parametrize("problem_type", [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS])
 def test_time_series_baseline(
     forecast_horizon, gap, problem_type, X_y_regression, X_y_binary, X_y_multi
 ):

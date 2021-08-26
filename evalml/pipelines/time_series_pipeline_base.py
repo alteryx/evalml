@@ -71,9 +71,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
     @staticmethod
     def _move_index_forward(index, gap):
-        if gap == 0:
-            return index
-        elif isinstance(index, (pd.DatetimeIndex, pd.PeriodIndex, pd.TimedeltaIndex)):
+        if isinstance(index, (pd.DatetimeIndex, pd.PeriodIndex, pd.TimedeltaIndex)):
             return index.shift(gap)
         else:
             return index + gap
