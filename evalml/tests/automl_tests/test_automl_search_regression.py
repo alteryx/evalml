@@ -455,6 +455,10 @@ def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, X_y_regress
             dt_ = result["parameters"]["ARIMA Regressor"].pop("date_index")
             assert "DateTime Featurization Component" not in result["parameters"].keys()
             assert "Delayed Feature Transformer" not in result["parameters"].keys()
+        elif "Prophet Regressor" in result["parameters"]:
+            dt_ = result["parameters"]["Prophet Regressor"].pop("date_index")
+            assert "DateTime Featurization Component" not in result["parameters"].keys()
+            assert "Delayed Feature Transformer" in result["parameters"].keys()
         else:
             dt_ = result["parameters"]["Delayed Feature Transformer"].pop("date_index")
         assert dt == dt_
