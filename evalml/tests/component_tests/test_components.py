@@ -1085,8 +1085,6 @@ def test_all_transformers_check_fit(X_y_binary):
         # SMOTE will throw errors if we call it but cannot oversample
         if "Oversampler" == component_class.name:
             component = component_class(sampling_ratio=1)
-            # handled in test_oversamplers
-            continue
 
         with pytest.raises(
             ComponentNotYetFittedError, match=f"You must fit {component_class.__name__}"
