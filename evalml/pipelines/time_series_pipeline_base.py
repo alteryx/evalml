@@ -90,15 +90,27 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         gap_target = pd.Series()
         if self.gap:
             gap_features = X_train.iloc[[-1] * self.gap]
-            gap_features.index = self._move_index_forward(X_train.index[-self.gap:], self.gap)
+            gap_features.index = self._move_index_forward(
+                X_train.index[-self.gap :], self.gap
+            )
             gap_target = y_train.iloc[[-1] * self.gap]
-            gap_target.index = self._move_index_forward(y_train.index[-self.gap:], self.gap)
+            gap_target.index = self._move_index_forward(
+                y_train.index[-self.gap :], self.gap
+            )
         padded_features = pd.concat(
-            [X_train.iloc[-last_row_of_training_needed_for_features:], gap_features, X_holdout],
+            [
+                X_train.iloc[-last_row_of_training_needed_for_features:],
+                gap_features,
+                X_holdout,
+            ],
             axis=0,
         )
         padded_target = pd.concat(
-            [y_train.iloc[-last_row_of_training_needed_for_features:], gap_target, y_holdout],
+            [
+                y_train.iloc[-last_row_of_training_needed_for_features:],
+                gap_target,
+                y_holdout,
+            ],
             axis=0,
         )
         padded_features.ww.init(schema=X_train.ww.schema)
@@ -106,7 +118,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             padded_target, logical_type=y_train.ww.logical_type
         )
         features = self.compute_estimator_features(padded_features, padded_target)
-        features_holdout = features.iloc[-len(y_holdout):]
+        features_holdout = features.iloc[-len(y_holdout) :]
         return features_holdout, y_holdout
 
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):

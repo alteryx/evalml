@@ -1,10 +1,5 @@
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    drop_rows_with_nans,
-    infer_feature_types,
-    pad_with_nans,
-)
 
 
 class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):

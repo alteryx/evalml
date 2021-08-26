@@ -7,11 +7,17 @@ Release Notes
         * Updated ``ComponentGraph`` initalization to raise ``ValueError`` when user attempts to use ``.y`` for a component that does not produce a tuple output :pr:`2662`
         * Added ``DropRowsTransformer`` component :pr:`2692`
         * Added ``DROP_ROWS`` to ``_make_component_list_from_actions`` and clean up metadata :pr:`2694`
+        * Added ``forecast_horizon`` as a required parameter to time series pipelines and ``AutoMLSearch`` :pr:`2697`
+        * Added ``predict_in_sample`` and ``predict_proba_in_sample`` methods to time series pipelines to predict on data where the target is known, e.g. cross-validation :pr:`2697`
     * Fixes
         * Updated Oversampler logic to select best SMOTE based on component input instead of pipeline input :pr:`2695`
     * Changes
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
+        * Changed ``TimeSeriesBaselineEstimator`` to only work on a time series pipeline with a ``DelayedFeaturesTransformer`` :pr:`2697`
+        * Added ``X_train`` and ``y_train`` as optional parameters to pipeline ``predict``, ``predict_proba``. Only used for time series pipelines :pr:`2697`
+        * Added ``training_data`` and ``training_target`` as optional parameters to ``explain_predictions`` and ``explain_predictions_best_worst`` to support time series pipelines :pr:`2697`
+        * Changed time series pipeline predictions to no longer output series/dataframes padded with NaNs. A prediction will be returned for every row in the `X` input :pr:`2697`
     * Documentation Changes
     * Testing Changes
         * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
@@ -22,6 +28,10 @@ Release Notes
     **Breaking Changes**
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
+        * Added ``forecast_horizon`` as a required parameter to time series pipelines and ``AutoMLSearch`` :pr:`2697`
+        * Changed ``TimeSeriesBaselineEstimator`` to only work on a time series pipeline with a ``DelayedFeaturesTransformer`` :pr:`2697`
+        * Added ``X_train`` and ``y_train`` as required parameters for ``predict`` and ``predict_proba`` in time series pipelines :pr:`2697`
+        * Added ``training_data`` and ``training_target`` as required parameters to ``explain_predictions`` and ``explain_predictions_best_worst`` for time series pipelines :pr:`2697`
     
 
 **v0.31.0 Aug. 19, 2021**

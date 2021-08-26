@@ -17,7 +17,7 @@ from evalml.pipelines import (
 from evalml.pipelines.utils import _get_pipeline_base_class
 from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes
-from evalml.utils import infer_feature_types, pad_with_nans
+from evalml.utils import infer_feature_types
 
 
 @pytest.mark.parametrize(
@@ -271,13 +271,12 @@ def test_predict_and_predict_in_sample(
     else:
         mock_classifier_predict.side_effect = mock_predict
 
-
     pl.fit(X.iloc[:20], y.iloc[:20])
     preds_in_sample = pl.predict_in_sample(
         X.iloc[20:], y.iloc[20:], X.iloc[:20], y.iloc[:20]
     )
     preds = pl.predict(
-        X.iloc[20: 20 + forecast_horizon],
+        X.iloc[20 : 20 + forecast_horizon],
         None,
         X_train=X.iloc[:20],
         y_train=y.iloc[:20],
@@ -611,7 +610,7 @@ def test_binary_classification_predictions_thresholded_properly(
     mock_decode.return_value = ww.init_series(pd.Series([0, 1]))
     X, y = X_y_binary
     X_train, y_train = X[:60], y[:60]
-    X_validation, y_validation = X[60:63], y[60:63]
+    X_validation = X[60:63]
     binary_pipeline = dummy_ts_binary_pipeline_class(
         parameters={
             "Logistic Regression Classifier": {"n_jobs": 1},
@@ -752,7 +751,7 @@ def test_time_series_pipeline_not_fitted_error(
         )
 
     X_train, y_train = X[:80], y[:80]
-    X_holdout, y_holdout = X[80:], y[80:]
+    X_holdout = X[80:]
 
     with pytest.raises(PipelineNotYetFittedError):
         clf.predict(X_holdout, None, X_train, y_train)
@@ -908,7 +907,7 @@ def test_ts_pipeline_predict_without_final_estimator(
     X = make_data_type("ww", X)
     y = make_data_type("ww", y)
     X_train, y_train = X.ww.iloc[:70], y.ww.iloc[:70]
-    X_validation, y_validation = X.ww.iloc[70:73], y.ww.iloc[70:73]
+    X_validation = X.ww.iloc[70:73]
 
     pipeline_class = _get_pipeline_base_class(problem_type)
     pipeline = pipeline_class(

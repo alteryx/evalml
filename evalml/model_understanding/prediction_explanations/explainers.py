@@ -85,7 +85,9 @@ def explain_predictions(
         )
 
     if is_time_series(pipeline.problem_type):
-        pipeline_features, _ = pipeline._compute_holdout_features_and_target(input_features, y, training_data, training_target)
+        pipeline_features, _ = pipeline._compute_holdout_features_and_target(
+            input_features, y, training_data, training_target
+        )
     else:
         pipeline_features = pipeline.compute_estimator_features(input_features, y)
 
@@ -209,7 +211,9 @@ def explain_predictions_best_worst(
     try:
         if is_regression(pipeline.problem_type):
             if is_time_series(pipeline.problem_type):
-                y_pred = pipeline.predict_in_sample(input_features, y_true, training_data, training_target)
+                y_pred = pipeline.predict_in_sample(
+                    input_features, y_true, training_data, training_target
+                )
             else:
                 y_pred = pipeline.predict(input_features)
             y_pred_values = None
@@ -217,8 +221,12 @@ def explain_predictions_best_worst(
             errors = metric(y_true_no_nan, y_pred_no_nan)
         else:
             if is_time_series(pipeline.problem_type):
-                y_pred = pipeline.predict_proba_in_sample(input_features, y_true, training_data, training_target)
-                y_pred_values = pipeline.predict_in_sample(input_features, y_true, training_data, training_target)
+                y_pred = pipeline.predict_proba_in_sample(
+                    input_features, y_true, training_data, training_target
+                )
+                y_pred_values = pipeline.predict_in_sample(
+                    input_features, y_true, training_data, training_target
+                )
             else:
                 y_pred = pipeline.predict_proba(input_features)
                 y_pred_values = pipeline.predict(input_features)
@@ -242,7 +250,9 @@ def explain_predictions_best_worst(
     )
 
     if is_time_series(pipeline.problem_type):
-        pipeline_features, _ = pipeline._compute_holdout_features_and_target(input_features, y_true, training_data, training_target)
+        pipeline_features, _ = pipeline._compute_holdout_features_and_target(
+            input_features, y_true, training_data, training_target
+        )
     else:
         pipeline_features = pipeline.compute_estimator_features(input_features, y_true)
 

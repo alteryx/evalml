@@ -1047,20 +1047,28 @@ class AutoMLSearch:
             max_delay = self.problem_configuration["max_delay"]
             forecast_horizon = self.problem_configuration["forecast_horizon"]
             baseline = pipeline_class(
-                component_graph=["Delayed Feature Transformer", "Time Series Baseline Estimator"],
+                component_graph=[
+                    "Delayed Feature Transformer",
+                    "Time Series Baseline Estimator",
+                ],
                 custom_name=pipeline_name,
                 parameters={
                     "pipeline": {
                         "date_index": date_index,
                         "gap": gap,
                         "max_delay": max_delay,
-                        "forecast_horizon": forecast_horizon
+                        "forecast_horizon": forecast_horizon,
                     },
-                    "Delayed Feature Transformer": {"max_delay": 0, "gap": gap, "forecast_horizon": forecast_horizon,
-                                                    "delay_target": True, "delay_features": False},
+                    "Delayed Feature Transformer": {
+                        "max_delay": 0,
+                        "gap": gap,
+                        "forecast_horizon": forecast_horizon,
+                        "delay_target": True,
+                        "delay_features": False,
+                    },
                     "Time Series Baseline Estimator": {
                         "gap": gap,
-                        "forecast_horizon": forecast_horizon
+                        "forecast_horizon": forecast_horizon,
                     },
                 },
             )
