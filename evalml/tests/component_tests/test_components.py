@@ -1315,6 +1315,8 @@ def test_estimators_accept_all_kwargs(
         params = estimator._component_obj.get_params()
         if "random_state" in params:
             del params["random_state"]
+        if estimator.name == "XGBoost Classifier":
+            del params["use_label_encoder"]
     estimator_class(**params)
 
 
