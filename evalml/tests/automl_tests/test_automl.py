@@ -3661,7 +3661,7 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(
         "pipeline": {
             "date_index": None,
             "gap": 6,
-            "max_delay": 3,
+            "max_delay": 0,
             "forecast_horizon": 7,
         },
         "Delayed Feature Transformer": {

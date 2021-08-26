@@ -42,12 +42,12 @@ from evalml.pipelines import (
     ComponentGraph,
     MulticlassClassificationPipeline,
     RegressionPipeline,
-    TimeSeriesBinaryClassificationPipeline,
-    TimeSeriesMulticlassClassificationPipeline,
-    TimeSeriesRegressionPipeline,
 )
 from evalml.pipelines.components.utils import get_estimators
-from evalml.pipelines.utils import make_pipeline
+from evalml.pipelines.utils import (
+    make_pipeline,
+    make_timeseries_baseline_pipeline,
+)
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -1028,49 +1028,10 @@ class AutoMLSearch:
                 parameters={"Baseline Classifier": {"strategy": "mean"}},
             )
         else:
-            pipeline_class, pipeline_name = {
-                ProblemTypes.TIME_SERIES_REGRESSION: (
-                    TimeSeriesRegressionPipeline,
-                    "Time Series Baseline Regression Pipeline",
-                ),
-                ProblemTypes.TIME_SERIES_MULTICLASS: (
-                    TimeSeriesMulticlassClassificationPipeline,
-                    "Time Series Baseline Multiclass Pipeline",
-                ),
-                ProblemTypes.TIME_SERIES_BINARY: (
-                    TimeSeriesBinaryClassificationPipeline,
-                    "Time Series Baseline Binary Pipeline",
-                ),
-            }[self.problem_type]
-            date_index = self.problem_configuration["date_index"]
             gap = self.problem_configuration["gap"]
-            max_delay = self.problem_configuration["max_delay"]
             forecast_horizon = self.problem_configuration["forecast_horizon"]
-            baseline = pipeline_class(
-                component_graph=[
-                    "Delayed Feature Transformer",
-                    "Time Series Baseline Estimator",
-                ],
-                custom_name=pipeline_name,
-                parameters={
-                    "pipeline": {
-                        "date_index": date_index,
-                        "gap": gap,
-                        "max_delay": max_delay,
-                        "forecast_horizon": forecast_horizon,
-                    },
-                    "Delayed Feature Transformer": {
-                        "max_delay": 0,
-                        "gap": gap,
-                        "forecast_horizon": forecast_horizon,
-                        "delay_target": True,
-                        "delay_features": False,
-                    },
-                    "Time Series Baseline Estimator": {
-                        "gap": gap,
-                        "forecast_horizon": forecast_horizon,
-                    },
-                },
+            baseline = make_timeseries_baseline_pipeline(
+                self.problem_type, gap, forecast_horizon
             )
         return baseline
 

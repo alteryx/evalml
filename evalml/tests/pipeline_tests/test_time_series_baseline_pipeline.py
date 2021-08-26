@@ -2,57 +2,9 @@ import numpy as np
 import pytest
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines import (
-    TimeSeriesBinaryClassificationPipeline,
-    TimeSeriesMulticlassClassificationPipeline,
-    TimeSeriesRegressionPipeline,
-)
 from evalml.pipelines.components import TimeSeriesBaselineEstimator
+from evalml.pipelines.utils import make_timeseries_baseline_pipeline
 from evalml.problem_types import ProblemTypes
-
-
-def _make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon):
-    pipeline_class, pipeline_name = {
-        ProblemTypes.TIME_SERIES_REGRESSION: (
-            TimeSeriesRegressionPipeline,
-            "Time Series Baseline Regression Pipeline",
-        ),
-        ProblemTypes.TIME_SERIES_MULTICLASS: (
-            TimeSeriesMulticlassClassificationPipeline,
-            "Time Series Baseline Multiclass Pipeline",
-        ),
-        ProblemTypes.TIME_SERIES_BINARY: (
-            TimeSeriesBinaryClassificationPipeline,
-            "Time Series Baseline Binary Pipeline",
-        ),
-    }[problem_type]
-    baseline = pipeline_class(
-        component_graph=[
-            "Delayed Feature Transformer",
-            "Time Series Baseline Estimator",
-        ],
-        custom_name=pipeline_name,
-        parameters={
-            "pipeline": {
-                "date_index": None,
-                "gap": gap,
-                "max_delay": 0,
-                "forecast_horizon": forecast_horizon,
-            },
-            "Delayed Feature Transformer": {
-                "max_delay": 0,
-                "gap": gap,
-                "forecast_horizon": forecast_horizon,
-                "delay_target": True,
-                "delay_features": False,
-            },
-            "Time Series Baseline Estimator": {
-                "gap": gap,
-                "forecast_horizon": forecast_horizon,
-            },
-        },
-    )
-    return baseline
 
 
 def test_time_series_baseline_regressor_init():
@@ -84,7 +36,14 @@ def test_time_series_baseline_outside_of_pipeline(X_y_regression):
 
 
 @pytest.mark.parametrize("forecast_horizon,gap", [[3, 0], [10, 1], [3, 2]])
-@pytest.mark.parametrize("problem_type", [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS])
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ],
+)
 def test_time_series_baseline(
     forecast_horizon, gap, problem_type, X_y_regression, X_y_binary, X_y_multi
 ):
@@ -99,7 +58,7 @@ def test_time_series_baseline(
     X_train, y_train = X[:50], y[:50]
     X_validation = X[(50 + gap) : (50 + gap + forecast_horizon)]
 
-    clf = _make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon)
+    clf = make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon)
     clf.fit(X_train, y_train)
 
     np.testing.assert_allclose(
