@@ -10,7 +10,7 @@ Release Notes
     * Changes
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     * Documentation Changes
-        * Added user guide documentation for using ``ComponentGraph`` :pr:`2673`
+        * Added user guide documentation for using ``ComponentGraph`` and added ``ComponentGraph`` to API reference :pr:`2673`
     * Testing Changes
         * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
 
