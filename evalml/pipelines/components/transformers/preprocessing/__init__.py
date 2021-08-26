@@ -8,3 +8,4 @@ from .featuretools import DFSTransformer
 from .polynomial_detrender import PolynomialDetrender
 from .log_transformer import LogTransformer
 from .transform_primitive_components import EmailFeaturizer, URLFeaturizer
+from .drop_rows_transformer import DropRowsTransformer
