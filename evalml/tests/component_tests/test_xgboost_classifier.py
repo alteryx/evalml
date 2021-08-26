@@ -1,4 +1,5 @@
 import string
+import warnings
 
 import numpy as np
 import pandas as pd
@@ -84,3 +85,21 @@ def test_xgboost_predict_all_boolean_columns():
     preds = xgb.predict(X)
     assert isinstance(preds, pd.Series)
     assert not preds.isna().any()
+
+
+@pytest.mark.parametrize(
+    "y,label_encoder",
+    [([True, False, False], True), ([1.0, 1.1, 1.1], True), ([0, 1, 1], False)],
+)
+def test_xgboost_catch_warnings_label_encoder(y, label_encoder):
+    X = pd.DataFrame({"a": [True, False, True], "b": [True, False, True]})
+    y = pd.Series(y)
+    xgb = XGBoostClassifier()
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        xgb.fit(X, y)
+    assert len(w) == 0
+    if label_encoder:
+        assert xgb._label_encoder is not None
+        return
+    assert xgb._label_encoder is None

@@ -1,3 +1,6 @@
+import pandas as pd
+from pandas.api.types import is_integer_dtype
+from sklearn.preprocessing import LabelEncoder
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -77,7 +80,10 @@ class XGBoostClassifier(Estimator):
             "XGBoost is not installed. Please install using `pip install xgboost.`"
         )
         xgb = import_or_raise("xgboost", error_msg=xgb_error_msg)
-        xgb_classifier = xgb.XGBClassifier(random_state=random_seed, **parameters)
+        xgb_classifier = xgb.XGBClassifier(
+            use_label_encoder=False, random_state=random_seed, **parameters
+        )
+        self._label_encoder = None
         super().__init__(
             parameters=parameters, component_obj=xgb_classifier, random_seed=random_seed
         )
@@ -88,11 +94,18 @@ class XGBoostClassifier(Estimator):
             col: "Integer" for col in X.ww.select("boolean", return_schema=True).columns
         }
 
+    def _label_encode(self, y):
+        if not is_integer_dtype(y):
+            self._label_encoder = LabelEncoder()
+            y = pd.Series(self._label_encoder.fit_transform(y), dtype="int64")
+        return y
+
     def fit(self, X, y=None):
         X, y = super()._manage_woodwork(X, y)
         X.ww.set_types(self._convert_bool_to_int(X))
         self.input_feature_names = list(X.columns)
         X = _rename_column_names_to_numeric(X, flatten_tuples=False)
+        y = self._label_encode(y)
         self._component_obj.fit(X, y)
         return self
 
