@@ -86,12 +86,9 @@ def explain_predictions(
             f"Explained indices should be between 0 and {len(input_features) - 1}"
         )
 
-    if is_time_series(pipeline.problem_type):
-        pipeline_features, _ = pipeline._compute_holdout_features_and_target(
-            input_features, y, training_data, training_target
-        )
-    else:
-        pipeline_features = pipeline.compute_estimator_features(input_features, y)
+    pipeline_features = pipeline.compute_estimator_features(
+        input_features, y, training_data, training_target
+    )
 
     data = _ReportData(
         pipeline,
@@ -253,12 +250,9 @@ def explain_predictions_best_worst(
         start_time, timer(), ExplainPredictionsStage.COMPUTE_FEATURE_STAGE, callback
     )
 
-    if is_time_series(pipeline.problem_type):
-        pipeline_features, _ = pipeline._compute_holdout_features_and_target(
-            input_features, y_true, training_data, training_target
-        )
-    else:
-        pipeline_features = pipeline.compute_estimator_features(input_features, y_true)
+    pipeline_features = pipeline.compute_estimator_features(
+        input_features, y_true, training_data, training_target
+    )
 
     _update_progress(
         start_time, timer(), ExplainPredictionsStage.COMPUTE_SHAP_VALUES_STAGE, callback

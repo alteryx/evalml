@@ -14,6 +14,7 @@ from evalml.pipelines import (
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline,
 )
+from evalml.pipelines.components import DelayedFeatureTransformer
 from evalml.pipelines.utils import _get_pipeline_base_class
 from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes
@@ -881,7 +882,7 @@ def test_time_series_pipeline_with_detrender(ts_data):
     X_validation, y_validation = X[24:], y[24:]
     pipeline.fit(X_train, y_train)
     predictions = pipeline.predict(X_validation, None, X_train, y_train)
-    features, _ = pipeline._compute_holdout_features_and_target(
+    features = pipeline.compute_estimator_features(
         X_validation, y_validation, X_train, y_train
     )
     detrender = pipeline.component_graph.get_component("Polynomial Detrender")
@@ -1066,3 +1067,35 @@ def test_ts_pipeline_transform_with_final_estimator(
         ),
     ):
         pipeline.transform(X_validation, y_validation)
+
+
+def test_compute_estimator_features_for_time_series(ts_data):
+    X, y = ts_data
+    pipeline = TimeSeriesRegressionPipeline(
+        ["Delayed Feature Transformer", "Random Forest Regressor"],
+        parameters={
+            "pipeline": {
+                "forecast_horizon": 2,
+                "gap": 1,
+                "max_delay": 2,
+                "date_index": None,
+            },
+            "Random Forest Regressor": {"n_jobs": 1},
+            "Delayed Feature Transformer": {
+                "max_delay": 2,
+                "gap": 1,
+                "forecast_horizon": 2,
+            },
+        },
+    )
+    X_train, y_train = X[:15], y[:15]
+    X_validation, y_validation = X[15:], y[15:]
+    pipeline.fit(X_train, y_train)
+    features = pipeline.compute_estimator_features(X_validation, y_validation)
+    delayer = DelayedFeatureTransformer(max_delay=2, gap=1, forecast_horizon=2)
+    assert_frame_equal(features, delayer.fit_transform(X_validation, y_validation))
+    features_with_training = pipeline.compute_estimator_features(
+        X_validation, y_validation, X_train, y_train
+    )
+    delayed = delayer.fit_transform(X, y).iloc[15:]
+    assert_frame_equal(features_with_training, delayed)

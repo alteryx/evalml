@@ -67,10 +67,10 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """
         y_holdout = self._encode_targets(y_holdout)
         y_train = self._encode_targets(y_train)
-        features, target = self._compute_holdout_features_and_target(
+        features = self.compute_estimator_features(
             X_holdout, y_holdout, X_train, y_train
         )
-        proba = self._estimator_predict_proba(features, target)
+        proba = self._estimator_predict_proba(features, y_holdout)
         proba.index = y_holdout.index
         proba = proba.ww.rename(
             columns={
@@ -100,10 +100,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
 
         y = self._encode_targets(y)
         y_train = self._encode_targets(y_train)
-        features, target = self._compute_holdout_features_and_target(
-            X, y, X_train, y_train
-        )
-        predictions = self._estimator_predict(features, target)
+        features = self.compute_estimator_features(X, y, X_train, y_train)
+        predictions = self._estimator_predict(features, y)
         predictions.index = y.index
         predictions = self.inverse_transform(predictions)
         predictions = pd.Series(

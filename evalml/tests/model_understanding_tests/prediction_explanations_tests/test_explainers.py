@@ -852,7 +852,6 @@ def test_explain_predictions_best_worst_and_explain_predictions(
     pipeline.name = "Test Pipeline Name"
     input_features.ww.init()
     pipeline.compute_estimator_features.return_value = input_features
-    pipeline._compute_holdout_features_and_target.return_value = (input_features, None)
 
     def _add_custom_index(answer, index_best, index_worst, output_format):
 

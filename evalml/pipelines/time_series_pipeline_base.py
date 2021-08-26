@@ -76,57 +76,96 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         else:
             return index + gap
 
-    def _compute_holdout_features_and_target(
-        self, X_holdout, y_holdout, X_train, y_train
-    ):
+    @staticmethod
+    def _are_datasets_separated_by_gap(train_index, test_index, gap):
+        if isinstance(
+            train_index, (pd.DatetimeIndex, pd.PeriodIndex, pd.TimedeltaIndex)
+        ):
+            return train_index[-1] != test_index[0] - gap * test_index[0].freq
+        else:
+            return train_index[-1] != test_index[0] - gap
+
+    def compute_estimator_features(self, X, y=None, X_train=None, y_train=None):
+        """Transforms the data by applying all pre-processing components.
+
+        Arguments:
+            X (pd.DataFrame): Input data to the pipeline to transform.
+
+        Returns:
+            pd.DataFrame: New transformed features.
+        """
+        if y_train is None:
+            y_train = pd.Series()
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
-        X_holdout, y_holdout = self._convert_to_woodwork(X_holdout, y_holdout)
-        last_row_of_training_needed_for_features = (
-            self.forecast_horizon + self.max_delay
-        )
-        gap_features = pd.DataFrame()
-        gap_target = pd.Series()
-        if self.gap:
-            gap_features = X_train.iloc[[-1] * self.gap]
-            gap_features.index = self._move_index_forward(
-                X_train.index[-self.gap :], self.gap
+        empty_training_data = X_train.empty or y_train.empty
+        X, y = self._convert_to_woodwork(X, y)
+
+        if empty_training_data:
+            features_holdout = super().compute_estimator_features(X, y)
+        else:
+            last_row_of_training_needed_for_features = (
+                self.forecast_horizon + self.max_delay + self.gap
             )
-            gap_target = y_train.iloc[[-1] * self.gap]
-            gap_target.index = self._move_index_forward(
-                y_train.index[-self.gap :], self.gap
+            gap_features = pd.DataFrame()
+            gap_target = pd.Series()
+            if (
+                self._are_datasets_separated_by_gap(X_train.index, X.index, self.gap)
+                and self.gap
+            ):
+                last_row_of_training_needed_for_features -= self.gap
+                gap_features = X_train.iloc[[-1] * self.gap]
+                gap_features.index = self._move_index_forward(
+                    X_train.index[-self.gap :], self.gap
+                )
+                gap_target = y_train.iloc[[-1] * self.gap]
+                gap_target.index = self._move_index_forward(
+                    y_train.index[-self.gap :], self.gap
+                )
+            padded_features = pd.concat(
+                [
+                    X_train.iloc[-last_row_of_training_needed_for_features:],
+                    gap_features,
+                    X,
+                ],
+                axis=0,
             )
-        padded_features = pd.concat(
-            [
-                X_train.iloc[-last_row_of_training_needed_for_features:],
-                gap_features,
-                X_holdout,
-            ],
-            axis=0,
-        )
-        padded_target = pd.concat(
-            [
-                y_train.iloc[-last_row_of_training_needed_for_features:],
-                gap_target,
-                y_holdout,
-            ],
-            axis=0,
-        )
-        padded_features.ww.init(schema=X_train.ww.schema)
-        padded_target = ww.init_series(
-            padded_target, logical_type=y_train.ww.logical_type
-        )
-        features = self.compute_estimator_features(padded_features, padded_target)
-        features_holdout = features.iloc[-len(y_holdout) :]
-        return features_holdout, y_holdout
+            padded_target = pd.concat(
+                [
+                    y_train.iloc[-last_row_of_training_needed_for_features:],
+                    gap_target,
+                    y,
+                ],
+                axis=0,
+            )
+            padded_features.ww.init(schema=X_train.ww.schema)
+            padded_target = ww.init_series(
+                padded_target, logical_type=y_train.ww.logical_type
+            )
+            features = super().compute_estimator_features(
+                padded_features, padded_target
+            )
+            features_holdout = features.iloc[-len(y) :]
+        return features_holdout
 
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):
+        """Predict on future data where the target is known, e.g. cross validation.
+
+        Arguments:
+            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
+            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples]
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
+            objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
+
+        Returns:
+            pd.Series: Estimated labels
+        """
         if self.estimator is None:
             raise ValueError(
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
             )
-        features, target = self._compute_holdout_features_and_target(
-            X, y, X_train, y_train
-        )
+        target = infer_feature_types(y)
+        features = self.compute_estimator_features(X, target, X_train, y_train)
         predictions = self._estimator_predict(features, target)
         predictions.index = y.index
         predictions = self.inverse_transform(predictions)
