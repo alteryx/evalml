@@ -135,15 +135,15 @@ def test_partial_dependence_with_non_numeric_columns(
 ):
     X = pd.DataFrame(
         {
-            "numeric": [1, 2, 3, 0],
-            "also numeric": [2, 3, 4, 1],
-            "string": ["a", "b", "a", "c"],
-            "also string": ["c", "b", "a", "d"],
+            "numeric": [1, 2, 3, 0]*4,
+            "also numeric": [2, 3, 4, 1]*4,
+            "string": ["a", "b", "a", "c"]*4,
+            "also string": ["c", "b", "a", "c"]*4,
         }
     )
     if data_type == "ww":
         X.ww.init()
-    y = [0, 0.2, 1.4, 1]
+    y = [0, 0.2, 1.4, 1]*4
     pipeline = linear_regression_pipeline_class(
         parameters={"Linear Regressor": {"n_jobs": 1}}
     )

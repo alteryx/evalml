@@ -217,6 +217,7 @@ def test_force_plot_regression(
 def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
     X, y = fraud_100
     columns_to_select = ["datetime", "amount", "provider", "currency"]
+    X.ww.init(logical_types={"currency": "categorical"})
 
     pipeline = pipeline_class(
         component_graph=[
@@ -250,6 +251,7 @@ def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
 def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
     X, y = fraud_100
     columns_to_select = ["datetime", "amount", "provider", "currency"]
+    X.ww.init(logical_types={"currency": "categorical"})
 
     X.ww.set_types(logical_types={"provider": "NaturalLanguage"})
     component_graph = [
