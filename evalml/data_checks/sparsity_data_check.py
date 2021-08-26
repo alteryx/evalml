@@ -52,14 +52,15 @@ class SparsityDataCheck(DataCheck):
             ...    'not_sparse': [float(1) for x in range(100)]
             ... })
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=0.5, unique_count_threshold=10)
-            >>> assert sparsity_check.validate(df) == {"errors": [],\
-                                                       "warnings": [{"message": "Input columns (sparse) for multiclass problem type are too sparse.",\
-                                                            "data_check_name": "SparsityDataCheck",\
-                                                            "level": "warning",\
-                                                            "code": "TOO_SPARSE",\
-                                                            "details": {"column": "sparse", 'sparsity_score': 0.0}}],\
-                                                       "actions": [{"code": "DROP_COL",\
-                                                                 "metadata": {"column": "sparse"}}]}
+            >>> assert sparsity_check.validate(df) == {
+            ...     "errors": [],
+            ...     "warnings": [{"message": "Input columns (sparse) for multiclass problem type are too sparse.",
+            ...                   "data_check_name": "SparsityDataCheck",
+            ...                    "level": "warning",
+            ...                    "code": "TOO_SPARSE",
+            ...                    "details": {"column": "sparse", 'sparsity_score': 0.0}}],
+            ...     "actions": [{"code": "DROP_COL",
+            ...                  "metadata": {"column": "sparse"}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

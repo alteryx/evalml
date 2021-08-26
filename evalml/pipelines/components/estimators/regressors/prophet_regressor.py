@@ -37,7 +37,7 @@ class ProphetRegressor(Estimator):
 
     def __init__(
         self,
-        date_column="ds",
+        date_index=None,
         changepoint_prior_scale=0.05,
         seasonality_prior_scale=10,
         holidays_prior_scale=10,
@@ -46,7 +46,6 @@ class ProphetRegressor(Estimator):
         stan_backend="CMDSTANPY",
         **kwargs,
     ):
-        self.date_column = date_column
 
         parameters = {
             "changepoint_prior_scale": changepoint_prior_scale,
@@ -69,6 +68,7 @@ class ProphetRegressor(Estimator):
         prophet = import_or_raise("prophet", error_msg=p_error_msg)
 
         prophet_regressor = prophet.Prophet(**parameters)
+        parameters["date_index"] = date_index
         super().__init__(
             parameters=parameters,
             component_obj=prophet_regressor,
@@ -83,22 +83,27 @@ class ProphetRegressor(Estimator):
             y = copy.deepcopy(y)
 
         if date_column in X.columns:
-            date_col = X[date_column]
-        elif isinstance(X.index, pd.DatetimeIndex):
-            date_col = X.reset_index()
-            date_col = date_col["index"]
-        elif isinstance(y.index, pd.DatetimeIndex):
-            date_col = y.reset_index()
-            date_col = date_col["index"]
+            date_column = X.pop(date_column)
         else:
-            msg = "Prophet estimator requires input data X to have a datetime column specified by the 'date_column' parameter. If it doesn't find one, it will look for the datetime column in the index of X or y."
-            raise ValueError(msg)
+            if isinstance(X.index, pd.DatetimeIndex):
+                X = X.reset_index()
+                date_column = X.pop("index")
+            elif isinstance(y.index, pd.DatetimeIndex):
+                y = y.reset_index()
+                date_column = y.pop("index")
+                y = pd.Series(y.values.flatten())
+            else:
+                msg = "Prophet estimator requires input data X to have a datetime column specified by the 'date_index' parameter. If it doesn't find one, it will look for the datetime column in the index of X or y."
+                raise ValueError(msg)
 
-        date_col = date_col.rename("ds")
-        prophet_df = date_col.to_frame()
+        prophet_df = X
+
         if y is not None:
-            y.index = prophet_df.index
+            if not prophet_df.empty:
+                y.index = prophet_df.index
             prophet_df["y"] = y
+        prophet_df["ds"] = date_column
+
         return prophet_df
 
     def fit(self, X, y=None):
@@ -108,7 +113,7 @@ class ProphetRegressor(Estimator):
         X, y = super()._manage_woodwork(X, y)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, date_column=self.date_column
+            X=X, y=y, date_column=self.parameters["date_index"]
         )
 
         self._component_obj.fit(prophet_df)
@@ -121,10 +126,11 @@ class ProphetRegressor(Estimator):
         X = infer_feature_types(X)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, date_column=self.date_column
+            X=X, y=y, date_column=self.parameters["date_index"]
         )
 
         y_pred = self._component_obj.predict(prophet_df)["yhat"]
+        y_pred = y_pred.rename(None)
         return y_pred
 
     def get_params(self):
@@ -147,6 +153,7 @@ class ProphetRegressor(Estimator):
 
         parameters = {
             "changepoint_prior_scale": 0.05,
+            "date_index": None,
             "seasonality_prior_scale": 10,
             "holidays_prior_scale": 10,
             "seasonality_mode": "additive",

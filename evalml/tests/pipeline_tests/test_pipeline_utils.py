@@ -177,7 +177,8 @@ def test_make_pipeline(
             )
             datetime = (
                 [DateTimeFeaturizer]
-                if estimator_class.model_family != ModelFamily.ARIMA
+                if estimator_class.model_family
+                not in [ModelFamily.ARIMA, ModelFamily.PROPHET]
                 and "dates" in column_names
                 else []
             )
@@ -413,7 +414,7 @@ def test_get_estimators(has_minimal_dependencies):
             == 2
         )
         assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 5
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 5
+        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 4
     else:
         assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 8
         assert (
@@ -426,7 +427,7 @@ def test_get_estimators(has_minimal_dependencies):
             == 2
         )
         assert len(get_estimators(problem_type=ProblemTypes.MULTICLASS)) == 8
-        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 8
+        assert len(get_estimators(problem_type=ProblemTypes.REGRESSION)) == 7
 
     assert len(get_estimators(problem_type=ProblemTypes.BINARY, model_families=[])) == 0
     assert (

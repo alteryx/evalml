@@ -45,11 +45,15 @@ class ComponentGraph:
                 "component_dict must be a dictionary which specifies the components and edges between components"
             )
         self._validate_component_dict()
+
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
             component_class = handle_component_class(component_info[0])
             self.component_instances[component_name] = component_class
+
+        self._validate_component_dict_edges()
+
         self.input_feature_names = {}
         self._feature_provenance = {}
         self._i = 0
@@ -61,6 +65,9 @@ class ComponentGraph:
                 raise ValueError(
                     "All component information should be passed in as a list"
                 )
+
+    def _validate_component_dict_edges(self):
+        for _, component_inputs in self.component_dict.items():
             component_inputs = component_inputs[1:]
             has_feature_input = any(
                 component_input.endswith(".x") or component_input == "X"
@@ -96,6 +103,19 @@ class ComponentGraph:
                 raise ValueError(
                     "All edges must be specified as either an input feature ('X'/.x) or input target ('y'/.y)."
                 )
+
+            target_inputs = [
+                component
+                for component in component_inputs
+                if (component.endswith(".y"))
+            ]
+            if target_inputs:
+                target_component_name = target_inputs[0][:-2]
+                target_component_class = self.get_component(target_component_name)
+                if not target_component_class.modifies_target:
+                    raise ValueError(
+                        f"{target_inputs[0]} is not a valid input edge because {target_component_name} does not return a target."
+                    )
 
     @property
     def compute_order(self):
@@ -310,7 +330,6 @@ class ComponentGraph:
                 raise ValueError(
                     "All components must be instantiated before fitting or predicting"
                 )
-
             x_inputs, y_input = self._consolidate_inputs_for_component(
                 output_cache, component_name, X, y
             )

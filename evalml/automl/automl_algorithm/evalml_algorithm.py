@@ -129,7 +129,7 @@ class EvalMLAlgorithm(AutoMLAlgorithm):
     def _naive_estimators(self):
         if is_regression(self.problem_type):
             naive_estimators = [
-                "Linear Regressor",
+                "Elastic Net Regressor",
                 "Random Forest Regressor",
             ]
         else:

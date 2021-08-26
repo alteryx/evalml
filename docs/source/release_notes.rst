@@ -2,14 +2,22 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Add ``ProphetRegressor`` to AutoML :pr:`2619`
+        * Removed SVM "linear" and "precomputed" kernel hyperparameter options, and improved default parameters :pr:`2651`
+        * Updated ``ComponentGraph`` initalization to raise ``ValueError`` when user attempts to use ``.y`` for a component that does not produce a tuple output :pr:`2662`
+        * Added ``DropRowsTransformer`` component :pr:`2692`
     * Fixes
     * Changes
+        * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     * Documentation Changes
+        * Added docstring formatting linting :pr:`2670`
     * Testing Changes
+        * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
 
 .. warning::
 
     **Breaking Changes**
+        * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     
 
 **v0.31.0 Aug. 19, 2021**
@@ -26,7 +34,9 @@ Release Notes
         * Removed commented out code in ``pipeline_meta.py`` :pr:`2659`
     * Documentation Changes
         * Add complete install command to README and Install section :pr:`2627`
+        * Cleaned up documentation for ``MulticollinearityDataCheck`` :pr:`2664`
     * Testing Changes
+        * Speed up CI by splitting Prophet tests into a separate workflow in GitHub :pr:`2644`
 
 .. warning::
 
