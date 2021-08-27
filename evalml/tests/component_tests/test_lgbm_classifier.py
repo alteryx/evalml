@@ -175,6 +175,7 @@ def test_categorical_data_subset(mock_predict, mock_predict_proba, X_y_binary):
     X = pd.DataFrame(
         {"feature_1": [0, 0, 1, 1, 0, 1]*2, "feature_2": ["a", "a", "b", "b", "c", "c"]*2}
     )
+    X.ww.init(logical_types={"feature_2": "categorical"})
     y = pd.Series([1, 1, 0, 0, 0, 1]*2)
     X_expected = pd.DataFrame(
         {0: [0, 0, 1, 1, 0, 1]*2, 1: [0.0, 0.0, 1.0, 1.0, 2.0, 2.0]*2}
@@ -182,6 +183,7 @@ def test_categorical_data_subset(mock_predict, mock_predict_proba, X_y_binary):
     X_expected.iloc[:, 1] = X_expected.iloc[:, 1].astype("category")
 
     X_subset = pd.DataFrame({"feature_1": [1, 0], "feature_2": ["c", "a"]})
+    X_subset.ww.init(logical_types={"feature_2": "categorical"})
     X_expected_subset = pd.DataFrame({0: [1, 0], 1: [2.0, 0.0]})
     X_expected_subset.iloc[:, 1] = X_expected_subset.iloc[:, 1].astype("category")
 
