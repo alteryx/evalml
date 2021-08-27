@@ -173,7 +173,7 @@ def test_oversample_seed_same_outputs(sampler, X_y_binary):
                 X, feature_types={0: "Categorical", 1: "Categorical"}
             )
             if sampler == "SMOTEN" and X.shape[1] > 2:
-                X = X = X.drop([i for i in range(2, 20)], axis=1)
+                X = X.drop([i for i in range(2, 20)], axis=1)
         samplers.append(oversampler)
 
     # iterate through different indices in samplers
@@ -184,7 +184,7 @@ def test_oversample_seed_same_outputs(sampler, X_y_binary):
         X1, y1 = samplers[s1].fit_transform(X, y)
         X2, y2 = samplers[s2].fit_transform(X, y)
         if s2 == 2 and sampler != "SMOTEN":
-            # group 3, SMOTENOversampler performance doesn't change with different random states
+            # group 3, SMOTEN performance doesn't change with different random states
             with pytest.raises(AssertionError):
                 pd.testing.assert_frame_equal(X1, X2)
         else:

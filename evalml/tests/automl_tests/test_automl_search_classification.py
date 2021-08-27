@@ -9,6 +9,7 @@ from sklearn.model_selection import StratifiedKFold
 from evalml import AutoMLSearch
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
+from evalml.automl.utils import get_best_sampler_for_data
 from evalml.exceptions import ParameterNotUsedWarning, PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
@@ -1208,6 +1209,27 @@ def test_automl_search_sampler_ratio(
         for comp in pipelines[0].component_graph:
             if "sampler" in comp.name:
                 assert comp.parameters["sampling_ratio"] == sampling_ratio
+
+
+def test_automl_oversampler_selection():
+    X = pd.DataFrame({"a": ["a"] * 50 + ["b"] * 25 + ["c"] * 25,
+                  "b": list(range(100))})
+    y = pd.Series([1] * 90 + [0] * 10)
+    X.ww.init(logical_types={"a": "Categorical"})
+
+    sampler = get_best_sampler_for_data(X, y, sampler_method="Oversampler",
+                                        sampler_balanced_ratio=0.5)
+
+    allowed_component_graph = {"DropCols": ["Drop Columns Transformer", "X", "y"],
+                               "Oversampler": [sampler, "DropCols.x", "y"],
+                               "RF": ["Random Forest Classifier", "Oversampler.x", "Oversampler.y"]
+                               }
+
+    automl = AutoMLSearch(X, y, "binary", allowed_component_graphs={"pipeline": allowed_component_graph},
+                          pipeline_parameters={"DropCols": {"columns": ["a"]}},
+                          error_callback=raise_error_callback)
+    # This should run without error
+    automl.search()
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
