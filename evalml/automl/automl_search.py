@@ -71,6 +71,30 @@ from evalml.utils.logger import (
 logger = get_logger(__file__)
 
 
+def build_engine_from_str(engine_str):
+    valid_engines = [
+        "sequential",
+        "cf_threaded",
+        "cf_process",
+        "dask_threaded",
+        "dask_process",
+    ]
+    if engine_str not in valid_engines:
+        raise ValueError(
+            f"'{engine_str}' is not a valid engine, please choose from {valid_engines}"
+        )
+    elif engine_str == "sequential":
+        return SequentialEngine()
+    elif engine_str == "cf_threaded":
+        return CFEngine(CFClient(ThreadPoolExecutor()))
+    elif engine_str == "cf_process":
+        return CFEngine(CFClient(ProcessPoolExecutor()))
+    elif engine_str == "dask_threaded":
+        return DaskEngine(cluster=dd.LocalCluster(processes=False))
+    elif engine_str == "dask_process":
+        return DaskEngine(cluster=dd.LocalCluster(processes=True))
+
+
 def search(
     X_train=None,
     y_train=None,
@@ -685,6 +709,7 @@ class AutoMLSearch:
             len(self.X_train.ww.select("natural_language", return_schema=True).columns)
             > 0
         )
+
         if run_ensembling and len(self.allowed_pipelines) == 1:
             logger.warning(
                 "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
@@ -741,22 +766,7 @@ class AutoMLSearch:
         if not engine:
             self._engine = SequentialEngine()
         else:
-            valid_engines = {
-                "sequential": SequentialEngine(),
-                "cf_threaded": CFEngine(CFClient(ThreadPoolExecutor())),
-                "cf_process": CFEngine(CFClient(ProcessPoolExecutor())),
-                "dask_threaded": DaskEngine(
-                    dd.Client(dd.LocalCluster(processes=False))
-                ),
-                "dask_process": DaskEngine(dd.Client(dd.LocalCluster(processes=True))),
-            }
-            if isinstance(engine, str):
-                try:
-                    engine = valid_engines[engine]
-                except KeyError:
-                    raise KeyError(
-                        f"{engine} not a valid engine {list(valid_engines.keys())}"
-                    )
+            engine = build_engine_from_str(engine)
             self._engine = engine
 
         self.automl_config = AutoMLConfig(
@@ -808,6 +818,15 @@ class AutoMLSearch:
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")
+
+    def close_engine(self):
+        """Function to explicitly close the cluster.  Currently only works for DaskEngines.
+        Returns: None
+        """
+        if isinstance(self._engine, DaskEngine):
+            self._engine.close()
+        else:
+            pass
 
     def _catch_warnings(self, warning_list):
         if len(warning_list) == len(self.allowed_pipelines) and len(warning_list) > 0:
