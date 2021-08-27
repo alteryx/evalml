@@ -431,7 +431,7 @@ class AutoMLSearch:
         self.n_jobs = n_jobs
 
         if not self.plot:
-            logger.warning(
+            self.logger.warning(
                 "Unable to import plotly; skipping pipeline search plotting\n"
             )
         if allowed_component_graphs is not None:
@@ -814,6 +814,7 @@ class AutoMLSearch:
             self.logger.error(
                 "AutoMLSearch.search() has already been run and will not run again on the same instance. Re-initialize AutoMLSearch to search again."
             )
+            self._deactivate_logger()
             return
 
         # don't show iteration plot outside of a jupyter notebook

@@ -1,5 +1,4 @@
 import inspect
-import logging
 
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
 from sklearn.utils.multiclass import unique_labels

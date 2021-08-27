@@ -1,5 +1,4 @@
 import inspect
-import logging
 import warnings
 
 import networkx as nx
