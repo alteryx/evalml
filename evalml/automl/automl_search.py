@@ -768,7 +768,9 @@ class AutoMLSearch:
         elif isinstance(engine, (DaskEngine, CFEngine)):
             self._engine = engine
         else:
-            raise TypeError("Invalid type provided for 'engine'.  Requires string, DaskEngine, or CFEngine.")
+            raise TypeError(
+                "Invalid type provided for 'engine'.  Requires string, DaskEngine, or CFEngine."
+            )
 
         self.automl_config = AutoMLConfig(
             self.data_splitter,
