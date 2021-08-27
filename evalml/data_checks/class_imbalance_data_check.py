@@ -16,7 +16,7 @@ class ClassImbalanceDataCheck(DataCheck):
     """
     Check if any of the target labels are imbalanced, or if the number of values for each target are below 2 times the number of CV folds. Use for classification problems.
 
-    Arguments:
+    Arguments
     ---------
         threshold (float): The minimum threshold allowed for class imbalance before a warning is raised.
             This threshold is calculated by comparing the number of samples in each class to the sum of samples in that class and the majority class.
@@ -53,7 +53,7 @@ class ClassImbalanceDataCheck(DataCheck):
         """
         Check if any target labels are imbalanced beyond a threshold for binary and multiclass problems Ignores NaN values in target labels if they appear.
 
-        Arguments:
+        Arguments
         ---------
             X (pd.DataFrame, np.ndarray): Features. Ignored.
             y (pd.Series, np.ndarray): Target labels to check for imbalanced data.
@@ -63,7 +63,7 @@ class ClassImbalanceDataCheck(DataCheck):
             dict: Dictionary with DataCheckWarnings if imbalance in classes is less than the threshold,
                   and DataCheckErrors if the number of values for each target is below 2 * num_cv_folds.
 
-        Example:
+        Example
         -------
             >>> import pandas as pd
             >>> X = pd.DataFrame()
