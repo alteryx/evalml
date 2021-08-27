@@ -290,7 +290,8 @@ def test_predict_and_predict_in_sample(
             "gap": gap,
             "max_delay": max_delay,
             "forecast_horizon": forecast_horizon,
-        }
+        },
+        estimator_name: {"n_jobs": 1}
     }
     expected_features = X.copy()
     expected_features.ww.init()
