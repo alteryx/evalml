@@ -1,3 +1,4 @@
+"""Data check to check if any set features are likely to be multicollinear."""
 from evalml.data_checks import (
     DataCheck,
     DataCheckMessageCode,
@@ -10,6 +11,7 @@ class MulticollinearityDataCheck(DataCheck):
     """Check if any set features are likely to be multicollinear.
 
     Arguments:
+    ---------
         threshold (float): The threshold to be considered. Defaults to 0.9.
     """
 

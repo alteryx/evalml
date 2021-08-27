@@ -5,7 +5,8 @@ from sklearn.model_selection._split import BaseCrossValidator
 
 
 class TimeSeriesSplit(BaseCrossValidator):
-    """Rolling Origin Cross Validation for time series problems.
+    """
+    Rolling Origin Cross Validation for time series problems.
 
     This class uses max_delay and gap values to take into account that evalml time series pipelines perform
     some feature and target engineering, e.g delaying input features and shifting the target variable by the
@@ -39,7 +40,8 @@ class TimeSeriesSplit(BaseCrossValidator):
         return data is None or data.empty
 
     def split(self, X, y=None, groups=None):
-        """Get the time series splits.
+        """
+        Get the time series splits.
 
         X and y are assumed to be sorted in ascending time order.
         This method can handle passing in empty or None X and y data but note that X and y cannot be None or empty
@@ -48,11 +50,11 @@ class TimeSeriesSplit(BaseCrossValidator):
         Arguments:
         ---------
             X (pd.DataFrame, None): Features to split.
-            y (pd.DataFrame, None): Target variable to split.
-            groups: Ignored but kept for compatibility with sklearn API.
+            y (pd.DataFrame, None): Target variable to split. Defaults to None.
+            groups: Ignored but kept for compatibility with sklearn API. Defaults to None.
 
         Returns
-        ------
+        -------
             Iterator of (train, test) indices tuples.
         """
         # Sklearn splitters always assume a valid X is passed but we need to support the

@@ -11,10 +11,11 @@ class DateTimeNaNDataCheck(DataCheck):
         """Checks if any datetime columns contain NaN values.
 
         Arguments:
+        ---------
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.  Defaults to None.
 
-        Returns:
+        Returns
         -------
             dict: dict with a DataCheckError if NaN values are present in datetime columns.
 
