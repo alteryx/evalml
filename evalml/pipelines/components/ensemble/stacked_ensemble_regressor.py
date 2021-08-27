@@ -1,5 +1,5 @@
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components import LinearRegressor
+from evalml.pipelines.components import ElasticNetRegressor
 from evalml.pipelines.components.ensemble import StackedEnsembleBase
 from evalml.problem_types import ProblemTypes
 
@@ -8,8 +8,6 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
     """Stacked Ensemble Regressor.
 
     Arguments:
-        input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators.
-            This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         final_estimator (Estimator or subclass): The regressor used to combine the base estimators. If None, uses LinearRegressor.
         cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
             For int/None inputs, KFold is used. Defaults to None.
@@ -19,9 +17,8 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
             - int: the number of folds in a (Stratified) KFold
             - An scikit-learn cross-validation generator object
             - An iterable yielding (train, test) splits
-        n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
-            None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
-            Defaults to -1.
+        n_jobs (int or None): Integer describing level of parallelism used for pipelines. None and 1 are equivalent.
+            If set to -1, all CPUs are used. For n_jobs greater than -1, (n_cpus + 1 + n_jobs) are used. Defaults to -1.
             - Note: there could be some multi-process errors thrown for values of `n_jobs != 1`. If this is the case, please use `n_jobs = 1`.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -39,4 +36,4 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
     ]"""
     hyperparameter_ranges = {}
     """{}"""
-    _default_final_estimator = LinearRegressor
+    _default_final_estimator = ElasticNetRegressor

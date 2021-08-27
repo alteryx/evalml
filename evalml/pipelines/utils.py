@@ -35,9 +35,6 @@ from evalml.pipelines.components import (  # noqa: F401
     RandomForestClassifier,
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
-    SMOTENCOversampler,
-    SMOTENOversampler,
-    SMOTEOversampler,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
@@ -266,7 +263,7 @@ def _make_stacked_ensemble_pipeline(
     n_jobs=-1,
     random_seed=0,
     use_sklearn=False,
-    ensemble_y='y'
+    ensemble_y="y",
 ):
     """Creates a pipeline with a stacked ensemble estimator.
 
