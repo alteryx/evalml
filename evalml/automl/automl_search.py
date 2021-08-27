@@ -427,7 +427,7 @@ class AutoMLSearch:
         _ensembling_split_size=0.2,
         _pipelines_per_batch=5,
         _automl_algorithm="iterative",
-        engine=None,
+        engine="sequential",
     ):
         if X_train is None:
             raise ValueError(
@@ -763,11 +763,12 @@ class AutoMLSearch:
                     + (self._pipelines_per_batch * (self.max_batches - 1))
                 )
 
-        if not engine:
-            self._engine = SequentialEngine()
-        else:
-            engine = build_engine_from_str(engine)
+        if isinstance(engine, str):
+            self._engine = build_engine_from_str(engine)
+        elif isinstance(engine, (DaskEngine, CFEngine)):
             self._engine = engine
+        else:
+            raise TypeError("Invalid type provided for 'engine'.  Requires string, DaskEngine, or CFEngine.")
 
         self.automl_config = AutoMLConfig(
             self.data_splitter,
