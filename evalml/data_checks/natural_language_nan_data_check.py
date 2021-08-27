@@ -9,7 +9,8 @@ class NaturalLanguageNaNDataCheck(DataCheck):
     """Checks each column in the input for natural language features and will issue an error if NaN values are present."""
 
     def validate(self, X, y=None):
-        """Check if any natural language columns contain NaN values.
+        """
+        Check if any natural language columns contain NaN values.
 
         Arguments:
         ---------
@@ -39,6 +40,7 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             ...                      message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
             ...                      details={"columns": 'A'}).to_dict()]
             ...    }
+
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

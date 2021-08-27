@@ -11,7 +11,8 @@ from evalml.utils import infer_feature_types
 
 
 class HighlyNullDataCheck(DataCheck):
-    """Check if there are any highly-null columns and rows in the input.
+    """
+    Check if there are any highly-null columns and rows in the input.
 
     Arguments:
     ---------
@@ -19,6 +20,7 @@ class HighlyNullDataCheck(DataCheck):
             that column will be considered highly-null. Defaults to 0.95.
         pct_null_row_threshold(float): If the percentage of NaN values in an input row exceeds this amount,
             that row will be considered highly-null. Defaults to 0.95.
+
     """
 
     def __init__(self, pct_null_col_threshold=0.95, pct_null_row_threshold=0.95):
@@ -35,7 +37,8 @@ class HighlyNullDataCheck(DataCheck):
         self.pct_null_row_threshold = pct_null_row_threshold
 
     def validate(self, X, y=None):
-        """Check if there are any highly-null columns or rows in the input.
+        """
+        Check if there are any highly-null columns or rows in the input.
 
         Arguments:
         ---------
@@ -78,6 +81,7 @@ class HighlyNullDataCheck(DataCheck):
             ...                   "details": {"column": "lots_of_null", "pct_null_rows": 0.8}}],
             ...    "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [0, 1, 2, 3]}},
             ...                {"code": "DROP_COL", "metadata": {"column": "lots_of_null"}}]}
+        
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
