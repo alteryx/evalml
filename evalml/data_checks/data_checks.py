@@ -1,3 +1,4 @@
+"""A collection of data checks."""
 import inspect
 
 from evalml.data_checks import DataCheck
@@ -6,7 +7,7 @@ from evalml.utils import infer_feature_types
 
 
 def _has_defaults_for_all_args(init):
-    """Tests whether the init method has defaults for all arguments."""
+    """Test whether the init method has defaults for all arguments."""
     signature = inspect.getfullargspec(init)
     n_default_args = 0 if not signature.defaults else len(signature.defaults)
     n_args = (
@@ -16,11 +17,17 @@ def _has_defaults_for_all_args(init):
 
 
 class DataChecks:
-    """A collection of data checks."""
+    """A collection of data checks.
+
+    Arguments:
+    ---------
+        data_checks (list (DataCheck)): List of DataCheck objects.
+        data_check_params (dict): Parameters for passed DataCheck objects.
+    """
 
     @staticmethod
     def _validate_data_checks(data_check_classes, params):
-        """Inits a DataChecks instance from a list of DataCheck classes and corresponding params."""
+        """Init a DataChecks instance from a list of DataCheck classes and corresponding params."""
         if not isinstance(data_check_classes, list):
             raise ValueError(
                 f"Parameter data_checks must be a list. Received {type(data_check_classes).__name__}."
@@ -73,25 +80,21 @@ class DataChecks:
         return data_check_instances
 
     def __init__(self, data_checks=None, data_check_params=None):
-        """A collection of data checks.
-
-        Arguments:
-            data_checks (list (DataCheck)): List of DataCheck objects
-            data_check_params (dict): Parameters for passed DataCheck objects
-        """
         data_check_params = data_check_params or dict()
         self._validate_data_checks(data_checks, data_check_params)
         data_check_instances = self._init_data_checks(data_checks, data_check_params)
         self.data_checks = data_check_instances
 
     def validate(self, X, y=None):
-        """Inspects and validates the input data against data checks and returns a list of warnings and errors if applicable.
+        """Inspect and validate the input data against data checks and returns a list of warnings and errors if applicable.
 
         Arguments:
+        ---------
             X (pd.DataFrame, np.ndarray): The input data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray): The target data of length [n_samples]
 
-        Returns:
+        Return:
+        ------
             dict: Dictionary containing DataCheckMessage objects
         """
         messages = {"warnings": [], "errors": [], "actions": []}

@@ -1,3 +1,4 @@
+"""A default set of data checks that can be used for a variety of datasets."""
 from .class_imbalance_data_check import ClassImbalanceDataCheck
 from .data_checks import DataChecks
 from .datetime_format_data_check import DateTimeFormatDataCheck
@@ -19,6 +20,7 @@ from evalml.problem_types import (
 
 class DefaultDataChecks(DataChecks):
     """A collection of basic data checks that is used by AutoML by default.
+
     Includes:
 
         - `HighlyNullDataCheck`
@@ -34,6 +36,7 @@ class DefaultDataChecks(DataChecks):
         - `DateTimeFormatDataCheck` (for time series problem types)
 
     Arguments:
+    ---------
         problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
         objective (str or ObjectiveBase): Name or instance of the objective class.
         n_splits (int): The number of splits as determined by the data splitter being used. Defaults to 3.

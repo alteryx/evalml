@@ -1,3 +1,4 @@
+"""Data check that checks if any of the features are likely to be ID columns."""
 from evalml.data_checks import (
     DataCheck,
     DataCheckAction,
@@ -12,6 +13,7 @@ class IDColumnsDataCheck(DataCheck):
     """Check if any of the features are likely to be ID columns.
 
     Arguments:
+    ---------
         id_threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0.
     """
 
@@ -21,19 +23,23 @@ class IDColumnsDataCheck(DataCheck):
         self.id_threshold = id_threshold
 
     def validate(self, X, y=None):
-        """Check if any of the features are likely to be ID columns. Currently performs these simple checks:
+        """Check if any of the features are likely to be ID columns. Currently performs a number of simple checks.
 
             - column name is "id"
             - column name ends in "_id"
             - column contains all unique values (and is categorical / integer type)
 
         Arguments:
-            X (pd.DataFrame, np.ndarray): The input features to check
+        ---------
+            X (pd.DataFrame, np.ndarray): The input features to check.T
+            y (pd.Series): The target. Defaults to None. Ignored.
 
-        Returns:
+        Return:
+        ------
             dict: A dictionary of features with column name or index and their probability of being ID columns
 
         Example:
+        -------
             >>> import pandas as pd
             >>> df = pd.DataFrame({
             ...     'df_id': [0, 1, 2, 3, 4],

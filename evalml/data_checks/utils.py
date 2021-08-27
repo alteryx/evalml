@@ -1,11 +1,14 @@
+"""Utilities for data checks."""
 from .data_checks import DataChecks
 
 
 class EmptyDataChecks(DataChecks):
-    def __init__(self, data_checks=None):
-        """An empty collection of data checks.
+    """An empty collection of data checks.
 
-        Arguments:
-            data_checks (list (DataCheck)): Ignored.
-        """
+    Arguments:
+    ---------
+        data_checks (list (DataCheck)): Ignored.
+    """
+
+    def __init__(self, data_checks=None):
         self.data_checks = []

@@ -1,3 +1,4 @@
+"""Data check that checks each column in the input for natural language features and will issue an error if NaN values are present."""
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
 from evalml.utils.woodwork_utils import infer_feature_types
 
@@ -8,16 +9,19 @@ class NaturalLanguageNaNDataCheck(DataCheck):
     """Checks each column in the input for natural language features and will issue an error if NaN values are present."""
 
     def validate(self, X, y=None):
-        """Checks if any natural language columns contain NaN values.
+        """Check if any natural language columns contain NaN values.
 
         Arguments:
+        ---------
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.  Defaults to None.
 
-        Returns:
+        Return:
+        ------
             dict: dict with a DataCheckError if NaN values are present in natural language columns.
 
         Example:
+        -------
             >>> import pandas as pd
             >>> import woodwork as ww
             >>> import numpy as np

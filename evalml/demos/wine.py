@@ -6,9 +6,7 @@ from evalml.preprocessing import load_data
 
 
 def load_wine():
-    """Load wine dataset.
-
-    Multiclass problem.
+    """Load wine dataset. Multiclass problem.
 
     Return:
     ------
