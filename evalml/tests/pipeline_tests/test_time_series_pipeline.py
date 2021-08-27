@@ -291,7 +291,7 @@ def test_predict_and_predict_in_sample(
             "max_delay": max_delay,
             "forecast_horizon": forecast_horizon,
         },
-        estimator_name: {"n_jobs": 1}
+        estimator_name: {"n_jobs": 1},
     }
     expected_features = X.copy()
     expected_features.ww.init()
@@ -628,7 +628,6 @@ def test_score_works(
 
     pl.fit(X_train, y_train)
     if expected_unique_values:
-        # NaNs are expected because of padding due to max_delay
         assert (
             set(
                 pl.predict(

@@ -71,6 +71,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
     @staticmethod
     def _move_index_forward(index, gap):
+        """Fill in the index of the gap features and values with the right values."""
         if isinstance(index, (pd.DatetimeIndex, pd.PeriodIndex, pd.TimedeltaIndex)):
             return index.shift(gap)
         else:
@@ -78,6 +79,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
     @staticmethod
     def _are_datasets_separated_by_gap(train_index, test_index, gap):
+        """Determine if the train and test datasets are separated by gap number of units.
+
+        This will be true when users are predicting on unseen data but not during cross
+        validation since the target is known.
+        """
         gap_difference = gap + 1
         index_difference = test_index[0] - train_index[-1]
         if isinstance(
@@ -87,16 +93,18 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         return index_difference == gap_difference
 
     def _add_training_data_to_X_Y(self, X, y, X_train, y_train):
-        last_row_of_training_needed_for_features = (
-            self.forecast_horizon + self.max_delay + self.gap
-        )
+        """Append the training data to the holdout data.
+
+        Need to do this so that we have all the data we need to compute lagged features on the holdout set.
+        """
+        last_row_of_training = self.forecast_horizon + self.max_delay + self.gap
         gap_features = pd.DataFrame()
         gap_target = pd.Series()
         if (
             self._are_datasets_separated_by_gap(X_train.index, X.index, self.gap)
             and self.gap
         ):
-            last_row_of_training_needed_for_features -= self.gap
+            last_row_of_training -= self.gap
             gap_features = X_train.iloc[[-1] * self.gap]
             gap_features.index = self._move_index_forward(
                 X_train.index[-self.gap :], self.gap
@@ -107,12 +115,12 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             )
 
         features_to_concat = [
-            X_train.iloc[-last_row_of_training_needed_for_features:],
+            X_train.iloc[-last_row_of_training:],
             gap_features,
             X,
         ]
         targets_to_concat = [
-            y_train.iloc[-last_row_of_training_needed_for_features:],
+            y_train.iloc[-last_row_of_training:],
             gap_target,
             y,
         ]
