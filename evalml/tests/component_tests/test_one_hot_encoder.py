@@ -78,7 +78,7 @@ def test_null_values_in_dataframe():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
-
+    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical"})
     # Test NaN will be counted as a category if within the top_n
     encoder = OneHotEncoder(handle_missing="as_category")
     encoder.fit(X)
@@ -110,7 +110,7 @@ def test_null_values_in_dataframe():
             "col_4": [2, 0, 1, np.nan, 0],
         }
     )
-
+    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical"})
     encoder = OneHotEncoder(top_n=2, handle_missing="as_category")
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -183,6 +183,7 @@ def test_drop_binary():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
+    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical", "col_3": "categorical"})
     encoder = OneHotEncoder(top_n=None, drop="if_binary", handle_unknown="error")
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -199,6 +200,7 @@ def test_drop_parameter_is_array():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
+    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical", "col_3": "categorical"})
     encoder = OneHotEncoder(top_n=None, drop=["b", "c", "a"], handle_unknown="error")
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -263,6 +265,7 @@ def test_no_top_n():
             "col_4": [2, 0, 1, 3, 0, 1, 2, 0, 2, 1, 2],
         }
     )
+    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical"})
     expected_col_names = set(["col_3_b", "col_4"])
     for val in X["col_1"]:
         expected_col_names.add("col_1_" + val)
@@ -345,7 +348,7 @@ def test_less_than_top_n_unique_values():
             "col_4": [2, 0, 1, 0, 0],
         }
     )
-
+    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical"})
     encoder = OneHotEncoder(top_n=5)
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -419,7 +422,7 @@ def test_more_top_n_unique_values_large():
             "col_4": [2, 0, 1, 3, 0, 1, 2, 4, 1],
         }
     )
-
+    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical", "col_3": "categorical"})
     random_seed = 2
 
     encoder = OneHotEncoder(top_n=3, random_seed=random_seed)
@@ -455,6 +458,7 @@ def test_categorical_dtype():
         }
     )
     X["col_4"] = X["col_4"].astype("category")
+    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical"})
 
     encoder = OneHotEncoder(top_n=5)
     encoder.fit(X)
