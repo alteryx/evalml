@@ -181,7 +181,6 @@ _not_used_in_automl = {
     "KNeighborsClassifier",
     "SVMClassifier",
     "SVMRegressor",
-    "ProphetRegressor",
     "LinearRegressor",
 }
 

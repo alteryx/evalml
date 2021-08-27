@@ -15,6 +15,7 @@ from evalml.pipelines.components import (
     DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
+    DropRowsTransformer,
     EmailFeaturizer,
     Estimator,
     Imputer,
@@ -177,7 +178,8 @@ def test_make_pipeline(
             )
             datetime = (
                 [DateTimeFeaturizer]
-                if estimator_class.model_family != ModelFamily.ARIMA
+                if estimator_class.model_family
+                not in [ModelFamily.ARIMA, ModelFamily.PROPHET]
                 and "dates" in column_names
                 else []
             )
@@ -330,15 +332,13 @@ def test_stacked_estimator_in_pipeline(
 def test_make_component_list_from_actions():
     assert _make_component_list_from_actions([]) == []
 
-    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ["some col"]})]
+    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some col"})]
     assert _make_component_list_from_actions(actions) == [
         DropColumns(columns=["some col"])
     ]
 
     actions = [
-        DataCheckAction(
-            DataCheckActionCode.DROP_COL, metadata={"columns": ["some col"]}
-        ),
+        DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "some col"}),
         DataCheckAction(
             DataCheckActionCode.IMPUTE_COL,
             metadata={
@@ -347,10 +347,30 @@ def test_make_component_list_from_actions():
                 "impute_strategy": "most_frequent",
             },
         ),
+        DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [1, 2]}),
     ]
     assert _make_component_list_from_actions(actions) == [
-        DropColumns(columns=["some col"]),
         TargetImputer(impute_strategy="most_frequent"),
+        DropRowsTransformer(indices_to_drop=[1, 2]),
+        DropColumns(columns=["some col"]),
+    ]
+
+
+def test_make_component_list_from_actions_with_duplicate_actions():
+    actions = [
+        DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some col"}),
+        DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some other col"}),
+    ]
+    assert _make_component_list_from_actions(actions) == [
+        DropColumns(columns=["some col", "some other col"])
+    ]
+    actions = [
+        DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [0, 3]}),
+        DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [1, 2]}),
+    ]
+    assert _make_component_list_from_actions(actions) == [
+        DropRowsTransformer(indices_to_drop=[0, 3]),
+        DropRowsTransformer(indices_to_drop=[1, 2]),
     ]
 
 

@@ -22,6 +22,7 @@ from evalml.pipelines.components import (  # noqa: F401
     DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
+    DropRowsTransformer,
     EmailFeaturizer,
     Estimator,
     Imputer,
@@ -113,7 +114,10 @@ def _get_preprocessing_components(
     datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
 
     add_datetime_featurizer = len(datetime_cols) > 0
-    if add_datetime_featurizer and estimator_class.model_family != ModelFamily.ARIMA:
+    if add_datetime_featurizer and estimator_class.model_family not in [
+        ModelFamily.ARIMA,
+        ModelFamily.PROPHET,
+    ]:
         pp_components.append(DateTimeFeaturizer)
 
     if (
@@ -319,13 +323,19 @@ def _make_component_list_from_actions(actions):
         List of components used to address the input actions
     """
     components = []
+    cols_to_drop = []
     for action in actions:
         if action.action_code == DataCheckActionCode.DROP_COL:
-            components.append(DropColumns(columns=action.metadata["columns"]))
-        if action.action_code == DataCheckActionCode.IMPUTE_COL:
+            cols_to_drop.append(action.metadata["column"])
+        elif action.action_code == DataCheckActionCode.IMPUTE_COL:
             metadata = action.metadata
             if metadata["is_target"]:
                 components.append(
                     TargetImputer(impute_strategy=metadata["impute_strategy"])
                 )
+        elif action.action_code == DataCheckActionCode.DROP_ROWS:
+            indices = action.metadata["indices"]
+            components.append(DropRowsTransformer(indices_to_drop=indices))
+    if cols_to_drop:
+        components.append(DropColumns(columns=cols_to_drop))
     return components

@@ -35,6 +35,7 @@ def test_init_with_other_params():
     assert clf.parameters == {
         "changepoint_prior_scale": 0.05,
         "daily_seasonality": True,
+        "date_index": None,
         "holidays_prior_scale": 10,
         "interval_width": 0.8,
         "mcmc_samples": 5,
@@ -56,6 +57,7 @@ def test_get_params(ts_data):
     clf = ProphetRegressor()
     assert clf.get_params() == {
         "changepoint_prior_scale": 0.05,
+        "date_index": None,
         "seasonality_prior_scale": 10,
         "holidays_prior_scale": 10,
         "seasonality_mode": "additive",
@@ -99,13 +101,14 @@ def test_fit_predict_ts_with_y_index(ts_data):
 
 
 def test_fit_predict_ts_no_X(ts_data):
-    X, y = ts_data
+    y = pd.Series(
+        range(1, 32), name="dates", index=pd.date_range("2020-10-01", "2020-10-31")
+    )
 
     p_clf = prophet.Prophet(uncertainty_samples=False, changepoint_prior_scale=2.0)
     prophet_df = ProphetRegressor.build_prophet_df(
         X=pd.DataFrame(), y=y, date_column="ds"
     )
-
     p_clf.fit(prophet_df)
     y_pred_p = p_clf.predict(prophet_df)["yhat"]
 
@@ -117,21 +120,26 @@ def test_fit_predict_ts_no_X(ts_data):
 
 
 def test_fit_predict_date_col(ts_data):
-    X, y = ts_data
+    X = pd.DataFrame(
+        {
+            "features": range(100),
+            "these_dates": pd.date_range("1/1/21", periods=100),
+            "more_dates": pd.date_range("7/4/1987", periods=100),
+        }
+    )
+    y = pd.Series(np.random.randint(1, 5, 100), name="y")
 
-    p_clf = prophet.Prophet(uncertainty_samples=False, changepoint_prior_scale=2.0)
-    prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, date_column="ds")
-
-    p_clf.fit(prophet_df)
-    y_pred_p = p_clf.predict(prophet_df)["yhat"]
-
-    X = X.reset_index()
-    X = X["index"].rename("ds").to_frame()
     clf = ProphetRegressor(
-        date_column="ds", uncertainty_samples=False, changepoint_prior_scale=2.0
+        date_index="these_dates", uncertainty_samples=False, changepoint_prior_scale=2.0
     )
     clf.fit(X, y)
     y_pred = clf.predict(X)
+
+    p_clf = prophet.Prophet(uncertainty_samples=False, changepoint_prior_scale=2.0)
+    prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, date_column="these_dates")
+
+    p_clf.fit(prophet_df)
+    y_pred_p = p_clf.predict(prophet_df)["yhat"]
 
     assert (y_pred == y_pred_p).all()
 
