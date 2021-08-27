@@ -97,7 +97,7 @@ class CFEngine(EngineBase):
             pipeline (pipeline.PipelineBase): pipeline to evaluate
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
-        Return:
+        Returns
             CFComputation: an object wrapping a reference to a future-like computation
                 occurring in the resource pool
         """
@@ -120,7 +120,7 @@ class CFEngine(EngineBase):
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
-        Return:
+        Returns
             CFComputation: an object wrapping a reference to a future-like computation
                 occurring in the resource pool
         """
@@ -139,7 +139,7 @@ class CFEngine(EngineBase):
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
-        Return:
+        Returns
             CFComputation: a object wrapping a reference to a future-like computation
                 occurring in the resource pool
         """

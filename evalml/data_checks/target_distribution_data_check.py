@@ -1,3 +1,4 @@
+"""Data check that checks if the target data contains certain distributions that may need to be transformed prior training to improve model performance."""
 import numpy as np
 import woodwork as ww
 from scipy.stats import shapiro
@@ -14,19 +15,23 @@ from evalml.utils import infer_feature_types
 
 
 class TargetDistributionDataCheck(DataCheck):
-    """Checks if the target data contains certain distributions that may need to be transformed prior training to improve model performance."""
+    """Check if the target data contains certain distributions that may need to be transformed prior training to improve model performance."""
 
     def validate(self, X, y):
-        """Checks if the target data has a certain distribution.
+        """
+        Check if the target data has a certain distribution.
 
         Arguments:
+        ---------
             X (pd.DataFrame, np.ndarray): Features. Ignored.
             y (pd.Series, np.ndarray): Target data to check for underlying distributions.
 
-        Returns:
+        Returns
+        -------
             dict (DataCheckError): List with DataCheckErrors if certain distributions are found in the target data.
 
         Example:
+        -------
             >>> from scipy.stats import lognorm
             >>> X = None
             >>> y = [0.946, 0.972, 1.154, 0.954, 0.969, 1.222, 1.038, 0.999, 0.973, 0.897]
@@ -39,6 +44,7 @@ class TargetDistributionDataCheck(DataCheck):
             ...                   "code": "TARGET_LOGNORMAL_DISTRIBUTION",
             ...                   "details": {"shapiro-statistic/pvalue": '0.84/0.045'}}],
             ...     "actions": [{'code': 'TRANSFORM_TARGET', 'metadata': {'column': None, 'transformation_strategy': 'lognormal', 'is_target': True}}]}
+
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

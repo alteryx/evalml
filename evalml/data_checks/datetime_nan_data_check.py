@@ -15,6 +15,7 @@ class DateTimeNaNDataCheck(DataCheck):
             y (pd.Series, np.ndarray): Ignored.  Defaults to None.
 
         Returns:
+        -------
             dict: dict with a DataCheckError if NaN values are present in datetime columns.
 
         Example:
@@ -32,6 +33,7 @@ class DateTimeNaNDataCheck(DataCheck):
             ...                                                                     data_check_name=DateTimeNaNDataCheck.name,
             ...                                                                     message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
             ...                                                                     details={"columns": 'index'}).to_dict()]}
+
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

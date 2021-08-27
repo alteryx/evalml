@@ -39,8 +39,8 @@ class NoVarianceDataCheck(DataCheck):
             count_unique (float): Number of unique values in this column.
             any_nulls (bool): Whether this column has any missing data.
 
-        Return:
-        ------
+        Returns
+        -------
             DataCheckError if the column has no variance or DataCheckWarning if the column has two unique values including NaN.
 
         """
@@ -73,8 +73,8 @@ class NoVarianceDataCheck(DataCheck):
             X (pd.DataFrame, np.ndarray): The input features.
             y (pd.Series, np.ndarray): The target data.
 
-        Return:
-        ------
+        Returns
+        -------
             dict: dict of warnings/errors corresponding to features or target with no variance.
 
         """

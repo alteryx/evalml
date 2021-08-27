@@ -17,8 +17,8 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.  Defaults to None.
 
-        Return:
-        ------
+        Returns
+        -------
             dict: dict with a DataCheckError if NaN values are present in natural language columns.
 
         Example:

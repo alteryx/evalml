@@ -17,12 +17,14 @@ def _has_defaults_for_all_args(init):
 
 
 class DataChecks:
-    """A collection of data checks.
+    """
+    A collection of data checks.
 
     Arguments:
     ---------
         data_checks (list (DataCheck)): List of DataCheck objects.
         data_check_params (dict): Parameters for passed DataCheck objects.
+
     """
 
     @staticmethod
@@ -86,16 +88,18 @@ class DataChecks:
         self.data_checks = data_check_instances
 
     def validate(self, X, y=None):
-        """Inspect and validate the input data against data checks and returns a list of warnings and errors if applicable.
+        """
+        Inspect and validate the input data against data checks and returns a list of warnings and errors if applicable.
 
         Arguments:
         ---------
             X (pd.DataFrame, np.ndarray): The input data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray): The target data of length [n_samples]
 
-        Return:
-        ------
+        Returns
+        -------
             dict: Dictionary containing DataCheckMessage objects
+
         """
         messages = {"warnings": [], "errors": [], "actions": []}
         X = infer_feature_types(X)

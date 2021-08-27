@@ -22,10 +22,12 @@ class MulticollinearityDataCheck(DataCheck):
         """Check if any set of features are likely to be multicollinear.
 
         Arguments:
+        ---------
             X (pd.DataFrame): The input features to check.
             y (pd.Series): The target. Ignored.
 
-        Returns:
+        Returns
+        -------
             dict: dict with a DataCheckWarning if there are any potentially multicollinear columns.
 
         Example:

@@ -13,7 +13,8 @@ warning_too_unique = "Input columns ({}) for {} problem type are too sparse."
 
 
 class SparsityDataCheck(DataCheck):
-    """Check if there are any columns with sparsely populated values in the input.
+    """
+    Check if there are any columns with sparsely populated values in the input.
 
     Arguments:
     ---------
@@ -24,6 +25,7 @@ class SparsityDataCheck(DataCheck):
         unique_count_threshold (int): The minimum number of times a unique
             value has to be present in a column to not be considered "sparse."
             Defaults to 10.
+
     """
 
     def __init__(self, problem_type, threshold, unique_count_threshold=10):
@@ -38,15 +40,16 @@ class SparsityDataCheck(DataCheck):
             raise ValueError("Unique count threshold must be positive integer.")
 
     def validate(self, X, y=None):
-        """Calculate what percentage of each column's unique values exceed the count threshold and compare that percentage to the sparsity threshold stored in the class instance.
+        """
+        Calculate what percentage of each column's unique values exceed the count threshold and compare that percentage to the sparsity threshold stored in the class instance.
 
         Arguments:
         ---------
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.
 
-        Return:
-        ------
+        Returns
+        -------
             dict: dict with a DataCheckWarning if there are any sparse columns.
 
         Example:
@@ -66,6 +69,7 @@ class SparsityDataCheck(DataCheck):
             ...                    "details": {"column": "sparse", 'sparsity_score': 0.0}}],
             ...     "actions": [{"code": "DROP_COL",
             ...                  "metadata": {"column": "sparse"}}]}
+
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
@@ -100,7 +104,8 @@ class SparsityDataCheck(DataCheck):
 
     @staticmethod
     def sparsity_score(col, count_threshold=10):
-        """Calculate a sparsity score for the given value counts by calculating the percentage of unique values that exceed the count_threshold.
+        """
+        Calculate a sparsity score for the given value counts by calculating the percentage of unique values that exceed the count_threshold.
 
         Arguments:
         ---------
@@ -108,9 +113,10 @@ class SparsityDataCheck(DataCheck):
             count_threshold (int): The number of instances below which a value is considered sparse.
                 Default is 10.
 
-        Return:
-        ------
+        Returns
+        -------
             (float): Sparsity score, or the percentage of the unique values that exceed count_threshold.
+
         """
         counts = col.value_counts()
         score = sum(counts > count_threshold) / counts.size

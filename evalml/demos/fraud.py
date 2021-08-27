@@ -13,7 +13,7 @@ def load_fraud(n_rows=None, verbose=True):
         n_rows (int): Number of rows from the dataset to return
         verbose (bool): Whether to print information about features and labels
 
-    Return:
+    Returns
     ------
         (pd.Dataframe, pd.Series): X and y
     """

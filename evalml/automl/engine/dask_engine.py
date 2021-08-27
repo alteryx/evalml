@@ -69,7 +69,7 @@ class DaskEngine(EngineBase):
         Arguments:
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
-        Return:
+        Returns
             dask.Future: the modeling data
         """
         data_hash = joblib.hash(X), joblib.hash(y)
@@ -90,7 +90,7 @@ class DaskEngine(EngineBase):
             pipeline (pipeline.PipelineBase): pipeline to evaluate
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
-        Return:
+        Returns
             DaskComputation: a object wrapping a reference to a future-like computation
                 occurring in the dask cluster
         """
@@ -114,7 +114,7 @@ class DaskEngine(EngineBase):
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
-        Return:
+        Returns
             DaskComputation: a object wrapping a reference to a future-like computation
                 occurring in the dask cluster
         """
@@ -134,7 +134,7 @@ class DaskEngine(EngineBase):
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
-        Return:
+        Returns
             DaskComputation: a object wrapping a reference to a future-like computation
                 occurring in the dask cluster
         """

@@ -35,7 +35,8 @@ def get_default_primary_search_objective(problem_type):
     Arguments:
         problem_type (str or ProblemType): problem type of interest.
 
-    Returns:
+    Returns
+    -------
         ObjectiveBase: primary objective instance for the problem type.
     """
     problem_type = handle_problem_types(problem_type)

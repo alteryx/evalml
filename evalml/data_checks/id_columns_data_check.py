@@ -10,11 +10,13 @@ from evalml.utils import infer_feature_types
 
 
 class IDColumnsDataCheck(DataCheck):
-    """Check if any of the features are likely to be ID columns.
+    """
+    Check if any of the features are likely to be ID columns.
 
     Arguments:
     ---------
         id_threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0.
+
     """
 
     def __init__(self, id_threshold=1.0):
@@ -23,7 +25,8 @@ class IDColumnsDataCheck(DataCheck):
         self.id_threshold = id_threshold
 
     def validate(self, X, y=None):
-        """Check if any of the features are likely to be ID columns. Currently performs a number of simple checks.
+        """
+        Check if any of the features are likely to be ID columns. Currently performs a number of simple checks.
 
             - column name is "id"
             - column name ends in "_id"
@@ -34,8 +37,8 @@ class IDColumnsDataCheck(DataCheck):
             X (pd.DataFrame, np.ndarray): The input features to check.T
             y (pd.Series): The target. Defaults to None. Ignored.
 
-        Return:
-        ------
+        Returns
+        -------
             dict: A dictionary of features with column name or index and their probability of being ID columns
 
         Example:
@@ -56,6 +59,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "details": {"column": "df_id"}}],
             ...     "actions": [{"code": "DROP_COL",
             ...                  "metadata": {"column": "df_id"}}]}
+
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

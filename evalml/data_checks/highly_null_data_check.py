@@ -45,8 +45,8 @@ class HighlyNullDataCheck(DataCheck):
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.
 
-        Return:
-        ------
+        Returns
+        -------
             dict: dict with a DataCheckWarning if there are any highly-null columns or rows.
 
         Example:
@@ -81,7 +81,7 @@ class HighlyNullDataCheck(DataCheck):
             ...                   "details": {"column": "lots_of_null", "pct_null_rows": 0.8}}],
             ...    "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [0, 1, 2, 3]}},
             ...                {"code": "DROP_COL", "metadata": {"column": "lots_of_null"}}]}
-        
+
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
