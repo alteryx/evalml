@@ -1212,22 +1212,28 @@ def test_automl_search_sampler_ratio(
 
 
 def test_automl_oversampler_selection():
-    X = pd.DataFrame({"a": ["a"] * 50 + ["b"] * 25 + ["c"] * 25,
-                  "b": list(range(100))})
+    X = pd.DataFrame({"a": ["a"] * 50 + ["b"] * 25 + ["c"] * 25, "b": list(range(100))})
     y = pd.Series([1] * 90 + [0] * 10)
     X.ww.init(logical_types={"a": "Categorical"})
 
-    sampler = get_best_sampler_for_data(X, y, sampler_method="Oversampler",
-                                        sampler_balanced_ratio=0.5)
+    sampler = get_best_sampler_for_data(
+        X, y, sampler_method="Oversampler", sampler_balanced_ratio=0.5
+    )
 
-    allowed_component_graph = {"DropCols": ["Drop Columns Transformer", "X", "y"],
-                               "Oversampler": [sampler, "DropCols.x", "y"],
-                               "RF": ["Random Forest Classifier", "Oversampler.x", "Oversampler.y"]
-                               }
+    allowed_component_graph = {
+        "DropCols": ["Drop Columns Transformer", "X", "y"],
+        "Oversampler": [sampler, "DropCols.x", "y"],
+        "RF": ["Random Forest Classifier", "Oversampler.x", "Oversampler.y"],
+    }
 
-    automl = AutoMLSearch(X, y, "binary", allowed_component_graphs={"pipeline": allowed_component_graph},
-                          pipeline_parameters={"DropCols": {"columns": ["a"]}},
-                          error_callback=raise_error_callback)
+    automl = AutoMLSearch(
+        X,
+        y,
+        "binary",
+        allowed_component_graphs={"pipeline": allowed_component_graph},
+        pipeline_parameters={"DropCols": {"columns": ["a"]}},
+        error_callback=raise_error_callback,
+    )
     # This should run without error
     automl.search()
 
