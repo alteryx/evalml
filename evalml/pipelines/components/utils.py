@@ -13,8 +13,6 @@ from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.problem_types import ProblemTypes, handle_problem_types
 from evalml.utils import get_importable_subclasses
 
-logger = logging.getLogger(__name__)
-
 
 def _all_estimators():
     return get_importable_subclasses(Estimator, used_in_automl=False)

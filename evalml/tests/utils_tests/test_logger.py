@@ -75,19 +75,6 @@ def test_logger_critical(caplog, logger_env_cleanup):
     assert "CRITICAL" in caplog.text
 
 
-def test_get_logger_default(capsys, caplog, logger_env_cleanup):
-    logger = get_logger(TEST_LOGGER_NAME)
-    assert len(logger.handlers) == 1
-
-    stdouterr = capsys.readouterr()
-    assert "Warning: cannot write debug logs" not in caplog.text
-    assert "Exception encountered while setting up debug log file" not in caplog.text
-    assert "Warning: cannot write debug logs" not in stdouterr.out
-    assert "Exception encountered while setting up debug log file" not in stdouterr.out
-    assert "Warning: cannot write debug logs" not in stdouterr.err
-    assert "Exception encountered while setting up debug log file" not in stdouterr.err
-
-
 @pytest.mark.parametrize(
     "time_passed,answer",
     [(101199, "28:06:39"), (3660, "1:01:00"), (65, "01:05"), (7, "00:07")],

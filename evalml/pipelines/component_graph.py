@@ -24,8 +24,6 @@ from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import import_or_raise, infer_feature_types
 from evalml.utils.logger import get_logger
 
-logger = logging.getLogger(__name__)
-
 
 class ComponentGraph:
     """Component graph for a pipeline as a directed acyclic graph (DAG).

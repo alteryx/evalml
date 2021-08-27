@@ -1011,7 +1011,7 @@ class AutoMLSearch:
                 num_without_improvement += 1
             if num_without_improvement >= self.patience:
                 self._activate_logger()
-                logger.info(
+                self.logger.info(
                     "\n\n{} iterations without improvement. Stopping search early...".format(
                         self.patience
                     )

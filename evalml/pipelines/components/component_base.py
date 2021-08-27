@@ -1,5 +1,4 @@
 import copy
-import logging
 from abc import ABC, abstractmethod
 
 import cloudpickle
@@ -13,8 +12,6 @@ from evalml.utils import (
     safe_repr,
 )
 from evalml.utils.logger import get_logger
-
-logger = logging.getLogger(__name__)
 
 
 class ComponentBase(ABC, metaclass=ComponentBaseMeta):
