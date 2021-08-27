@@ -7,6 +7,8 @@ Release Notes
         * Updated ``ComponentGraph`` initalization to raise ``ValueError`` when user attempts to use ``.y`` for a component that does not produce a tuple output :pr:`2662`
         * Updated to support Woodwork 0.6.0 :pr:`2690`
         * Added ``DropRowsTransformer`` component :pr:`2692`
+        * Added ``DROP_ROWS`` to ``_make_component_list_from_actions`` and clean up metadata :pr:`2694`
+
     * Fixes
     * Changes
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
