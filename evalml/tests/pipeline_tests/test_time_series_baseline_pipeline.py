@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 
 from evalml.model_family import ModelFamily
@@ -55,12 +56,14 @@ def test_time_series_baseline(
     else:
         X, y = X_y_multi
 
-    X_train, y_train = X[:50], y[:50]
-    X_validation = X[(50 + gap) : (50 + gap + forecast_horizon)]
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+
+    X_train, y_train = X.iloc[:50], y.iloc[:50]
+    X_validation = X.iloc[(50 + gap) : (50 + gap + forecast_horizon)]
 
     clf = make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon)
     clf.fit(X_train, y_train)
-
     np.testing.assert_allclose(
         y[50 - forecast_horizon : 50],
         clf.predict(X_validation, None, X_train, y_train).values,

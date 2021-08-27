@@ -189,6 +189,54 @@ def test_fit_drop_nans_before_estimator(
     np.testing.assert_equal(target_passed_to_estimator.values, expected_target)
 
 
+@pytest.mark.parametrize(
+    "forecast_horizon,gap,max_delay",
+    [
+        (1, 0, 1),
+        (1, 0, 2),
+        (1, 1, 1),
+        (2, 1, 2),
+        (2, 2, 2),
+        (3, 7, 3),
+        (2, 2, 4),
+    ],
+)
+def test_compute_estimator_features_for_time_series(
+    forecast_horizon, gap, max_delay, ts_data
+):
+    X, y = ts_data
+    pipeline = TimeSeriesRegressionPipeline(
+        ["Delayed Feature Transformer", "Random Forest Regressor"],
+        parameters={
+            "pipeline": {
+                "forecast_horizon": forecast_horizon,
+                "gap": gap,
+                "max_delay": max_delay,
+                "date_index": None,
+            },
+            "Random Forest Regressor": {"n_jobs": 1},
+            "Delayed Feature Transformer": {
+                "max_delay": max_delay,
+                "gap": gap,
+                "forecast_horizon": forecast_horizon,
+            },
+        },
+    )
+    X_train, y_train = X[:15], y[:15]
+    X_validation, y_validation = X[15:], y[15:]
+    pipeline.fit(X_train, y_train)
+    features = pipeline.compute_estimator_features(X_validation, y_validation)
+    delayer = DelayedFeatureTransformer(
+        max_delay=max_delay, gap=gap, forecast_horizon=forecast_horizon
+    )
+    assert_frame_equal(features, delayer.fit_transform(X_validation, y_validation))
+    features_with_training = pipeline.compute_estimator_features(
+        X_validation, y_validation, X_train, y_train
+    )
+    delayed = delayer.fit_transform(X, y).iloc[15:]
+    assert_frame_equal(features_with_training, delayed)
+
+
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize(
     "forecast_horizon,gap,max_delay,date_index",
@@ -210,25 +258,11 @@ def test_fit_drop_nans_before_estimator(
         (TimeSeriesMulticlassClassificationPipeline, "Random Forest Classifier"),
     ],
 )
-@patch("evalml.pipelines.components.RandomForestClassifier.fit")
 @patch("evalml.pipelines.components.RandomForestClassifier.predict")
-@patch("evalml.pipelines.components.RandomForestRegressor.fit")
 @patch("evalml.pipelines.components.RandomForestRegressor.predict")
-@patch(
-    "evalml.pipelines.TimeSeriesClassificationPipeline._encode_targets",
-    side_effect=lambda y: y,
-)
-@patch(
-    "evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets",
-    side_effect=lambda y: y,
-)
 def test_predict_and_predict_in_sample(
-    mock_decode_targets,
-    mock_encode_targets,
     mock_regressor_predict,
-    mock_regressor_fit,
     mock_classifier_predict,
-    mock_classifier_fit,
     pipeline_class,
     estimator_name,
     forecast_horizon,
@@ -239,54 +273,70 @@ def test_predict_and_predict_in_sample(
     ts_data,
 ):
 
-    if not include_delayed_features or (max_delay == 0 and gap == 0):
-        pytest.skip("This would result in an empty feature dataframe.")
-
-    X, y = ts_data
-
-    pl = pipeline_class(
-        component_graph=["Delayed Feature Transformer", estimator_name],
-        parameters={
-            "Delayed Feature Transformer": {
-                "date_index": None,
-                "gap": gap,
-                "max_delay": max_delay,
-                "forecast_horizon": forecast_horizon,
-                "delay_features": include_delayed_features,
-                "delay_target": include_delayed_features,
-            },
-            "pipeline": {
-                "date_index": None,
-                "gap": gap,
-                "max_delay": max_delay,
-                "forecast_horizon": forecast_horizon,
-            },
-        },
-    )
-
-    def mock_predict(df, y=None):
-        return pd.Series(range(200, 200 + df.shape[0]))
-
-    if isinstance(pl, TimeSeriesRegressionPipeline):
-        mock_regressor_predict.side_effect = mock_predict
+    X, target = ts_data
+    mock_to_check = mock_classifier_predict
+    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
+        target = target % 2
+    elif pipeline_class == TimeSeriesMulticlassClassificationPipeline:
+        target = target % 3
     else:
-        mock_classifier_predict.side_effect = mock_predict
+        mock_to_check = mock_regressor_predict
+    mock_to_check.side_effect = lambda x, y: target.iloc[: x.shape[0]]
 
-    pl.fit(X.iloc[:20], y.iloc[:20])
+    component_graph = [estimator_name]
+    parameters = {
+        "pipeline": {
+            "date_index": None,
+            "gap": gap,
+            "max_delay": max_delay,
+            "forecast_horizon": forecast_horizon,
+        }
+    }
+    expected_features = X.copy()
+    expected_features.ww.init()
+    expected_features_in_sample = expected_features.ww.iloc[20:]
+    expected_features_pred = expected_features[20 + gap : 20 + gap + forecast_horizon]
+    if include_delayed_features:
+        component_graph = ["Delayed Feature Transformer"] + component_graph
+        delayer_params = {
+            "date_index": None,
+            "gap": gap,
+            "max_delay": max_delay,
+            "forecast_horizon": forecast_horizon,
+            "delay_features": True,
+            "delay_target": True,
+        }
+        parameters.update({"Delayed Feature Transformer": delayer_params})
+        expected_features = DelayedFeatureTransformer(**delayer_params).fit_transform(
+            X, target
+        )
+        expected_features_in_sample = expected_features.ww.iloc[20:]
+        expected_features_pred = expected_features[
+            20 + gap : 20 + gap + forecast_horizon
+        ]
+
+    pl = pipeline_class(component_graph=component_graph, parameters=parameters)
+
+    pl.fit(X.iloc[:20], target.iloc[:20])
     preds_in_sample = pl.predict_in_sample(
-        X.iloc[20:], y.iloc[20:], X.iloc[:20], y.iloc[:20]
+        X.iloc[20:], target.iloc[20:], X.iloc[:20], target.iloc[:20]
     )
+    assert_frame_equal(mock_to_check.call_args[0][0], expected_features_in_sample)
+    mock_to_check.reset_mock()
     preds = pl.predict(
-        X.iloc[20 : 20 + forecast_horizon],
+        X.iloc[20 + gap : 20 + gap + forecast_horizon],
         None,
         X_train=X.iloc[:20],
-        y_train=y.iloc[:20],
+        y_train=target.iloc[:20],
     )
+    assert_frame_equal(mock_to_check.call_args[0][0], expected_features_pred)
 
     assert len(preds) == forecast_horizon
-    assert (preds.index == y.iloc[20 : 20 + forecast_horizon].index).all()
-    assert len(preds_in_sample) == len(y.iloc[20:])
-    assert (preds_in_sample.index == y.iloc[20:].index).all()
+    assert (
+        preds.index == target.iloc[20 + gap : 20 + forecast_horizon + gap].index
+    ).all()
+    assert len(preds_in_sample) == len(target.iloc[20:])
+    assert (preds_in_sample.index == target.iloc[20:].index).all()
 
 
 @pytest.mark.parametrize("only_use_y", [False])
@@ -1067,35 +1117,3 @@ def test_ts_pipeline_transform_with_final_estimator(
         ),
     ):
         pipeline.transform(X_validation, y_validation)
-
-
-def test_compute_estimator_features_for_time_series(ts_data):
-    X, y = ts_data
-    pipeline = TimeSeriesRegressionPipeline(
-        ["Delayed Feature Transformer", "Random Forest Regressor"],
-        parameters={
-            "pipeline": {
-                "forecast_horizon": 2,
-                "gap": 1,
-                "max_delay": 2,
-                "date_index": None,
-            },
-            "Random Forest Regressor": {"n_jobs": 1},
-            "Delayed Feature Transformer": {
-                "max_delay": 2,
-                "gap": 1,
-                "forecast_horizon": 2,
-            },
-        },
-    )
-    X_train, y_train = X[:15], y[:15]
-    X_validation, y_validation = X[15:], y[15:]
-    pipeline.fit(X_train, y_train)
-    features = pipeline.compute_estimator_features(X_validation, y_validation)
-    delayer = DelayedFeatureTransformer(max_delay=2, gap=1, forecast_horizon=2)
-    assert_frame_equal(features, delayer.fit_transform(X_validation, y_validation))
-    features_with_training = pipeline.compute_estimator_features(
-        X_validation, y_validation, X_train, y_train
-    )
-    delayed = delayer.fit_transform(X, y).iloc[15:]
-    assert_frame_equal(features_with_training, delayed)

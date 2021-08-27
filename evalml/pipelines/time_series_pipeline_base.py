@@ -78,12 +78,52 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
     @staticmethod
     def _are_datasets_separated_by_gap(train_index, test_index, gap):
+        gap_difference = gap + 1
+        index_difference = test_index[0] - train_index[-1]
         if isinstance(
             train_index, (pd.DatetimeIndex, pd.PeriodIndex, pd.TimedeltaIndex)
         ):
-            return train_index[-1] != test_index[0] - gap * test_index[0].freq
-        else:
-            return train_index[-1] != test_index[0] - gap
+            gap_difference *= test_index.freq
+        return index_difference == gap_difference
+
+    def _add_training_data_to_X_Y(self, X, y, X_train, y_train):
+        last_row_of_training_needed_for_features = (
+            self.forecast_horizon + self.max_delay + self.gap
+        )
+        gap_features = pd.DataFrame()
+        gap_target = pd.Series()
+        if (
+            self._are_datasets_separated_by_gap(X_train.index, X.index, self.gap)
+            and self.gap
+        ):
+            last_row_of_training_needed_for_features -= self.gap
+            gap_features = X_train.iloc[[-1] * self.gap]
+            gap_features.index = self._move_index_forward(
+                X_train.index[-self.gap :], self.gap
+            )
+            gap_target = y_train.iloc[[-1] * self.gap]
+            gap_target.index = self._move_index_forward(
+                y_train.index[-self.gap :], self.gap
+            )
+
+        features_to_concat = [
+            X_train.iloc[-last_row_of_training_needed_for_features:],
+            gap_features,
+            X,
+        ]
+        targets_to_concat = [
+            y_train.iloc[-last_row_of_training_needed_for_features:],
+            gap_target,
+            y,
+        ]
+        padded_features = pd.concat(features_to_concat, axis=0)
+        padded_target = pd.concat(targets_to_concat, axis=0)
+
+        padded_features.ww.init(schema=X_train.ww.schema)
+        padded_target = ww.init_series(
+            padded_target, logical_type=y_train.ww.logical_type
+        )
+        return padded_features, padded_target
 
     def compute_estimator_features(self, X, y=None, X_train=None, y_train=None):
         """Transforms the data by applying all pre-processing components.
@@ -97,49 +137,14 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         if y_train is None:
             y_train = pd.Series()
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
-        empty_training_data = X_train.empty or y_train.empty
         X, y = self._convert_to_woodwork(X, y)
 
+        empty_training_data = X_train.empty or y_train.empty
         if empty_training_data:
             features_holdout = super().compute_estimator_features(X, y)
         else:
-            last_row_of_training_needed_for_features = (
-                self.forecast_horizon + self.max_delay + self.gap
-            )
-            gap_features = pd.DataFrame()
-            gap_target = pd.Series()
-            if (
-                self._are_datasets_separated_by_gap(X_train.index, X.index, self.gap)
-                and self.gap
-            ):
-                last_row_of_training_needed_for_features -= self.gap
-                gap_features = X_train.iloc[[-1] * self.gap]
-                gap_features.index = self._move_index_forward(
-                    X_train.index[-self.gap :], self.gap
-                )
-                gap_target = y_train.iloc[[-1] * self.gap]
-                gap_target.index = self._move_index_forward(
-                    y_train.index[-self.gap :], self.gap
-                )
-            padded_features = pd.concat(
-                [
-                    X_train.iloc[-last_row_of_training_needed_for_features:],
-                    gap_features,
-                    X,
-                ],
-                axis=0,
-            )
-            padded_target = pd.concat(
-                [
-                    y_train.iloc[-last_row_of_training_needed_for_features:],
-                    gap_target,
-                    y,
-                ],
-                axis=0,
-            )
-            padded_features.ww.init(schema=X_train.ww.schema)
-            padded_target = ww.init_series(
-                padded_target, logical_type=y_train.ww.logical_type
+            padded_features, padded_target = self._add_training_data_to_X_Y(
+                X, y, X_train, y_train
             )
             features = super().compute_estimator_features(
                 padded_features, padded_target

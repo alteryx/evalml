@@ -1,4 +1,3 @@
-import numpy as np
 from sklearn.model_selection import TimeSeriesSplit as SkTimeSeriesSplit
 from sklearn.model_selection._split import BaseCrossValidator
 
