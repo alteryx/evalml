@@ -380,8 +380,6 @@ class ComponentGraph:
                 output_cache[f"{component_name}.x"] = output_x
                 output_cache[f"{component_name}.y"] = output_y
             else:
-                # if fit and self.is_ensemble_graph and component_instance._is_fitted:
-                #     pass
                 if fit:
                     component_instance.fit(x_inputs, y_input)
 

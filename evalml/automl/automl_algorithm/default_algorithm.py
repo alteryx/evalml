@@ -263,7 +263,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             final_components=final_components,
             random_seed=self.random_seed,
             n_jobs=n_jobs_ensemble,
-            ensemble_y=ensemble_y
+            ensemble_y=ensemble_y,
         )
         next_batch.append(ensemble)
 

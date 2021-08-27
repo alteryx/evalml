@@ -1540,7 +1540,7 @@ def test_describe_pipeline_with_ensembling(
             num_sklearn_pl += 1
         else:
             assert "Stacked Ensemble Classification Pipeline" in out
-            assert "* final_estimator : Logistic Regression Classifier" in out
+            assert "* final_estimator : Elastic Net Classifier" in out
         assert "Problem Type: binary" in out
         assert "Model Family: Ensemble" in out
         assert "Total training time (including CV): " in out
