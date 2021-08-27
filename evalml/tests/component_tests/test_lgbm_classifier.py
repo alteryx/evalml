@@ -205,7 +205,9 @@ def test_categorical_data_subset(mock_predict, mock_predict_proba, X_y_binary):
 def test_multiple_fit(mock_predict, mock_predict_proba):
     y = pd.Series([1] * 4)
     X1_fit = pd.DataFrame({"feature": ["a", "b", "c", "c"]})
+    X1_fit.ww.init(logical_types={"feature": "categorical"})
     X1_predict = pd.DataFrame({"feature": ["a", "a", "b", "c"]})
+    X1_predict.ww.init(logical_types={"feature": "categorical"})
     X1_predict_expected = pd.DataFrame({0: [0.0, 0.0, 1.0, 2.0]}, dtype="category")
 
     clf = LightGBMClassifier()
@@ -217,7 +219,9 @@ def test_multiple_fit(mock_predict, mock_predict_proba):
 
     # Check if it will fit a different dataset with new variable
     X2_fit = pd.DataFrame({"feature": ["c", "b", "a", "d"]})
+    X2_fit.ww.init(logical_types={"feature": "categorical"})
     X2_predict = pd.DataFrame({"feature": ["d", "c", "b", "a"]})
+    X2_predict.ww.init(logical_types={"feature": "categorical"})
     X2_predict_expected = pd.DataFrame({0: [3.0, 2.0, 1.0, 0.0]}, dtype="category")
 
     clf = LightGBMClassifier()
