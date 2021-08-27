@@ -656,7 +656,9 @@ class AutoMLSearch:
         self.logger.debug(
             f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}"
         )
-        self.logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
+        self.logger.debug(
+            f"allowed_model_families set to {self.allowed_model_families}"
+        )
 
         self._automl_algorithm = IterativeAlgorithm(
             max_iterations=self.max_iterations,
@@ -878,7 +880,9 @@ class AutoMLSearch:
                 break
             try:
                 new_pipeline_ids = []
-                log_title(self.logger, f"Evaluating Batch Number {self._get_batch_number()}")
+                log_title(
+                    self.logger, f"Evaluating Batch Number {self._get_batch_number()}"
+                )
                 for pipeline in current_batch_pipelines:
                     self._pre_evaluation_callback(pipeline)
                     computation = self._engine.submit_evaluation_job(
