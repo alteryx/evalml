@@ -1340,8 +1340,8 @@ def test_automl_search_dictionary_undersampler(
 @pytest.mark.parametrize(
     "problem_type,sampling_ratio_dict,length",
     [
-        ("binary", {0: 1, 1: 0.5}, 1000),
-        ("binary", {0: 1, 1: 0.8}, 1200),
+        ("binary", {0: 1, 1: 0.5}, 900),
+        ("binary", {0: 1, 1: 0.8}, 1080),
         ("multiclass", {0: 1, 1: 0.5, 2: 0.5}, 1200),
         ("multiclass", {0: 1, 1: 0.8, 2: 0.8}, 1560),
     ],
@@ -1369,7 +1369,7 @@ def test_automl_search_dictionary_oversampler(
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
     if problem_type == "binary":
-        y = pd.Series([0] * 1000 + [1] * 200)
+        y = pd.Series([0] * 900 + [1] * 300)
     else:
         y = pd.Series([0] * 900 + [1] * 150 + [2] * 150)
 
@@ -1418,7 +1418,7 @@ def test_automl_search_sampler_dictionary_keys(
         pytest.skip("Skipping tests since imblearn isn't installed")
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
-    y = pd.Series(["majority"] * 1100 + ["minority"] * 100)
+    y = pd.Series(["majority"] * 900 + ["minority"] * 300)
     pipeline_parameters = {sampler: {"sampling_ratio_dict": sampling_ratio_dict}}
     automl = AutoMLSearch(
         X_train=X,
