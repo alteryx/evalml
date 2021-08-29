@@ -7,6 +7,8 @@ Release Notes
         * Updated ``ComponentGraph`` initalization to raise ``ValueError`` when user attempts to use ``.y`` for a component that does not produce a tuple output :pr:`2662`
         * Updated pipeline ``graph()`` to distingush X and y edges :pr:`2654`
         * Added ``DropRowsTransformer`` component :pr:`2692`
+        * Added ``DROP_ROWS`` to ``_make_component_list_from_actions`` and clean up metadata :pr:`2694`
+
     * Fixes
     * Changes
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
