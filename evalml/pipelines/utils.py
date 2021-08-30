@@ -29,12 +29,10 @@ from evalml.pipelines.components import (  # noqa: F401
     Imputer,
     LogTransformer,
     OneHotEncoder,
+    Oversampler,
     RandomForestClassifier,
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
-    SMOTENCOversampler,
-    SMOTENOversampler,
-    SMOTEOversampler,
     StandardScaler,
     TargetImputer,
     TextFeaturizer,
@@ -140,9 +138,7 @@ def _get_preprocessing_components(
 
     sampler_components = {
         "Undersampler": Undersampler,
-        "SMOTE Oversampler": SMOTEOversampler,
-        "SMOTENC Oversampler": SMOTENCOversampler,
-        "SMOTEN Oversampler": SMOTENOversampler,
+        "Oversampler": Oversampler,
     }
     if sampler_name is not None:
         try:

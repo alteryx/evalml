@@ -1460,16 +1460,16 @@ def test_component_graph_sampler_y_passes(mock_estimator_fit):
     y = pd.Series([0] * 90 + [1] * 10)
     component_graph = {
         "Imputer": ["Imputer", "X", "y"],
-        "SMOTE Oversampler": ["SMOTE Oversampler", "Imputer.x", "y"],
+        "Oversampler": ["Oversampler", "Imputer.x", "y"],
         "Standard Scaler": [
             "Standard Scaler",
-            "SMOTE Oversampler.x",
-            "SMOTE Oversampler.y",
+            "Oversampler.x",
+            "Oversampler.y",
         ],
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Standard Scaler.x",
-            "SMOTE Oversampler.y",
+            "Oversampler.y",
         ],
     }
 
@@ -2179,11 +2179,11 @@ def test_component_graph_repr():
 
 
 @patch("evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit")
-@pytest.mark.parametrize("sampler", ["Undersampler", "SMOTE Oversampler"])
+@pytest.mark.parametrize("sampler", ["Undersampler", "Oversampler"])
 def test_component_graph_compute_final_component_features_with_sampler(
     mock_estimator_fit, sampler, has_minimal_dependencies
 ):
-    if sampler == "SMOTE Oversampler" and has_minimal_dependencies:
+    if sampler == "Oversampler" and has_minimal_dependencies:
         pytest.importorskip(
             "imblearn.over_sampling", reason="Cannot import imblearn, skipping tests"
         )
