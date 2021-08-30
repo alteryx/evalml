@@ -19,7 +19,7 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             dict: dict with a DataCheckError if NaN values are present in natural language columns.
 
         Example:
-        
+
             >>> import pandas as pd
             >>> import woodwork as ww
             >>> import numpy as np

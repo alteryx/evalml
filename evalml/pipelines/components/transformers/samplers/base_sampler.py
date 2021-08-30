@@ -51,7 +51,7 @@ class BaseSampler(Transformer):
             X (pd.DataFrame): Training features.
             y (pd.Series): Target.
 
-         Returns:
+        Returns:
             pd.DataFrame, pd.Series: Prepared X and y data as pandas types
         """
         X = infer_feature_types(X)

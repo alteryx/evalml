@@ -56,7 +56,8 @@ class Undersampler(BaseSampler):
         """Helper function to initialize the undersampler component object.
 
         Args:
-            y (pd.Series): The target data
+            X (pd.DataFrame): Ignored.
+            y (pd.Series): The target data.
         """
         param_dic = self._dictionary_to_params(
             self.parameters["sampling_ratio_dict"], y

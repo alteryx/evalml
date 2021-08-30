@@ -707,6 +707,7 @@ class AutoMLSearch:
 
     def __str__(self):
         """Returns string representation of the AutoMLSearch object."""
+
         def _print_list(obj_list):
             lines = sorted(["\t{}".format(o.name) for o in obj_list])
             return "\n".join(lines)

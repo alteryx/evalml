@@ -10,7 +10,7 @@ from evalml.automl.engine.engine_base import (
 
 class CFClient:
     """Custom CFClient API to match Dask's CFClient and allow context management.
-    
+
     Args:
         pool(cf.ThreadPoolExecutor or cf.ProcessPoolExecutor): the resource pool to execute the futures work on.
     """
@@ -33,7 +33,7 @@ class CFClient:
 
 class CFComputation(EngineComputation):
     """A Future-like wrapper around jobs created by the CFEngine.
-    
+
     Args:
         future(cf.Future): The concurrent.futures.Future that is desired to be executed.
     """

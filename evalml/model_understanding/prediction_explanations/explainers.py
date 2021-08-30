@@ -110,7 +110,7 @@ def explain_predictions(
 
 def _update_progress(start_time, current_time, progress_stage, callback_function):
     """Helper function for updating progress of a function and making a call to the user-provided callback function, if provided.
-    
+
     The callback function should accept the following parameters:
         - progress_stage: stage of computation
         - time_elapsed: total time in seconds that has elapsed since start of call
@@ -122,6 +122,7 @@ def _update_progress(start_time, current_time, progress_stage, callback_function
 
 class ExplainPredictionsStage(Enum):
     """Enum for prediction stage."""
+
     PREPROCESSING_STAGE = "preprocessing_stage"
     PREDICT_STAGE = "predict_stage"
     COMPUTE_FEATURE_STAGE = "compute_feature_stage"

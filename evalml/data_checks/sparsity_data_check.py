@@ -46,7 +46,7 @@ class SparsityDataCheck(DataCheck):
         Returns:
             dict: dict with a DataCheckWarning if there are any sparse columns.
 
-        Example: 
+        Example:
             >>> import pandas as pd
             >>> df = pd.DataFrame({
             ...    'sparse': [float(x) for x in range(100)],

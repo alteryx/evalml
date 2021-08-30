@@ -10,7 +10,7 @@ from pathlib import Path
 
 def get_logger(name):
     """Get the logger with the associated name.
-    
+
     Args:
         name (str): Name of the logger to get.
     """

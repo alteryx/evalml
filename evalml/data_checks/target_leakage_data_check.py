@@ -73,7 +73,7 @@ class TargetLeakageDataCheck(DataCheck):
         Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
 
         Args:
-        
+
             X (pd.DataFrame, np.ndarray): The input features to check
             y (pd.Series, np.ndarray): The target data
 

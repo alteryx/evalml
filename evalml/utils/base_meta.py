@@ -13,6 +13,7 @@ class BaseMeta(ABCMeta):
     @classmethod
     def set_fit(cls, method):
         """Wrapper for the fit method."""
+
         @wraps(method)
         def _set_fit(self, X, y=None):
             return_value = method(self, X, y)

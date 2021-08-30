@@ -21,14 +21,14 @@ class TargetDistributionDataCheck(DataCheck):
         """Check if the target data has a certain distribution.
 
         Args:
-        
+
             X (pd.DataFrame, np.ndarray): Features. Ignored.
             y (pd.Series, np.ndarray): Target data to check for underlying distributions.
 
         Returns:
             dict (DataCheckError): List with DataCheckErrors if certain distributions are found in the target data.
 
-        Example: 
+        Example:
             >>> from scipy.stats import lognorm
             >>> X = None
             >>> y = [0.946, 0.972, 1.154, 0.954, 0.969, 1.222, 1.038, 0.999, 0.973, 0.897]

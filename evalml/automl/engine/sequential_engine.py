@@ -51,7 +51,7 @@ class SequentialEngine(EngineBase):
 
     def submit_evaluation_job(self, automl_config, pipeline, X, y):
         """Submit a job to evaluate a pipeline.
-        
+
         Args:
             automl_config: Structure containing data passed from AutoMLSearch instance.
             pipeline (pipeline.PipelineBase): Pipeline to evaluate.
@@ -70,7 +70,7 @@ class SequentialEngine(EngineBase):
 
     def submit_training_job(self, automl_config, pipeline, X, y):
         """Submit a job to train a pipeline.
-        
+
         Args:
             automl_config: Structure containing data passed from AutoMLSearch instance.
             pipeline (pipeline.PipelineBase): Pipeline to evaluate.
@@ -88,7 +88,7 @@ class SequentialEngine(EngineBase):
 
     def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
         """Submit a job to score a pipeline.
-        
+
         Args:
             automl_config: Structure containing data passed from AutoMLSearch instance.
             pipeline (pipeline.PipelineBase): Pipeline to train.

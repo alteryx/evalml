@@ -60,7 +60,7 @@ def _get_preprocessing_components(
     Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
     Args:
-    
+
         X (pd.DataFrame): The input data of shape [n_samples, n_features].
         y (pd.Series): The target data of length [n_samples].
         problem_type (ProblemTypes or str): Problem type.
@@ -193,7 +193,7 @@ def make_pipeline(
     Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
     Args:
-    
+
          X (pd.DataFrame): The input data of shape [n_samples, n_features].
          y (pd.Series): The target data of length [n_samples].
          estimator (Estimator): Estimator for pipeline.
@@ -205,7 +205,7 @@ def make_pipeline(
          extra_components (list(ComponentBase)): List of extra components to be added after preprocessing components. Defaults to None.
 
      Returns
-     
+
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
     """
     X = infer_feature_types(X)

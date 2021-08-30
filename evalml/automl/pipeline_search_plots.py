@@ -9,6 +9,7 @@ class SearchIterationPlot:
         results (dict): Dictionary of current results.
         objective (ObjectiveBase): Objective that AutoML is optimizing for.
     """
+
     def __init__(self, results, objective):
         self._go = import_or_raise(
             "plotly.graph_objects",

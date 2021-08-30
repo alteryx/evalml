@@ -24,9 +24,7 @@ class CostBenefitMatrix(BinaryClassificationObjective):
 
     def __init__(self, true_positive, true_negative, false_positive, false_negative):
         if None in {true_positive, true_negative, false_positive, false_negative}:
-            raise ValueError(
-                "Args: to CostBenefitMatrix must all be numeric values."
-            )
+            raise ValueError("Args: to CostBenefitMatrix must all be numeric values.")
 
         self.true_positive = true_positive
         self.true_negative = true_negative

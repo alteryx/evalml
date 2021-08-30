@@ -22,14 +22,14 @@ class MulticollinearityDataCheck(DataCheck):
     def validate(self, X, y=None):
         """Check if any set of features are likely to be multicollinear.
 
-        Args:  
+        Args:
             X (pd.DataFrame): The input features to check.
             y (pd.Series): The target. Ignored.
 
-        Returns:     
+        Returns:
             dict: dict with a DataCheckWarning if there are any potentially multicollinear columns.
 
-        Example:    
+        Example:
             >>> import pandas as pd
             >>> col = pd.Series([1, 0, 2, 3, 4])
             >>> X = pd.DataFrame({"col_1": col, "col_2": col * 3})
