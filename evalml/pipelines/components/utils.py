@@ -140,7 +140,10 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         self.pipeline = pipeline
         self._estimator_type = "classifier"
         if pipeline._is_fitted:
-            self.feature_importances_ = pipeline.feature_importance
+            try:
+                self.feature_importances_ = pipeline.feature_importance
+            except Exception as e:
+                print ("yay")
             self._is_fitted = True
             self.classes_ = pipeline.classes_
 
@@ -199,8 +202,12 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         self.pipeline = pipeline
         self._estimator_type = "regressor"
         if pipeline._is_fitted:
-            self.feature_importances_ = pipeline.feature_importance
-            self._is_fitted = True
+            try:
+                self.feature_importances_ = pipeline.feature_importance
+            except Exception as e:
+                print ("yay")
+
+            self._is_fitted_ = True
 
     def fit(self, X, y):
         """Fits component to data
