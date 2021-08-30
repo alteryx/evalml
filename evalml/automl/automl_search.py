@@ -387,9 +387,9 @@ class AutoMLSearch:
 
         _automl_algorithm (str): The automl algorithm to use. Currently the two choices are 'iterative' and 'default'. Defaults to `iterative`.
 
-        engine (EngineBase, list of str, or None): The engine instance used to evaluate pipelines. Dask or concurrent.futures engines can be chosen by providing
+        engine (EngineBase or str): The engine instance used to evaluate pipelines. Dask or concurrent.futures engines can be chosen by providing
             a string from the list ["sequential", "cf_threaded", "cf_process", "dask_threaded", "dask_process"]. If a parallel engine is selected,
-            the maximum amount of paralellism, as determined by the engine, will be used. If None, a SequentialEngine will be used.
+            the maximum amount of paralellism, as determined by the engine, will be used. Defaults to "sequential"
     """
 
     _MAX_NAME_LEN = 40
@@ -769,7 +769,7 @@ class AutoMLSearch:
             self._engine = engine
         else:
             raise TypeError(
-                "Invalid type provided for 'engine'.  Requires string, DaskEngine, or CFEngine."
+                "Invalid type provided for 'engine'.  Requires string, DaskEngine instance, or CFEngine instance."
             )
 
         self.automl_config = AutoMLConfig(

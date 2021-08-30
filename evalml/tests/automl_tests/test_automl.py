@@ -4986,3 +4986,43 @@ def test_build_engine(engine_str):
             ValueError, match="is not a valid engine, please choose from"
         ):
             build_engine_from_str(engine_str)
+
+
+@pytest.mark.parametrize(
+    "engine_choice",
+    ["str", "engine_instance", "invalid_type", "invalid_str"],
+)
+def test_automl_chooses_engine(engine_choice, X_y_binary):
+    """Test that ensures that AutoMLSearch chooses an engine for valid input types and raises
+    the proper exception for others."""
+    X, y = X_y_binary
+    if engine_choice == "str":
+        engine_choice = "dask_process"
+        automl = AutoMLSearch(
+            X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+        )
+        assert isinstance(automl._engine, DaskEngine)
+        automl.close_engine()
+    elif engine_choice == "engine_instance":
+        engine_choice = DaskEngine()
+        automl = AutoMLSearch(
+            X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+        )
+        automl.close_engine()
+    elif engine_choice == "invalid_str":
+        engine_choice = "DaskEngine"
+        with pytest.raises(
+            ValueError, match="is not a valid engine, please choose from"
+        ):
+            automl = AutoMLSearch(
+                X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+            )
+    elif engine_choice == "invalid_type":
+        engine_choice = DaskEngine
+        with pytest.raises(
+            TypeError,
+            match="Invalid type provided for 'engine'.  Requires string, DaskEngine instance, or CFEngine instance.",
+        ):
+            automl = AutoMLSearch(
+                X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+            )
