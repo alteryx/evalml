@@ -828,8 +828,8 @@ class AutoMLSearch:
         """
         if isinstance(self._engine, DaskEngine):
             self._engine.close()
-        else:
-            pass
+        elif isinstance(self._engine, CFEngine):
+            self._engine.client.pool.shutdown()
 
     def _catch_warnings(self, warning_list):
         if len(warning_list) == len(self.allowed_pipelines) and len(warning_list) > 0:

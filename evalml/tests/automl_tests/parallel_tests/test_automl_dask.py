@@ -239,3 +239,26 @@ def test_automl_convenience_exception(X_y_binary_cls):
             engine="bad_choice",
             optimize_thresholds=False,
         )
+
+
+@pytest.mark.parametrize(
+    "engine_str",
+    engine_strs,
+)
+def test_automl_closes_engines(engine_str, X_y_binary_cls):
+    X, y = X_y_binary_cls
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        engine=engine_str,
+        optimize_thresholds=False,
+    )
+    automl.close_engine()
+    if "dask" in engine_str:
+        assert automl._engine.cluster.status.value == "closed"
+    elif "cf" in engine_str:
+        if "process" in engine_str:
+            assert automl._engine.client.pool._shutdown_thread
+        else:
+            assert automl._engine.client.pool._shutdown
