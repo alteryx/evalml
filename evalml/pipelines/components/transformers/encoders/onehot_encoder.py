@@ -20,7 +20,7 @@ class OneHotEncoderMeta(ComponentBaseMeta):
 class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     """A transformer that encodes categorical features in a one-hot numeric array.
 
-    Arguments:
+    Parameters
         top_n (int): Number of categories per column to encode. If None, all categories will be encoded.
             Otherwise, the `n` most frequent will be encoded and all others will be dropped. Defaults to 10.
         features_to_encode (list[str]): List of columns to encode. All other columns will remain untouched.
@@ -158,7 +158,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     def transform(self, X, y=None):
         """One-hot encode the input data.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Features to one-hot encode.
             y (pd.Series): Ignored.
 
@@ -201,7 +201,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     def categories(self, feature_name):
         """Returns a list of the unique categories to be encoded for the particular feature, in order.
 
-        Arguments:
+        Parameters
             feature_name (str): the name of any feature provided to one-hot encoder during fit
         Returns:
             np.ndarray: the unique categories, in the same dtype as they were provided during fit

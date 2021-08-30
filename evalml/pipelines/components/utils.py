@@ -34,7 +34,7 @@ def all_components():
 def allowed_model_families(problem_type):
     """List the model types allowed for a particular problem type.
 
-    Arguments:
+    Parameters
         problem_types (ProblemTypes or str): binary, multiclass, or regression
 
     Returns:
@@ -58,7 +58,7 @@ def get_estimators(problem_type, model_families=None):
 
     Can also optionally filter by a list of model types.
 
-    Arguments:
+    Parameters
         problem_type (ProblemTypes or str): problem type to filter for
         model_families (list[ModelFamily] or list[str]): model families to filter for
 
@@ -102,7 +102,7 @@ def handle_component_class(component_class):
     return a new instance. Otherwise if a ComponentBase subclass or Component instance is provided,
     will return that without modification.
 
-    Arguments:
+    Parameters
         component (str, ComponentBase): input to be standardized
 
     Returns:
@@ -133,7 +133,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self, pipeline):
         """Scikit-learn classifier wrapper class. Takes an EvalML pipeline as input and returns a scikit-learn classifier class wrapping that pipeline.
 
-        Arguments:
+        Parameters
             pipeline (PipelineBase or subclass obj): EvalML pipeline
         """
         self.pipeline = pipeline
@@ -146,7 +146,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
     def fit(self, X, y):
         """Fits component to data.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training data of length [n_samples]
 
@@ -163,7 +163,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
     def predict(self, X):
         """Make predictions using selected features.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Features
 
         Returns:
@@ -176,7 +176,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Features
 
         Returns:
@@ -191,7 +191,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
     def __init__(self, pipeline):
         """Scikit-learn regressor wrapper class. Takes an EvalML pipeline as input and returns a scikit-learn regressor class wrapping that pipeline.
 
-        Arguments:
+        Parameters
             pipeline (PipelineBase or subclass obj): EvalML pipeline
         """
         self.pipeline = pipeline
@@ -203,7 +203,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
     def fit(self, X, y):
         """Fits component to data.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training data of length [n_samples]
 
@@ -216,7 +216,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
     def predict(self, X):
         """Make predictions using selected features.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Features
 
         Returns:
@@ -260,7 +260,7 @@ def scikit_learn_wrapped_estimator(evalml_obj):
 def generate_component_code(element):
     """Creates and returns a string that contains the Python imports and code required for running the EvalML component.
 
-    Arguments:
+    Parameters
         element (component instance): The instance of the component to generate string Python code for
 
     Returns:
@@ -295,7 +295,7 @@ def generate_component_code(element):
 def make_balancing_dictionary(y, sampling_ratio):
     """Makes dictionary for oversampler components. Find ratio of each class to the majority. If the ratio is smaller than the sampling_ratio, we want to oversample, otherwise, we don't want to sample at all, and we leave the data as is.
 
-    Arguments:
+    Parameters
         y (pd.Series): Target data
         sampling_ratio (float): The balanced ratio we want the samples to meet
 

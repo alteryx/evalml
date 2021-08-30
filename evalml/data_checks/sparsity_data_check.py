@@ -16,7 +16,7 @@ class SparsityDataCheck(DataCheck):
     """
     Check if there are any columns with sparsely populated values in the input.
 
-    Arguments:
+    Parameters
     ---------
         problem_type (str or ProblemTypes): The specific problem type to data check for.
             'multiclass' or 'time series multiclass' is the only accepted problem type.
@@ -43,7 +43,7 @@ class SparsityDataCheck(DataCheck):
         """
         Calculate what percentage of each column's unique values exceed the count threshold and compare that percentage to the sparsity threshold stored in the class instance.
 
-        Arguments:
+        Parameters
         ---------
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.
@@ -107,7 +107,7 @@ class SparsityDataCheck(DataCheck):
         """
         Calculate a sparsity score for the given value counts by calculating the percentage of unique values that exceed the count_threshold.
 
-        Arguments:
+        Parameters
         ---------
             col (pd.Series): Feature values.
             count_threshold (int): The number of instances below which a value is considered sparse.

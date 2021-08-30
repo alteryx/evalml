@@ -20,7 +20,7 @@ from evalml.utils import (
 class LightGBMClassifier(Estimator):
     """LightGBM Classifier.
 
-    Arguments:
+    Parameters
         boosting_type (string): Type of boosting to use. Defaults to "gbdt".
             - 'gbdt' uses traditional Gradient Boosting Decision Tree
             - "dart", uses Dropouts meet Multiple Additive Regression Trees

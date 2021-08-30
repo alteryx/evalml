@@ -1,3 +1,4 @@
+"""Data check that checks if there are any outliers in input data by using IQR to determine score anomalies."""
 import numpy as np
 from scipy.stats import gamma
 
@@ -17,18 +18,19 @@ class OutliersDataCheck(DataCheck):
     """
 
     def validate(self, X, y=None):
-        """Checks if there are any outliers in a dataframe by using IQR to determine column anomalies. Column with anomalies are considered to contain outliers.
+        """
+        Check if there are any outliers in a dataframe by using IQR to determine column anomalies. Column with anomalies are considered to contain outliers.
 
-        Arguments:
+        Parameters
         ---------
             X (pd.DataFrame, np.ndarray): Features
             y (pd.Series, np.ndarray): Ignored.
 
-        Return:
+        Return
         ------
             dict: A dictionary with warnings if any columns have outliers.
 
-        Example:
+        Example
         -------
             >>> import pandas as pd
             >>> df = pd.DataFrame({
@@ -85,19 +87,21 @@ class OutliersDataCheck(DataCheck):
 
     @staticmethod
     def _no_outlier_prob(num_records: int, pct_outliers: float) -> float:
-        """This functions calculates the probability that there are no true outliers in a numeric (integer or float) column. It is based on creating 100,000 samples consisting of a given number of records, and then repeating this over a grid of sample sizes. Each value in a sample is drawn from a log normal distribution, and then the number of potential outliers in the data is determined using the skew adjusted box plot approach based on the medcouple statistic. It was observed that the distribution of the percentage of outliers could be described by a gamma distribution, with the shape and scale parameters changing with the sample size. For each sample size, the shape and scale parameters of the gamma distriubtion were estimated using maximum likelihood methods. The set of estimate shape and scale parameters for different sample size were then used to fit equations that relate these two parameters to the sample size. These equations use a transendental logrithmic functional form that provides a seventh order Taylor series approximation to the two true functional relationships, and was estimated using least squares regression.
+        """
+        Calculate the probability that there are no true outliers in a numeric (integer or float) column. It is based on creating 100,000 samples consisting of a given number of records, and then repeating this over a grid of sample sizes. Each value in a sample is drawn from a log normal distribution, and then the number of potential outliers in the data is determined using the skew adjusted box plot approach based on the medcouple statistic. It was observed that the distribution of the percentage of outliers could be described by a gamma distribution, with the shape and scale parameters changing with the sample size. For each sample size, the shape and scale parameters of the gamma distriubtion were estimated using maximum likelihood methods. The set of estimate shape and scale parameters for different sample size were then used to fit equations that relate these two parameters to the sample size. These equations use a transendental logrithmic functional form that provides a seventh order Taylor series approximation to the two true functional relationships, and was estimated using least squares regression.
 
         Original credit goes to Jad Raad and Dan Putler of Alteryx.
 
+        Parameters
+        ---------
+            num_records (int): The integer number of non-missing values in a column.
+            pct_outliers (float): The percentage of potential outliers in a column.
 
-        Arguments:
-            num_records (int): The integer number of non-missing values in a column
-            pct_outliers (float): The percentage of potential outliers in a column
-        Returns:
-            float: The probability that no outliers are present in the column
+        Returns
+        -------
+            float: The probability that no outliers are present in the column.
         """
-
-        # calculate the shape and scale parameters of the approximate
+        # Calculate the shape and scale parameters of the approximate
         # gamma distribution given the number of records in the data.
         # For both measures, the values are are from a least squares regression
         # model

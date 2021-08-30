@@ -1,3 +1,4 @@
+"""Helpful preprocessing utilities."""
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
@@ -14,7 +15,7 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
     """
     Load features and target from file.
 
-    Arguments:
+    Parameters
     ---------
         path (str): Path to file or a http/ftp/s3 URL.
         index (str): Column for index.
@@ -23,12 +24,10 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         drop (list): List of columns to drop. Defaults to None.
         verbose (bool): If True, prints information about features and target. Defaults to True.
 
-    Returns:
+    Returns
     -------
        pd.DataFrame, pd.Series: Features matrix and target.
-
     """
-
     feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
 
     targets = [target] + (drop or [])
@@ -52,9 +51,9 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
 def split_data(
     X, y, problem_type, problem_configuration=None, test_size=0.2, random_seed=0
 ):
-    """Splits data into train and test sets.
+    """Split data into train and test sets.
 
-    Arguments:
+    Parameters
     ---------
         X (pd.DataFrame or np.ndarray): data of shape [n_samples, n_features]
         y (pd.Series, or np.ndarray): target data of length [n_samples]
@@ -64,7 +63,8 @@ def split_data(
         test_size (float): What percentage of data points should be included in the test set. Defaults to 0.2 (20%).
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
-    Returns:
+    Returns
+    -------
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets.
 
     """
@@ -99,11 +99,11 @@ def number_of_features(dtypes):
     """
     Get the number of features of each specific dtype in a DataFrame.
 
-    Arguments:
+    Parameters
     ---------
         dtypes (pd.Series): DataFrame.dtypes to get the number of features for.
 
-    Returns:
+    Returns
     -------
         pd.Series: dtypes and the number of features for each input type.
 
@@ -125,11 +125,11 @@ def target_distribution(targets):
     """
     Get the target distributions.
 
-    Arguments:
+    Parameters
     ---------
         targets (pd.Series): Target data.
 
-    Returns:
+    Returns
     -------
         pd.Series: Target data and their frequency distribution as percentages.
     """
@@ -139,14 +139,14 @@ def target_distribution(targets):
 
 def drop_nan_target_rows(X, y):
     """
-    Drops rows in X and y when row in the target y has a value of NaN.
+    Drop rows in X and y when row in the target y has a value of NaN.
 
-    Arguments:
+    Parameters
     ---------
         X (pd.DataFrame, np.ndarray): Data to transform.
         y (pd.Series, np.ndarray): Target data.
 
-    Returns:
+    Returns
     -------
         pd.DataFrame, pd.DataFrame: Transformed X (and y, if passed in) with rows that had a NaN value removed.
     """

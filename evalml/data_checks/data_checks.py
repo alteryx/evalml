@@ -20,7 +20,7 @@ class DataChecks:
     """
     A collection of data checks.
 
-    Arguments:
+    Arguments
     ---------
         data_checks (list (DataCheck)): List of DataCheck objects.
         data_check_params (dict): Parameters for passed DataCheck objects.
@@ -91,7 +91,7 @@ class DataChecks:
         """
         Inspect and validate the input data against data checks and returns a list of warnings and errors if applicable.
 
-        Arguments:
+        Arguments
         ---------
             X (pd.DataFrame, np.ndarray): The input data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray): The target data of length [n_samples]

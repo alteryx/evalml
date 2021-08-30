@@ -10,7 +10,7 @@ from evalml.utils import infer_feature_types
 class MulticollinearityDataCheck(DataCheck):
     """Check if any set features are likely to be multicollinear.
 
-    Arguments:
+    Parameters
     ---------
         threshold (float): The threshold to be considered. Defaults to 0.9.
     """
@@ -23,7 +23,7 @@ class MulticollinearityDataCheck(DataCheck):
     def validate(self, X, y=None):
         """Check if any set of features are likely to be multicollinear.
 
-        Arguments:
+        Parameters
         ---------
             X (pd.DataFrame): The input features to check.
             y (pd.Series): The target. Ignored.

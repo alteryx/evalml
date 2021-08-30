@@ -9,7 +9,7 @@ from .tuner_exceptions import NoParamsException
 class GridSearchTuner(Tuner):
     """Grid Search Optimizer, which generates all of the possible points to search for using a grid.
 
-    Arguments:
+    Parameters
         pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
         n_points (int): The number of points to sample from along each dimension
             defined in the ``space`` argument. Defaults to 10.
@@ -57,7 +57,7 @@ class GridSearchTuner(Tuner):
     def add(self, pipeline_parameters, score):
         """Not applicable to grid search tuner as generated parameters are not dependent on scores of previous parameters.
 
-        Arguments:
+        Parameters
             pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
             score (float): the score obtained by evaluating the pipeline with the provided parameters
         """

@@ -13,7 +13,7 @@ class TimeSeriesSplit(BaseCrossValidator):
     desired amount. If the data that will be split already has all the features and appropriate target values, and
     then set max_delay and gap to 0.
 
-    Arguments:
+    Parameters
     ---------
         max_delay (int): Max delay value for feature engineering. Time series pipelines create delayed features
             from existing features. This process will introduce NaNs into the first max_delay number of rows. The
@@ -47,7 +47,7 @@ class TimeSeriesSplit(BaseCrossValidator):
         This method can handle passing in empty or None X and y data but note that X and y cannot be None or empty
         at the same time.
 
-        Arguments:
+        Parameters
         ---------
             X (pd.DataFrame, None): Features to split.
             y (pd.DataFrame, None): Target variable to split. Defaults to None.

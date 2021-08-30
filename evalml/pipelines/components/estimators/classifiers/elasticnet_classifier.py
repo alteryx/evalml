@@ -12,7 +12,7 @@ from evalml.problem_types import ProblemTypes
 class ElasticNetClassifier(Estimator):
     """Elastic Net Classifier. Uses Logistic Regression with elasticnet penalty as the base estimator.
 
-    Arguments:
+    Parameters
         penalty ({"l1", "l2", "elasticnet", "none"}): The norm used in penalization. Defaults to "elasticnet".
         C (float): Inverse of regularization strength. Must be a positive float. Defaults to 1.0.
         l1_ratio (float): The mixing parameter, with 0 <= l1_ratio <= 1. Only used if penalty='elasticnet'. Setting l1_ratio=0 is equivalent to using penalty='l2',

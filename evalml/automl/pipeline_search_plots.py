@@ -79,7 +79,7 @@ class PipelineSearchPlots:
     def __init__(self, results, objective):
         """Make plots for the AutoMLSearch class.
 
-        Arguments:
+        Parameters
             data (AutoMLSearch): Automated pipeline search object
         """
         self._go = import_or_raise(

@@ -17,7 +17,7 @@ class SequentialComputation(EngineComputation):
     computation is "done", by always returning True in done() we make sure that get_result is called in the order that
     the jobs are submitted. So the computations happen sequentially!
 
-    Arguments:
+    Parameters
         work (callable): Computation that should be done by the engine.
     """
 

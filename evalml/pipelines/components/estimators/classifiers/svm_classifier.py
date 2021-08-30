@@ -10,7 +10,7 @@ from evalml.problem_types import ProblemTypes
 class SVMClassifier(Estimator):
     """Support Vector Machine Classifier.
 
-    Arguments:
+    Parameters
         C (float): The regularization parameter. The strength of the regularization is inversely proportional to C.
             Must be strictly positive. The penalty is a squared l2 penalty. Defaults to 1.0.
         kernel ({"poly", "rbf", "sigmoid"}): Specifies the kernel type to be used in the algorithm. Defaults to "rbf".

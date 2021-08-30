@@ -10,7 +10,7 @@ _nonstackable_model_families = [ModelFamily.BASELINE, ModelFamily.NONE]
 class SklearnStackedEnsembleBase(Estimator):
     """Stacked Ensemble Base Class.
 
-    Arguments:
+    Parameters
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         final_estimator (Estimator or subclass): The estimator used to combine the base estimators.

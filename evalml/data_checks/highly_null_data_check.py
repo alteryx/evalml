@@ -14,7 +14,7 @@ class HighlyNullDataCheck(DataCheck):
     """
     Check if there are any highly-null columns and rows in the input.
 
-    Arguments:
+    Parameters
     ---------
         pct_null_col_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
             that column will be considered highly-null. Defaults to 0.95.
@@ -40,7 +40,7 @@ class HighlyNullDataCheck(DataCheck):
         """
         Check if there are any highly-null columns or rows in the input.
 
-        Arguments:
+        Parameters
         ---------
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.

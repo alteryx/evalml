@@ -98,7 +98,7 @@ class EngineBase(ABC):
 def train_pipeline(pipeline, X, y, automl_config, schema=True):
     """Train a pipeline and tune the threshold if necessary.
 
-    Arguments:
+    Parameters
         pipeline (PipelineBase): Pipeline to train.
         X (pd.DataFrame): Features to train on.
         y (pd.Series): Target to train on.
@@ -147,7 +147,7 @@ def train_and_score_pipeline(
 ):
     """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores.
 
-    Arguments:
+    Parameters
         pipeline (PipelineBase): The pipeline to score
         automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback
         full_X_train (pd.DataFrame): Training features
@@ -290,7 +290,7 @@ def train_and_score_pipeline(
 def evaluate_pipeline(pipeline, automl_config, X, y, logger):
     """Function submitted to the submit_evaluation_job engine method.
 
-    Arguments:
+    Parameters
         pipeline (PipelineBase): The pipeline to score
         automl_config (AutoMLConfig): The AutoMLSearch object, used to access config and the error callback
         X (pd.DataFrame): Training features
@@ -317,7 +317,7 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
 def score_pipeline(pipeline, X, y, objectives, X_schema=None, y_schema=None):
     """Wrapper around pipeline.score method to make it easy to score pipelines with dask.
 
-        Arguments:
+        Parameters
         pipeline (PipelineBase): The pipeline to score.
         X (pd.DataFrame): Features to score on.
         y (pd.Series): Target used to calcualte scores.

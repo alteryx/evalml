@@ -6,7 +6,7 @@ class EmptyDataChecks(DataChecks):
     """
     An empty collection of data checks.
 
-    Arguments:
+    Parameters
     ---------
         data_checks (list (DataCheck)): Ignored.
 

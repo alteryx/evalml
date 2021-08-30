@@ -20,7 +20,7 @@ logger = get_logger(__file__)
 def import_or_raise(library, error_msg=None, warning=False):
     """Attempts to import the requested library by name. If the import fails, raises an ImportError or warning.
 
-    Arguments:
+    Parameters
         library (str): the name of the library
         error_msg (str): error message to return if the import fails
         warning (bool): if True, import_or_raise gives a warning instead of ImportError. Defaults to False.
@@ -75,7 +75,7 @@ SEED_BOUNDS = namedtuple("SEED_BOUNDS", ("min_bound", "max_bound"))(0, 2 ** 31 -
 def get_random_state(seed):
     """Generates a numpy.random.RandomState instance using seed.
 
-    Arguments:
+    Parameters
         seed (None, int, np.random.RandomState object): seed to use to generate numpy.random.RandomState. Must be between SEED_BOUNDS.min_bound and SEED_BOUNDS.max_bound, inclusive. Otherwise, an exception will be thrown.
     """
     if isinstance(seed, (int, np.integer)) and (
@@ -96,7 +96,7 @@ def get_random_seed(
 
     To protect against invalid input to a particular library's random number generator, if an int value is provided, and it is outside the bounds "[min_bound, max_bound)", the value will be projected into the range between the min_bound (inclusive) and max_bound (exclusive) using modular arithmetic.
 
-    Arguments:
+    Parameters
         random_state (int, numpy.random.RandomState): random state
         min_bound (None, int): if not default of None, will be min bound when generating seed (inclusive). Must be less than max_bound.
         max_bound (None, int): if not default of None, will be max bound when generating seed (exclusive). Must be greater than min_bound.
@@ -149,7 +149,7 @@ class classproperty:
 def _get_subclasses(base_class):
     """Gets all of the leaf nodes in the hiearchy tree for a given base class.
 
-    Arguments:
+    Parameters
         base_class (abc.ABCMeta): Class to find all of the children for.
 
     Returns:
@@ -187,7 +187,7 @@ _not_used_in_automl = {
 def get_importable_subclasses(base_class, used_in_automl=True):
     """Get importable subclasses of a base class. Used to list all of our estimators, transformers, components and pipelines dynamically.
 
-    Arguments:
+    Parameters
         base_class (abc.ABCMeta): Base class to find all of the subclasses for.
         args (list): Args used to instantiate the subclass. [{}] for a pipeline, and [] for
             all other classes.
@@ -222,7 +222,7 @@ def get_importable_subclasses(base_class, used_in_automl=True):
 def _rename_column_names_to_numeric(X, flatten_tuples=True):
     """Used in LightGBM and XGBoost estimator classes to rename column names when the input is a pd.DataFrame in case it has column names that contain symbols ([, ], <) that these estimators cannot natively handle.
 
-    Arguments:
+    Parameters
         X (pd.DataFrame): The input training data of shape [n_samples, n_features]
         flatten_tuples (bool): Whether to flatten MultiIndex or tuple column names. LightGBM cannot handle columns with tuple names.
 
@@ -250,7 +250,7 @@ def _rename_column_names_to_numeric(X, flatten_tuples=True):
 def jupyter_check():
     """Get whether or not the code is being run in a Ipython environment (such as Jupyter Notebook or Jupyter Lab)
 
-    Arguments:
+    Parameters
         None
 
     Returns:
@@ -266,7 +266,7 @@ def jupyter_check():
 def safe_repr(value):
     """Convert the given value into a string that can safely be used for repr.
 
-    Arguments:
+    Parameters
         value: the item to convert
 
     Returns:
@@ -283,7 +283,7 @@ def safe_repr(value):
 def is_all_numeric(df):
     """Checks if the given DataFrame contains only numeric values.
 
-    Arguments:
+    Parameters
         df (pd.DataFrame): The DataFrame to check data types of.
 
     Returns:
@@ -301,7 +301,7 @@ def is_all_numeric(df):
 def pad_with_nans(pd_data, num_to_pad):
     """Pad the beginning num_to_pad rows with nans.
 
-    Arguments:
+    Parameters
         pd_data (pd.DataFrame or pd.Series): Data to pad.
 
     Returns:
@@ -326,7 +326,7 @@ def pad_with_nans(pd_data, num_to_pad):
 def _get_rows_without_nans(*data):
     """Compute a boolean array marking where all entries in the data are non-nan.
 
-    Arguments:
+    Parameters
         *data (sequence of pd.Series or pd.DataFrame)
 
     Returns:
@@ -351,7 +351,7 @@ def _get_rows_without_nans(*data):
 def drop_rows_with_nans(*pd_data):
     """Drop rows that have any NaNs in all dataframes or series.
 
-    Arguments:
+    Parameters
         *pd_data (sequence of pd.Series or pd.DataFrame or None)
 
     Returns:
@@ -371,7 +371,7 @@ def drop_rows_with_nans(*pd_data):
 def _file_path_check(filepath=None, format="png", interactive=False, is_plotly=False):
     """Helper function to check the filepath being passed.
 
-    Arguments:
+    Parameters
         filepath (str or Path, optional): Location to save file.
         format (str): Extension for figure to be saved as. Defaults to 'png'.
         interactive (bool, optional): If True and fig is of type plotly.Figure, sets the format to 'html'.
@@ -406,7 +406,7 @@ def save_plot(
 ):
     """Saves fig to filepath if specified, or to a default location if not.
 
-    Arguments:
+    Parameters
         fig (Figure): Figure to be saved.
         filepath (str or Path, optional): Location to save file. Default is with filename "test_plot".
         format (str): Extension for figure to be saved as. Ignored if interactive is True and fig
@@ -474,7 +474,7 @@ def save_plot(
 def deprecate_arg(old_arg, new_arg, old_value, new_value):
     """Helper to raise warnings when a deprecated arg is used.
 
-    Arguments:
+    Parameters
         old_arg (str): Name of old/deprecated argument.
         new_arg (str): Name of new argument.
         old_value (Any): Value the user passed in for the old argument.

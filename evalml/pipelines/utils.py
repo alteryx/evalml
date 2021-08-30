@@ -56,17 +56,19 @@ logger = get_logger(__file__)
 def _get_preprocessing_components(
     X, y, problem_type, estimator_class, sampler_name=None
 ):
-    """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
+    """
+    Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
-    Arguments:
-        X (pd.DataFrame): The input data of shape [n_samples, n_features]
-        y (pd.Series): The target data of length [n_samples]
-        problem_type (ProblemTypes or str): Problem type
-        estimator_class (class): A class which subclasses Estimator estimator for pipeline,
-        sampler_name (str): The name of the sampler component to add to the pipeline. Defaults to None
+    Parameters
+    ----------
+        X (pd.DataFrame): The input data of shape [n_samples, n_features].
+        y (pd.Series): The target data of length [n_samples].
+        problem_type (ProblemTypes or str): Problem type.
+        estimator_class (class): A class which subclasses Estimator estimator for pipeline.
+        sampler_name (str): The name of the sampler component to add to the pipeline. Defaults to None.
 
     Returns:
-        list[Transformer]: A list of applicable preprocessing components to use with the estimator
+        list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
 
     pp_components = []
@@ -187,21 +189,24 @@ def make_pipeline(
     sampler_name=None,
     extra_components=None,
 ):
-    """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
+    """
+    Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
-    Arguments:
-         X (pd.DataFrame): The input data of shape [n_samples, n_features]
-         y (pd.Series): The target data of length [n_samples]
-         estimator (Estimator): Estimator for pipeline
-         problem_type (ProblemTypes or str): Problem type for pipeline to generate
+    Parameters
+    ----------
+         X (pd.DataFrame): The input data of shape [n_samples, n_features].
+         y (pd.Series): The target data of length [n_samples].
+         estimator (Estimator): Estimator for pipeline.
+         problem_type (ProblemTypes or str): Problem type for pipeline to generate.
          parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
              An empty dictionary or None implies using all default values for component parameters.
          sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
              Defaults to None
          extra_components (list(ComponentBase)): List of extra components to be added after preprocessing components. Defaults to None.
 
-     Returns:
-         PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator
+     Returns
+     -------
+         PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
@@ -231,7 +236,7 @@ def make_pipeline(
 def generate_pipeline_code(element):
     """Creates and returns a string that contains the Python imports and code required for running the EvalML pipeline.
 
-    Arguments:
+    Parameters
         element (pipeline instance): The instance of the pipeline to generate string Python code
 
     Returns:
@@ -260,7 +265,7 @@ def _make_stacked_ensemble_pipeline(
 ):
     """Creates a pipeline with a stacked ensemble estimator.
 
-    Arguments:
+    Parameters
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         problem_type (ProblemType): problem type of pipeline
@@ -315,7 +320,7 @@ def _make_stacked_ensemble_pipeline(
 def _make_component_list_from_actions(actions):
     """Creates a list of components from the input DataCheckAction list.
 
-    Arguments:
+    Parameters
         actions (list(DataCheckAction)): List of DataCheckAction objects used to create list of components
 
     Returns:

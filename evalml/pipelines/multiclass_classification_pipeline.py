@@ -5,7 +5,7 @@ from evalml.problem_types import ProblemTypes
 class MulticlassClassificationPipeline(ClassificationPipeline):
     """Pipeline subclass for all multiclass classification pipelines.
 
-    Arguments:
+    Parameters
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph

@@ -13,7 +13,7 @@ from evalml.automl.engine.engine_base import (
 class DaskComputation(EngineComputation):
     """A Future-like wrapper around jobs created by the DaskEngine.
 
-    Arguments:
+    Parameters
         dask_future (callable): Computation to do.
     """
 
@@ -66,7 +66,7 @@ class DaskEngine(EngineBase):
         The implementation uses caching so the data is only sent once. This follows
         dask best practices.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
         Returns
@@ -85,7 +85,7 @@ class DaskEngine(EngineBase):
     def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send evaluation job to cluster.
 
-        Arguments:
+        Parameters
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to evaluate
             X (pd.DataFrame): input data for modeling
@@ -109,7 +109,7 @@ class DaskEngine(EngineBase):
     def submit_training_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send training job to cluster.
 
-        Arguments:
+        Parameters
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling
@@ -129,7 +129,7 @@ class DaskEngine(EngineBase):
     ) -> EngineComputation:
         """Send scoring job to cluster.
 
-        Arguments:
+        Parameters
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling

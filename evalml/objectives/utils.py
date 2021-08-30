@@ -68,7 +68,7 @@ def get_core_objective_names():
 def get_objective(objective, return_instance=False, **kwargs):
     """Returns the Objective class corresponding to a given objective name.
 
-    Arguments:
+    Parameters
         objective (str or ObjectiveBase): Name or instance of the objective class.
         return_instance (bool): Whether to return an instance of the objective. This only applies if objective
             is of type str. Note that the instance will be initialized with default arguments.
@@ -113,7 +113,7 @@ def get_core_objectives(problem_type):
 
     Core objectives are designed to work out-of-the-box for any dataset.
 
-    Arguments:
+    Parameters
         problem_type (str/ProblemTypes): Type of problem
 
     Returns:

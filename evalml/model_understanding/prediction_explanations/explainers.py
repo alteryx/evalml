@@ -47,7 +47,7 @@ def explain_predictions(
 
     XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
 
-    Arguments:
+    Parameters
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
         y (pd.Series): Labels for the input data.
@@ -141,7 +141,7 @@ def explain_predictions_best_worst(
 
     XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
 
-    Arguments:
+    Parameters
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (pd.DataFrame): Input data to evaluate the pipeline on.
         y_true (pd.Series): True labels for the input data.
@@ -268,7 +268,7 @@ def explain_predictions_best_worst(
 def abs_error(y_true, y_pred):
     """Computes the absolute error per data point for regression problems.
 
-    Arguments:
+    Parameters
         y_true (pd.Series): True labels.
         y_pred (pd.Series): Predicted values.
 
@@ -281,7 +281,7 @@ def abs_error(y_true, y_pred):
 def cross_entropy(y_true, y_pred_proba):
     """Computes Cross Entropy Loss per data point for classification problems.
 
-    Arguments:
+    Parameters
         y_true (pd.Series): True labels encoded as ints.
         y_pred_proba (pd.DataFrame): Predicted probabilities. One column per class.
 

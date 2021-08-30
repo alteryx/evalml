@@ -28,7 +28,7 @@ logger = get_logger(__file__)
 class ComponentGraph:
     """Component graph for a pipeline as a directed acyclic graph (DAG).
 
-    Arguments:
+    Parameters
         component_dict (dict): A dictionary which specifies the components and edges between components that should be used to create the component graph. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
@@ -138,7 +138,7 @@ class ComponentGraph:
     def instantiate(self, parameters):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be raised if a component is already instantiated but the parameters dict contains arguments for that component.
 
-        Arguments:
+        Parameters
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                                An empty dictionary {} or None implies using all default values for component parameters. If a component
                                in the component graph is already instantiated, it will not use any of its parameters defined in this dictionary.
@@ -176,7 +176,7 @@ class ComponentGraph:
     def fit(self, X, y):
         """Fit each component in the graph.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): The input training data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples].
         """
@@ -189,7 +189,7 @@ class ComponentGraph:
     def fit_features(self, X, y):
         """Fit all components save the final one, usually an estimator.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): The input training data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples].
 
@@ -201,7 +201,7 @@ class ComponentGraph:
     def compute_final_component_features(self, X, y=None):
         """Transform all components save the final one, and gathers the data from any number of parents to get all the information that should be fed to the final component.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples]. Defaults to None.
 
@@ -213,7 +213,7 @@ class ComponentGraph:
     def _fit_transform_features_helper(self, needs_fitting, X, y=None):
         """Transform all components save the final one, and returns the data that should be fed to the final component, usually an estimator.
 
-        Arguments:
+        Parameters
             needs_fitting (boolean): Determines if components should be fit.
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples]. Defaults to None.
@@ -260,7 +260,7 @@ class ComponentGraph:
     def transform(self, X, y=None):
         """Transform the input using the component graph.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Input features of shape [n_samples, n_features].
             y (pd.Series): The target data of length [n_samples]. Defaults to None.
 
@@ -286,7 +286,7 @@ class ComponentGraph:
     def predict(self, X):
         """Make predictions using selected features.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Input features of shape [n_samples, n_features].
 
         Returns:
@@ -306,7 +306,7 @@ class ComponentGraph:
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
 
-        Arguments:
+        Parameters
             component_list (list): The list of component names to compute.
             X (pd.DataFrame): Input data to the pipeline to transform.
             y (pd.Series): The target training data of length [n_samples].
@@ -387,7 +387,7 @@ class ComponentGraph:
         If a feature is then calculated from feature 'a', e.g. 'a_squared', then the provenance would instead
         be {'cats': ['a', 'a_squared', 'b']}.
 
-        Arguments:
+        Parameters
             input_feature_names (list(str)): Names of the features in the input dataframe.
 
         Returns:
@@ -442,7 +442,7 @@ class ComponentGraph:
     def get_component(self, component_name):
         """Retrieves a single component object from the graph.
 
-        Arguments:
+        Parameters
             component_name (str): Name of the component to retrieve
 
         Returns:
@@ -483,7 +483,7 @@ class ComponentGraph:
     def get_inputs(self, component_name):
         """Retrieves all inputs for a given component.
 
-        Arguments:
+        Parameters
             component_name (str): Name of the component to look up.
 
         Returns:
@@ -500,7 +500,7 @@ class ComponentGraph:
     def describe(self, return_dict=False):
         """Outputs component graph details including component parameters.
 
-        Arguments:
+        Parameters
             return_dict (bool): If True, return dictionary of information about component graph. Defaults to False.
 
         Returns:
@@ -523,7 +523,7 @@ class ComponentGraph:
     def graph(self, name=None, graph_format=None):
         """Generate an image representing the component graph.
 
-        Arguments:
+        Parameters
             name (str): Name of the graph. Defaults to None.
             graph_format (str): file format to save the graph in. Defaults to None.
 
@@ -682,7 +682,7 @@ class ComponentGraph:
 
         Components that implement inverse_transform are PolynomialDetrender, LabelEncoder (tbd).
 
-        Arguments:
+        Parameters
             y: (pd.Series): Final component features
         """
         data_to_transform = infer_feature_types(y)

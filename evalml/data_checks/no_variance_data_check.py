@@ -17,7 +17,7 @@ class NoVarianceDataCheck(DataCheck):
     """
     Check if the target or any of the features have no variance.
 
-    Arguments:
+    Parameters
     ---------
         count_nan_as_value (bool): If True, missing values will be counted as their own unique value.
             Additionally, if true, will return a DataCheckWarning instead of an error
@@ -33,7 +33,7 @@ class NoVarianceDataCheck(DataCheck):
         """
         Check if a column has no variance.
 
-        Arguments:
+        Parameters
         ---------
             column_name (str): Name of the column we are checking.
             count_unique (float): Number of unique values in this column.
@@ -68,7 +68,7 @@ class NoVarianceDataCheck(DataCheck):
         """
         Check if the target or any of the features have no variance (1 unique value).
 
-        Arguments:
+        Parameters
         ---------
             X (pd.DataFrame, np.ndarray): The input features.
             y (pd.Series, np.ndarray): The target data.

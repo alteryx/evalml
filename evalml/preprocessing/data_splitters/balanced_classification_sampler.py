@@ -9,7 +9,7 @@ class BalancedClassificationSampler(SamplerBase):
     """
     Class for balanced classification downsampler.
 
-    Arguments:
+    Parameters
     ---------
         sampling_ratio (float): The smallest minority:majority ratio that is accepted as 'balanced'. For instance, a 1:4 ratio would be
             represented as 0.25, while a 1:1 ratio is 1.0. Must be between 0 and 1, inclusive. Defaults to 0.25.
@@ -56,11 +56,11 @@ class BalancedClassificationSampler(SamplerBase):
         """
         Return dictionary of examples to drop for each class if we need to resample.
 
-        Arguments:
+        Parameters
         ---------
             y (pd.Series): Target data passed in.
 
-        Returns:
+        Returns
         -------
             (dict): dictionary with undersample target class as key, and number of samples to remove as the value.
                 If we don't need to resample, returns empty dictionary.
@@ -93,11 +93,11 @@ class BalancedClassificationSampler(SamplerBase):
         """
         Turn the sampling dict input into a dict of samples to remove for each target, similar to the return of _find_ideal_samples.
 
-        Arguments:
+        Parameters
         ---------
             y (pd.Series): Training data targets.
 
-        Returns:
+        Returns
         -------
             (dict): dictionary with undersample target class as key, and number of samples to remove as the value.
                 If we don't need to resample, returns empty dictionary.
@@ -112,12 +112,12 @@ class BalancedClassificationSampler(SamplerBase):
         """
         Resampling technique for this sampler.
 
-        Arguments:
+        Parameters
         ---------
             X (pd.DataFrame): Training data to fit and resample.
             y (pd.Series): Training data targets to fit and resample.
 
-        Returns:
+        Returns
         -------
             list: Indices to keep for training data.
         """

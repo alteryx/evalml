@@ -20,7 +20,7 @@ class LogTransformer(TargetTransformer):
     def fit(self, X, y=None):
         """Fits the LogTransformer.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): Ignored.
             y (pd.Series, optional): Ignored.
 
@@ -32,7 +32,7 @@ class LogTransformer(TargetTransformer):
     def transform(self, X, y=None):
         """Log transforms the target variable.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame, optional): Ignored.
             y (pd.Series): Target data to log transform.
 
@@ -52,7 +52,7 @@ class LogTransformer(TargetTransformer):
     def fit_transform(self, X, y=None):
         """Log transforms the target variable.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame, optional): Ignored.
             y (pd.Series): Target variable to log transform.
 

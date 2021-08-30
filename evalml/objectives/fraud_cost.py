@@ -4,7 +4,7 @@ from .binary_classification_objective import BinaryClassificationObjective
 class FraudCost(BinaryClassificationObjective):
     """Score the percentage of money lost of the total transaction amount process due to fraud.
 
-    Arguments:
+    Parameters
         retry_percentage (float): What percentage of customers that will retry a transaction if it
             is declined. Between 0 and 1. Defaults to 0.5.
         interchange_fee (float): How much of each successful transaction you pay.
@@ -36,7 +36,7 @@ class FraudCost(BinaryClassificationObjective):
     def objective_function(self, y_true, y_predicted, X, sample_weight=None):
         """Calculate amount lost to fraud per transaction given predictions, true values, and dataframe with transaction amount.
 
-        Arguments:
+        Parameters
             y_predicted (pd.Series): Predicted fraud labels
             y_true (pd.Series): True fraud labels
             X (pd.DataFrame): Data with transaction amounts

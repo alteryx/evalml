@@ -10,7 +10,7 @@ from evalml.utils import infer_feature_types
 class BaselineRegressor(Estimator):
     """Baseline regressor that uses a simple strategy to make predictions. This is useful as a simple baseline regressor to compare with other regressors.
 
-    Arguments:
+    Parameters
         strategy (str): Method used to predict. Valid options are "mean", "median". Defaults to "mean".
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """

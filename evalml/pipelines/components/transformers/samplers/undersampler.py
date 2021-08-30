@@ -13,7 +13,7 @@ class Undersampler(BaseSampler):
 
     This component is only run during training and not during predict.
 
-    Arguments:
+    Parameters
         sampling_ratio (float): The smallest minority:majority ratio that is accepted as 'balanced'. For instance, a 1:4 ratio would be
             represented as 0.25, while a 1:1 ratio is 1.0. Must be between 0 and 1, inclusive. Defaults to 0.25.
         sampling_ratio_dict (dict): A dictionary specifying the desired balanced ratio for each target value. For instance, in a binary case where class 1 is the minority, we could specify:
@@ -55,7 +55,7 @@ class Undersampler(BaseSampler):
     def _initialize_sampler(self, X, y):
         """Helper function to initialize the undersampler component object.
 
-        Arguments:
+        Parameters
             y (pd.Series): The target data
         """
         param_dic = self._dictionary_to_params(

@@ -59,7 +59,7 @@ def log_subtitle(logger, title, underline="="):
 def time_elapsed(start_time):
     """How much time has elapsed since the search started.
 
-    Arguments:
+    Parameters
         start_time (int): Time when search started.
 
     Returns:

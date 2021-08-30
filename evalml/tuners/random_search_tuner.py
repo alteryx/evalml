@@ -7,7 +7,7 @@ from evalml.utils import get_random_state
 class RandomSearchTuner(Tuner):
     """Random Search Optimizer.
 
-    Arguments:
+    Parameters
         pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
         with_replacement (bool): If false, only unique hyperparameters will be shown
         replacement_max_attempts (int): The maximum number of tries to get a unique
@@ -41,7 +41,7 @@ class RandomSearchTuner(Tuner):
     def add(self, pipeline_parameters, score):
         """Not applicable to random search tuner as generated parameters are not dependent on scores of previous parameters.
 
-        Arguments:
+        Parameters
             pipeline_parameters (dict): A dict of the parameters used to evaluate a pipeline
             score (float): The score obtained by evaluating the pipeline with the provided parameters
         """

@@ -8,7 +8,7 @@ from evalml.utils import infer_feature_types
 class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines.
 
-    Arguments:
+    Parameters
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -38,7 +38,7 @@ class ClassificationPipeline(PipelineBase):
     def fit(self, X, y):
         """Build a classification model. For string and categorical targets, classes are sorted by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray): The target training labels of length [n_samples]
 
@@ -80,7 +80,7 @@ class ClassificationPipeline(PipelineBase):
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
@@ -92,7 +92,7 @@ class ClassificationPipeline(PipelineBase):
     def predict(self, X, objective=None):
         """Make predictions using selected features.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
@@ -108,7 +108,7 @@ class ClassificationPipeline(PipelineBase):
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
         Returns:
@@ -131,7 +131,7 @@ class ClassificationPipeline(PipelineBase):
     def score(self, X, y, objectives):
         """Evaluate model performance on objectives.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
             y (pd.Series, or np.ndarray): True labels of length [n_samples]
             objectives (list): List of objectives to score

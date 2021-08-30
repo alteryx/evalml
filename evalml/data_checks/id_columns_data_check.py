@@ -13,7 +13,7 @@ class IDColumnsDataCheck(DataCheck):
     """
     Check if any of the features are likely to be ID columns.
 
-    Arguments:
+    Parameters
     ---------
         id_threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0.
 
@@ -32,7 +32,7 @@ class IDColumnsDataCheck(DataCheck):
             - column name ends in "_id"
             - column contains all unique values (and is categorical / integer type)
 
-        Arguments:
+        Parameters
         ---------
             X (pd.DataFrame, np.ndarray): The input features to check.T
             y (pd.Series): The target. Defaults to None. Ignored.

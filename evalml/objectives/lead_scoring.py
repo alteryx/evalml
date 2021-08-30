@@ -6,7 +6,7 @@ from .binary_classification_objective import BinaryClassificationObjective
 class LeadScoring(BinaryClassificationObjective):
     """Lead scoring.
 
-    Arguments:
+    Parameters
         true_positives (int): Reward for a true positive. Defaults to 1.
         false_positives (int): Cost for a false positive. Should be negative. Defaults to -1.
     """
@@ -25,7 +25,7 @@ class LeadScoring(BinaryClassificationObjective):
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Calculate the profit per lead.
 
-        Arguments:
+        Parameters
             y_predicted (pd.Series): Predicted labels
             y_true (pd.Series): True labels
             X (pd.DataFrame): Ignored.

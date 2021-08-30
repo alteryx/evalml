@@ -12,7 +12,7 @@ class BaselineClassifier(Estimator):
 
     This is useful as a simple baseline classifier to compare with other classifiers.
 
-    Arguments:
+    Parameters
         strategy (str): Method used to predict. Valid options are "mode", "random" and "random_weighted". Defaults to "mode".
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """

@@ -18,7 +18,7 @@ from evalml.utils import (
 class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPipeline):
     """Pipeline base class for time series classification problems.
 
-    Arguments:
+    Parameters
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -34,7 +34,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
     def fit(self, X, y):
         """Fit a time series classification pipeline.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray): The target training targets of length [n_samples]
 
@@ -71,7 +71,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
     def predict(self, X, y=None, objective=None):
         """Make predictions using selected features.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series, np.ndarray, None): The target training targets of length [n_samples].
             objective (Object or string): The objective to use to make predictions.
@@ -98,7 +98,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
     def predict_proba(self, X, y=None):
         """Make probability estimates for labels.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
 
         Returns:
@@ -120,7 +120,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series): True labels of length [n_samples].
             objectives (list): Non-empty list of objectives to score on.
@@ -153,7 +153,7 @@ class TimeSeriesBinaryClassificationPipeline(
 ):
     """Pipeline base class for time series binary classification problems.
 
-    Arguments:
+    Parameters
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -207,7 +207,7 @@ class TimeSeriesBinaryClassificationPipeline(
 class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipeline):
     """Pipeline base class for time series multiclass classification problems.
 
-    Arguments:
+    Parameters
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph

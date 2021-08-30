@@ -10,7 +10,7 @@ from evalml.problem_types import ProblemTypes
 class SklearnStackedEnsembleRegressor(SklearnStackedEnsembleBase):
     """Scikit-learn Stacked Ensemble Regressor.
 
-    Arguments:
+    Parameters
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         final_estimator (Estimator or subclass): The regressor used to combine the base estimators. If None, uses LinearRegressor.

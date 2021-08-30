@@ -36,7 +36,7 @@ class DefaultDataChecks(DataChecks):
         - `TargetDistributionDataCheck` (for regression problem types)
         - `DateTimeFormatDataCheck` (for time series problem types)
 
-    Arguments:
+    Arguments
     ---------
         problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
         objective (str or ObjectiveBase): Name or instance of the objective class.

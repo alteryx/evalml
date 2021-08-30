@@ -10,7 +10,7 @@ from evalml.problem_types import ProblemTypes
 class KNeighborsClassifier(Estimator):
     """K-Nearest Neighbors Classifier.
 
-    Arguments:
+    Parameters
         n_neighbors (int): Number of neighbors to use by default. Defaults to 5.
         weights ({‘uniform’, ‘distance’} or callable): Weight function used in prediction. Can be:
 

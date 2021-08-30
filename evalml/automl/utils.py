@@ -32,7 +32,7 @@ _LARGE_DATA_PERCENT_VALIDATION = 0.75
 def get_default_primary_search_objective(problem_type):
     """Get the default primary search objective for a problem type.
 
-    Arguments:
+    Parameters
         problem_type (str or ProblemType): problem type of interest.
 
     Returns
@@ -62,7 +62,7 @@ def make_data_splitter(
 ):
     """Given the training data and ML problem parameters, compute a data splitting method to use during AutoML search.
 
-    Arguments:
+    Parameters
         X (pd.DataFrame): The input training data of shape [n_samples, n_features].
         y (pd.Series): The target training data of length [n_samples].
         problem_type (ProblemType): The type of machine learning problem.
@@ -105,7 +105,7 @@ def tune_binary_threshold(
 ):
     """Tunes the threshold of a binary pipeline to the X and y thresholding data.
 
-    Arguments:
+    Parameters
         pipeline (Pipeline): Pipeline instance to threshold.
         objective (ObjectiveBase): The objective we want to tune with. If not tuneable and best_pipeline is True, will use F1.
         problem_type (ProblemType): The problem type of the pipeline.
@@ -129,7 +129,7 @@ def tune_binary_threshold(
 def check_all_pipeline_names_unique(pipelines):
     """Checks whether all the pipeline names are unique.
 
-    Arguments:
+    Parameters
         pipelines (list(PipelineBase)): List of pipelines to check if all names are unique.
 
     Returns:
@@ -169,7 +169,7 @@ AutoMLConfig = namedtuple(
 def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
     """Returns the name of the sampler component to use for AutoMLSearch.
 
-    Arguments:
+    Parameters
         X (pd.DataFrame): The input feature data
         y (pd.Series): The input target data
         sampler_method (str): The sampler_type argument passed to AutoMLSearch
@@ -211,7 +211,7 @@ def get_pipelines_from_component_graphs(
 ):
     """Returns created pipelines from passed component graphs based on the specified problem type.
 
-    Arguments:
+    Parameters
         component_graphs_dict (dict): The dict of component graphs.
         problem_type (str or ProblemType): The problem type for which pipelines will be created.
         parameters (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.

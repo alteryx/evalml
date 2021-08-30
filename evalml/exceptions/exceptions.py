@@ -52,7 +52,7 @@ class EnsembleMissingPipelinesError(Exception):
 class PipelineScoreError(Exception):
     """An exception raised when a pipeline errors while scoring any objective in a list of objectives.
 
-    Arguments:
+    Parameters
         exceptions (dict): A dictionary mapping an objective name (str) to a tuple of the form (exception, traceback).
             All of the objectives that errored will be stored here.
         scored_successfully (dict): A dictionary mapping an objective name (str) to a score value. All of the objectives

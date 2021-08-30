@@ -12,7 +12,7 @@ from evalml.utils.gen_utils import (
 class XGBoostClassifier(Estimator):
     """XGBoost Classifier.
 
-    Arguments:
+    Parameters
         eta (float): Boosting learning rate. Defaults to 0.1.
         max_depth (int): Maximum tree depth for base learners. Defaults to 6.
         min_child_weight (float): Minimum sum of instance weight (hessian) needed in a child. Defaults to 1.0

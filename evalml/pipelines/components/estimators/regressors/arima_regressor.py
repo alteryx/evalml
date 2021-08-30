@@ -13,7 +13,7 @@ class ARIMARegressor(Estimator):
 
     Currently ARIMARegressor isn't supported via conda install. It's recommended that it be installed via PyPI.
 
-    Arguments:
+    Parameters
         date_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
         trend (str): Controls the deterministic trend. Options are ['n', 'c', 't', 'ct'] where 'c' is a constant term,
             't' indicates a linear trend, and 'ct' is both. Can also be an iterable when defining a polynomial, such

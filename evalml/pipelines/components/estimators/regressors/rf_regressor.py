@@ -9,7 +9,7 @@ from evalml.problem_types import ProblemTypes
 class RandomForestRegressor(Estimator):
     """Random Forest Regressor.
 
-    Arguments:
+    Parameters
         n_estimators (float): The number of trees in the forest. Defaults to 100.
         max_depth (int): Maximum tree depth for base learners. Defaults to 6.
         n_jobs (int or None): Number of jobs to run in parallel. -1 uses all processes. Defaults to -1.

@@ -12,7 +12,7 @@ class CFClient:
 
     def __init__(self, pool):
         """
-        Arguments:
+        Parameters
             pool(cf.ThreadPoolExecutor or cf.ProcessPoolExecutor): the resource pool
                 to execute the futures work on.
         """
@@ -34,7 +34,7 @@ class CFComputation(EngineComputation):
 
     def __init__(self, future):
         """
-        Arguments:
+        Parameters
             future(cf.Future): The concurrent.futures.Future that is desired
                 to be executed.
         """
@@ -92,7 +92,7 @@ class CFEngine(EngineBase):
     def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send evaluation job to cluster.
 
-        Arguments:
+        Parameters
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to evaluate
             X (pd.DataFrame): input data for modeling
@@ -115,7 +115,7 @@ class CFEngine(EngineBase):
     def submit_training_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send training job to cluster.
 
-        Arguments:
+        Parameters
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling
@@ -134,7 +134,7 @@ class CFEngine(EngineBase):
     ) -> EngineComputation:
         """Send scoring job to cluster.
 
-        Arguments:
+        Parameters
             automl_config: structure containing data passed from AutoMLSearch instance
             pipeline (pipeline.PipelineBase): pipeline to train
             X (pd.DataFrame): input data for modeling

@@ -39,7 +39,7 @@ class TargetImputerMeta(ComponentBaseMeta):
 class TargetImputer(Transformer, metaclass=TargetImputerMeta):
     """Imputes missing target data according to a specified imputation strategy.
 
-    Arguments:
+    Parameters
         impute_strategy (string): Impute strategy to use. Valid values include "mean", "median", "most_frequent", "constant" for
            numerical data, and "most_frequent", "constant" for object data types. Defaults to "most_frequent".
         fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
@@ -68,7 +68,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
     def fit(self, X, y):
         """Fits imputer to target data. 'None' values are converted to np.nan before imputation and are treated as the same.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]. Ignored.
             y (pd.Series, optional): The target training data of length [n_samples].
 
@@ -92,7 +92,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
     def transform(self, X, y):
         """Transforms input target data by imputing missing values. 'None' and np.nan values are treated as the same.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Features. Ignored.
             y (pd.Series): Target data to impute.
 
@@ -120,7 +120,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
     def fit_transform(self, X, y):
         """Fits on and transforms the input target data.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Features. Ignored.
             y (pd.Series): Target data to impute.
 

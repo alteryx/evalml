@@ -25,7 +25,7 @@ class BinaryClassificationObjective(ObjectiveBase):
     def optimize_threshold(self, ypred_proba, y_true, X=None):
         """Learn a binary classification threshold which optimizes the current objective.
 
-        Arguments:
+        Parameters
             ypred_proba (pd.Series): The classifier's predicted probabilities
             y_true (pd.Series): The ground truth for the predictions.
             X (pd.DataFrame, optional): Any extra columns that are needed from training data.
@@ -57,7 +57,7 @@ class BinaryClassificationObjective(ObjectiveBase):
     def decision_function(self, ypred_proba, threshold=0.5, X=None):
         """Apply a learned threshold to predicted probabilities to get predicted classes.
 
-        Arguments:
+        Parameters
             ypred_proba (pd.Series, np.ndarray): The classifier's predicted probabilities
             threshold (float, optional): Threshold used to make a prediction. Defaults to 0.5.
             X (pd.DataFrame, optional): Any extra columns that are needed from training data.

@@ -12,7 +12,7 @@ class NaturalLanguageNaNDataCheck(DataCheck):
         """
         Check if any natural language columns contain NaN values.
 
-        Arguments:
+        Parameters
         ---------
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.  Defaults to None.

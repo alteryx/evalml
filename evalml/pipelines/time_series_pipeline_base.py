@@ -9,7 +9,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
     """Pipeline base class for time series problems.
 
-    Arguments:
+    Parameters
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -56,7 +56,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
     def fit(self, X, y):
         """Fit a time series pipeline.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
             y (pd.Series, np.ndarray): The target training targets of length [n_samples].
 

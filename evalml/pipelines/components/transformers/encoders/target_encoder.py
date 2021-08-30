@@ -16,7 +16,7 @@ from evalml.utils import (
 class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
     """A transformer that encodes categorical features into target encodings.
 
-    Arguments:
+    Parameters
         cols (list): Columns to encode. If None, all string columns will be encoded, otherwise only the columns provided will be encoded.
             Defaults to None
         smoothing (float): The smoothing factor to apply. The larger this value is, the more influence the expected target value has

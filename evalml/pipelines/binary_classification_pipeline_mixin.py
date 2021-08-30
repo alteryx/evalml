@@ -42,7 +42,7 @@ class BinaryClassificationPipelineMixin:
     def optimize_threshold(self, X, y, y_pred_proba, objective):
         """Optimize the pipeline threshold given the objective to use. Only used for binary problems with objectives whose thresholds can be tuned.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Input features
             y (pd.Series): Input target values
             y_pred_proba (pd.Series): The predicted probabilities of the target outputted by the pipeline

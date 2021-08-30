@@ -1,3 +1,4 @@
+"""Data check that checks if the target data contains missing or invalid values."""
 import woodwork as ww
 
 from evalml.data_checks import (
@@ -23,9 +24,11 @@ from evalml.utils.woodwork_utils import (
 
 
 class InvalidTargetDataCheck(DataCheck):
-    """Checks if the target data contains missing or invalid values.
+    """
+    Check if the target data contains missing or invalid values.
 
-    Arguments:
+    Arguments
+    ---------
         problem_type (str or ProblemTypes): The specific problem type to data check for.
             e.g. 'binary', 'multiclass', 'regression, 'time series regression'
         objective (str or ObjectiveBase): Name or instance of the objective class.
@@ -43,10 +46,10 @@ class InvalidTargetDataCheck(DataCheck):
         self.n_unique = n_unique
 
     def validate(self, X, y):
-        """Checks if the target data contains missing or invalid values.
+        """Check if the target data contains missing or invalid values.
 
-        Arguments:
-        ---------
+        Parameters
+        ----------
             X (pd.DataFrame, np.ndarray): Features. Ignored.
             y (pd.Series, np.ndarray): Target data to check for invalid values.
 
@@ -54,7 +57,8 @@ class InvalidTargetDataCheck(DataCheck):
         -------
             dict (DataCheckError): List with DataCheckErrors if any invalid values are found in the target data.
 
-        Example:
+        Example
+        -------
             >>> import pandas as pd
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = pd.Series([0, 1, None, None])

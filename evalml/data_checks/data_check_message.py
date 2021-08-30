@@ -6,7 +6,7 @@ class DataCheckMessage:
     """
     Base class for a message returned by a DataCheck, tagged by name.
 
-    Arguments:
+    Arguments
     ---------
         message (str): Message string.
         data_check_name (str): Name of data check.

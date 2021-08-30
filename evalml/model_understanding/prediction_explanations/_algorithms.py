@@ -15,7 +15,7 @@ logger = get_logger(__file__)
 def _create_dictionary(shap_values, feature_names):
     """Creates a mapping from a feature name to a list of SHAP values for all points that were queried.
 
-    Arguments:
+    Parameters
         shap_values (np.ndarray): SHAP values stored in an array of shape (n_datapoints, n_features).
         feature_names (Iterable): Iterable storing the feature names as they are ordered in the dataset.
 
@@ -34,7 +34,7 @@ def _create_dictionary(shap_values, feature_names):
 def _compute_shap_values(pipeline, features, training_data=None):
     """Computes SHAP values for each feature.
 
-    Arguments:
+    Parameters
         pipeline (PipelineBase): Trained pipeline whose predictions we want to explain with SHAP.
         features (pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
         training_data (pd.DataFrame): Training data the pipeline was fit on.
@@ -147,7 +147,7 @@ def _aggreggate_shap_values_dict(values, provenance):
     This aggregation will happen for all features for which we know the provenance/lineage. Other features will
     be left as they are.
 
-    Arguments:
+    Parameters
         values (dict):  A mapping of feature names to a list of SHAP values for each data point.
         provenance (dict): A mapping from a feature in the original data to the names of the features that were created
             from that feature.
@@ -179,7 +179,7 @@ def _aggreggate_shap_values_dict(values, provenance):
 def _aggregate_shap_values(values, provenance):
     """Aggregates shap values across features created from a common feature.
 
-    Arguments:
+    Parameters
         values (dict):  A mapping of feature names to a list of SHAP values for each data point.
         provenance (dict): A mapping from a feature in the original data to the names of the features that were created
             from that feature
@@ -201,7 +201,7 @@ def _aggregate_shap_values(values, provenance):
 def _normalize_values_dict(values):
     """Normalizes SHAP values by dividing by the sum of absolute values for each feature.
 
-    Arguments:
+    Parameters
         values (dict): A mapping of feature names to a list of SHAP values for each data point.
 
     Returns:
@@ -231,7 +231,7 @@ def _normalize_values_dict(values):
 def _normalize_shap_values(values):
     """Normalizes the SHAP values by the absolute value of their sum for each data point.
 
-    Arguments:
+    Parameters
         values (dict or list(dict)): Dictionary mapping feature name to list of values,
             or a list of dictionaries (each mapping a feature name to a list of values).
 

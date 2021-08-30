@@ -13,7 +13,7 @@ def calculate_permutation_importance(
 ):
     """Calculates permutation importance for features.
 
-    Arguments:
+    Parameters
         pipeline (PipelineBase or subclass): Fitted pipeline.
         X (pd.DataFrame): The input data used to score and compute permutation importance.
         y (pd.Series): The target data.
@@ -77,7 +77,7 @@ def calculate_permutation_importance_one_column(
 ):
     """Calculates permutation importance for one column in the original dataframe.
 
-    Arguments:
+    Parameters
         pipeline (PipelineBase or subclass): Fitted pipeline.
         X (pd.DataFrame): The input data used to score and compute permutation importance.
         y (pd.Series): The target data.

@@ -11,7 +11,7 @@ from evalml.utils import (
 class PerColumnImputer(Transformer):
     """Imputes missing data according to a specified imputation strategy per column.
 
-    Arguments:
+    Parameters
         impute_strategies (dict): Column and {"impute_strategy": strategy, "fill_value":value} pairings.
             Valid values for impute strategy include "mean", "median", "most_frequent", "constant" for numerical data,
             and "most_frequent", "constant" for object data types. Defaults to None, which uses "most_frequent" for all columns.
@@ -54,7 +54,7 @@ class PerColumnImputer(Transformer):
     def fit(self, X, y=None):
         """Fits imputers on input data.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to fit.
             y (pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
@@ -81,7 +81,7 @@ class PerColumnImputer(Transformer):
     def transform(self, X, y=None):
         """Transforms input data by imputing missing values.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to transform.
             y (pd.Series, optional): The target training data of length [n_samples]. Ignored.
 

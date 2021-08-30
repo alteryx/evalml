@@ -10,7 +10,7 @@ from evalml.problem_types import ProblemTypes
 class LogisticRegressionClassifier(Estimator):
     """Logistic Regression Classifier.
 
-    Arguments:
+    Parameters
         penalty ({"l1", "l2", "elasticnet", "none"}): The norm used in penalization. Defaults to "l2".
         C (float): Inverse of regularization strength. Must be a positive float. Defaults to 1.0.
         multi_class ({"auto", "ovr", "multinomial"}): If the option chosen is "ovr", then a binary problem is fit for each label.

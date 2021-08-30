@@ -5,7 +5,7 @@ class DataCheckAction:
     """
     Recommended action returned by a DataCheck.
 
-    Arguments:
+    Arguments
     ---------
         action_code (DataCheckActionCode): Action code associated with the action.
         metadata (dict, optional): Additional useful information associated with the action. Defaults to None.

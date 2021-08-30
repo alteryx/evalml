@@ -58,7 +58,7 @@ def _extract_hour(col, encode_as_categories=False):
 class DateTimeFeaturizer(Transformer):
     """Transformer that can automatically extract features from datetime columns.
 
-    Arguments:
+    Parameters
         features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour". Defaults to None.
         encode_as_categories (bool): Whether day-of-week and month features should be encoded as pandas "category" dtype.
             This allows OneHotEncoders to encode these features. Defaults to False.
@@ -119,7 +119,7 @@ class DateTimeFeaturizer(Transformer):
     def transform(self, X, y=None):
         """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Data to transform
             y (pd.Series, optional): Ignored.
 

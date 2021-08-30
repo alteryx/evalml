@@ -7,7 +7,7 @@ from evalml.utils import infer_feature_types
 class ColumnSelector(Transformer):
     """Initalizes an transformer that drops specified columns in input data.
 
-    Arguments:
+    Parameters
         columns (list(string)): List of column names, used to determine which columns to select.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -39,7 +39,7 @@ class ColumnSelector(Transformer):
     def fit(self, X, y=None):
         """Fits the transformer by checking if column names are present in the dataset.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Data to check.
             y (pd.Series, optional): Targets.
 
@@ -61,7 +61,7 @@ class ColumnSelector(Transformer):
 class DropColumns(ColumnSelector):
     """Drops specified columns in input data.
 
-    Arguments:
+    Parameters
         columns (list(string)): List of column names, used to determine which columns to drop.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -77,7 +77,7 @@ class DropColumns(ColumnSelector):
     def transform(self, X, y=None):
         """Transforms data X by dropping columns.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Targets.
 
@@ -90,7 +90,7 @@ class DropColumns(ColumnSelector):
 class SelectColumns(ColumnSelector):
     """Selects specified columns in input data.
 
-    Arguments:
+    Parameters
         columns (list(string)): List of column names, used to determine which columns to select.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -106,7 +106,7 @@ class SelectColumns(ColumnSelector):
     def transform(self, X, y=None):
         """Transforms data X by selecting columns.
 
-        Arguments:
+        Parameters
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Targets.
 
@@ -119,7 +119,7 @@ class SelectColumns(ColumnSelector):
 class SelectByType(ColumnSelector):
     """Selects columns by specified Woodwork logical type or semantic tag in input data.
 
-    Arguments:
+    Parameters
         column_types (string, ww.LogicalType, list(string), list(ww.LogicalType)): List of Woodwork types or tags, used to determine which columns to select.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
