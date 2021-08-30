@@ -1,6 +1,8 @@
-import pandas as pd
-from evalml.utils import infer_feature_types
 import os
+
+import pandas as pd
+
+from evalml.utils import infer_feature_types
 
 
 def load_weather():
