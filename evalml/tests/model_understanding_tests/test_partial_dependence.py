@@ -21,7 +21,6 @@ from evalml.pipelines import (
     RegressionPipeline,
 )
 from evalml.problem_types import ProblemTypes
-from evalml.utils import infer_feature_types
 
 
 @pytest.fixture

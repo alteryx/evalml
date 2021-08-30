@@ -43,7 +43,6 @@ from evalml.problem_types import (
     handle_problem_types,
     is_regression,
 )
-from evalml.utils import infer_feature_types
 
 
 def pytest_configure(config):
