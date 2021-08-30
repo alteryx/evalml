@@ -128,7 +128,7 @@ def test_non_numeric_errors(non_numeric_df):
 
 
 def test_non_numeric_valid(non_numeric_df):
-    X = non_numeric_df
+    X = non_numeric_df.copy()
     X.ww.init(
         logical_types={
             "A": "categorical",
@@ -153,10 +153,19 @@ def test_non_numeric_valid(non_numeric_df):
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t)
 
+    X = non_numeric_df.copy()
     # constant with all strings
     strategies = {"D": {"impute_strategy": "constant", "fill_value": 100}}
     transformer = PerColumnImputer(impute_strategies=strategies)
 
+    X.ww.init(
+        logical_types={
+            "A": "categorical",
+            "B": "categorical",
+            "C": "categorical",
+            "D": "categorical",
+        }
+    )
     X_expected = pd.DataFrame(
         [
             ["a", "a", "a", "a"],
