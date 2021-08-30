@@ -4,8 +4,7 @@
 class DataCheckAction:
     """Recommended action returned by a DataCheck.
 
-    Arguments
-    ---------
+    Args:
         action_code (DataCheckActionCode): Action code associated with the action.
         metadata (dict, optional): Additional useful information associated with the action. Defaults to None.
     """
@@ -15,8 +14,7 @@ class DataCheckAction:
         self.metadata = metadata or {}
 
     def __eq__(self, other):
-        """
-        Check for equality.
+        """Check for equality.
 
         Two DataCheckAction objs are considered equivalent if all of their attributes are equivalent.
 

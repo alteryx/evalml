@@ -1,3 +1,4 @@
+"""Custom CFClient API to match Dask's CFClient and allow context management."""
 from evalml.automl.engine.engine_base import (
     EngineBase,
     EngineComputation,
@@ -8,20 +9,21 @@ from evalml.automl.engine.engine_base import (
 
 
 class CFClient:
-    """Custom CFClient API to match Dask's CFClient and allow context management."""
+    """Custom CFClient API to match Dask's CFClient and allow context management.
+    
+    Args:
+        pool(cf.ThreadPoolExecutor or cf.ProcessPoolExecutor): the resource pool to execute the futures work on.
+    """
 
     def __init__(self, pool):
-        """
-        Parameters
-            pool(cf.ThreadPoolExecutor or cf.ProcessPoolExecutor): the resource pool
-                to execute the futures work on.
-        """
         self.pool = pool
 
     def __enter__(self):
+        """Enter runtime context."""
         return self
 
     def __exit__(self, typ, value, traceback):
+        """Exit runtime context."""
         pass
 
     def submit(self, *args, **kwargs):
@@ -30,22 +32,18 @@ class CFClient:
 
 
 class CFComputation(EngineComputation):
-    """A Future-like wrapper around jobs created by the CFEngine."""
+    """A Future-like wrapper around jobs created by the CFEngine.
+    
+    Args:
+        future(cf.Future): The concurrent.futures.Future that is desired to be executed.
+    """
 
     def __init__(self, future):
-        """
-        Parameters
-            future(cf.Future): The concurrent.futures.Future that is desired
-                to be executed.
-        """
         self.work = future
         self.meta_data = {}
 
     def done(self):
-        """
-        Returns:
-            bool: Whether the computation is done.
-        """
+        """Returns whether the computation is done."""
         return self.work.done()
 
     def get_result(self):
@@ -55,6 +53,7 @@ class CFComputation(EngineComputation):
             Exception: If computation fails. Returns traceback.
             cf.TimeoutError: If computation takes longer than default timeout time.
             cf.CancelledError: If computation was canceled before completing.
+
         Returns:
             The result of the requested job.
         """
@@ -71,10 +70,7 @@ class CFComputation(EngineComputation):
 
     @property
     def is_cancelled(self):
-        """
-        Returns:
-            bool: Returns whether computation was cancelled.
-        """
+        """Returns whether computation was cancelled."""
         return self.work.cancelled()
 
 
@@ -92,13 +88,14 @@ class CFEngine(EngineBase):
     def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send evaluation job to cluster.
 
-        Parameters
-            automl_config: structure containing data passed from AutoMLSearch instance
-            pipeline (pipeline.PipelineBase): pipeline to evaluate
-            X (pd.DataFrame): input data for modeling
-            y (pd.Series): target data for modeling
-        Returns
-            CFComputation: an object wrapping a reference to a future-like computation
+        Args:
+            automl_config: Structure containing data passed from AutoMLSearch instance.
+            pipeline (pipeline.PipelineBase): Pipeline to evaluate.
+            X (pd.DataFrame): Input data for modeling.
+            y (pd.Series): Target data for modeling.
+
+        Returns:
+            CFComputation: An object wrapping a reference to a future-like computation
                 occurring in the resource pool
         """
         logger = self.setup_job_log()
@@ -115,13 +112,14 @@ class CFEngine(EngineBase):
     def submit_training_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send training job to cluster.
 
-        Parameters
-            automl_config: structure containing data passed from AutoMLSearch instance
-            pipeline (pipeline.PipelineBase): pipeline to train
-            X (pd.DataFrame): input data for modeling
-            y (pd.Series): target data for modeling
-        Returns
-            CFComputation: an object wrapping a reference to a future-like computation
+        Args:
+            automl_config: Structure containing data passed from AutoMLSearch instance.
+            pipeline (pipeline.PipelineBase): Pipeline to train.
+            X (pd.DataFrame): Input data for modeling.
+            y (pd.Series): Target data for modeling.
+
+        Returns:
+            CFComputation: An object wrapping a reference to a future-like computation
                 occurring in the resource pool
         """
         future = self.client.submit(
@@ -134,14 +132,16 @@ class CFEngine(EngineBase):
     ) -> EngineComputation:
         """Send scoring job to cluster.
 
-        Parameters
-            automl_config: structure containing data passed from AutoMLSearch instance
-            pipeline (pipeline.PipelineBase): pipeline to train
-            X (pd.DataFrame): input data for modeling
-            y (pd.Series): target data for modeling
-        Returns
-            CFComputation: a object wrapping a reference to a future-like computation
-                occurring in the resource pool
+        Args:
+            automl_config: Structure containing data passed from AutoMLSearch instance.
+            pipeline (pipeline.PipelineBase): Pipeline to train.
+            X (pd.DataFrame): Input data for modeling.
+            y (pd.Series): Target data for modeling.
+            objectives (list(ObjectiveBase)): Objectives to score on.
+
+        Returns:
+            CFComputation: An object wrapping a reference to a future-like computation
+                occurring in the resource pool.
         """
         # Get the schema before we lose it
         X_schema = X.ww.schema

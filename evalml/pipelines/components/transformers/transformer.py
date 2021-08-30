@@ -22,7 +22,7 @@ class Transformer(ComponentBase):
 
     To see some examples, check out the definitions of any Transformer component.
 
-    Parameters
+    Args:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
         component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -36,11 +36,11 @@ class Transformer(ComponentBase):
     def transform(self, X, y=None):
         """Transforms data X.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Target data.
 
-        Returns:
+        Returns
             pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
@@ -60,11 +60,11 @@ class Transformer(ComponentBase):
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Data to fit and transform
             y (pd.Series): Target data
 
-        Returns:
+        Returns
             pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
@@ -95,9 +95,9 @@ class TargetTransformer(Transformer):
     def inverse_transform(self, y):
         """Inverts the transformation done by the transform method.
 
-         Parameters
+         Args:
             y (pd.Series): Target transformed by this component.
 
-        Returns:
+        Returns
             pd.Seriesø: Target without the transformation.
         """

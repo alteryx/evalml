@@ -10,7 +10,7 @@ _nonstackable_model_families = [ModelFamily.BASELINE, ModelFamily.NONE]
 class SklearnStackedEnsembleBase(Estimator):
     """Stacked Ensemble Base Class.
 
-    Parameters
+    Args:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         final_estimator (Estimator or subclass): The estimator used to combine the base estimators.
@@ -103,7 +103,7 @@ class SklearnStackedEnsembleBase(Estimator):
     def default_parameters(cls):
         """Returns the default parameters for stacked ensemble classes.
 
-        Returns:
+        Returns
             dict: default parameters for this component.
         """
         return {

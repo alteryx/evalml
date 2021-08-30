@@ -12,8 +12,7 @@ from evalml.utils import infer_feature_types
 class IDColumnsDataCheck(DataCheck):
     """Check if any of the features are likely to be ID columns.
 
-    Parameters
-    ----------
+    Args:
         id_threshold (float): The probability threshold to be considered an ID column. Defaults to 1.0.
     """
 
@@ -29,17 +28,14 @@ class IDColumnsDataCheck(DataCheck):
             - column name ends in "_id"
             - column contains all unique values (and is categorical / integer type)
 
-        Parameters
-        ----------
+        Args:
             X (pd.DataFrame, np.ndarray): The input features to check.T
             y (pd.Series): The target. Defaults to None. Ignored.
 
-        Returns
-        -------
+        Returns:
             dict: A dictionary of features with column name or index and their probability of being ID columns
 
-        Examples
-        --------
+        Example:
             >>> import pandas as pd
             >>> df = pd.DataFrame({
             ...     'df_id': [0, 1, 2, 3, 4],

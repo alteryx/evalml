@@ -12,11 +12,9 @@ from evalml.utils import infer_feature_types
 
 
 def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwargs):
-    """
-    Load features and target from file.
+    """Load features and target from file.
 
-    Parameters
-    ---------
+    Args:
         path (str): Path to file or a http/ftp/s3 URL.
         index (str): Column for index.
         target (str): Column for target.
@@ -24,8 +22,7 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         drop (list): List of columns to drop. Defaults to None.
         verbose (bool): If True, prints information about features and target. Defaults to True.
 
-    Returns
-    -------
+    Returns:
        pd.DataFrame, pd.Series: Features matrix and target.
     """
     feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
@@ -53,8 +50,7 @@ def split_data(
 ):
     """Split data into train and test sets.
 
-    Parameters
-    ---------
+    Args:
         X (pd.DataFrame or np.ndarray): data of shape [n_samples, n_features]
         y (pd.Series, or np.ndarray): target data of length [n_samples]
         problem_type (str or ProblemTypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
@@ -63,10 +59,8 @@ def split_data(
         test_size (float): What percentage of data points should be included in the test set. Defaults to 0.2 (20%).
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
-    Returns
-    -------
+    Returns:
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets.
-
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
@@ -96,17 +90,13 @@ def split_data(
 
 
 def number_of_features(dtypes):
-    """
-    Get the number of features of each specific dtype in a DataFrame.
+    """Get the number of features of each specific dtype in a DataFrame.
 
-    Parameters
-    ---------
+    Args:
         dtypes (pd.Series): DataFrame.dtypes to get the number of features for.
 
-    Returns
-    -------
+    Returns:
         pd.Series: dtypes and the number of features for each input type.
-
     """
     dtype_to_vtype = {
         "bool": "Boolean",
@@ -122,15 +112,12 @@ def number_of_features(dtypes):
 
 
 def target_distribution(targets):
-    """
-    Get the target distributions.
+    """Get the target distributions.
 
-    Parameters
-    ---------
+    Args:
         targets (pd.Series): Target data.
 
-    Returns
-    -------
+    Returns:
         pd.Series: Target data and their frequency distribution as percentages.
     """
     distribution = targets.value_counts() / len(targets)
@@ -138,16 +125,13 @@ def target_distribution(targets):
 
 
 def drop_nan_target_rows(X, y):
-    """
-    Drop rows in X and y when row in the target y has a value of NaN.
+    """Drop rows in X and y when row in the target y has a value of NaN.
 
-    Parameters
-    ---------
+    Args:
         X (pd.DataFrame, np.ndarray): Data to transform.
         y (pd.Series, np.ndarray): Target data.
 
-    Returns
-    -------
+    Returns:
         pd.DataFrame, pd.DataFrame: Transformed X (and y, if passed in) with rows that had a NaN value removed.
     """
     X_t = X

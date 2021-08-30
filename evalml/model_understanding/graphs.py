@@ -44,7 +44,7 @@ from evalml.utils import import_or_raise, infer_feature_types, jupyter_check
 def confusion_matrix(y_true, y_predicted, normalize_method="true"):
     """Confusion matrix for binary and multiclass classification.
 
-    Parameters
+    Args:
         y_true (pd.Series or np.ndarray): True binary labels.
         y_pred (pd.Series or np.ndarray): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all', None}): Normalization method to use, if not None. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
@@ -67,7 +67,7 @@ def confusion_matrix(y_true, y_predicted, normalize_method="true"):
 def normalize_confusion_matrix(conf_mat, normalize_method="true"):
     """Normalize a confusion matrix.
 
-    Parameters
+    Args:
         conf_mat (pd.DataFrame or np.ndarray): Confusion matrix to normalize.
         normalize_method ({'true', 'pred', 'all'}): Normalization method. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
@@ -106,7 +106,7 @@ def graph_confusion_matrix(
 
     If `normalize_method` is set, hover text will show raw count, otherwise hover text will show count normalized with method 'true'.
 
-    Parameters
+    Args:
         y_true (pd.Series or np.ndarray): True binary labels.
         y_pred (pd.Series or np.ndarray): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all', None}): Normalization method to use, if not None. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
@@ -184,7 +184,7 @@ def graph_confusion_matrix(
 def precision_recall_curve(y_true, y_pred_proba, pos_label_idx=-1):
     """Given labels and binary classifier predicted probabilities, compute and return the data representing a precision-recall curve.
 
-    Parameters
+    Args:
         y_true (pd.Series or np.ndarray): True binary labels.
         y_pred_proba (pd.Series or np.ndarray): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
         pos_label_idx (int): the column index corresponding to the positive class. If predicted probabilities are two-dimensional, this will be used to access the probabilities for the positive class.
@@ -222,7 +222,7 @@ def precision_recall_curve(y_true, y_pred_proba, pos_label_idx=-1):
 def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
     """Generate and display a precision-recall plot.
 
-    Parameters
+    Args:
         y_true (pd.Series or np.ndarray): True binary labels.
         y_pred_proba (pd.Series or np.ndarray): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
         title_addition (str or None): If not None, append to plot title. Default None.
@@ -261,7 +261,7 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
 def roc_curve(y_true, y_pred_proba):
     """Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
 
-    Parameters
+    Args:
         y_true (pd.Series or np.ndarray): True labels.
         y_pred_proba (pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied.
 
@@ -310,7 +310,7 @@ def roc_curve(y_true, y_pred_proba):
 def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_addition=None):
     """Generate and display a Receiver Operating Characteristic (ROC) plot for binary and multiclass classification problems.
 
-    Parameters
+    Args:
         y_true (pd.Series or np.ndarray): True labels.
         y_pred_proba (pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
         custom_class_labels (list or None): If not None, custom labels for classes. Default None.
@@ -369,7 +369,7 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
 def graph_permutation_importance(pipeline, X, y, objective, importance_threshold=0):
     """Generate a bar graph of the pipeline's permutation importance.
 
-    Parameters
+    Args:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (pd.DataFrame): The input data used to score and compute permutation importance
         y (pd.Series): The target data
@@ -428,7 +428,7 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
 def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     """Compute objective score as a function of potential binary classification decision thresholds for a fitted binary classification pipeline.
 
-    Parameters
+    Args:
         pipeline (BinaryClassificationPipeline obj): Fitted binary classification pipeline
         X (pd.DataFrame): The input data used to compute objective score
         y (pd.Series): The target labels
@@ -460,7 +460,7 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
 def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     """Generate a plot graphing objective score vs. decision thresholds for a fitted binary classification pipeline.
 
-    Parameters
+    Args:
         pipeline (PipelineBase or subclass): Fitted pipeline
         X (pd.DataFrame): The input data used to score and compute scores
         y (pd.Series): The target labels
@@ -570,10 +570,10 @@ def partial_dependence(
     is calculated with the first feature in the y-axis and second feature in the
     x-axis.
 
-    Parameters
-        pipeline (PipelineBase or subclass): Fitted pipeline
+    Args:
+        pipeline (PipelineBase or subclass): Fitted pipeline.
         X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values
-            for feature where partial dependence will be calculated at
+            for feature where partial dependence will be calculated at.
         features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
             If features is an int, it must be the index of the feature to use.
             If features is a string, it must be a valid column name in X.
@@ -618,7 +618,6 @@ def partial_dependence(
         PartialDependenceError: if any of the features are low-variance. Defined as having one value occurring more than the upper
             percentile passed by the user. By default 95%.
     """
-
     try:
         # Dynamically set the grid resolution to the maximum number of values
         # in the categorical/datetime variables if there are more categories/datetime values than resolution cells
@@ -933,7 +932,7 @@ def graph_partial_dependence(
 ):
     """Create an one-way or two-way partial dependence plot. Passing a single integer or string as features will create a one-way partial dependence plot with the feature values plotted against the partial dependence.  Passing features a tuple of int/strings will create a two-way partial dependence plot with a contour of feature[0] in the y-axis, feature[1] in the x-axis and the partial dependence in the z-axis.
 
-    Parameters
+    Args:
         pipeline (PipelineBase or subclass): Fitted pipeline.
         X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at.
@@ -950,7 +949,7 @@ def graph_partial_dependence(
              (PD) graph, 'individual' creates an individual conditional expectation (ICE) plot, and 'both' creates a
              single-figure PD and ICE plot. ICE plots can only be shown for one-way partial dependence plots.
 
-    Returns:
+    Returns::
         plotly.graph_objects.Figure: figure object containing the partial dependence data for plotting
 
     Raises:
@@ -1176,7 +1175,7 @@ def _calculate_axis_range(arr):
 def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
     """Combine y_true and y_pred into a single dataframe and adds a column for outliers. Used in `graph_prediction_vs_actual()`.
 
-    Parameters
+    Args:
         y_true (pd.Series, or np.ndarray): The real target values of the data
         y_pred (pd.Series, or np.ndarray): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
@@ -1215,7 +1214,7 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
 def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     """Generate a scatter plot comparing the true and predicted values. Used for regression plotting.
 
-    Parameters
+    Args:
         y_true (pd.Series): The real target values of the data
         y_pred (pd.Series): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
@@ -1298,7 +1297,7 @@ def _tree_parse(est, feature_names):
 def decision_tree_data_from_estimator(estimator):
     """Return data for a fitted tree in a restructured format.
 
-    Parameters
+    Args:
         estimator (ComponentBase): A fitted DecisionTree-based estimator.
 
     Returns:
@@ -1321,7 +1320,7 @@ def decision_tree_data_from_estimator(estimator):
 def decision_tree_data_from_pipeline(pipeline_):
     """Return data for a fitted pipeline with  in a restructured format.
 
-    Parameters
+    Args:
         pipeline_ (PipelineBase): A pipeline with a DecisionTree-based estimator.
 
     Returns:
@@ -1347,7 +1346,7 @@ def visualize_decision_tree(
 ):
     """Generate an image visualizing the decision tree.
 
-    Parameters
+    Args:
         estimator (ComponentBase): A fitted DecisionTree-based estimator.
         max_depth (int, optional): The depth to which the tree should be displayed. If set to None (as by default),
         tree is fully generated.
@@ -1423,7 +1422,7 @@ def visualize_decision_tree(
 def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
     """Get the data needed for the prediction_vs_actual_over_time plot.
 
-    Parameters
+    Args:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
         X (pd.DataFrame): Features used to generate new predictions.
         y (pd.Series): Target values to compare predictions against.
@@ -1432,7 +1431,6 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
     Returns:
        pd.DataFrame
     """
-
     dates = infer_feature_types(dates)
     y = infer_feature_types(y)
     prediction = pipeline.predict(X, y)
@@ -1449,7 +1447,7 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
 def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
     """Plot the target values and predictions against time on the x-axis.
 
-    Parameters
+    Args:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
         X (pd.DataFrame): Features used to generate new predictions.
         y (pd.Series): Target values to compare predictions against.
@@ -1499,7 +1497,7 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
 def get_linear_coefficients(estimator, features=None):
     """Return a dataframe showing the features with the greatest predictive power for a linear model.
 
-    Parameters
+    Args:
         estimator (Estimator): Fitted linear model family estimator.
         features (list[str]): List of feature names associated with the underlying data.
 
@@ -1535,7 +1533,7 @@ def t_sne(
 ):
     """Get the transformed output after fitting X to the embedded space using t-SNE.
 
-     Parameters
+     Args:
         X (np.ndarray, pd.DataFrame): Data to be transformed. Must be numeric.
         n_components (int, optional): Dimension of the embedded space.
         perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
@@ -1578,7 +1576,7 @@ def graph_t_sne(
 ):
     """Plot high dimensional data into lower dimensional space using t-SNE .
 
-    Parameters
+    Args:
         X (np.ndarray, pd.DataFrame): Data to be transformed. Must be numeric.
         n_components (int, optional): Dimension of the embedded space.
         perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning

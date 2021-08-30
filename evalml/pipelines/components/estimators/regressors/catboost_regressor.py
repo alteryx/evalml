@@ -14,7 +14,7 @@ class CatBoostRegressor(Estimator):
 
     For more information, check out https://catboost.ai/
 
-    Parameters
+    Args:
         n_estimators (float): The maximum number of trees to build. Defaults to 10.
         eta (float): The learning rate. Defaults to 0.03.
         max_depth (int): The maximum tree depth for base learners. Defaults to 6.

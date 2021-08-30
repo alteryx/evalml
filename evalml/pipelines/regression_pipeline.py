@@ -6,7 +6,7 @@ from evalml.utils import infer_feature_types
 class RegressionPipeline(PipelineBase):
     """Pipeline subclass for all regression pipelines.
 
-    Parameters
+    Args:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -24,11 +24,11 @@ class RegressionPipeline(PipelineBase):
     def fit(self, X, y):
         """Build a regression model.
 
-        Parameters
+        Args:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray): The target training data of length [n_samples]
 
-        Returns:
+        Returns
             self
         """
         X = infer_feature_types(X)
@@ -42,12 +42,12 @@ class RegressionPipeline(PipelineBase):
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives.
 
-        Parameters
+        Args:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
             y (pd.Series, or np.ndarray): True values of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
-        Returns:
+        Returns
             dict: Ordered dictionary of objective scores
         """
         objectives = self.create_objectives(objectives)

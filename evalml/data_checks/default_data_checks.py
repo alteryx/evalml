@@ -35,8 +35,7 @@ class DefaultDataChecks(DataChecks):
         - `TargetDistributionDataCheck` (for regression problem types)
         - `DateTimeFormatDataCheck` (for time series problem types)
 
-    Arguments
-    ---------
+    Args:
         problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
         objective (str or ObjectiveBase): Name or instance of the objective class.
         n_splits (int): The number of splits as determined by the data splitter being used. Defaults to 3.

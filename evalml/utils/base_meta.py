@@ -1,3 +1,4 @@
+"""Metaclass that overrides creating a new component or pipeline by wrapping methods with validators and setters."""
 from abc import ABCMeta
 from functools import wraps
 
@@ -11,6 +12,7 @@ class BaseMeta(ABCMeta):
 
     @classmethod
     def set_fit(cls, method):
+        """Wrapper for the fit method."""
         @wraps(method)
         def _set_fit(self, X, y=None):
             return_value = method(self, X, y)
@@ -20,6 +22,7 @@ class BaseMeta(ABCMeta):
         return _set_fit
 
     def __new__(cls, name, bases, dct):
+        """Create a new instance."""
         for attribute in dct:
             if attribute in cls.FIT_METHODS:
                 dct[attribute] = cls.set_fit(dct[attribute])

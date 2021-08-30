@@ -11,7 +11,7 @@ from evalml.utils import (
 class FeatureSelector(Transformer):
     """Selects top features based on importance weights.
 
-    Parameters
+    Args:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
         component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -20,7 +20,7 @@ class FeatureSelector(Transformer):
     def get_names(self):
         """Get names of selected features.
 
-        Returns:
+        Returns
             list[str]: List of the names of features selected
         """
         selected_masks = self._component_obj.get_support()
@@ -35,11 +35,11 @@ class FeatureSelector(Transformer):
     def transform(self, X, y=None):
         """Transforms input data by selecting features. If the component_obj does not have a transform method, will raise an MethodPropertyNotFoundError exception.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Target data. Ignored.
 
-        Returns:
+        Returns
             pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)

@@ -19,7 +19,7 @@ class Estimator(ComponentBase):
 
     To see some examples, check out the definitions of any Estimator component.
 
-    Parameters
+    Args:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
         component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -65,10 +65,10 @@ class Estimator(ComponentBase):
     def predict(self, X):
         """Make predictions using selected features.
 
-        Parameters
+        Args:
             X (pd.DataFrame, np.ndarray): Data of shape [n_samples, n_features]
 
-        Returns:
+        Returns
             pd.Series: Predicted values
         """
         try:
@@ -85,10 +85,10 @@ class Estimator(ComponentBase):
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
-        Parameters
+        Args:
             X (pd.DataFrame, or np.ndarray): Features
 
-        Returns:
+        Returns
             pd.Series: Probability estimates
         """
         try:
@@ -104,7 +104,7 @@ class Estimator(ComponentBase):
     def feature_importance(self):
         """Returns importance associated with each feature.
 
-        Returns:
+        Returns
             np.ndarray: Importance associated with each feature
         """
         try:

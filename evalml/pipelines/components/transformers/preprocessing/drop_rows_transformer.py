@@ -5,7 +5,7 @@ from evalml.utils import infer_feature_types
 class DropRowsTransformer(Transformer):
     """Transformer to drop rows specified by row indices.
 
-    Parameters
+    Args:
         indices_to_drop (list): List of indices to drop in the input data. Defaults to None.
         random_seed (int): Seed for the random number generator. Is not used by this component. Defaults to 0.
     """

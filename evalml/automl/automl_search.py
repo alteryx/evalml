@@ -1,3 +1,4 @@
+"""EvalML's core AutoML object."""
 import copy
 import pickle
 import sys
@@ -81,7 +82,7 @@ def search(
 
     This method is provided for convenience. If you'd like more control over when each of these steps is run, consider making calls directly to the various pieces like the data checks and AutoMLSearch, instead of using this method.
 
-    Parameters
+    Args:
         X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
 
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
@@ -152,7 +153,7 @@ def search(
 class AutoMLSearch:
     """Automated Pipeline search.
 
-    Parameters
+    Args:
         X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
 
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
@@ -224,7 +225,7 @@ class AutoMLSearch:
         ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over.
             If the number of unique pipelines to search over per batch is one, ensembling will not run. Defaults to False.
 
-        max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
+        max_batches (int): The maximum number of batches of pipelines to search. Args: max_time, and
             max_iterations have precedence over stopping the search.
 
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
@@ -705,6 +706,7 @@ class AutoMLSearch:
         return objective
 
     def __str__(self):
+        """Returns string representation of the AutoMLSearch object."""
         def _print_list(obj_list):
             lines = sorted(["\t{}".format(o.name) for o in obj_list])
             return "\n".join(lines)
@@ -717,7 +719,7 @@ class AutoMLSearch:
 
         search_desc = (
             f"{handle_problem_types(self.problem_type).name} Search\n\n"
-            f"Parameters: \n{'='*20}\n"
+            f"Args:: \n{'='*20}\n"
             f"Objective: {get_objective(self.objective).name}\n"
             f"Max Time: {self.max_time}\n"
             f"Max Iterations: {self.max_iterations}\n"
@@ -759,7 +761,7 @@ class AutoMLSearch:
     def _handle_keyboard_interrupt(self):
         """Presents a prompt to the user asking if they want to stop the search.
 
-        Returns:
+        Returns
             bool: If True, search should terminate early
         """
         leading_char = "\n"
@@ -784,7 +786,7 @@ class AutoMLSearch:
     def search(self, show_iteration_plot=True):
         """Find the best pipeline for the data set.
 
-        Parameters
+        Args:
             feature_types (list, optional): list of feature types, either numerical or categorical.
                 Categorical features will automatically be encoded
 
@@ -944,15 +946,15 @@ class AutoMLSearch:
         """Return the number of pipeline evaluations which have been made.
 
         Returns:
-            int: the number of pipeline evaluations made in the search
+            int: The number of pipeline evaluations made in the search.
         """
         return len(self._results["pipeline_results"])
 
     def _should_continue(self):
-        """Given the original stopping criterion and current state, should the search continue?
+        """Given the original stopping criterion and current state, return whether or not the search should continue.
 
         Returns:
-            bool: True if yes, False if no.
+            bool: True if search should continue, False otherwise.
         """
         if self._interrupted:
             return False
@@ -1199,10 +1201,10 @@ class AutoMLSearch:
     def get_pipeline(self, pipeline_id):
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline initialized with the parameters used to train that pipeline during automl search.
 
-        Parameters
+        Args:
             pipeline_id (int): pipeline to retrieve
 
-        Returns:
+        Returns
             PipelineBase: untrained pipeline instance associated with the provided ID
         """
         pipeline_results = self.results["pipeline_results"].get(pipeline_id)
@@ -1219,12 +1221,12 @@ class AutoMLSearch:
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline.
 
-        Parameters
+        Args:
             pipeline_id (int): pipeline to describe
             return_dict (bool): If True, return dictionary of information
                 about pipeline. Defaults to False.
 
-        Returns:
+        Returns
             Description of specified pipeline. Includes information such as
             type of pipeline components, problem, training time, cross validation, etc.
         """
@@ -1295,7 +1297,7 @@ class AutoMLSearch:
     def add_to_rankings(self, pipeline):
         """Fits and evaluates a given pipeline then adds the results to the automl rankings with the requirement that automl search has been run.
 
-        Parameters
+        Args:
             pipeline (PipelineBase): pipeline to train and evaluate.
         """
         pipeline_rows = self.full_rankings[
@@ -1321,7 +1323,7 @@ class AutoMLSearch:
     def results(self):
         """Class that allows access to a copy of the results from `automl_search`.
 
-        Returns: dict containing `pipeline_results`: a dict with results from each pipeline,
+        Returns dict containing `pipeline_results`: a dict with results from each pipeline,
                  and `search_order`: a list describing the order the pipelines were searched.
         """
         return copy.deepcopy(self._results)
@@ -1388,7 +1390,7 @@ class AutoMLSearch:
     ):
         """Saves AutoML object at file path.
 
-        Parameters
+        Args:
             file_path (str): location to save file
             pickle_type {"pickle", "cloudpickle"}: the pickling library to use.
             pickle_protocol (int): the pickle data stream format.
@@ -1415,7 +1417,7 @@ class AutoMLSearch:
     ):
         """Loads AutoML object at file path.
 
-        Parameters
+        Args:
             file_path (str): location to find file to load
             pickle_type {"pickle", "cloudpickle"}: the pickling library to use. Currently not used since the standard pickle library can handle cloudpickles.
 
@@ -1430,7 +1432,7 @@ class AutoMLSearch:
 
         This can be helpful for training pipelines once the search is complete.
 
-        Parameters
+        Args:
             pipelines (list(PipelineBase)): List of pipelines to train.
 
         Returns:
@@ -1470,7 +1472,7 @@ class AutoMLSearch:
     def score_pipelines(self, pipelines, X_holdout, y_holdout, objectives):
         """Score a list of pipelines on the given holdout data.
 
-        Parameters
+        Args:
             pipelines (list(PipelineBase)): List of pipelines to train.
             X_holdout (pd.DataFrame): Holdout features.
             y_holdout (pd.Series): Holdout targets for scoring.
@@ -1522,7 +1524,7 @@ class AutoMLSearch:
 
     @property
     def plot(self):
-        # Return an instance of the plot with the latest scores
+        """Return an instance of the plot with the latest scores."""
         try:
             return PipelineSearchPlots(self.results, self.objective)
         except ImportError:

@@ -1,3 +1,4 @@
+"""Exceptions used in EvalML."""
 from enum import Enum
 
 
@@ -20,7 +21,7 @@ class ObjectiveNotFoundError(Exception):
 
 
 class MissingComponentError(Exception):
-    """An exception raised when a component is not found in all_components()"""
+    """An exception raised when a component is not found in all_components()."""
 
     pass
 
@@ -52,7 +53,7 @@ class EnsembleMissingPipelinesError(Exception):
 class PipelineScoreError(Exception):
     """An exception raised when a pipeline errors while scoring any objective in a list of objectives.
 
-    Parameters
+    Args:
         exceptions (dict): A dictionary mapping an objective name (str) to a tuple of the form (exception, traceback).
             All of the objectives that errored will be stored here.
         scored_successfully (dict): A dictionary mapping an objective name (str) to a score value. All of the objectives
@@ -98,7 +99,7 @@ class ParameterNotUsedWarning(UserWarning):
     def __init__(self, components):
         self.components = components
 
-        msg = f"Parameters for components {components} will not be used to instantiate the pipeline since they don't appear in the pipeline"
+        msg = f"Args: for components {components} will not be used to instantiate the pipeline since they don't appear in the pipeline"
         super().__init__(msg)
 
 

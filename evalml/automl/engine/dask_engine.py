@@ -1,3 +1,4 @@
+"""A Future-like wrapper around jobs created by the DaskEngine."""
 import joblib
 from dask.distributed import Client
 
@@ -13,7 +14,7 @@ from evalml.automl.engine.engine_base import (
 class DaskComputation(EngineComputation):
     """A Future-like wrapper around jobs created by the DaskEngine.
 
-    Parameters
+    Args:
         dask_future (callable): Computation to do.
     """
 
@@ -22,10 +23,7 @@ class DaskComputation(EngineComputation):
         self.meta_data = {}
 
     def done(self):
-        """
-        Returns:
-            bool: Whether the computation is done.
-        """
+        """Returns whether the computation is done."""
         return self.work.done()
 
     def get_result(self):
@@ -42,10 +40,7 @@ class DaskComputation(EngineComputation):
 
     @property
     def is_cancelled(self):
-        """
-        Returns:
-            bool: Returns whether computation was cancelled.
-        """
+        """Returns whether computation was cancelled."""
         return self.work.status
 
 
@@ -66,7 +61,7 @@ class DaskEngine(EngineBase):
         The implementation uses caching so the data is only sent once. This follows
         dask best practices.
 
-        Parameters
+        Args:
             X (pd.DataFrame): input data for modeling
             y (pd.Series): target data for modeling
         Returns
@@ -85,13 +80,14 @@ class DaskEngine(EngineBase):
     def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send evaluation job to cluster.
 
-        Parameters
-            automl_config: structure containing data passed from AutoMLSearch instance
-            pipeline (pipeline.PipelineBase): pipeline to evaluate
-            X (pd.DataFrame): input data for modeling
-            y (pd.Series): target data for modeling
-        Returns
-            DaskComputation: a object wrapping a reference to a future-like computation
+        Args:
+            automl_config: Structure containing data passed from AutoMLSearch instance.
+            pipeline (pipeline.PipelineBase): Pipeline to evaluate.
+            X (pd.DataFrame): Input data for modeling.
+            y (pd.Series): Target data for modeling.
+
+        Returns:
+            DaskComputation: An object wrapping a reference to a future-like computation
                 occurring in the dask cluster
         """
         logger = self.setup_job_log()
@@ -109,13 +105,14 @@ class DaskEngine(EngineBase):
     def submit_training_job(self, automl_config, pipeline, X, y) -> EngineComputation:
         """Send training job to cluster.
 
-        Parameters
-            automl_config: structure containing data passed from AutoMLSearch instance
-            pipeline (pipeline.PipelineBase): pipeline to train
-            X (pd.DataFrame): input data for modeling
-            y (pd.Series): target data for modeling
-        Returns
-            DaskComputation: a object wrapping a reference to a future-like computation
+        Args:
+            automl_config: Structure containing data passed from AutoMLSearch instance.
+            pipeline (pipeline.PipelineBase): Pipeline to train.
+            X (pd.DataFrame): Input data for modeling.
+            y (pd.Series): Target data for modeling.
+
+        Returns:
+            DaskComputation: An object wrapping a reference to a future-like computation
                 occurring in the dask cluster
         """
         X, y = self.send_data_to_cluster(X, y)
@@ -129,13 +126,15 @@ class DaskEngine(EngineBase):
     ) -> EngineComputation:
         """Send scoring job to cluster.
 
-        Parameters
-            automl_config: structure containing data passed from AutoMLSearch instance
-            pipeline (pipeline.PipelineBase): pipeline to train
-            X (pd.DataFrame): input data for modeling
-            y (pd.Series): target data for modeling
-        Returns
-            DaskComputation: a object wrapping a reference to a future-like computation
+        Args:
+            automl_config: Structure containing data passed from AutoMLSearch instance.
+            pipeline (pipeline.PipelineBase): Pipeline to train.
+            X (pd.DataFrame): Input data for modeling.
+            y (pd.Series): Target data for modeling.
+            objectives (list(ObjectiveBase)): List of objectives to score on.
+
+        Returns:
+            DaskComputation: An object wrapping a reference to a future-like computation
                 occurring in the dask cluster
         """
         # Get the schema before we lose it

@@ -9,9 +9,8 @@ from evalml.preprocessing import load_data
 def load_diabetes():
     """Load diabetes dataset. Used for regression problem.
 
-    Returns
-    ------
-        (pd.Dataframe, pd.Series): X and y
+    Returns:
+        pd.Dataframe, pd.Series): X and y
     """
     filename = (
         "https://api.featurelabs.com/datasets/diabetes.csv?library=evalml&version="

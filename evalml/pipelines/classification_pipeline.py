@@ -8,7 +8,7 @@ from evalml.utils import infer_feature_types
 class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines.
 
-    Parameters
+    Args:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -38,11 +38,11 @@ class ClassificationPipeline(PipelineBase):
     def fit(self, X, y):
         """Build a classification model. For string and categorical targets, classes are sorted by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
-        Parameters
+        Args:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray): The target training labels of length [n_samples]
 
-        Returns:
+        Returns
             self
         """
         X = infer_feature_types(X)
@@ -80,11 +80,11 @@ class ClassificationPipeline(PipelineBase):
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
-        Returns:
+        Returns
             pd.Series: Estimated labels
         """
         return self.component_graph.predict(X)
@@ -92,11 +92,11 @@ class ClassificationPipeline(PipelineBase):
     def predict(self, X, objective=None):
         """Make predictions using selected features.
 
-        Parameters
+        Args:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
-        Returns:
+        Returns
             pd.Series: Estimated labels
         """
         predictions = self._predict(X, objective=objective)
@@ -108,10 +108,10 @@ class ClassificationPipeline(PipelineBase):
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
-        Parameters
+        Args:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
-        Returns:
+        Returns
             pd.DataFrame: Probability estimates
         """
         if self.estimator is None:
@@ -131,12 +131,12 @@ class ClassificationPipeline(PipelineBase):
     def score(self, X, y, objectives):
         """Evaluate model performance on objectives.
 
-        Parameters
+        Args:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
             y (pd.Series, or np.ndarray): True labels of length [n_samples]
             objectives (list): List of objectives to score
 
-        Returns:
+        Returns
             dict: Ordered dictionary of objective scores
         """
         y = infer_feature_types(y)

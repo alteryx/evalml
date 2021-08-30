@@ -1,3 +1,4 @@
+"""CLI functions."""
 import locale
 import os
 import platform
@@ -17,7 +18,7 @@ logger = get_logger(__file__)
 def print_info():
     """Prints information about the system, evalml, and dependencies of evalml.
 
-    Returns:
+    Returns?
         None
     """
     logger.info("EvalML version: %s" % evalml.__version__)

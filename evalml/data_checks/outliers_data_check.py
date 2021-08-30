@@ -11,8 +11,7 @@ from evalml.utils import infer_feature_types
 
 
 class OutliersDataCheck(DataCheck):
-    """
-    Checks if there are any outliers in input data by using IQR to determine score anomalies.
+    """Checks if there are any outliers in input data by using IQR to determine score anomalies.
 
     Columns with score anomalies are considered to contain outliers.
     """
@@ -20,17 +19,14 @@ class OutliersDataCheck(DataCheck):
     def validate(self, X, y=None):
         """Check if there are any outliers in a dataframe by using IQR to determine column anomalies. Column with anomalies are considered to contain outliers.
 
-        Parameters
-        ----------
+        Args:
             X (pd.DataFrame, np.ndarray): Input features.
             y (pd.Series, np.ndarray): Ignored. Defaults to None.
 
-        Returns
-        -------
+        Returns:
             dict: A dictionary with warnings if any columns have outliers.
 
-        Examples
-        --------
+        Example:
             >>> import pandas as pd
             >>> df = pd.DataFrame({
             ...     'x': [1, 2, 3, 4, 5],
@@ -90,13 +86,11 @@ class OutliersDataCheck(DataCheck):
 
         Original credit goes to Jad Raad and Dan Putler of Alteryx.
 
-        Parameters
-        ----------
+        Args:
             num_records (int): The integer number of non-missing values in a column.
             pct_outliers (float): The percentage of potential outliers in a column.
 
-        Returns
-        -------
+        Returns:
             float: The probability that no outliers are present in the column.
         """
         # Calculate the shape and scale parameters of the approximate

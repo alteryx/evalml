@@ -6,11 +6,9 @@ from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class BalancedClassificationSampler(SamplerBase):
-    """
-    Class for balanced classification downsampler.
+    """Class for balanced classification downsampler.
 
-    Parameters
-    ---------
+    Args:
         sampling_ratio (float): The smallest minority:majority ratio that is accepted as 'balanced'. For instance, a 1:4 ratio would be
             represented as 0.25, while a 1:1 ratio is 1.0. Must be between 0 and 1, inclusive. Defaults to 0.25.
         sampling_ratio_dict (dict): A dictionary specifying the desired balanced ratio for each target value. Overrides sampling_ratio if provided.
@@ -22,7 +20,6 @@ class BalancedClassificationSampler(SamplerBase):
             To determine severe imbalance, the minority class must have a class ratio below this and must occur less often than min_samples.
             Must be between 0 and 0.5, inclusive. Defaults to 0.1.
         random_seed (int): The seed to use for random sampling. Defaults to 0.
-
     """
 
     def __init__(
@@ -53,15 +50,12 @@ class BalancedClassificationSampler(SamplerBase):
         self.sampling_ratio_dict = sampling_ratio_dict or {}
 
     def _find_ideal_samples(self, y):
-        """
-        Return dictionary of examples to drop for each class if we need to resample.
+        """Return dictionary of examples to drop for each class if we need to resample.
 
-        Parameters
-        ---------
+        Args:
             y (pd.Series): Target data passed in.
 
         Returns
-        -------
             (dict): dictionary with undersample target class as key, and number of samples to remove as the value.
                 If we don't need to resample, returns empty dictionary.
         """
@@ -90,15 +84,12 @@ class BalancedClassificationSampler(SamplerBase):
         return {k: v for k, v in drop_values.items() if v > 0}
 
     def _sampling_dict_to_remove_dict(self, y):
-        """
-        Turn the sampling dict input into a dict of samples to remove for each target, similar to the return of _find_ideal_samples.
+        """Turn the sampling dict input into a dict of samples to remove for each target, similar to the return of _find_ideal_samples.
 
-        Parameters
-        ---------
+        Args:
             y (pd.Series): Training data targets.
 
-        Returns
-        -------
+        Returns:
             (dict): dictionary with undersample target class as key, and number of samples to remove as the value.
                 If we don't need to resample, returns empty dictionary.
         """
@@ -109,16 +100,13 @@ class BalancedClassificationSampler(SamplerBase):
         return new_dic
 
     def fit_resample(self, X, y):
-        """
-        Resampling technique for this sampler.
+        """Resampling technique for this sampler.
 
-        Parameters
-        ---------
+        Args:
             X (pd.DataFrame): Training data to fit and resample.
             y (pd.Series): Training data targets to fit and resample.
 
-        Returns
-        -------
+        Returns:
             list: Indices to keep for training data.
         """
         y = infer_feature_types(y)

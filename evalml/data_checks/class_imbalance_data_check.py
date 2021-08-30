@@ -1,5 +1,4 @@
-"""
-Data check that checks if any of the target labels are imbalanced, or if the number of values for each target are below 2 times the number of CV folds.
+"""Data check that checks if any of the target labels are imbalanced, or if the number of values for each target are below 2 times the number of CV folds.
 
 Use for classification problems.
 """
@@ -15,8 +14,7 @@ from evalml.utils import infer_feature_types
 class ClassImbalanceDataCheck(DataCheck):
     """Check if any of the target labels are imbalanced, or if the number of values for each target are below 2 times the number of CV folds. Use for classification problems.
 
-    Arguments
-    ---------
+    Args:
         threshold (float): The minimum threshold allowed for class imbalance before a warning is raised.
             This threshold is calculated by comparing the number of samples in each class to the sum of samples in that class and the majority class.
             For example, a multiclass case with [900, 900, 100] samples per classes 0, 1, and 2, respectively,
@@ -50,18 +48,15 @@ class ClassImbalanceDataCheck(DataCheck):
     def validate(self, X, y):
         """Check if any target labels are imbalanced beyond a threshold for binary and multiclass problems Ignores NaN values in target labels if they appear.
 
-        Arguments
-        ---------
+        Args:
             X (pd.DataFrame, np.ndarray): Features. Ignored.
             y (pd.Series, np.ndarray): Target labels to check for imbalanced data.
 
-        Returns
-        -------
+        Returns:
             dict: Dictionary with DataCheckWarnings if imbalance in classes is less than the threshold,
                   and DataCheckErrors if the number of values for each target is below 2 * num_cv_folds.
 
-        Examples
-        --------
+        Example:
             >>> import pandas as pd
             >>> X = pd.DataFrame()
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])

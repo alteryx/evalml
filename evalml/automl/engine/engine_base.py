@@ -1,3 +1,4 @@
+"""Base class for EvalML engines."""
 import sys
 import time
 import traceback
@@ -35,7 +36,7 @@ class EngineComputation(ABC):
 
 
 class JobLogger:
-    """Mimics the behavior of a python logging.Logger but stores all messages rather than actually logging them.
+    """Mimic the behavior of a python logging.Logger but stores all messages rather than actually logging them.
 
     This is used during engine jobs so that log messages are recorded
     after the job completes. This is desired so that all of the messages
@@ -78,8 +79,11 @@ class JobLogger:
 
 
 class EngineBase(ABC):
+    """Base class for EvalML engines."""
+
     @staticmethod
     def setup_job_log():
+        """Set up logger for job."""
         return JobLogger()
 
     @abstractmethod
@@ -98,15 +102,15 @@ class EngineBase(ABC):
 def train_pipeline(pipeline, X, y, automl_config, schema=True):
     """Train a pipeline and tune the threshold if necessary.
 
-    Parameters
+    Args:
         pipeline (PipelineBase): Pipeline to train.
         X (pd.DataFrame): Features to train on.
         y (pd.Series): Target to train on.
-        automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback
-        schema (bool): Whether to use the schemas for X and y
+        automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback.
+        schema (bool): Whether to use the schemas for X and y. Defaults to True.
 
     Returns:
-        pipeline (PipelineBase): trained pipeline.
+        pipeline (PipelineBase): A trained pipeline instance.
     """
     X_threshold_tuning = None
     y_threshold_tuning = None
@@ -147,11 +151,11 @@ def train_and_score_pipeline(
 ):
     """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores.
 
-    Parameters
-        pipeline (PipelineBase): The pipeline to score
-        automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback
-        full_X_train (pd.DataFrame): Training features
-        full_y_train (pd.Series): Training target
+    Args:
+        pipeline (PipelineBase): The pipeline to score.
+        automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback.
+        full_X_train (pd.DataFrame): Training features.
+        full_y_train (pd.Series): Training target.
 
     Returns:
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
@@ -288,13 +292,13 @@ def train_and_score_pipeline(
 
 
 def evaluate_pipeline(pipeline, automl_config, X, y, logger):
-    """Function submitted to the submit_evaluation_job engine method.
+    """Submit this function to the submit_evaluation_job engine method.
 
-    Parameters
-        pipeline (PipelineBase): The pipeline to score
-        automl_config (AutoMLConfig): The AutoMLSearch object, used to access config and the error callback
-        X (pd.DataFrame): Training features
-        y (pd.Series): Training target
+    Args:
+        pipeline (PipelineBase): The pipeline to score.
+        automl_config (AutoMLConfig): The AutoMLSearch object, used to access config and the error callback.
+        X (pd.DataFrame): Training features.
+        y (pd.Series): Training target.
 
     Returns:
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
@@ -315,14 +319,14 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
 
 
 def score_pipeline(pipeline, X, y, objectives, X_schema=None, y_schema=None):
-    """Wrapper around pipeline.score method to make it easy to score pipelines with dask.
+    """Wrap around pipeline.score method to make it easy to score pipelines with dask.
 
-        Parameters
+    Args:
         pipeline (PipelineBase): The pipeline to score.
         X (pd.DataFrame): Features to score on.
         y (pd.Series): Target used to calcualte scores.
-        X_schema (ww.TableSchema): Schema for features.
-        y_schema (ww.ColumnSchema): Schema for columns.
+        X_schema (ww.TableSchema): Schema for features. Defaults to None.
+        y_schema (ww.ColumnSchema): Schema for columns. Defaults to None.
 
     Returns:
        dict containing pipeline scores.

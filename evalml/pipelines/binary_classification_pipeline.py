@@ -13,7 +13,7 @@ class BinaryClassificationPipeline(
 ):
     """Pipeline subclass for all binary classification pipelines.
 
-    Parameters
+    Args:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -31,11 +31,11 @@ class BinaryClassificationPipeline(
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
 
-        Returns:
+        Returns
             pd.Series: Estimated labels
         """
 
@@ -55,10 +55,10 @@ class BinaryClassificationPipeline(
     def predict_proba(self, X):
         """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
 
-        Parameters
+        Args:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
-        Returns:
+        Returns
             pd.Series: Probability estimates
         """
         return super().predict_proba(X)

@@ -10,7 +10,7 @@ from evalml.utils.woodwork_utils import infer_feature_types
 class BaseSampler(Transformer):
     """Base Sampler component. Used as the base class of all sampler components.
 
-    Parameters
+    Args:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
         component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -22,7 +22,7 @@ class BaseSampler(Transformer):
     def fit(self, X, y):
         """Fits the sampler to the data.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Input features.
             y (pd.Series): Target.
 
@@ -39,7 +39,7 @@ class BaseSampler(Transformer):
     def _initialize_sampler(self, X, y):
         """Helper function to initialize the sampler component object.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Features.
             y (pd.Series): The target data.
         """
@@ -47,7 +47,7 @@ class BaseSampler(Transformer):
     def _prepare_data(self, X, y):
         """Transforms the input data to pandas data structure that our sampler can ingest.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Training features.
             y (pd.Series): Target.
 
@@ -63,7 +63,7 @@ class BaseSampler(Transformer):
     def transform(self, X, y=None):
         """Transforms the input data by sampling the data.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Training features.
             y (pd.Series): Target.
 
@@ -77,7 +77,7 @@ class BaseSampler(Transformer):
     def _convert_dictionary(self, sampling_dict, y):
         """Converts the provided sampling dictionary from a dictionary of ratios to a dictionary of number of samples. Expects the provided dictionary keys to be the target values y, and the associated values to be the min:max ratios. Converts and returns a dictionary with the same keys, but changes the values to be the number of samples rather than ratio.
 
-        Parameters
+        Args:
             sampling_dict (dict): The input sampling dictionary passed in from user.
             y (pd.Series): The target values.
 
@@ -111,7 +111,7 @@ class BaseSampler(Transformer):
     def _dictionary_to_params(self, sampling_dict, y):
         """If a sampling ratio dictionary is provided, add the updated sampling dictionary to the parameters and return the updated parameter dictionary. Otherwise, simply return the current parameters.
 
-        Parameters
+        Args:
             sampling_dict (dict): The input sampling dictionary passed in from user.
             y (pd.Series): The target values.
 
@@ -133,7 +133,7 @@ class BaseSampler(Transformer):
 class BaseOversampler(BaseSampler):
     """Base Oversampler component. Used as the base class of all imbalance-learn oversampler components.
 
-    Parameters
+    Args:
         sampler (obj): Sampler object to use.
         sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
             of the minority to majority class after oversampling. We will create the a sampling dictionary using this ratio, with the keys corresponding to the class
@@ -176,7 +176,7 @@ class BaseOversampler(BaseSampler):
     def _initialize_sampler(self, X, y):
         """Initializes the oversampler with the given sampler_ratio or sampler_ratio_dict. If a sampler_ratio_dict is provided, we will opt to use that. Otherwise, we use will create the sampler_ratio_dict dictionary.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Input features.
             y (pd.Series): Target.
         """

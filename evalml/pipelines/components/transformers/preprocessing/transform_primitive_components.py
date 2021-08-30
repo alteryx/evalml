@@ -112,7 +112,7 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
 class EmailFeaturizer(_ExtractFeaturesWithTransformPrimitives):
     """Transformer that can automatically extract features from emails.
 
-    Parameters
+    Args:
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -135,7 +135,7 @@ class EmailFeaturizer(_ExtractFeaturesWithTransformPrimitives):
 class URLFeaturizer(_ExtractFeaturesWithTransformPrimitives):
     """Transformer that can automatically extract features from URL.
 
-    Parameters
+    Args:
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 

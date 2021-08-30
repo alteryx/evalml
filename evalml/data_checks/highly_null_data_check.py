@@ -13,8 +13,7 @@ from evalml.utils import infer_feature_types
 class HighlyNullDataCheck(DataCheck):
     """Check if there are any highly-null columns and rows in the input.
 
-    Parameters
-    ----------
+    Args:
         pct_null_col_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
             that column will be considered highly-null. Defaults to 0.95.
         pct_null_row_threshold(float): If the percentage of NaN values in an input row exceeds this amount,
@@ -37,17 +36,14 @@ class HighlyNullDataCheck(DataCheck):
     def validate(self, X, y=None):
         """Check if there are any highly-null columns or rows in the input.
 
-        Parameters
-        ----------
+        Args:
             X (pd.DataFrame, np.ndarray): Features.
-            y (pd.Series, np.ndarray): Ignored.
+            y (pd.Series, np.ndarray): Ignored. Defaults to None.
 
-        Returns
-        -------
+        Returns:
             dict: dict with a DataCheckWarning if there are any highly-null columns or rows.
 
-        Examples
-        --------
+        Example:
             >>> import pandas as pd
             >>> class SeriesWrap():
             ...     def __init__(self, series):
@@ -78,7 +74,6 @@ class HighlyNullDataCheck(DataCheck):
             ...                   "details": {"column": "lots_of_null", "pct_null_rows": 0.8}}],
             ...    "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [0, 1, 2, 3]}},
             ...                {"code": "DROP_COL", "metadata": {"column": "lots_of_null"}}]}
-
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

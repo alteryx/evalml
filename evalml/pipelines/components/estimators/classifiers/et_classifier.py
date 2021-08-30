@@ -9,7 +9,7 @@ from evalml.problem_types import ProblemTypes
 class ExtraTreesClassifier(Estimator):
     """Extra Trees Classifier.
 
-    Parameters
+    Args:
         n_estimators (float): The number of trees in the forest. Defaults to 100.
         max_features (int, float or {"auto", "sqrt", "log2"}): The number of features to consider when looking for the best split:
 

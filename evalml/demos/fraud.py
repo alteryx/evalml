@@ -8,13 +8,11 @@ def load_fraud(n_rows=None, verbose=True):
 
     The fraud dataset can be used for binary classification problems.
 
-    Parameters
-    ---------
+    Args:
         n_rows (int): Number of rows from the dataset to return
         verbose (bool): Whether to print information about features and labels
 
-    Returns
-    ------
+    Returns:
         (pd.Dataframe, pd.Series): X and y
     """
     fraud_data_path = (

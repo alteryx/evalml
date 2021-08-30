@@ -22,8 +22,7 @@ class TargetLeakageDataCheck(DataCheck):
     Otherwise, if `method='pearson'`, it uses Pearson correlation and only supports binary with numeric and boolean dtypes.
     Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
 
-    Parameters
-    ----------
+    Args:
         pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
         method (string): The method to determine correlation. Use 'mutual' for mutual information, otherwise 'pearson' for Pearson correlation. Defaults to 'mutual'.
     """
@@ -73,17 +72,15 @@ class TargetLeakageDataCheck(DataCheck):
         If `method='mutual'`, supports all target and feature types. Otherwise, if `method='pearson'` only supports binary with numeric and boolean dtypes.
         Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
 
-        Parameters
-        ----------
+        Args:
+        
             X (pd.DataFrame, np.ndarray): The input features to check
             y (pd.Series, np.ndarray): The target data
 
-        Returns
-        -------
+        Returns:
             dict (DataCheckWarning): dict with a DataCheckWarning if target leakage is detected.
 
-        Examples
-        --------
+        Example:
             >>> import pandas as pd
             >>> X = pd.DataFrame({
             ...    'leak': [10, 42, 31, 51, 61],

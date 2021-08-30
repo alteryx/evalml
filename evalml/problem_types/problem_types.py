@@ -38,7 +38,7 @@ class ProblemTypes(Enum):
     def all_problem_types(cls):
         """Get a list of all defined problem types.
 
-        Returns:
+        Returns
             list(ProblemTypes): list
         """
         return list(cls)

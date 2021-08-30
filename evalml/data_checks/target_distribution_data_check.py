@@ -20,17 +20,15 @@ class TargetDistributionDataCheck(DataCheck):
     def validate(self, X, y):
         """Check if the target data has a certain distribution.
 
-        Parameters
-        ----------
+        Args:
+        
             X (pd.DataFrame, np.ndarray): Features. Ignored.
             y (pd.Series, np.ndarray): Target data to check for underlying distributions.
 
-        Returns
-        -------
+        Returns:
             dict (DataCheckError): List with DataCheckErrors if certain distributions are found in the target data.
 
-        Examples
-        --------
+        Example: 
             >>> from scipy.stats import lognorm
             >>> X = None
             >>> y = [0.946, 0.972, 1.154, 0.954, 0.969, 1.222, 1.038, 0.999, 0.973, 0.897]
@@ -43,7 +41,6 @@ class TargetDistributionDataCheck(DataCheck):
             ...                   "code": "TARGET_LOGNORMAL_DISTRIBUTION",
             ...                   "details": {"shapiro-statistic/pvalue": '0.84/0.045'}}],
             ...     "actions": [{'code': 'TRANSFORM_TARGET', 'metadata': {'column': None, 'transformation_strategy': 'lognormal', 'is_target': True}}]}
-
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

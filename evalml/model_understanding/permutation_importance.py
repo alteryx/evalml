@@ -13,7 +13,7 @@ def calculate_permutation_importance(
 ):
     """Calculates permutation importance for features.
 
-    Parameters
+    Args:
         pipeline (PipelineBase or subclass): Fitted pipeline.
         X (pd.DataFrame): The input data used to score and compute permutation importance.
         y (pd.Series): The target data.
@@ -22,6 +22,7 @@ def calculate_permutation_importance(
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+
     Returns:
         pd.DataFrame: Mean feature importance scores over a number of shuffles.
     """
@@ -77,7 +78,7 @@ def calculate_permutation_importance_one_column(
 ):
     """Calculates permutation importance for one column in the original dataframe.
 
-    Parameters
+    Args:
         pipeline (PipelineBase or subclass): Fitted pipeline.
         X (pd.DataFrame): The input data used to score and compute permutation importance.
         y (pd.Series): The target data.

@@ -19,7 +19,7 @@ class TextFeaturizer(TextTransformer):
     LSA (Latent Semantic Analysis). Calling transform on this component will replace any text columns
     in the given dataset with these numeric columns.
 
-    Parameters
+    Args:
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -75,7 +75,7 @@ class TextFeaturizer(TextTransformer):
     def fit(self, X, y=None):
         """Fits component to data.
 
-        Parameters
+        Args:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray, optional): The target training data of length [n_samples]
 
@@ -115,7 +115,7 @@ class TextFeaturizer(TextTransformer):
     def transform(self, X, y=None):
         """Transforms data X by creating new features using existing text columns.
 
-        Parameters
+        Args:
             X (pd.DataFrame): The data to transform.
             y (pd.Series, optional): Ignored.
 

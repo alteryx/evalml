@@ -34,10 +34,10 @@ def all_components():
 def allowed_model_families(problem_type):
     """List the model types allowed for a particular problem type.
 
-    Parameters
+    Args:
         problem_types (ProblemTypes or str): binary, multiclass, or regression
 
-    Returns:
+    Returns
         list[ModelFamily]: a list of model families
     """
 
@@ -58,11 +58,11 @@ def get_estimators(problem_type, model_families=None):
 
     Can also optionally filter by a list of model types.
 
-    Parameters
+    Args:
         problem_type (ProblemTypes or str): problem type to filter for
         model_families (list[ModelFamily] or list[str]): model families to filter for
 
-    Returns:
+    Returns
         list[class]: a list of estimator subclasses
     """
     if model_families is not None and not isinstance(model_families, list):
@@ -102,10 +102,10 @@ def handle_component_class(component_class):
     return a new instance. Otherwise if a ComponentBase subclass or Component instance is provided,
     will return that without modification.
 
-    Parameters
+    Args:
         component (str, ComponentBase): input to be standardized
 
-    Returns:
+    Returns
         ComponentBase
     """
     if isinstance(component_class, ComponentBase) or (
@@ -133,7 +133,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
     def __init__(self, pipeline):
         """Scikit-learn classifier wrapper class. Takes an EvalML pipeline as input and returns a scikit-learn classifier class wrapping that pipeline.
 
-        Parameters
+        Args:
             pipeline (PipelineBase or subclass obj): EvalML pipeline
         """
         self.pipeline = pipeline
@@ -146,11 +146,11 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
     def fit(self, X, y):
         """Fits component to data.
 
-        Parameters
+        Args:
             X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training data of length [n_samples]
 
-        Returns:
+        Returns
             self
         """
         self.classes_ = unique_labels(y)
@@ -163,10 +163,10 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
     def predict(self, X):
         """Make predictions using selected features.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Features
 
-        Returns:
+        Returns
             np.ndarray: Predicted values
         """
         check_is_fitted(self, "is_fitted_")
@@ -176,10 +176,10 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Features
 
-        Returns:
+        Returns
             np.ndarray: Probability estimates
         """
         return self.pipeline.predict_proba(X).to_numpy()
@@ -191,7 +191,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
     def __init__(self, pipeline):
         """Scikit-learn regressor wrapper class. Takes an EvalML pipeline as input and returns a scikit-learn regressor class wrapping that pipeline.
 
-        Parameters
+        Args:
             pipeline (PipelineBase or subclass obj): EvalML pipeline
         """
         self.pipeline = pipeline
@@ -203,11 +203,11 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
     def fit(self, X, y):
         """Fits component to data.
 
-        Parameters
+        Args:
             X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training data of length [n_samples]
 
-        Returns:
+        Returns
             self
         """
         self.pipeline.fit(X, y)
@@ -216,10 +216,10 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
     def predict(self, X):
         """Make predictions using selected features.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Features
 
-        Returns:
+        Returns
             np.ndarray: Predicted values
         """
         return self.pipeline.predict(X).to_numpy()
@@ -260,10 +260,10 @@ def scikit_learn_wrapped_estimator(evalml_obj):
 def generate_component_code(element):
     """Creates and returns a string that contains the Python imports and code required for running the EvalML component.
 
-    Parameters
+    Args:
         element (component instance): The instance of the component to generate string Python code for
 
-    Returns:
+    Returns
         String representation of Python code that can be run separately in order to recreate the component instance.
         Does not include code for custom component implementation.
     """
@@ -295,11 +295,11 @@ def generate_component_code(element):
 def make_balancing_dictionary(y, sampling_ratio):
     """Makes dictionary for oversampler components. Find ratio of each class to the majority. If the ratio is smaller than the sampling_ratio, we want to oversample, otherwise, we don't want to sample at all, and we leave the data as is.
 
-    Parameters
+    Args:
         y (pd.Series): Target data
         sampling_ratio (float): The balanced ratio we want the samples to meet
 
-    Returns:
+    Returns
         Dictionary where keys are the classes, and the corresponding values are the counts of samples
         for each class that will satisfy sampling_ratio.
     """

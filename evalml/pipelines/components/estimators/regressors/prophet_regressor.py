@@ -147,7 +147,7 @@ class ProphetRegressor(Estimator):
 
         Our convention is that Component.default_parameters == Component().parameters.
 
-        Returns:
+        Returns
             dict: default parameters for this component.
         """
 

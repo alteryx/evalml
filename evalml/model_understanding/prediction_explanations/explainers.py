@@ -1,3 +1,4 @@
+"""Prediction explanation tools."""
 import sys
 import traceback
 from collections import namedtuple
@@ -47,7 +48,7 @@ def explain_predictions(
 
     XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
 
-    Parameters
+    Args:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
         y (pd.Series): Labels for the input data.
@@ -108,10 +109,11 @@ def explain_predictions(
 
 
 def _update_progress(start_time, current_time, progress_stage, callback_function):
-    """Helper function for updating progress of a function and making a call to the user-provided callback function, if provided. The callback function should accept the following parameters:
-
-    - progress_stage: stage of computation
-    - time_elapsed: total time in seconds that has elapsed since start of call
+    """Helper function for updating progress of a function and making a call to the user-provided callback function, if provided.
+    
+    The callback function should accept the following parameters:
+        - progress_stage: stage of computation
+        - time_elapsed: total time in seconds that has elapsed since start of call
     """
     if callback_function is not None:
         elapsed_time = current_time - start_time
@@ -119,6 +121,7 @@ def _update_progress(start_time, current_time, progress_stage, callback_function
 
 
 class ExplainPredictionsStage(Enum):
+    """Enum for prediction stage."""
     PREPROCESSING_STAGE = "preprocessing_stage"
     PREDICT_STAGE = "predict_stage"
     COMPUTE_FEATURE_STAGE = "compute_feature_stage"
@@ -141,7 +144,7 @@ def explain_predictions_best_worst(
 
     XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
 
-    Parameters
+    Args:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (pd.DataFrame): Input data to evaluate the pipeline on.
         y_true (pd.Series): True labels for the input data.
@@ -183,7 +186,7 @@ def explain_predictions_best_worst(
         )
     if y_true.shape[0] != input_features.shape[0]:
         raise ValueError(
-            "Parameters y_true and input_features must have the same number of data points. Received: "
+            "Args: y_true and input_features must have the same number of data points. Received: "
             f"true labels: {y_true.shape[0]} and {input_features.shape[0]}"
         )
     if output_format not in {"text", "dict", "dataframe"}:
@@ -268,7 +271,7 @@ def explain_predictions_best_worst(
 def abs_error(y_true, y_pred):
     """Computes the absolute error per data point for regression problems.
 
-    Parameters
+    Args:
         y_true (pd.Series): True labels.
         y_pred (pd.Series): Predicted values.
 
@@ -281,7 +284,7 @@ def abs_error(y_true, y_pred):
 def cross_entropy(y_true, y_pred_proba):
     """Computes Cross Entropy Loss per data point for classification problems.
 
-    Parameters
+    Args:
         y_true (pd.Series): True labels encoded as ints.
         y_pred_proba (pd.DataFrame): Predicted probabilities. One column per class.
 

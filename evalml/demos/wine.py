@@ -8,8 +8,7 @@ from evalml.preprocessing import load_data
 def load_wine():
     """Load wine dataset. Multiclass problem.
 
-    Returns
-    ------
+    Returns:
         (pd.Dataframe, pd.Series): X and y
     """
     filepath = (

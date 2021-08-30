@@ -12,7 +12,7 @@ class BaselineClassifier(Estimator):
 
     This is useful as a simple baseline classifier to compare with other classifiers.
 
-    Parameters
+    Args:
         strategy (str): Method used to predict. Valid options are "mode", "random" and "random_weighted". Defaults to "mode".
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -96,7 +96,7 @@ class BaselineClassifier(Estimator):
     def feature_importance(self):
         """Returns importance associated with each feature. Since baseline classifiers do not use input features to calculate predictions, returns an array of zeroes.
 
-        Returns:
+        Returns
             np.ndarray (float): An array of zeroes
         """
         return np.zeros(self._num_features)
@@ -105,7 +105,7 @@ class BaselineClassifier(Estimator):
     def classes_(self):
         """Returns class labels. Will return None before fitting.
 
-        Returns:
+        Returns
             list[str] or list(float) : Class names
         """
         return self._classes

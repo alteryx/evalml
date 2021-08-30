@@ -22,7 +22,7 @@ def _make_rows(
 ):
     """Makes the rows (one row for each feature) for the SHAP table.
 
-    Parameters
+    Args:
         shap_values (dict): Dictionary mapping the feature names to their SHAP values. In a multiclass setting,
             this dictionary for correspond to the SHAP values for a single class.
         normalized_values (dict): Normalized SHAP values. Same structure as shap_values parameter.
@@ -80,7 +80,6 @@ def _make_rows(
 
 def _rows_to_dict(rows):
     """Turns a list of lists into a dictionary."""
-
     feature_names = []
     feature_values = []
     qualitative_explanations = []
@@ -128,7 +127,7 @@ def _make_text_table(
 ):
     """Make a table displaying the SHAP values for a prediction.
 
-    Parameters
+    Args:
         shap_values (dict): Dictionary mapping the feature names to their SHAP values. In a multiclass setting,
             this dictionary for correspond to the SHAP values for a single class.
         normalized_values (dict): Normalized SHAP values. Same structure as shap_values parameter.
@@ -484,7 +483,7 @@ def _make_single_prediction_shap_table(
 ):
     """Creates table summarizing the top_k_features positive and top_k_features negative contributing features to the prediction of a single datapoint.
 
-    Parameters
+    Args:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         pipeline_features (pd.DataFrame): Dataframe of features computed by the pipeline.
         input_features (pd.DataFrame): Dataframe of features passed to the pipeline. This is where the pipeline_features
@@ -595,7 +594,7 @@ class _Heading(_SectionMaker):
         Differences between best/worst reports and reports where user manually specifies the input features subset
         are handled by formatting the value of the prefix parameter in the initialization.
 
-        Parameters
+        Args:
             rank (int): Rank (1, 2, 3, ...) of the prediction. Used to say "Best 1 of 5", "Worst 1 of 5", etc.
         """
         prefix = self.prefixes[(rank // self.n_indices)]
@@ -605,7 +604,7 @@ class _Heading(_SectionMaker):
     def make_dict(self, rank):
         """Makes the heading section for reports formatted as dictionaries.
 
-        Parameters
+        Args:
             rank (int): Rank (1, 2, 3, ...) of the prediction. Used to say "Best 1 of 5", "Worst 1 of 5", etc.
         """
         prefix = self.prefixes[(rank // self.n_indices)]
@@ -615,7 +614,7 @@ class _Heading(_SectionMaker):
     def make_dataframe(self, rank):
         """Makes the heading section for reports formatted as a dataframe.
 
-        Parameters
+        Args:
             rank (int): Rank (1, 2, 3, ...) of the prediction. Used to say "Best 1 of 5", "Worst 1 of 5", etc.
         """
         return self.make_dict(rank)
@@ -634,7 +633,7 @@ class _ClassificationPredictedValues(_SectionMaker):
     def make_text(self, index, y_pred, y_true, scores, dataframe_index):
         """Makes the predicted values section for classification problem best/worst reports formatted as text.
 
-        Parameters
+        Args:
             index (int): The index of the prediction in the dataset.
             y_pred (pd.Series): Pipeline predictions on the entire dataset.
             y_true (pd.Series): Targets for the entire dataset.
@@ -687,7 +686,7 @@ class _RegressionPredictedValues(_SectionMaker):
     def make_text(self, index, y_pred, y_true, scores, dataframe_index):
         """Makes the predicted values section for regression problem best/worst reports formatted as text.
 
-        Parameters
+        Args:
             index (int): The index of the prediction in the dataset.
             y_pred (pd.Series): Pipeline predictions on the entire dataset.
             y_true (pd.Series): Targets for the entire dataset.
@@ -734,7 +733,7 @@ class _SHAPTable(_SectionMaker):
         Handling the differences in how the table is formatted between regression and classification problems
         is delegated to the _make_single_prediction_shap_table
 
-        Parameters
+        Args:
             index (int): The index of the prediction in the dataset.
             pipeline (PipelineBase): The pipeline to explain.
             pipeline_features (pd.DataFrame): The dataframe of features created by the pipeline.
@@ -803,7 +802,7 @@ class _ReportMaker:
     def make_text(self, data):
         """Make a prediction explanation report that is formatted as text.
 
-        Parameters
+        Args:
            data (_ReportData): Data passed in by the user.
 
         Returns:
@@ -834,7 +833,7 @@ class _ReportMaker:
     def make_dict(self, data):
         """Make a prediction explanation report that is formatted as a dictionary.
 
-        Parameters
+        Args:
             data (_ReportData): Data passed in by the user.
 
         Returns:

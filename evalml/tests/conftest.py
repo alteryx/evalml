@@ -1046,7 +1046,7 @@ def mock_imbalanced_data_X_y():
         For our targets, we maintain a 1:5, or 0.2, class ratio of minority : majority.
         We only generate minimum amount for X to set the logical_types, so the length of X and y will be different.
 
-        Parameters
+        Args:
             problem_type (str): Either 'binary' or 'multiclass'
             categorical_columns (str): Determines how many categorical cols to use. Either 'all', 'some', or 'none'.
             size (str): Either 'large' or 'small'. 'large' returns a dataset of size 21,000, while 'small' returns a size of 4200
@@ -1093,7 +1093,7 @@ class _AutoMLTestEnv:
     tests that patch Estimator.fit instead of Pipeline.fit or tests that only want to patch a selective
     subset of the methods listed above.
 
-    Examples
+    Example:
         >>> env = _AutoMLTestEnv(problem_type="binary")
         >>> # run_search is short-hand for creating the context manager and then running search
         >>> # env.run_search(automl, score_return_value={automl.objective.name: 1.0})
@@ -1106,7 +1106,7 @@ class _AutoMLTestEnv:
     def __init__(self, problem_type):
         """Create a test environment.
 
-        Parameters
+        Args:
             problem_type (str): The problem type corresponding to the search class you want to test.
 
         Attributes:
@@ -1206,7 +1206,7 @@ class _AutoMLTestEnv:
     ):
         """A context manager for creating an environment that patches time-consuming pipeline methods. Sets the mock_fit, mock_score, mock_encode_targets, mock_predict_proba, mock_optimize_threshold attributes.
 
-        Parameters
+        Args:
             score_return_value: Passed as the return_value argument of the pipeline.score patch.
             mock_score_side_effect: Passed as the side_effect argument of the pipeline.score patch. Takes precedence over
                 score_return_value.

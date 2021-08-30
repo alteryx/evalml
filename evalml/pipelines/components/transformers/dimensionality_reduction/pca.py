@@ -13,7 +13,7 @@ from evalml.utils import (
 class PCA(Transformer):
     """Reduces the number of features by using Principal Component Analysis (PCA).
 
-    Parameters
+    Args:
         variance (float): The percentage of the original data variance that should be preserved when reducing the
             number of features. Defaults to 0.95.
         n_components (int): The number of features to maintain after computing SVD. Defaults to None, but will override

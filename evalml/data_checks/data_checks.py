@@ -17,11 +17,9 @@ def _has_defaults_for_all_args(init):
 
 
 class DataChecks:
-    """
-    A collection of data checks.
+    """A collection of data checks.
 
-    Arguments
-    ---------
+    Args:
         data_checks (list (DataCheck)): List of DataCheck objects.
         data_check_params (dict): Parameters for passed DataCheck objects.
     """
@@ -70,7 +68,7 @@ class DataChecks:
             class_params = params.get(data_check_class.name, {})
             if not isinstance(class_params, dict):
                 raise DataCheckInitError(
-                    f"Parameters for {data_check_class.name} were not in a dictionary. Received {class_params}."
+                    f"Parameters: for {data_check_class.name} were not in a dictionary. Received {class_params}."
                 )
             try:
                 data_check_instances.append(data_check_class(**class_params))
@@ -89,13 +87,11 @@ class DataChecks:
     def validate(self, X, y=None):
         """Inspect and validate the input data against data checks and returns a list of warnings and errors if applicable.
 
-        Arguments
-        ---------
+        Args:
             X (pd.DataFrame, np.ndarray): The input data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray): The target data of length [n_samples]
 
-        Returns
-        -------
+        Returns:
             dict: Dictionary containing DataCheckMessage objects
         """
         messages = {"warnings": [], "errors": [], "actions": []}

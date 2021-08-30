@@ -10,7 +10,7 @@ from evalml.utils import (
 class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
     """Pipeline base class for time series regression problems.
 
-    Parameters
+    Args:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -29,12 +29,12 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
     def predict(self, X, y=None, objective=None):
         """Make predictions using selected features.
 
-        Parameters
+        Args:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series, np.ndarray, None): The target training targets of length [n_samples].
             objective (Object or string): The objective to use to make predictions.
 
-        Returns:
+        Returns
             pd.Series: Predicted values.
         """
         if self.estimator is None:
@@ -56,12 +56,12 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
     def score(self, X, y, objectives):
         """Evaluate model performance on current and additional objectives.
 
-        Parameters
+        Args:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series): True labels of length [n_samples].
             objectives (list): Non-empty list of objectives to score on.
 
-        Returns:
+        Returns
             dict: Ordered dictionary of objective scores.
         """
         X, y = self._convert_to_woodwork(X, y)

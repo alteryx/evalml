@@ -10,7 +10,7 @@ from evalml.utils import import_or_raise, infer_feature_types
 class PolynomialDetrender(TargetTransformer):
     """Removes trends from time series by fitting a polynomial to the data.
 
-    Parameters
+    Args:
         degree (int): Degree for the polynomial. If 1, linear model is fit to the data.
             If 2, quadratic model is fit, etc. Defaults to 1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -49,7 +49,7 @@ class PolynomialDetrender(TargetTransformer):
     def fit(self, X, y=None):
         """Fits the PolynomialDetrender.
 
-        Parameters
+        Args:
             X (pd.DataFrame, optional): Ignored.
             y (pd.Series): Target variable to detrend.
 
@@ -65,7 +65,7 @@ class PolynomialDetrender(TargetTransformer):
     def transform(self, X, y=None):
         """Removes fitted trend from target variable.
 
-        Parameters
+        Args:
             X (pd.DataFrame, optional): Ignored.
             y (pd.Series): Target variable to detrend.
 
@@ -83,7 +83,7 @@ class PolynomialDetrender(TargetTransformer):
     def fit_transform(self, X, y=None):
         """Removes fitted trend from target variable.
 
-        Parameters
+        Args:
             X (pd.DataFrame, optional): Ignored.
             y (pd.Series): Target variable to detrend.
 
@@ -96,7 +96,7 @@ class PolynomialDetrender(TargetTransformer):
     def inverse_transform(self, y):
         """Adds back fitted trend to target variable.
 
-        Parameters
+        Args:
             X (pd.DataFrame, optional): Ignored.
             y (pd.Series): Target variable.
 

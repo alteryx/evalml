@@ -11,7 +11,7 @@ from evalml.utils import (
 class Imputer(Transformer):
     """Imputes missing data according to a specified imputation strategy.
 
-    Parameters
+    Args:
         categorical_impute_strategy (string): Impute strategy to use for string, object, boolean, categorical dtypes. Valid values include "most_frequent" and "constant".
         numeric_impute_strategy (string): Impute strategy to use for numeric columns. Valid values include "mean", "median", "most_frequent", and "constant".
         categorical_fill_value (string): When categorical_impute_strategy == "constant", fill_value is used to replace missing data. The default value of None will fill with the string "missing_value".
@@ -78,11 +78,11 @@ class Imputer(Transformer):
     def fit(self, X, y=None):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are treated as the same.
 
-        Parameters
+        Args:
             X (pd.DataFrame, np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, optional): The target training data of length [n_samples]
 
-        Returns:
+        Returns
             self
         """
         X = infer_feature_types(X)
@@ -108,11 +108,11 @@ class Imputer(Transformer):
     def transform(self, X, y=None):
         """Transforms data X by imputing missing values. 'None' values are converted to np.nan before imputation and are treated as the same.
 
-        Parameters
+        Args:
             X (pd.DataFrame): Data to transform
             y (pd.Series, optional): Ignored.
 
-        Returns:
+        Returns
             pd.DataFrame: Transformed X
         """
         X = infer_feature_types(X)

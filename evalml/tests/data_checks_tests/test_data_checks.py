@@ -587,7 +587,7 @@ class MockCheck2(DataCheck):
             [MockCheck],
             {"mock_check": 1},
             DataCheckInitError,
-            "Parameters for mock_check were not in a dictionary. Received 1.",
+            "Args: for mock_check were not in a dictionary. Received 1.",
         ),
         (
             [MockCheck],

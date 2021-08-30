@@ -12,7 +12,7 @@ from evalml.utils import infer_feature_types
 class LSA(TextTransformer):
     """Transformer to calculate the Latent Semantic Analysis Values of text input.
 
-    Parameters
+    Args:
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -42,7 +42,7 @@ class LSA(TextTransformer):
     def transform(self, X, y=None):
         """Transforms data X by applying the LSA pipeline.
 
-        Parameters
+        Args:
             X (pd.DataFrame): The data to transform.
             y (pd.Series, optional): Ignored.
 

@@ -16,7 +16,7 @@ from evalml.utils import (
 class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
     """A transformer that encodes categorical features into target encodings.
 
-    Parameters
+    Args:
         cols (list): Columns to encode. If None, all string columns will be encoded, otherwise only the columns provided will be encoded.
             Defaults to None
         smoothing (float): The smoothing factor to apply. The larger this value is, the more influence the expected target value has
@@ -94,7 +94,7 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
     def get_feature_names(self):
         """Return feature names for the input features after fitting.
 
-        Returns:
+        Returns
             np.array: The feature names after encoding
         """
         return self._component_obj.get_feature_names()

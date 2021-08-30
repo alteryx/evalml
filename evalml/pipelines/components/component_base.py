@@ -19,7 +19,7 @@ logger = get_logger(__file__)
 class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """Base class for all components.
 
-    Parameters
+    Args:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
         component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -30,7 +30,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         """Base class for all components.
 
-        Parameters
+        Args:
             parameters (dict): Dictionary of parameters for the component. Defaults to None.
             component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
             random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -94,7 +94,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
         Our convention is that Component.default_parameters == Component().parameters.
 
-        Returns:
+        Returns
             dict: default parameters for this component.
         """
 
@@ -110,7 +110,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def clone(self):
         """Constructs a new component with the same parameters and random state.
 
-        Returns:
+        Returns
             A new instance of this component with identical parameters and random state.
         """
         return self.__class__(**self.parameters, random_seed=self.random_seed)
@@ -118,11 +118,11 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def fit(self, X, y=None):
         """Fits component to data.
 
-        Parameters
+        Args:
             X (list, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
             y (list, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
 
-        Returns:
+        Returns
             self
         """
         X = infer_feature_types(X)
@@ -139,11 +139,11 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def describe(self, print_name=False, return_dict=False):
         """Describe a component and its parameters.
 
-        Parameters
+        Args:
             print_name(bool, optional): whether to print name of component
             return_dict(bool, optional): whether to return description as dictionary in the format {"name": name, "parameters": parameters}
 
-        Returns:
+        Returns
             None or dict: prints and returns dictionary
         """
         if print_name:
@@ -162,11 +162,11 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def save(self, file_path, pickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
         """Saves component at file path.
 
-        Parameters
+        Args:
             file_path (str): Location to save file
             pickle_protocol (int): The pickle data stream format.
 
-        Returns:
+        Returns
             None
         """
         with open(file_path, "wb") as f:
@@ -176,10 +176,10 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def load(file_path):
         """Loads component at file path.
 
-        Parameters
+        Args:
             file_path (str): Location to load file
 
-        Returns:
+        Returns
             ComponentBase object
         """
         with open(file_path, "rb") as f:

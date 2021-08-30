@@ -14,33 +14,27 @@ logger = get_logger(__file__)
 
 
 class NoVarianceDataCheck(DataCheck):
-    """
-    Check if the target or any of the features have no variance.
+    """Check if the target or any of the features have no variance.
 
-    Parameters
-    ----------
+    Args:
         count_nan_as_value (bool): If True, missing values will be counted as their own unique value.
             Additionally, if true, will return a DataCheckWarning instead of an error
             if the feature has mostly missing data and only one unique value.
             Defaults to False.
-
     """
 
     def __init__(self, count_nan_as_value=False):
         self._dropnan = not count_nan_as_value
 
     def _check_for_errors(self, column_name, count_unique, any_nulls):
-        """
-        Check if a column has no variance.
+        """Check if a column has no variance.
 
-        Parameters
-        ----------
+        Args:
             column_name (str): Name of the column we are checking.
             count_unique (float): Number of unique values in this column.
             any_nulls (bool): Whether this column has any missing data.
 
-        Returns
-        -------
+        Returns:
             DataCheckError if the column has no variance or DataCheckWarning if the column has two unique values including NaN.
         """
         message = f"{column_name} has {int(count_unique)} unique value."
@@ -64,16 +58,13 @@ class NoVarianceDataCheck(DataCheck):
             )
 
     def validate(self, X, y):
-        """
-        Check if the target or any of the features have no variance (1 unique value).
+        """Check if the target or any of the features have no variance (1 unique value).
 
-        Parameters
-        ----------
+        Args:
             X (pd.DataFrame, np.ndarray): The input features.
             y (pd.Series, np.ndarray): The target data.
 
-        Returns
-        -------
+        Returns:
             dict: dict of warnings/errors corresponding to features or target with no variance.
         """
         results = {"warnings": [], "errors": [], "actions": []}

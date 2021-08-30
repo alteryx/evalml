@@ -12,17 +12,14 @@ class DateTimeNaNDataCheck(DataCheck):
     def validate(self, X, y=None):
         """Check if any datetime columns contain NaN values.
 
-        Arguments
-        ---------
+        Args:
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.  Defaults to None.
 
-        Returns
-        -------
+        Returns:
             dict: dict with a DataCheckError if NaN values are present in datetime columns.
 
-        Examples
-        --------
+        Example:
             >>> import pandas as pd
             >>> import woodwork as ww
             >>> import numpy as np

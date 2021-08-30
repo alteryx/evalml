@@ -12,7 +12,7 @@ class TimeSeriesBaselineEstimator(Estimator):
 
     This is useful as a simple baseline estimator for time series problems.
 
-    Parameters
+    Args:
         gap (int): Gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period. Defaults to 1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -87,7 +87,7 @@ class TimeSeriesBaselineEstimator(Estimator):
 
         Since baseline estimators do not use input features to calculate predictions, returns an array of zeroes.
 
-        Returns:
+        Returns
             np.ndarray (float): an array of zeroes
         """
         return np.zeros(self._num_features)

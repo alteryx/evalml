@@ -1,3 +1,4 @@
+"""Base class for the AutoML algorithms which power EvalML."""
 from abc import ABC, abstractmethod
 
 from evalml.exceptions import PipelineNotFoundError
@@ -17,7 +18,7 @@ class AutoMLAlgorithm(ABC):
 
     To use this interface, you must define a next_batch method which returns the next group of pipelines to evaluate on the training data. That method may access state and results recorded from the previous batches, although that information is not tracked in a general way in this base class. Overriding add_result is a convenient way to record pipeline evaluation info if necessary.
 
-    Parameters
+    Args:
         allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
         custom_hyperparameters (dict): Custom hyperparameter ranges specified for pipelines to iterate over.
         max_iterations (int): The maximum number of iterations to be evaluated.
@@ -52,14 +53,14 @@ class AutoMLAlgorithm(ABC):
     def next_batch(self):
         """Get the next batch of pipelines to evaluate.
 
-        Returns:
+        Returns
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
         """Register results from evaluating a pipeline.
 
-        Parameters
+        Args:
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
             trained_pipeline_results (dict): Results from training a pipeline.

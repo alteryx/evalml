@@ -15,8 +15,7 @@ warning_too_unique = "Input columns ({}) for {} problem type are too sparse."
 class SparsityDataCheck(DataCheck):
     """Check if there are any columns with sparsely populated values in the input.
 
-    Parameters
-    ----------
+    Args:
         problem_type (str or ProblemTypes): The specific problem type to data check for.
             'multiclass' or 'time series multiclass' is the only accepted problem type.
         threshold (float): The threshold value, or percentage of each column's unique values,
@@ -40,17 +39,14 @@ class SparsityDataCheck(DataCheck):
     def validate(self, X, y=None):
         """Calculate what percentage of each column's unique values exceed the count threshold and compare that percentage to the sparsity threshold stored in the class instance.
 
-        Parameters
-        ----------
+        Args:
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.
 
-        Returns
-        -------
+        Returns:
             dict: dict with a DataCheckWarning if there are any sparse columns.
 
-        Examples
-        --------
+        Example: 
             >>> import pandas as pd
             >>> df = pd.DataFrame({
             ...    'sparse': [float(x) for x in range(100)],
@@ -100,17 +96,14 @@ class SparsityDataCheck(DataCheck):
 
     @staticmethod
     def sparsity_score(col, count_threshold=10):
-        """
-        Calculate a sparsity score for the given value counts by calculating the percentage of unique values that exceed the count_threshold.
+        """Calculate a sparsity score for the given value counts by calculating the percentage of unique values that exceed the count_threshold.
 
-        Parameters
-        ----------
+        Args:
             col (pd.Series): Feature values.
             count_threshold (int): The number of instances below which a value is considered sparse.
                 Default is 10.
 
-        Returns
-        -------
+        Returns:
             (float): Sparsity score, or the percentage of the unique values that exceed count_threshold.
         """
         counts = col.value_counts()

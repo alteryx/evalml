@@ -1,3 +1,4 @@
+"""Force plots."""
 import numpy as np
 import shap
 from shap import initjs
@@ -89,7 +90,6 @@ def force_plot(pipeline, rows_to_explain, training_data, y):
         TypeError: if rows_to_explain is not a list.
         TypeError: if all values in rows_to_explain aren't integers.
     """
-
     if not isinstance(rows_to_explain, list):
         raise TypeError(
             "rows_to_explain should be provided as a list of row index integers!"

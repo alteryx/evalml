@@ -63,7 +63,7 @@ class ObjectiveBase(ABC):
     def objective_function(cls, y_true, y_predicted, X=None, sample_weight=None):
         """Computes the relative value of the provided predictions compared to the actual labels, according a specified metric.
 
-         Parameters
+         Args:
             y_predicted (pd.Series): Predicted values of length [n_samples]
             y_true (pd.Series): Actual class labels of length [n_samples]
             X (pd.DataFrame or np.ndarray): Extra data of shape [n_samples, n_features] necessary to calculate score
@@ -84,7 +84,7 @@ class ObjectiveBase(ABC):
     def score(self, y_true, y_predicted, X=None, sample_weight=None):
         """Returns a numerical score indicating performance based on the differences between the predicted and actual values.
 
-        Parameters
+        Args:
             y_predicted (pd.Series): Predicted values of length [n_samples]
             y_true (pd.Series): Actual class labels of length [n_samples]
             X (pd.DataFrame or np.ndarray): Extra data of shape [n_samples, n_features] necessary to calculate score
@@ -106,7 +106,7 @@ class ObjectiveBase(ABC):
     def _standardize_input_type(input_data):
         """Standardize input to pandas for scoring.
 
-        Parameters
+        Args:
             input_data (list, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
 
         Returns:
@@ -126,7 +126,7 @@ class ObjectiveBase(ABC):
     def validate_inputs(self, y_true, y_predicted):
         """Validates the input based on a few simple checks.
 
-        Parameters
+        Args:
             y_predicted (pd.Series, or pd.DataFrame): Predicted values of length [n_samples]
             y_true (pd.Series): Actual class labels of length [n_samples]
 
@@ -156,7 +156,7 @@ class ObjectiveBase(ABC):
     def calculate_percent_difference(cls, score, baseline_score):
         """Calculate the percent difference between scores.
 
-        Parameters
+        Args:
             score (float): A score. Output of the score method of this objective.
             baseline_score (float): A score. Output of the score method of this objective. In practice,
                 this is the score achieved on this objective with a baseline estimator.

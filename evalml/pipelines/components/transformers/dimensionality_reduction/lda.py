@@ -12,7 +12,7 @@ from evalml.utils import (
 class LinearDiscriminantAnalysis(Transformer):
     """Reduces the number of features by using Linear Discriminant Analysis.
 
-    Parameters
+    Args:
         n_components (int): The number of features to maintain after computation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """

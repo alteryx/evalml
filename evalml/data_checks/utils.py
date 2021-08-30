@@ -5,8 +5,7 @@ from .data_checks import DataChecks
 class EmptyDataChecks(DataChecks):
     """An empty collection of data checks.
 
-    Parameters
-    ----------
+    Args:
         data_checks (list (DataCheck)): Ignored.
     """
 

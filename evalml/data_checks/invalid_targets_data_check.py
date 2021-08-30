@@ -26,8 +26,7 @@ from evalml.utils.woodwork_utils import (
 class InvalidTargetDataCheck(DataCheck):
     """Check if the target data contains missing or invalid values.
 
-    Arguments
-    ---------
+    Args:
         problem_type (str or ProblemTypes): The specific problem type to data check for.
             e.g. 'binary', 'multiclass', 'regression, 'time series regression'
         objective (str or ObjectiveBase): Name or instance of the objective class.
@@ -47,17 +46,14 @@ class InvalidTargetDataCheck(DataCheck):
     def validate(self, X, y):
         """Check if the target data contains missing or invalid values.
 
-        Parameters
-        ----------
+        Args:
             X (pd.DataFrame, np.ndarray): Features. Ignored.
             y (pd.Series, np.ndarray): Target data to check for invalid values.
 
         Returns
-        -------
             dict (DataCheckError): List with DataCheckErrors if any invalid values are found in the target data.
 
-        Examples
-        --------
+        Example:
             >>> import pandas as pd
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = pd.Series([0, 1, None, None])

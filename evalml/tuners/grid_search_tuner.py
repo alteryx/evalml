@@ -1,3 +1,4 @@
+"""Grid Search Optimizer, which generates all of the possible points to search for using a grid."""
 import itertools
 
 from skopt.space import Integer, Real
@@ -9,13 +10,13 @@ from .tuner_exceptions import NoParamsException
 class GridSearchTuner(Tuner):
     """Grid Search Optimizer, which generates all of the possible points to search for using a grid.
 
-    Parameters
+    Args:
         pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
         n_points (int): The number of points to sample from along each dimension
             defined in the ``space`` argument. Defaults to 10.
         random_seed (int): Seed for random number generator. Unused in this class, defaults to 0.
 
-    Examples
+    Example:
         >>> tuner = GridSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, n_points=5)
         >>> proposal = tuner.propose()
         >>> assert proposal.keys() == {'My Component'}
@@ -57,7 +58,7 @@ class GridSearchTuner(Tuner):
     def add(self, pipeline_parameters, score):
         """Not applicable to grid search tuner as generated parameters are not dependent on scores of previous parameters.
 
-        Parameters
+        Args:
             pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
             score (float): the score obtained by evaluating the pipeline with the provided parameters
         """
@@ -80,11 +81,11 @@ class GridSearchTuner(Tuner):
     def is_search_space_exhausted(self):
         """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in ``self.curr_params`` to be returned by ``propose()``.
 
+        Returns:
+            bool: If no more valid parameters exists in the search space, return False.
+
         Raises:
             NoParamsException: If a search space is exhausted, then this exception is thrown.
-
-        Returns:
-            bool: If no more valid parameters exists in the search space, return false.
         """
         try:
             self.curr_params = next(self._grid_points)

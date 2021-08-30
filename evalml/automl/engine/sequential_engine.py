@@ -1,3 +1,4 @@
+"""A Future-like api for jobs created by the SequentialEngine, an Engine that sequentially computes the submitted jobs."""
 from evalml.automl.engine.engine_base import (
     EngineBase,
     EngineComputation,
@@ -17,7 +18,7 @@ class SequentialComputation(EngineComputation):
     computation is "done", by always returning True in done() we make sure that get_result is called in the order that
     the jobs are submitted. So the computations happen sequentially!
 
-    Parameters
+    Args:
         work (callable): Computation that should be done by the engine.
     """
 
@@ -33,7 +34,8 @@ class SequentialComputation(EngineComputation):
     def get_result(self):
         """Gets the computation result. Will block until the computation is finished.
 
-        Raises Exception: If computation fails. Returns traceback.
+        Raises:
+            Exception: If computation fails. Returns traceback.
         """
         return self.work(**self.kwargs)
 
@@ -48,6 +50,14 @@ class SequentialEngine(EngineBase):
     """
 
     def submit_evaluation_job(self, automl_config, pipeline, X, y):
+        """Submit a job to evaluate a pipeline.
+        
+        Args:
+            automl_config: Structure containing data passed from AutoMLSearch instance.
+            pipeline (pipeline.PipelineBase): Pipeline to evaluate.
+            X (pd.DataFrame): Input data for modeling.
+            y (pd.Series): Target data for modeling.
+        """
         logger = self.setup_job_log()
         return SequentialComputation(
             work=evaluate_pipeline,
@@ -59,6 +69,14 @@ class SequentialEngine(EngineBase):
         )
 
     def submit_training_job(self, automl_config, pipeline, X, y):
+        """Submit a job to train a pipeline.
+        
+        Args:
+            automl_config: Structure containing data passed from AutoMLSearch instance.
+            pipeline (pipeline.PipelineBase): Pipeline to evaluate.
+            X (pd.DataFrame): Input data for modeling.
+            y (pd.Series): Target data for modeling.
+        """
         return SequentialComputation(
             work=train_pipeline,
             pipeline=pipeline,
@@ -69,6 +87,15 @@ class SequentialEngine(EngineBase):
         )
 
     def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
+        """Submit a job to score a pipeline.
+        
+        Args:
+            automl_config: Structure containing data passed from AutoMLSearch instance.
+            pipeline (pipeline.PipelineBase): Pipeline to train.
+            X (pd.DataFrame): Input data for modeling.
+            y (pd.Series): Target data for modeling.
+            objectives (list(ObjectiveBase)): List of objectives to score on.
+        """
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         computation = SequentialComputation(
             work=score_pipeline,

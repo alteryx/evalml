@@ -1,3 +1,4 @@
+"""Logging functions."""
 import logging
 import os
 import sys
@@ -8,6 +9,11 @@ from pathlib import Path
 
 
 def get_logger(name):
+    """Get the logger with the associated name.
+    
+    Args:
+        name (str): Name of the logger to get.
+    """
     logger = logging.getLogger(name)
     if not len(logger.handlers):
         logger.setLevel(logging.DEBUG)
@@ -44,6 +50,7 @@ def get_logger(name):
 
 
 def log_title(logger, title):
+    """Log with a title."""
     logger.info("\n" + "*" * (len(title) + 4))
     logger.info("* %s *" % title)
     logger.info("*" * (len(title) + 4))
@@ -51,6 +58,7 @@ def log_title(logger, title):
 
 
 def log_subtitle(logger, title, underline="="):
+    """Log with a subtitle."""
     logger.info("")
     logger.info("%s" % title)
     logger.info(underline * len(title))
@@ -59,13 +67,12 @@ def log_subtitle(logger, title, underline="="):
 def time_elapsed(start_time):
     """How much time has elapsed since the search started.
 
-    Parameters
+    Args:
         start_time (int): Time when search started.
 
     Returns:
         str: elapsed time formatted as a string [H:]MM:SS
     """
-
     time_diff = time.time() - start_time
     # Source: tqdm.std.tqdm.format_interval
     mins, s = divmod(int(time_diff), 60)

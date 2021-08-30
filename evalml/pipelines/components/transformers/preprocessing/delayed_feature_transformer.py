@@ -9,7 +9,7 @@ from evalml.utils import infer_feature_types
 class DelayedFeatureTransformer(Transformer):
     """Transformer that delays input features and target variable for time series problems.
 
-    Parameters
+    Args:
         date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
         max_delay (int): Maximum number of time units to delay each feature. Defaults to 2.
         delay_features (bool): Whether to delay the input features. Defaults to True.
@@ -57,11 +57,11 @@ class DelayedFeatureTransformer(Transformer):
     def fit(self, X, y=None):
         """Fits the DelayFeatureTransformer.
 
-        Parameters
+        Args:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, optional): The target training data of length [n_samples]
 
-        Returns:
+        Returns
             self
         """
         return self
@@ -98,11 +98,11 @@ class DelayedFeatureTransformer(Transformer):
 
         If y is not None, it will also compute the delayed values for the target variable.
 
-        Parameters
+        Args:
             X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
             y (pd.Series, or None): Target.
 
-        Returns:
+        Returns
             pd.DataFrame: Transformed X.
         """
         if X is None:

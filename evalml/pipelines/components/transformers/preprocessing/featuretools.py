@@ -10,7 +10,7 @@ from evalml.utils import (
 class DFSTransformer(Transformer):
     """Featuretools DFS component that generates features for the input features.
 
-    Parameters
+    Args:
         index (string): The name of the column that contains the indices. If no column with this name exists,
             then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -46,11 +46,11 @@ class DFSTransformer(Transformer):
     def fit(self, X, y=None):
         """Fits the DFSTransformer Transformer component.
 
-        Parameters
+        Args:
             X (pd.DataFrame, np.array): The input data to transform, of shape [n_samples, n_features]
             y (pd.Series, np.ndarray, optional): The target training data of length [n_samples]
 
-        Returns:
+        Returns
             self
         """
         X_ww = infer_feature_types(X)
@@ -64,11 +64,11 @@ class DFSTransformer(Transformer):
     def transform(self, X, y=None):
         """Computes the feature matrix for the input X using featuretools' dfs algorithm.
 
-        Parameters
+        Args:
             X (pd.DataFrame or np.ndarray): The input training data to transform. Has shape [n_samples, n_features]
             y (pd.Series, optional): Ignored.
 
-        Returns:
+        Returns
             pd.DataFrame: Feature matrix
         """
         X_ww = infer_feature_types(X)

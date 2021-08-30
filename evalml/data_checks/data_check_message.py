@@ -3,11 +3,9 @@ from .data_check_message_type import DataCheckMessageType
 
 
 class DataCheckMessage:
-    """
-    Base class for a message returned by a DataCheck, tagged by name.
+    """Base class for a message returned by a DataCheck, tagged by name.
 
-    Arguments
-    ---------
+    Args:
         message (str): Message string.
         data_check_name (str): Name of data check.
         message_code (DataCheckMessageCode): Message code associated with message. Defaults to None.

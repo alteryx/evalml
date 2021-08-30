@@ -1,3 +1,4 @@
+"""Model understanding tools."""
 from .graphs import (
     binary_objective_vs_threshold,
     confusion_matrix,

@@ -27,7 +27,7 @@ def _report_creator_factory(
 ):
     """Get and initialize the report creator class given the ReportData and parameters passed in by the user.
 
-    Parameters
+    Args:
         data (_ReportData): Data about the problem (pipeline/predicted values, etc) needed for the report.
         report_type (str): Either "explain_predictions" or "explain_predictions_best_worst"
         output_format (str): Either "text" or "dict" - passed in by user.

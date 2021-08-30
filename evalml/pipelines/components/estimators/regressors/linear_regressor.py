@@ -8,7 +8,7 @@ from evalml.problem_types import ProblemTypes
 class LinearRegressor(Estimator):
     """Linear Regressor.
 
-    Parameters
+    Args:
         fit_intercept (boolean): Whether to calculate the intercept for this model.
             If set to False, no intercept will be used in calculations (i.e. data is expected to be centered).
             Defaults to True.
