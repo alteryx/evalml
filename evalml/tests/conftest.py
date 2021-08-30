@@ -1093,7 +1093,7 @@ class _AutoMLTestEnv:
     tests that patch Estimator.fit instead of Pipeline.fit or tests that only want to patch a selective
     subset of the methods listed above.
 
-    Example:
+    Examples
         >>> env = _AutoMLTestEnv(problem_type="binary")
         >>> # run_search is short-hand for creating the context manager and then running search
         >>> # env.run_search(automl, score_return_value={automl.objective.name: 1.0})

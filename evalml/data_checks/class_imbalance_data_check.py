@@ -13,8 +13,7 @@ from evalml.utils import infer_feature_types
 
 
 class ClassImbalanceDataCheck(DataCheck):
-    """
-    Check if any of the target labels are imbalanced, or if the number of values for each target are below 2 times the number of CV folds. Use for classification problems.
+    """Check if any of the target labels are imbalanced, or if the number of values for each target are below 2 times the number of CV folds. Use for classification problems.
 
     Arguments
     ---------
@@ -25,7 +24,6 @@ class ClassImbalanceDataCheck(DataCheck):
         min_samples (int): The minimum number of samples per accepted class. If the minority class is both below the threshold and min_samples,
             then we consider this severely imbalanced. Must be greater than 0. Defaults to 100.
         num_cv_folds (int): The number of cross-validation folds. Must be positive. Choose 0 to ignore this warning. Defaults to 3.
-
     """
 
     def __init__(self, threshold=0.1, min_samples=100, num_cv_folds=3):
@@ -50,8 +48,7 @@ class ClassImbalanceDataCheck(DataCheck):
         self.cv_folds = num_cv_folds * 2
 
     def validate(self, X, y):
-        """
-        Check if any target labels are imbalanced beyond a threshold for binary and multiclass problems Ignores NaN values in target labels if they appear.
+        """Check if any target labels are imbalanced beyond a threshold for binary and multiclass problems Ignores NaN values in target labels if they appear.
 
         Arguments
         ---------
@@ -63,8 +60,8 @@ class ClassImbalanceDataCheck(DataCheck):
             dict: Dictionary with DataCheckWarnings if imbalance in classes is less than the threshold,
                   and DataCheckErrors if the number of values for each target is below 2 * num_cv_folds.
 
-        Example
-        -------
+        Examples
+        --------
             >>> import pandas as pd
             >>> X = pd.DataFrame()
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
@@ -85,7 +82,6 @@ class ClassImbalanceDataCheck(DataCheck):
             ...                                                    "code": "CLASS_IMBALANCE_SEVERE",
             ...                                                    "details": {"target_values": [0]}}],
             ...                                      "actions": []}
-
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

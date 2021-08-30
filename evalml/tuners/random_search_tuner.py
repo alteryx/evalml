@@ -15,7 +15,7 @@ class RandomSearchTuner(Tuner):
             with_replacement=True
         random_seed (int): Seed for random number generator. Defaults to 0.
 
-    Example:
+    Examples
         >>> tuner = RandomSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, random_seed=42)
         >>> proposal = tuner.propose()
         >>> assert proposal.keys() == {'My Component'}

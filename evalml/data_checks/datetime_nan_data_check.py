@@ -21,8 +21,8 @@ class DateTimeNaNDataCheck(DataCheck):
         -------
             dict: dict with a DataCheckError if NaN values are present in datetime columns.
 
-        Example
-        -------
+        Examples
+        --------
             >>> import pandas as pd
             >>> import woodwork as ww
             >>> import numpy as np

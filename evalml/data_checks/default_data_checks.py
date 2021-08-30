@@ -19,8 +19,7 @@ from evalml.problem_types import (
 
 
 class DefaultDataChecks(DataChecks):
-    """
-    A collection of basic data checks that is used by AutoML by default.
+    """A collection of basic data checks that is used by AutoML by default.
 
     Includes:
 
@@ -43,7 +42,6 @@ class DefaultDataChecks(DataChecks):
         n_splits (int): The number of splits as determined by the data splitter being used. Defaults to 3.
         datetime_column (str): The name of the column containing datetime information to be used for time series problems.
         Default to "index" indicating that the datetime information is in the index of X or y.
-
     """
 
     _DEFAULT_DATA_CHECK_CLASSES = [

@@ -15,7 +15,7 @@ class GridSearchTuner(Tuner):
             defined in the ``space`` argument. Defaults to 10.
         random_seed (int): Seed for random number generator. Unused in this class, defaults to 0.
 
-    Example:
+    Examples
         >>> tuner = GridSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, n_points=5)
         >>> proposal = tuner.propose()
         >>> assert proposal.keys() == {'My Component'}

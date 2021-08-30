@@ -35,7 +35,7 @@ def detect_problem_type(y):
     Returns:
         ProblemType: ProblemType Enum
 
-    Example:
+    Examples
         >>> y = pd.Series([0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1])
         >>> problem_type = detect_problem_type(y)
         >>> assert problem_type == ProblemTypes.BINARY

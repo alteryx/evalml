@@ -18,7 +18,7 @@ class NoVarianceDataCheck(DataCheck):
     Check if the target or any of the features have no variance.
 
     Parameters
-    ---------
+    ----------
         count_nan_as_value (bool): If True, missing values will be counted as their own unique value.
             Additionally, if true, will return a DataCheckWarning instead of an error
             if the feature has mostly missing data and only one unique value.
@@ -34,7 +34,7 @@ class NoVarianceDataCheck(DataCheck):
         Check if a column has no variance.
 
         Parameters
-        ---------
+        ----------
             column_name (str): Name of the column we are checking.
             count_unique (float): Number of unique values in this column.
             any_nulls (bool): Whether this column has any missing data.
@@ -42,7 +42,6 @@ class NoVarianceDataCheck(DataCheck):
         Returns
         -------
             DataCheckError if the column has no variance or DataCheckWarning if the column has two unique values including NaN.
-
         """
         message = f"{column_name} has {int(count_unique)} unique value."
 
@@ -69,14 +68,13 @@ class NoVarianceDataCheck(DataCheck):
         Check if the target or any of the features have no variance (1 unique value).
 
         Parameters
-        ---------
+        ----------
             X (pd.DataFrame, np.ndarray): The input features.
             y (pd.Series, np.ndarray): The target data.
 
         Returns
         -------
             dict: dict of warnings/errors corresponding to features or target with no variance.
-
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

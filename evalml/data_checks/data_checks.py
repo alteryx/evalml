@@ -24,7 +24,6 @@ class DataChecks:
     ---------
         data_checks (list (DataCheck)): List of DataCheck objects.
         data_check_params (dict): Parameters for passed DataCheck objects.
-
     """
 
     @staticmethod
@@ -88,8 +87,7 @@ class DataChecks:
         self.data_checks = data_check_instances
 
     def validate(self, X, y=None):
-        """
-        Inspect and validate the input data against data checks and returns a list of warnings and errors if applicable.
+        """Inspect and validate the input data against data checks and returns a list of warnings and errors if applicable.
 
         Arguments
         ---------
@@ -99,7 +97,6 @@ class DataChecks:
         Returns
         -------
             dict: Dictionary containing DataCheckMessage objects
-
         """
         messages = {"warnings": [], "errors": [], "actions": []}
         X = infer_feature_types(X)

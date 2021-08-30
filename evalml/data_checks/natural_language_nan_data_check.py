@@ -13,7 +13,7 @@ class NaturalLanguageNaNDataCheck(DataCheck):
         Check if any natural language columns contain NaN values.
 
         Parameters
-        ---------
+        ----------
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.  Defaults to None.
 
@@ -21,8 +21,8 @@ class NaturalLanguageNaNDataCheck(DataCheck):
         -------
             dict: dict with a DataCheckError if NaN values are present in natural language columns.
 
-        Example:
-        -------
+        Examples
+        --------
             >>> import pandas as pd
             >>> import woodwork as ww
             >>> import numpy as np

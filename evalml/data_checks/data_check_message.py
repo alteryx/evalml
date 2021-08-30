@@ -12,7 +12,6 @@ class DataCheckMessage:
         data_check_name (str): Name of data check.
         message_code (DataCheckMessageCode): Message code associated with message. Defaults to None.
         details (dict): Additional useful information associated with the message. Defaults to None.
-
     """
 
     message_type = None
@@ -28,8 +27,7 @@ class DataCheckMessage:
         return self.message
 
     def __eq__(self, other):
-        """
-        Check for equality.
+        """Check for equality.
 
         Two DataCheckMessage objs are considered equivalent if all of
         their attributes are equivalent.

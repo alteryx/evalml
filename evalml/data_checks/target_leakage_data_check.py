@@ -16,18 +16,16 @@ from evalml.utils.woodwork_utils import (
 
 
 class TargetLeakageDataCheck(DataCheck):
-    """
-    Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
+    """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
 
     If `method='mutual'`, this data check uses mutual information and supports all target and feature types.
     Otherwise, if `method='pearson'`, it uses Pearson correlation and only supports binary with numeric and boolean dtypes.
     Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
 
     Parameters
-    ---------
+    ----------
         pct_corr_threshold (float): The correlation threshold to be considered leakage. Defaults to 0.95.
         method (string): The method to determine correlation. Use 'mutual' for mutual information, otherwise 'pearson' for Pearson correlation. Defaults to 'mutual'.
-
     """
 
     def __init__(self, pct_corr_threshold=0.95, method="mutual"):
@@ -70,14 +68,13 @@ class TargetLeakageDataCheck(DataCheck):
         return highly_corr_cols
 
     def validate(self, X, y):
-        """
-        Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
+        """Check if any of the features are highly correlated with the target by using mutual information or Pearson correlation.
 
         If `method='mutual'`, supports all target and feature types. Otherwise, if `method='pearson'` only supports binary with numeric and boolean dtypes.
         Pearson correlation returns a value in [-1, 1], while mutual information returns a value in [0, 1].
 
         Parameters
-        ---------
+        ----------
             X (pd.DataFrame, np.ndarray): The input features to check
             y (pd.Series, np.ndarray): The target data
 
@@ -85,8 +82,8 @@ class TargetLeakageDataCheck(DataCheck):
         -------
             dict (DataCheckWarning): dict with a DataCheckWarning if target leakage is detected.
 
-        Example:
-        -------
+        Examples
+        --------
             >>> import pandas as pd
             >>> X = pd.DataFrame({
             ...    'leak': [10, 42, 31, 51, 61],

@@ -24,8 +24,7 @@ from evalml.utils.woodwork_utils import (
 
 
 class InvalidTargetDataCheck(DataCheck):
-    """
-    Check if the target data contains missing or invalid values.
+    """Check if the target data contains missing or invalid values.
 
     Arguments
     ---------
@@ -57,8 +56,8 @@ class InvalidTargetDataCheck(DataCheck):
         -------
             dict (DataCheckError): List with DataCheckErrors if any invalid values are found in the target data.
 
-        Example
-        -------
+        Examples
+        --------
             >>> import pandas as pd
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = pd.Series([0, 1, None, None])

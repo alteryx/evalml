@@ -120,7 +120,7 @@ def get_random_seed(
 class classproperty:
     """Allows function to be accessed as a class level property.
 
-    Example:
+    Examples
 
     .. code-block::
 

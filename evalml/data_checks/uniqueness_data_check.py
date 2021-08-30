@@ -20,8 +20,7 @@ warning_too_unique = "Input columns ({}) for {} problem type are too unique."
 
 
 class UniquenessDataCheck(DataCheck):
-    """
-    Check if there are any columns in the input that are either too unique for classification problems or not unique enough for regression problems.
+    """Check if there are any columns in the input that are either too unique for classification problems or not unique enough for regression problems.
 
     Arguments
     ---------
@@ -38,8 +37,7 @@ class UniquenessDataCheck(DataCheck):
         self.threshold = threshold
 
     def validate(self, X, y=None):
-        """
-        Check if there are any columns in the input that are too unique in the case of classification problems or not unique enough in the case of regression problems.
+        """Check if there are any columns in the input that are too unique in the case of classification problems or not unique enough in the case of regression problems.
 
         Parameters
         ----------
@@ -51,8 +49,8 @@ class UniquenessDataCheck(DataCheck):
             dict: dict with a DataCheckWarning if there are any too unique or not
                 unique enough columns.
 
-        Example:
-        -------
+        Examples
+        --------
             >>> import pandas as pd
             >>> df = pd.DataFrame({
             ...    'regression_unique_enough': [float(x) for x in range(100)],
@@ -131,19 +129,17 @@ class UniquenessDataCheck(DataCheck):
 
     @staticmethod
     def uniqueness_score(col):
-        """
-        Calculate a uniqueness score for the provided field.  NaN values are not considered as unique values in the calculation.
+        """Calculate a uniqueness score for the provided field.  NaN values are not considered as unique values in the calculation.
 
         Based on the Herfindahl–Hirschman Index.
 
         Parameters
-        ---------
+        ----------
             col (pd.Series): Feature values.
 
         Returns
         -------
             (float): Uniqueness score.
-
         """
         norm_counts = col.value_counts() / col.value_counts().sum()
         square_counts = norm_counts ** 2

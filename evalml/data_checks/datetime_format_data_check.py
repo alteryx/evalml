@@ -1,5 +1,4 @@
-"""Data check that checks if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order to be supported by time series estimators.
-"""
+"""Data check that checks if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order to be supported by time series estimators."""
 import pandas as pd
 
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
@@ -7,8 +6,7 @@ from evalml.utils import infer_feature_types
 
 
 class DateTimeFormatDataCheck(DataCheck):
-    """
-    Check if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order to be supported by time series estimators.
+    """Check if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order to be supported by time series estimators.
 
     Parameters
     ----------
@@ -19,7 +17,7 @@ class DateTimeFormatDataCheck(DataCheck):
         self.datetime_column = datetime_column
 
     def validate(self, X, y):
-        """Checks if the target data has equal intervals and is sorted.
+        """Check if the target data has equal intervals and is sorted.
 
         Parameters
         ----------
@@ -30,8 +28,8 @@ class DateTimeFormatDataCheck(DataCheck):
         -------
             dict (DataCheckError): List with DataCheckErrors if unequal intervals are found in the datetime column.
 
-        Example
-        -------
+        Examples
+        --------
             >>> from pandas as pd
             >>> X = pd.DataFrame(pd.date_range("January 1, 2021", periods=8), columns=["dates"])
             >>> y = pd.Series([1, 2, 4, 2, 1, 2, 3, 1])

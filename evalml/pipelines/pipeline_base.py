@@ -130,7 +130,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def summary(self):
         """A short summary of the pipeline structure, describing the list of components used.
 
-        Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
+        Examples Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
         component_graph = [
             type(self.component_graph.component_instances[component])
