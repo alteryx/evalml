@@ -1,3 +1,4 @@
+"""Pipeline subclass for all regression pipelines."""
 from evalml.pipelines import PipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
@@ -28,7 +29,7 @@ class RegressionPipeline(PipelineBase):
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray): The target training data of length [n_samples]
 
-        Returns
+        Returns:
             self
         """
         X = infer_feature_types(X)
@@ -47,7 +48,7 @@ class RegressionPipeline(PipelineBase):
             y (pd.Series, or np.ndarray): True values of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
 
-        Returns
+        Returns:
             dict: Ordered dictionary of objective scores
         """
         objectives = self.create_objectives(objectives)
@@ -57,6 +58,15 @@ class RegressionPipeline(PipelineBase):
         )
 
     def predict(self, X, objective=None):
+        """Make predictions using selected features.
+
+        Args:
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
+            objective (Object or string): The objective to use to make predictions.
+
+        Returns:
+            pd.Series: Predicted values.
+        """
         X = infer_feature_types(X)
         predictions = self.component_graph.predict(X)
         predictions = self.inverse_transform(predictions)

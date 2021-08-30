@@ -9,7 +9,7 @@ from evalml.preprocessing.data_splitters import TrainingValidationSplit
 
 # Top-level replacement for AutoML object to supply data for testing purposes.
 def err_call(*args, **kwargs):
-    """No-op."""
+    """No-op"""
 
 
 data_splitter = TrainingValidationSplit()
@@ -96,11 +96,9 @@ class DaskPipelineWithScoreError(BinaryClassificationPipeline):
 
 
 class DaskPipelineSlow(BinaryClassificationPipeline):
-    """Pipeline for testing whose fit() should take longer than the fast pipeline.
-
-    This exists solely to test AutoMLSearch termination and not complete
-    fitting.
-    """
+    """Pipeline for testing whose fit() should take longer than the
+    fast pipeline.  This exists solely to test AutoMLSearch termination
+    and not complete fitting."""
 
     component_graph = ["Baseline Classifier"]
     custom_name = "SlowPipeline"
@@ -125,11 +123,9 @@ class DaskPipelineSlow(BinaryClassificationPipeline):
 
 
 class DaskPipelineFast(BinaryClassificationPipeline):
-    """Pipeline for testing whose fit() should complete before the slow pipeline.
-
-    This exists solely to test AutoMLSearch termination and complete
-    fitting.
-    """
+    """Pipeline for testing whose fit() should complete before the
+    slow pipeline.  This exists solely to test AutoMLSearch termination
+    and complete fitting."""
 
     component_graph = ["Baseline Classifier"]
     custom_name = "FastPipeline"

@@ -1,3 +1,4 @@
+"""Utility methods for EvalML objectives."""
 from .objective_base import ObjectiveBase
 
 from evalml import objectives

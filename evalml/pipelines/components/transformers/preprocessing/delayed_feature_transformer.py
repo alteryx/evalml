@@ -132,4 +132,13 @@ class DelayedFeatureTransformer(Transformer):
         return X_ww
 
     def fit_transform(self, X, y):
+        """Fit the component and transform the input data.
+
+        Args:
+            X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
+            y (pd.Series, or None): Target.
+
+        Returns
+            pd.DataFrame: Transformed X.
+        """
         return self.fit(X, y).transform(X, y)

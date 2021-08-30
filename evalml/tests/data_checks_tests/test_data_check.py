@@ -22,7 +22,7 @@ def test_data_check_name(mock_data_check_class):
     assert mock_data_check_class.name == "MockDataCheck"
 
     class Funky_Name1DataCheck(mock_data_check_class):
-        """Mock data check with a funky name."""
+        """Mock data check with a funky name"""
 
     assert Funky_Name1DataCheck().name == "Funky_Name1DataCheck"
     assert Funky_Name1DataCheck.name == "Funky_Name1DataCheck"

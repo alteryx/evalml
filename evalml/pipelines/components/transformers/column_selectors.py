@@ -1,3 +1,4 @@
+"""Initalizes an transformer that selects specified columns in input data."""
 from abc import abstractmethod
 
 from evalml.pipelines.components.transformers import Transformer
@@ -5,7 +6,7 @@ from evalml.utils import infer_feature_types
 
 
 class ColumnSelector(Transformer):
-    """Initalizes an transformer that drops specified columns in input data.
+    """Initalizes an transformer that selects specified columns in input data.
 
     Args:
         columns (list(string)): List of column names, used to determine which columns to select.
@@ -43,7 +44,7 @@ class ColumnSelector(Transformer):
             X (pd.DataFrame): Data to check.
             y (pd.Series, optional): Targets.
 
-        Returns
+        Returns:
             self
         """
         X = infer_feature_types(X)
@@ -51,6 +52,15 @@ class ColumnSelector(Transformer):
         return self
 
     def transform(self, X, y=None):
+        """Transform data using fitted column selector component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+        """
         X = infer_feature_types(X)
         self._check_input_for_columns(X)
         cols = self.parameters.get("columns") or []
@@ -81,7 +91,7 @@ class DropColumns(ColumnSelector):
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Targets.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed X.
         """
         return super().transform(X, y)
@@ -110,7 +120,7 @@ class SelectColumns(ColumnSelector):
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Targets.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed X.
         """
         return super().transform(X, y)
@@ -148,6 +158,15 @@ class SelectByType(ColumnSelector):
         return X.ww.select(cols)
 
     def transform(self, X, y=None):
+        """Transforms data X by selecting columns.
+
+        Args:
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Targets.
+
+        Returns:
+            pd.DataFrame: Transformed X.
+        """
         X = infer_feature_types(X)
         self._check_input_for_columns(X)
         cols = self.parameters.get("column_types") or []

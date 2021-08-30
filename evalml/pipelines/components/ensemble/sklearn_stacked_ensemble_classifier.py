@@ -1,3 +1,4 @@
+"""Scikit-learn Stacked Ensemble Classifier."""
 from sklearn.ensemble import StackingClassifier
 from sklearn.model_selection import StratifiedKFold
 

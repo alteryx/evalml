@@ -1,3 +1,4 @@
+"""A component that may or may not need fitting that transforms data. These components are used before an estimator."""
 from abc import abstractmethod
 
 import pandas as pd

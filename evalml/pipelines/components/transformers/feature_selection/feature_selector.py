@@ -1,3 +1,4 @@
+"""Component that selects top features based on importance weights."""
 import pandas as pd
 
 from evalml.exceptions import MethodPropertyNotFoundError
@@ -39,7 +40,7 @@ class FeatureSelector(Transformer):
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Target data. Ignored.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
@@ -63,4 +64,13 @@ class FeatureSelector(Transformer):
         )
 
     def fit_transform(self, X, y=None):
+        """Fit and transform data using the feature selector.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+        """
         return self.fit(X, y).transform(X, y)

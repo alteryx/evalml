@@ -93,6 +93,15 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         return list(X.ww.select(include=["category"], return_schema=True).columns)
 
     def fit(self, X, y=None):
+        """Fits the one-hot encoder component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         top_n = self.parameters["top_n"]
         X = infer_feature_types(X)
         if self.features_to_encode is None:
@@ -163,7 +172,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             X (pd.DataFrame): Features to one-hot encode.
             y (pd.Series): Ignored.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed data, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
         X = infer_feature_types(X)
@@ -203,9 +212,10 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         """Returns a list of the unique categories to be encoded for the particular feature, in order.
 
         Args:
-            feature_name (str): the name of any feature provided to one-hot encoder during fit
-        Returns
-            np.ndarray: the unique categories, in the same dtype as they were provided during fit
+            feature_name (str): The name of any feature provided to one-hot encoder during fit.
+
+        Returns:
+            np.ndarray: The unique categories, in the same dtype as they were provided during fit.
         """
         try:
             index = self.features_to_encode.index(feature_name)
@@ -218,7 +228,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     @staticmethod
     def _make_name_unique(name, seen_before):
         """Helper to make the name unique."""
-
         if name not in seen_before:
             return name
 
@@ -239,7 +248,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         For example, consider a dataframe with a column called "A" and category "x_y" and another column
         called "A_x" with "y". In this example, the feature names would be "A_x_y" and "A_x_y_1".
 
-        Returns
+        Returns:
             np.ndarray: The feature names after encoding, provided in the same order as input_features.
         """
         self._features_to_drop = []
@@ -286,7 +295,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         For example, consider a dataframe with a column called "A" and category "x_y" and another column
         called "A_x" with "y". In this example, the feature names would be "A_x_y" and "A_x_y_1".
 
-        Returns
+        Returns:
             np.ndarray: The feature names after encoding, provided in the same order as input_features.
         """
         feature_names = self._get_feature_names()

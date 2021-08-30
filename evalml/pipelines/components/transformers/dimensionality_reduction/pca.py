@@ -38,6 +38,15 @@ class PCA(Transformer):
         )
 
     def fit(self, X, y=None):
+        """Fits the PCA component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         X = infer_feature_types(X)
         if not is_all_numeric(X):
             raise ValueError("PCA input must be all numeric")
@@ -45,6 +54,15 @@ class PCA(Transformer):
         return self
 
     def transform(self, X, y=None):
+        """Transform data using fitted PCA component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+        """
         X_ww = infer_feature_types(X)
         if not is_all_numeric(X_ww):
             raise ValueError("PCA input must be all numeric")
@@ -57,6 +75,15 @@ class PCA(Transformer):
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def fit_transform(self, X, y=None):
+        """Fit and transform data using the PCA component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+        """
         X_ww = infer_feature_types(X)
         if not is_all_numeric(X_ww):
             raise ValueError("PCA input must be all numeric")

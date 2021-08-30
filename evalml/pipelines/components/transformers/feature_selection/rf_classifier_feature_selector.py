@@ -1,3 +1,4 @@
+"""Component that selects top features based on importance weights using a Random Forest classifier."""
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.feature_selection import SelectFromModel as SkSelect

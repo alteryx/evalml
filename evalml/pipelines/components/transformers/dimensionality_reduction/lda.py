@@ -1,3 +1,4 @@
+"""Component that reduces the number of features by using Linear Discriminant Analysis."""
 import pandas as pd
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as SkLDA
 
@@ -34,6 +35,15 @@ class LinearDiscriminantAnalysis(Transformer):
         )
 
     def fit(self, X, y):
+        """Fits the LDA component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         X = infer_feature_types(X)
         if not is_all_numeric(X):
             raise ValueError("LDA input must be all numeric")
@@ -48,6 +58,15 @@ class LinearDiscriminantAnalysis(Transformer):
         return self
 
     def transform(self, X, y=None):
+        """Transform data using the fitted LDA component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+        """
         X_ww = infer_feature_types(X)
         if not is_all_numeric(X_ww):
             raise ValueError("LDA input must be all numeric")
@@ -60,6 +79,15 @@ class LinearDiscriminantAnalysis(Transformer):
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def fit_transform(self, X, y=None):
+        """Fit and transform data using the LDA component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+        """
         X_ww = infer_feature_types(X)
         if not is_all_numeric(X_ww):
             raise ValueError("LDA input must be all numeric")

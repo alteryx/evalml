@@ -10,7 +10,7 @@ from evalml.utils.woodwork_utils import infer_feature_types
 class Oversampler(BaseSampler):
     """SMOTE Oversampler component. Will automatically select whether to use SMOTE, SMOTEN, or SMOTENC based on inputs to the component.
 
-    Arguments:
+    Args:
         sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio
             of the minority to majority class after oversampling. We will create the a sampling dictionary using this ratio, with the keys corresponding to the class
             and the values responding to the number of samples. Defaults to 0.25.
@@ -51,6 +51,15 @@ class Oversampler(BaseSampler):
         )
 
     def fit(self, X, y):
+        """Fits oversampler to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         X_ww, y_ww = self._prepare_data(X, y)
         self.sampler = self._get_best_oversampler(X_ww)
 
@@ -79,10 +88,11 @@ class Oversampler(BaseSampler):
         self._parameters["categorical_features"] = self.categorical_features
 
     def _initialize_sampler(self, X, y):
-        """Initializes the oversampler with the given sampler_ratio or sampler_ratio_dict. If a sampler_ratio_dict is provided, we will opt to use that.
-        Otherwise, we use will create the sampler_ratio_dict dictionary.
+        """Initializes the oversampler with the given sampler_ratio or sampler_ratio_dict.
 
-        Arguments:
+        If a sampler_ratio_dict is provided, we will opt to use that. Otherwise, we use will create the sampler_ratio_dict dictionary.
+
+        Args:
             X (pd.DataFrame): Input features.
             y (pd.Series): Target.
         """

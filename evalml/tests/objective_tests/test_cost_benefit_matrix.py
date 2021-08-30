@@ -8,25 +8,25 @@ from evalml.objectives import CostBenefitMatrix
 
 def test_cbm_init():
     with pytest.raises(
-        ValueError, match="Args: to CostBenefitMatrix must all be numeric values."
+        ValueError, match="Parameters to CostBenefitMatrix must all be numeric values."
     ):
         CostBenefitMatrix(
             true_positive=None, true_negative=-1, false_positive=-7, false_negative=-2
         )
     with pytest.raises(
-        ValueError, match="Args: to CostBenefitMatrix must all be numeric values."
+        ValueError, match="Parameters to CostBenefitMatrix must all be numeric values."
     ):
         CostBenefitMatrix(
             true_positive=1, true_negative=-1, false_positive=None, false_negative=-2
         )
     with pytest.raises(
-        ValueError, match="Args: to CostBenefitMatrix must all be numeric values."
+        ValueError, match="Parameters to CostBenefitMatrix must all be numeric values."
     ):
         CostBenefitMatrix(
             true_positive=1, true_negative=None, false_positive=-7, false_negative=-2
         )
     with pytest.raises(
-        ValueError, match="Args: to CostBenefitMatrix must all be numeric values."
+        ValueError, match="Parameters to CostBenefitMatrix must all be numeric values."
     ):
         CostBenefitMatrix(
             true_positive=3, true_negative=-1, false_positive=-7, false_negative=None

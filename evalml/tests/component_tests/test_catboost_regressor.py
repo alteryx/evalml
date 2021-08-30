@@ -10,7 +10,7 @@ importorskip("catboost", reason="Skipping test because catboost not installed")
 
 
 def test_catboost_regressor_random_seed_bounds_seed(X_y_regression):
-    """ensure catboost's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds."""
+    """ensure catboost's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds"""
     X, y = X_y_regression
     col_names = ["col_{}".format(i) for i in range(len(X[0]))]
     X = pd.DataFrame(X, columns=col_names)

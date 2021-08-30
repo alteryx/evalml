@@ -1,3 +1,4 @@
+"""Pipeline subclass for all multiclass classification pipelines."""
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.problem_types import ProblemTypes
 

@@ -1,3 +1,4 @@
+"""Scikit-learn Stacked Ensemble Regressor."""
 from sklearn.ensemble import StackingRegressor
 from sklearn.model_selection import KFold
 

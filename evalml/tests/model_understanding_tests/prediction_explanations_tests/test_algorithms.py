@@ -33,10 +33,8 @@ from evalml.problem_types.problem_types import ProblemTypes
 
 def make_test_pipeline(estimator, base_class):
     """Make an estimator-only pipeline.
-
-    This is helps test the exceptions raised in _compute_shap_values
-    without having to use make_pipeline (which needs training data to be
-    passed in).
+    This is helps test the exceptions raised in _compute_shap_values without having to use make_pipeline
+    (which needs training data to be passed in).
     """
 
     class Pipeline(base_class):

@@ -126,4 +126,13 @@ class BaseSampler(Transformer):
         return param_copy
 
     def fit_transform(self, X, y):
+        """Fit and transform data using the sampler component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            (pd.DataFrame, pd.Series): Transformed data.
+        """
         return self.fit(X, y).transform(X, y)

@@ -1,3 +1,4 @@
+"""Component graph for a pipeline as a directed acyclic graph (DAG)."""
 import inspect
 import warnings
 
@@ -609,12 +610,14 @@ class ComponentGraph:
         return compute_order
 
     def __getitem__(self, index):
+        """Get an element in the component graph."""
         if isinstance(index, int):
             return self.get_component(self.compute_order[index])
         else:
             return self.get_component(index)
 
     def __iter__(self):
+        """Iterator for the component graph."""
         self._i = 0
         return self
 
@@ -632,6 +635,7 @@ class ComponentGraph:
             raise StopIteration
 
     def __eq__(self, other):
+        """Test for equality."""
         if not isinstance(other, self.__class__):
             return False
         random_seed_eq = self.random_seed == other.random_seed
@@ -644,6 +648,7 @@ class ComponentGraph:
         return True
 
     def __repr__(self):
+        """String representation of a component graph."""
         component_strs = []
         for (
             component_name,

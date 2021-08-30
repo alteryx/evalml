@@ -59,7 +59,8 @@ def test_init(process_pool):
 def test_submit_training_job_single(
     X_y_binary_cls, pool_type, thread_pool, process_pool
 ):
-    """Test that training a single pipeline using the parallel engine produces the same results as simply running the train_pipeline function."""
+    """Test that training a single pipeline using the parallel engine produces the
+    same results as simply running the train_pipeline function."""
     X, y = X_y_binary_cls
     pool = get_pool(pool_type, thread_pool, process_pool)
     with CFClient(pool) as client:
@@ -90,7 +91,8 @@ def test_submit_training_job_single(
 def test_submit_training_jobs_multiple(
     X_y_binary_cls, pool_type, thread_pool, process_pool
 ):
-    """Test that training multiple pipelines using the parallel engine produces the same results as the sequential engine."""
+    """Test that training multiple pipelines using the parallel engine produces the
+    same results as the sequential engine."""
     X, y = X_y_binary_cls
     pool = get_pool(pool_type, thread_pool, process_pool)
     with CFClient(pool) as client:
@@ -134,7 +136,8 @@ def test_submit_training_jobs_multiple(
 def test_submit_evaluate_job_single(
     X_y_binary_cls, pool_type, thread_pool, process_pool
 ):
-    """Test that evaluating a single pipeline using the parallel engine produces the same results as simply running the evaluate_pipeline function."""
+    """Test that evaluating a single pipeline using the parallel engine produces the
+    same results as simply running the evaluate_pipeline function."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
@@ -188,7 +191,8 @@ def test_submit_evaluate_job_single(
 def test_submit_evaluate_jobs_multiple(
     X_y_binary_cls, pool_type, thread_pool, process_pool
 ):
-    """Test that evaluating multiple pipelines using the parallel engine produces the same results as the sequential engine."""
+    """Test that evaluating multiple pipelines using the parallel engine produces the
+    same results as the sequential engine."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
@@ -244,7 +248,8 @@ def test_submit_evaluate_jobs_multiple(
 def test_submit_scoring_job_single(
     X_y_binary_cls, pool_type, thread_pool, process_pool
 ):
-    """Test that scoring a single pipeline using the parallel engine produces the same results as simply running the score_pipeline function."""
+    """Test that scoring a single pipeline using the parallel engine produces the
+    same results as simply running the score_pipeline function."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
@@ -283,7 +288,8 @@ def test_submit_scoring_job_single(
 def test_submit_scoring_jobs_multiple(
     X_y_binary_cls, pool_type, thread_pool, process_pool
 ):
-    """Test that scoring multiple pipelines using the parallel engine produces the same results as the sequential engine."""
+    """Test that scoring multiple pipelines using the parallel engine produces the
+    same results as the sequential engine."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
@@ -338,7 +344,8 @@ def test_submit_scoring_jobs_multiple(
 
 @pytest.mark.parametrize("pool_type", ["threads"])
 def test_cancel_job(X_y_binary_cls, pool_type, thread_pool, process_pool):
-    """Test that training a single pipeline using the parallel engine produces the same results as simply running the train_pipeline function."""
+    """Test that training a single pipeline using the parallel engine produces the
+    same results as simply running the train_pipeline function."""
     X, y = X_y_binary_cls
     pool = get_pool(pool_type, thread_pool, process_pool)
 

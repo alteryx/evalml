@@ -63,7 +63,7 @@ input_features_and_y_true = [
     (
         pd.DataFrame({"a": range(15)}),
         pd.Series(range(12)),
-        "^Args: y_true and input_features must have the same number of data points.",
+        "^Parameters y_true and input_features must have the same number of data points.",
     ),
 ]
 
@@ -152,7 +152,7 @@ def test_output_format_checked():
 
 regression_best_worst_answer = """Test Pipeline Name
 
-        Args: go here
+        Parameters go here
 
             Best 1 of 1
 
@@ -220,7 +220,7 @@ regression_best_worst_answer_df = pd.DataFrame(
 
 no_best_worst_answer = """Test Pipeline Name
 
-        Args: go here
+        Parameters go here
 
             1 of 2
 
@@ -253,7 +253,7 @@ no_best_worst_answer_df = pd.DataFrame(
 
 binary_best_worst_answer = """Test Pipeline Name
 
-        Args: go here
+        Parameters go here
 
             Best 1 of 1
 
@@ -339,7 +339,7 @@ multiclass_table = """Class: setosa
 
 multiclass_best_worst_answer = """Test Pipeline Name
 
-        Args: go here
+        Parameters go here
 
             Best 1 of 1
 
@@ -414,7 +414,7 @@ multiclass_best_worst_answer_df = pd.DataFrame(
 
 multiclass_no_best_worst_answer = """Test Pipeline Name
 
-    Args: go here
+    Parameters go here
 
         1 of 2
 
@@ -846,7 +846,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(
         }
 
     pipeline = MagicMock()
-    pipeline.parameters = "Args: go here"
+    pipeline.parameters = "Parameters go here"
     input_features = pd.DataFrame({"a": [3, 4]}, index=custom_index)
     pipeline.problem_type = problem_type
     pipeline.name = "Test Pipeline Name"
@@ -958,7 +958,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(
 
 regression_custom_metric_answer = """Test Pipeline Name
 
-        Args: go here
+        Parameters go here
 
             Best 1 of 1
 
@@ -1032,7 +1032,7 @@ def test_explain_predictions_best_worst_custom_metric(
         else {"explanations": ["explanation_dictionary_goes_here"]}
     )
     pipeline = MagicMock()
-    pipeline.parameters = "Args: go here"
+    pipeline.parameters = "Parameters go here"
     input_features = pd.DataFrame({"a": [5, 6]})
     pipeline.problem_type = ProblemTypes.REGRESSION
     pipeline.name = "Test Pipeline Name"

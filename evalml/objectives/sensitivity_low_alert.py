@@ -1,3 +1,4 @@
+"""Sensitivity at Low Alert Rates objective."""
 import numpy as np
 
 from .binary_classification_objective import BinaryClassificationObjective
@@ -8,6 +9,12 @@ logger = get_logger(__file__)
 
 
 class SensitivityLowAlert(BinaryClassificationObjective):
+    """Create instance of SensitivityLowAlert.
+
+    Args:
+        alert_rate (float): percentage of top scores to classify as high risk.
+    """
+
     name = "Sensitivity at Low Alert Rates"
     greater_is_better = True
     score_needs_proba = False
@@ -16,11 +23,6 @@ class SensitivityLowAlert(BinaryClassificationObjective):
     expected_range = [0, 1]
 
     def __init__(self, alert_rate=0.01):
-        """Create instance of SensitivityLowAlert.
-
-        Args:
-            alert_rate (float): percentage of top scores to classify as high risk
-        """
         if (alert_rate > 1) or (alert_rate < 0):
             raise ValueError("Alert rate is outside of valid range [0,1]")
 
@@ -32,7 +34,6 @@ class SensitivityLowAlert(BinaryClassificationObjective):
         Args:
             ypred_proba (pd.Series): Predicted probabilities
         """
-
         ypred_proba = self._standardize_input_type(ypred_proba)
         if len(ypred_proba.unique()) == 1:
             logger.debug(

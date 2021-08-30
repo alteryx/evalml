@@ -1,3 +1,4 @@
+"""Transformer that can automatically extract features from datetime columns."""
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
 
@@ -110,6 +111,15 @@ class DateTimeFeaturizer(Transformer):
         )
 
     def fit(self, X, y=None):
+        """Fit the datetime featurizer component.
+
+        Args:
+            X (pd.DataFrame): Input features.
+            y (pd.Series, optional): Target data. Ignored.
+
+        Returns:
+            self
+        """
         X = infer_feature_types(X)
         self._date_time_col_names = list(
             X.ww.select("datetime", return_schema=True).columns
@@ -120,7 +130,7 @@ class DateTimeFeaturizer(Transformer):
         """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns.
 
         Args:
-            X (pd.DataFrame): Data to transform
+            X (pd.DataFrame): Input features.
             y (pd.Series, optional): Ignored.
 
         Returns

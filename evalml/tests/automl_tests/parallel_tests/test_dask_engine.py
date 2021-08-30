@@ -42,7 +42,8 @@ def test_init(cluster):
 
 
 def test_submit_training_job_single(X_y_binary_cls, cluster):
-    """Test that training a single pipeline using the parallel engine produces the same results as simply running the train_pipeline function."""
+    """Test that training a single pipeline using the parallel engine produces the
+    same results as simply running the train_pipeline function."""
     X, y = X_y_binary_cls
     with Client(cluster) as client:
         engine = DaskEngine(client=client)
@@ -69,7 +70,8 @@ def test_submit_training_job_single(X_y_binary_cls, cluster):
 
 
 def test_submit_training_jobs_multiple(X_y_binary_cls, cluster):
-    """Test that training multiple pipelines using the parallel engine produces the same results as the sequential engine."""
+    """Test that training multiple pipelines using the parallel engine produces the
+    same results as the sequential engine."""
     X, y = X_y_binary_cls
     with Client(cluster) as client:
         pipelines = [
@@ -109,7 +111,8 @@ def test_submit_training_jobs_multiple(X_y_binary_cls, cluster):
 
 
 def test_submit_evaluate_job_single(X_y_binary_cls, cluster):
-    """Test that evaluating a single pipeline using the parallel engine produces the same results as simply running the evaluate_pipeline function."""
+    """Test that evaluating a single pipeline using the parallel engine produces the
+    same results as simply running the evaluate_pipeline function."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
@@ -159,7 +162,8 @@ def test_submit_evaluate_job_single(X_y_binary_cls, cluster):
 
 
 def test_submit_evaluate_jobs_multiple(X_y_binary_cls, cluster):
-    """Test that evaluating multiple pipelines using the parallel engine produces the same results as the sequential engine."""
+    """Test that evaluating multiple pipelines using the parallel engine produces the
+    same results as the sequential engine."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
@@ -211,7 +215,8 @@ def test_submit_evaluate_jobs_multiple(X_y_binary_cls, cluster):
 
 
 def test_submit_scoring_job_single(X_y_binary_cls, cluster):
-    """Test that scoring a single pipeline using the parallel engine produces the same results as simply running the score_pipeline function."""
+    """Test that scoring a single pipeline using the parallel engine produces the
+    same results as simply running the score_pipeline function."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
@@ -246,7 +251,8 @@ def test_submit_scoring_job_single(X_y_binary_cls, cluster):
 
 
 def test_submit_scoring_jobs_multiple(X_y_binary_cls, cluster):
-    """Test that scoring multiple pipelines using the parallel engine produces the same results as the sequential engine."""
+    """Test that scoring multiple pipelines using the parallel engine produces the
+    same results as the sequential engine."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
@@ -299,7 +305,8 @@ def test_submit_scoring_jobs_multiple(X_y_binary_cls, cluster):
 
 
 def test_cancel_job(X_y_binary_cls, cluster):
-    """Test that training a single pipeline using the parallel engine produces the same results as simply running the train_pipeline function."""
+    """Test that training a single pipeline using the parallel engine produces the
+    same results as simply running the train_pipeline function."""
     X, y = X_y_binary_cls
 
     with Client(cluster) as client:

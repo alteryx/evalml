@@ -1,3 +1,4 @@
+"""A transformer that encodes categorical features into target encodings."""
 import pandas as pd
 from woodwork.logical_types import Categorical
 
@@ -76,9 +77,27 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
         )
 
     def fit(self, X, y):
+        """Fits the target encoder.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         return super().fit(X, y)
 
     def transform(self, X, y=None):
+        """Transform data using the fitted target encoder.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+        """
         X_ww = infer_feature_types(X)
         if y is not None:
             y = infer_feature_types(y)
@@ -89,6 +108,15 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
         )
 
     def fit_transform(self, X, y):
+        """Fit and transform data using the target encoder.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+        """
         return self.fit(X, y).transform(X, y)
 
     def get_feature_names(self):
