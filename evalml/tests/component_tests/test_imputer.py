@@ -259,9 +259,10 @@ def test_imputer_does_not_reset_index():
     X.loc[5, "input_val"] = np.nan
     X.loc[5, "input_cat"] = np.nan
     assert X.index.tolist() == list(range(10))
+    X.ww.init(logical_types={"input_cat": "categorical"})
 
     X.drop(0, inplace=True)
-    y = X.pop("target")
+    y = X.ww.pop("target")
 
     imputer = Imputer()
     imputer.fit(X, y=y)

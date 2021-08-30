@@ -43,6 +43,7 @@ from evalml.problem_types import (
     handle_problem_types,
     is_regression,
 )
+from evalml.utils import infer_feature_types
 
 
 def pytest_configure(config):
@@ -741,6 +742,7 @@ def decision_tree_classification_pipeline_class(X_y_categorical_classification):
         }
     )
     X, y = X_y_categorical_classification
+    X.ww.init(logical_types={"Ticket": "categorical", "Cabin": "categorical"})
     pipeline.fit(X, y)
     return pipeline
 

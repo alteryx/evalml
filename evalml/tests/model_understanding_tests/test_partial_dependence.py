@@ -21,6 +21,7 @@ from evalml.pipelines import (
     RegressionPipeline,
 )
 from evalml.problem_types import ProblemTypes
+from evalml.utils import infer_feature_types
 
 
 @pytest.fixture
@@ -209,6 +210,7 @@ def test_partial_dependence_catboost(
                 "also string": ["c", "b", "a"],
             }
         )
+        X.ww.init(logical_types={"string": "categorical", "also string": "categorical"})
         pipeline = pipeline_class(
             component_graph=["CatBoost Classifier"],
             parameters={"CatBoost Classifier": {"thread_count": 1}},
