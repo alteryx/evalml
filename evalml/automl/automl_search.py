@@ -589,7 +589,7 @@ class AutoMLSearch:
 
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
-            if self.sampler_method in ["auto", "Oversampler"]:
+            if self.sampler_method == "auto":
                 self._sampler_name = get_best_sampler_for_data(
                     self.X_train,
                     self.y_train,
