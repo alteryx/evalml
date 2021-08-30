@@ -126,7 +126,7 @@ class ComponentGraph:
     def default_parameters(self):
         """The default parameter dictionary for this pipeline.
 
-        Returns
+        Returns:
             dict: Dictionary of all component default parameters.
         """
         defaults = {}
@@ -193,7 +193,7 @@ class ComponentGraph:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples].
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed values.
         """
         return self._fit_transform_features_helper(True, X, y)
@@ -205,7 +205,7 @@ class ComponentGraph:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples]. Defaults to None.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed values.
         """
         return self._fit_transform_features_helper(False, X, y)
@@ -218,7 +218,7 @@ class ComponentGraph:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples]. Defaults to None.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed values.
         """
         if len(self.compute_order) <= 1:
@@ -264,7 +264,7 @@ class ComponentGraph:
             X (pd.DataFrame): Input features of shape [n_samples, n_features].
             y (pd.Series): The target data of length [n_samples]. Defaults to None.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed output.
         """
         if len(self.compute_order) == 0:
@@ -289,7 +289,7 @@ class ComponentGraph:
         Args:
             X (pd.DataFrame): Input features of shape [n_samples, n_features].
 
-        Returns
+        Returns:
             pd.Series: Predicted values.
         """
         if len(self.compute_order) == 0:
@@ -313,7 +313,7 @@ class ComponentGraph:
             fit (boolean): Whether to fit the estimators as well as transform it.
                         Defaults to False.
 
-        Returns
+        Returns:
             dict: Outputs from each component.
         """
         X = infer_feature_types(X)
@@ -390,8 +390,8 @@ class ComponentGraph:
         Args:
             input_feature_names (list(str)): Names of the features in the input dataframe.
 
-        Returns
-           dictionary: mapping of feature name to set feature names that were created from that feature.
+        Returns:
+           dict: Dictionary mapping of feature name to set feature names that were created from that feature.
         """
         if not self.compute_order:
             return {}
@@ -445,7 +445,7 @@ class ComponentGraph:
         Args:
             component_name (str): Name of the component to retrieve
 
-        Returns
+        Returns:
             ComponentBase object
         """
         try:
@@ -456,7 +456,7 @@ class ComponentGraph:
     def get_last_component(self):
         """Retrieves the component that is computed last in the graph, usually the final estimator.
 
-        Returns
+        Returns:
             ComponentBase object
         """
         if len(self.compute_order) == 0:
@@ -467,7 +467,7 @@ class ComponentGraph:
     def get_estimators(self):
         """Gets a list of all the estimator components within this graph.
 
-        Returns
+        Returns:
             list: All estimator objects within the graph.
         """
         if not isinstance(self.get_last_component(), ComponentBase):
@@ -503,7 +503,7 @@ class ComponentGraph:
         Args:
             return_dict (bool): If True, return dictionary of information about component graph. Defaults to False.
 
-        Returns
+        Returns:
             dict: Dictionary of all component parameters if return_dict is True, else None
         """
         components = {}
@@ -527,7 +527,7 @@ class ComponentGraph:
             name (str): Name of the graph. Defaults to None.
             graph_format (str): file format to save the graph in. Defaults to None.
 
-        Returns
+        Returns:
             graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
         """
         graphviz = import_or_raise(
@@ -621,7 +621,7 @@ class ComponentGraph:
     def __next__(self):
         """Iterator for graphs, retrieves the components in the graph in order.
 
-        Returns
+        Returns:
             ComponentBase obj: The next component class or instance in the graph
         """
         if self._i < len(self.compute_order):

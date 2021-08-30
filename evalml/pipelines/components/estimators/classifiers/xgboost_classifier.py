@@ -1,3 +1,4 @@
+"""XGBoost Classifier."""
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -88,6 +89,15 @@ class XGBoostClassifier(Estimator):
         }
 
     def fit(self, X, y=None):
+        """Fits XGBoost classifier component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         X, y = super()._manage_woodwork(X, y)
         X.ww.set_types(self._convert_bool_to_int(X))
         self.input_feature_names = list(X.columns)
@@ -96,12 +106,28 @@ class XGBoostClassifier(Estimator):
         return self
 
     def predict(self, X):
+        """Make predictions using the fitted XGBoost classifier.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.DataFrame: Predicted values.
+        """
         X, _ = super()._manage_woodwork(X)
         X.ww.set_types(self._convert_bool_to_int(X))
         X = _rename_column_names_to_numeric(X, flatten_tuples=False)
         return super().predict(X)
 
     def predict_proba(self, X):
+        """Make predictions using the fitted CatBoost classifier.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.DataFrame: Predicted values.
+        """
         X, _ = super()._manage_woodwork(X)
         X.ww.set_types(self._convert_bool_to_int(X))
         X = _rename_column_names_to_numeric(X, flatten_tuples=False)
@@ -109,4 +135,5 @@ class XGBoostClassifier(Estimator):
 
     @property
     def feature_importance(self):
+        """Feature importance of fitted XGBoost classifier."""
         return self._component_obj.feature_importances_

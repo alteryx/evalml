@@ -1,3 +1,4 @@
+"""Pipeline base class for time series regression problems."""
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
@@ -34,7 +35,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             y (pd.Series, np.ndarray, None): The target training targets of length [n_samples].
             objective (Object or string): The objective to use to make predictions.
 
-        Returns
+        Returns:
             pd.Series: Predicted values.
         """
         if self.estimator is None:
@@ -61,7 +62,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             y (pd.Series): True labels of length [n_samples].
             objectives (list): Non-empty list of objectives to score on.
 
-        Returns
+        Returns:
             dict: Ordered dictionary of objective scores.
         """
         X, y = self._convert_to_woodwork(X, y)

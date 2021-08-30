@@ -1,3 +1,4 @@
+"""Components that extract features from the input data."""
 from abc import abstractmethod
 
 import featuretools as ft

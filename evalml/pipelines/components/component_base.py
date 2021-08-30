@@ -1,3 +1,4 @@
+"""Base class for all components."""
 import copy
 from abc import ABC, abstractmethod
 
@@ -94,10 +95,9 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
         Our convention is that Component.default_parameters == Component().parameters.
 
-        Returns
-            dict: default parameters for this component.
+        Returns:
+            dict: Default parameters for this component.
         """
-
         if cls._default_parameters is None:
             cls._default_parameters = cls().parameters
 
@@ -110,7 +110,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def clone(self):
         """Constructs a new component with the same parameters and random state.
 
-        Returns
+        Returns:
             A new instance of this component with identical parameters and random state.
         """
         return self.__class__(**self.parameters, random_seed=self.random_seed)
@@ -119,10 +119,10 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """Fits component to data.
 
         Args:
-            X (list, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (list, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): The target training data of length [n_samples]
 
-        Returns
+        Returns:
             self
         """
         X = infer_feature_types(X)
@@ -143,8 +143,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             print_name(bool, optional): whether to print name of component
             return_dict(bool, optional): whether to return description as dictionary in the format {"name": name, "parameters": parameters}
 
-        Returns
-            None or dict: prints and returns dictionary
+        Returns:
+            None or dict: Returns dictionary if return_dict is True, else None.
         """
         if print_name:
             title = self.name
@@ -166,7 +166,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             file_path (str): Location to save file
             pickle_protocol (int): The pickle data stream format.
 
-        Returns
+        Returns:
             None
         """
         with open(file_path, "wb") as f:
@@ -186,6 +186,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             return cloudpickle.load(f)
 
     def __eq__(self, other):
+        """Check for equality."""
         if not isinstance(other, self.__class__):
             return False
         random_seed_eq = self.random_seed == other.random_seed
@@ -198,9 +199,11 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         return True
 
     def __str__(self):
+        """String representation of a component."""
         return self.name
 
     def __repr__(self):
+        """String representation of a component."""
         parameters_repr = ", ".join(
             [f"{key}={safe_repr(value)}" for key, value in self.parameters.items()]
         )

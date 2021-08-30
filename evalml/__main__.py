@@ -1,4 +1,4 @@
-"""I'm a docstring."""
+"""CLI commands."""
 
 import click
 
@@ -7,13 +7,13 @@ from evalml.utils.cli_utils import print_info
 
 @click.group()
 def cli():
-    """I'm a docstring."""
+    """CLI command with no arguments. Does nothing."""
     pass
 
 
 @click.command()
 def info():
-    """I'm a docstring."""
+    """CLI command with `info` argument. Prints info about the system, evalml, and dependencies of evalml."""
     print_info()
 
 

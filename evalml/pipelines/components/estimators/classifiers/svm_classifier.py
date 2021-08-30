@@ -1,3 +1,4 @@
+"""Support Vector Machine Classifier."""
 import numpy as np
 from sklearn.svm import SVC
 from skopt.space import Real
@@ -72,7 +73,7 @@ class SVMClassifier(Estimator):
     def feature_importance(self):
         """Feature importance only works with linear kernels.
 
-        If the kernel isn't linear, we return a numpy array of zeros
+        If the kernel isn't linear, we return a numpy array of zeros.
         """
         if self._parameters["kernel"] != "linear":
             return np.zeros(self._component_obj.n_features_in_)

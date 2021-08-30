@@ -4,5 +4,4 @@
 flake8==3.7.0
 black==21.5b1
 isort==5.0.0
-docformatter==1.4
 pydocstyle==6.1.1

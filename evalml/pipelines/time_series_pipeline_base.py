@@ -1,3 +1,4 @@
+"""Pipeline base class for time-series problems."""
 import pandas as pd
 
 from evalml.pipelines import PipelineBase
@@ -6,7 +7,6 @@ from evalml.utils import drop_rows_with_nans, infer_feature_types
 
 
 class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
-
     """Pipeline base class for time series problems.
 
     Args:

@@ -47,7 +47,7 @@ def _standardize_versions(notebooks, desired_version="3.8.6"):
 
 @click.group()
 def cli():
-    """no-op."""
+    """no-op"""
 
 
 @cli.command()

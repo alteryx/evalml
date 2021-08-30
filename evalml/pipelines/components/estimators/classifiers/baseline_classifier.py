@@ -1,3 +1,4 @@
+"""Baseline classifier."""
 import numpy as np
 import pandas as pd
 
@@ -42,6 +43,15 @@ class BaselineClassifier(Estimator):
         )
 
     def fit(self, X, y=None):
+        """Fits baseline classifier component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         if y is None:
             raise ValueError("Cannot fit Baseline classifier if y is None")
         X = infer_feature_types(X)
@@ -58,6 +68,14 @@ class BaselineClassifier(Estimator):
         return self
 
     def predict(self, X):
+        """Make predictions using the baseline classification strategy.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.Series: Predicted values.
+        """
         X = infer_feature_types(X)
         strategy = self.parameters["strategy"]
         if strategy == "mode":
@@ -73,6 +91,14 @@ class BaselineClassifier(Estimator):
         return infer_feature_types(predictions)
 
     def predict_proba(self, X):
+        """Make prediction probabilities using the baseline classification strategy.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.DataFrame: Predicted probability values.
+        """
         X = infer_feature_types(X)
         strategy = self.parameters["strategy"]
         if strategy == "mode":

@@ -1,3 +1,4 @@
+"""Extra Trees Regressor."""
 from sklearn.ensemble import ExtraTreesRegressor as SKExtraTreesRegressor
 from skopt.space import Integer
 

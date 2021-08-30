@@ -1,3 +1,4 @@
+"""Transformer that can automatically featurize text columns using featuretools' nlp_primitives."""
 import string
 
 import featuretools as ft
@@ -77,7 +78,7 @@ class TextFeaturizer(TextTransformer):
 
         Args:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (pd.Series, np.ndarray, optional): The target training data of length [n_samples]
+            y (pd.Series): The target training data of length [n_samples]
 
         Returns:
             self

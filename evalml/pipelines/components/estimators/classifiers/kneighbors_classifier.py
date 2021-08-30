@@ -1,3 +1,4 @@
+"""K-Nearest Neighbors Classifier."""
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier as SKKNeighborsClassifier
 from skopt.space import Integer

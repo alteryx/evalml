@@ -1,3 +1,4 @@
+"""A component that fits and predicts given data."""
 from abc import abstractmethod
 
 from pandas.core.indexes import range
@@ -17,7 +18,7 @@ class Estimator(ComponentBase):
     uses standard keyword arguments and calls `super().__init__()` with a parameters dict. You may also override the
     `fit`, `transform`, `fit_transform` and other methods in this class if appropriate.
 
-    To see some examples, check out the definitions of any Estimator component.
+    To see some examples, check out the definitions of any Estimator component subclass.
 
     Args:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
@@ -57,6 +58,15 @@ class Estimator(ComponentBase):
         return X, y
 
     def fit(self, X, y=None):
+        """Fits estimator to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         X, y = self._manage_woodwork(X, y)
         self.input_feature_names = list(X.columns)
         self._component_obj.fit(X, y)
@@ -66,10 +76,10 @@ class Estimator(ComponentBase):
         """Make predictions using selected features.
 
         Args:
-            X (pd.DataFrame, np.ndarray): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
 
-        Returns
-            pd.Series: Predicted values
+        Returns:
+            pd.Series: Predicted values.
         """
         try:
             X = infer_feature_types(X)
@@ -88,8 +98,8 @@ class Estimator(ComponentBase):
         Args:
             X (pd.DataFrame, or np.ndarray): Features
 
-        Returns
-            pd.Series: Probability estimates
+        Returns:
+            pd.Series: Probability estimates.
         """
         try:
             X = infer_feature_types(X)
@@ -115,6 +125,7 @@ class Estimator(ComponentBase):
             )
 
     def __eq__(self, other):
+        """Check for equality."""
         return (
             super().__eq__(other)
             and self.supported_problem_types == other.supported_problem_types

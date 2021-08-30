@@ -1,3 +1,4 @@
+"""CatBoost Regressor, a regressor that uses gradient-boosting on decision trees. CatBoost is an open-source library and natively supports categorical features."""
 import copy
 import warnings
 
@@ -91,6 +92,15 @@ class CatBoostRegressor(Estimator):
         )
 
     def fit(self, X, y=None):
+        """Fits CatBoost regressor component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         X = infer_feature_types(X)
         cat_cols = list(X.ww.select("category", return_schema=True).columns)
         self.input_feature_names = list(X.columns)
@@ -100,4 +110,5 @@ class CatBoostRegressor(Estimator):
 
     @property
     def feature_importance(self):
+        """Feature importance of fitted CatBoost regressor."""
         return self._component_obj.get_feature_importance()

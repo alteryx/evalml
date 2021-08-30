@@ -1,3 +1,4 @@
+"""Component that removes trends from time series by fitting a polynomial to the data."""
 import pandas as pd
 from skopt.space import Integer
 
@@ -97,7 +98,6 @@ class PolynomialDetrender(TargetTransformer):
         """Adds back fitted trend to target variable.
 
         Args:
-            X (pd.DataFrame, optional): Ignored.
             y (pd.Series): Target variable.
 
         Returns:

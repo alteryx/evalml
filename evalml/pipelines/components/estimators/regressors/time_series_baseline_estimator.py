@@ -1,3 +1,4 @@
+"""Time series estimator that predicts using the naive forecasting approach."""
 import numpy as np
 import pandas as pd
 
@@ -51,6 +52,15 @@ class TimeSeriesBaselineEstimator(Estimator):
         )
 
     def fit(self, X, y=None):
+        """Fits time series baseline estimator to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         if X is None:
             X = pd.DataFrame()
         X = infer_feature_types(X)
@@ -58,6 +68,15 @@ class TimeSeriesBaselineEstimator(Estimator):
         return self
 
     def predict(self, X, y=None):
+        """Make predictions using fitted time series baseline estimator.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data.
+
+        Returns:
+            pd.Series: Predicted values.
+        """
         if y is None:
             raise ValueError(
                 "Cannot predict Time Series Baseline Estimator if y is None"
@@ -70,6 +89,15 @@ class TimeSeriesBaselineEstimator(Estimator):
         return infer_feature_types(y)
 
     def predict_proba(self, X, y=None):
+        """Make prediction probabilities using fitted time series baseline estimator.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data.
+
+        Returns:
+            pd.DataFrame: Predicted probability values.
+        """
         if y is None:
             raise ValueError(
                 "Cannot predict Time Series Baseline Estimator if y is None"

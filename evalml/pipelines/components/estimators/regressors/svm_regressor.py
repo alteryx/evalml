@@ -1,3 +1,4 @@
+"""Support Vector Machine Regressor."""
 import numpy as np
 from sklearn.svm import SVR
 from skopt.space import Real
@@ -54,9 +55,9 @@ class SVMRegressor(Estimator):
 
     @property
     def feature_importance(self):
-        """Feature importance only works with linear kernels.
+        """Feature importance of fitted SVM regresor.
 
-        If the kernel isn't linear, we return a numpy array of zeros
+        Only works with linear kernels. If the kernel isn't linear, we return a numpy array of zeros.
         """
         if self._parameters["kernel"] != "linear":
             return np.zeros(self._component_obj.n_features_in_)

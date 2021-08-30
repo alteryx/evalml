@@ -1,3 +1,4 @@
+"""Elastic Net Classifier. Uses Logistic Regression with elasticnet penalty as the base estimator."""
 import warnings
 
 import numpy as np
@@ -82,11 +83,21 @@ class ElasticNetClassifier(Estimator):
         )
 
     def fit(self, X, y):
+        """Fits ElasticNet classifier component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         warnings.filterwarnings("ignore", message="The max_iter was reached")
         return super().fit(X, y)
 
     @property
     def feature_importance(self):
+        """Feature importance for fitted ElasticNet classifier."""
         coef_ = self._component_obj.coef_
         # binary classification case
         if len(coef_) <= 2:

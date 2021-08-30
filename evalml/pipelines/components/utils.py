@@ -1,3 +1,4 @@
+"""Utility methods for EvalML components."""
 import inspect
 
 from sklearn.base import BaseEstimator, ClassifierMixin, RegressorMixin
@@ -28,6 +29,7 @@ def _all_transformers():
 
 
 def all_components():
+    """Get all available components."""
     return _all_estimators() + _all_transformers()
 
 
@@ -35,12 +37,11 @@ def allowed_model_families(problem_type):
     """List the model types allowed for a particular problem type.
 
     Args:
-        problem_types (ProblemTypes or str): binary, multiclass, or regression
+        problem_types (ProblemTypes or str): ProblemTypes enum or string.
 
-    Returns
-        list[ModelFamily]: a list of model families
+    Returns:
+        list[ModelFamily]: A list of model families
     """
-
     estimators = []
     problem_type = handle_problem_types(problem_type)
     for estimator in _all_estimators_used_in_search():
@@ -59,11 +60,11 @@ def get_estimators(problem_type, model_families=None):
     Can also optionally filter by a list of model types.
 
     Args:
-        problem_type (ProblemTypes or str): problem type to filter for
-        model_families (list[ModelFamily] or list[str]): model families to filter for
+        problem_type (ProblemTypes or str): Problem type to filter for.
+        model_families (list[ModelFamily] or list[str]): Model families to filter for.
 
-    Returns
-        list[class]: a list of estimator subclasses
+    Returns:
+        list[class]: A list of estimator subclasses.
     """
     if model_families is not None and not isinstance(model_families, list):
         raise TypeError("model_families parameter is not a list.")
@@ -103,9 +104,9 @@ def handle_component_class(component_class):
     will return that without modification.
 
     Args:
-        component (str, ComponentBase): input to be standardized
+        component (str, ComponentBase): Input to be standardized.
 
-    Returns
+    Returns:
         ComponentBase
     """
     if isinstance(component_class, ComponentBase) or (
@@ -134,7 +135,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         """Scikit-learn classifier wrapper class. Takes an EvalML pipeline as input and returns a scikit-learn classifier class wrapping that pipeline.
 
         Args:
-            pipeline (PipelineBase or subclass obj): EvalML pipeline
+            pipeline (PipelineBase or subclass obj): EvalML pipeline.
         """
         self.pipeline = pipeline
         self._estimator_type = "classifier"
@@ -147,10 +148,10 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         """Fits component to data.
 
         Args:
-            X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
-            y (pd.Series, optional): the target training data of length [n_samples]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
 
-        Returns
+        Returns:
             self
         """
         self.classes_ = unique_labels(y)
@@ -177,10 +178,10 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         """Make probability estimates for labels.
 
         Args:
-            X (pd.DataFrame): Features
+            X (pd.DataFrame): Features.
 
-        Returns
-            np.ndarray: Probability estimates
+        Returns:
+            np.ndarray: Probability estimates.
         """
         return self.pipeline.predict_proba(X).to_numpy()
 
@@ -192,7 +193,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         """Scikit-learn regressor wrapper class. Takes an EvalML pipeline as input and returns a scikit-learn regressor class wrapping that pipeline.
 
         Args:
-            pipeline (PipelineBase or subclass obj): EvalML pipeline
+            pipeline (PipelineBase or subclass obj): EvalML pipeline.
         """
         self.pipeline = pipeline
         self._estimator_type = "regressor"
@@ -207,7 +208,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
             X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training data of length [n_samples]
 
-        Returns
+        Returns:
             self
         """
         self.pipeline.fit(X, y)
@@ -217,15 +218,16 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         """Make predictions using selected features.
 
         Args:
-            X (pd.DataFrame): Features
+            X (pd.DataFrame): Features.
 
-        Returns
-            np.ndarray: Predicted values
+        Returns:
+            np.ndarray: Predicted values.
         """
         return self.pipeline.predict(X).to_numpy()
 
 
 def scikit_learn_wrapped_estimator(evalml_obj):
+    """Wraps an EvalML object as a scikit-learn estimator."""
     from evalml.pipelines.pipeline_base import PipelineBase
 
     """Wrap an EvalML pipeline or estimator in a scikit-learn estimator."""
@@ -261,9 +263,9 @@ def generate_component_code(element):
     """Creates and returns a string that contains the Python imports and code required for running the EvalML component.
 
     Args:
-        element (component instance): The instance of the component to generate string Python code for
+        element (component instance): The instance of the component to generate string Python code for.
 
-    Returns
+    Returns:
         String representation of Python code that can be run separately in order to recreate the component instance.
         Does not include code for custom component implementation.
     """
@@ -299,8 +301,8 @@ def make_balancing_dictionary(y, sampling_ratio):
         y (pd.Series): Target data
         sampling_ratio (float): The balanced ratio we want the samples to meet
 
-    Returns
-        Dictionary where keys are the classes, and the corresponding values are the counts of samples
+    Returns:
+        dict : Dictionary where keys are the classes, and the corresponding values are the counts of samples
         for each class that will satisfy sampling_ratio.
     """
     if sampling_ratio <= 0 or sampling_ratio > 1:

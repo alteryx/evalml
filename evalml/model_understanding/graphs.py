@@ -1,4 +1,4 @@
-"""I'm a docstring."""
+"""Model understanding graphing utilities."""
 
 import copy
 import os

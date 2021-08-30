@@ -1,4 +1,9 @@
+"""Binary classification pipeline mix-in class."""
+
+
 class BinaryClassificationPipelineMixin:
+    """Binary classification pipeline mix-in class."""
+
     _threshold = None
 
     @property

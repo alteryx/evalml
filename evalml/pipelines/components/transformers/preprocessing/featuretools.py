@@ -48,7 +48,7 @@ class DFSTransformer(Transformer):
 
         Args:
             X (pd.DataFrame, np.array): The input data to transform, of shape [n_samples, n_features]
-            y (pd.Series, np.ndarray, optional): The target training data of length [n_samples]
+            y (pd.Series): The target training data of length [n_samples]
 
         Returns
             self

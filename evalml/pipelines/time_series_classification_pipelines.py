@@ -1,3 +1,4 @@
+"""Pipeline base class for time-series classification problems."""
 import pandas as pd
 
 from .binary_classification_pipeline_mixin import (
@@ -38,7 +39,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray): The target training targets of length [n_samples]
 
-        Returns
+        Returns:
             self
         """
         X, y = self._convert_to_woodwork(X, y)
@@ -76,7 +77,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             y (pd.Series, np.ndarray, None): The target training targets of length [n_samples].
             objective (Object or string): The objective to use to make predictions.
 
-        Returns
+        Returns:
             pd.Series: Predicted values.
         """
         if self.estimator is None:
@@ -101,7 +102,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         Args:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
 
-        Returns
+        Returns:
             pd.DataFrame: Probability estimates.
         """
         if self.estimator is None:
@@ -125,7 +126,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             y (pd.Series): True labels of length [n_samples].
             objectives (list): Non-empty list of objectives to score on.
 
-        Returns
+        Returns:
             dict: Ordered dictionary of objective scores.
         """
         X, y = self._convert_to_woodwork(X, y)

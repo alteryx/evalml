@@ -1,3 +1,4 @@
+"""Transformer to drop features whose percentage of NaN values exceeds a specified threshold."""
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
 
@@ -30,6 +31,15 @@ class DropNullColumns(Transformer):
         )
 
     def fit(self, X, y=None):
+        """Fits component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         pct_null_threshold = self.parameters["pct_null_threshold"]
         X_t = infer_feature_types(X)
         percent_null = X_t.isnull().mean()

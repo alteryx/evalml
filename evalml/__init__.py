@@ -1,4 +1,4 @@
-"""This is a docstring."""
+"""EvalML."""
 import warnings
 
 # hack to prevent warnings from skopt

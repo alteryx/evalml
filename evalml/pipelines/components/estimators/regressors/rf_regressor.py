@@ -1,3 +1,4 @@
+"""Random Forest Regressor."""
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from skopt.space import Integer
 

@@ -1,3 +1,4 @@
+"""Extra Trees Classifier."""
 from sklearn.ensemble import ExtraTreesClassifier as SKExtraTreesClassifier
 from skopt.space import Integer
 

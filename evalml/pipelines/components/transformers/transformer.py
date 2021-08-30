@@ -40,7 +40,7 @@ class Transformer(ComponentBase):
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Target data.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
@@ -64,7 +64,7 @@ class Transformer(ComponentBase):
             X (pd.DataFrame): Data to fit and transform
             y (pd.Series): Target data
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
@@ -98,6 +98,6 @@ class TargetTransformer(Transformer):
          Args:
             y (pd.Series): Target transformed by this component.
 
-        Returns
-            pd.Seriesø: Target without the transformation.
+        Returns:
+            pd.Series: Target without the transformation.
         """

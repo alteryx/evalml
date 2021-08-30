@@ -1,3 +1,4 @@
+"""Decision Tree Classifier."""
 from sklearn.tree import DecisionTreeClassifier as SKDecisionTreeClassifier
 from skopt.space import Integer
 

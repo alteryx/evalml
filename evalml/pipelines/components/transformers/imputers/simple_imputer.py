@@ -1,3 +1,4 @@
+"""Component that imputes missing data according to a specified imputation strategy."""
 import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
 from woodwork.logical_types import NaturalLanguage
@@ -44,7 +45,7 @@ class SimpleImputer(Transformer):
             X (pd.DataFrame or np.ndarray): the input training data of shape [n_samples, n_features]
             y (pd.Series, optional): the target training data of length [n_samples]
 
-        Returns
+        Returns:
             self
         """
         X = infer_feature_types(X)
@@ -72,10 +73,10 @@ class SimpleImputer(Transformer):
         """Transforms input by imputing missing values. 'None' and np.nan values are treated as the same.
 
         Args:
-            X (pd.DataFrame): Data to transform
+            X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Ignored.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed X
         """
         X = infer_feature_types(X)
@@ -111,7 +112,7 @@ class SimpleImputer(Transformer):
             X (pd.DataFrame): Data to fit and transform
             y (pd.Series, optional): Target data.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed X
         """
         return self.fit(X, y).transform(X, y)

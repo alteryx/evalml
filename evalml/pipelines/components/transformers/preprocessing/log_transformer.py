@@ -63,6 +63,15 @@ class LogTransformer(TargetTransformer):
         return self.fit(X, y).transform(X, y)
 
     def inverse_transform(self, y):
+        """Apply exponential to target data.
+
+        Args:
+            y (pd.Series): Target variable.
+
+        Returns:
+            pd.Series: Target with exponential applied.
+
+        """
         y_ww_inv = infer_feature_types(y)
         y_inv = y_ww_inv.apply(np.exp)
         if self.min <= 0:

@@ -1,3 +1,4 @@
+"""Pipeline subclass for all binary classification pipelines."""
 from .binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,
 )
@@ -33,12 +34,11 @@ class BinaryClassificationPipeline(
 
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features]
-            objective (Object or string): The objective to use to make predictions
+            objective (Object or string): The objective to use to make predictions.
 
-        Returns
+        Returns:
             pd.Series: Estimated labels
         """
-
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
             if not objective.is_defined_for_problem_type(self.problem_type):
@@ -58,7 +58,7 @@ class BinaryClassificationPipeline(
         Args:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
-        Returns
+        Returns:
             pd.Series: Probability estimates
         """
         return super().predict_proba(X)

@@ -1,3 +1,4 @@
+"""Component that imputes missing data according to a specified imputation strategy per column."""
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers.simple_imputer import (
     SimpleImputer,
@@ -58,7 +59,7 @@ class PerColumnImputer(Transformer):
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to fit.
             y (pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
-        Returns
+        Returns:
             self
         """
         X = infer_feature_types(X)
@@ -85,7 +86,7 @@ class PerColumnImputer(Transformer):
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features] to transform.
             y (pd.Series, optional): The target training data of length [n_samples]. Ignored.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)

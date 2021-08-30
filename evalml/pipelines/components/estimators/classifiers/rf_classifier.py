@@ -1,3 +1,4 @@
+"""Random Forest Classifier."""
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from skopt.space import Integer
 

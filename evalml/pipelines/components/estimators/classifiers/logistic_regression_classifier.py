@@ -1,3 +1,4 @@
+"""Logistic Regression Classifier."""
 import numpy as np
 from sklearn.linear_model import LogisticRegression as SKLogisticRegression
 from skopt.space import Real
@@ -80,6 +81,7 @@ class LogisticRegressionClassifier(Estimator):
 
     @property
     def feature_importance(self):
+        """Feature importance for fitted logistic regression classifier."""
         coef_ = self._component_obj.coef_
         # binary classification case
         if len(coef_) <= 2:

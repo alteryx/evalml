@@ -1,3 +1,4 @@
+"""Pipeline subclass for all classification pipelines."""
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
@@ -42,7 +43,7 @@ class ClassificationPipeline(PipelineBase):
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray): The target training labels of length [n_samples]
 
-        Returns
+        Returns:
             self
         """
         X = infer_feature_types(X)
@@ -81,10 +82,10 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Args:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
-            objective (Object or string): The objective to use to make predictions
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            objective (Object or string): The objective to use to make predictions.
 
-        Returns
+        Returns:
             pd.Series: Estimated labels
         """
         return self.component_graph.predict(X)
@@ -93,11 +94,11 @@ class ClassificationPipeline(PipelineBase):
         """Make predictions using selected features.
 
         Args:
-            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
-            objective (Object or string): The objective to use to make predictions
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
+            objective (Object or string): The objective to use to make predictions.
 
-        Returns
-            pd.Series: Estimated labels
+        Returns:
+            pd.Series: Estimated labels.
         """
         predictions = self._predict(X, objective=objective)
         predictions = pd.Series(
@@ -111,7 +112,7 @@ class ClassificationPipeline(PipelineBase):
         Args:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
 
-        Returns
+        Returns:
             pd.DataFrame: Probability estimates
         """
         if self.estimator is None:
@@ -136,7 +137,7 @@ class ClassificationPipeline(PipelineBase):
             y (pd.Series, or np.ndarray): True labels of length [n_samples]
             objectives (list): List of objectives to score
 
-        Returns
+        Returns:
             dict: Ordered dictionary of objective scores
         """
         y = infer_feature_types(y)

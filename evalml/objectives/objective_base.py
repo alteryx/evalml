@@ -166,7 +166,6 @@ class ObjectiveBase(ABC):
                 as percentages, this will be the difference between the reference score and score. For all other
                 objectives, the difference will be normalized by the reference score.
         """
-
         if pd.isna(score) or pd.isna(baseline_score):
             return np.nan
 

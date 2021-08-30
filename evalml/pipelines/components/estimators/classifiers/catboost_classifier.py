@@ -1,3 +1,4 @@
+"""CatBoost Classifier, a classifier that uses gradient-boosting on decision trees. CatBoost is an open-source library and natively supports categorical features."""
 import copy
 import warnings
 
@@ -99,6 +100,15 @@ class CatBoostClassifier(Estimator):
         )
 
     def fit(self, X, y=None):
+        """Fits CatBoost classifier component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         X = infer_feature_types(X)
         cat_cols = list(X.ww.select("category", return_schema=True).columns)
         self.input_feature_names = list(X.columns)
@@ -111,6 +121,14 @@ class CatBoostClassifier(Estimator):
         return self
 
     def predict(self, X):
+        """Make predictions using the fitted CatBoost classifier.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.DataFrame: Predicted values.
+        """
         X = infer_feature_types(X)
         predictions = self._component_obj.predict(X)
         if predictions.ndim == 2 and predictions.shape[1] == 1:
@@ -123,4 +141,5 @@ class CatBoostClassifier(Estimator):
 
     @property
     def feature_importance(self):
+        """Feature importance of fitted CatBoost classifier."""
         return self._component_obj.get_feature_importance()

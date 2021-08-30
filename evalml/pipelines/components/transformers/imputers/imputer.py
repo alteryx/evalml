@@ -1,3 +1,4 @@
+"""Component that imputes missing data according to a specified imputation strategy."""
 import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
@@ -82,7 +83,7 @@ class Imputer(Transformer):
             X (pd.DataFrame, np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, optional): The target training data of length [n_samples]
 
-        Returns
+        Returns:
             self
         """
         X = infer_feature_types(X)
@@ -112,7 +113,7 @@ class Imputer(Transformer):
             X (pd.DataFrame): Data to transform
             y (pd.Series, optional): Ignored.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed X
         """
         X = infer_feature_types(X)

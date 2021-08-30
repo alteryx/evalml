@@ -1,3 +1,4 @@
+"""Component that imputes missing target data according to a specified imputation strategy."""
 from functools import wraps
 
 import pandas as pd
@@ -72,7 +73,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]. Ignored.
             y (pd.Series, optional): The target training data of length [n_samples].
 
-        Returns
+        Returns:
             self
         """
         if y is None:
@@ -96,10 +97,9 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
             X (pd.DataFrame): Features. Ignored.
             y (pd.Series): Target data to impute.
 
-        Returns
+        Returns:
             (pd.DataFrame, pd.Series): The original X, transformed y
         """
-
         if X is not None:
             X = infer_feature_types(X)
         if y is None:
@@ -124,7 +124,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
             X (pd.DataFrame): Features. Ignored.
             y (pd.Series): Target data to impute.
 
-        Returns
+        Returns:
             (pd.DataFrame, pd.Series): The original X, transformed y
         """
         return self.fit(X, y).transform(X, y)
