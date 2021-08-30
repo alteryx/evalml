@@ -86,7 +86,15 @@ def test_multicollinearity_nonnumeric_cols(data_type, make_data_type):
             "col_6": [1, 1, 2, 3, 1],
         }
     )
-    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical", "col_3": "categorical", "col_4": "categorical", "col_5": "categorical"})
+    X.ww.init(
+        logical_types={
+            "col_1": "categorical",
+            "col_2": "categorical",
+            "col_3": "categorical",
+            "col_4": "categorical",
+            "col_5": "categorical",
+        }
+    )
 
     multi_check = MulticollinearityDataCheck(threshold=0.9)
     assert multi_check.validate(X) == {

@@ -258,7 +258,12 @@ def test_simple_imputer_fill_value(data_type):
                 ),
             }
         )
-        X.ww.init(logical_types={"categorical with nan": "categorical", "object with nan": "categorical"})
+        X.ww.init(
+            logical_types={
+                "categorical with nan": "categorical",
+                "object with nan": "categorical",
+            }
+        )
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = SimpleImputer(impute_strategy="constant", fill_value=fill_value)
     imputer.fit(X, y)
@@ -324,7 +329,13 @@ def test_simple_imputer_with_none():
             "all None": [None, None, None, None],
         }
     )
-    X.ww.init(logical_types={"boolean with None": "categorical", "object with None": "categorical", "all None": "categorical"})
+    X.ww.init(
+        logical_types={
+            "boolean with None": "categorical",
+            "object with None": "categorical",
+            "all None": "categorical",
+        }
+    )
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = SimpleImputer()
     imputer.fit(X, y)
@@ -347,7 +358,12 @@ def test_simple_imputer_supports_natural_language_constant():
         }
     )
     y = pd.Series([0, 0, 1, 0, 1])
-    X.ww.init(logical_types={"cat with None": "categorical", "natural language col": "NaturalLanguage"})
+    X.ww.init(
+        logical_types={
+            "cat with None": "categorical",
+            "natural language col": "NaturalLanguage",
+        }
+    )
     imputer = SimpleImputer(impute_strategy="constant", fill_value="placeholder")
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)

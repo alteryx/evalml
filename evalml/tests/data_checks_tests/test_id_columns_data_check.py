@@ -135,7 +135,14 @@ def test_id_columns_strings():
         "col_6": [0.1, 0.2, 0.3, 0.4],
     }
     X = pd.DataFrame.from_dict(X_dict)
-    X.ww.init(logical_types={"col_1_id": "categorical", "col_2": "categorical", "Id": "categorical", "col_5": "categorical"})
+    X.ww.init(
+        logical_types={
+            "col_1_id": "categorical",
+            "col_2": "categorical",
+            "Id": "categorical",
+            "col_5": "categorical",
+        }
+    )
     id_cols_check = IDColumnsDataCheck(id_threshold=0.95)
     assert id_cols_check.validate(X) == {
         "warnings": [

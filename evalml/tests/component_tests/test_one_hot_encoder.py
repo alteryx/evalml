@@ -166,7 +166,13 @@ def test_drop_first():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
-    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical", "col_3": "categorical"})
+    X.ww.init(
+        logical_types={
+            "col_1": "categorical",
+            "col_2": "categorical",
+            "col_3": "categorical",
+        }
+    )
     encoder = OneHotEncoder(top_n=None, drop="first", handle_unknown="error")
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -183,7 +189,13 @@ def test_drop_binary():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
-    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical", "col_3": "categorical"})
+    X.ww.init(
+        logical_types={
+            "col_1": "categorical",
+            "col_2": "categorical",
+            "col_3": "categorical",
+        }
+    )
     encoder = OneHotEncoder(top_n=None, drop="if_binary", handle_unknown="error")
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -200,7 +212,13 @@ def test_drop_parameter_is_array():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
-    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical", "col_3": "categorical"})
+    X.ww.init(
+        logical_types={
+            "col_1": "categorical",
+            "col_2": "categorical",
+            "col_3": "categorical",
+        }
+    )
     encoder = OneHotEncoder(top_n=None, drop=["b", "c", "a"], handle_unknown="error")
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -219,7 +237,13 @@ def test_drop_binary_and_top_n_2():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
-    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical", "col_3": "categorical"})
+    X.ww.init(
+        logical_types={
+            "col_1": "categorical",
+            "col_2": "categorical",
+            "col_3": "categorical",
+        }
+    )
     encoder = OneHotEncoder(top_n=2, drop="if_binary")
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -237,7 +261,13 @@ def test_handle_unknown():
             "col_4": [2, 0, 1, 3, 0, 1, 2],
         }
     )
-    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical", "col_3": "categorical"})
+    X.ww.init(
+        logical_types={
+            "col_1": "categorical",
+            "col_2": "categorical",
+            "col_3": "categorical",
+        }
+    )
     encoder = OneHotEncoder(handle_unknown="error")
     encoder.fit(X)
     assert isinstance(encoder.transform(X), pd.DataFrame)
@@ -304,7 +334,13 @@ def test_categories():
             "col_4": [2, 0, 1, 3, 0, 1, 2],
         }
     )
-    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical", "col_3": "categorical"})
+    X.ww.init(
+        logical_types={
+            "col_1": "categorical",
+            "col_2": "categorical",
+            "col_3": "categorical",
+        }
+    )
 
     categories = [["a", "b", "c", "d"], ["a", "b", "c"], ["a", "b"]]
 
@@ -379,7 +415,13 @@ def test_more_top_n_unique_values():
             "col_4": [2, 0, 1, 3, 0, 1, 2],
         }
     )
-    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical", "col_3": "categorical"})
+    X.ww.init(
+        logical_types={
+            "col_1": "categorical",
+            "col_2": "categorical",
+            "col_3": "categorical",
+        }
+    )
 
     random_seed = 2
 
@@ -422,7 +464,13 @@ def test_more_top_n_unique_values_large():
             "col_4": [2, 0, 1, 3, 0, 1, 2, 4, 1],
         }
     )
-    X.ww.init(logical_types={"col_1": "categorical", "col_2": "categorical", "col_3": "categorical"})
+    X.ww.init(
+        logical_types={
+            "col_1": "categorical",
+            "col_2": "categorical",
+            "col_3": "categorical",
+        }
+    )
     random_seed = 2
 
     encoder = OneHotEncoder(top_n=3, random_seed=random_seed)
@@ -529,15 +577,15 @@ def test_large_number_of_categories():
 @pytest.mark.parametrize("data_type", ["list", "np", "pd_no_index", "pd_index", "ww"])
 def test_data_types(data_type):
     if data_type == "list":
-        X = [["a"], ["b"], ["c"]]*5
+        X = [["a"], ["b"], ["c"]] * 5
     elif data_type == "np":
-        X = np.array([["a"], ["b"], ["c"]]*5)
+        X = np.array([["a"], ["b"], ["c"]] * 5)
     elif data_type == "pd_no_index":
-        X = pd.DataFrame(["a", "b", "c"]*5)
+        X = pd.DataFrame(["a", "b", "c"] * 5)
     elif data_type == "pd_index":
-        X = pd.DataFrame(["a", "b", "c"]*5, columns=["0"])
+        X = pd.DataFrame(["a", "b", "c"] * 5, columns=["0"])
     elif data_type == "ww":
-        X = pd.DataFrame(["a", "b", "c"]*5)
+        X = pd.DataFrame(["a", "b", "c"] * 5)
         X.ww.init()
     encoder = OneHotEncoder()
     encoder.fit(X)
@@ -699,7 +747,9 @@ def test_ohe_column_names_unique():
             "A_x_y": ["1", "y", "y"],
         }
     )
-    df.ww.init(logical_types={"A": "categorical", "A_x": "categorical", "A_x_y": "categorical"})
+    df.ww.init(
+        logical_types={"A": "categorical", "A_x": "categorical", "A_x_y": "categorical"}
+    )
     df_transformed = OneHotEncoder().fit_transform(df)
     # category y in A_x gets mapped to A_x_y_1 because A_x_y already exists
     # category 1 in A_x_y gets mapped to A_x_y_1_1 because A_x_y_1 already exists
@@ -708,7 +758,9 @@ def test_ohe_column_names_unique():
     df = pd.DataFrame(
         {"A": ["x_y", "z", "a"], "A_x": ["y_1", "y", "b"], "A_x_y": ["1", "y", "c"]}
     )
-    df.ww.init(logical_types={"A": "categorical", "A_x": "categorical", "A_x_y": "categorical"})
+    df.ww.init(
+        logical_types={"A": "categorical", "A_x": "categorical", "A_x_y": "categorical"}
+    )
     df_transformed = OneHotEncoder().fit_transform(df)
     # category y in A_x gets mapped to A_x_y_1 because A_x_y already exists
     # category y_1 in A_x gets mapped to A_x_y_1_1 because A_x_y_1 already exists

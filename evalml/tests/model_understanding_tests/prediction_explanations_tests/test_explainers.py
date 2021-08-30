@@ -1263,7 +1263,9 @@ pipeline_test_cases = [
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
 def test_categories_aggregated_linear_pipeline(pipeline_class, estimator, fraud_100):
     X, y = fraud_100
-    X.ww.init(logical_types={"currency": "categorical", "expiration_date": "categorical"})
+    X.ww.init(
+        logical_types={"currency": "categorical", "expiration_date": "categorical"}
+    )
 
     pipeline = pipeline_class(
         component_graph=[
@@ -1305,7 +1307,13 @@ def test_categories_aggregated_linear_pipeline(pipeline_class, estimator, fraud_
 def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
     X, y = fraud_100
 
-    X.ww.set_types(logical_types={"provider": "NaturalLanguage", "currency": "categorical", "expiration_date": "categorical"})
+    X.ww.set_types(
+        logical_types={
+            "provider": "NaturalLanguage",
+            "currency": "categorical",
+            "expiration_date": "categorical",
+        }
+    )
     component_graph = [
         "Select Columns Transformer",
         "One Hot Encoder",
@@ -1362,7 +1370,9 @@ def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
 def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
     X, y = fraud_100
-    X.ww.init(logical_types={"currency": "categorical", "expiration_date": "categorical"})
+    X.ww.init(
+        logical_types={"currency": "categorical", "expiration_date": "categorical"}
+    )
 
     pipeline = pipeline_class(
         component_graph=[
@@ -1417,7 +1427,9 @@ def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
 def test_categories_aggregated_pca_dag(pipeline_class, estimator, fraud_100):
     X, y = fraud_100
-    X.ww.init(logical_types={"currency": "categorical", "expiration_date": "categorical"})
+    X.ww.init(
+        logical_types={"currency": "categorical", "expiration_date": "categorical"}
+    )
 
     component_graph = {
         "SelectNumeric": ["Select Columns Transformer", "X", "y"],
@@ -1477,7 +1489,9 @@ def test_categories_aggregated_but_not_those_that_are_dropped(
     pipeline_class, estimator, fraud_100
 ):
     X, y = fraud_100
-    X.ww.init(logical_types={"currency": "categorical", "expiration_date": "categorical"})
+    X.ww.init(
+        logical_types={"currency": "categorical", "expiration_date": "categorical"}
+    )
 
     component_graph = [
         "Select Columns Transformer",
@@ -1521,7 +1535,9 @@ def test_categories_aggregated_when_some_are_dropped(
     pipeline_class, estimator, fraud_100
 ):
     X, y = fraud_100
-    X.ww.init(logical_types={"currency": "categorical", "expiration_date": "categorical"})
+    X.ww.init(
+        logical_types={"currency": "categorical", "expiration_date": "categorical"}
+    )
 
     component_graph = [
         "Select Columns Transformer",
@@ -1627,7 +1643,9 @@ def test_explain_predictions_oversampler(estimator, fraud_100):
         reason="Skipping test because imbalanced-learn not installed",
     )
     X, y = fraud_100
-    X.ww.init(logical_types={"currency": "categorical", "expiration_date": "categorical"})
+    X.ww.init(
+        logical_types={"currency": "categorical", "expiration_date": "categorical"}
+    )
     pipeline = BinaryClassificationPipeline(
         component_graph={
             "Imputer": ["Imputer", "X", "y"],

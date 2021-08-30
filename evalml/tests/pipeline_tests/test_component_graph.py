@@ -1018,7 +1018,12 @@ def test_component_graph_dataset_with_different_types():
 
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
     X = infer_feature_types(
-        X, {"column_1": "categorical", "column_2": "categorical", "column_5": "NaturalLanguage"}
+        X,
+        {
+            "column_1": "categorical",
+            "column_2": "categorical",
+            "column_5": "NaturalLanguage",
+        },
     )
 
     component_graph = ComponentGraph(graph)
@@ -1266,7 +1271,9 @@ def test_component_graph_preserves_ltypes_created_during_pipeline_evaluation():
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
 
     # woodwork would infer this as boolean by default -- convert to a numeric type
-    X.ww.init(logical_types={"column_1": "categorical"}, semantic_tags={"address": "address"})
+    X.ww.init(
+        logical_types={"column_1": "categorical"}, semantic_tags={"address": "address"}
+    )
 
     component_graph = ComponentGraph(graph)
     # we don't have feature type selectors defined yet, so in order for the above graph to work we have to
@@ -1336,7 +1343,9 @@ def test_component_graph_types_merge():
     X["column_5"] = X["column_4"]
     X["column_6"] = [42.0] * len(X)
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
-    X = infer_feature_types(X, {"column_1": "categorical", "column_5": "NaturalLanguage"})
+    X = infer_feature_types(
+        X, {"column_1": "categorical", "column_5": "NaturalLanguage"}
+    )
 
     component_graph = ComponentGraph(graph)
     # we don't have feature type selectors defined yet, so in order for the above graph to work we have to

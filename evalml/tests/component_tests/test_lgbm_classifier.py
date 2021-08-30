@@ -173,12 +173,15 @@ def test_correct_args(mock_predict, mock_predict_proba, X_y_binary):
 @patch("evalml.pipelines.components.estimators.estimator.Estimator.predict")
 def test_categorical_data_subset(mock_predict, mock_predict_proba, X_y_binary):
     X = pd.DataFrame(
-        {"feature_1": [0, 0, 1, 1, 0, 1]*2, "feature_2": ["a", "a", "b", "b", "c", "c"]*2}
+        {
+            "feature_1": [0, 0, 1, 1, 0, 1] * 2,
+            "feature_2": ["a", "a", "b", "b", "c", "c"] * 2,
+        }
     )
     X.ww.init(logical_types={"feature_2": "categorical"})
-    y = pd.Series([1, 1, 0, 0, 0, 1]*2)
+    y = pd.Series([1, 1, 0, 0, 0, 1] * 2)
     X_expected = pd.DataFrame(
-        {0: [0, 0, 1, 1, 0, 1]*2, 1: [0.0, 0.0, 1.0, 1.0, 2.0, 2.0]*2}
+        {0: [0, 0, 1, 1, 0, 1] * 2, 1: [0.0, 0.0, 1.0, 1.0, 2.0, 2.0] * 2}
     )
     X_expected.iloc[:, 1] = X_expected.iloc[:, 1].astype("category")
 

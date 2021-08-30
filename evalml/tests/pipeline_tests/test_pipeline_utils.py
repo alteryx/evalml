@@ -48,9 +48,10 @@ def get_test_data_from_configuration():
     ):
         X_all = pd.DataFrame(
             {
-                "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]*2,
+                "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+                * 2,
                 "numerical": range(14),
-                "categorical": ["a", "b", "a", "b", "b", "a", "b"]*2,
+                "categorical": ["a", "b", "a", "b", "b", "a", "b"] * 2,
                 "dates": pd.date_range("2000-02-03", periods=14, freq="W"),
                 "text": [
                     "this is a string",
@@ -60,7 +61,8 @@ def get_test_data_from_configuration():
                     "cats are gr8",
                     "hello world",
                     "evalml is gr8",
-                ]*2,
+                ]
+                * 2,
                 "email": [
                     "abalone_0@gmail.com",
                     "AbaloneRings@yahoo.com",
@@ -69,7 +71,8 @@ def get_test_data_from_configuration():
                     "fooEMAIL@email.org",
                     "evalml@evalml.org",
                     "evalml@alteryx.org",
-                ]*2,
+                ]
+                * 2,
                 "url": [
                     "https://evalml.alteryx.com/en/stable/",
                     "https://woodwork.alteryx.com/en/stable/guides/statistical_insights.html",
@@ -78,17 +81,18 @@ def get_test_data_from_configuration():
                     "https://www.evalml.alteryx.com/en/stable/demos/text_input.html",
                     "https://github.com/alteryx/evalml",
                     "https://github.com/alteryx/featuretools",
-                ]*2,
+                ]
+                * 2,
             }
         )
-        y = pd.Series([0, 0, 1, 0, 0, 1, 1]*2)
+        y = pd.Series([0, 0, 1, 0, 0, 1, 1] * 2)
         if problem_type == ProblemTypes.MULTICLASS:
-            y = pd.Series([0, 2, 1, 2, 0, 2, 1]*2)
+            y = pd.Series([0, 2, 1, 2, 0, 2, 1] * 2)
         elif is_regression(problem_type):
             if lognormal_distribution:
-                y = pd.Series([1, 1, 1, 2, 3, 6, 9]*2)
+                y = pd.Series([1, 1, 1, 2, 3, 6, 9] * 2)
             else:
-                y = pd.Series([1, 2, 3, 3, 3, 4, 5]*2)
+                y = pd.Series([1, 2, 3, 3, 3, 4, 5] * 2)
         X = X_all[column_names]
 
         if input_type == "ww":

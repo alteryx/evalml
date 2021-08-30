@@ -340,7 +340,12 @@ def test_default_data_checks_regression(input_type):
     X["nan_dt_col"][0] = None
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
     y_no_variance = pd.Series([5] * 5)
-    X.ww.init(logical_types={"lots_of_null": "categorical", "natural_language_nan": "NaturalLanguage"})
+    X.ww.init(
+        logical_types={
+            "lots_of_null": "categorical",
+            "natural_language_nan": "NaturalLanguage",
+        }
+    )
     if input_type == "ww":
         y = ww.init_series(y)
         y_no_variance = ww.init_series(y_no_variance)
