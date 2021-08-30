@@ -86,6 +86,8 @@ def test_delayed_feature_extractor_maxdelay3_gap1(
         answer["feature"] = X.feature.astype("int64")
     if not encode_y_as_str:
         answer["target_delay_0"] = y_answer.astype("int64")
+    else:
+        y = y.astype("category")
 
     assert_frame_equal(
         answer, DelayedFeatureTransformer(max_delay=3, gap=1).fit_transform(X=X, y=y)
@@ -130,6 +132,8 @@ def test_delayed_feature_extractor_maxdelay5_gap1(
             "target_delay_5": y_answer.shift(5),
         }
     )
+    if encode_y_as_str:
+        y = y.astype("category")
     if not encode_X_as_str:
         answer["feature"] = X.feature.astype("int64")
     assert_frame_equal(
@@ -173,6 +177,8 @@ def test_delayed_feature_extractor_maxdelay3_gap7(
             "target_delay_3": y_answer.shift(3),
         }
     )
+    if encode_y_as_str:
+        y = y.astype("category")
     if not encode_X_as_str:
         answer["feature"] = X.feature.astype("int64")
     assert_frame_equal(
@@ -190,49 +196,6 @@ def test_delayed_feature_extractor_maxdelay3_gap7(
     assert_frame_equal(
         answer_only_y,
         DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X=None, y=y),
-    )
-
-
-@pytest.mark.parametrize("encode_X_as_str", [True, False])
-@pytest.mark.parametrize("encode_y_as_str", [True, False])
-def test_delayed_feature_extractor_numpy(
-    encode_X_as_str, encode_y_as_str, delayed_features_data
-):
-    X, y = delayed_features_data
-    X, X_answer, y, y_answer = encode_X_y_as_strings(
-        X, y, encode_X_as_str, encode_y_as_str
-    )
-    X_np = X.values
-    y_np = y.values
-    answer = pd.DataFrame(
-        {
-            0: X.feature,
-            "0_delay_1": X_answer.feature.shift(1),
-            "0_delay_2": X_answer.feature.shift(2),
-            "0_delay_3": X_answer.feature.shift(3),
-            "target_delay_0": y_answer.astype("int64"),
-            "target_delay_1": y_answer.shift(1),
-            "target_delay_2": y_answer.shift(2),
-            "target_delay_3": y_answer.shift(3),
-        }
-    )
-    if not encode_X_as_str:
-        answer[0] = X.feature.astype("int64")
-    assert_frame_equal(
-        answer, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X_np, y_np)
-    )
-
-    answer_only_y = pd.DataFrame(
-        {
-            "target_delay_0": y_answer.astype("int64"),
-            "target_delay_1": y_answer.shift(1),
-            "target_delay_2": y_answer.shift(2),
-            "target_delay_3": y_answer.shift(3),
-        }
-    )
-    assert_frame_equal(
-        answer_only_y,
-        DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X=None, y=y_np),
     )
 
 
@@ -264,6 +227,8 @@ def test_lagged_feature_extractor_delay_features_delay_target(
             "target_delay_3": y_answer.shift(3),
         }
     )
+    if encode_y_as_str:
+        y = y.astype("category")
     if not encode_X_as_str:
         all_delays["feature"] = X.feature.astype("int64")
     if not delay_features:
@@ -307,7 +272,8 @@ def test_lagged_feature_extractor_delay_target(
                 "target_delay_3": y_answer.shift(3),
             }
         )
-
+    if encode_y_as_str:
+        y = y.astype("category")
     transformer = DelayedFeatureTransformer(
         max_delay=3, gap=1, delay_features=delay_features, delay_target=delay_target
     )
@@ -372,6 +338,8 @@ def test_delay_feature_transformer_supports_custom_index(
 
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
+    if encode_y_as_str:
+        y = y.astype("category")
 
     assert_frame_equal(
         answer, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X, y)
@@ -407,6 +375,7 @@ def test_delay_feature_transformer_multiple_categorical_columns(delayed_features
             "target_delay_1": y_answer.shift(1),
         }
     )
+    y = y.astype("category")
     assert_frame_equal(
         answer, DelayedFeatureTransformer(max_delay=1, gap=11).fit_transform(X, y)
     )
@@ -469,9 +438,13 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
             dft.fit(X, y)
             transformed = dft.transform(X, y)
         assert isinstance(transformed, pd.DataFrame)
+
+        if logical_type == Boolean:
+            transformed.ww.init(logical_types={"0_delay_1": "categorical"})
         transformed_logical_types = {
             k: type(v) for k, v in transformed.ww.logical_types.items()
         }
+
         if logical_type in [Integer, Double, Categorical]:
             assert transformed_logical_types == {
                 0: logical_type,
