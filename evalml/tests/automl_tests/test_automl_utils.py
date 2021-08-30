@@ -260,12 +260,7 @@ def test_get_best_sampler_for_data_auto(
         if size == "large" or has_minimal_dependencies:
             assert name_output == "Undersampler"
         else:
-            if categorical_columns == "none":
-                assert name_output == "SMOTE Oversampler"
-            elif categorical_columns == "some":
-                assert name_output == "SMOTENC Oversampler"
-            else:
-                assert name_output == "SMOTEN Oversampler"
+            assert name_output == "Oversampler"
 
 
 @pytest.mark.parametrize("sampler_method", ["Undersampler", "Oversampler"])
@@ -281,12 +276,7 @@ def test_get_best_sampler_for_data_sampler_method(
     if sampler_method == "Undersampler" or has_minimal_dependencies:
         assert name_output == "Undersampler"
     else:
-        if categorical_columns == "none":
-            assert name_output == "SMOTE Oversampler"
-        elif categorical_columns == "some":
-            assert name_output == "SMOTENC Oversampler"
-        else:
-            assert name_output == "SMOTEN Oversampler"
+        assert name_output == "Oversampler"
 
 
 def test_get_best_sampler_for_data_nonnumeric_noncategorical_columns(X_y_binary):
@@ -301,16 +291,16 @@ def test_get_best_sampler_for_data_nonnumeric_noncategorical_columns(X_y_binary)
     X_ww = infer_feature_types(X, feature_types={0: "boolean", 1: "categorical"})
 
     name_output = get_best_sampler_for_data(X_ww, y, "Oversampler", 0.8)
-    assert name_output == "SMOTENC Oversampler"
+    assert name_output == "Oversampler"
 
     X = X.drop([i for i in range(2, 20)], axis=1)  # remove all numeric columns
     X_ww = infer_feature_types(X, feature_types={0: "boolean", 1: "categorical"})
     name_output = get_best_sampler_for_data(X_ww, y, "Oversampler", 0.5)
-    assert name_output == "SMOTEN Oversampler"
+    assert name_output == "Oversampler"
 
     X_ww = infer_feature_types(X, feature_types={0: "boolean", 1: "boolean"})
     name_output = get_best_sampler_for_data(X_ww, y, "Oversampler", 0.5)
-    assert name_output == "SMOTEN Oversampler"
+    assert name_output == "Oversampler"
 
 
 @pytest.mark.parametrize(
