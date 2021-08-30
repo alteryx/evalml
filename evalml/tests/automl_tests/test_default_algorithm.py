@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 from skopt.space import Categorical, Integer
 
-from evalml.automl.automl_algorithm import EvalMLAlgorithm
+from evalml.automl.automl_algorithm import DefaultAlgorithm
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ElasticNetClassifier,
@@ -17,12 +17,12 @@ from evalml.pipelines.components import (
 from evalml.problem_types import ProblemTypes
 
 
-def test_evalml_algorithm_init(X_y_binary):
+def test_default_algorithm_init(X_y_binary):
     X, y = X_y_binary
     problem_type = "binary"
     sampler_name = "Undersampler"
 
-    algo = EvalMLAlgorithm(X, y, problem_type, sampler_name)
+    algo = DefaultAlgorithm(X, y, problem_type, sampler_name)
 
     assert algo.problem_type == problem_type
     assert algo.sampler_name == sampler_name
@@ -31,7 +31,7 @@ def test_evalml_algorithm_init(X_y_binary):
     assert algo.allowed_pipelines == []
 
 
-def test_evalml_algorithm_custom_hyperparameters_error(X_y_binary):
+def test_default_algorithm_custom_hyperparameters_error(X_y_binary):
     X, y = X_y_binary
     problem_type = "binary"
     sampler_name = "Undersampler"
@@ -44,7 +44,7 @@ def test_evalml_algorithm_custom_hyperparameters_error(X_y_binary):
     with pytest.raises(
         ValueError, match="If custom_hyperparameters provided, must be of type dict"
     ):
-        EvalMLAlgorithm(
+        DefaultAlgorithm(
             X,
             y,
             problem_type,
@@ -55,7 +55,7 @@ def test_evalml_algorithm_custom_hyperparameters_error(X_y_binary):
     with pytest.raises(
         ValueError, match="Custom hyperparameters should only contain skopt"
     ):
-        EvalMLAlgorithm(
+        DefaultAlgorithm(
             X,
             y,
             problem_type,
@@ -67,7 +67,7 @@ def test_evalml_algorithm_custom_hyperparameters_error(X_y_binary):
     with pytest.raises(
         ValueError, match="Pipeline parameters should not contain skopt.Space variables"
     ):
-        EvalMLAlgorithm(
+        DefaultAlgorithm(
             X,
             y,
             problem_type,
@@ -88,7 +88,7 @@ def add_result(algo, batch):
     "automl_type",
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
-def test_evalml_algorithm(
+def test_default_algorithm(
     mock_get_names,
     automl_type,
     X_y_binary,
@@ -108,7 +108,7 @@ def test_evalml_algorithm(
     mock_get_names.return_value = ["0", "1", "2"]
     problem_type = automl_type
     sampler_name = None
-    algo = EvalMLAlgorithm(X, y, problem_type, sampler_name)
+    algo = DefaultAlgorithm(X, y, problem_type, sampler_name)
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
     first_batch = algo.next_batch()
@@ -181,7 +181,7 @@ def test_evalml_algo_pipeline_params(mock_get_names, X_y_binary):
         "pipeline": {"gap": 2, "max_delay": 10},
         "Logistic Regression Classifier": {"C": 5},
     }
-    algo = EvalMLAlgorithm(
+    algo = DefaultAlgorithm(
         X,
         y,
         problem_type,
@@ -214,7 +214,7 @@ def test_evalml_algo_custom_hyperparameters(mock_get_names, X_y_binary):
         }
     }
 
-    algo = EvalMLAlgorithm(
+    algo = DefaultAlgorithm(
         X,
         y,
         problem_type,

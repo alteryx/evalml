@@ -13,7 +13,7 @@ from sklearn.model_selection import BaseCrossValidator
 
 from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 
-from evalml.automl.automl_algorithm import EvalMLAlgorithm, IterativeAlgorithm
+from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
 from evalml.automl.utils import (
@@ -98,7 +98,7 @@ def search(
             - LogLossMulticlass for multiclass classification problems, and
             - R2 for regression problems.
 
-        mode (str): mode for EvalMLAlgorithm. There are two modes: fast and long, where fast is a subset of long. Please look at EvalMLAlgorithm for more details.
+        mode (str): mode for DefaultAlgorithm. There are two modes: fast and long, where fast is a subset of long. Please look at DefaultAlgorithm for more details.
 
         max_time (int, str): Maximum time to search for pipelines.
             This will not start a new pipeline search after the duration
@@ -165,7 +165,7 @@ def search(
     if len(data_check_results.get("errors", [])):
         return None, data_check_results
 
-    automl = AutoMLSearch(_automl_algorithm="evalml", **automl_config)
+    automl = AutoMLSearch(_automl_algorithm="default", **automl_config)
     automl.search()
     return automl, data_check_results
 
@@ -357,7 +357,7 @@ class AutoMLSearch:
         _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
             The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
 
-        _automl_algorithm (str): The automl algorithm to use. Currently the two choices are 'iterative' and 'evalml'. Defaults to `iterative`.
+        _automl_algorithm (str): The automl algorithm to use. Currently the two choices are 'iterative' and 'default'. Defaults to `iterative`.
 
         engine (EngineBase or None): The engine instance used to evaluate pipelines. If None, a SequentialEngine will
             be used.
@@ -773,8 +773,8 @@ class AutoMLSearch:
                 pipeline_params=parameters,
                 custom_hyperparameters=custom_hyperparameters,
             )
-        elif _automl_algorithm == "evalml":
-            self._automl_algorithm = EvalMLAlgorithm(
+        elif _automl_algorithm == "default":
+            self._automl_algorithm = DefaultAlgorithm(
                 X=self.X_train,
                 y=self.y_train,
                 problem_type=self.problem_type,

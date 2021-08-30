@@ -7,7 +7,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoMLSearch
-from evalml.automl.automl_algorithm import EvalMLAlgorithm, IterativeAlgorithm
+from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
 from evalml.exceptions import ParameterNotUsedWarning, PipelineNotFoundError
@@ -66,9 +66,9 @@ def test_init(X_y_binary):
         problem_type="binary",
         max_iterations=1,
         n_jobs=1,
-        _automl_algorithm="evalml",
+        _automl_algorithm="default",
     )
-    assert isinstance(automl._automl_algorithm, EvalMLAlgorithm)
+    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
 
     with pytest.raises(ValueError, match="Please specify a valid automl algorithm."):
         AutoMLSearch(

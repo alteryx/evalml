@@ -24,7 +24,7 @@ from evalml.pipelines.utils import (
 from evalml.problem_types import is_regression
 
 
-class EvalMLAlgorithm(AutoMLAlgorithm):
+class DefaultAlgorithm(AutoMLAlgorithm):
     """An automl algorithm that consists of two modes: fast and long, where fast is a subset of long.
 
     1. Naive pipelines:

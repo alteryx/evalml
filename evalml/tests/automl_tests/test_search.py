@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from evalml.automl import AutoMLSearch, search
-from evalml.automl.automl_algorithm import EvalMLAlgorithm
+from evalml.automl.automl_algorithm import DefaultAlgorithm
 from evalml.utils import infer_feature_types
 
 
@@ -113,7 +113,7 @@ def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
     assert automl.patience == 3
     assert automl.tolerance == 0.5
     assert automl.max_batches == 3
-    assert isinstance(automl._automl_algorithm, EvalMLAlgorithm)
+    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
 
     automl, data_check_results = search(
         X_train=X,
@@ -128,7 +128,7 @@ def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
     assert automl.patience == 3
     assert automl.tolerance == 0.5
     assert automl.max_batches is None
-    assert isinstance(automl._automl_algorithm, EvalMLAlgorithm)
+    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
 
     with pytest.raises(ValueError):
         search(

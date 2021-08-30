@@ -4,7 +4,7 @@ import pandas as pd
 import pytest
 
 from evalml import AutoMLSearch
-from evalml.automl.automl_algorithm import EvalMLAlgorithm, IterativeAlgorithm
+from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
@@ -62,10 +62,10 @@ def test_init(X_y_regression):
         objective="R2",
         max_iterations=3,
         n_jobs=1,
-        _automl_algorithm="evalml",
+        _automl_algorithm="default",
     )
 
-    assert isinstance(automl._automl_algorithm, EvalMLAlgorithm)
+    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
 
     with pytest.raises(ValueError, match="Please specify a valid automl algorithm."):
         AutoMLSearch(
