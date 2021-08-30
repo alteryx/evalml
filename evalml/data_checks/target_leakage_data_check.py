@@ -53,10 +53,11 @@ class TargetLeakageDataCheck(DataCheck):
 
     def _calculate_mutual_information(self, X, y):
         highly_corr_cols = []
+        y_type = type(y.ww.logical_type)
         for col in X.columns:
-            cols_to_compare = infer_feature_types(
-                pd.DataFrame({col: X[col], str(col) + "y": y})
-            )
+            logical_types = {col: type(X.ww.logical_types[col]), str(col) + "y": y_type}
+            cols_to_compare = pd.DataFrame({col: X[col], str(col) + "y": y})
+            cols_to_compare.ww.init(logical_types=logical_types)
             mutual_info = cols_to_compare.ww.mutual_information()
             if (
                 len(mutual_info) > 0
