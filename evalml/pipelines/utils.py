@@ -22,17 +22,16 @@ from evalml.pipelines.components import (  # noqa: F401
     DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
+    DropRowsTransformer,
     EmailFeaturizer,
     Estimator,
     Imputer,
     LogTransformer,
     OneHotEncoder,
+    Oversampler,
     RandomForestClassifier,
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
-    SMOTENCOversampler,
-    SMOTENOversampler,
-    SMOTEOversampler,
     StandardScaler,
     TargetImputer,
     TextFeaturizer,
@@ -139,9 +138,7 @@ def _get_preprocessing_components(
 
     sampler_components = {
         "Undersampler": Undersampler,
-        "SMOTE Oversampler": SMOTEOversampler,
-        "SMOTENC Oversampler": SMOTENCOversampler,
-        "SMOTEN Oversampler": SMOTENOversampler,
+        "Oversampler": Oversampler,
     }
     if sampler_name is not None:
         try:
@@ -326,13 +323,19 @@ def _make_component_list_from_actions(actions):
         List of components used to address the input actions
     """
     components = []
+    cols_to_drop = []
     for action in actions:
         if action.action_code == DataCheckActionCode.DROP_COL:
-            components.append(DropColumns(columns=action.metadata["columns"]))
-        if action.action_code == DataCheckActionCode.IMPUTE_COL:
+            cols_to_drop.append(action.metadata["column"])
+        elif action.action_code == DataCheckActionCode.IMPUTE_COL:
             metadata = action.metadata
             if metadata["is_target"]:
                 components.append(
                     TargetImputer(impute_strategy=metadata["impute_strategy"])
                 )
+        elif action.action_code == DataCheckActionCode.DROP_ROWS:
+            indices = action.metadata["indices"]
+            components.append(DropRowsTransformer(indices_to_drop=indices))
+    if cols_to_drop:
+        components.append(DropColumns(columns=cols_to_drop))
     return components
