@@ -1,3 +1,4 @@
+"""Stacked Ensemble Base Class."""
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator

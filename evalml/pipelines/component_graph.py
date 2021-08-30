@@ -683,7 +683,7 @@ class ComponentGraph:
         Components that implement inverse_transform are PolynomialDetrender, LabelEncoder (tbd).
 
         Args:
-            y: (pd.Series): Final component features
+            y: (pd.Series): Final component features.
         """
         data_to_transform = infer_feature_types(y)
         current_component = self.compute_order[-1]

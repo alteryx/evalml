@@ -1,3 +1,4 @@
+"""Component that applies a log transformation to the target data."""
 import numpy as np
 
 from evalml.pipelines.components.transformers.transformer import (

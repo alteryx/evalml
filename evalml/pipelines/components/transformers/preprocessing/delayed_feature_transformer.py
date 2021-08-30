@@ -1,3 +1,4 @@
+"""Transformer that delays input features and target variable for time series problems."""
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from woodwork import logical_types

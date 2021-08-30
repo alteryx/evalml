@@ -1,3 +1,4 @@
+"""An undersampling transformer to downsample the majority classes in the dataset."""
 import pandas as pd
 
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
@@ -69,6 +70,15 @@ class Undersampler(BaseSampler):
         self._component_obj = sampler
 
     def transform(self, X, y=None):
+        """Transforms the input data by sampling the data.
+
+        Args:
+            X (pd.DataFrame): Training features.
+            y (pd.Series): Target.
+
+        Returns:
+            pd.DataFrame, pd.Series: Transformed features and target.
+        """
         X_ww, y_ww = self._prepare_data(X, y)
         self._initialize_sampler(X, y_ww)
         index_df = pd.Series(y_ww.index)

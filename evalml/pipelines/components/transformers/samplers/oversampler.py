@@ -1,3 +1,4 @@
+"""SMOTE Oversampler component. Will automatically select whether to use SMOTE, SMOTEN, or SMOTENC based on inputs to the component."""
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
     BaseSampler,
 )
@@ -7,8 +8,7 @@ from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class Oversampler(BaseSampler):
-    """
-    SMOTE Oversampler component. Will automatically select whether to use SMOTE, SMOTEN, or SMOTENC based on inputs to the component.
+    """SMOTE Oversampler component. Will automatically select whether to use SMOTE, SMOTEN, or SMOTENC based on inputs to the component.
 
     Arguments:
         sampling_ratio (float): This is the goal ratio of the minority to majority class, with range (0, 1]. A value of 0.25 means we want a 1:4 ratio

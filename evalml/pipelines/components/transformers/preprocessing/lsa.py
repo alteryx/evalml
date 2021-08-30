@@ -1,3 +1,4 @@
+"""Transformer to calculate the Latent Semantic Analysis Values of text input."""
 import pandas as pd
 from sklearn.decomposition import TruncatedSVD
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -28,6 +29,13 @@ class LSA(TextTransformer):
         super().__init__(random_seed=random_seed, **kwargs)
 
     def fit(self, X, y=None):
+        """Fits the input data.
+
+        Args:
+            X (pd.DataFrame): The data to transform.
+            y (pd.Series, optional): Ignored.
+
+        """
         X = infer_feature_types(X)
         self._text_columns = self._get_text_columns(X)
 

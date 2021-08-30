@@ -1,3 +1,4 @@
+"""Base Sampler component. Used as the base class of all sampler components."""
 import copy
 from abc import abstractmethod
 

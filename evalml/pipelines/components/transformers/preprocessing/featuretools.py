@@ -1,3 +1,4 @@
+"""Featuretools DFS component that generates features for the input features."""
 from featuretools import EntitySet, calculate_feature_matrix, dfs
 
 from evalml.pipelines.components.transformers.transformer import Transformer
