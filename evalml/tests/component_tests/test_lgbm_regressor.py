@@ -150,6 +150,8 @@ def test_multiple_fit(mock_predict):
     X1_fit = pd.DataFrame({"feature": ["a", "b", "c", "c"]})
     X1_predict = pd.DataFrame({"feature": ["a", "a", "b", "c"]})
     X1_predict_expected = pd.DataFrame({0: [0.0, 0.0, 1.0, 2.0]}, dtype="category")
+    X1_fit.ww.init(logical_types={"feature": "categorical"})
+    X1_predict.ww.init(logical_types={"feature": "categorical"})
 
     clf = LightGBMRegressor()
     clf.fit(X1_fit, y)
@@ -160,6 +162,8 @@ def test_multiple_fit(mock_predict):
     X2_fit = pd.DataFrame({"feature": ["c", "b", "a", "d"]})
     X2_predict = pd.DataFrame({"feature": ["d", "c", "b", "a"]})
     X2_predict_expected = pd.DataFrame({0: [3.0, 2.0, 1.0, 0.0]}, dtype="category")
+    X2_fit.ww.init(logical_types={"feature": "categorical"})
+    X2_predict.ww.init(logical_types={"feature": "categorical"})
 
     clf = LightGBMRegressor()
     clf.fit(X2_fit, y)
