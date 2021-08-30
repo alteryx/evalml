@@ -15,11 +15,13 @@ from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
+from evalml.automl.automl_search import build_engine_from_str
 from evalml.automl.callbacks import (
     log_error_callback,
     raise_error_callback,
     silent_error_callback,
 )
+from evalml.automl.engine import CFEngine, DaskEngine
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
@@ -67,6 +69,9 @@ from evalml.problem_types import (
     handle_problem_types,
     is_classification,
     is_time_series,
+)
+from evalml.tests.automl_tests.parallel_tests.test_automl_dask import (
+    engine_strs,
 )
 from evalml.tests.conftest import CustomClassificationObjectiveRanges
 from evalml.tuners import NoParamsException, RandomSearchTuner, SKOptTuner
@@ -4963,3 +4968,15 @@ def test_search_with_text_nans(mock_score, mock_fit, nans):
         assert all(
             [str(types) == "Double" for types in x.ww.types["Logical Type"].values]
         )
+
+
+@pytest.mark.parametrize(
+    "engine_str",
+    engine_strs,
+)
+def test_build_engine(engine_str):
+    if "cf" in engine_str:
+        expected_engine_type = CFEngine
+    elif "dask" in engine_str:
+        expected_engine_type = DaskEngine
+    assert isinstance(build_engine_from_str(engine_str), expected_engine_type)

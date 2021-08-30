@@ -1,15 +1,10 @@
-from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
-
 import numpy as np
 import pytest
-from dask import distributed as dd
-from dask.distributed import LocalCluster
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.engine import CFEngine, DaskEngine, SequentialEngine
-from evalml.automl.engine.cf_engine import CFClient
 from evalml.tests.automl_tests.dask_test_utils import (
     DaskPipelineFast,
     DaskPipelineSlow,
