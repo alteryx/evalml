@@ -1627,6 +1627,7 @@ def test_explain_predictions_oversampler(estimator, fraud_100):
         reason="Skipping test because imbalanced-learn not installed",
     )
     X, y = fraud_100
+    X.ww.init(logical_types={"currency": "categorical", "expiration_date": "categorical"})
     pipeline = BinaryClassificationPipeline(
         component_graph={
             "Imputer": ["Imputer", "X", "y"],
