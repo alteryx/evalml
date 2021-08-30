@@ -104,7 +104,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             self._are_datasets_separated_by_gap(X_train.index, X.index, self.gap)
             and self.gap
         ):
+            # The training data does not have the gap dates so don't need to include them
             last_row_of_training -= self.gap
+
+            # Instead, we'll create some dummy data to represent the missing gap dates
+            # These do not show up in the features used for prediction
             gap_features = X_train.iloc[[-1] * self.gap]
             gap_features.index = self._move_index_forward(
                 X_train.index[-self.gap :], self.gap
