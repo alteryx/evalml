@@ -547,9 +547,10 @@ class ComponentGraph:
             )
 
         graph = graphviz.Digraph(
-            name=name, format=graph_format, graph_attr={"splines": "ortho"}
+            name=name,
+            format=graph_format,
+            graph_attr={"splines": "true", "overlap": "scale", "rankdir": "LR"},
         )
-        graph.attr(rankdir="LR")
         for component_name, component_class in self.component_instances.items():
             label = "%s\l" % (component_name)  # noqa: W605
             if isinstance(component_class, ComponentBase):
@@ -562,21 +563,52 @@ class ComponentGraph:
                     ]
                 )  # noqa: W605
                 label = "%s |%s\l" % (component_name, parameters)  # noqa: W605
-            graph.node(component_name, shape="record", label=label)
-        edges = self._get_edges(self.component_dict)
-        graph.edges(edges)
+            graph.node(component_name, shape="record", label=label, nodesep="0.03")
+
+        graph.node("X", shape="circle", label="X")
+        graph.node("y", shape="circle", label="y")
+
+        x_edges = self._get_edges(self.component_dict, "features")
+        y_edges = self._get_edges(self.component_dict, "target")
+        for component_name, component_info in self.component_dict.items():
+            for parent in component_info[1:]:
+                if parent == "X":
+                    x_edges.append(("X", component_name))
+                elif parent == "y":
+                    y_edges.append(("y", component_name))
+
+        for edge in x_edges:
+            graph.edge(edge[0], edge[1], color="black")
+        for edge in y_edges:
+            graph.edge(edge[0], edge[1], style="dotted")
+
         return graph
 
     @staticmethod
-    def _get_edges(component_dict):
+    def _get_edges(component_dict, edges_to_return="all"):
+        """
+        Gets the edges for a component graph.
+
+        Arguments:
+            edges (str): The types of edges to return. Defaults to "all".
+                - if "all", returns all types of edges.
+                - if "features", returns only feature edges
+                - if "target", returns only target edges
+        """
         edges = []
         for component_name, component_info in component_dict.items():
-            if len(component_info) > 1:
-                for parent in component_info[1:]:
-                    if parent == "X" or parent == "y":
-                        continue
-                    elif parent[-2:] == ".x" or parent[-2:] == ".y":
-                        parent = parent[:-2]
+            for parent in component_info[1:]:
+                feature_edge = parent[-2:] == ".x"
+                target_edge = parent[-2:] == ".y"
+                return_edge = (
+                    (edges_to_return == "features" and feature_edge)
+                    or (edges_to_return == "target" and target_edge)
+                    or (edges_to_return == "all" and (feature_edge or target_edge))
+                )
+                if parent == "X" or parent == "y":
+                    continue
+                elif return_edge:
+                    parent = parent[:-2]
                     edges.append((parent, component_name))
         return edges
 
