@@ -626,7 +626,9 @@ def test_permutation_importance_oversampler(fraud_100):
             ],
         }
     )
-    X.ww.init(logical_types={"currency": "categorical", "expiration_date": "categorical"})
+    X.ww.init(
+        logical_types={"currency": "categorical", "expiration_date": "categorical"}
+    )
     pipeline.fit(X=X, y=y)
     pipeline.predict(X)
     importance = calculate_permutation_importance(
