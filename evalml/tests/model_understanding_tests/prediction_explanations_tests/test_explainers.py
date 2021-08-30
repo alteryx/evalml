@@ -1655,12 +1655,12 @@ def test_explain_predictions_oversampler(estimator, fraud_100):
                 "One Hot Encoder.x",
                 "y",
             ],
-            "SMOTENC Oversampler": [
-                "SMOTENC Oversampler",
+            "Oversampler": [
+                "Oversampler",
                 "DateTime Featurization Component.x",
                 "y",
             ],
-            estimator: [estimator, "SMOTENC Oversampler.x", "SMOTENC Oversampler.y"],
+            estimator: [estimator, "Oversampler.x", "Oversampler.y"],
         }
     )
 

@@ -614,15 +614,15 @@ def test_permutation_importance_oversampler(fraud_100):
                 "One Hot Encoder.x",
                 "y",
             ],
-            "SMOTENC Oversampler": [
-                "SMOTENC Oversampler",
+            "Oversampler": [
+                "Oversampler",
                 "DateTime Featurization Component.x",
                 "y",
             ],
             "Decision Tree Classifier": [
                 "Decision Tree Classifier",
-                "SMOTENC Oversampler.x",
-                "SMOTENC Oversampler.y",
+                "Oversampler.x",
+                "Oversampler.y",
             ],
         }
     )
