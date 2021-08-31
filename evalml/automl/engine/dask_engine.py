@@ -51,13 +51,13 @@ class DaskComputation(EngineComputation):
 
 
 class DaskEngine(EngineBase):
-    """The dask engine"""
+    """The dask engine
+
+    Arguments:
+        client (None or dd.Client): If None, creates a threaded Dask client for procesing. Defaults to None.
+    """
 
     def __init__(self, cluster=None):
-        """
-        Args:
-            client (None or dd.Client): If None, creates a threaded Dask client for procesing. Defaults to None.
-        """
         if cluster is not None and not isinstance(cluster, (LocalCluster)):
             raise TypeError(
                 f"Expected dask.distributed.Client, received {type(cluster)}"

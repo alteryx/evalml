@@ -90,13 +90,13 @@ class CFComputation(EngineComputation):
 
 
 class CFEngine(EngineBase):
-    """The concurrent.futures (CF) engine"""
+    """The concurrent.futures (CF) engine
+
+    Arguments:
+        client (None or CFClient): If None, creates a threaded pool for processing. Defaults to None.
+    """
 
     def __init__(self, client=None):
-        """
-        Args:
-            client (None or CFClient): If None, creates a threaded pool for processing.  Defaults to None.
-        """
         if client is not None and not isinstance(client, CFClient):
             raise TypeError(
                 f"Expected evalml.automl.engine.cf_engine.CFClient, received {type(client)}"

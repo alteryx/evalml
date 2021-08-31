@@ -13,7 +13,8 @@ from evalml.tests.automl_tests.dask_test_utils import (
 )
 from evalml.tuners import SKOptTuner
 
-engine_strs = ["cf_threaded", "cf_process", "dask_threaded", "dask_process"]
+# The engines to parametrize the AutoML tests over.
+engine_strs = ["cf_threaded", "dask_threaded"]
 
 
 @pytest.fixture(scope="module")
