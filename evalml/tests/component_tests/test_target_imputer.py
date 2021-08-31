@@ -57,11 +57,15 @@ def test_target_imputer_mean():
         (None, pd.Series([np.nan, 0, 5]), pd.Series([0, 0, 5])),
         (
             None,
-            pd.Series([np.nan, "a", "b"]),
-            pd.Series(["missing_value", "a", "b"]).astype("category"),
+            pd.Series([np.nan, "a", "b"] * 5),
+            pd.Series(["missing_value", "a", "b"] * 5).astype("category"),
         ),
         (3, pd.Series([np.nan, 0, 5]), pd.Series([3, 0, 5])),
-        (3, pd.Series([np.nan, "a", "b"]), pd.Series([3, "a", "b"]).astype("category")),
+        (
+            3,
+            pd.Series([np.nan, "a", "b"] * 5),
+            pd.Series([3, "a", "b"] * 5).astype("category"),
+        ),
     ],
 )
 def test_target_imputer_constant(fill_value, y, y_expected):
@@ -71,9 +75,9 @@ def test_target_imputer_constant(fill_value, y, y_expected):
 
 
 def test_target_imputer_most_frequent():
-    y = pd.Series([np.nan, "a", "b"])
+    y = pd.Series([np.nan, "a", "b"] * 5)
     imputer = TargetImputer(impute_strategy="most_frequent")
-    y_expected = pd.Series(["a", "a", "b"]).astype("category")
+    y_expected = pd.Series(["a", "a", "b"] * 5).astype("category")
     _, y_t = imputer.fit_transform(None, y)
     assert_series_equal(y_expected, y_t, check_dtype=False)
 
@@ -85,7 +89,7 @@ def test_target_imputer_most_frequent():
 
 
 def test_target_imputer_col_with_non_numeric_with_numeric_strategy():
-    y = pd.Series([np.nan, "a", "b"])
+    y = pd.Series([np.nan, "a", "b"] * 5)
     imputer = TargetImputer(impute_strategy="mean")
     with pytest.raises(
         ValueError, match="Cannot use mean strategy with non-numeric data"
@@ -190,16 +194,16 @@ def test_target_imputer_with_none(y, y_expected):
     "y, y_expected",
     [
         (
-            pd.Series(["b", "a", "a", None], dtype="category"),
-            pd.Series(["b", "a", "a", "a"], dtype="category"),
+            pd.Series(["b", "a", "a", None] * 4, dtype="category"),
+            pd.Series(["b", "a", "a", "a"] * 4, dtype="category"),
         ),
         (
             pd.Series([True, None, False, True], dtype="category"),
             pd.Series([True, True, False, True], dtype="category"),
         ),
         (
-            pd.Series(["b", "a", "a", None]),
-            pd.Series(["b", "a", "a", "a"], dtype="category"),
+            pd.Series(["b", "a", "a", None] * 4),
+            pd.Series(["b", "a", "a", "a"] * 4, dtype="category"),
         ),
     ],
 )

@@ -70,6 +70,13 @@ def test_null_values_in_dataframe():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
+    X.ww.init(
+        logical_types={
+            "col_1": "categorical",
+            "col_2": "categorical",
+            "col_3": "categorical",
+        }
+    )
     y = pd.Series([0, 1, 1, 1, 0])
     encoder = TargetEncoder(handle_missing="value")
     encoder.fit(X, y)
@@ -116,13 +123,13 @@ def test_null_values_in_dataframe():
 def test_cols():
     X = pd.DataFrame(
         {
-            "col_1": [1, 2, 1, 1, 2],
-            "col_2": ["2", "1", "1", "1", "1"],
-            "col_3": ["a", "a", "a", "a", "a"],
+            "col_1": [1, 2, 1, 1, 2] * 2,
+            "col_2": ["2", "1", "1", "1", "1"] * 2,
+            "col_3": ["a", "a", "a", "a", "a"] * 2,
         }
     )
     X_expected = X.astype({"col_1": "int64", "col_2": "category", "col_3": "category"})
-    y = pd.Series([0, 1, 1, 1, 0])
+    y = pd.Series([0, 1, 1, 1, 0] * 2)
     encoder = TargetEncoder(cols=[])
     encoder.fit(X, y)
     X_t = encoder.transform(X)
@@ -133,9 +140,9 @@ def test_cols():
     X_t = encoder.transform(X)
     X_expected = pd.DataFrame(
         {
-            "col_1": pd.Series([1, 2, 1, 1, 2], dtype="int64"),
-            "col_2": [0.60000, 0.742886, 0.742886, 0.742886, 0.742886],
-            "col_3": pd.Series(["a", "a", "a", "a", "a"], dtype="category"),
+            "col_1": pd.Series([1, 2, 1, 1, 2] * 2, dtype="int64"),
+            "col_2": [0.161365, 0.749863, 0.749863, 0.749863, 0.749863] * 2,
+            "col_3": pd.Series(["a", "a", "a", "a", "a"] * 2, dtype="category"),
         }
     )
     assert_frame_equal(X_expected, X_t, check_less_precise=True)
@@ -157,6 +164,7 @@ def test_transform():
             "col_3": ["a", "a", "a", "b", "a"],
         }
     )
+    X.ww.init(logical_types={"col_2": "categorical", "col_3": "categorical"})
     y = pd.Series([0, 1, 1, 1, 0])
     encoder = TargetEncoder()
     encoder.fit(X, y)
@@ -180,6 +188,7 @@ def test_smoothing():
             "col_3": ["a", "a", "a", "a", "b"],
         }
     )
+    X.ww.init(logical_types={"col_3": "categorical"})
     y = pd.Series([0, 1, 1, 1, 0])
     encoder = TargetEncoder(smoothing=1)
     encoder.fit(X, y)
