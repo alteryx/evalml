@@ -12,7 +12,7 @@ import evalml.preprocessing
 import evalml.problem_types
 import evalml.utils
 import evalml.data_checks
-from evalml.automl import AutoMLSearch, search
+from evalml.automl import AutoMLSearch, search_iterative, search
 from evalml.utils import print_info, update_checker
 
 with warnings.catch_warnings():
