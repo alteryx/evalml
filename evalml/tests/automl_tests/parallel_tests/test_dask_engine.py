@@ -360,3 +360,9 @@ def test_daskengine_convenience():
 
     with pytest.raises(TypeError, match="Expected dask.distributed.Client, received"):
         dask_engine = DaskEngine(cluster="Processes!")
+
+@pytest.mark.parametrize("process", [True, False])
+def test_automl_closes_engines(process, X_y_binary_cls):
+    dask_engine = DaskEngine(LocalCluster(process))
+    dask_engine.close()
+    assert dask_engine.is_closed
