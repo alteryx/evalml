@@ -187,7 +187,7 @@ def explain_predictions_best_worst(
         )
     if y_true.shape[0] != input_features.shape[0]:
         raise ValueError(
-            "Args: y_true and input_features must have the same number of data points. Received: "
+            "Parameters y_true and input_features must have the same number of data points. Received: "
             f"true labels: {y_true.shape[0]} and {input_features.shape[0]}"
         )
     if output_format not in {"text", "dict", "dataframe"}:

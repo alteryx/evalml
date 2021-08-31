@@ -68,7 +68,7 @@ class DataChecks:
             class_params = params.get(data_check_class.name, {})
             if not isinstance(class_params, dict):
                 raise DataCheckInitError(
-                    f"Parameters: for {data_check_class.name} were not in a dictionary. Received {class_params}."
+                    f"Parameters for {data_check_class.name} were not in a dictionary. Received {class_params}."
                 )
             try:
                 data_check_instances.append(data_check_class(**class_params))
