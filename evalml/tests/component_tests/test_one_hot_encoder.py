@@ -17,6 +17,17 @@ from evalml.pipelines.components import OneHotEncoder
 from evalml.utils import get_random_seed, infer_feature_types
 
 
+def set_first_three_columns_to_categorical(X):
+    X.ww.init(
+        logical_types={
+            "col_1": "categorical",
+            "col_2": "categorical",
+            "col_3": "categorical",
+        }
+    )
+    return X
+
+
 def test_init():
     parameters = {
         "top_n": 10,
@@ -166,19 +177,14 @@ def test_drop_first():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
-    X.ww.init(
-        logical_types={
-            "col_1": "categorical",
-            "col_2": "categorical",
-            "col_3": "categorical",
-        }
-    )
+    X = set_first_three_columns_to_categorical(X)
     encoder = OneHotEncoder(top_n=None, drop="first", handle_unknown="error")
     encoder.fit(X)
     X_t = encoder.transform(X)
     col_names = set(X_t.columns)
     expected_col_names = set(["col_1_b", "col_1_c", "col_1_d", "col_2_b", "col_2_c"])
     assert col_names == expected_col_names
+
 
 
 def test_drop_binary():
@@ -189,13 +195,7 @@ def test_drop_binary():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
-    X.ww.init(
-        logical_types={
-            "col_1": "categorical",
-            "col_2": "categorical",
-            "col_3": "categorical",
-        }
-    )
+    X = set_first_three_columns_to_categorical(X)
     encoder = OneHotEncoder(top_n=None, drop="if_binary", handle_unknown="error")
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -212,13 +212,7 @@ def test_drop_parameter_is_array():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
-    X.ww.init(
-        logical_types={
-            "col_1": "categorical",
-            "col_2": "categorical",
-            "col_3": "categorical",
-        }
-    )
+    X = set_first_three_columns_to_categorical(X)
     encoder = OneHotEncoder(top_n=None, drop=["b", "c", "a"], handle_unknown="error")
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -237,13 +231,7 @@ def test_drop_binary_and_top_n_2():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
-    X.ww.init(
-        logical_types={
-            "col_1": "categorical",
-            "col_2": "categorical",
-            "col_3": "categorical",
-        }
-    )
+    X = set_first_three_columns_to_categorical(X)
     encoder = OneHotEncoder(top_n=2, drop="if_binary")
     encoder.fit(X)
     X_t = encoder.transform(X)
@@ -261,13 +249,7 @@ def test_handle_unknown():
             "col_4": [2, 0, 1, 3, 0, 1, 2],
         }
     )
-    X.ww.init(
-        logical_types={
-            "col_1": "categorical",
-            "col_2": "categorical",
-            "col_3": "categorical",
-        }
-    )
+    X = set_first_three_columns_to_categorical(X)
     encoder = OneHotEncoder(handle_unknown="error")
     encoder.fit(X)
     assert isinstance(encoder.transform(X), pd.DataFrame)
@@ -334,13 +316,7 @@ def test_categories():
             "col_4": [2, 0, 1, 3, 0, 1, 2],
         }
     )
-    X.ww.init(
-        logical_types={
-            "col_1": "categorical",
-            "col_2": "categorical",
-            "col_3": "categorical",
-        }
-    )
+    X = set_first_three_columns_to_categorical(X)
 
     categories = [["a", "b", "c", "d"], ["a", "b", "c"], ["a", "b"]]
 
@@ -415,13 +391,7 @@ def test_more_top_n_unique_values():
             "col_4": [2, 0, 1, 3, 0, 1, 2],
         }
     )
-    X.ww.init(
-        logical_types={
-            "col_1": "categorical",
-            "col_2": "categorical",
-            "col_3": "categorical",
-        }
-    )
+    X = set_first_three_columns_to_categorical(X)
 
     random_seed = 2
 
@@ -464,13 +434,7 @@ def test_more_top_n_unique_values_large():
             "col_4": [2, 0, 1, 3, 0, 1, 2, 4, 1],
         }
     )
-    X.ww.init(
-        logical_types={
-            "col_1": "categorical",
-            "col_2": "categorical",
-            "col_3": "categorical",
-        }
-    )
+    X = set_first_three_columns_to_categorical(X)
     random_seed = 2
 
     encoder = OneHotEncoder(top_n=3, random_seed=random_seed)

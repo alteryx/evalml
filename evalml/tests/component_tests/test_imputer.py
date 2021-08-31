@@ -144,7 +144,6 @@ def test_categorical_only_input(imputer_test_data):
     )
 
     imputer = Imputer()
-    imputer.fit(X, y)
     transformed = imputer.fit_transform(X, y)
 
     assert_frame_equal(transformed, expected, check_dtype=False)
