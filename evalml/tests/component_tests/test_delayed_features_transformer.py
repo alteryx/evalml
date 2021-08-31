@@ -199,13 +199,9 @@ def test_delayed_feature_extractor_maxdelay3_gap7(
     )
 
 
-def test_delayed_feature_extractor_numpy(
-    delayed_features_data
-):
+def test_delayed_feature_extractor_numpy(delayed_features_data):
     X, y = delayed_features_data
-    X, X_answer, y, y_answer = encode_X_y_as_strings(
-        X, y, False, False
-    )
+    X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, False, False)
     X_np = X.values
     y_np = y.values
     answer = pd.DataFrame(
