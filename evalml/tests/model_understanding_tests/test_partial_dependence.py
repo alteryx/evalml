@@ -20,6 +20,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
+from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -525,6 +526,30 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
     assert len(ind_preds) == 5
     for ind_df in ind_preds:
         assert ind_df.shape == (3, 3)
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
+def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regression):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        input_pipelines = [
+            BinaryClassificationPipeline(["Random Forest Classifier"]),
+            BinaryClassificationPipeline(["Elastic Net Classifier"]),
+        ]
+        pipeline_class = BinaryClassificationPipeline
+    else:
+        X, y = X_y_regression
+        input_pipelines = [
+            RegressionPipeline(["Random Forest Regressor"]),
+            RegressionPipeline(["Elastic Net Regressor"]),
+        ]
+    pipeline = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines, problem_type=problem_type
+    )
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
+    check_partial_dependence_dataframe(pipeline, part_dep)
+    assert not part_dep.isnull().all().all()
 
 
 def test_graph_partial_dependence(breast_cancer_local, test_pipeline):

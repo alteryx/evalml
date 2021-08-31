@@ -143,7 +143,7 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
             try:
                 self.feature_importances_ = pipeline.feature_importance
             except Exception as e:
-                print ("yay")
+                print("yay")
             self._is_fitted = True
             self.classes_ = pipeline.classes_
 
@@ -205,7 +205,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
             try:
                 self.feature_importances_ = pipeline.feature_importance
             except Exception as e:
-                print ("yay")
+                print("yay")
 
             self._is_fitted_ = True
 
