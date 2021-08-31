@@ -436,3 +436,14 @@ def test_cfengine_convenience():
         TypeError, match="Expected evalml.automl.engine.cf_engine.CFClient, received"
     ):
         cf_engine = CFEngine(client="Processes!")
+
+
+@pytest.mark.parametrize("pool_class", [ThreadPoolExecutor, ProcessPoolExecutor])
+def test_automl_closes_engines(pool_class, X_y_binary_cls):
+    pool_instance = pool_class
+    cf_engine = CFEngine(CFClient(pool_class()))
+    cf_engine.close()
+    if isinstance(pool_instance, ProcessPoolExecutor):
+        assert cf_engine.client.pool._shutdown_thread
+    elif isinstance(pool_instance, ThreadPoolExecutor):
+        assert cf_engine.client.pool._shutdown

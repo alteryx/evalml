@@ -217,7 +217,7 @@ def test_automl_immediate_quit(
 
 @pytest.mark.parametrize(
     "engine_str",
-    engine_strs,
+    engine_strs + ["sequential"],
 )
 def test_engine_can_use_str_name_for_convenience(engine_str, X_y_binary_cls):
     """Test to assert the proper engine is set for each provided convenience string."""
