@@ -12,10 +12,12 @@ Release Notes
         * Added ``DROP_ROWS`` to ``_make_component_list_from_actions`` and clean up metadata :pr:`2694`
     * Fixes
         * Updated Oversampler logic to select best SMOTE based on component input instead of pipeline input :pr:`2695`
+        * Added ability to explicitly close DaskEngine resources to improve runtime and reduce Dask warnings :pr:`2667`
     * Changes
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     * Documentation Changes
+        * Updated documentation to make parallelization of AutoML clearer :pr:`2667`
     * Testing Changes
         * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
         * Installed numba 0.53 in windows CI to prevent problems installing version 0.54 :pr:`2710`
