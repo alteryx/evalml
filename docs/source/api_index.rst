@@ -67,6 +67,7 @@ AutoML Utils
     evalml.automl.search
     evalml.automl.get_default_primary_search_objective
     evalml.automl.make_data_splitter
+    evalml.automl.close_engine
 
 
 AutoML Algorithm Classes
@@ -86,6 +87,15 @@ AutoML Callbacks
     evalml.automl.callbacks.log_error_callback
     evalml.automl.callbacks.raise_error_callback
 
+
+AutoML Engines
+~~~~~~~~~~~~~~~~~~~~~~~~
+.. autoapisummary::
+    :nosignatures:
+
+    evalml.automl.engine.sequential_engine.SequentialEngine
+    evalml.automl.engine.cf_engine.CFEngine
+    evalml.automl.engine.dask_engine.DaskEngine
 
 Pipelines
 =========
