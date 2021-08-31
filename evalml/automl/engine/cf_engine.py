@@ -76,10 +76,6 @@ class CFComputation(EngineComputation):
         """
         return self.work.cancel()
 
-    def close(self):
-        """Closes the threadpool."""
-        self.pool.shutdown()
-
     @property
     def is_cancelled(self):
         """

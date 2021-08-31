@@ -252,7 +252,7 @@ def test_automl_convenience_exception(X_y_binary_cls):
 
 @pytest.mark.parametrize(
     "engine_str",
-    engine_strs,
+    engine_strs + ["cf_process"],
 )
 def test_automl_closes_engines(engine_str, X_y_binary_cls):
     X, y = X_y_binary_cls
