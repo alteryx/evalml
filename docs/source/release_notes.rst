@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Add ``ProphetRegressor`` to AutoML :pr:`2619`
-        * Integrate ``EvalMLAlgorithm`` into ``AutoMLSearch`` :pr:`2634`
+        * Integrated ``DefaultAlgorithm`` into ``AutoMLSearch`` :pr:`2634`
         * Removed SVM "linear" and "precomputed" kernel hyperparameter options, and improved default parameters :pr:`2651`
         * Updated ``ComponentGraph`` initalization to raise ``ValueError`` when user attempts to use ``.y`` for a component that does not produce a tuple output :pr:`2662`
         * Updated pipeline ``graph()`` to distingush X and y edges :pr:`2654`
@@ -22,6 +22,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Renamed the current top level ``search`` method to ``search_iterative`` and defined a new ``search`` method for the ``DefaultAlgorithm`` :pr:`2634`
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     
@@ -47,7 +48,6 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
-        * Renamed the current top level ``search`` method to ``search_iterative`` and defined a new ``search`` method for the ``EvalMLAlgorithm`` :pr:`2634`
         * ``TimeSeriesRegressionPipeline`` no longer inherits from ``TimeSeriesRegressionPipeline`` :pr:`2649`
 
 
