@@ -85,7 +85,7 @@ def search(
 
     This method is provided for convenience. If you'd like more control over when each of these steps is run, consider making calls directly to the various pieces like the data checks and AutoMLSearch, instead of using this method.
 
-    Arguments:
+    Args:
         X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
 
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.

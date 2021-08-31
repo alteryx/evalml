@@ -587,11 +587,11 @@ class ComponentGraph:
 
     @staticmethod
     def _get_edges(component_dict, edges_to_return="all"):
-        """
-        Gets the edges for a component graph.
+        """Gets the edges for a component graph.
 
-        Arguments:
-            edges (str): The types of edges to return. Defaults to "all".
+        Args:
+            component_dict (dict): Component dictionary to get edges from.
+            edges_to_return (str): The types of edges to return. Defaults to "all".
                 - if "all", returns all types of edges.
                 - if "features", returns only feature edges
                 - if "target", returns only target edges

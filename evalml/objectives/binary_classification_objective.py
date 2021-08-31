@@ -1,3 +1,4 @@
+"""Base class for all binary classification objectives."""
 import numpy as np
 from scipy.optimize import minimize_scalar
 
@@ -69,6 +70,7 @@ class BinaryClassificationObjective(ObjectiveBase):
         return ypred_proba > threshold
 
     def validate_inputs(self, y_true, y_predicted):
+        """Validate inputs for scoring."""
         super().validate_inputs(y_true, y_predicted)
         if len(np.unique(y_true)) > 2:
             raise ValueError("y_true contains more than two unique values")

@@ -1,3 +1,4 @@
+"""Lead scoring objective."""
 import math
 
 from .binary_classification_objective import BinaryClassificationObjective

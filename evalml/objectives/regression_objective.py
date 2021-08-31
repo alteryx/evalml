@@ -1,3 +1,4 @@
+"""Base class for all regression objectives."""
 from .objective_base import ObjectiveBase
 
 from evalml.problem_types import ProblemTypes

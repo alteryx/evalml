@@ -196,4 +196,5 @@ class ObjectiveBase(ABC):
 
     @classmethod
     def is_defined_for_problem_type(cls, problem_type):
+        """Returns whether or not an objective is defined for a problem type."""
         return handle_problem_types(problem_type) in cls.problem_types
