@@ -15,6 +15,7 @@ Release Notes
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     * Documentation Changes
+        * Specified installation steps for Prophet :pr:`2713`
     * Testing Changes
         * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
         * Installed numba 0.53 in windows CI to prevent problems installing version 0.54 :pr:`2710`
