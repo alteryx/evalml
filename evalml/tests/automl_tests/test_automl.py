@@ -21,7 +21,7 @@ from evalml.automl.callbacks import (
     raise_error_callback,
     silent_error_callback,
 )
-from evalml.automl.engine import CFEngine, DaskEngine
+from evalml.automl.engine import CFEngine, DaskEngine, SequentialEngine
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
@@ -4975,12 +4975,18 @@ def test_search_with_text_nans(mock_score, mock_fit, nans):
     engine_strs + ["cf_process", "invalid option"],
 )
 def test_build_engine(engine_str):
+    """Test to ensure that AutoMLSearch's build_engine_from_str() chooses
+    and returns an instance of the correct engine."""
     if "cf" in engine_str:
         expected_engine_type = CFEngine
         engine = build_engine_from_str(engine_str)
         assert isinstance(engine, expected_engine_type)
     elif "dask" in engine_str:
         expected_engine_type = DaskEngine
+        engine = build_engine_from_str(engine_str)
+        assert isinstance(engine, expected_engine_type)
+    elif "sequential" in engine_str:
+        expected_engine_type = SequentialEngine
         engine = build_engine_from_str(engine_str)
         assert isinstance(engine, expected_engine_type)
     else:
