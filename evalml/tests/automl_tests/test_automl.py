@@ -4972,7 +4972,7 @@ def test_search_with_text_nans(mock_score, mock_fit, nans):
 
 @pytest.mark.parametrize(
     "engine_str",
-    engine_strs + ["cf_process", "invalid option"],
+    engine_strs + ["sequential", "cf_process", "invalid option"],
 )
 def test_build_engine(engine_str):
     """Test to ensure that AutoMLSearch's build_engine_from_str() chooses
