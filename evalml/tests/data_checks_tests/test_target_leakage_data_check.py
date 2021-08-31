@@ -629,5 +629,7 @@ def test_target_leakage_maintains_logical_types():
 
     X.ww.init(logical_types={"A": "Unknown", "B": "Double"})
     warnings = TargetLeakageDataCheck().validate(X, y)["warnings"]
+
     # Mutual information is not supported for Unknown logical types, so should not be included
     assert not any(w["message"].startswith("Column 'A'") for w in warnings)
+    assert len(warnings) == 1
