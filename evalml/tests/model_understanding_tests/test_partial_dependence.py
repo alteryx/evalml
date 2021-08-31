@@ -135,15 +135,15 @@ def test_partial_dependence_with_non_numeric_columns(
 ):
     X = pd.DataFrame(
         {
-            "numeric": [1, 2, 3, 0],
-            "also numeric": [2, 3, 4, 1],
-            "string": ["a", "b", "a", "c"],
-            "also string": ["c", "b", "a", "d"],
+            "numeric": [1, 2, 3, 0] * 4,
+            "also numeric": [2, 3, 4, 1] * 4,
+            "string": ["a", "b", "a", "c"] * 4,
+            "also string": ["c", "b", "a", "c"] * 4,
         }
     )
     if data_type == "ww":
         X.ww.init()
-    y = [0, 0.2, 1.4, 1]
+    y = [0, 0.2, 1.4, 1] * 4
     pipeline = linear_regression_pipeline_class(
         parameters={"Linear Regressor": {"n_jobs": 1}}
     )
@@ -184,11 +184,11 @@ def test_partial_dependence_catboost(
 
         if problem_type == ProblemTypes.BINARY:
             X, y = X_y_binary
-            y_small = ["a", "b", "a"]
+            y_small = ["a", "b", "a"] * 5
             pipeline_class = BinaryClassificationPipeline
         else:
             X, y = X_y_multi
-            y_small = ["a", "b", "c"]
+            y_small = ["a", "b", "c"] * 5
             pipeline_class = MulticlassClassificationPipeline
 
         pipeline = pipeline_class(
@@ -203,10 +203,10 @@ def test_partial_dependence_catboost(
         # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
         X = pd.DataFrame(
             {
-                "numeric": [1, 2, 3],
-                "also numeric": [2, 3, 4],
-                "string": ["a", "b", "c"],
-                "also string": ["c", "b", "a"],
+                "numeric": [1, 2, 3] * 5,
+                "also numeric": [2, 3, 4] * 5,
+                "string": ["a", "b", "c"] * 5,
+                "also string": ["c", "b", "a"] * 5,
             }
         )
         pipeline = pipeline_class(

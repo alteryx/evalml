@@ -247,6 +247,7 @@ def test_target_leakage_types():
     X["d"] = ~y
     X["e"] = [0, 0, 0, 0]
     y = y.astype(bool)
+    X.ww.init(logical_types={"a": "categorical"})
 
     expected = {
         "warnings": [
@@ -377,6 +378,7 @@ def test_target_leakage_regression():
     X["c"] = y / 10
     X["d"] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     X["e"] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"]
+    X.ww.init(logical_types={"e": "categorical"})
 
     expected = {
         "warnings": [
