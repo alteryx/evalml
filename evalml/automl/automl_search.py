@@ -79,6 +79,7 @@ def build_engine_from_str(engine_str):
 
     Returns:
         (EngineBase): Instance of the requested engine.
+
     """
     valid_engines = [
         "sequential",
@@ -397,8 +398,7 @@ class AutoMLSearch:
 
         engine (EngineBase or str): The engine instance used to evaluate pipelines. Dask or concurrent.futures engines can also
             be chosen by providing a string from the list ["sequential", "cf_threaded", "cf_process", "dask_threaded", "dask_process"].
-            If a parallel engine is selected this way, the maximum amount of parallelism, as determined by the engine, will be used.
-                Defaults to "sequential"
+            If a parallel engine is selected this way, the maximum amount of parallelism, as determined by the engine, will be used. Defaults to "sequential".
     """
 
     _MAX_NAME_LEN = 40
