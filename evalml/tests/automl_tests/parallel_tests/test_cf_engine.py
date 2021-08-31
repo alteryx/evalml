@@ -440,8 +440,8 @@ def test_cfengine_convenience():
 
 @pytest.mark.parametrize("pool_class", [ThreadPoolExecutor, ProcessPoolExecutor])
 def test_automl_closes_engines(pool_class, X_y_binary_cls):
-    pool_instance = pool_class
-    cf_engine = CFEngine(CFClient(pool_class()))
+    pool_instance = pool_class()
+    cf_engine = CFEngine(CFClient(pool_instance))
     cf_engine.close()
     if isinstance(pool_instance, ProcessPoolExecutor):
         assert cf_engine.client.pool._shutdown_thread
