@@ -13,7 +13,8 @@ from evalml.tests.automl_tests.dask_test_utils import (
 )
 from evalml.tuners import SKOptTuner
 
-# The engines to parametrize the AutoML tests over.
+# The engines to parametrize the AutoML tests over.  The process-level parallel tests
+# are flaky.
 engine_strs = ["cf_threaded", "dask_threaded"]
 
 

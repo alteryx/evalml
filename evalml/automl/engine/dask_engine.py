@@ -54,9 +54,9 @@ class DaskEngine(EngineBase):
     """The dask engine
 
     Arguments:
-        client (None or dd.Client): If None, creates a threaded Dask client for procesing. Defaults to None.
+        cluster (None or dd.Client): If None, creates a local, threaded Dask client for processing.
+            Defaults to None.
     """
-
     def __init__(self, cluster=None):
         if cluster is not None and not isinstance(cluster, (LocalCluster)):
             raise TypeError(
