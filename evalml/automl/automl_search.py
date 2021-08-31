@@ -116,7 +116,7 @@ def search(
             in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
 
     Returns:
-        (AutoMLSearch, dict): the automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
+        (AutoMLSearch, dict): The automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
     """
     X_train = infer_feature_types(X_train)
     y_train = infer_feature_types(y_train)
@@ -328,7 +328,7 @@ class AutoMLSearch:
         ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over.
             If the number of unique pipelines to search over per batch is one, ensembling will not run. Defaults to False.
 
-        max_batches (int): The maximum number of batches of pipelines to search. Args: max_time, and
+        max_batches (int): The maximum number of batches of pipelines to search. Parameters max_time, and
             max_iterations have precedence over stopping the search.
 
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
@@ -840,7 +840,7 @@ class AutoMLSearch:
 
         search_desc = (
             f"{handle_problem_types(self.problem_type).name} Search\n\n"
-            f"Args:: \n{'='*20}\n"
+            f"Parameters: \n{'='*20}\n"
             f"Objective: {get_objective(self.objective).name}\n"
             f"Max Time: {self.max_time}\n"
             f"Max Iterations: {self.max_iterations}\n"
@@ -882,8 +882,8 @@ class AutoMLSearch:
     def _handle_keyboard_interrupt(self):
         """Presents a prompt to the user asking if they want to stop the search.
 
-        Returns
-            bool: If True, search should terminate early
+        Returns:
+            bool: If True, search should terminate early.
         """
         leading_char = "\n"
         start_of_loop = time.time()
@@ -1323,10 +1323,10 @@ class AutoMLSearch:
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline initialized with the parameters used to train that pipeline during automl search.
 
         Args:
-            pipeline_id (int): pipeline to retrieve
+            pipeline_id (int): Pipeline to retrieve
 
-        Returns
-            PipelineBase: untrained pipeline instance associated with the provided ID
+        Returns:
+            PipelineBase: Untrained pipeline instance associated with the provided ID
         """
         pipeline_results = self.results["pipeline_results"].get(pipeline_id)
         if pipeline_results is None:
@@ -1347,7 +1347,7 @@ class AutoMLSearch:
             return_dict (bool): If True, return dictionary of information
                 about pipeline. Defaults to False.
 
-        Returns
+        Returns:
             Description of specified pipeline. Includes information such as
             type of pipeline components, problem, training time, cross validation, etc.
         """
@@ -1444,8 +1444,9 @@ class AutoMLSearch:
     def results(self):
         """Class that allows access to a copy of the results from `automl_search`.
 
-        Returns dict containing `pipeline_results`: a dict with results from each pipeline,
-                 and `search_order`: a list describing the order the pipelines were searched.
+        Returns:
+            dict: Dictionary containing `pipeline_results`, a dict with results from each pipeline,
+                 and `search_order`, a list describing the order the pipelines were searched.
         """
         return copy.deepcopy(self._results)
 
@@ -1600,7 +1601,7 @@ class AutoMLSearch:
             objectives (list(str), list(ObjectiveBase)): Objectives used for scoring.
 
         Returns:
-            Dict[str, Dict[str, float]]: Dictionary keyed by pipeline name that maps to a dictionary of scores.
+            dict[str, Dict[str, float]]: Dictionary keyed by pipeline name that maps to a dictionary of scores.
             Note that the any pipelines that error out during scoring will not be included in the dictionary
             but the exception and stacktrace will be displayed in the log.
         """

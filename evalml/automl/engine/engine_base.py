@@ -63,10 +63,7 @@ class JobLogger:
         self.logs.append(("error", msg))
 
     def write_to_logger(self, logger):
-        """Write all the messages to the logger.
-
-        First In First Out order.
-        """
+        """Write all the messages to the logger, first in, first out (FIFO) order."""
         logger_method = {
             "info": logger.info,
             "debug": logger.debug,
@@ -292,7 +289,7 @@ def train_and_score_pipeline(
 
 
 def evaluate_pipeline(pipeline, automl_config, X, y, logger):
-    """Submit this function to the submit_evaluation_job engine method.
+    """Function submitted to the submit_evaluation_job engine method.
 
     Args:
         pipeline (PipelineBase): The pipeline to score.

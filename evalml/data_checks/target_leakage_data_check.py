@@ -98,7 +98,6 @@ class TargetLeakageDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": [{"code": "DROP_COL",
             ...                  "metadata": {"column": "leak"}}]}
-
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

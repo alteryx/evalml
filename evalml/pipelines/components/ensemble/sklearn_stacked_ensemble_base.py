@@ -104,8 +104,8 @@ class SklearnStackedEnsembleBase(Estimator):
     def default_parameters(cls):
         """Returns the default parameters for stacked ensemble classes.
 
-        Returns
-            dict: default parameters for this component.
+        Returns:
+            dict: Default parameters for this component.
         """
         return {
             "final_estimator": None,

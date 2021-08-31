@@ -12,7 +12,7 @@ class CFClient:
     """Custom CFClient API to match Dask's CFClient and allow context management.
 
     Args:
-        pool(cf.ThreadPoolExecutor or cf.ProcessPoolExecutor): the resource pool to execute the futures work on.
+        pool(cf.ThreadPoolExecutor or cf.ProcessPoolExecutor): The resource pool to execute the futures work on.
     """
 
     def __init__(self, pool):

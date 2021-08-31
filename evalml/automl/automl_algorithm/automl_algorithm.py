@@ -53,7 +53,7 @@ class AutoMLAlgorithm(ABC):
     def next_batch(self):
         """Get the next batch of pipelines to evaluate.
 
-        Returns
+        Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
 

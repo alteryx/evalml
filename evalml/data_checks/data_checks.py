@@ -26,7 +26,7 @@ class DataChecks:
 
     @staticmethod
     def _validate_data_checks(data_check_classes, params):
-        """Init a DataChecks instance from a list of DataCheck classes and corresponding params."""
+    """Creates a DataChecks instance from a list of DataCheck classes and corresponding params."""
         if not isinstance(data_check_classes, list):
             raise ValueError(
                 f"Parameter data_checks must be a list. Received {type(data_check_classes).__name__}."

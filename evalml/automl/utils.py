@@ -176,7 +176,7 @@ def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
         sampler_balanced_ratio (float): The ratio of min:majority targets that we would consider balanced,
             or should balance the classes to.
 
-    Returns
+    Returns:
         str, None: The string name of the sampling component to use, or None if no sampler is necessary
     """
     # we check for the class balances
@@ -207,10 +207,10 @@ def get_pipelines_from_component_graphs(
     Args:
         component_graphs_dict (dict): The dict of component graphs.
         problem_type (str or ProblemType): The problem type for which pipelines will be created.
-        parameters (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.
-        random_seed (int): Random seed.
+        parameters (dict): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
+        random_seed (int): Random seed. Defaults to 0.
 
-    Returns
+    Returns:
         list: List of pipelines made from the passed component graphs.
     """
     pipeline_class = {

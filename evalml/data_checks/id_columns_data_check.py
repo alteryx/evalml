@@ -24,12 +24,14 @@ class IDColumnsDataCheck(DataCheck):
     def validate(self, X, y=None):
         """Check if any of the features are likely to be ID columns. Currently performs a number of simple checks.
 
+        Checks performed are:
+
             - column name is "id"
             - column name ends in "_id"
             - column contains all unique values (and is categorical / integer type)
 
         Args:
-            X (pd.DataFrame, np.ndarray): The input features to check.T
+            X (pd.DataFrame, np.ndarray): The input features to check.
             y (pd.Series): The target. Defaults to None. Ignored.
 
         Returns:

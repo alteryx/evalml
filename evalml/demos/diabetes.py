@@ -10,7 +10,7 @@ def load_diabetes():
     """Load diabetes dataset. Used for regression problem.
 
     Returns:
-        pd.Dataframe, pd.Series): X and y
+        (pd.Dataframe, pd.Series): X and y
     """
     filename = (
         "https://api.featurelabs.com/datasets/diabetes.csv?library=evalml&version="

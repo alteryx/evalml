@@ -1,4 +1,4 @@
-"""Exception used in EvalML."""
+"""Exceptions used in EvalML."""
 from .exceptions import (
     MethodPropertyNotFoundError,
     PipelineNotFoundError,

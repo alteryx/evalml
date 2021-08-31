@@ -114,8 +114,8 @@ class Estimator(ComponentBase):
     def feature_importance(self):
         """Returns importance associated with each feature.
 
-        Returns
-            np.ndarray: Importance associated with each feature
+        Returns:
+            np.ndarray: Importance associated with each feature.
         """
         try:
             return self._component_obj.feature_importances_

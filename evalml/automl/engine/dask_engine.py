@@ -62,10 +62,11 @@ class DaskEngine(EngineBase):
         dask best practices.
 
         Args:
-            X (pd.DataFrame): input data for modeling
-            y (pd.Series): target data for modeling
-        Returns
-            dask.Future: the modeling data
+            X (pd.DataFrame): Input data for modeling
+            y (pd.Series): Target data for modeling
+
+        Returns:
+            dask.Future: The modeling data
         """
         data_hash = joblib.hash(X), joblib.hash(y)
         if data_hash in self._data_futures_cache:

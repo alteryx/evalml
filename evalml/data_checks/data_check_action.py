@@ -2,7 +2,7 @@
 
 
 class DataCheckAction:
-    """Recommended action returned by a DataCheck.
+    """A recommended action returned by a DataCheck.
 
     Args:
         action_code (DataCheckActionCode): Action code associated with the action.

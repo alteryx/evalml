@@ -99,7 +99,7 @@ class ParameterNotUsedWarning(UserWarning):
     def __init__(self, components):
         self.components = components
 
-        msg = f"Args: for components {components} will not be used to instantiate the pipeline since they don't appear in the pipeline"
+        msg = f"Parameters for components {components} will not be used to instantiate the pipeline since they don't appear in the pipeline"
         super().__init__(msg)
 
 

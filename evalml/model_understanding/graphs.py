@@ -949,7 +949,7 @@ def graph_partial_dependence(
              (PD) graph, 'individual' creates an individual conditional expectation (ICE) plot, and 'both' creates a
              single-figure PD and ICE plot. ICE plots can only be shown for one-way partial dependence plots.
 
-    Returns::
+    Returns:
         plotly.graph_objects.Figure: figure object containing the partial dependence data for plotting
 
     Raises:

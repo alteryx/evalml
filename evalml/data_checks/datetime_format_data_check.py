@@ -16,7 +16,7 @@ class DateTimeFormatDataCheck(DataCheck):
         self.datetime_column = datetime_column
 
     def validate(self, X, y):
-        """Check if the target data has equal intervals and is sorted.
+        """Checks if the target data has equal intervals and is sorted.
 
         Args:
             X (pd.DataFrame, np.ndarray): Features.

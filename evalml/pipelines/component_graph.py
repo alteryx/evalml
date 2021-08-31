@@ -487,7 +487,7 @@ class ComponentGraph:
         Args:
             component_name (str): Name of the component to look up.
 
-        Returns
+        Returns:
             list[str]: List of inputs for the component to use.
         """
         try:

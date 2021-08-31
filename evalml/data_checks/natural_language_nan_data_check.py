@@ -15,11 +15,10 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.  Defaults to None.
 
-        Returns
+        Returns:
             dict: dict with a DataCheckError if NaN values are present in natural language columns.
 
         Example:
-
             >>> import pandas as pd
             >>> import woodwork as ww
             >>> import numpy as np
@@ -37,7 +36,6 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             ...                      message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
             ...                      details={"columns": 'A'}).to_dict()]
             ...    }
-
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

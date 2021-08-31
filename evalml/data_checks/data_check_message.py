@@ -21,7 +21,7 @@ class DataCheckMessage:
         self.details = details
 
     def __str__(self):
-        """Return a string representation of data check message, equivalent to self.message attribute."""
+        """String representation of data check message, equivalent to self.message attribute."""
         return self.message
 
     def __eq__(self, other):

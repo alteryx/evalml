@@ -13,7 +13,7 @@ def get_non_core_objectives():
     Non-core objectives are objectives that are domain-specific. Users typically need to configure these objectives
     before using them in AutoMLSearch.
 
-    Returns::
+    Returns:
         List of ObjectiveBase classes
     """
     return [
@@ -44,7 +44,7 @@ def _all_objectives_dict():
 def get_all_objective_names():
     """Get a list of the names of all objectives.
 
-    Returns::
+    Returns:
         list (str): Objective names
     """
     all_objectives_dict = _all_objectives_dict()
@@ -67,7 +67,7 @@ def get_core_objective_names():
 
 
 def get_objective(objective, return_instance=False, **kwargs):
-    """Returns: the Objective class corresponding to a given objective name.
+    """Returns the Objective class corresponding to a given objective name.
 
     Args:
         objective (str or ObjectiveBase): Name or instance of the objective class.
@@ -110,7 +110,7 @@ def get_objective(objective, return_instance=False, **kwargs):
 
 
 def get_core_objectives(problem_type):
-    """Returns: all core objective instances associated with the given problem type.
+    """Returns all core objective instances associated with the given problem type.
 
     Core objectives are designed to work out-of-the-box for any dataset.
 

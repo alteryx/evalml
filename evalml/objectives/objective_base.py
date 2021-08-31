@@ -78,7 +78,7 @@ class ObjectiveBase(ABC):
     def positive_only(cls):
         """If True, this objective is only valid for positive data.
 
-        Default False.
+        Defaults to False.
         """
         return False
 

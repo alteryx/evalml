@@ -179,7 +179,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         Args:
             file_path (str): Location to load file
 
-        Returns
+        Returns:
             ComponentBase object
         """
         with open(file_path, "rb") as f:
