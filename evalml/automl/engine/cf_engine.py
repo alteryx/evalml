@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor
+from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
 
 from evalml.automl.engine.engine_base import (
     EngineBase,
@@ -33,6 +33,13 @@ class CFClient:
     def close(self):
         """Closes the underlying Executor."""
         self.pool.shutdown()
+
+    @property
+    def is_closed(self):
+        if isinstance(self.pool, ProcessPoolExecutor):
+            return self.pool._shutdown_thread
+        elif isinstance(self.pool, ThreadPoolExecutor):
+            return self.pool._shutdown
 
 
 class CFComputation(EngineComputation):
@@ -173,4 +180,10 @@ class CFEngine(EngineBase):
         return computation
 
     def close(self):
+        """Function to properly shutdown the Engine's Client's resources."""
         self.client.close()
+
+    @property
+    def is_closed(self):
+        """Property that determines whether the Engine's Client's resources are shutdown."""
+        return self.client.is_closed

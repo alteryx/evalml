@@ -443,7 +443,4 @@ def test_automl_closes_engines(pool_class, X_y_binary_cls):
     pool_instance = pool_class()
     cf_engine = CFEngine(CFClient(pool_instance))
     cf_engine.close()
-    if isinstance(pool_instance, ProcessPoolExecutor):
-        assert cf_engine.client.pool._shutdown_thread
-    elif isinstance(pool_instance, ThreadPoolExecutor):
-        assert cf_engine.client.pool._shutdown
+    assert cf_engine.is_closed
