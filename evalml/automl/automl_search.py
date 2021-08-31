@@ -72,15 +72,13 @@ logger = get_logger(__file__)
 
 
 def build_engine_from_str(engine_str):
-    """Function that converts a convenience string for an parallel engine
-    type and returns an instance of that engine.
+    """Function that converts a convenience string for an parallel engine type and returns an instance of that engine.
 
     Arguments:
         engine_str (str): String representing the requested engine.
 
     Returns:
         (EngineBase): Instance of the requested engine.
-
     """
     valid_engines = [
         "sequential",
