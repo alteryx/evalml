@@ -12,6 +12,7 @@ Release Notes
         * Added ``DROP_ROWS`` to ``_make_component_list_from_actions`` and clean up metadata :pr:`2694`
     * Fixes
         * Updated Oversampler logic to select best SMOTE based on component input instead of pipeline input :pr:`2695`
+        * Fixed partial dependence bug for ensemble pipelines :pr:`2714`
         * Updated ``TargetLeakageDataCheck`` to maintain user-selected logical types :pr:`2711`
     * Changes
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
