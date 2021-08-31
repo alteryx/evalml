@@ -54,7 +54,7 @@ def infer_feature_types(data, feature_types=None):
             mapping column names to the type of data represented in the column. If data is a 1D structure, then feature_types must be
             a Woodwork logical type or a string representing a Woodwork logical type ("Double", "Integer", "Boolean", "Categorical", "Datetime", "NaturalLanguage")
 
-    Returns
+    Returns:
         A Woodwork data structure where the data type of each column was either specified or inferred.
     """
     if isinstance(data, list):
@@ -121,7 +121,7 @@ def _retain_custom_types_and_initalize_woodwork(
         ltypes_to_ignore (list): List of Woodwork logical types to ignore. Columns from the old DataFrame that have a logical type
         specified in this list will not have their logical types carried over to the new DataFrame returned
 
-    Returns
+    Returns:
         A new DataFrame where any of the columns that exist in the old input DataFrame and the new DataFrame try to retain
         the original logical type, if possible and not specified to be ignored.
     """
@@ -156,7 +156,7 @@ def _convert_numeric_dataset_pandas(X, y):
         X (pd.DataFrame, np.ndarray): Data to transform
         y (pd.Series, np.ndarray): Target data
 
-    Returns
+    Returns:
         Tuple(pd.DataFrame, pd.Series): Transformed X and y
     """
     X_ww = infer_feature_types(X)

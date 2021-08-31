@@ -115,7 +115,7 @@ class TimeSeriesBaselineEstimator(Estimator):
 
         Since baseline estimators do not use input features to calculate predictions, returns an array of zeroes.
 
-        Returns
-            np.ndarray (float): an array of zeroes
+        Returns:
+            np.ndarray (float): An array of zeroes.
         """
         return np.zeros(self._num_features)

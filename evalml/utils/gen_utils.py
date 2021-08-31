@@ -251,7 +251,7 @@ def jupyter_check():
     """Get whether or not the code is being run in a Ipython environment (such as Jupyter Notebook or Jupyter Lab).
 
     Returns:
-        Boolean: True if Ipython, False otherwise.
+        boolean: True if Ipython, False otherwise.
     """
     try:
         ipy = import_or_raise("IPython")

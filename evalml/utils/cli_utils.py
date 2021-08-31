@@ -16,11 +16,7 @@ logger = get_logger(__file__)
 
 
 def print_info():
-    """Prints information about the system, evalml, and dependencies of evalml.
-
-    Returns?
-        None
-    """
+    """Prints information about the system, evalml, and dependencies of evalml."""
     logger.info("EvalML version: %s" % evalml.__version__)
     logger.info("EvalML installation directory: %s" % get_evalml_root())
     print_sys_info()
@@ -28,11 +24,7 @@ def print_info():
 
 
 def print_sys_info():
-    """Prints system information.
-
-    Returns:
-        None
-    """
+    """Prints system information."""
     logger.info("\nSYSTEM INFO")
     logger.info("-----------")
     sys_info = get_sys_info()
@@ -41,11 +33,7 @@ def print_sys_info():
 
 
 def print_deps():
-    """Prints the version number of each dependency.
-
-    Returns:
-        None
-    """
+    """Prints the version number of each dependency."""
     logger.info("\nINSTALLED VERSIONS")
     logger.info("------------------")
     installed_packages = get_installed_packages()

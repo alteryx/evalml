@@ -122,8 +122,8 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
     def get_feature_names(self):
         """Return feature names for the input features after fitting.
 
-        Returns
-            np.array: The feature names after encoding
+        Returns:
+            np.array: The feature names after encoding.
         """
         return self._component_obj.get_feature_names()
 
