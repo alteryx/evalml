@@ -2,25 +2,27 @@ from unittest.mock import patch
 
 import numpy as np
 import pytest
-from skopt.space import Categorical
+from skopt.space import Categorical, Integer
 
-from evalml.automl.automl_algorithm import EvalMLAlgorithm
+from evalml.automl.automl_algorithm import DefaultAlgorithm
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     ElasticNetClassifier,
     ElasticNetRegressor,
+    LogisticRegressionClassifier,
+    RandomForestClassifier,
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
 )
 from evalml.problem_types import ProblemTypes
 
 
-def test_evalml_algorithm_init(X_y_binary):
+def test_default_algorithm_init(X_y_binary):
     X, y = X_y_binary
     problem_type = "binary"
     sampler_name = "Undersampler"
 
-    algo = EvalMLAlgorithm(X, y, problem_type, sampler_name)
+    algo = DefaultAlgorithm(X, y, problem_type, sampler_name)
 
     assert algo.problem_type == problem_type
     assert algo.sampler_name == sampler_name
@@ -29,7 +31,7 @@ def test_evalml_algorithm_init(X_y_binary):
     assert algo.allowed_pipelines == []
 
 
-def test_evalml_algorithm_custom_hyperparameters_error(X_y_binary):
+def test_default_algorithm_custom_hyperparameters_error(X_y_binary):
     X, y = X_y_binary
     problem_type = "binary"
     sampler_name = "Undersampler"
@@ -42,7 +44,7 @@ def test_evalml_algorithm_custom_hyperparameters_error(X_y_binary):
     with pytest.raises(
         ValueError, match="If custom_hyperparameters provided, must be of type dict"
     ):
-        EvalMLAlgorithm(
+        DefaultAlgorithm(
             X,
             y,
             problem_type,
@@ -53,7 +55,7 @@ def test_evalml_algorithm_custom_hyperparameters_error(X_y_binary):
     with pytest.raises(
         ValueError, match="Custom hyperparameters should only contain skopt"
     ):
-        EvalMLAlgorithm(
+        DefaultAlgorithm(
             X,
             y,
             problem_type,
@@ -65,7 +67,7 @@ def test_evalml_algorithm_custom_hyperparameters_error(X_y_binary):
     with pytest.raises(
         ValueError, match="Pipeline parameters should not contain skopt.Space variables"
     ):
-        EvalMLAlgorithm(
+        DefaultAlgorithm(
             X,
             y,
             problem_type,
@@ -86,7 +88,7 @@ def add_result(algo, batch):
     "automl_type",
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
-def test_evalml_algorithm(
+def test_default_algorithm(
     mock_get_names,
     automl_type,
     X_y_binary,
@@ -106,7 +108,7 @@ def test_evalml_algorithm(
     mock_get_names.return_value = ["0", "1", "2"]
     problem_type = automl_type
     sampler_name = None
-    algo = EvalMLAlgorithm(X, y, problem_type, sampler_name)
+    algo = DefaultAlgorithm(X, y, problem_type, sampler_name)
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
     first_batch = algo.next_batch()
@@ -166,3 +168,70 @@ def test_evalml_algorithm(
     long_estimators = set([pipeline.estimator.name for pipeline in long_2])
     assert len(long_2) == 30
     assert len(long_estimators) == 3
+
+
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_evalml_algo_pipeline_params(mock_get_names, X_y_binary):
+    X, y = X_y_binary
+    mock_get_names.return_value = ["0", "1", "2"]
+
+    problem_type = ProblemTypes.BINARY
+    sampler_name = None
+    pipeline_params = {
+        "pipeline": {"gap": 2, "max_delay": 10},
+        "Logistic Regression Classifier": {"C": 5},
+    }
+    algo = DefaultAlgorithm(
+        X,
+        y,
+        problem_type,
+        sampler_name,
+        pipeline_params=pipeline_params,
+        num_long_explore_pipelines=1,
+        num_long_pipelines_per_batch=1,
+    )
+
+    for _ in range(6):
+        batch = algo.next_batch()
+        add_result(algo, batch)
+        for pipeline in batch:
+            if not isinstance(pipeline.estimator, SklearnStackedEnsembleClassifier):
+                assert pipeline.parameters["pipeline"] == {"gap": 2, "max_delay": 10}
+            if isinstance(pipeline.estimator, LogisticRegressionClassifier):
+                assert pipeline.parameters["Logistic Regression Classifier"]["C"] == 5
+
+
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_evalml_algo_custom_hyperparameters(mock_get_names, X_y_binary):
+    X, y = X_y_binary
+    mock_get_names.return_value = ["0", "1", "2"]
+    problem_type = ProblemTypes.BINARY
+    sampler_name = None
+    custom_hyperparameters = {
+        "Random Forest Classifier": {
+            "n_estimators": Integer(5, 7),
+            "max_depth": Categorical([5, 6, 7]),
+        }
+    }
+
+    algo = DefaultAlgorithm(
+        X,
+        y,
+        problem_type,
+        sampler_name,
+        custom_hyperparameters=custom_hyperparameters,
+        num_long_explore_pipelines=3,
+        num_long_pipelines_per_batch=3,
+    )
+
+    for _ in range(10):
+        batch = algo.next_batch()
+        add_result(algo, batch)
+        for pipeline in batch:
+            if isinstance(pipeline.estimator, RandomForestClassifier):
+                assert pipeline.parameters["Random Forest Classifier"][
+                    "n_estimators"
+                ] in Integer(5, 7)
+                assert pipeline.parameters["Random Forest Classifier"][
+                    "max_depth"
+                ] in Categorical([5, 6, 7])
