@@ -378,6 +378,7 @@ def test_target_leakage_regression():
     X["c"] = y / 10
     X["d"] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     X["e"] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"]
+    X.ww.init(logical_types={"e": "categorical"})
 
     expected = {
         "warnings": [
@@ -399,6 +400,12 @@ def test_target_leakage_regression():
                 message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                 details={"column": "c"},
             ).to_dict(),
+            DataCheckWarning(
+                message="Column 'e' is 80.0% or more correlated with the target",
+                data_check_name=target_leakage_data_check_name,
+                message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                details={"column": "e"},
+            ).to_dict(),
         ],
         "errors": [],
         "actions": [
@@ -410,6 +417,9 @@ def test_target_leakage_regression():
             ).to_dict(),
             DataCheckAction(
                 DataCheckActionCode.DROP_COL, metadata={"column": "c"}
+            ).to_dict(),
+            DataCheckAction(
+                DataCheckActionCode.DROP_COL, metadata={"column": "e"}
             ).to_dict(),
         ],
     }
