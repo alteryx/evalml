@@ -298,8 +298,6 @@ def test_cancel_job(X_y_binary_cls):
 def test_dask_sends_woodwork_schema(X_y_binary_cls):
     X, y = X_y_binary_cls
 
-    engine = DaskEngine()
-
     X.ww.init(logical_types={0: "Categorical"}, semantic_tags={0: ["my cool feature"]})
     y = ww.init_series(y)
 
@@ -325,23 +323,23 @@ def test_dask_sends_woodwork_schema(X_y_binary_cls):
         y_schema_to_check=y.ww.schema,
     )
 
-    future = engine.submit_training_job(
-        X=X, y=y, automl_config=new_config, pipeline=pipeline
-    )
-    fitted_pipeline = future.get_result()
+    with DaskEngine() as engine:
+        future = engine.submit_training_job(
+            X=X, y=y, automl_config=new_config, pipeline=pipeline
+        )
+        fitted_pipeline = future.get_result()
 
-    future = engine.submit_scoring_job(
-        X=X,
-        y=y,
-        automl_config=new_config,
-        pipeline=fitted_pipeline,
-        objectives=["F1"],
-    )
-    _ = future.get_result()
+        future = engine.submit_scoring_job(
+            X=X,
+            y=y,
+            automl_config=new_config,
+            pipeline=fitted_pipeline,
+            objectives=["F1"],
+        )
+        _ = future.get_result()
 
-    future = engine.submit_evaluation_job(new_config, pipeline, X, y)
-    future.get_result()
-    engine.close()
+        future = engine.submit_evaluation_job(new_config, pipeline, X, y)
+        future.get_result()
 
 
 def test_daskengine_convenience():
