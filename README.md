@@ -30,6 +30,13 @@ Prophet is currently only supported via pip installation in EvalML.
 ```shell
 pip install evalml[prophet]
 ```
+Another option for installing Prophet with CmdStan as a backend is to use `make installdeps-prophet`.
+This command will do the following:
+- Pip install `cmdstanpy==0.9.68`
+- Execute the `install_cmdstan.py` script found within your `site-packages/cmdstanpy` which builds `cmdstan` in your `site-packages`.
+- Install `Prophet==0.1.0` with the `CMDSTAN` and `STAN_BACKEND` environment variables set.
+
+If the `site-packages` path is incorrect or you'd like to specify a different one, just run `make installdeps-prophet SITE_PACKAGES_DIR="<path_to_your_site_packages>"`.
 
 #### Update checker
 
