@@ -88,9 +88,8 @@ AutoML Callbacks
 
 
 AutoML Engines
-~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~
 .. autoapisummary::
-    :nosignatures:
 
     evalml.automl.engine.sequential_engine.SequentialEngine
     evalml.automl.engine.cf_engine.CFEngine
