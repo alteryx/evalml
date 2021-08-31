@@ -186,7 +186,6 @@ def test_drop_first():
     assert col_names == expected_col_names
 
 
-
 def test_drop_binary():
     X = pd.DataFrame(
         {
