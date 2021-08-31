@@ -1,4 +1,4 @@
-from concurrent.futures import ThreadPoolExecutor, ProcessPoolExecutor
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 from evalml.automl.engine.engine_base import (
     EngineBase,

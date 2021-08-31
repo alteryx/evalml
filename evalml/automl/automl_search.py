@@ -72,7 +72,7 @@ logger = get_logger(__file__)
 
 
 def build_engine_from_str(engine_str):
-    """ Function that converts a convenience string for an parallel engine
+    """Function that converts a convenience string for an parallel engine
     type and returns an instance of that engine.
 
     Arguments:
