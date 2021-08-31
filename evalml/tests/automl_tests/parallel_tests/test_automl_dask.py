@@ -16,6 +16,19 @@ from evalml.tuners import SKOptTuner
 engine_strs = ["cf_threaded", "cf_process", "dask_threaded", "dask_process"]
 
 
+@pytest.fixture(scope="module")
+def sequential_results(X_y_binary_cls):
+    X, y = X_y_binary_cls
+
+    seq_automl = AutoMLSearch(
+        X_train=X, y_train=y, problem_type="binary", engine="sequential"
+    )
+    seq_automl.search()
+    sequential_rankings = seq_automl.full_rankings
+    seq_results = sequential_rankings.drop(columns=["id"])
+    return seq_results
+
+
 @pytest.mark.parametrize(
     "engine_str",
     engine_strs,
@@ -23,6 +36,7 @@ engine_strs = ["cf_threaded", "cf_process", "dask_threaded", "dask_process"]
 def test_automl(
     engine_str,
     X_y_binary_cls,
+    sequential_results,
 ):
     """Comparing the results of parallel and sequential AutoML to each other."""
 
@@ -34,14 +48,8 @@ def test_automl(
     par_automl.close_engine()
     parallel_rankings = par_automl.full_rankings
 
-    seq_automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", engine="sequential"
-    )
-    seq_automl.search()
-    sequential_rankings = seq_automl.full_rankings
-
     par_results = parallel_rankings.drop(columns=["id"])
-    seq_results = sequential_rankings.drop(columns=["id"])
+    seq_results = sequential_results
 
     assert all(seq_results["pipeline_name"] == par_results["pipeline_name"])
     assert np.allclose(

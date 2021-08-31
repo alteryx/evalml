@@ -170,5 +170,7 @@ class DaskEngine(EngineBase):
         return computation
 
     def close(self):
+        """Closes the underlying cluster."""
+        # TODO: Might want to rethink this if using something other than a LocalCluster.
         self.cluster.close()
         self.client.close()

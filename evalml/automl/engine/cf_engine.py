@@ -30,6 +30,10 @@ class CFClient:
         """Pass through to imitate Dask's Client API."""
         return self.pool.submit(*args, **kwargs)
 
+    def close(self):
+        """Closes the underlying Executor."""
+        self.pool.shutdown()
+
 
 class CFComputation(EngineComputation):
     """A Future-like wrapper around jobs created by the CFEngine."""
@@ -71,6 +75,10 @@ class CFComputation(EngineComputation):
               and cannot be cancelled.  True if the call can be canceled.
         """
         return self.work.cancel()
+
+    def close(self):
+        """Closes the threadpool."""
+        self.pool.shutdown()
 
     @property
     def is_cancelled(self):
@@ -167,3 +175,6 @@ class CFEngine(EngineBase):
         computation = CFComputation(future)
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation
+
+    def close(self):
+        self.client.close()

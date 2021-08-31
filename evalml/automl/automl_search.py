@@ -826,10 +826,7 @@ class AutoMLSearch:
         """Function to explicitly close the cluster.  Currently only works for DaskEngines.
         Returns: None
         """
-        if isinstance(self._engine, DaskEngine):
-            self._engine.close()
-        elif isinstance(self._engine, CFEngine):
-            self._engine.client.pool.shutdown()
+        self._engine.close()
 
     def _catch_warnings(self, warning_list):
         if len(warning_list) == len(self.allowed_pipelines) and len(warning_list) > 0:
