@@ -199,6 +199,46 @@ def test_delayed_feature_extractor_maxdelay3_gap7(
     )
 
 
+def test_delayed_feature_extractor_numpy(
+    delayed_features_data
+):
+    X, y = delayed_features_data
+    X, X_answer, y, y_answer = encode_X_y_as_strings(
+        X, y, False, False
+    )
+    X_np = X.values
+    y_np = y.values
+    answer = pd.DataFrame(
+        {
+            0: X.feature,
+            "0_delay_1": X_answer.feature.shift(1),
+            "0_delay_2": X_answer.feature.shift(2),
+            "0_delay_3": X_answer.feature.shift(3),
+            "target_delay_0": y_answer.astype("int64"),
+            "target_delay_1": y_answer.shift(1),
+            "target_delay_2": y_answer.shift(2),
+            "target_delay_3": y_answer.shift(3),
+        }
+    )
+
+    assert_frame_equal(
+        answer, DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X_np, y_np)
+    )
+
+    answer_only_y = pd.DataFrame(
+        {
+            "target_delay_0": y_answer.astype("int64"),
+            "target_delay_1": y_answer.shift(1),
+            "target_delay_2": y_answer.shift(2),
+            "target_delay_3": y_answer.shift(3),
+        }
+    )
+    assert_frame_equal(
+        answer_only_y,
+        DelayedFeatureTransformer(max_delay=3, gap=7).fit_transform(X=None, y=y_np),
+    )
+
+
 @pytest.mark.parametrize(
     "delay_features,delay_target", [(False, True), (True, False), (False, False)]
 )
