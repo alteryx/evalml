@@ -400,7 +400,7 @@ class AutoMLSearch:
         engine (EngineBase or str): The engine instance used to evaluate pipelines. Dask or concurrent.futures engines can also
             be chosen by providing a string from the list ["sequential", "cf_threaded", "cf_process", "dask_threaded", "dask_process"].
             If a parallel engine is selected this way, the maximum amount of parallelism, as determined by the engine, will be used.
-            Defaults to "sequential"
+                Defaults to "sequential"
     """
 
     _MAX_NAME_LEN = 40
@@ -834,9 +834,7 @@ class AutoMLSearch:
             raise ValueError("Please specify a valid automl algorithm.")
 
     def close_engine(self):
-        """Function to explicitly close the cluster.  Currently only works for DaskEngines.
-        Returns: None
-        """
+        """Function to explicitly close the engine, client, parallel resources."""
         self._engine.close()
 
     def _catch_warnings(self, warning_list):
