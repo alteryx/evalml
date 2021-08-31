@@ -69,7 +69,7 @@ class DFSTransformer(Transformer):
             X (pd.DataFrame or np.ndarray): The input training data to transform. Has shape [n_samples, n_features]
             y (pd.Series, optional): Ignored.
 
-        Returns
+        Returns:
             pd.DataFrame: Feature matrix
         """
         X_ww = infer_feature_types(X)

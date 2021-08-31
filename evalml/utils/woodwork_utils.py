@@ -153,11 +153,11 @@ def _convert_numeric_dataset_pandas(X, y):
     """Convert numeric and non-null data to pandas datatype. Raises ValueError if there is null or non-numeric data. Used with data sampler strategies.
 
     Args:
-        X (pd.DataFrame, np.ndarray): Data to transform
-        y (pd.Series, np.ndarray): Target data
+        X (pd.DataFrame, np.ndarray): Data to transform.
+        y (pd.Series, np.ndarray): Target data.
 
     Returns:
-        Tuple(pd.DataFrame, pd.Series): Transformed X and y
+        Tuple(pd.DataFrame, pd.Series): Transformed X and y.
     """
     X_ww = infer_feature_types(X)
     if not is_all_numeric(X_ww):
