@@ -1165,7 +1165,7 @@ def _add_ice_plot(_go, fig, ice_data, label=None, row=None, col=None):
 
 
 def _calculate_axis_range(arr):
-    """A helper method to help calculate the appropriate range for an axis based on the data to graph."""
+    """Helper method to help calculate the appropriate range for an axis based on the data to graph."""
     max_value = arr.max()
     min_value = arr.min()
     margins = abs(max_value - min_value) * 0.05

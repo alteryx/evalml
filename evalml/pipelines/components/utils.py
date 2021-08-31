@@ -40,7 +40,7 @@ def allowed_model_families(problem_type):
         problem_types (ProblemTypes or str): ProblemTypes enum or string.
 
     Returns:
-        list[ModelFamily]: A list of model families
+        list[ModelFamily]: A list of model families.
     """
     estimators = []
     problem_type = handle_problem_types(problem_type)
@@ -167,8 +167,8 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         Args:
             X (pd.DataFrame): Features
 
-        Returns
-            np.ndarray: Predicted values
+        Returns:
+            np.ndarray: Predicted values.
         """
         check_is_fitted(self, "is_fitted_")
 
@@ -302,7 +302,7 @@ def make_balancing_dictionary(y, sampling_ratio):
         sampling_ratio (float): The balanced ratio we want the samples to meet
 
     Returns:
-        dict : Dictionary where keys are the classes, and the corresponding values are the counts of samples
+        dict: Dictionary where keys are the classes, and the corresponding values are the counts of samples
         for each class that will satisfy sampling_ratio.
     """
     if sampling_ratio <= 0 or sampling_ratio > 1:

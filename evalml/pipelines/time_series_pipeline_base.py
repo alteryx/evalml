@@ -60,7 +60,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
             y (pd.Series, np.ndarray): The target training targets of length [n_samples].
 
-        Returns
+        Returns:
             self
         """
         X, y = self._convert_to_woodwork(X, y)

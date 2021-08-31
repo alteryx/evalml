@@ -48,10 +48,10 @@ class DFSTransformer(Transformer):
         """Fits the DFSTransformer Transformer component.
 
         Args:
-            X (pd.DataFrame, np.array): The input data to transform, of shape [n_samples, n_features]
-            y (pd.Series): The target training data of length [n_samples]
+            X (pd.DataFrame, np.array): The input data to transform, of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
 
-        Returns
+        Returns:
             self
         """
         X_ww = infer_feature_types(X)

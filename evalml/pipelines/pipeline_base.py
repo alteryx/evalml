@@ -131,8 +131,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def summary(self):
         """A short summary of the pipeline structure, describing the list of components used.
 
-        Example:
-            Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
+        Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
         """
         component_graph = [
             type(self.component_graph.component_instances[component])
@@ -404,7 +403,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Importance associated with each feature. Features dropped by the feature selection are excluded.
 
         Returns:
-            pd.DataFrame : Feature names and their corresponding importance
+            pd.DataFrame: Feature names and their corresponding importance
         """
         feature_names = self.input_feature_names[self._estimator_name]
         importance = list(
@@ -476,7 +475,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to zero.
 
         Returns:
-            plotly.Figure : A bar graph showing features and their corresponding importance
+            plotly.Figure: A bar graph showing features and their corresponding importance
         """
         go = import_or_raise(
             "plotly.graph_objects",

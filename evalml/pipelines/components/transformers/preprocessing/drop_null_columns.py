@@ -57,7 +57,7 @@ class DropNullColumns(Transformer):
             X (pd.DataFrame): Data to transform
             y (pd.Series, optional): Ignored.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed X
         """
         X_t = infer_feature_types(X)

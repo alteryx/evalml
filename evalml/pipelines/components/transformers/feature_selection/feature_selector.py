@@ -21,8 +21,8 @@ class FeatureSelector(Transformer):
     def get_names(self):
         """Get names of selected features.
 
-        Returns
-            list[str]: List of the names of features selected
+        Returns:
+            list[str]: List of the names of features selected.
         """
         selected_masks = self._component_obj.get_support()
         return [

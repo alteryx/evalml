@@ -62,11 +62,11 @@ class DaskEngine(EngineBase):
         dask best practices.
 
         Args:
-            X (pd.DataFrame): Input data for modeling
-            y (pd.Series): Target data for modeling
+            X (pd.DataFrame): Input data for modeling.
+            y (pd.Series): Target data for modeling.
 
         Returns:
-            dask.Future: The modeling data
+            dask.Future: The modeling data.
         """
         data_hash = joblib.hash(X), joblib.hash(y)
         if data_hash in self._data_futures_cache:
@@ -89,7 +89,7 @@ class DaskEngine(EngineBase):
 
         Returns:
             DaskComputation: An object wrapping a reference to a future-like computation
-                occurring in the dask cluster
+                occurring in the dask cluster.
         """
         logger = self.setup_job_log()
         X, y = self.send_data_to_cluster(X, y)
@@ -114,7 +114,7 @@ class DaskEngine(EngineBase):
 
         Returns:
             DaskComputation: An object wrapping a reference to a future-like computation
-                occurring in the dask cluster
+                occurring in the dask cluster.
         """
         X, y = self.send_data_to_cluster(X, y)
         dask_future = self.client.submit(
@@ -136,7 +136,7 @@ class DaskEngine(EngineBase):
 
         Returns:
             DaskComputation: An object wrapping a reference to a future-like computation
-                occurring in the dask cluster
+                occurring in the dask cluster.
         """
         # Get the schema before we lose it
         X_schema = X.ww.schema

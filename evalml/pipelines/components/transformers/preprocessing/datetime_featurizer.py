@@ -133,7 +133,7 @@ class DateTimeFeaturizer(Transformer):
             X (pd.DataFrame): Input features.
             y (pd.Series, optional): Ignored.
 
-        Returns
+        Returns:
             pd.DataFrame: Transformed X
         """
         X = infer_feature_types(X)
@@ -156,8 +156,8 @@ class DateTimeFeaturizer(Transformer):
     def get_feature_names(self):
         """Gets the categories of each datetime feature.
 
-        Returns
-           Dictionary, where each key-value pair is a column name and a dictionary
+        Returns:
+           dict: Dictionary, where each key-value pair is a column name and a dictionary
            mapping the unique feature values to their integer encoding.
         """
         return self._categories
