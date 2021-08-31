@@ -310,9 +310,6 @@ def test_fast_permutation_importance_matches_slow_output(
             "dependency not installed."
         )
     X, y = fraud_100
-    X.ww.init(
-        logical_types={"currency": "categorical", "expiration_date": "categorical"}
-    )
 
     if pipeline_class == LinearPipelineWithTextFeatures:
         X.ww.set_types(logical_types={"provider": "NaturalLanguage"})
@@ -625,9 +622,6 @@ def test_permutation_importance_oversampler(fraud_100):
                 "Oversampler.y",
             ],
         }
-    )
-    X.ww.init(
-        logical_types={"currency": "categorical", "expiration_date": "categorical"}
     )
     pipeline.fit(X=X, y=y)
     pipeline.predict(X)

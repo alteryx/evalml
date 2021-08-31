@@ -1138,9 +1138,6 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
             "Random Forest Classifier",
         ]
     )
-    X.ww.init(
-        logical_types={"currency": "categorical", "expiration_date": "categorical"}
-    )
     pl.fit(X, y)
     dep = partial_dependence(pl, X, features="amount", grid_resolution=5)
 
