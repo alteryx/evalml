@@ -850,7 +850,12 @@ def partial_dependence(
         elif kind == "average":
             return avg_data
     except Exception as e:
-        raise e
+        if isinstance(e, PartialDependenceError):
+            raise e
+        else:
+            raise PartialDependenceError(
+                str(e), PartialDependenceErrorCode.ALL_OTHER_ERRORS
+            ) from e
 
 
 def _update_fig_with_two_way_partial_dependence(

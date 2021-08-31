@@ -536,7 +536,6 @@ def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regr
             BinaryClassificationPipeline(["Random Forest Classifier"]),
             BinaryClassificationPipeline(["Elastic Net Classifier"]),
         ]
-        pipeline_class = BinaryClassificationPipeline
     else:
         X, y = X_y_regression
         input_pipelines = [
