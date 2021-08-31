@@ -265,10 +265,4 @@ def test_automl_closes_engines(engine_str, X_y_binary_cls):
         optimize_thresholds=False,
     )
     automl.close_engine()
-    if "dask" in engine_str:
-        assert automl._engine.cluster.status.value == "closed"
-    elif "cf" in engine_str:
-        if "process" in engine_str:
-            assert automl._engine.client.pool._shutdown_thread
-        else:
-            assert automl._engine.client.pool._shutdown
+    assert automl._engine.is_closed

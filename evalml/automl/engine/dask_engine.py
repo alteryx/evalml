@@ -174,3 +174,8 @@ class DaskEngine(EngineBase):
         # TODO: Might want to rethink this if using something other than a LocalCluster.
         self.cluster.close()
         self.client.close()
+
+    @property
+    def is_closed(self):
+        """Property that determines whether the Engine's Client's resources are shutdown."""
+        return self.cluster.status.value == "closed"
