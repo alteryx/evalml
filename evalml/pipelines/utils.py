@@ -274,7 +274,9 @@ def _make_stacked_ensemble_pipeline(
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             Defaults to -1.
+        final_components (list(str)): List of the final components to pass as input into the stacked ensembler component.
         use_sklearn (bool): If True, instantiates a pipeline with the scikit-learn ensembler.
+        ensemble_y (str): The y input to use as ".y" for the stacked ensembler. By default will use dataset "y".
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.

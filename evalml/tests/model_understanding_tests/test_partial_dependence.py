@@ -19,7 +19,6 @@ from evalml.pipelines import (
     ClassificationPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
-    components,
 )
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
