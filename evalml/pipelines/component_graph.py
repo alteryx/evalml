@@ -137,18 +137,6 @@ class ComponentGraph:
                 defaults[component.name] = component.default_parameters
         return defaults
 
-    @property
-    def is_ensemble_graph(self):
-        """Checks if graph represents an ensemble graph
-
-        Returns:
-            bool: True if there is an ensembler component at the end of the graph
-        """
-        return (
-            self.get_component(self.compute_order[-1]).model_family
-            == ModelFamily.ENSEMBLE
-        )
-
     def instantiate(self, parameters):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be raised if a component is already instantiated but the parameters dict contains arguments for that component.
 
