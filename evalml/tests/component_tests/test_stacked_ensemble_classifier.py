@@ -15,6 +15,7 @@ from evalml.pipelines.components import RandomForestClassifier
 from evalml.pipelines.components.ensemble import StackedEnsembleClassifier
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import import_or_raise
 
 
 def test_stacked_model_family():
@@ -81,23 +82,24 @@ def test_stacked_problem_types():
 
 
 def test_stacked_ensemble_nondefault_y(X_y_binary):
-    X, y = X_y_binary
-    component_graph = {
-        "OS": ["Oversampler", "X", "y"],
-        "RF": [RandomForestClassifier, "OS.x", "OS.y"],
-        "RF B": [RandomForestClassifier, "X", "y"],
-    }
-    pl = _make_stacked_ensemble_pipeline(
-        component_graph=component_graph,
-        problem_type=ProblemTypes.BINARY,
-        final_components=["RF", "RF B"],
-        ensemble_y="OS.y",
-    )
-    pl = BinaryClassificationPipeline(component_graph)
-    pl.fit(X, y)
-    y_pred = pl.predict(X)
-    assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred).all()
+    if import_or_raise("imblearn.over_sampling"):
+        X, y = X_y_binary
+        component_graph = {
+            "OS": ["Oversampler", "X", "y"],
+            "RF": [RandomForestClassifier, "OS.x", "OS.y"],
+            "RF B": [RandomForestClassifier, "X", "y"],
+        }
+        pl = _make_stacked_ensemble_pipeline(
+            component_graph=component_graph,
+            problem_type=ProblemTypes.BINARY,
+            final_components=["RF", "RF B"],
+            ensemble_y="OS.y",
+        )
+        pl = BinaryClassificationPipeline(component_graph)
+        pl.fit(X, y)
+        y_pred = pl.predict(X)
+        assert len(y_pred) == len(y)
+        assert not np.isnan(y_pred).all()
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])

@@ -1,6 +1,7 @@
 """Base class for the AutoML algorithms which power EvalML."""
 from abc import ABC, abstractmethod
 
+from evalml import model_family
 from evalml.exceptions import PipelineNotFoundError
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
@@ -93,45 +94,20 @@ class AutoMLAlgorithm(ABC):
         next_batch = []
 
         # Custom Stacked Pipelines
-        ensembler_component_graph = {}
-        final_components = []
-        problem_type = None
+        problem_type = list(self._best_pipeline_info.values())[0][
+            "pipeline"
+        ].problem_type
         n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
-
-        for model_type, best_info in self._best_pipeline_info.items():
-
-            def _make_new_component_name(component_name):
-                return str(model_type) + " Pipeline - " + component_name
-
-            pipeline = best_info["pipeline"]
-            if problem_type is None:
-                problem_type = pipeline.problem_type
-            final_component = None
-            ensemble_y = "y"
-            for name, component_list in pipeline.component_graph.component_dict.items():
-                new_component_list = []
-                new_component_name = _make_new_component_name(name)
-                for i, item in enumerate(component_list):
-                    if i == 0:
-                        fitted_comp = handle_component_class(item)
-                        new_component_list.append(fitted_comp)
-                    elif isinstance(item, str) and item not in ["X", "y"]:
-                        new_component_list.append(_make_new_component_name(item))
-                    else:
-                        new_component_list.append(item)
-                    if i != 0 and item.endswith(".y"):
-                        ensemble_y = _make_new_component_name(item)
-                ensembler_component_graph[new_component_name] = new_component_list
-                final_component = new_component_name
-            final_components.append(final_component)
+        input_pipelines = [
+            best_info["pipeline"]
+            for best_info in list(self._best_pipeline_info.values())
+        ]
 
         ensemble = _make_stacked_ensemble_pipeline(
+            input_pipelines,
             problem_type,
-            component_graph=ensembler_component_graph,
-            final_components=final_components,
             random_seed=self.random_seed,
             n_jobs=n_jobs_ensemble,
-            ensemble_y=ensemble_y,
         )
         next_batch.append(ensemble)
 
@@ -154,8 +130,8 @@ class AutoMLAlgorithm(ABC):
                 pipeline.new(parameters=parameters, random_seed=self.random_seed)
             )
         ensemble = _make_stacked_ensemble_pipeline(
+            input_pipelines,
             problem_type,
-            input_pipelines=input_pipelines,
             random_seed=self.random_seed,
             n_jobs=n_jobs_ensemble,
             use_sklearn=True,
