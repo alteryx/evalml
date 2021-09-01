@@ -1,9 +1,7 @@
 """Base class for the AutoML algorithms which power EvalML."""
 from abc import ABC, abstractmethod
 
-from evalml import model_family
 from evalml.exceptions import PipelineNotFoundError
-from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.tuners import SKOptTuner
 

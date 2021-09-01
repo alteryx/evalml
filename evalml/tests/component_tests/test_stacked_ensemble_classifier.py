@@ -1,4 +1,3 @@
-from typing import final
 from unittest.mock import patch
 
 import numpy as np
@@ -9,7 +8,6 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
-    components,
 )
 from evalml.pipelines.components import RandomForestClassifier
 from evalml.pipelines.components.ensemble import StackedEnsembleClassifier
