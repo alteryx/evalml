@@ -441,7 +441,10 @@ class AutoMLSearch:
         verbose=False,
     ):
         self.verbose = verbose
-        self._activate_logger()
+        if verbose:
+            self.logger = get_logger(f"{__name__}.verbose")
+        else:
+            self.logger = logging.getLogger(__name__)
         if X_train is None:
             raise ValueError(
                 "Must specify training data as a 2d array using the X_train argument"
@@ -836,18 +839,6 @@ class AutoMLSearch:
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")
-    self._deactivate_logger()
-
-    def _activate_logger(self):
-        if self.verbose:
-            self.logger = get_logger(__name__)
-        else:
-            self.logger = logging.getLogger(__name__)
-
-    def _deactivate_logger(self):
-        if self.verbose and len(self.logger.handlers):
-            self.logger.handlers.pop()
-            self.logger.setLevel(logging.WARNING)
 
     def close_engine(self):
         """Function to explicitly close the engine, client, parallel resources."""
@@ -956,9 +947,7 @@ class AutoMLSearch:
                 .lower()
             )
             if choice == "y":
-                self._activate_logger
                 self.logger.info("Exiting AutoMLSearch.")
-                self._deactivate_logger
                 return True
             elif choice == "n":
                 # So that the time in this loop does not count towards the time budget (if set)
@@ -978,12 +967,10 @@ class AutoMLSearch:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
         """
-        self._activate_logger()
         if self._searched:
             self.logger.error(
                 "AutoMLSearch.search() has already been run and will not run again on the same instance. Re-initialize AutoMLSearch to search again."
             )
-            self._deactivate_logger()
             return
 
         # don't show iteration plot outside of a jupyter notebook
@@ -1111,7 +1098,6 @@ class AutoMLSearch:
                 f"Best pipeline {self.objective.name}: {best_pipeline['mean_cv_score']:3f}"
             )
         self._searched = True
-        self._deactivate_logger()
 
     def _find_best_pipeline(self):
         """Finds the best pipeline in the rankings
@@ -1182,13 +1168,11 @@ class AutoMLSearch:
             else:
                 num_without_improvement += 1
             if num_without_improvement >= self.patience:
-                self._activate_logger()
                 self.logger.info(
                     "\n\n{} iterations without improvement. Stopping search early...".format(
                         self.patience
                     )
                 )
-                self._deactivate_logger()
                 return False
         return True
 
@@ -1655,12 +1639,10 @@ class AutoMLSearch:
                     fitted_pipeline = computation.get_result()
                     fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
                 except Exception as e:
-                    self._activate_logger()
                     self.logger.error(f"Train error for {pipeline.name}: {str(e)}")
                     tb = traceback.format_tb(sys.exc_info()[2])
                     self.logger.error("Traceback:")
                     self.logger.error("\n".join(tb))
-                    self._deactivate_logger()
             else:
                 computations.append(computation)
 
@@ -1702,7 +1684,6 @@ class AutoMLSearch:
                 try:
                     scores[pipeline_name] = computation.get_result()
                 except Exception as e:
-                    self._activate_logger()
                     self.logger.error(f"Score error for {pipeline_name}: {str(e)}")
                     if isinstance(e, PipelineScoreError):
                         nan_scores = {objective: np.nan for objective in e.exceptions}
@@ -1716,7 +1697,6 @@ class AutoMLSearch:
                         scores[pipeline_name] = {
                             objective.name: np.nan for objective in objectives
                         }
-                    self._deactivate_logger()
             else:
                 computations.append(computation)
         return scores
