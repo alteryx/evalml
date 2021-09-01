@@ -247,6 +247,7 @@ def test_target_leakage_types():
     X["d"] = ~y
     X["e"] = [0, 0, 0, 0]
     y = y.astype(bool)
+    X.ww.init(logical_types={"a": "categorical"})
 
     expected = {
         "warnings": [
@@ -377,6 +378,7 @@ def test_target_leakage_regression():
     X["c"] = y / 10
     X["d"] = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
     X["e"] = ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j", "k", "l", "m", "n", "o"]
+    X.ww.init(logical_types={"e": "categorical"})
 
     expected = {
         "warnings": [
@@ -621,3 +623,15 @@ def test_target_leakage_none_pearson():
     expected = {"warnings": [], "errors": [], "actions": []}
 
     assert leakage_check.validate(X, y) == expected
+
+
+def test_target_leakage_maintains_logical_types():
+    X = pd.DataFrame({"A": pd.Series([1, 2, 3]), "B": pd.Series([4, 5, 6])})
+    y = pd.Series([1, 2, 3])
+
+    X.ww.init(logical_types={"A": "Unknown", "B": "Double"})
+    warnings = TargetLeakageDataCheck().validate(X, y)["warnings"]
+
+    # Mutual information is not supported for Unknown logical types, so should not be included
+    assert not any(w["message"].startswith("Column 'A'") for w in warnings)
+    assert len(warnings) == 1

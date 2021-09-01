@@ -741,6 +741,7 @@ def decision_tree_classification_pipeline_class(X_y_categorical_classification):
         }
     )
     X, y = X_y_categorical_classification
+    X.ww.init(logical_types={"Ticket": "categorical", "Cabin": "categorical"})
     pipeline.fit(X, y)
     return pipeline
 
@@ -989,7 +990,14 @@ def fraud_local():
 @pytest.fixture
 def fraud_100():
     X, y = load_fraud_local(n_rows=100)
-    X.ww.set_types(logical_types={"provider": "Categorical", "region": "Categorical"})
+    X.ww.set_types(
+        logical_types={
+            "provider": "Categorical",
+            "region": "Categorical",
+            "currency": "categorical",
+            "expiration_date": "categorical",
+        }
+    )
     return X, y
 
 
