@@ -1,3 +1,5 @@
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
+
 from evalml.automl.engine.engine_base import (
     EngineBase,
     EngineComputation,
@@ -27,6 +29,17 @@ class CFClient:
     def submit(self, *args, **kwargs):
         """Pass through to imitate Dask's Client API."""
         return self.pool.submit(*args, **kwargs)
+
+    def close(self):
+        """Closes the underlying Executor."""
+        self.pool.shutdown()
+
+    @property
+    def is_closed(self):
+        if isinstance(self.pool, ProcessPoolExecutor):
+            return self.pool._shutdown_thread
+        elif isinstance(self.pool, ThreadPoolExecutor):
+            return self.pool._shutdown
 
 
 class CFComputation(EngineComputation):
@@ -80,13 +93,19 @@ class CFComputation(EngineComputation):
 
 
 class CFEngine(EngineBase):
-    """The concurrent.futures (CF) engine"""
+    """The concurrent.futures (CF) engine
 
-    def __init__(self, client):
-        if not isinstance(client, CFClient):
+    Arguments:
+        client (None or CFClient): If None, creates a threaded pool for processing. Defaults to None.
+    """
+
+    def __init__(self, client=None):
+        if client is not None and not isinstance(client, CFClient):
             raise TypeError(
                 f"Expected evalml.automl.engine.cf_engine.CFClient, received {type(client)}"
             )
+        elif client is None:
+            client = CFClient(ThreadPoolExecutor())
         self.client = client
         self._data_futures_cache = {}
 
@@ -159,3 +178,12 @@ class CFEngine(EngineBase):
         computation = CFComputation(future)
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation
+
+    def close(self):
+        """Function to properly shutdown the Engine's Client's resources."""
+        self.client.close()
+
+    @property
+    def is_closed(self):
+        """Property that determines whether the Engine's Client's resources are shutdown."""
+        return self.client.is_closed
