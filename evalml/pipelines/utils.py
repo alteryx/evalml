@@ -43,7 +43,10 @@ from evalml.pipelines.components import (  # noqa: F401
     Undersampler,
     URLFeaturizer,
 )
-from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.components.utils import (
+    get_estimators,
+    handle_component_class,
+)
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -256,14 +259,11 @@ def generate_pipeline_code(element):
 
 
 def _make_stacked_ensemble_pipeline(
+    input_pipelines,
     problem_type,
-    input_pipelines=None,
-    component_graph=None,
-    final_components=None,
     n_jobs=-1,
     random_seed=0,
     use_sklearn=False,
-    ensemble_y="y",
 ):
     """Creates a pipeline with a stacked ensemble estimator.
 
@@ -274,27 +274,11 @@ def _make_stacked_ensemble_pipeline(
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             Defaults to -1.
-        final_components (list(str)): List of the final components to pass as input into the stacked ensembler component.
         use_sklearn (bool): If True, instantiates a pipeline with the scikit-learn ensembler.
-        ensemble_y (str): The y input to use as ".y" for the stacked ensembler. By default will use dataset "y".
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
-    if use_sklearn and input_pipelines is None:
-        raise ValueError(
-            "`input_pipelines` must be set when using the sklearn ensembler."
-        )
-
-    if not use_sklearn and component_graph is None:
-        raise ValueError(
-            "`component_graph` must be set when using the custom ensembler."
-        )
-    if not use_sklearn and final_components is None:
-        raise ValueError(
-            "`final_components` must be set when using the custom ensembler."
-        )
-
     parameters = {}
     if is_classification(problem_type):
         if use_sklearn:
@@ -351,10 +335,40 @@ def _make_stacked_ensemble_pipeline(
     }[problem_type]
 
     if not use_sklearn:
+
+        def _make_new_component_name(model_type, component_name):
+            return str(model_type) + " Pipeline - " + component_name
+
+        component_graph = {}
+        final_components = []
+        problem_type = None
+
+        for pipeline in input_pipelines:
+            model_type = pipeline.component_graph[-1].model_family
+            final_component = None
+            ensemble_y = "y"
+            for name, component_list in pipeline.component_graph.component_dict.items():
+                new_component_list = []
+                new_component_name = _make_new_component_name(model_type, name)
+                for i, item in enumerate(component_list):
+                    if i == 0:
+                        fitted_comp = handle_component_class(item)
+                        new_component_list.append(fitted_comp)
+                    elif isinstance(item, str) and item not in ["X", "y"]:
+                        new_component_list.append(
+                            _make_new_component_name(model_type, item)
+                        )
+                    else:
+                        new_component_list.append(item)
+                    if i != 0 and item.endswith(".y"):
+                        ensemble_y = _make_new_component_name(model_type, item)
+                component_graph[new_component_name] = new_component_list
+                final_component = new_component_name
+            final_components.append(final_component)
+
         component_graph[estimator.name] = (
             [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
         )
-
     return pipeline_class(
         [estimator] if use_sklearn else component_graph,
         parameters=parameters,
