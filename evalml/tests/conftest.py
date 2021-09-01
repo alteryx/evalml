@@ -221,7 +221,7 @@ def X_y_binary():
     return X, y
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def X_y_binary_cls():
     X, y = datasets.make_classification(
         n_samples=100, n_features=20, n_informative=2, n_redundant=2, random_state=0
