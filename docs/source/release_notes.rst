@@ -27,6 +27,7 @@ Release Notes
         * Changed time series pipeline predictions to no longer output series/dataframes padded with NaNs. A prediction will be returned for every row in the `X` input :pr:`2697`
     * Documentation Changes
         * Updated documentation to make parallelization of AutoML clearer :pr:`2667`
+        * Added a user guide entry for time series modelling :pr:`2697`
     * Testing Changes
         * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
         * Installed numba 0.53 in windows CI to prevent problems installing version 0.54 :pr:`2710`
