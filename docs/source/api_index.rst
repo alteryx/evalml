@@ -25,7 +25,6 @@ Utilities to preprocess data before using evalml.
     :nosignatures:
 
     evalml.preprocessing.load_data
-    evalml.preprocessing.drop_nan_target_rows
     evalml.preprocessing.target_distribution
     evalml.preprocessing.number_of_features
     evalml.preprocessing.split_data
