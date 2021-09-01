@@ -8,7 +8,6 @@ from skopt.space import Categorical, Integer, Real
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 
 _ESTIMATOR_FAMILY_ORDER = [
     ModelFamily.LINEAR_MODEL,
@@ -164,70 +163,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             and self._batch_number != 1
             and (self._batch_number) % (len(self._first_batch_results) + 1) == 0
         ):
-            # Custom Stacked Pipelines
-            ensembler_component_graph = {}
-            final_components = []
-            problem_type = None
-            n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
-
-            for model_type, best_info in self._best_pipeline_info.items():
-
-                def _make_new_component_name(component_name):
-                    return str(model_type) + " Pipeline - " + component_name
-
-                pipeline = best_info["pipeline"]
-                if problem_type is None:
-                    problem_type = pipeline.problem_type
-                final_component = None
-                ensemble_y = "y"
-                for (
-                    name,
-                    component_list,
-                ) in pipeline.component_graph.component_dict.items():
-                    new_component_list = []
-                    new_component_name = _make_new_component_name(name)
-                    for i, item in enumerate(component_list):
-                        if i == 0:
-                            fitted_comp = pipeline.component_graph[item.name]
-                            new_component_list.append(fitted_comp)
-                        elif isinstance(item, str) and item not in ["X", "y"]:
-                            new_component_list.append(_make_new_component_name(item))
-                        else:
-                            new_component_list.append(item)
-                        if i != 0 and item.endswith(".y"):
-                            ensemble_y = _make_new_component_name(item)
-                    ensembler_component_graph[new_component_name] = new_component_list
-                    final_component = new_component_name
-                final_components.append(final_component)
-
-            ensemble = _make_stacked_ensemble_pipeline(
-                problem_type,
-                component_graph=ensembler_component_graph,
-                final_components=final_components,
-                random_seed=self.random_seed,
-                n_jobs=n_jobs_ensemble,
-                ensemble_y=ensemble_y,
-            )
-            next_batch.append(ensemble)
-
-            # Sklearn Stacked Pipelines
-            input_pipelines = []
-            for pipeline_dict in self._best_pipeline_info.values():
-                pipeline = pipeline_dict["pipeline"]
-                pipeline_params = pipeline_dict["parameters"]
-                parameters = self._transform_parameters(pipeline, pipeline_params)
-                input_pipelines.append(
-                    pipeline.new(parameters=parameters, random_seed=self.random_seed)
-                )
-            ensemble = _make_stacked_ensemble_pipeline(
-                problem_type,
-                input_pipelines=input_pipelines,
-                random_seed=self.random_seed,
-                n_jobs=n_jobs_ensemble,
-                use_sklearn=True,
-            )
-
-            next_batch.append(ensemble)
+            next_batch = self._create_ensemble()
         else:
             num_pipelines = (
                 (len(self._first_batch_results) + 1)
