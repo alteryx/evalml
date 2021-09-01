@@ -8,8 +8,10 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoMLSearch
+from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
+from evalml.automl.utils import get_best_sampler_for_data
 from evalml.exceptions import ParameterNotUsedWarning, PipelineNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.objectives import (
@@ -42,6 +44,7 @@ def test_init(X_y_binary):
     automl.search()
 
     assert automl.n_jobs == 1
+    assert isinstance(automl._automl_algorithm, IterativeAlgorithm)
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
     automl.best_pipeline.predict(X)
@@ -58,6 +61,26 @@ def test_init(X_y_binary):
     assert isinstance(automl.get_pipeline(0), PipelineBase)
     assert automl.objective.name == "Log Loss Binary"
     automl.best_pipeline.predict(X)
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=1,
+        n_jobs=1,
+        _automl_algorithm="default",
+    )
+    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
+
+    with pytest.raises(ValueError, match="Please specify a valid automl algorithm."):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            max_iterations=1,
+            n_jobs=1,
+            _automl_algorithm="not_valid",
+        )
 
 
 def test_init_objective(X_y_binary):
@@ -236,8 +259,9 @@ def test_multi_objective(X_y_multi):
     assert automl.problem_type == ProblemTypes.BINARY
 
 
-def test_categorical_classification(X_y_categorical_classification):
+def test_categorical_classification(AutoMLTestEnv, X_y_categorical_classification):
     X, y = X_y_categorical_classification
+
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -246,7 +270,10 @@ def test_categorical_classification(X_y_categorical_classification):
         max_batches=1,
         n_jobs=1,
     )
-    automl.search()
+
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={automl.objective.name: 1}):
+        automl.search()
     assert not automl.rankings["mean_cv_score"].isnull().any()
 
 
@@ -1201,33 +1228,41 @@ def test_automl_search_sampler_ratio(
                 any("Undersampler" in comp.name for comp in pipeline.component_graph)
                 for pipeline in pipelines
             )
-        elif categorical_features == "none":
+        else:
             assert all(
-                any(
-                    "SMOTE Oversampler" in comp.name
-                    for comp in pipeline.component_graph
-                )
-                for pipeline in pipelines
-            )
-        elif categorical_features == "some":
-            assert all(
-                any(
-                    "SMOTENC Oversampler" in comp.name
-                    for comp in pipeline.component_graph
-                )
-                for pipeline in pipelines
-            )
-        elif categorical_features == "all":
-            assert all(
-                any(
-                    "SMOTEN Oversampler" in comp.name
-                    for comp in pipeline.component_graph
-                )
+                any("Oversampler" in comp.name for comp in pipeline.component_graph)
                 for pipeline in pipelines
             )
         for comp in pipelines[0].component_graph:
             if "sampler" in comp.name:
                 assert comp.parameters["sampling_ratio"] == sampling_ratio
+
+
+def test_automl_oversampler_selection():
+    X = pd.DataFrame({"a": ["a"] * 50 + ["b"] * 25 + ["c"] * 25, "b": list(range(100))})
+    y = pd.Series([1] * 90 + [0] * 10)
+    X.ww.init(logical_types={"a": "Categorical"})
+
+    sampler = get_best_sampler_for_data(
+        X, y, sampler_method="Oversampler", sampler_balanced_ratio=0.5
+    )
+
+    allowed_component_graph = {
+        "DropCols": ["Drop Columns Transformer", "X", "y"],
+        "Oversampler": [sampler, "DropCols.x", "y"],
+        "RF": ["Random Forest Classifier", "Oversampler.x", "Oversampler.y"],
+    }
+
+    automl = AutoMLSearch(
+        X,
+        y,
+        "binary",
+        allowed_component_graphs={"pipeline": allowed_component_graph},
+        pipeline_parameters={"DropCols": {"columns": ["a"]}},
+        error_callback=raise_error_callback,
+    )
+    # This should run without error
+    automl.search()
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
@@ -1278,11 +1313,11 @@ def test_automl_search_sampler_method(
 
 
 @pytest.mark.parametrize("sampling_ratio", [0.1, 0.2, 0.5, 1])
-@pytest.mark.parametrize("sampler", ["Undersampler", "SMOTE Oversampler"])
+@pytest.mark.parametrize("sampler", ["Undersampler", "Oversampler"])
 def test_automl_search_ratio_overrides_sampler_ratio(
     sampler, sampling_ratio, mock_imbalanced_data_X_y, has_minimal_dependencies
 ):
-    if has_minimal_dependencies and sampler == "SMOTE Oversampler":
+    if has_minimal_dependencies and sampler == "Oversampler":
         pytest.skip("Skipping test with minimal dependencies")
     X, y = mock_imbalanced_data_X_y("binary", "none", "small")
     pipeline_parameters = {sampler: {"sampling_ratio": sampling_ratio}}
@@ -1346,15 +1381,13 @@ def test_automl_search_dictionary_undersampler(
         pipeline_parameters=pipeline_parameters,
     )
     # check that the sampling dict got set properly
-    pipelines = automl.allowed_pipelines
-    for pipeline in pipelines:
-        seen_under = False
-        for comp in pipeline.component_graph:
-            if comp.name == "Undersampler":
-                assert comp.parameters["sampling_ratio_dict"] == sampling_ratio_dict
-                seen_under = True
-        assert seen_under
     automl.search()
+    for result in automl.results["pipeline_results"].values():
+        parameters = result["parameters"]
+        if "Undersampler" in parameters:
+            assert (
+                parameters["Undersampler"]["sampling_ratio_dict"] == sampling_ratio_dict
+            )
     # assert we sample the right number of elements for our estimator
     assert len(mock_est_fit.call_args[0][0]) == length
 
@@ -1394,15 +1427,13 @@ def test_automl_search_dictionary_oversampler(
         y = pd.Series([0] * 900 + [1] * 300)
     else:
         y = pd.Series([0] * 900 + [1] * 150 + [2] * 150)
-    # we only test with SMOTE Oversampler since the oversamplers perform similarly
-    pipeline_parameters = {
-        "SMOTE Oversampler": {"sampling_ratio_dict": sampling_ratio_dict}
-    }
+
+    pipeline_parameters = {"Oversampler": {"sampling_ratio_dict": sampling_ratio_dict}}
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type=problem_type,
-        sampler_method="SMOTE Oversampler",
+        sampler_method="Oversampler",
         optimize_thresholds=False,
         pipeline_parameters=pipeline_parameters,
     )
@@ -1411,7 +1442,7 @@ def test_automl_search_dictionary_oversampler(
     for pipeline in pipelines:
         seen_under = False
         for comp in pipeline.component_graph:
-            if comp.name == "SMOTE Oversampler":
+            if comp.name == "Oversampler":
                 assert comp.parameters["sampling_ratio_dict"] == sampling_ratio_dict
                 seen_under = True
         assert seen_under
@@ -1424,7 +1455,7 @@ def test_automl_search_dictionary_oversampler(
     "sampling_ratio_dict,errors",
     [({0: 1, 1: 0.5}, False), ({"majority": 1, "minority": 0.5}, True)],
 )
-@pytest.mark.parametrize("sampler", ["Undersampler", "SMOTE Oversampler"])
+@pytest.mark.parametrize("sampler", ["Undersampler", "Oversampler"])
 @patch("evalml.pipelines.components.estimators.Estimator.fit")
 @patch(
     "evalml.pipelines.BinaryClassificationPipeline.score",
@@ -1438,7 +1469,7 @@ def test_automl_search_sampler_dictionary_keys(
     errors,
     has_minimal_dependencies,
 ):
-    if sampler == "SMOTE Oversampler" and has_minimal_dependencies:
+    if sampler == "Oversampler" and has_minimal_dependencies:
         pytest.skip("Skipping tests since imblearn isn't installed")
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
@@ -1462,9 +1493,9 @@ def test_automl_search_sampler_dictionary_keys(
         automl.search()
 
 
-@pytest.mark.parametrize("sampler", ["Undersampler", "SMOTE Oversampler"])
+@pytest.mark.parametrize("sampler", ["Undersampler", "Oversampler"])
 def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependencies):
-    if sampler == "SMOTE Oversampler" and has_minimal_dependencies:
+    if sampler == "Oversampler" and has_minimal_dependencies:
         pytest.skip("Skipping tests since imblearn isn't installed")
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
@@ -1475,6 +1506,7 @@ def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependenci
         y_train=y,
         problem_type="binary",
         sampler_method=sampler,
+        sampler_balanced_ratio=0.5,
         pipeline_parameters=pipeline_parameters,
     )
     for pipeline in automl.allowed_pipelines:
@@ -1487,7 +1519,7 @@ def test_automl_search_sampler_k_neighbors_param(sampler, has_minimal_dependenci
 
 
 @pytest.mark.parametrize(
-    "parameters", [None, {"SMOTENC Oversampler": {"k_neighbors_default": 5}}]
+    "parameters", [None, {"Oversampler": {"k_neighbors_default": 5}}]
 )
 def test_automl_search_sampler_k_neighbors_no_error(
     parameters, has_minimal_dependencies, fraud_100

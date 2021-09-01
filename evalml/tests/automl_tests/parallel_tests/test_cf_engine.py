@@ -362,7 +362,7 @@ def test_cancel_job(X_y_binary_cls, pool_type, thread_pool, process_pool):
 
 
 @pytest.mark.parametrize("pool_type", ["threads", "processes"])
-def test_dask_sends_woodwork_schema(
+def test_cfengine_sends_woodwork_schema(
     X_y_binary_cls, pool_type, thread_pool, process_pool
 ):
     X, y = X_y_binary_cls
@@ -414,3 +414,33 @@ def test_dask_sends_woodwork_schema(
 
         future = engine.submit_evaluation_job(new_config, pipeline, X, y)
         future.get_result()
+
+
+def test_cfengine_convenience():
+    """The purpose of this test is to ensure that a CFEngine initialized without an
+    explicit client self-initializes a threaded CFClient."""
+
+    cf_engine = CFEngine()
+    assert isinstance(cf_engine.client, CFClient)
+    assert isinstance(cf_engine.client.pool, ThreadPoolExecutor)
+
+    cf_engine = CFEngine(client=None)
+    assert isinstance(cf_engine.client, CFClient)
+    assert isinstance(cf_engine.client.pool, ThreadPoolExecutor)
+
+    cf_engine = CFEngine(client=CFClient(ProcessPoolExecutor()))
+    assert isinstance(cf_engine.client, CFClient)
+    assert isinstance(cf_engine.client.pool, ProcessPoolExecutor)
+
+    with pytest.raises(
+        TypeError, match="Expected evalml.automl.engine.cf_engine.CFClient, received"
+    ):
+        cf_engine = CFEngine(client="Processes!")
+
+
+@pytest.mark.parametrize("pool_class", [ThreadPoolExecutor, ProcessPoolExecutor])
+def test_automl_closes_engines(pool_class, X_y_binary_cls):
+    pool_instance = pool_class()
+    cf_engine = CFEngine(CFClient(pool_instance))
+    cf_engine.close()
+    assert cf_engine.is_closed

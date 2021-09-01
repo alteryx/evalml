@@ -231,18 +231,19 @@ def test_invalid_target_data_input_formats():
     #  test Woodwork
     y = pd.Series([None, None, None, 0])
     X = pd.DataFrame({"col": range(len(y))})
+
     messages = invalid_targets_check.validate(X, y)
     assert messages == expected
 
     #  test list
-    y = [None, None, None, 0]
+    y = [np.nan, np.nan, np.nan, 0]
     X = pd.DataFrame({"col": range(len(y))})
 
     messages = invalid_targets_check.validate(X, y)
     assert messages == expected
 
     # test np.array
-    y = np.array([None, None, None, 0])
+    y = np.array([np.nan, np.nan, np.nan, 0])
     X = pd.DataFrame({"col": range(len(y))})
 
     messages = invalid_targets_check.validate(X, y)

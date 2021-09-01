@@ -138,7 +138,6 @@ class WrappedSKClassifier(BaseEstimator, ClassifierMixin):
         self.pipeline = pipeline
         self._estimator_type = "classifier"
         if pipeline._is_fitted:
-            self.feature_importances_ = pipeline.feature_importance
             self._is_fitted = True
             self.classes_ = pipeline.classes_
 
@@ -196,9 +195,7 @@ class WrappedSKRegressor(BaseEstimator, RegressorMixin):
         """
         self.pipeline = pipeline
         self._estimator_type = "regressor"
-        if pipeline._is_fitted:
-            self.feature_importances_ = pipeline.feature_importance
-            self._is_fitted = True
+        self._is_fitted_ = True  # We need an attribute that ends in an underscore for scikit-learn to treat as fitted
 
     def fit(self, X, y):
         """Fits component to data

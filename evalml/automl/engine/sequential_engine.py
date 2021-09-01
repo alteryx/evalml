@@ -79,3 +79,6 @@ class SequentialEngine(EngineBase):
         )
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation
+
+    def close(self):
+        pass

@@ -759,7 +759,7 @@ def test_iterative_algorithm_first_batch_order_param(
 
 @pytest.mark.parametrize(
     "sampler",
-    ["Undersampler", "SMOTE Oversampler", "SMOTENC Oversampler", "SMOTEN Oversampler"],
+    ["Undersampler", "Oversampler"],
 )
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_iterative_algorithm_sampling_params(

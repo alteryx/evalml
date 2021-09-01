@@ -15,11 +15,13 @@ from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
+from evalml.automl.automl_search import build_engine_from_str
 from evalml.automl.callbacks import (
     log_error_callback,
     raise_error_callback,
     silent_error_callback,
 )
+from evalml.automl.engine import CFEngine, DaskEngine, SequentialEngine
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
@@ -67,6 +69,9 @@ from evalml.problem_types import (
     handle_problem_types,
     is_classification,
     is_time_series,
+)
+from evalml.tests.automl_tests.parallel_tests.test_automl_dask import (
+    engine_strs,
 )
 from evalml.tests.conftest import CustomClassificationObjectiveRanges
 from evalml.tuners import NoParamsException, RandomSearchTuner, SKOptTuner
@@ -4979,9 +4984,9 @@ def test_data_splitter_gives_pipelines_same_data(
         (
             {
                 "Undersampler": {"sampling_ratio": 0.05},
-                "SMOTE Oversampler": {"sampling_ratio": 0.10},
+                "Oversampler": {"sampling_ratio": 0.10},
             },
-            {"Undersampler", "SMOTE Oversampler"},
+            {"Undersampler", "Oversampler"},
         ),
     ],
 )
@@ -5034,3 +5039,72 @@ def test_search_with_text_nans(mock_score, mock_fit, nans):
         assert all(
             [str(types) == "Double" for types in x.ww.types["Logical Type"].values]
         )
+
+
+@pytest.mark.parametrize(
+    "engine_str",
+    engine_strs + ["sequential", "cf_process", "invalid option"],
+)
+def test_build_engine(engine_str):
+    """Test to ensure that AutoMLSearch's build_engine_from_str() chooses
+    and returns an instance of the correct engine."""
+    if "cf" in engine_str:
+        expected_engine_type = CFEngine
+        engine = build_engine_from_str(engine_str)
+        assert isinstance(engine, expected_engine_type)
+        engine.close()
+    elif "dask" in engine_str:
+        expected_engine_type = DaskEngine
+        engine = build_engine_from_str(engine_str)
+        assert isinstance(engine, expected_engine_type)
+        engine.close()
+    elif "sequential" in engine_str:
+        expected_engine_type = SequentialEngine
+        engine = build_engine_from_str(engine_str)
+        assert isinstance(engine, expected_engine_type)
+        engine.close()
+    else:
+        with pytest.raises(
+            ValueError, match="is not a valid engine, please choose from"
+        ):
+            build_engine_from_str(engine_str)
+
+
+@pytest.mark.parametrize(
+    "engine_choice",
+    ["str", "engine_instance", "invalid_type", "invalid_str"],
+)
+def test_automl_chooses_engine(engine_choice, X_y_binary):
+    """Test that ensures that AutoMLSearch chooses an engine for valid input types and raises
+    the proper exception for others."""
+    X, y = X_y_binary
+    if engine_choice == "str":
+        engine_choice = "dask_process"
+        automl = AutoMLSearch(
+            X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+        )
+        assert isinstance(automl._engine, DaskEngine)
+        automl.close_engine()
+    elif engine_choice == "engine_instance":
+        engine_choice = DaskEngine()
+        automl = AutoMLSearch(
+            X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+        )
+        automl.close_engine()
+    elif engine_choice == "invalid_str":
+        engine_choice = "DaskEngine"
+        with pytest.raises(
+            ValueError, match="is not a valid engine, please choose from"
+        ):
+            automl = AutoMLSearch(
+                X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+            )
+    elif engine_choice == "invalid_type":
+        engine_choice = DaskEngine
+        with pytest.raises(
+            TypeError,
+            match="Invalid type provided for 'engine'.  Requires string, DaskEngine instance, or CFEngine instance.",
+        ):
+            automl = AutoMLSearch(
+                X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+            )
