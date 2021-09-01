@@ -1329,7 +1329,11 @@ def test_categories_aggregated_linear_pipeline(pipeline_class, estimator, fraud_
 def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
     X, y = fraud_100
 
-    X.ww.set_types(logical_types={"provider": "NaturalLanguage"})
+    X.ww.set_types(
+        logical_types={
+            "provider": "NaturalLanguage",
+        }
+    )
     component_graph = [
         "Select Columns Transformer",
         "One Hot Encoder",

@@ -39,6 +39,7 @@ def test_delayed_features_transformer_init():
 
 
 def encode_y_as_string(y):
+    y = y.astype("category")
     y_answer = y.astype(int) - 1
     y = y.map(lambda val: str(val).zfill(2))
     return y, y_answer
@@ -132,6 +133,7 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
             "target_delay_6": y_answer.shift(6),
         }
     )
+
     assert_frame_equal(
         answer,
         DelayedFeatureTransformer(max_delay=5, gap=0, forecast_horizon=1).fit_transform(
@@ -178,6 +180,7 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
             "target_delay_11": y_answer.shift(11),
         }
     )
+
     assert_frame_equal(
         answer,
         DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1).fit_transform(
@@ -201,15 +204,9 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
     )
 
 
-@pytest.mark.parametrize("encode_X_as_str", [True, False])
-@pytest.mark.parametrize("encode_y_as_str", [True, False])
-def test_delayed_feature_extractor_numpy(
-    encode_X_as_str, encode_y_as_str, delayed_features_data
-):
+def test_delayed_feature_extractor_numpy(delayed_features_data):
     X, y = delayed_features_data
-    X, X_answer, y, y_answer = encode_X_y_as_strings(
-        X, y, encode_X_as_str, encode_y_as_str
-    )
+    X, X_answer, y, y_answer = encode_X_y_as_strings(X, y, False, False)
     X_np = X.values
     y_np = y.values
     answer = pd.DataFrame(
@@ -436,14 +433,15 @@ def test_delayed_feature_transformer_does_not_modify_input_data(delayed_features
     "X_df",
     [
         pd.DataFrame(
-            pd.to_datetime(["20190902", "20200519", "20190607"], format="%Y%m%d")
+            pd.to_datetime(["20190902", "20200519", "20190607"] * 5, format="%Y%m%d")
         ),
-        pd.DataFrame(pd.Series([1, 2, 3], dtype="int64")),
-        pd.DataFrame(pd.Series([1.0, 2.0, 3.0], dtype="float")),
-        pd.DataFrame(pd.Series(["a", "b", "a"], dtype="category")),
+        pd.DataFrame(pd.Series([0, 0, 3, 1] * 5, dtype="int64")),
+        pd.DataFrame(pd.Series([0, 0, 3.0, 2] * 5, dtype="float")),
+        pd.DataFrame(pd.Series(["a", "b", "a"] * 5, dtype="category")),
         pd.DataFrame(
             pd.Series(
-                ["this will be a natural language column because length", "yay", "hay"],
+                ["this will be a natural language column because length", "yay", "hay"]
+                * 5,
                 dtype="string",
             )
         ),

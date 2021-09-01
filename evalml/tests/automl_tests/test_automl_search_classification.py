@@ -7,6 +7,7 @@ import pytest
 from sklearn.model_selection import StratifiedKFold
 
 from evalml import AutoMLSearch
+from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
 from evalml.automl.utils import get_best_sampler_for_data
@@ -42,6 +43,7 @@ def test_init(X_y_binary):
     automl.search()
 
     assert automl.n_jobs == 1
+    assert isinstance(automl._automl_algorithm, IterativeAlgorithm)
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
     automl.best_pipeline.predict(X)
@@ -58,6 +60,26 @@ def test_init(X_y_binary):
     assert isinstance(automl.get_pipeline(0), PipelineBase)
     assert automl.objective.name == "Log Loss Binary"
     automl.best_pipeline.predict(X)
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=1,
+        n_jobs=1,
+        _automl_algorithm="default",
+    )
+    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
+
+    with pytest.raises(ValueError, match="Please specify a valid automl algorithm."):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="binary",
+            max_iterations=1,
+            n_jobs=1,
+            _automl_algorithm="not_valid",
+        )
 
 
 def test_init_objective(X_y_binary):
@@ -236,8 +258,9 @@ def test_multi_objective(X_y_multi):
     assert automl.problem_type == ProblemTypes.BINARY
 
 
-def test_categorical_classification(X_y_categorical_classification):
+def test_categorical_classification(AutoMLTestEnv, X_y_categorical_classification):
     X, y = X_y_categorical_classification
+
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -246,7 +269,10 @@ def test_categorical_classification(X_y_categorical_classification):
         max_batches=1,
         n_jobs=1,
     )
-    automl.search()
+
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={automl.objective.name: 1}):
+        automl.search()
     assert not automl.rankings["mean_cv_score"].isnull().any()
 
 
@@ -1366,15 +1392,13 @@ def test_automl_search_dictionary_undersampler(
         pipeline_parameters=pipeline_parameters,
     )
     # check that the sampling dict got set properly
-    pipelines = automl.allowed_pipelines
-    for pipeline in pipelines:
-        seen_under = False
-        for comp in pipeline.component_graph:
-            if comp.name == "Undersampler":
-                assert comp.parameters["sampling_ratio_dict"] == sampling_ratio_dict
-                seen_under = True
-        assert seen_under
     automl.search()
+    for result in automl.results["pipeline_results"].values():
+        parameters = result["parameters"]
+        if "Undersampler" in parameters:
+            assert (
+                parameters["Undersampler"]["sampling_ratio_dict"] == sampling_ratio_dict
+            )
     # assert we sample the right number of elements for our estimator
     assert len(mock_est_fit.call_args[0][0]) == length
 

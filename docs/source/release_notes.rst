@@ -2,15 +2,22 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Allow string for ``engine`` parameter for ``AutoMLSearch``:pr:`2667`
         * Add ``ProphetRegressor`` to AutoML :pr:`2619`
+        * Integrated ``DefaultAlgorithm`` into ``AutoMLSearch`` :pr:`2634`
         * Removed SVM "linear" and "precomputed" kernel hyperparameter options, and improved default parameters :pr:`2651`
         * Updated ``ComponentGraph`` initalization to raise ``ValueError`` when user attempts to use ``.y`` for a component that does not produce a tuple output :pr:`2662`
+        * Updated to support Woodwork 0.6.0 :pr:`2690`
+        * Updated pipeline ``graph()`` to distingush X and y edges :pr:`2654`
         * Added ``DropRowsTransformer`` component :pr:`2692`
         * Added ``DROP_ROWS`` to ``_make_component_list_from_actions`` and clean up metadata :pr:`2694`
         * Added ``forecast_horizon`` as a required parameter to time series pipelines and ``AutoMLSearch`` :pr:`2697`
         * Added ``predict_in_sample`` and ``predict_proba_in_sample`` methods to time series pipelines to predict on data where the target is known, e.g. cross-validation :pr:`2697`
     * Fixes
         * Updated Oversampler logic to select best SMOTE based on component input instead of pipeline input :pr:`2695`
+        * Added ability to explicitly close DaskEngine resources to improve runtime and reduce Dask warnings :pr:`2667`
+        * Fixed partial dependence bug for ensemble pipelines :pr:`2714`
+        * Updated ``TargetLeakageDataCheck`` to maintain user-selected logical types :pr:`2711`
     * Changes
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
@@ -19,6 +26,7 @@ Release Notes
         * Added ``training_data`` and ``training_target`` as optional parameters to ``explain_predictions`` and ``explain_predictions_best_worst`` to support time series pipelines :pr:`2697`
         * Changed time series pipeline predictions to no longer output series/dataframes padded with NaNs. A prediction will be returned for every row in the `X` input :pr:`2697`
     * Documentation Changes
+        * Updated documentation to make parallelization of AutoML clearer :pr:`2667`
     * Testing Changes
         * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
         * Installed numba 0.53 in windows CI to prevent problems installing version 0.54 :pr:`2710`
@@ -26,6 +34,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Renamed the current top level ``search`` method to ``search_iterative`` and defined a new ``search`` method for the ``DefaultAlgorithm`` :pr:`2634`
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
         * Added ``forecast_horizon`` as a required parameter to time series pipelines and ``AutoMLSearch`` :pr:`2697`
