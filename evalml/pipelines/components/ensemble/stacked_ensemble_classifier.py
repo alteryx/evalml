@@ -1,9 +1,6 @@
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ElasticNetClassifier
 from evalml.pipelines.components.ensemble import StackedEnsembleBase
-from evalml.pipelines.components.estimators.classifiers.elasticnet_classifier import (
-    ElasticNetClassifier,
-)
 from evalml.problem_types import ProblemTypes
 
 
