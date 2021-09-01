@@ -4981,14 +4981,17 @@ def test_build_engine(engine_str):
         expected_engine_type = CFEngine
         engine = build_engine_from_str(engine_str)
         assert isinstance(engine, expected_engine_type)
+        engine.close()
     elif "dask" in engine_str:
         expected_engine_type = DaskEngine
         engine = build_engine_from_str(engine_str)
         assert isinstance(engine, expected_engine_type)
+        engine.close()
     elif "sequential" in engine_str:
         expected_engine_type = SequentialEngine
         engine = build_engine_from_str(engine_str)
         assert isinstance(engine, expected_engine_type)
+        engine.close()
     else:
         with pytest.raises(
             ValueError, match="is not a valid engine, please choose from"
