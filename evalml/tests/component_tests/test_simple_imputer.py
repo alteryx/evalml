@@ -44,7 +44,7 @@ def test_simple_imputer_mean():
 def test_simple_imputer_constant():
     # test impute strategy is constant and fill value is not specified
     X = pd.DataFrame([[np.nan, 0, 1, np.nan], ["a", 2, np.nan, 3], ["b", 2, 3, 0]])
-
+    X.ww.init(logical_types={0: "categorical", 1: "Double", 2: "Double", 3: "Double"})
     transformer = SimpleImputer(impute_strategy="constant", fill_value=3)
     X_expected_arr = pd.DataFrame([[3, 0, 1, 3], ["a", 2, 3, 3], ["b", 2, 3, 0]])
     X_expected_arr = X_expected_arr.astype({0: "category"})
@@ -54,7 +54,7 @@ def test_simple_imputer_constant():
 
 def test_simple_imputer_most_frequent():
     X = pd.DataFrame([[np.nan, 0, 1, np.nan], ["a", 2, np.nan, 3], ["b", 2, 1, 0]])
-
+    X.ww.init(logical_types={0: "categorical", 1: "Double", 2: "Double", 3: "Double"})
     transformer = SimpleImputer(impute_strategy="most_frequent")
     X_expected_arr = pd.DataFrame([["a", 0, 1, 0], ["a", 2, 1, 3], ["b", 2, 1, 0]])
     X_expected_arr = X_expected_arr.astype({0: "category"})
@@ -67,7 +67,7 @@ def test_simple_imputer_col_with_non_numeric():
     X = pd.DataFrame(
         [["a", 0, 1, np.nan], ["b", 2, 3, 3], ["a", 2, 3, 1], [np.nan, 2, 3, 0]]
     )
-
+    X.ww.init(logical_types={0: "categorical", 1: "Double", 2: "Double", 3: "Double"})
     transformer = SimpleImputer(impute_strategy="mean")
     with pytest.raises(
         ValueError, match="Cannot use mean strategy with non-numeric data"
@@ -121,6 +121,7 @@ def test_simple_imputer_all_bool_return_original(data_type, make_data_type):
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_simple_imputer_boolean_dtype(data_type, make_data_type):
     X = pd.DataFrame([True, np.nan, False, np.nan, True])
+    X.ww.init(logical_types={0: "categorical"})
     y = pd.Series([1, 0, 0, 1, 0])
     X_expected_arr = pd.DataFrame([True, True, False, True, True], dtype="category")
     X = make_data_type(data_type, X)
@@ -138,6 +139,7 @@ def test_simple_imputer_multitype_with_one_bool(data_type, make_data_type):
             "bool no nan": pd.Series([False, False, False, False, True], dtype=bool),
         }
     )
+    X_multi.ww.init(logical_types={"bool with nan": "categorical"})
     y = pd.Series([1, 0, 0, 1, 0])
     X_multi_expected_arr = pd.DataFrame(
         {
@@ -256,6 +258,12 @@ def test_simple_imputer_fill_value(data_type):
                 ),
             }
         )
+        X.ww.init(
+            logical_types={
+                "categorical with nan": "categorical",
+                "object with nan": "categorical",
+            }
+        )
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = SimpleImputer(impute_strategy="constant", fill_value=fill_value)
     imputer.fit(X, y)
@@ -321,6 +329,13 @@ def test_simple_imputer_with_none():
             "all None": [None, None, None, None],
         }
     )
+    X.ww.init(
+        logical_types={
+            "boolean with None": "categorical",
+            "object with None": "categorical",
+            "all None": "categorical",
+        }
+    )
     y = pd.Series([0, 0, 1, 0, 1])
     imputer = SimpleImputer()
     imputer.fit(X, y)
@@ -343,7 +358,12 @@ def test_simple_imputer_supports_natural_language_constant():
         }
     )
     y = pd.Series([0, 0, 1, 0, 1])
-    X.ww.init(logical_types={"natural language col": "NaturalLanguage"})
+    X.ww.init(
+        logical_types={
+            "cat with None": "categorical",
+            "natural language col": "NaturalLanguage",
+        }
+    )
     imputer = SimpleImputer(impute_strategy="constant", fill_value="placeholder")
     imputer.fit(X, y)
     transformed = imputer.transform(X, y)

@@ -87,6 +87,14 @@ AutoML Callbacks
     evalml.automl.callbacks.raise_error_callback
 
 
+AutoML Engines
+~~~~~~~~~~~~~~
+.. autoapisummary::
+
+    evalml.automl.engine.sequential_engine.SequentialEngine
+    evalml.automl.engine.cf_engine.CFEngine
+    evalml.automl.engine.dask_engine.DaskEngine
+
 Pipelines
 =========
 

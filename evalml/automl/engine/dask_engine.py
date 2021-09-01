@@ -1,5 +1,5 @@
 import joblib
-from dask.distributed import Client
+from dask.distributed import Client, LocalCluster
 
 from evalml.automl.engine.engine_base import (
     EngineBase,
@@ -51,15 +51,29 @@ class DaskComputation(EngineComputation):
 
 
 class DaskEngine(EngineBase):
-    """The dask engine"""
+    """The dask engine
 
-    def __init__(self, client):
-        if not isinstance(client, Client):
+    Arguments:
+        cluster (None or dd.Client): If None, creates a local, threaded Dask client for processing.
+            Defaults to None.
+    """
+
+    def __init__(self, cluster=None):
+        if cluster is not None and not isinstance(cluster, (LocalCluster)):
             raise TypeError(
-                f"Expected dask.distributed.Client, received {type(client)}"
+                f"Expected dask.distributed.Client, received {type(cluster)}"
             )
-        self.client = client
+        elif cluster is None:
+            cluster = LocalCluster(processes=False)
+        self.cluster = cluster
+        self.client = Client(self.cluster)
         self._data_futures_cache = {}
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
 
     def send_data_to_cluster(self, X, y):
         """Send data to the cluster.
@@ -155,3 +169,14 @@ class DaskEngine(EngineBase):
         computation = DaskComputation(dask_future)
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation
+
+    def close(self):
+        """Closes the underlying cluster."""
+        # TODO: Might want to rethink this if using something other than a LocalCluster.
+        self.cluster.close()
+        self.client.close()
+
+    @property
+    def is_closed(self):
+        """Property that determines whether the Engine's Client's resources are shutdown."""
+        return self.cluster.status.value == "closed"
