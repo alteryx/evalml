@@ -1304,7 +1304,11 @@ def test_categories_aggregated_linear_pipeline(pipeline_class, estimator, fraud_
 def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
     X, y = fraud_100
 
-    X.ww.set_types(logical_types={"provider": "NaturalLanguage"})
+    X.ww.set_types(
+        logical_types={
+            "provider": "NaturalLanguage",
+        }
+    )
     component_graph = [
         "Select Columns Transformer",
         "One Hot Encoder",
@@ -1631,12 +1635,12 @@ def test_explain_predictions_oversampler(estimator, fraud_100):
                 "One Hot Encoder.x",
                 "y",
             ],
-            "SMOTENC Oversampler": [
-                "SMOTENC Oversampler",
+            "Oversampler": [
+                "Oversampler",
                 "DateTime Featurization Component.x",
                 "y",
             ],
-            estimator: [estimator, "SMOTENC Oversampler.x", "SMOTENC Oversampler.y"],
+            estimator: [estimator, "Oversampler.x", "Oversampler.y"],
         }
     )
 

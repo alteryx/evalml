@@ -5,17 +5,21 @@ import time
 import traceback
 import warnings
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 import cloudpickle
 import numpy as np
 import pandas as pd
+from dask import distributed as dd
 from sklearn.model_selection import BaseCrossValidator
 
 from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 
-from evalml.automl.automl_algorithm import IterativeAlgorithm
+from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
+from evalml.automl.engine.cf_engine import CFClient, CFEngine
+from evalml.automl.engine.dask_engine import DaskEngine
 from evalml.automl.utils import (
     AutoMLConfig,
     check_all_pipeline_names_unique,
@@ -67,7 +71,143 @@ from evalml.utils.logger import (
 logger = get_logger(__file__)
 
 
+def build_engine_from_str(engine_str):
+    """Function that converts a convenience string for an parallel engine type and returns an instance of that engine.
+
+    Arguments:
+        engine_str (str): String representing the requested engine.
+
+    Returns:
+        (EngineBase): Instance of the requested engine.
+
+    """
+    valid_engines = [
+        "sequential",
+        "cf_threaded",
+        "cf_process",
+        "dask_threaded",
+        "dask_process",
+    ]
+    if engine_str not in valid_engines:
+        raise ValueError(
+            f"'{engine_str}' is not a valid engine, please choose from {valid_engines}"
+        )
+    elif engine_str == "sequential":
+        return SequentialEngine()
+    elif engine_str == "cf_threaded":
+        return CFEngine(CFClient(ThreadPoolExecutor()))
+    elif engine_str == "cf_process":
+        return CFEngine(CFClient(ProcessPoolExecutor()))
+    elif engine_str == "dask_threaded":
+        return DaskEngine(cluster=dd.LocalCluster(processes=False))
+    elif engine_str == "dask_process":
+        return DaskEngine(cluster=dd.LocalCluster(processes=True))
+
+
 def search(
+    X_train=None,
+    y_train=None,
+    problem_type=None,
+    objective="auto",
+    mode="fast",
+    max_time=None,
+    patience=None,
+    tolerance=None,
+    problem_configuration=None,
+):
+    """Given data and configuration, run an automl search.
+
+    This method will run EvalML's default suite of data checks. If the data checks produce errors, the data check results will be returned before running the automl search. In that case we recommend you alter your data to address these errors and try again.
+
+    This method is provided for convenience. If you'd like more control over when each of these steps is run, consider making calls directly to the various pieces like the data checks and AutoMLSearch, instead of using this method.
+
+    Arguments:
+        X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
+
+        y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
+
+        problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+
+        objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
+            When set to 'auto', chooses:
+
+            - LogLossBinary for binary classification problems,
+            - LogLossMulticlass for multiclass classification problems, and
+            - R2 for regression problems.
+
+        mode (str): mode for DefaultAlgorithm. There are two modes: fast and long, where fast is a subset of long. Please look at DefaultAlgorithm for more details.
+
+        max_time (int, str): Maximum time to search for pipelines.
+            This will not start a new pipeline search after the duration
+            has elapsed. If it is an integer, then the time will be in seconds.
+            For strings, time can be specified as seconds, minutes, or hours.
+
+        patience (int): Number of iterations without improvement to stop search early. Must be positive.
+            If None, early stopping is disabled. Defaults to None.
+
+        tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
+            Only applicable if patience is not None. Defaults to None.
+
+        problem_configuration (dict): Additional parameters needed to configure the search. For example,
+            in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+
+    Returns:
+        (AutoMLSearch, dict): the automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
+    """
+    X_train = infer_feature_types(X_train)
+    y_train = infer_feature_types(y_train)
+    problem_type = handle_problem_types(problem_type)
+
+    datetime_column = None
+    if is_time_series(problem_type):
+        if problem_configuration:
+            if "date_index" in problem_configuration:
+                datetime_column = problem_configuration["date_index"]
+            else:
+                raise ValueError(
+                    "For the default data checks to run in time series, date_index has to be passed in problem_configuration. "
+                    f"Received {problem_configuration}"
+                )
+        else:
+            raise ValueError(
+                "For the default data checks to run in time series, the problem_configuration parameter must be specified."
+            )
+
+    if objective == "auto":
+        objective = get_default_primary_search_objective(problem_type)
+    objective = get_objective(objective, return_instance=False)
+
+    if mode != "fast" and mode != "long":
+        raise ValueError("Mode must be either 'fast' or 'long'")
+
+    max_batches = None
+    if mode == "fast":
+        max_batches = 3
+
+    automl_config = {
+        "X_train": X_train,
+        "y_train": y_train,
+        "problem_type": problem_type,
+        "objective": objective,
+        "max_batches": max_batches,
+        "max_time": max_time,
+        "patience": patience,
+        "tolerance": tolerance,
+    }
+
+    data_checks = DefaultDataChecks(
+        problem_type=problem_type, objective=objective, datetime_column=datetime_column
+    )
+    data_check_results = data_checks.validate(X_train, y=y_train)
+    if len(data_check_results.get("errors", [])):
+        return None, data_check_results
+
+    automl = AutoMLSearch(_automl_algorithm="default", **automl_config)
+    automl.search()
+    return automl, data_check_results
+
+
+def search_iterative(
     X_train=None,
     y_train=None,
     problem_type=None,
@@ -86,7 +226,7 @@ def search(
 
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
 
-        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+        problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
             When set to 'auto', chooses:
@@ -157,7 +297,7 @@ class AutoMLSearch:
 
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
 
-        problem_type (str or ProblemTypes): type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+        problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
 
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
             When set to 'auto', chooses:
@@ -254,8 +394,11 @@ class AutoMLSearch:
         _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
             The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
 
-        engine (EngineBase or None): The engine instance used to evaluate pipelines. If None, a SequentialEngine will
-            be used.
+        _automl_algorithm (str): The automl algorithm to use. Currently the two choices are 'iterative' and 'default'. Defaults to `iterative`.
+
+        engine (EngineBase or str): The engine instance used to evaluate pipelines. Dask or concurrent.futures engines can also
+            be chosen by providing a string from the list ["sequential", "cf_threaded", "cf_process", "dask_threaded", "dask_process"].
+            If a parallel engine is selected this way, the maximum amount of parallelism, as determined by the engine, will be used. Defaults to "sequential".
     """
 
     _MAX_NAME_LEN = 40
@@ -292,7 +435,8 @@ class AutoMLSearch:
         sampler_balanced_ratio=0.25,
         _ensembling_split_size=0.2,
         _pipelines_per_batch=5,
-        engine=None,
+        _automl_algorithm="iterative",
+        engine="sequential",
     ):
         if X_train is None:
             raise ValueError(
@@ -442,7 +586,6 @@ class AutoMLSearch:
                     )
         self.allowed_component_graphs = allowed_component_graphs
         self.allowed_model_families = allowed_model_families
-        self._automl_algorithm = None
         self._start = 0.0
         self._baseline_cv_scores = {}
         self.show_batch_output = False
@@ -484,7 +627,7 @@ class AutoMLSearch:
 
         if is_classification(self.problem_type):
             self._sampler_name = self.sampler_method
-            if self.sampler_method in ["auto", "Oversampler"]:
+            if self.sampler_method == "auto":
                 self._sampler_name = get_best_sampler_for_data(
                     self.X_train,
                     self.y_train,
@@ -575,6 +718,7 @@ class AutoMLSearch:
             len(self.X_train.ww.select("natural_language", return_schema=True).columns)
             > 0
         )
+
         if run_ensembling and len(self.allowed_pipelines) == 1:
             logger.warning(
                 "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
@@ -628,10 +772,14 @@ class AutoMLSearch:
                     + (self._pipelines_per_batch * (self.max_batches - 1))
                 )
 
-        if not engine:
-            self._engine = SequentialEngine()
-        else:
+        if isinstance(engine, str):
+            self._engine = build_engine_from_str(engine)
+        elif isinstance(engine, (DaskEngine, CFEngine)):
             self._engine = engine
+        else:
+            raise TypeError(
+                "Invalid type provided for 'engine'.  Requires string, DaskEngine instance, or CFEngine instance."
+            )
 
         self.automl_config = AutoMLConfig(
             self.data_splitter,
@@ -654,19 +802,38 @@ class AutoMLSearch:
         )
         logger.debug(f"allowed_model_families set to {self.allowed_model_families}")
 
-        self._automl_algorithm = IterativeAlgorithm(
-            max_iterations=self.max_iterations,
-            allowed_pipelines=self.allowed_pipelines,
-            tuner_class=self.tuner_class,
-            random_seed=self.random_seed,
-            n_jobs=self.n_jobs,
-            number_features=self.X_train.shape[1],
-            pipelines_per_batch=self._pipelines_per_batch,
-            ensembling=run_ensembling,
-            text_in_ensembling=text_in_ensembling,
-            pipeline_params=parameters,
-            custom_hyperparameters=custom_hyperparameters,
-        )
+        if _automl_algorithm == "iterative":
+            self._automl_algorithm = IterativeAlgorithm(
+                max_iterations=self.max_iterations,
+                allowed_pipelines=self.allowed_pipelines,
+                tuner_class=self.tuner_class,
+                random_seed=self.random_seed,
+                n_jobs=self.n_jobs,
+                number_features=self.X_train.shape[1],
+                pipelines_per_batch=self._pipelines_per_batch,
+                ensembling=run_ensembling,
+                text_in_ensembling=text_in_ensembling,
+                pipeline_params=parameters,
+                custom_hyperparameters=custom_hyperparameters,
+            )
+        elif _automl_algorithm == "default":
+            self._automl_algorithm = DefaultAlgorithm(
+                X=self.X_train,
+                y=self.y_train,
+                problem_type=self.problem_type,
+                sampler_name=self._sampler_name,
+                tuner_class=self.tuner_class,
+                random_seed=self.random_seed,
+                pipeline_params=parameters,
+                custom_hyperparameters=self.custom_hyperparameters,
+                text_in_ensembling=text_in_ensembling,
+            )
+        else:
+            raise ValueError("Please specify a valid automl algorithm.")
+
+    def close_engine(self):
+        """Function to explicitly close the engine, client, parallel resources."""
+        self._engine.close()
 
     def _catch_warnings(self, warning_list):
         if len(warning_list) == len(self.allowed_pipelines) and len(warning_list) > 0:

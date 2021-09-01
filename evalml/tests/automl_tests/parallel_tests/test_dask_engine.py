@@ -21,32 +21,12 @@ from evalml.tests.automl_tests.dask_test_utils import (
 )
 
 
-@pytest.fixture(scope="module")
-def cluster():
-    dask_cluster = LocalCluster(
-        n_workers=1, threads_per_worker=1, dashboard_address=None
-    )
-    yield dask_cluster
-    dask_cluster.close()
-
-
-def test_init(cluster):
-    with Client(cluster) as client:
-        engine = DaskEngine(client=client)
-        assert engine.client == client
-
-        with pytest.raises(
-            TypeError, match="Expected dask.distributed.Client, received"
-        ):
-            DaskEngine(client="Client")
-
-
-def test_submit_training_job_single(X_y_binary_cls, cluster):
+def test_submit_training_job_single(X_y_binary_cls):
     """Test that training a single pipeline using the parallel engine produces the
     same results as simply running the train_pipeline function."""
     X, y = X_y_binary_cls
-    with Client(cluster) as client:
-        engine = DaskEngine(client=client)
+
+    with DaskEngine() as engine:
         pipeline = BinaryClassificationPipeline(
             component_graph=["Logistic Regression Classifier"],
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
@@ -69,38 +49,38 @@ def test_submit_training_job_single(X_y_binary_cls, cluster):
         )
 
 
-def test_submit_training_jobs_multiple(X_y_binary_cls, cluster):
+def test_submit_training_jobs_multiple(X_y_binary_cls):
     """Test that training multiple pipelines using the parallel engine produces the
     same results as the sequential engine."""
     X, y = X_y_binary_cls
-    with Client(cluster) as client:
-        pipelines = [
-            BinaryClassificationPipeline(
-                component_graph=["Logistic Regression Classifier"],
-                parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-            ),
-            BinaryClassificationPipeline(component_graph=["Baseline Classifier"]),
-            BinaryClassificationPipeline(component_graph=["SVM Classifier"]),
-        ]
+    pipelines = [
+        BinaryClassificationPipeline(
+            component_graph=["Logistic Regression Classifier"],
+            parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+        ),
+        BinaryClassificationPipeline(component_graph=["Baseline Classifier"]),
+        BinaryClassificationPipeline(component_graph=["SVM Classifier"]),
+    ]
 
-        def fit_pipelines(pipelines, engine):
-            futures = []
-            for pipeline in pipelines:
-                futures.append(
-                    engine.submit_training_job(
-                        X=X, y=y, automl_config=automl_data, pipeline=pipeline
-                    )
+    def fit_pipelines(pipelines, engine):
+        futures = []
+        for pipeline in pipelines:
+            futures.append(
+                engine.submit_training_job(
+                    X=X, y=y, automl_config=automl_data, pipeline=pipeline
                 )
-            results = [f.get_result() for f in futures]
-            return results
+            )
+        results = [f.get_result() for f in futures]
+        return results
 
-        # Verify all pipelines are trained and fitted.
-        seq_pipelines = fit_pipelines(pipelines, SequentialEngine())
-        for pipeline in seq_pipelines:
-            assert pipeline._is_fitted
+    # Verify all pipelines are trained and fitted.
+    seq_pipelines = fit_pipelines(pipelines, SequentialEngine())
+    for pipeline in seq_pipelines:
+        assert pipeline._is_fitted
 
-        # Verify all pipelines are trained and fitted.
-        par_pipelines = fit_pipelines(pipelines, DaskEngine(client=client))
+    # Verify all pipelines are trained and fitted.
+    with DaskEngine() as engine:
+        par_pipelines = fit_pipelines(pipelines, engine)
         for pipeline in par_pipelines:
             assert pipeline._is_fitted
 
@@ -110,21 +90,19 @@ def test_submit_training_jobs_multiple(X_y_binary_cls, cluster):
             assert par_pipeline in seq_pipelines
 
 
-def test_submit_evaluate_job_single(X_y_binary_cls, cluster):
+def test_submit_evaluate_job_single(X_y_binary_cls):
     """Test that evaluating a single pipeline using the parallel engine produces the
     same results as simply running the evaluate_pipeline function."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
 
-    with Client(cluster) as client:
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Logistic Regression Classifier"],
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+    )
 
-        pipeline = BinaryClassificationPipeline(
-            component_graph=["Logistic Regression Classifier"],
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-        )
-
-        engine = DaskEngine(client=client)
+    with DaskEngine() as engine:
 
         # Verify that engine evaluates a pipeline
         pipeline_future = engine.submit_evaluation_job(
@@ -161,36 +139,36 @@ def test_submit_evaluate_job_single(X_y_binary_cls, cluster):
         )
 
 
-def test_submit_evaluate_jobs_multiple(X_y_binary_cls, cluster):
+def test_submit_evaluate_jobs_multiple(X_y_binary_cls):
     """Test that evaluating multiple pipelines using the parallel engine produces the
     same results as the sequential engine."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
 
-    with Client(cluster) as client:
+    pipelines = [
+        BinaryClassificationPipeline(
+            component_graph=["Logistic Regression Classifier"],
+            parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+        ),
+        BinaryClassificationPipeline(component_graph=["Baseline Classifier"]),
+        BinaryClassificationPipeline(component_graph=["SVM Classifier"]),
+    ]
 
-        pipelines = [
-            BinaryClassificationPipeline(
-                component_graph=["Logistic Regression Classifier"],
-                parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-            ),
-            BinaryClassificationPipeline(component_graph=["Baseline Classifier"]),
-            BinaryClassificationPipeline(component_graph=["SVM Classifier"]),
-        ]
-
-        def eval_pipelines(pipelines, engine):
-            futures = []
-            for pipeline in pipelines:
-                futures.append(
-                    engine.submit_evaluation_job(
-                        X=X, y=y, automl_config=automl_data, pipeline=pipeline
-                    )
+    def eval_pipelines(pipelines, engine):
+        futures = []
+        for pipeline in pipelines:
+            futures.append(
+                engine.submit_evaluation_job(
+                    X=X, y=y, automl_config=automl_data, pipeline=pipeline
                 )
-            results = [f.get_result() for f in futures]
-            return results
+            )
+        results = [f.get_result() for f in futures]
+        return results
 
-        par_eval_results = eval_pipelines(pipelines, DaskEngine(client=client))
+    with DaskEngine() as engine:
+        par_eval_results = eval_pipelines(pipelines, engine)
+        engine.close()
         par_dicts = [s.get("scores") for s in par_eval_results]
         par_scores = [s["cv_data"][0]["mean_cv_score"] for s in par_dicts]
         par_pipelines = [s.get("pipeline") for s in par_eval_results]
@@ -214,20 +192,18 @@ def test_submit_evaluate_jobs_multiple(X_y_binary_cls, cluster):
             assert par_pipeline in seq_pipelines
 
 
-def test_submit_scoring_job_single(X_y_binary_cls, cluster):
+def test_submit_scoring_job_single(X_y_binary_cls):
     """Test that scoring a single pipeline using the parallel engine produces the
     same results as simply running the score_pipeline function."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
 
-    with Client(cluster) as client:
-
-        pipeline = BinaryClassificationPipeline(
-            component_graph=["Logistic Regression Classifier"],
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-        )
-        engine = DaskEngine(client=client)
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Logistic Regression Classifier"],
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+    )
+    with DaskEngine() as engine:
         objectives = [automl_data.objective]
 
         pipeline_future = engine.submit_training_job(
@@ -250,48 +226,47 @@ def test_submit_scoring_job_single(X_y_binary_cls, cluster):
         assert pipeline_score == original_pipeline_score
 
 
-def test_submit_scoring_jobs_multiple(X_y_binary_cls, cluster):
+def test_submit_scoring_jobs_multiple(X_y_binary_cls):
     """Test that scoring multiple pipelines using the parallel engine produces the
     same results as the sequential engine."""
     X, y = X_y_binary_cls
     X.ww.init()
     y = ww.init_series(y)
 
-    with Client(cluster) as client:
+    pipelines = [
+        BinaryClassificationPipeline(
+            component_graph=["Logistic Regression Classifier"],
+            parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+        ),
+        BinaryClassificationPipeline(component_graph=["Baseline Classifier"]),
+        BinaryClassificationPipeline(component_graph=["SVM Classifier"]),
+    ]
 
-        pipelines = [
-            BinaryClassificationPipeline(
-                component_graph=["Logistic Regression Classifier"],
-                parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-            ),
-            BinaryClassificationPipeline(component_graph=["Baseline Classifier"]),
-            BinaryClassificationPipeline(component_graph=["SVM Classifier"]),
-        ]
-
-        def score_pipelines(pipelines, engine):
-            futures = []
-            for pipeline in pipelines:
-                futures.append(
-                    engine.submit_training_job(
-                        X=X, y=y, automl_config=automl_data, pipeline=pipeline
-                    )
+    def score_pipelines(pipelines, engine):
+        futures = []
+        for pipeline in pipelines:
+            futures.append(
+                engine.submit_training_job(
+                    X=X, y=y, automl_config=automl_data, pipeline=pipeline
                 )
-            pipelines = [f.get_result() for f in futures]
-            futures = []
-            for pipeline in pipelines:
-                futures.append(
-                    engine.submit_scoring_job(
-                        X=X,
-                        y=y,
-                        automl_config=automl_data,
-                        pipeline=pipeline,
-                        objectives=[automl_data.objective],
-                    )
+            )
+        pipelines = [f.get_result() for f in futures]
+        futures = []
+        for pipeline in pipelines:
+            futures.append(
+                engine.submit_scoring_job(
+                    X=X,
+                    y=y,
+                    automl_config=automl_data,
+                    pipeline=pipeline,
+                    objectives=[automl_data.objective],
                 )
-            results = [f.get_result() for f in futures]
-            return results
+            )
+        results = [f.get_result() for f in futures]
+        return results
 
-        par_eval_results = score_pipelines(pipelines, DaskEngine(client=client))
+    with DaskEngine() as engine:
+        par_eval_results = score_pipelines(pipelines, engine)
         par_scores = [s["Log Loss Binary"] for s in par_eval_results]
 
         seq_eval_results = score_pipelines(pipelines, SequentialEngine())
@@ -304,13 +279,12 @@ def test_submit_scoring_jobs_multiple(X_y_binary_cls, cluster):
         np.testing.assert_allclose(par_scores, seq_scores, rtol=1e-10)
 
 
-def test_cancel_job(X_y_binary_cls, cluster):
+def test_cancel_job(X_y_binary_cls):
     """Test that training a single pipeline using the parallel engine produces the
     same results as simply running the train_pipeline function."""
     X, y = X_y_binary_cls
 
-    with Client(cluster) as client:
-        engine = DaskEngine(client=client)
+    with DaskEngine() as engine:
         pipeline = DaskPipelineSlow({"Logistic Regression Classifier": {"n_jobs": 1}})
 
         # Verify that engine fits a pipeline
@@ -321,39 +295,35 @@ def test_cancel_job(X_y_binary_cls, cluster):
         assert pipeline_future.is_cancelled
 
 
-def test_dask_sends_woodwork_schema(X_y_binary_cls, cluster):
+def test_dask_sends_woodwork_schema(X_y_binary_cls):
     X, y = X_y_binary_cls
 
-    with Client(cluster) as client:
-        engine = DaskEngine(client=client)
+    X.ww.init(logical_types={0: "Categorical"}, semantic_tags={0: ["my cool feature"]})
+    y = ww.init_series(y)
 
-        X.ww.init(
-            logical_types={0: "Categorical"}, semantic_tags={0: ["my cool feature"]}
-        )
-        y = ww.init_series(y)
+    new_config = AutoMLConfig(
+        data_splitter=automl_data.data_splitter,
+        problem_type=automl_data.problem_type,
+        objective=automl_data.objective,
+        alternate_thresholding_objective=automl_data.alternate_thresholding_objective,
+        additional_objectives=automl_data.additional_objectives,
+        optimize_thresholds=automl_data.optimize_thresholds,
+        error_callback=automl_data.error_callback,
+        random_seed=automl_data.random_seed,
+        X_schema=X.ww.schema,
+        y_schema=y.ww.schema,
+    )
 
-        new_config = AutoMLConfig(
-            data_splitter=automl_data.data_splitter,
-            problem_type=automl_data.problem_type,
-            objective=automl_data.objective,
-            alternate_thresholding_objective=automl_data.alternate_thresholding_objective,
-            additional_objectives=automl_data.additional_objectives,
-            optimize_thresholds=automl_data.optimize_thresholds,
-            error_callback=automl_data.error_callback,
-            random_seed=automl_data.random_seed,
-            X_schema=X.ww.schema,
-            y_schema=y.ww.schema,
-        )
+    # TestSchemaCheckPipeline will verify that the schema is preserved by the time we call
+    # pipeline.fit and pipeline.score
+    pipeline = DaskSchemaCheckPipeline(
+        component_graph=["One Hot Encoder", "Logistic Regression Classifier"],
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+        X_schema_to_check=X.ww.schema,
+        y_schema_to_check=y.ww.schema,
+    )
 
-        # TestSchemaCheckPipeline will verify that the schema is preserved by the time we call
-        # pipeline.fit and pipeline.score
-        pipeline = DaskSchemaCheckPipeline(
-            component_graph=["One Hot Encoder", "Logistic Regression Classifier"],
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
-            X_schema_to_check=X.ww.schema,
-            y_schema_to_check=y.ww.schema,
-        )
-
+    with DaskEngine() as engine:
         future = engine.submit_training_job(
             X=X, y=y, automl_config=new_config, pipeline=pipeline
         )
@@ -370,3 +340,28 @@ def test_dask_sends_woodwork_schema(X_y_binary_cls, cluster):
 
         future = engine.submit_evaluation_job(new_config, pipeline, X, y)
         future.get_result()
+
+
+def test_daskengine_convenience():
+    """The purpose of this test is to ensure that a DaskEngine initialized without an
+    explicit client self-initializes a threaded Client."""
+
+    with DaskEngine() as dask_engine:
+        assert isinstance(dask_engine.client, Client)
+        assert isinstance(dask_engine.cluster, LocalCluster)
+        assert len(dask_engine.client.ncores()) == 1
+
+    with DaskEngine(cluster=LocalCluster(processes=False)) as dask_engine:
+        assert isinstance(dask_engine.client, Client)
+        assert isinstance(dask_engine.cluster, LocalCluster)
+        assert len(dask_engine.client.ncores()) == 1
+
+    with pytest.raises(TypeError, match="Expected dask.distributed.Client, received"):
+        dask_engine = DaskEngine(cluster="Processes!")
+
+
+@pytest.mark.parametrize("process", [True, False])
+def test_automl_closes_engines(process, X_y_binary_cls):
+    dask_engine = DaskEngine(LocalCluster(process))
+    dask_engine.close()
+    assert dask_engine.is_closed
