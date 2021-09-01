@@ -82,18 +82,19 @@ def test_stacked_problem_types():
 def test_stacked_ensemble_nondefault_y(X_y_binary):
     if import_or_raise("imblearn.over_sampling"):
         X, y = X_y_binary
-        component_graph = {
-            "OS": ["Oversampler", "X", "y"],
-            "RF": [RandomForestClassifier, "OS.x", "OS.y"],
-            "RF B": [RandomForestClassifier, "X", "y"],
-        }
+        input_pipelines = [
+            BinaryClassificationPipeline(
+                {
+                    "OS": ["Oversampler", "X", "y"],
+                    "rf": [RandomForestClassifier, "OS.x", "OS.y"],
+                }
+            ),
+            BinaryClassificationPipeline([RandomForestClassifier]),
+        ]
         pl = _make_stacked_ensemble_pipeline(
-            component_graph=component_graph,
+            input_pipelines=input_pipelines,
             problem_type=ProblemTypes.BINARY,
-            final_components=["RF", "RF B"],
-            ensemble_y="OS.y",
         )
-        pl = BinaryClassificationPipeline(component_graph)
         pl.fit(X, y)
         y_pred = pl.predict(X)
         assert len(y_pred) == len(y)
