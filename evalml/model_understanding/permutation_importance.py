@@ -293,6 +293,7 @@ def _shuffle_and_score_helper(
         col = X_permuted.iloc[shuffling_idx, col_idx]
         col.index = X_permuted.index
         X_permuted.iloc[:, col_idx] = col
+        X_permuted.ww.init(schema=X_features.ww.schema)
         if is_fast:
             feature_score = scorer(pipeline, X_permuted, X_features, y, objective)
         else:

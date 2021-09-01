@@ -753,6 +753,8 @@ def test_computation_input_custom_index(index, example_graph):
         index=index,
     )
     y = pd.Series([1, 2, 1, 2, 1])
+    X.ww.init(logical_types={"categories": "categorical"})
+
     component_graph = ComponentGraph(example_graph)
     component_graph.instantiate({})
     component_graph.fit(X, y)
@@ -881,6 +883,7 @@ def test_input_feature_names(example_graph):
         }
     )
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
+    X.ww.init(logical_types={"column_1": "categorical"})
 
     component_graph = ComponentGraph(example_graph)
     component_graph.instantiate(
@@ -945,7 +948,7 @@ def test_custom_input_feature_types(example_graph):
         }
     )
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
-    X = infer_feature_types(X, {"column_2": "categorical"})
+    X = infer_feature_types(X, {"column_1": "categorical", "column_2": "categorical"})
 
     component_graph = ComponentGraph(example_graph)
     component_graph.instantiate(
@@ -1015,7 +1018,12 @@ def test_component_graph_dataset_with_different_types():
 
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
     X = infer_feature_types(
-        X, {"column_2": "categorical", "column_5": "NaturalLanguage"}
+        X,
+        {
+            "column_1": "categorical",
+            "column_2": "categorical",
+            "column_5": "NaturalLanguage",
+        },
     )
 
     component_graph = ComponentGraph(graph)
@@ -1181,7 +1189,7 @@ def test_component_graph_types_merge_mock(mock_rf_fit):
     )
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
     # woodwork would infer this as boolean by default -- convert to a numeric type
-    X = infer_feature_types(X, {"column_3": "integer"})
+    X = infer_feature_types(X, {"column_1": "categorical", "column_3": "integer"})
 
     component_graph = ComponentGraph(graph)
     # we don't have feature type selectors defined yet, so in order for the above graph to work we have to
@@ -1263,7 +1271,9 @@ def test_component_graph_preserves_ltypes_created_during_pipeline_evaluation():
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
 
     # woodwork would infer this as boolean by default -- convert to a numeric type
-    X.ww.init(semantic_tags={"address": "address"})
+    X.ww.init(
+        logical_types={"column_1": "categorical"}, semantic_tags={"address": "address"}
+    )
 
     component_graph = ComponentGraph(graph)
     # we don't have feature type selectors defined yet, so in order for the above graph to work we have to
@@ -1333,7 +1343,9 @@ def test_component_graph_types_merge():
     X["column_5"] = X["column_4"]
     X["column_6"] = [42.0] * len(X)
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
-    X = infer_feature_types(X, {"column_5": "NaturalLanguage"})
+    X = infer_feature_types(
+        X, {"column_1": "categorical", "column_5": "NaturalLanguage"}
+    )
 
     component_graph = ComponentGraph(graph)
     # we don't have feature type selectors defined yet, so in order for the above graph to work we have to
@@ -1416,6 +1428,7 @@ def test_component_graph_dataset_with_target_imputer():
         }
     )
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, np.nan])
+    X = infer_feature_types(X, {"column_1": "categorical"})
     graph = {
         "Target Imputer": [TargetImputer, "X", "y"],
         "OneHot": [OneHotEncoder, "Target Imputer.x", "Target Imputer.y"],
@@ -1460,16 +1473,16 @@ def test_component_graph_sampler_y_passes(mock_estimator_fit):
     y = pd.Series([0] * 90 + [1] * 10)
     component_graph = {
         "Imputer": ["Imputer", "X", "y"],
-        "SMOTE Oversampler": ["SMOTE Oversampler", "Imputer.x", "y"],
+        "Oversampler": ["Oversampler", "Imputer.x", "y"],
         "Standard Scaler": [
             "Standard Scaler",
-            "SMOTE Oversampler.x",
-            "SMOTE Oversampler.y",
+            "Oversampler.x",
+            "Oversampler.y",
         ],
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Standard Scaler.x",
-            "SMOTE Oversampler.y",
+            "Oversampler.y",
         ],
     }
 
@@ -1919,6 +1932,7 @@ def test_final_component_features_does_not_have_target():
         }
     )
     y = pd.Series([1, 0, 1, 0, 1, 1, 0, 0, 0])
+    X.ww.init(logical_types={"column_1": "categorical"})
 
     cg = ComponentGraph(
         {
@@ -2179,11 +2193,11 @@ def test_component_graph_repr():
 
 
 @patch("evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit")
-@pytest.mark.parametrize("sampler", ["Undersampler", "SMOTE Oversampler"])
+@pytest.mark.parametrize("sampler", ["Undersampler", "Oversampler"])
 def test_component_graph_compute_final_component_features_with_sampler(
     mock_estimator_fit, sampler, has_minimal_dependencies
 ):
-    if sampler == "SMOTE Oversampler" and has_minimal_dependencies:
+    if sampler == "Oversampler" and has_minimal_dependencies:
         pytest.importorskip(
             "imblearn.over_sampling", reason="Cannot import imblearn, skipping tests"
         )

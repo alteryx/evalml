@@ -87,6 +87,14 @@ AutoML Callbacks
     evalml.automl.callbacks.raise_error_callback
 
 
+AutoML Engines
+~~~~~~~~~~~~~~
+.. autoapisummary::
+
+    evalml.automl.engine.sequential_engine.SequentialEngine
+    evalml.automl.engine.cf_engine.CFEngine
+    evalml.automl.engine.dask_engine.DaskEngine
+
 Pipelines
 =========
 
@@ -162,9 +170,7 @@ Transformers are components that take in data as input and output transformed da
     evalml.pipelines.components.DFSTransformer
     evalml.pipelines.components.PolynomialDetrender
     evalml.pipelines.components.Undersampler
-    evalml.pipelines.components.SMOTEOversampler
-    evalml.pipelines.components.SMOTENCOversampler
-    evalml.pipelines.components.SMOTENOversampler
+    evalml.pipelines.components.Oversampler
 
 
 Estimators
