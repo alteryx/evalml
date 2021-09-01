@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer_dtype
 from sklearn.preprocessing import LabelEncoder
@@ -6,9 +7,10 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-from evalml.utils.gen_utils import (
+from evalml.utils import (
     _rename_column_names_to_numeric,
     import_or_raise,
+    infer_feature_types,
 )
 
 
@@ -76,6 +78,8 @@ class XGBoostClassifier(Estimator):
             "n_jobs": n_jobs,
         }
         parameters.update(kwargs)
+        if "use_label_encoder" in parameters:
+            parameters.pop("use_label_encoder")
         xgb_error_msg = (
             "XGBoost is not installed. Please install using `pip install xgboost.`"
         )
@@ -113,7 +117,13 @@ class XGBoostClassifier(Estimator):
         X, _ = super()._manage_woodwork(X)
         X.ww.set_types(self._convert_bool_to_int(X))
         X = _rename_column_names_to_numeric(X, flatten_tuples=False)
-        return super().predict(X)
+        predictions = super().predict(X)
+        if not self._label_encoder:
+            return predictions
+        predictions = pd.Series(
+            self._label_encoder.inverse_transform(predictions.astype(np.int64))
+        )
+        return infer_feature_types(predictions)
 
     def predict_proba(self, X):
         X, _ = super()._manage_woodwork(X)

@@ -89,7 +89,12 @@ def test_xgboost_predict_all_boolean_columns():
 
 @pytest.mark.parametrize(
     "y,label_encoder",
-    [([True, False, False], True), ([1.0, 1.1, 1.1], True), ([0, 1, 1], False)],
+    [
+        ([True, False, False], True),
+        ([1.0, 1.1, 1.1], True),
+        (["One", "Two", "Two"], True),
+        ([0, 1, 1], False),
+    ],
 )
 def test_xgboost_catch_warnings_label_encoder(y, label_encoder):
     X = pd.DataFrame({"a": [True, False, True], "b": [True, False, True]})
@@ -99,6 +104,9 @@ def test_xgboost_catch_warnings_label_encoder(y, label_encoder):
         warnings.simplefilter("always")
         xgb.fit(X, y)
     assert len(w) == 0
+    preds = xgb.predict(X)
+    # make sure the predicted outputs are the same labels as the passed-in labels
+    assert preds[0] in y.values
     if label_encoder:
         assert xgb._label_encoder is not None
         return
