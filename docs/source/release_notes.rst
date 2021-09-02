@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added ``verbose`` flag to ``AutoMLSearch`` to run search in silent mode by default :pr:`2645`
+        * Added label encoder to ``XGBoostClassifier`` to remove the warning :pr:`2701`
     * Fixes
     * Changes
         * Removed default logging setup and debugging log file :pr:`2645`
