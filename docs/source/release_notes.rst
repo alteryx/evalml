@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Added documentation for data exploration on data check actions :pr:`2696` 
     * Testing Changes
 
 .. warning::
@@ -31,7 +32,6 @@ Release Notes
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     * Documentation Changes
-        * Added documentation for data exploration on data check actions :pr:`2696` 
         * Updated documentation to make parallelization of AutoML clearer :pr:`2667`
     * Testing Changes
         * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
