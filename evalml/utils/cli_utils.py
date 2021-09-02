@@ -1,5 +1,4 @@
 import locale
-import logging
 import os
 import platform
 import struct
@@ -10,8 +9,7 @@ import psutil
 from psutil._common import bytes2human
 
 import evalml
-
-logger = logging.getLogger(__name__)
+from evalml.utils import get_logger
 
 
 def print_info():
@@ -20,6 +18,7 @@ def print_info():
     Returns:
         None
     """
+    logger = get_logger(__name__)
     logger.info("EvalML version: %s" % evalml.__version__)
     logger.info("EvalML installation directory: %s" % get_evalml_root())
     print_sys_info()
@@ -32,6 +31,7 @@ def print_sys_info():
     Returns:
         None
     """
+    logger = get_logger(__name__)
     logger.info("\nSYSTEM INFO")
     logger.info("-----------")
     sys_info = get_sys_info()
@@ -45,6 +45,7 @@ def print_deps():
     Returns:
         None
     """
+    logger = get_logger(__name__)
     logger.info("\nINSTALLED VERSIONS")
     logger.info("------------------")
     installed_packages = get_installed_packages()
