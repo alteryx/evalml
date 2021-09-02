@@ -58,6 +58,12 @@ from evalml.pipelines import (
     RegressionPipeline,
     SklearnStackedEnsembleClassifier,
 )
+from evalml.pipelines.components import (
+    ElasticNetRegressor,
+    Imputer,
+    LogTransformer,
+    RandomForestRegressor,
+)
 from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators,
@@ -5233,3 +5239,70 @@ def test_automl_chooses_engine(engine_choice, X_y_binary):
             automl = AutoMLSearch(
                 X_train=X, y_train=y, problem_type="binary", engine=engine_choice
             )
+
+
+@patch("evalml.pipelines.components.RandomForestClassifier.predict_proba")
+@patch("evalml.pipelines.components.RandomForestClassifier.predict")
+@patch("evalml.pipelines.components.ElasticNetClassifier.predict_proba")
+@patch("evalml.pipelines.components.ElasticNetClassifier.predict")
+def test_automl_enesmbler_allowed_component_graphs(
+    mock_en_predict,
+    mock_en_predict_proba,
+    mock_rf_predict,
+    mock_rf_predict_proba,
+    X_y_regression,
+    caplog,
+):
+    """
+    Test that ensures that pipelines that are defined as strings or classes are able to be ensembled.
+    """
+    X, y = X_y_regression
+    mock_en_predict_proba.return_value = np.ones(len(y))
+    mock_rf_predict_proba.return_value = np.ones(len(y))
+    mock_en_predict.return_value = np.ones(len(y))
+    mock_rf_predict.return_value = np.ones(len(y))
+    component_graphs = {
+        "Pipeline1": {
+            "Imputer": ["Imputer", "X", "y"],
+            "Log Transformer": ["Log Transformer", "X", "y"],
+            "RF": ["Random Forest Regressor", "Imputer.x", "Log Transformer.y"],
+        },
+        "Pipeline2": {
+            "Imputer": ["Imputer", "X", "y"],
+            "Log Transformer": ["Log Transformer", "X", "y"],
+            "EN": ["Elastic Net Regressor", "Imputer.x", "Log Transformer.y"],
+        },
+    }
+    automl = AutoMLSearch(
+        X,
+        y,
+        "regression",
+        allowed_component_graphs=component_graphs,
+        ensembling=True,
+        max_batches=4,
+    )
+    automl.search()
+    assert "Stacked Ensemble Regression Pipeline" in caplog.text
+
+    component_graphs = {
+        "Pipeline1": {
+            "Imputer": [Imputer, "X", "y"],
+            "Log Transformer": [LogTransformer, "X", "y"],
+            "RF": [RandomForestRegressor, "Imputer.x", "Log Transformer.y"],
+        },
+        "Pipeline2": {
+            "Imputer": [Imputer, "X", "y"],
+            "Log Transformer": [LogTransformer, "X", "y"],
+            "EN": [ElasticNetRegressor, "Imputer.x", "Log Transformer.y"],
+        },
+    }
+    automl = AutoMLSearch(
+        X,
+        y,
+        "regression",
+        allowed_component_graphs=component_graphs,
+        ensembling=True,
+        max_batches=4,
+    )
+    automl.search()
+    assert "Stacked Ensemble Regression Pipeline" in caplog.text

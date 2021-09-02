@@ -185,7 +185,7 @@ def train_and_score_pipeline(
         if isinstance(pipeline.estimator, SklearnStackedEnsembleBase) and i > 0:
             # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
             logger.debug(
-                f"Skipping fold {i} because CV for stacked ensembles is not supported."
+                f"Skipping fold {i} because CV for scikit-learn based stacked ensembles is not supported."
             )
             break
         logger.debug(f"\t\tTraining and scoring on fold {i}")
