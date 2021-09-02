@@ -261,6 +261,7 @@ def generate_pipeline_code(element):
 def _make_stacked_ensemble_pipeline(
     input_pipelines,
     problem_type,
+    final_estimator=None,
     n_jobs=-1,
     random_seed=0,
     use_sklearn=False,
@@ -271,6 +272,7 @@ def _make_stacked_ensemble_pipeline(
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         problem_type (ProblemType): problem type of pipeline
+        final_estimator (Estimator): Metalearner to use for the ensembler.
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             Defaults to -1.
@@ -372,6 +374,7 @@ def _make_stacked_ensemble_pipeline(
     return pipeline_class(
         [estimator] if use_sklearn else component_graph,
         parameters=parameters,
+        final_estimator=final_estimator,
         custom_name=pipeline_name,
         random_seed=random_seed,
     )
