@@ -51,7 +51,7 @@ class StackedEnsembleBase(Estimator):
 
     @property
     def feature_importance(self):
-        """Not implemented for SklearnStackedEnsembleClassifier and SklearnStackedEnsembleRegressor"""
+        """Not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor"""
         raise NotImplementedError(
             "feature_importance is not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor"
         )

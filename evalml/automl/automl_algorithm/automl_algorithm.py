@@ -92,14 +92,26 @@ class AutoMLAlgorithm(ABC):
         next_batch = []
 
         # Custom Stacked Pipelines
-        problem_type = list(self._best_pipeline_info.values())[0][
-            "pipeline"
-        ].problem_type
+        best_pipelines = list(self._best_pipeline_info.values())
+        problem_type = best_pipelines[0]["pipeline"].problem_type
         n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
-        input_pipelines = [
-            best_info["pipeline"]
-            for best_info in list(self._best_pipeline_info.values())
-        ]
+        input_pipelines = []
+        for pipeline_dict in best_pipelines:
+            pipeline = pipeline_dict["pipeline"]
+            pipeline_params = pipeline_dict["parameters"]
+            if hasattr(self, "_transform_parameters"):
+                pipeline_params = self._transform_parameters(pipeline, pipeline_params)
+            if hasattr(self, "_selected_cols"):
+                if (
+                    "Select Columns Transformer"
+                    in pipeline.component_graph.component_instances
+                ):
+                    pipeline_params.update(
+                        {"Select Columns Transformer": {"columns": self._selected_cols}}
+                    )
+            input_pipelines.append(
+                pipeline.new(parameters=pipeline_params, random_seed=self.random_seed)
+            )
 
         ensemble = _make_stacked_ensemble_pipeline(
             input_pipelines,
@@ -110,23 +122,6 @@ class AutoMLAlgorithm(ABC):
         next_batch.append(ensemble)
 
         # Sklearn Stacked Pipelines
-        input_pipelines = []
-        for pipeline_dict in self._best_pipeline_info.values():
-            pipeline = pipeline_dict["pipeline"]
-            pipeline_params = pipeline_dict["parameters"]
-            if hasattr(self, "_transform_parameters"):
-                parameters = self._transform_parameters(pipeline, pipeline_params)
-            if hasattr(self, "_selected_cols"):
-                if (
-                    "Select Columns Transformer"
-                    in pipeline.component_graph.component_instances
-                ):
-                    parameters.update(
-                        {"Select Columns Transformer": {"columns": self._selected_cols}}
-                    )
-            input_pipelines.append(
-                pipeline.new(parameters=parameters, random_seed=self.random_seed)
-            )
         ensemble = _make_stacked_ensemble_pipeline(
             input_pipelines,
             problem_type,
