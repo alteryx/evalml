@@ -3,7 +3,7 @@ click==8.0.1
 cloudpickle==1.6.0
 colorama==0.4.4
 dask==2021.8.1
-featuretools==0.27.0
+featuretools==0.27.1
 graphviz==0.17
 imbalanced-learn==0.8.0
 ipywidgets==7.6.4
