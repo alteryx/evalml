@@ -399,7 +399,7 @@ class AutoMLSearch:
             be chosen by providing a string from the list ["sequential", "cf_threaded", "cf_process", "dask_threaded", "dask_process"].
             If a parallel engine is selected this way, the maximum amount of parallelism, as determined by the engine, will be used. Defaults to "sequential".
 
-        verbose (boolean): Whether or not to display semi-real-time updates while search is running. Defaults to False.
+        verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
     """
 
     _MAX_NAME_LEN = 40
