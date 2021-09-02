@@ -6,6 +6,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Added documentation for data exploration on data check actions :pr:`2696` 
     * Testing Changes
 
 .. warning::
