@@ -13,9 +13,6 @@ from evalml.utils.logger import (
 
 TEST_LOGGER_NAME = "my_logger"
 
-logger = logging.getLogger("evalml")
-logger.setLevel(logging.INFO)
-
 
 @pytest.fixture()
 def logger_env_cleanup(monkeypatch):
