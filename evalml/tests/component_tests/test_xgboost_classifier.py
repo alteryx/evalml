@@ -13,6 +13,17 @@ from evalml.utils import SEED_BOUNDS, get_random_state
 xgb = importorskip("xgboost", reason="Skipping test because xgboost not installed")
 
 
+@pytest.mark.parametrize("metric", ["error", "logloss"])
+def test_xgboost_classifier_default_evaluation_metric(metric):
+    xgb = XGBoostClassifier(eval_metric=metric)
+    assert xgb.parameters["eval_metric"] == metric
+    assert xgb._component_obj.get_params()["eval_metric"] == metric
+
+    xgb = XGBoostClassifier()
+    assert xgb.parameters["eval_metric"] == "logloss"
+    assert xgb._component_obj.get_params()["eval_metric"] == "logloss"
+
+
 def test_xgboost_classifier_random_seed_bounds_seed(X_y_binary):
     """ensure xgboost's RNG doesn't fail for the min/max bounds we support on user-inputted random seeds"""
     X, y = X_y_binary

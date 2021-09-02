@@ -415,6 +415,7 @@ def test_describe_component():
                 "min_child_weight": 1,
                 "n_estimators": 75,
                 "n_jobs": -1,
+                "eval_metric": "logloss",
             },
         }
         assert xgb_regressor.describe(return_dict=True) == {
