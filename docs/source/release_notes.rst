@@ -2,6 +2,17 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.32.0 Aug. 31, 2021**
+    * Enhancements
         * Allow string for ``engine`` parameter for ``AutoMLSearch``:pr:`2667`
         * Add ``ProphetRegressor`` to AutoML :pr:`2619`
         * Integrated ``DefaultAlgorithm`` into ``AutoMLSearch`` :pr:`2634`
