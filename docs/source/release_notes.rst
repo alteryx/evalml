@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added label encoder to ``XGBoostClassifier`` to remove the warning :pr:`2701`
     * Fixes
     * Changes
     * Documentation Changes
@@ -21,7 +22,6 @@ Release Notes
         * Updated to support Woodwork 0.6.0 :pr:`2690`
         * Updated pipeline ``graph()`` to distingush X and y edges :pr:`2654`
         * Added ``DropRowsTransformer`` component :pr:`2692`
-        * Added label encoder to ``XGBoostClassifier`` to remove the warning :pr:`2701`
         * Added ``DROP_ROWS`` to ``_make_component_list_from_actions`` and clean up metadata :pr:`2694`
     * Fixes
         * Updated Oversampler logic to select best SMOTE based on component input instead of pipeline input :pr:`2695`
