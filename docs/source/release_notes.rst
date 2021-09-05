@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added ``verbose`` flag to ``AutoMLSearch`` to run search in silent mode by default :pr:`2645`
         * Added label encoder to ``XGBoostClassifier`` to remove the warning :pr:`2701`
+        * Added support for ``woodwork`` versions ``0.7.0`` and ``0.7.1`` :pr:`2743`
     * Fixes
     * Changes
         * Removed default logging setup and debugging log file :pr:`2645`
@@ -36,6 +37,7 @@ Release Notes
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     * Documentation Changes
+        * Added user guide documentation for using ``ComponentGraph`` and added ``ComponentGraph`` to API reference :pr:`2673`
         * Updated documentation to make parallelization of AutoML clearer :pr:`2667`
     * Testing Changes
         * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
