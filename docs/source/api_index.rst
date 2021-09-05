@@ -122,6 +122,15 @@ Pipeline Utils
     evalml.pipelines.utils.generate_pipeline_code
 
 
+
+Component Graphs
+================
+
+.. autoapisummary::
+
+    evalml.pipelines.ComponentGraph
+
+
 Components
 ==========
 
