@@ -125,18 +125,18 @@ class Imputer(Transformer):
             df = pd.DataFrame(index=X.index)
             return _retain_custom_types_and_initalize_woodwork(original_ltypes, df)
 
-        X.drop(self._all_null_cols, inplace=True, axis=1, errors="ignore")
+        X_no_all_null = X.ww.drop(self._all_null_cols)
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
-            X_numeric = X[self._numeric_cols.tolist()]
+            X_numeric = X.ww.select(self._numeric_cols.tolist())
             print(f"Imputer numeric schema: {X_numeric.ww.schema}")
             imputed = self._numeric_imputer.transform(X_numeric)
-            X[X_numeric.columns] = imputed
+            X_no_all_null[X_numeric.columns] = imputed
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
-            X_categorical = X[self._categorical_cols.tolist()]
+            X_categorical = X.ww.select(self._categorical_cols.tolist())
             print(f"Imputer categorical schema: {X_categorical.ww.schema}")
             print(f"Imputer dtypes categorical: {X_categorical.dtypes}")
             imputed = self._categorical_imputer.transform(X_categorical)
-            X[X_categorical.columns] = imputed
-        return _retain_custom_types_and_initalize_woodwork(original_ltypes, X)
+            X_no_all_null[X_categorical.columns] = imputed
+        return _retain_custom_types_and_initalize_woodwork(original_ltypes, X_no_all_null)
