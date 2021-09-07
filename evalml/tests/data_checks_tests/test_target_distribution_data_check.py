@@ -114,7 +114,7 @@ def test_target_distribution_data_check_warning_action(
         shapiro_test_og = shapiro(y)
 
         details = {
-            "shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 2)}/{round(shapiro_test_og.pvalue, 3)}"
+            "shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 1)}/{round(shapiro_test_og.pvalue, 3)}"
         }
         assert target_dist_ == {
             "warnings": [

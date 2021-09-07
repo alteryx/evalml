@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added ``verbose`` flag to ``AutoMLSearch`` to run search in silent mode by default :pr:`2645`
         * Added label encoder to ``XGBoostClassifier`` to remove the warning :pr:`2701`
+        * Set ``eval_metric`` to ``logloss`` for ``XGBoostClassifier`` :pr:`2741`
         * Added support for ``woodwork`` versions ``0.7.0`` and ``0.7.1`` :pr:`2743`
     * Fixes
     * Changes
@@ -11,6 +12,7 @@ Release Notes
     * Documentation Changes
         * Added documentation for data exploration on data check actions :pr:`2696` 
     * Testing Changes
+        * Fixed flaky ``TargetDistributionDataCheck`` test for very_lognormal distribution :pr:`2748`
 
 .. warning::
 

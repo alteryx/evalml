@@ -67,6 +67,7 @@ class XGBoostClassifier(Estimator):
         min_child_weight=1,
         n_estimators=100,
         random_seed=0,
+        eval_metric="logloss",
         n_jobs=-1,
         **kwargs,
     ):
@@ -76,6 +77,7 @@ class XGBoostClassifier(Estimator):
             "min_child_weight": min_child_weight,
             "n_estimators": n_estimators,
             "n_jobs": n_jobs,
+            "eval_metric": eval_metric,
         }
         parameters.update(kwargs)
         if "use_label_encoder" in parameters:
