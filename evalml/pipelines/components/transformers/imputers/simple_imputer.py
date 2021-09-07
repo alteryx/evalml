@@ -80,6 +80,7 @@ class SimpleImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         print(f"SimpleImputer ww schema: {X.ww.schema}")
+        print(f"SimpleImpluter dtypes: {X.dtypes}")
         X = infer_feature_types(X)
         print(f"SimpleImputer logical types: {X.ww.logical_types}")
 
