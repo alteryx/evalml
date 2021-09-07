@@ -9,6 +9,8 @@ extras_require = {
 }
 extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
+print("Running EVALML script!")
+
 setup(
     name='evalml',
     version='0.31.0',

@@ -118,6 +118,7 @@ class Imputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X = infer_feature_types(X)
+        print(f"Imputer logical types beginning: {X.ww.logical_types}")
         original_ltypes = X.ww.schema.logical_types
         if len(self._all_null_cols) == X.shape[1]:
             df = pd.DataFrame(index=X.index)
@@ -126,11 +127,13 @@ class Imputer(Transformer):
         X.drop(self._all_null_cols, inplace=True, axis=1, errors="ignore")
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
+            print(f"Imputer logical types numeric: {X.ww.logical_types}")
             X_numeric = X[self._numeric_cols.tolist()]
             imputed = self._numeric_imputer.transform(X_numeric)
             X[X_numeric.columns] = imputed
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
+            print(f"Imputer logical types categorical: {X.ww.logical_types}")
             X_categorical = X[self._categorical_cols.tolist()]
             imputed = self._categorical_imputer.transform(X_categorical)
             X[X_categorical.columns] = imputed

@@ -79,7 +79,10 @@ class SimpleImputer(Transformer):
         Returns:
             pd.DataFrame: Transformed X
         """
+        print(f"SimpleImputer ww schema: {X.ww.schema}")
         X = infer_feature_types(X)
+        print(f"SimpleImputer logical types: {X.ww.logical_types}")
+
         original_logical_types = X.ww.schema.logical_types
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
