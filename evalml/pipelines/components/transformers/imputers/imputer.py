@@ -128,13 +128,13 @@ class Imputer(Transformer):
         X_no_all_null = X.ww.drop(self._all_null_cols)
 
         if self._numeric_cols is not None and len(self._numeric_cols) > 0:
-            X_numeric = X.ww.select(self._numeric_cols.tolist())
+            X_numeric = X.ww[self._numeric_cols.tolist()]
             print(f"Imputer numeric schema: {X_numeric.ww.schema}")
             imputed = self._numeric_imputer.transform(X_numeric)
             X_no_all_null[X_numeric.columns] = imputed
 
         if self._categorical_cols is not None and len(self._categorical_cols) > 0:
-            X_categorical = X.ww.select(self._categorical_cols.tolist())
+            X_categorical = X.ww[self._categorical_cols.tolist()]
             print(f"Imputer categorical schema: {X_categorical.ww.schema}")
             print(f"Imputer dtypes categorical: {X_categorical.dtypes}")
             imputed = self._categorical_imputer.transform(X_categorical)
