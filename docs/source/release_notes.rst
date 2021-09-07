@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added label encoder to ``XGBoostClassifier`` to remove the warning :pr:`2701`
+        * Set ``eval_metric`` to ``logloss`` for ``XGBoostClassifier`` :pr:`2741`
         * Added support for ``woodwork`` versions ``0.7.0`` and ``0.7.1`` :pr:`2743`
     * Fixes
     * Changes
