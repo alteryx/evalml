@@ -123,6 +123,7 @@ def test_categorical_data_subset(mock_predict, X_y_regression):
     X = pd.DataFrame(
         {"feature_1": [0, 0, 1, 1, 0, 1], "feature_2": ["a", "a", "b", "b", "c", "c"]}
     )
+    X.ww.init(logical_types={"feature_2": "categorical"})
     y = pd.Series([1, 1, 0, 0, 0, 1])
     X_expected = pd.DataFrame(
         {0: [0, 0, 1, 1, 0, 1], 1: [0.0, 0.0, 1.0, 1.0, 2.0, 2.0]}
@@ -130,6 +131,7 @@ def test_categorical_data_subset(mock_predict, X_y_regression):
     X_expected.iloc[:, 1] = X_expected.iloc[:, 1].astype("category")
 
     X_subset = pd.DataFrame({"feature_1": [1, 0], "feature_2": ["c", "a"]})
+    X_subset.ww.init(logical_types={"feature_2": "categorical"})
     X_expected_subset = pd.DataFrame({0: [1, 0], 1: [2.0, 0.0]})
     X_expected_subset.iloc[:, 1] = X_expected_subset.iloc[:, 1].astype("category")
 
@@ -148,6 +150,8 @@ def test_multiple_fit(mock_predict):
     X1_fit = pd.DataFrame({"feature": ["a", "b", "c", "c"]})
     X1_predict = pd.DataFrame({"feature": ["a", "a", "b", "c"]})
     X1_predict_expected = pd.DataFrame({0: [0.0, 0.0, 1.0, 2.0]}, dtype="category")
+    X1_fit.ww.init(logical_types={"feature": "categorical"})
+    X1_predict.ww.init(logical_types={"feature": "categorical"})
 
     clf = LightGBMRegressor()
     clf.fit(X1_fit, y)
@@ -158,6 +162,8 @@ def test_multiple_fit(mock_predict):
     X2_fit = pd.DataFrame({"feature": ["c", "b", "a", "d"]})
     X2_predict = pd.DataFrame({"feature": ["d", "c", "b", "a"]})
     X2_predict_expected = pd.DataFrame({0: [3.0, 2.0, 1.0, 0.0]}, dtype="category")
+    X2_fit.ww.init(logical_types={"feature": "categorical"})
+    X2_predict.ww.init(logical_types={"feature": "categorical"})
 
     clf = LightGBMRegressor()
     clf.fit(X2_fit, y)

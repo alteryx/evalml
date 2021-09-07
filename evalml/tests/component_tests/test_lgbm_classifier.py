@@ -173,8 +173,12 @@ def test_correct_args(mock_predict, mock_predict_proba, X_y_binary):
 @patch("evalml.pipelines.components.estimators.estimator.Estimator.predict")
 def test_categorical_data_subset(mock_predict, mock_predict_proba, X_y_binary):
     X = pd.DataFrame(
-        {"feature_1": [0, 0, 1, 1, 0, 1], "feature_2": ["a", "a", "b", "b", "c", "c"]}
+        {
+            "feature_1": [0, 0, 1, 1, 0, 1],
+            "feature_2": ["a", "a", "b", "b", "c", "c"],
+        }
     )
+    X.ww.init(logical_types={"feature_2": "categorical"})
     y = pd.Series([1, 1, 0, 0, 0, 1])
     X_expected = pd.DataFrame(
         {0: [0, 0, 1, 1, 0, 1], 1: [0.0, 0.0, 1.0, 1.0, 2.0, 2.0]}
@@ -182,6 +186,7 @@ def test_categorical_data_subset(mock_predict, mock_predict_proba, X_y_binary):
     X_expected.iloc[:, 1] = X_expected.iloc[:, 1].astype("category")
 
     X_subset = pd.DataFrame({"feature_1": [1, 0], "feature_2": ["c", "a"]})
+    X_subset.ww.init(logical_types={"feature_2": "categorical"})
     X_expected_subset = pd.DataFrame({0: [1, 0], 1: [2.0, 0.0]})
     X_expected_subset.iloc[:, 1] = X_expected_subset.iloc[:, 1].astype("category")
 
@@ -203,7 +208,9 @@ def test_categorical_data_subset(mock_predict, mock_predict_proba, X_y_binary):
 def test_multiple_fit(mock_predict, mock_predict_proba):
     y = pd.Series([1] * 4)
     X1_fit = pd.DataFrame({"feature": ["a", "b", "c", "c"]})
+    X1_fit.ww.init(logical_types={"feature": "categorical"})
     X1_predict = pd.DataFrame({"feature": ["a", "a", "b", "c"]})
+    X1_predict.ww.init(logical_types={"feature": "categorical"})
     X1_predict_expected = pd.DataFrame({0: [0.0, 0.0, 1.0, 2.0]}, dtype="category")
 
     clf = LightGBMClassifier()
@@ -215,7 +222,9 @@ def test_multiple_fit(mock_predict, mock_predict_proba):
 
     # Check if it will fit a different dataset with new variable
     X2_fit = pd.DataFrame({"feature": ["c", "b", "a", "d"]})
+    X2_fit.ww.init(logical_types={"feature": "categorical"})
     X2_predict = pd.DataFrame({"feature": ["d", "c", "b", "a"]})
+    X2_predict.ww.init(logical_types={"feature": "categorical"})
     X2_predict_expected = pd.DataFrame({0: [3.0, 2.0, 1.0, 0.0]}, dtype="category")
 
     clf = LightGBMClassifier()
