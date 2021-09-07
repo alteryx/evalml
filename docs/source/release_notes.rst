@@ -8,6 +8,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Specified installation steps for Prophet :pr:`2713`
         * Added documentation for data exploration on data check actions :pr:`2696` 
     * Testing Changes
         * Fixed flaky ``TargetDistributionDataCheck`` test for very_lognormal distribution :pr:`2748`
