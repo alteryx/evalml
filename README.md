@@ -23,31 +23,6 @@ pip install evalml
 ```
 ### Add-ons
 
-#### Time Series support with Facebook's Prophet
-
-To support the `Prophet` time series estimator, be sure to install it as an extra requirement. Please note that this may take a few minutes.
-Prophet is currently only supported via pip installation in EvalML.
-```shell
-pip install evalml[prophet]
-```
-Another option for installing Prophet with CmdStan as a backend is to use `make installdeps-prophet`.
-This command will do the following:
-- Pip install `cmdstanpy==0.9.68`
-- Execute the `install_cmdstan.py` script found within your `site-packages/cmdstanpy` which builds `cmdstan` in your `site-packages`.
-- Install `Prophet==1.0.1` with the `CMDSTAN` and `STAN_BACKEND` environment variables set.
-
-If the `site-packages` path is incorrect or you'd like to specify a different one, just run `make installdeps-prophet SITE_PACKAGES_DIR="<path_to_your_site_packages>"`.
-
-If you'd like to have more fine-tuned control over the installation steps for Prophet, such as specifying the backend, follow these steps:
-
-For CmdStanPy as a backend:
-1. `pip install cmdstanpy==0.9.68`
-2. `python <path_to_installed_cmdstanpy>/install_cmdstan.py --dir <path_to_build_cmdstan>`
-3. `CMDSTAN=<path_to_build_cmdstan>/cmdstan-2.27.0 STAN_BACKEND=CMDSTANPY pip install prophet==1.0.1`
-
-For PyStan as a backend (PyStan is used by default):
-1. `pip install prophet==1.0.1`
-
 #### Update checker
 
 Receive automatic notifications of new EvalML releases
