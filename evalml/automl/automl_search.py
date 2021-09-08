@@ -550,7 +550,9 @@ class AutoMLSearch:
         self._pipelines_per_batch = _pipelines_per_batch
         if not self.max_iterations and not self.max_time and not self.max_batches:
             self.max_batches = 1
-            self.logger.info("Using default limit of max_batches=1.\n")
+            self.logger.info(
+                f"Using default limit of max_batches={self.max_batches}.\n"
+            )
 
         if patience and (not isinstance(patience, int) or patience < 0):
             raise ValueError(

@@ -327,8 +327,7 @@ def test_pipeline_limits(
     caplog.clear()
 
 
-@pytest.mark.parametrize("verbose", [True, False])
-def test_pipeline_fit_raises(verbose, AutoMLTestEnv, X_y_binary, caplog):
+def test_pipeline_fit_raises(AutoMLTestEnv, X_y_binary, caplog):
     X, y = X_y_binary
     # Don't train the best pipeline, since this test mocks the pipeline.fit() method and causes it to raise an exception,
     # which we don't want to raise while fitting the best pipeline.
@@ -339,7 +338,6 @@ def test_pipeline_fit_raises(verbose, AutoMLTestEnv, X_y_binary, caplog):
         problem_type="binary",
         max_iterations=1,
         train_best_pipeline=False,
-        verbose=verbose,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(
@@ -360,8 +358,7 @@ def test_pipeline_fit_raises(verbose, AutoMLTestEnv, X_y_binary, caplog):
                 assert np.isnan(score)
 
 
-@pytest.mark.parametrize("verbose", [True, False])
-def test_pipeline_score_raises(verbose, AutoMLTestEnv, X_y_binary, caplog):
+def test_pipeline_score_raises(AutoMLTestEnv, X_y_binary, caplog):
     caplog.clear()
     X, y = X_y_binary
     automl = AutoMLSearch(
@@ -370,7 +367,6 @@ def test_pipeline_score_raises(verbose, AutoMLTestEnv, X_y_binary, caplog):
         problem_type="binary",
         max_iterations=1,
         n_jobs=1,
-        verbose=verbose,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(
@@ -392,8 +388,7 @@ def test_pipeline_score_raises(verbose, AutoMLTestEnv, X_y_binary, caplog):
 
 
 @patch("evalml.objectives.AUC.score")
-@pytest.mark.parametrize("verbose", [True, False])
-def test_objective_score_raises(mock_score, verbose, X_y_binary, caplog):
+def test_objective_score_raises(mock_score, X_y_binary, caplog):
     caplog.clear()
     msg = "all your model are belong to us"
     mock_score.side_effect = Exception(msg)
@@ -405,7 +400,6 @@ def test_objective_score_raises(mock_score, verbose, X_y_binary, caplog):
         optimize_thresholds=False,
         max_iterations=1,
         n_jobs=1,
-        verbose=verbose,
     )
     automl.search()
     out = caplog.text
@@ -2440,9 +2434,8 @@ def _get_first_stacked_classifier_no(model_families=None):
     ],
 )
 @pytest.mark.parametrize("use_ensembling", [True, False])
-@pytest.mark.parametrize("verbose", [True, False])
 def test_max_iteration_works_with_stacked_ensemble(
-    max_iterations, verbose, use_ensembling, AutoMLTestEnv, X_y_binary, caplog
+    max_iterations, use_ensembling, AutoMLTestEnv, X_y_binary, caplog
 ):
     X, y = X_y_binary
 
@@ -2454,7 +2447,7 @@ def test_max_iteration_works_with_stacked_ensemble(
         objective="Log Loss Binary",
         optimize_thresholds=False,
         ensembling=use_ensembling,
-        verbose=verbose,
+        verbose=True,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.8}):
@@ -2471,7 +2464,7 @@ def test_max_iteration_works_with_stacked_ensemble(
         assert (
             f"Ensembling will run at the {_get_first_stacked_classifier_no()} iteration"
             in caplog.text
-        ) == verbose
+        )
 
     else:
         assert not pipeline_names.str.contains("Ensemble").any()
@@ -3338,10 +3331,7 @@ def test_automl_respects_random_seed(
     "callback", [log_error_callback, silent_error_callback, raise_error_callback]
 )
 @pytest.mark.parametrize("error_type", ["fit", "mean_cv_score", "fit-single"])
-@pytest.mark.parametrize("verbose", [True, False])
-def test_automl_error_callback(
-    error_type, callback, verbose, AutoMLTestEnv, X_y_binary, caplog
-):
+def test_automl_error_callback(error_type, callback, AutoMLTestEnv, X_y_binary, caplog):
     X, y = X_y_binary
     score_side_effect = None
     fit_side_effect = None
@@ -3364,7 +3354,6 @@ def test_automl_error_callback(
         train_best_pipeline=False,
         optimize_thresholds=False,
         n_jobs=1,
-        verbose=verbose,
     )
     if callback in [log_error_callback, silent_error_callback]:
         exception = AutoMLSearchException
@@ -3628,8 +3617,7 @@ def test_automl_data_splitter_consistent(
     assert data_splitters[2] == data_splitters[3]
 
 
-@pytest.mark.parametrize("verbose", [True, False])
-def test_automl_rerun(verbose, AutoMLTestEnv, X_y_binary, caplog):
+def test_automl_rerun(AutoMLTestEnv, X_y_binary, caplog):
     msg = "AutoMLSearch.search() has already been run and will not run again on the same instance"
     X, y = X_y_binary
     automl = AutoMLSearch(
@@ -4065,10 +4053,7 @@ def test_automl_check_for_high_variance(
             assert not automl._check_for_high_variance(pipeline, cv_scores)
 
 
-@pytest.mark.parametrize("verbose", [True, False])
-def test_automl_check_high_variance_logs_warning(
-    verbose, AutoMLTestEnv, X_y_binary, caplog
-):
+def test_automl_check_high_variance_logs_warning(AutoMLTestEnv, X_y_binary, caplog):
     X, y = X_y_binary
 
     env = AutoMLTestEnv("binary")
@@ -4078,7 +4063,6 @@ def test_automl_check_high_variance_logs_warning(
         y_train=y,
         problem_type="binary",
         optimize_thresholds=False,
-        verbose=verbose,
     )
     with env.test_context(score_return_value={"Log Loss Binary": 1}):
         automl.search()
@@ -4094,7 +4078,6 @@ def test_automl_check_high_variance_logs_warning(
         problem_type="binary",
         optimize_thresholds=False,
         max_iterations=2,
-        verbose=verbose,
     )
     with env.test_context(mock_score_side_effect=desired_score_values):
         automl.search()
@@ -4842,10 +4825,7 @@ def test_automl_thresholding_train_pipelines(mock_objective, threshold, X_y_bina
 
 
 @pytest.mark.parametrize("columns", [[], ["unknown_col"], ["unknown1, unknown2"]])
-@pytest.mark.parametrize("verbose", [True, False])
-def test_automl_drop_unknown_columns(
-    columns, verbose, AutoMLTestEnv, X_y_binary, caplog
-):
+def test_automl_drop_unknown_columns(columns, AutoMLTestEnv, X_y_binary, caplog):
     caplog.clear()
     X, y = X_y_binary
     X = pd.DataFrame(X)
@@ -4859,7 +4839,7 @@ def test_automl_drop_unknown_columns(
         problem_type="binary",
         optimize_thresholds=False,
         max_batches=2,
-        verbose=verbose,
+        verbose=True,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
@@ -4870,7 +4850,7 @@ def test_automl_drop_unknown_columns(
         assert "because they are of 'Unknown'" not in caplog.text
         return
 
-    assert ("because they are of 'Unknown'" in caplog.text) == verbose
+    assert "because they are of 'Unknown'" in caplog.text
     for pipeline in automl.allowed_pipelines:
         assert pipeline.get_component("Drop Columns Transformer")
         assert "Drop Columns Transformer" in pipeline.parameters
