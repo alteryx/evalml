@@ -26,6 +26,8 @@ class DelayedFeatureTransformer(Transformer):
     hyperparameter_ranges = {}
     """{}"""
     needs_fitting = False
+    target_colname_prefix = "target_delay_{}"
+    """target_delay_{}"""
 
     def __init__(
         self,
@@ -128,7 +130,7 @@ class DelayedFeatureTransformer(Transformer):
             if type(y.ww.logical_type) == logical_types.Categorical:
                 y = self._encode_y_while_preserving_index(y)
             for t in range(self.start_delay, self.start_delay + self.max_delay + 1):
-                X_ww.ww[f"target_delay_{t}"] = y.shift(t)
+                X_ww.ww[self.target_colname_prefix.format(t)] = y.shift(t)
         return X_ww.ww.drop(original_features)
 
     def fit_transform(self, X, y):

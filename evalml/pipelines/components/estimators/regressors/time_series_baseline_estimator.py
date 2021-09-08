@@ -2,6 +2,7 @@ import numpy as np
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.transformers import DelayedFeatureTransformer
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
@@ -59,12 +60,13 @@ class TimeSeriesBaselineEstimator(Estimator):
 
     def predict(self, X):
         X = infer_feature_types(X)
-        if f"target_delay_{self.start_delay}" not in X.columns:
+        feature_name = DelayedFeatureTransformer.target_colname_prefix.format(self.start_delay)
+        if feature_name not in X.columns:
             raise ValueError(
                 "Time Series Baseline Estimator is meant to be used in a pipeline with "
                 "a DelayedFeaturesTransformer"
             )
-        return X.ww[f"target_delay_{self.start_delay}"]
+        return X.ww[feature_name]
 
     def predict_proba(self, X):
         preds = self.predict(X).astype("int")
