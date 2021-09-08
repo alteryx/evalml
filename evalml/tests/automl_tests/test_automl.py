@@ -4959,7 +4959,7 @@ def test_pipeline_parameter_warnings_only_parameternotused(
             X_train=X,
             y_train=y,
             problem_type="regression",
-            allowed_model_families=["xgboost"],
+            allowed_model_families=["random_forest"],
             max_batches=3,
         )
     # But that it does throw a warning
