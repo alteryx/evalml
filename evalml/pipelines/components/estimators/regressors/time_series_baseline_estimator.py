@@ -60,7 +60,9 @@ class TimeSeriesBaselineEstimator(Estimator):
 
     def predict(self, X):
         X = infer_feature_types(X)
-        feature_name = DelayedFeatureTransformer.target_colname_prefix.format(self.start_delay)
+        feature_name = DelayedFeatureTransformer.target_colname_prefix.format(
+            self.start_delay
+        )
         if feature_name not in X.columns:
             raise ValueError(
                 "Time Series Baseline Estimator is meant to be used in a pipeline with "
