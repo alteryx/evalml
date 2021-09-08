@@ -4945,6 +4945,29 @@ def test_pipeline_parameter_warnings_component_graphs(
         assert w[0].message.components == set_values
 
 
+@patch(
+    "evalml.data_checks.target_distribution_data_check.TargetDistributionDataCheck.validate"
+)
+def test_pipeline_parameter_warnings_only_parameternotused(
+    mock_data_check, X_y_regression
+):
+    mock_data_check.side_effect = UserWarning("Big bad warning")
+    X, y = X_y_regression
+    # Make sure it doesn't throw an error trying to access warning.components
+    with pytest.raises(UserWarning) as cw:
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="regression",
+            allowed_model_families=["xgboost"],
+            max_batches=3,
+        )
+    # But that it does throw a warning
+    warning = cw.value
+    assert isinstance(warning, UserWarning)
+    assert str(warning) == "Big bad warning"
+
+
 @pytest.mark.parametrize("nans", [None, pd.NA, np.nan])
 @patch("evalml.pipelines.components.Estimator.fit")
 @patch(
