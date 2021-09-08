@@ -840,13 +840,14 @@ class AutoMLSearch:
             # we find the value(s) that we must throw any ParameterNotUsedWarnings for
             final_message = set([])
             for idx, msg in enumerate(warning_list):
-                if isinstance(msg, ParameterNotUsedWarning):
+                if isinstance(msg.message, ParameterNotUsedWarning):
                     if idx == 0:
                         final_message = final_message.union(msg.message.components)
                     else:
                         final_message = final_message.intersection(
                             msg.message.components
                         )
+            if len(final_message):
                 warnings.warn(ParameterNotUsedWarning(final_message))
 
     def _get_batch_number(self):
