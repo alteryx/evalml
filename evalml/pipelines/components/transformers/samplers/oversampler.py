@@ -37,8 +37,13 @@ class Oversampler(BaseSampler):
         **kwargs,
     ):
         error_msg = "imbalanced-learn is not installed. Please install using 'pip install imbalanced-learn'"
-        self._im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
+        im = import_or_raise("imblearn.over_sampling", error_msg=error_msg)
         self.sampler = None
+        self.sampler_options = {
+            "SMOTE": im.SMOTE,
+            "SMOTENC": im.SMOTENC,
+            "SMOTEN": im.SMOTEN,
+        }
         parameters = {
             "sampling_ratio": sampling_ratio,
             "k_neighbors_default": k_neighbors_default,
@@ -52,10 +57,11 @@ class Oversampler(BaseSampler):
 
     def fit(self, X, y):
         X_ww, y_ww = self._prepare_data(X, y)
-        self.sampler = self._get_best_oversampler(X_ww)
+        sampler_name = self._get_best_oversampler(X_ww)
+        self.sampler = self.sampler_options[sampler_name]
 
         # get categorical features first, if necessary
-        if self.sampler is self._im.SMOTENC:
+        if sampler_name == "SMOTENC":
             self._get_categorical(X)
         super().fit(X, y)
         return self
@@ -63,11 +69,11 @@ class Oversampler(BaseSampler):
     def _get_best_oversampler(self, X):
         cat_cols = X.ww.select("Categorical").columns
         if len(cat_cols) == X.shape[1]:
-            return self._im.SMOTEN
+            return "SMOTEN"
         elif not len(cat_cols):
-            return self._im.SMOTE
+            return "SMOTE"
         else:
-            return self._im.SMOTENC
+            return "SMOTENC"
 
     def _get_categorical(self, X):
         X = infer_feature_types(X)
