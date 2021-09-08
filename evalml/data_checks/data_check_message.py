@@ -29,6 +29,12 @@ class DataCheckMessage:
 
         Two DataCheckMessage objs are considered equivalent if all of
         their attributes are equivalent.
+
+        Args:
+            other: An object to compare equality with.
+
+        Returns:
+            bool: True if the other object is considered an equivalent data check message, False otherwise.
         """
         return (
             self.message_type == other.message_type

@@ -55,7 +55,7 @@ class BalancedClassificationSampler(SamplerBase):
         Args:
             y (pd.Series): Target data passed in.
 
-        Returns
+        Returns:
             (dict): dictionary with undersample target class as key, and number of samples to remove as the value.
                 If we don't need to resample, returns empty dictionary.
         """

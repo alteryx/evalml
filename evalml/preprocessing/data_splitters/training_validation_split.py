@@ -34,7 +34,11 @@ class TrainingValidationSplit(BaseCrossValidator):
 
     @staticmethod
     def get_n_splits():
-        """Return the number of splits of this object."""
+        """Return the number of splits of this object.
+
+        Returns:
+            int: Always returns 1.
+        """
         return 1
 
     def split(self, X, y=None):

@@ -31,12 +31,12 @@ class TimeSeriesSplit(BaseCrossValidator):
 
     def get_n_splits(self, X=None, y=None, groups=None):
         """Get the number of data splits.
-        
+
         Args:
             X (pd.DataFrame, None): Features to split.
             y (pd.DataFrame, None): Target variable to split. Defaults to None.
             groups: Ignored but kept for compatibility with sklearn API. Defaults to None.
-        
+
         Returns:
             Number of splits.
         """

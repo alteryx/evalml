@@ -153,6 +153,10 @@ def train_and_score_pipeline(
         automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback.
         full_X_train (pd.DataFrame): Training features.
         full_y_train (pd.Series): Training target.
+        logger: Logger object to write to.
+
+    Raises:
+        Exception: If there are missing target values in the training set after data split.
 
     Returns:
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
@@ -296,6 +300,7 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
         automl_config (AutoMLConfig): The AutoMLSearch object, used to access config and the error callback.
         X (pd.DataFrame): Training features.
         y (pd.Series): Training target.
+        logger: Logger object to write to.
 
     Returns:
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
@@ -322,11 +327,12 @@ def score_pipeline(pipeline, X, y, objectives, X_schema=None, y_schema=None):
         pipeline (PipelineBase): The pipeline to score.
         X (pd.DataFrame): Features to score on.
         y (pd.Series): Target used to calcualte scores.
+        objectives (list[ObjectiveBase]): List of objectives to score on.
         X_schema (ww.TableSchema): Schema for features. Defaults to None.
         y_schema (ww.ColumnSchema): Schema for columns. Defaults to None.
 
     Returns:
-       dict containing pipeline scores.
+        dict: Dictionary object containing pipeline scores.
     """
     if X_schema:
         X.ww.init(schema=X_schema)

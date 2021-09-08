@@ -25,6 +25,9 @@ def calculate_permutation_importance(
 
     Returns:
         pd.DataFrame: Mean feature importance scores over a number of shuffles.
+
+    Raises:
+        ValueError: If objective cannot be used with the given pipeline.
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)

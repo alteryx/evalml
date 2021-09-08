@@ -30,7 +30,10 @@ class DaskComputation(EngineComputation):
         """Gets the computation result. Will block until the computation is finished.
 
         Raises:
-             Exception: If computation fails. Returns traceback.
+            Exception: If computation fails. Returns traceback.
+
+        Returns:
+            Computation results.
         """
         return self.work.result()
 
@@ -92,7 +95,7 @@ class DaskEngine(EngineBase):
         )
         return self._data_futures_cache[data_hash]
 
-    def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
+    def submit_evaluation_job(self, automl_config, pipeline, X, y):
         """Send evaluation job to cluster.
 
         Args:
@@ -117,7 +120,7 @@ class DaskEngine(EngineBase):
         )
         return DaskComputation(dask_future)
 
-    def submit_training_job(self, automl_config, pipeline, X, y) -> EngineComputation:
+    def submit_training_job(self, automl_config, pipeline, X, y):
         """Send training job to cluster.
 
         Args:
@@ -136,9 +139,7 @@ class DaskEngine(EngineBase):
         )
         return DaskComputation(dask_future)
 
-    def submit_scoring_job(
-        self, automl_config, pipeline, X, y, objectives
-    ) -> EngineComputation:
+    def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
         """Send scoring job to cluster.
 
         Args:
@@ -146,7 +147,7 @@ class DaskEngine(EngineBase):
             pipeline (pipeline.PipelineBase): Pipeline to train.
             X (pd.DataFrame): Input data for modeling.
             y (pd.Series): Target data for modeling.
-            objectives (list(ObjectiveBase)): List of objectives to score on.
+            objectives (list[ObjectiveBase]): List of objectives to score on.
 
         Returns:
             DaskComputation: An object wrapping a reference to a future-like computation

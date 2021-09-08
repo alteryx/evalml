@@ -21,9 +21,10 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
         n_rows (int): Number of rows to return. Defaults to None.
         drop (list): List of columns to drop. Defaults to None.
         verbose (bool): If True, prints information about features and target. Defaults to True.
+        **kwargs: Other keyword arguments that should be passed to panda's `read_csv` method.
 
     Returns:
-       pd.DataFrame, pd.Series: Features matrix and target.
+        pd.DataFrame, pd.Series: Features matrix and target.
     """
     feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
 

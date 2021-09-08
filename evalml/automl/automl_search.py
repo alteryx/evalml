@@ -1602,7 +1602,7 @@ class AutoMLSearch:
         This can be helpful for training pipelines once the search is complete.
 
         Args:
-            pipelines (list(PipelineBase)): List of pipelines to train.
+            pipelines (list[PipelineBase]): List of pipelines to train.
 
         Returns:
             Dict[str, PipelineBase]: Dictionary keyed by pipeline name that maps to the fitted pipeline.
@@ -1642,10 +1642,10 @@ class AutoMLSearch:
         """Score a list of pipelines on the given holdout data.
 
         Args:
-            pipelines (list(PipelineBase)): List of pipelines to train.
+            pipelines (list[PipelineBase]): List of pipelines to train.
             X_holdout (pd.DataFrame): Holdout features.
             y_holdout (pd.Series): Holdout targets for scoring.
-            objectives (list(str), list(ObjectiveBase)): Objectives used for scoring.
+            objectives (list[str], list[ObjectiveBase]): Objectives used for scoring.
 
         Returns:
             dict[str, Dict[str, float]]: Dictionary keyed by pipeline name that maps to a dictionary of scores.

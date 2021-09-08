@@ -1358,6 +1358,10 @@ def visualize_decision_tree(
 
     Returns:
         graphviz.Source: DOT object that can be directly displayed in Jupyter notebooks.
+
+    Raises:
+        ValueError: If the estimator is not a decision tree estimator.
+        NotFittedError: If the estimator is not fitted yet.
     """
     if not estimator.model_family == ModelFamily.DECISION_TREE:
         raise ValueError(
@@ -1574,7 +1578,7 @@ def graph_t_sne(
     marker_size=7,
     **kwargs,
 ):
-    """Plot high dimensional data into lower dimensional space using t-SNE .
+    """Plot high dimensional data into lower dimensional space using t-SNE.
 
     Args:
         X (np.ndarray, pd.DataFrame): Data to be transformed. Must be numeric.
@@ -1588,7 +1592,7 @@ def graph_t_sne(
         marker_size (int, optional): Determines the size of the marker.
 
     Returns:
-        plotly.Figure representing the transformed data
+        plotly.Figure: Figure representing the transformed data.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"

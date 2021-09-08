@@ -22,7 +22,7 @@ def graph_force_plot(pipeline, rows_to_explain, training_data, y, matplotlib=Fal
             Defaults to False.
 
     Returns:
-        list(dict(shap.AdditiveForceVisualizer)): The same as force_plot(), but with an additional
+        list[dict[shap.AdditiveForceVisualizer]]: The same as force_plot(), but with an additional
             key in each dictionary for the plot.
     """
 
@@ -62,12 +62,12 @@ def force_plot(pipeline, rows_to_explain, training_data, y):
 
     Args:
         pipeline (PipelineBase): The pipeline to generate the force plot for.
-        rows_to_explain (list(int)): A list of the indices of the training_data to explain.
+        rows_to_explain (list[int]): A list of the indices of the training_data to explain.
         training_data (pandas.DataFrame): The data used to train the pipeline.
         y (pandas.Series): The target data.
 
     Returns:
-        list(dict()): list of dictionaries where each dict contains force plot data.  Each dictionary
+        list[dict]: list of dictionaries where each dict contains force plot data.  Each dictionary
             entry represents the explanations for a single row.
 
             For single row binary force plots:
@@ -87,8 +87,8 @@ def force_plot(pipeline, rows_to_explain, training_data, y):
                                 'plot': AdditiveForceVisualizer}]
 
     Raises:
-        TypeError: if rows_to_explain is not a list.
-        TypeError: if all values in rows_to_explain aren't integers.
+        TypeError: If rows_to_explain is not a list.
+        TypeError: If all values in rows_to_explain aren't integers.
     """
     if not isinstance(rows_to_explain, list):
         raise TypeError(

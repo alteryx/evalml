@@ -1,9 +1,6 @@
-<<<<<<< HEAD
 """Custom CFClient API to match Dask's CFClient and allow context management."""
-=======
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
->>>>>>> main
 from evalml.automl.engine.engine_base import (
     EngineBase,
     EngineComputation,
@@ -107,7 +104,7 @@ class CFEngine(EngineBase):
         self.client = client
         self._data_futures_cache = {}
 
-    def submit_evaluation_job(self, automl_config, pipeline, X, y) -> EngineComputation:
+    def submit_evaluation_job(self, automl_config, pipeline, X, y):
         """Send evaluation job to cluster.
 
         Args:
@@ -131,7 +128,7 @@ class CFEngine(EngineBase):
         )
         return CFComputation(future)
 
-    def submit_training_job(self, automl_config, pipeline, X, y) -> EngineComputation:
+    def submit_training_job(self, automl_config, pipeline, X, y):
         """Send training job to cluster.
 
         Args:
@@ -149,9 +146,7 @@ class CFEngine(EngineBase):
         )
         return CFComputation(future)
 
-    def submit_scoring_job(
-        self, automl_config, pipeline, X, y, objectives
-    ) -> EngineComputation:
+    def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
         """Send scoring job to cluster.
 
         Args:
@@ -159,7 +154,7 @@ class CFEngine(EngineBase):
             pipeline (pipeline.PipelineBase): Pipeline to train.
             X (pd.DataFrame): Input data for modeling.
             y (pd.Series): Target data for modeling.
-            objectives (list(ObjectiveBase)): Objectives to score on.
+            objectives (list[ObjectiveBase]): Objectives to score on.
 
         Returns:
             CFComputation: An object wrapping a reference to a future-like computation

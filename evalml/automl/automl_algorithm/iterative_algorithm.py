@@ -69,7 +69,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
             pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
             custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
-            _estimator_family_order (list(ModelFamily) or None): specify the sort order for the first batch. Defaults to None, which uses _ESTIMATOR_FAMILY_ORDER.
+            _estimator_family_order (list[ModelFamily]): specify the sort order for the first batch. Defaults to None, which uses _ESTIMATOR_FAMILY_ORDER.
         """
         self._estimator_family_order = (
             _estimator_family_order or _ESTIMATOR_FAMILY_ORDER
@@ -134,7 +134,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         """Get the next batch of pipelines to evaluate.
 
         Returns:
-            list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
+            list[PipelineBase]: a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
         if self._batch_number == 1:
             if len(self._first_batch_results) == 0:

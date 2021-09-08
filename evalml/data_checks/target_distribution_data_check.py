@@ -21,7 +21,6 @@ class TargetDistributionDataCheck(DataCheck):
         """Check if the target data has a certain distribution.
 
         Args:
-
             X (pd.DataFrame, np.ndarray): Features. Ignored.
             y (pd.Series, np.ndarray): Target data to check for underlying distributions.
 

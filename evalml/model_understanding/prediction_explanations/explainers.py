@@ -52,7 +52,7 @@ def explain_predictions(
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
         y (pd.Series): Labels for the input data.
-        indices_to_explain (list(int)): List of integer indices to explain.
+        indices_to_explain (list[int]): List of integer indices to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.  Default is 3.
         include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
@@ -60,7 +60,7 @@ def explain_predictions(
         output_format (str): Either "text", "dict", or "dataframe". Default is "text".
 
     Returns:
-        str, dict, or pd.DataFrame - A report explaining the top contributing features to each prediction for each row of input_features.
+        str, dict, or pd.DataFrame: A report explaining the top contributing features to each prediction for each row of input_features.
             The report will include the feature names, prediction contribution, and SHAP Value (optional).
 
     Raises:
@@ -161,15 +161,17 @@ def explain_predictions_best_worst(
         callback (callable): Function to be called with incremental updates. Has the following parameters:
             - progress_stage: stage of computation
             - time_elapsed: total time in seconds that has elapsed since start of call
+
     Returns:
-        str, dict, or pd.DataFrame - A report explaining the top contributing features for the best/worst predictions in the input_features.
+        str, dict, or pd.DataFrame: A report explaining the top contributing features for the best/worst predictions in the input_features.
             For each of the best/worst rows of input_features, the predicted values, true labels, metric value,
             feature names, prediction contribution, and SHAP Value (optional) will be listed.
 
     Raises:
-        ValueError: if input_features does not have more than twice the requested features to explain.
-        ValueError: if y_true and input_features have mismatched lengths.
-        ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
+        ValueError: If input_features does not have more than twice the requested features to explain.
+        ValueError: If y_true and input_features have mismatched lengths.
+        ValueError: If an output_format outside of "text", "dict" or "dataframe is provided.
+        PipelineScoreError: If the pipeline errors out while scoring.
     """
     start_time = timer()
     _update_progress(

@@ -28,7 +28,11 @@ class SequentialComputation(EngineComputation):
         self.meta_data = {}
 
     def done(self):
-        """Whether the computation is done."""
+        """Whether the computation is done.
+
+        Returns:
+            bool: Always returns True.
+        """
         return True
 
     def get_result(self):
@@ -36,6 +40,9 @@ class SequentialComputation(EngineComputation):
 
         Raises:
             Exception: If computation fails. Returns traceback.
+
+        Returns:
+            Computation results.
         """
         return self.work(**self.kwargs)
 
@@ -57,6 +64,9 @@ class SequentialEngine(EngineBase):
             pipeline (pipeline.PipelineBase): Pipeline to evaluate.
             X (pd.DataFrame): Input data for modeling.
             y (pd.Series): Target data for modeling.
+
+        Returns:
+            SequentialComputation: Computation result.
         """
         logger = self.setup_job_log()
         return SequentialComputation(
@@ -76,6 +86,9 @@ class SequentialEngine(EngineBase):
             pipeline (pipeline.PipelineBase): Pipeline to evaluate.
             X (pd.DataFrame): Input data for modeling.
             y (pd.Series): Target data for modeling.
+
+        Returns:
+            SequentialComputation: Computation result.
         """
         return SequentialComputation(
             work=train_pipeline,
@@ -94,7 +107,10 @@ class SequentialEngine(EngineBase):
             pipeline (pipeline.PipelineBase): Pipeline to train.
             X (pd.DataFrame): Input data for modeling.
             y (pd.Series): Target data for modeling.
-            objectives (list(ObjectiveBase)): List of objectives to score on.
+            objectives (list[ObjectiveBase]): List of objectives to score on.
+
+        Returns:
+            SequentialComputation: Computation result.
         """
         objectives = [get_objective(o, return_instance=True) for o in objectives]
         computation = SequentialComputation(

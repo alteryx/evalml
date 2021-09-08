@@ -18,6 +18,11 @@ class DataCheckAction:
 
         Two DataCheckAction objs are considered equivalent if all of their attributes are equivalent.
 
+        Args:
+            other: An object to compare equality with.
+
+        Returns:
+            bool: True if the other object is considered an equivalent data check action, False otherwise.
         """
         return self.action_code == other.action_code and self.metadata == other.metadata
 

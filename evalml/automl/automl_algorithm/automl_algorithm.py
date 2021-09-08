@@ -54,7 +54,7 @@ class AutoMLAlgorithm(ABC):
         """Get the next batch of pipelines to evaluate.
 
         Returns:
-            list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
+            list[PipelineBase]: a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):

@@ -181,13 +181,7 @@ class _TableMaker(abc.ABC):
         original_features,
         include_shap_values,
     ):
-        """Format the 'drill_down' section of the explanation report when output_format="dict".
-
-        This section will include the feature values, feature names,
-        qualitative explanation and shap values (if
-        include_shap_values=True) for the features created from one of
-        the original features in the data.
-        """
+        """Format the 'drill_down' section of the explanation report when output_format="dict". This section will include the feature values, feature names, qualitative explanation and shap values (if include_shap_values=True) for the features created from one of the original features in the data."""
         drill_down = {}
         for parent_feature, children_features in provenance.items():
             shap_for_children = {
@@ -596,16 +590,22 @@ class _Heading(_SectionMaker):
 
         Args:
             rank (int): Rank (1, 2, 3, ...) of the prediction. Used to say "Best 1 of 5", "Worst 1 of 5", etc.
+
+        Returns:
+            The heading section for reports formatted as text.
         """
         prefix = self.prefixes[(rank // self.n_indices)]
         rank = rank % self.n_indices
         return [f"\t{prefix}{rank + 1} of {self.n_indices}\n\n"]
 
     def make_dict(self, rank):
-        """Makes the heading section for reports formatted as dictionaries.
+        """Makes the heading section for reports formatted as a dictionary.
 
         Args:
             rank (int): Rank (1, 2, 3, ...) of the prediction. Used to say "Best 1 of 5", "Worst 1 of 5", etc.
+
+        Returns:
+            The heading section for reports formatted as a dictionary.
         """
         prefix = self.prefixes[(rank // self.n_indices)]
         rank = rank % self.n_indices
@@ -616,6 +616,9 @@ class _Heading(_SectionMaker):
 
         Args:
             rank (int): Rank (1, 2, 3, ...) of the prediction. Used to say "Best 1 of 5", "Worst 1 of 5", etc.
+
+        Returns:
+            The heading section for reports formatted as a dictionary.
         """
         return self.make_dict(rank)
 
@@ -640,6 +643,9 @@ class _ClassificationPredictedValues(_SectionMaker):
             scores (np.ndarray): Scores on the entire dataset.
             dataframe_index (pd.Series): pandas index for the entire dataset. Used to display the index in the data
                 each explanation belongs to.
+
+        Returns:
+            The predicted values section for classification problem best/worst reports formatted as text.
         """
         pred_value = [
             f"{col_name}: {pred}"
@@ -693,6 +699,9 @@ class _RegressionPredictedValues(_SectionMaker):
             scores (pd.Series): Scores on the entire dataset.
             dataframe_index (pd.Series): pandas index for the entire dataset. Used to display the index in the data
                 each explanation belongs to.
+
+        Returns:
+            The predicted values section for regression problem best/worst reports formatted as text.
         """
         return [
             f"\t\tPredicted Value: {round(y_pred.iloc[index], 3)}\n",
@@ -738,6 +747,9 @@ class _SHAPTable(_SectionMaker):
             pipeline (PipelineBase): The pipeline to explain.
             pipeline_features (pd.DataFrame): The dataframe of features created by the pipeline.
             input_features (pd.Dataframe): The dataframe of features passed to the pipeline.
+
+        Returns:
+            The SHAP table section for reports formatted as text.
         """
         table = _make_single_prediction_shap_table(
             pipeline,
@@ -803,7 +815,7 @@ class _ReportMaker:
         """Make a prediction explanation report that is formatted as text.
 
         Args:
-           data (_ReportData): Data passed in by the user.
+            data (_ReportData): Data passed in by the user.
 
         Returns:
              str
