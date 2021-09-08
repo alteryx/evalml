@@ -2,6 +2,23 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added label encoder to ``XGBoostClassifier`` to remove the warning :pr:`2701`
+        * Set ``eval_metric`` to ``logloss`` for ``XGBoostClassifier`` :pr:`2741`
+        * Added support for ``woodwork`` versions ``0.7.0`` and ``0.7.1`` :pr:`2743`
+    * Fixes
+    * Changes
+    * Documentation Changes
+        * Specified installation steps for Prophet :pr:`2713`
+        * Added documentation for data exploration on data check actions :pr:`2696` 
+    * Testing Changes
+        * Fixed flaky ``TargetDistributionDataCheck`` test for very_lognormal distribution :pr:`2748`
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.32.0 Aug. 31, 2021**
+    * Enhancements
         * Allow string for ``engine`` parameter for ``AutoMLSearch``:pr:`2667`
         * Add ``ProphetRegressor`` to AutoML :pr:`2619`
         * Integrated ``DefaultAlgorithm`` into ``AutoMLSearch`` :pr:`2634`
@@ -26,6 +43,7 @@ Release Notes
         * Added ``training_data`` and ``training_target`` as optional parameters to ``explain_predictions`` and ``explain_predictions_best_worst`` to support time series pipelines :pr:`2697`
         * Changed time series pipeline predictions to no longer output series/dataframes padded with NaNs. A prediction will be returned for every row in the `X` input :pr:`2697`
     * Documentation Changes
+        * Added user guide documentation for using ``ComponentGraph`` and added ``ComponentGraph`` to API reference :pr:`2673`
         * Updated documentation to make parallelization of AutoML clearer :pr:`2667`
         * Added a user guide entry for time series modelling :pr:`2697`
     * Testing Changes
