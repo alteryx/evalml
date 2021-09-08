@@ -8,6 +8,7 @@ Release Notes
     * Fixes
         * Fixed bug where ``_catch_warnings`` assumed all warnings were ``PipelineNotUsed`` :pr:`2753`
         * Fixed bug where ``Imputer.transform`` would erase ww typing information prior to handing data to the ``SimpleImputer`` :pr:`2752`
+        * Fixed bug where ``Oversampler`` could not be copied :pr:`2755`
     * Changes
     * Documentation Changes
         * Specified installation steps for Prophet :pr:`2713`
