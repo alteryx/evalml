@@ -6,6 +6,7 @@ Release Notes
         * Set ``eval_metric`` to ``logloss`` for ``XGBoostClassifier`` :pr:`2741`
         * Added support for ``woodwork`` versions ``0.7.0`` and ``0.7.1`` :pr:`2743`
     * Fixes
+        * Fixed bug where ``_catch_warnings`` assumed all warnings were ``PipelineNotUsed`` :pr:`2753`
     * Changes
     * Documentation Changes
         * Specified installation steps for Prophet :pr:`2713`
