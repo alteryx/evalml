@@ -347,7 +347,7 @@ def test_pipeline_fit_raises(verbose, AutoMLTestEnv, X_y_binary, caplog):
     ):
         automl.search()
     out = caplog.text
-    "Exception during automl search" in out
+    assert "Exception during automl search" in out
     pipeline_results = automl.results.get("pipeline_results", {})
     assert len(pipeline_results) == 1
 

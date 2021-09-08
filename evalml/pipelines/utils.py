@@ -150,7 +150,7 @@ def _get_preprocessing_components(
             pp_components.append(sampler_components[sampler_name])
         except ImportError:
             logger.warning(
-                f"Could not import imblearn.over_sampling, so defaulting to use Undersampler"
+                "Could not import imblearn.over_sampling, so defaulting to use Undersampler"
             )
             pp_components.append(Undersampler)
 
