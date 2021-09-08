@@ -142,6 +142,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
         Arguments:
             X (pd.DataFrame): Input data to the pipeline to transform.
+            y (pd.Series): Targets corresponding to the pipeline targets.
+            X_train (pd.DataFrame): Training data used to generate generates from past observations.
+            y_train (pd.Series): Training targets used to generate features from past observations.
 
         Returns:
             pd.DataFrame: New transformed features.
@@ -196,6 +199,15 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         )
 
     def predict(self, X, objective=None, X_train=None, y_train=None):
+        """Predict on future data where target is not known.
+
+        Arguments:
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
+            objective (str, ObjectiveBase): Used in classification problems to threshold the predictions.
+            objective (Object or string): The objective to use to make predictions.
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
+        """
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         if self.estimator is None:
             raise ValueError(

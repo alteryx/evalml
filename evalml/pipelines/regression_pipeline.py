@@ -46,6 +46,8 @@ class RegressionPipeline(PipelineBase):
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
             y (pd.Series, or np.ndarray): True values of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             dict: Ordered dictionary of objective scores

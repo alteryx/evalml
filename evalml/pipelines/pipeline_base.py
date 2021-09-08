@@ -252,6 +252,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         Arguments:
             X (pd.DataFrame): Input data to the pipeline to transform.
+            y (pd.Series or None): Targets corresponding to X. optional.
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Only used for time series.
+            y_train (pd.Series or None): Training labels.  Only used for time series.
 
         Returns:
             pd.DataFrame: New transformed features.
@@ -294,6 +297,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Arguments:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
             objective (Object or string): The objective to use to make predictions.
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             pd.Series: Predicted values.
@@ -311,6 +316,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series, np.ndarray): True labels of length [n_samples].
             objectives (list): Non-empty list of objectives to score on.
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             dict: Ordered dictionary of objective scores.

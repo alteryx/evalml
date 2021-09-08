@@ -13,6 +13,7 @@ class TimeSeriesBaselineEstimator(Estimator):
 
     Arguments:
         gap (int): Gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period. Defaults to 1.
+        forecast_horizon (int): Number of time steps the model is expected to predict.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 

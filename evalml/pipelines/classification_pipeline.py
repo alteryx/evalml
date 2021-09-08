@@ -95,6 +95,8 @@ class ClassificationPipeline(PipelineBase):
         Arguments:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             pd.Series: Estimated labels
@@ -110,6 +112,8 @@ class ClassificationPipeline(PipelineBase):
 
         Arguments:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             pd.DataFrame: Probability estimates
@@ -135,6 +139,8 @@ class ClassificationPipeline(PipelineBase):
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
             y (pd.Series, or np.ndarray): True labels of length [n_samples]
             objectives (list): List of objectives to score
+            X_train (pd.DataFrame or np.ndarray): Training data. Ignored. Only used for time series.
+            y_train (pd.Series): Training labels. Ignored. Only used for time series.
 
         Returns:
             dict: Ordered dictionary of objective scores

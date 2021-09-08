@@ -59,12 +59,16 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         Arguments:
             X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
             y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples]
-            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features]
             y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
 
         Returns:
-            pd.Series: Estimated probabilities
+            pd.Series: Estimated probabilities.
         """
+        if self.estimator is None:
+            raise ValueError(
+                "Cannot call predict_proba_in_sample() on a component graph because the final component is not an Estimator."
+            )
         y_holdout = self._encode_targets(y_holdout)
         y_train = self._encode_targets(y_train)
         features = self.compute_estimator_features(
@@ -84,14 +88,14 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """Predict on future data where the target is known, e.g. cross validation.
 
         Arguments:
-            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
-            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples]
-            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
-            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
+            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features].
+            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples].
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features].
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
             objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
 
         Returns:
-            pd.Series: Estimated labels
+            pd.Series: Estimated labels.
         """
         if self.estimator is None:
             raise ValueError(
@@ -116,7 +120,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
 
         Arguments:
             X (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
-            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features]
             y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
 
         Returns:
@@ -149,7 +153,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series): True labels of length [n_samples].
             objectives (list): Non-empty list of objectives to score on.
-            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features]
             y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
 
         Returns:

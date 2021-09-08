@@ -57,6 +57,8 @@ class BinaryClassificationPipeline(
 
         Arguments:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             pd.Series: Probability estimates

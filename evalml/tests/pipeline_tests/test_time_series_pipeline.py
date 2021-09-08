@@ -976,22 +976,24 @@ def test_ts_pipeline_predict_without_final_estimator(
         },
     )
     pipeline.fit(X_train, y_train)
+    msg = "Cannot call {method} on a component graph because the final component is not an Estimator."
     if is_classification(problem_type):
         with pytest.raises(
-            ValueError,
-            match=re.escape(
-                "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
-            ),
+            ValueError, match=re.escape(msg.format(method="predict_proba()"))
         ):
             pipeline.predict_proba(X_validation, X_train, y_train)
+        with pytest.raises(
+            ValueError, match=re.escape(msg.format(method="predict_proba_in_sample()"))
+        ):
+            pipeline.predict_proba_in_sample(X_validation, None, X_train, y_train)
+
+    with pytest.raises(ValueError, match=re.escape(msg.format(method="predict()"))):
+        pipeline.predict(X_validation, None, X_train, y_train)
 
     with pytest.raises(
-        ValueError,
-        match=re.escape(
-            "Cannot call predict() on a component graph because the final component is not an Estimator."
-        ),
+        ValueError, match=re.escape(msg.format(method="predict_in_sample()"))
     ):
-        pipeline.predict(X_validation, None, X_train, y_train)
+        pipeline.predict_in_sample(X_validation, None, X_train, y_train)
 
 
 @patch("evalml.pipelines.components.Imputer.transform")

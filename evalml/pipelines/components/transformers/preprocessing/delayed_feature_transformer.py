@@ -12,6 +12,7 @@ class DelayedFeatureTransformer(Transformer):
     Arguments:
         date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
         max_delay (int): Maximum number of time units to delay each feature. Defaults to 2.
+        forecast_horizon (int): The number of time periods the pipeline is expected to forecast.
         delay_features (bool): Whether to delay the input features. Defaults to True.
         delay_target (bool): Whether to delay the target. Defaults to True.
         gap (int): The number of time units between when the features are collected and
