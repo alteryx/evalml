@@ -47,6 +47,7 @@ def test_all_strategies():
             "D": pd.Series(["a", "a", "b", np.nan]),
         }
     )
+    X.ww.init(logical_types={"D": "categorical"})
 
     X_expected = pd.DataFrame(
         {
@@ -91,7 +92,14 @@ def test_fit_transform():
 def test_non_numeric_errors(non_numeric_df):
     # test col with all strings
     X = non_numeric_df
-
+    X.ww.init(
+        logical_types={
+            "A": "categorical",
+            "B": "categorical",
+            "C": "categorical",
+            "D": "categorical",
+        }
+    )
     # mean with all strings
     strategies = {"A": {"impute_strategy": "mean"}}
     with pytest.raises(
@@ -120,8 +128,15 @@ def test_non_numeric_errors(non_numeric_df):
 
 
 def test_non_numeric_valid(non_numeric_df):
-    X = non_numeric_df
-
+    X = non_numeric_df.copy()
+    X.ww.init(
+        logical_types={
+            "A": "categorical",
+            "B": "categorical",
+            "C": "categorical",
+            "D": "categorical",
+        }
+    )
     # most frequent with all strings
     strategies = {"C": {"impute_strategy": "most_frequent"}}
     transformer = PerColumnImputer(impute_strategies=strategies)
@@ -138,10 +153,19 @@ def test_non_numeric_valid(non_numeric_df):
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t)
 
+    X = non_numeric_df.copy()
     # constant with all strings
     strategies = {"D": {"impute_strategy": "constant", "fill_value": 100}}
     transformer = PerColumnImputer(impute_strategies=strategies)
 
+    X.ww.init(
+        logical_types={
+            "A": "categorical",
+            "B": "categorical",
+            "C": "categorical",
+            "D": "categorical",
+        }
+    )
     X_expected = pd.DataFrame(
         [
             ["a", "a", "a", "a"],

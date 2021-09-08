@@ -20,6 +20,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
+from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -135,15 +136,15 @@ def test_partial_dependence_with_non_numeric_columns(
 ):
     X = pd.DataFrame(
         {
-            "numeric": [1, 2, 3, 0],
-            "also numeric": [2, 3, 4, 1],
-            "string": ["a", "b", "a", "c"],
-            "also string": ["c", "b", "a", "d"],
+            "numeric": [1, 2, 3, 0] * 4,
+            "also numeric": [2, 3, 4, 1] * 4,
+            "string": ["a", "b", "a", "c"] * 4,
+            "also string": ["c", "b", "a", "c"] * 4,
         }
     )
     if data_type == "ww":
         X.ww.init()
-    y = [0, 0.2, 1.4, 1]
+    y = [0, 0.2, 1.4, 1] * 4
     pipeline = linear_regression_pipeline_class(
         parameters={"Linear Regressor": {"n_jobs": 1}}
     )
@@ -184,11 +185,11 @@ def test_partial_dependence_catboost(
 
         if problem_type == ProblemTypes.BINARY:
             X, y = X_y_binary
-            y_small = ["a", "b", "a"]
+            y_small = ["a", "b", "a"] * 5
             pipeline_class = BinaryClassificationPipeline
         else:
             X, y = X_y_multi
-            y_small = ["a", "b", "c"]
+            y_small = ["a", "b", "c"] * 5
             pipeline_class = MulticlassClassificationPipeline
 
         pipeline = pipeline_class(
@@ -203,10 +204,10 @@ def test_partial_dependence_catboost(
         # test that CatBoost can natively handle non-numerical columns as feature passed to partial_dependence
         X = pd.DataFrame(
             {
-                "numeric": [1, 2, 3],
-                "also numeric": [2, 3, 4],
-                "string": ["a", "b", "c"],
-                "also string": ["c", "b", "a"],
+                "numeric": [1, 2, 3] * 5,
+                "also numeric": [2, 3, 4] * 5,
+                "string": ["a", "b", "c"] * 5,
+                "also string": ["c", "b", "a"] * 5,
             }
         )
         pipeline = pipeline_class(
@@ -525,6 +526,29 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
     assert len(ind_preds) == 5
     for ind_df in ind_preds:
         assert ind_df.shape == (3, 3)
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
+def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regression):
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        input_pipelines = [
+            BinaryClassificationPipeline(["Random Forest Classifier"]),
+            BinaryClassificationPipeline(["Elastic Net Classifier"]),
+        ]
+    else:
+        X, y = X_y_regression
+        input_pipelines = [
+            RegressionPipeline(["Random Forest Regressor"]),
+            RegressionPipeline(["Elastic Net Regressor"]),
+        ]
+    pipeline = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines, problem_type=problem_type
+    )
+    pipeline.fit(X, y)
+    part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
+    check_partial_dependence_dataframe(pipeline, part_dep)
+    assert not part_dep.isnull().all().all()
 
 
 def test_graph_partial_dependence(breast_cancer_local, test_pipeline):

@@ -23,14 +23,6 @@ pip install evalml
 ```
 ### Add-ons
 
-#### Time Series support with Facebook's Prophet
-
-To support the `Prophet` time series estimator, be sure to install it as an extra requirement. Please note that this may take a few minutes.
-Prophet is currently only supported via pip installation in EvalML.
-```shell
-pip install evalml[prophet]
-```
-
 #### Update checker
 
 Receive automatic notifications of new EvalML releases

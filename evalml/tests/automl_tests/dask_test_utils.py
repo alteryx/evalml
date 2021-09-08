@@ -117,7 +117,7 @@ class DaskPipelineSlow(BinaryClassificationPipeline):
     def clone(self):
         return self.__class__(self.parameters, random_seed=self.random_seed)
 
-    @delayed(15)
+    @delayed(2)
     def fit(self, X, y):
         super().fit(X, y)
 

@@ -6,10 +6,12 @@ import time
 import traceback
 import warnings
 from collections import defaultdict
+from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 
 import cloudpickle
 import numpy as np
 import pandas as pd
+from dask import distributed as dd
 from sklearn.model_selection import BaseCrossValidator
 
 from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
@@ -17,6 +19,8 @@ from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
+from evalml.automl.engine.cf_engine import CFClient, CFEngine
+from evalml.automl.engine.dask_engine import DaskEngine
 from evalml.automl.utils import (
     AutoMLConfig,
     check_all_pipeline_names_unique,
@@ -66,6 +70,39 @@ from evalml.utils.logger import (
 )
 
 logger = get_logger(__file__)
+
+
+def build_engine_from_str(engine_str):
+    """Function that converts a convenience string for an parallel engine type and returns an instance of that engine.
+
+    Args:
+        engine_str (str): String representing the requested engine.
+
+    Returns:
+        (EngineBase): Instance of the requested engine.
+
+    """
+    valid_engines = [
+        "sequential",
+        "cf_threaded",
+        "cf_process",
+        "dask_threaded",
+        "dask_process",
+    ]
+    if engine_str not in valid_engines:
+        raise ValueError(
+            f"'{engine_str}' is not a valid engine, please choose from {valid_engines}"
+        )
+    elif engine_str == "sequential":
+        return SequentialEngine()
+    elif engine_str == "cf_threaded":
+        return CFEngine(CFClient(ThreadPoolExecutor()))
+    elif engine_str == "cf_process":
+        return CFEngine(CFClient(ProcessPoolExecutor()))
+    elif engine_str == "dask_threaded":
+        return DaskEngine(cluster=dd.LocalCluster(processes=False))
+    elif engine_str == "dask_process":
+        return DaskEngine(cluster=dd.LocalCluster(processes=True))
 
 
 def search(
@@ -360,8 +397,9 @@ class AutoMLSearch:
 
         _automl_algorithm (str): The automl algorithm to use. Currently the two choices are 'iterative' and 'default'. Defaults to `iterative`.
 
-        engine (EngineBase or None): The engine instance used to evaluate pipelines. If None, a SequentialEngine will
-            be used.
+        engine (EngineBase or str): The engine instance used to evaluate pipelines. Dask or concurrent.futures engines can also
+            be chosen by providing a string from the list ["sequential", "cf_threaded", "cf_process", "dask_threaded", "dask_process"].
+            If a parallel engine is selected this way, the maximum amount of parallelism, as determined by the engine, will be used. Defaults to "sequential".
     """
 
     _MAX_NAME_LEN = 40
@@ -399,7 +437,7 @@ class AutoMLSearch:
         _ensembling_split_size=0.2,
         _pipelines_per_batch=5,
         _automl_algorithm="iterative",
-        engine=None,
+        engine="sequential",
     ):
         if X_train is None:
             raise ValueError(
@@ -681,6 +719,7 @@ class AutoMLSearch:
             len(self.X_train.ww.select("natural_language", return_schema=True).columns)
             > 0
         )
+
         if run_ensembling and len(self.allowed_pipelines) == 1:
             logger.warning(
                 "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
@@ -734,10 +773,14 @@ class AutoMLSearch:
                     + (self._pipelines_per_batch * (self.max_batches - 1))
                 )
 
-        if not engine:
-            self._engine = SequentialEngine()
-        else:
+        if isinstance(engine, str):
+            self._engine = build_engine_from_str(engine)
+        elif isinstance(engine, (DaskEngine, CFEngine)):
             self._engine = engine
+        else:
+            raise TypeError(
+                "Invalid type provided for 'engine'.  Requires string, DaskEngine instance, or CFEngine instance."
+            )
 
         self.automl_config = AutoMLConfig(
             self.data_splitter,
@@ -788,6 +831,10 @@ class AutoMLSearch:
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")
+
+    def close_engine(self):
+        """Function to explicitly close the engine, client, parallel resources."""
+        self._engine.close()
 
     def _catch_warnings(self, warning_list):
         if len(warning_list) == len(self.allowed_pipelines) and len(warning_list) > 0:

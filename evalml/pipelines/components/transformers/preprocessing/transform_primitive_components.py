@@ -74,20 +74,13 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
 
         es = self._make_entity_set(X_ww)
         features = ft.calculate_feature_matrix(features=self._features, entityset=es)
-
         features.set_index(X_ww.index, inplace=True)
 
         X_ww = X_ww.ww.drop(self._columns)
+        features.ww.init(logical_types={col_: "categorical" for col_ in features})
         for col in features:
             X_ww.ww[col] = features[col]
 
-        all_created_columns = self._get_feature_provenance().values()
-        to_categorical = {
-            col: "Categorical"
-            for feature_list in all_created_columns
-            for col in feature_list
-        }
-        X_ww.ww.set_types(to_categorical)
         return X_ww
 
     @staticmethod

@@ -99,7 +99,7 @@ class TargetDistributionDataCheck(DataCheck):
 
         if log_detected:
             details = {
-                "shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 2)}/{round(shapiro_test_og.pvalue, 3)}"
+                "shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 1)}/{round(shapiro_test_og.pvalue, 3)}"
             }
             results["warnings"].append(
                 DataCheckWarning(
