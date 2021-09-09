@@ -249,11 +249,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             pipeline_dict.update({"components": component_dict})
             return pipeline_dict
 
-    def compute_estimator_features(self, X, y=None):
+    def compute_estimator_features(self, X, y=None, X_train=None, y_train=None):
         """Transforms the data by applying all pre-processing components.
 
         Arguments:
             X (pd.DataFrame): Input data to the pipeline to transform.
+            y (pd.Series or None): Targets corresponding to X. optional.
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Only used for time series.
+            y_train (pd.Series or None): Training labels.  Only used for time series.
 
         Returns:
             pd.DataFrame: New transformed features.
@@ -290,12 +293,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         return self.component_graph.transform(X, y)
 
-    def predict(self, X, objective=None):
+    def predict(self, X, objective=None, X_train=None, y_train=None):
         """Make predictions using selected features.
 
         Arguments:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
             objective (Object or string): The objective to use to make predictions.
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             pd.Series: Predicted values.
@@ -306,13 +311,15 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return infer_feature_types(predictions)
 
     @abstractmethod
-    def score(self, X, y, objectives):
+    def score(self, X, y, objectives, X_train=None, y_train=None):
         """Evaluate model performance on current and additional objectives.
 
         Arguments:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series, np.ndarray): True labels of length [n_samples].
             objectives (list): Non-empty list of objectives to score on.
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             dict: Ordered dictionary of objective scores.
