@@ -126,4 +126,5 @@ class SequentialEngine(EngineBase):
         return computation
 
     def close(self):
+        """No-op."""
         pass

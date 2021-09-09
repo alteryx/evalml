@@ -38,6 +38,7 @@ class CFClient:
 
     @property
     def is_closed(self):
+        """Property that determines whether the Engine's Client's resources are closed."""
         if isinstance(self.pool, ProcessPoolExecutor):
             return self.pool._shutdown_thread
         elif isinstance(self.pool, ThreadPoolExecutor):

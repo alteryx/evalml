@@ -67,9 +67,11 @@ class DaskEngine(EngineBase):
         self._data_futures_cache = {}
 
     def __enter__(self):
+        """Enter runtime context."""
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        """Exit runtime context."""
         self.close()
 
     def send_data_to_cluster(self, X, y):

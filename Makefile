@@ -8,10 +8,11 @@ clean:
 
 .PHONY: lint
 lint:
-	flake8 evalml && isort --check-only evalml && python docs/notebook_version_standardizer.py check-versions
-	pydocstyle evalml/ --convention=google --add-ignore=D107 --add-select=D400 --match-dir='^(?!(tests)).*'
-	darglint evalml/
+	isort --check-only evalml
+	python docs/notebook_version_standardizer.py check-versions
 	black evalml -t py39 --check
+	pydocstyle evalml/ --convention=google --add-ignore=D107 --add-select=D400 --match-dir='^(?!(tests)).*'
+	find evalml -type f -not -path "evalml/tests/*" -a -name "*.py" | xargs flake8
 
 .PHONY: lint-fix
 lint-fix:

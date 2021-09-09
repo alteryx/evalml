@@ -319,8 +319,8 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     Args:
         y_true (pd.Series or np.ndarray): True labels.
         y_pred_proba (pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
-        custom_class_names (list): If not None, custom labels for classes. Default None.
-        title_addition (str: if not None, append to plot title. Default None.
+        custom_class_names (list): If not None, custom labels for classes. Defaults to None.
+        title_addition (str): if not None, append to plot title. Defaults to None.
 
     Returns:
         plotly.Figure representing the ROC plot generated.
@@ -379,14 +379,17 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
     """Generate a bar graph of the pipeline's permutation importance.
 
     Args:
-        pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame): The input data used to score and compute permutation importance
-        y (pd.Series): The target data
-        objective (str, ObjectiveBase): Objective to score on
+        pipeline (PipelineBase or subclass): Fitted pipeline.
+        X (pd.DataFrame): The input data used to score and compute permutation importance.
+        y (pd.Series): The target data.
+        objective (str, ObjectiveBase): Objective to score on.
         importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to zero.
 
     Returns:
         plotly.Figure, a bar graph showing features and their respective permutation importance.
+
+    Raises:
+        ValueError: If importance_threshold is not greater than or equal to 0.
     """
     go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
@@ -438,14 +441,18 @@ def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     """Compute objective score as a function of potential binary classification decision thresholds for a fitted binary classification pipeline.
 
     Args:
-        pipeline (BinaryClassificationPipeline obj): Fitted binary classification pipeline
-        X (pd.DataFrame): The input data used to compute objective score
-        y (pd.Series): The target labels
-        objective (ObjectiveBase obj, str): Objective used to score
-        steps (int): Number of intervals to divide and calculate objective score at
+        pipeline (BinaryClassificationPipeline obj): Fitted binary classification pipeline.
+        X (pd.DataFrame): The input data used to compute objective score.
+        y (pd.Series): The target labels.
+        objective (ObjectiveBase obj, str): Objective used to score.
+        steps (int): Number of intervals to divide and calculate objective score at.
 
     Returns:
-        pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
+        pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold.
+
+    Raises:
+        ValueError: If objective is not a binary classification objective.
+        ValueError: If objective's `score_needs_proba` is not False.
     """
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(ProblemTypes.BINARY):
@@ -470,14 +477,14 @@ def graph_binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
     """Generate a plot graphing objective score vs. decision thresholds for a fitted binary classification pipeline.
 
     Args:
-        pipeline (PipelineBase or subclass): Fitted pipeline
-        X (pd.DataFrame): The input data used to score and compute scores
-        y (pd.Series): The target labels
-        objective (ObjectiveBase obj, str): Objective used to score, shown on the y-axis of the graph
-        steps (int): Number of intervals to divide and calculate objective score at
+        pipeline (PipelineBase or subclass): Fitted pipeline.
+        X (pd.DataFrame): The input data used to score and compute scores.
+        y (pd.Series): The target labels.
+        objective (ObjectiveBase obj, str): Objective used to score, shown on the y-axis of the graph.
+        steps (int): Number of intervals to divide and calculate objective score at.
 
     Returns:
-        plotly.Figure representing the objective score vs. threshold graph generated
+        plotly.Figure representing the objective score vs. threshold graph generated.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
@@ -597,7 +604,7 @@ def partial_dependence(
             the grid but averaged over all of the samples in X.
 
     Returns:
-        pd.DataFrame, list[pd.DataFrame], or tuple(pd.DataFrame, list[pd.DataFrame]):
+        pd.DataFrame, list[pd.DataFrame], or tuple[pd.DataFrame, list[pd.DataFrame]]:
             When `kind='average'`: DataFrame with averaged predictions for all points in the grid averaged
             over all samples of X and the values used to calculate those predictions.
 
@@ -620,12 +627,14 @@ def partial_dependence(
             feature value pair.
 
     Raises:
-        PartialDependenceError: if the user provides a tuple of not exactly two features.
-        PartialDependenceError: if the provided pipeline isn't fitted.
-        PartialDependenceError: if the provided pipeline is a Baseline pipeline.
-        PartialDependenceError: if any of the features passed in are completely NaN
-        PartialDependenceError: if any of the features are low-variance. Defined as having one value occurring more than the upper
+        PartialDependenceError: If the user provides a tuple of not exactly two features.
+        PartialDependenceError: If the provided pipeline isn't fitted.
+        PartialDependenceError: If the provided pipeline is a Baseline pipeline.
+        PartialDependenceError: If any of the features passed in are completely NaN.
+        PartialDependenceError: If any of the features are low-variance. Defined as having one value occurring more than the upper
             percentile passed by the user. By default 95%.
+        ValueError: Error during call to scikit-learn's partial dependence method.
+        Exception: All other errors during calculation.
     """
     try:
         # Dynamically set the grid resolution to the maximum number of values
@@ -1189,13 +1198,16 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
         y_pred (pd.Series, or np.ndarray): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
                                  between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
-                                 Defaults to None
+                                 Defaults to None.
 
     Returns:
         pd.DataFrame with the following columns:
                 * `prediction`: Predicted values from regression model.
                 * `actual`: Real target values.
                 * `outlier`: Colors indicating which values are in the threshold for what is considered an outlier value.
+
+    Raises:
+        ValueError: If threshold is not positive.
     """
     if outlier_threshold and outlier_threshold <= 0:
         raise ValueError(
@@ -1228,10 +1240,13 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
         y_pred (pd.Series): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
                                  between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
-                                 Defaults to None
+                                 Defaults to None.
 
     Returns:
-        plotly.Figure representing the predicted vs. actual values graph
+        plotly.Figure representing the predicted vs. actual values graph.
+
+    Raises:
+        ValueError: If threshold is not positive.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
@@ -1310,7 +1325,11 @@ def decision_tree_data_from_estimator(estimator):
         estimator (ComponentBase): A fitted DecisionTree-based estimator.
 
     Returns:
-        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
+        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure.
+
+    Raises:
+        ValueError: If estimator is not a decision tree-based estimator.
+        NotFittedError: If estimator is not yet fitted.
     """
     if not estimator.model_family == ModelFamily.DECISION_TREE:
         raise ValueError(
@@ -1327,13 +1346,17 @@ def decision_tree_data_from_estimator(estimator):
 
 
 def decision_tree_data_from_pipeline(pipeline_):
-    """Return data for a fitted pipeline with  in a restructured format.
+    """Return data for a fitted pipeline with in a restructured format.
 
     Args:
         pipeline_ (PipelineBase): A pipeline with a DecisionTree-based estimator.
 
     Returns:
         OrderedDict: An OrderedDict of OrderedDicts describing a tree structure.
+
+    Raises:
+        ValueError: If input pipeline is not a decision tree model.
+        NotFittedError: If pipeline is not fitted.
     """
     if not pipeline_.model_family == ModelFamily.DECISION_TREE:
         raise ValueError(
@@ -1439,7 +1462,7 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
         dates (pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
-       pd.DataFrame: Predictions vs time.
+        pd.DataFrame: Predictions vs time.
     """
     dates = infer_feature_types(dates)
     y = infer_feature_types(y)
