@@ -9,7 +9,7 @@ Release Notes
         * Fixed bug where ``Imputer.transform`` would erase ww typing information prior to handing data to the ``SimpleImputer`` :pr:`2752`
         * Fixed bug where ``Oversampler`` could not be copied :pr:`2755`
     * Changes
-        * Deleted ``drop_nan_target_rows`` utility method :pr:`2737
+        * Deleted ``drop_nan_target_rows`` utility method :pr:`2737`
     * Documentation Changes
         * Specified installation steps for Prophet :pr:`2713`
         * Added documentation for data exploration on data check actions :pr:`2696` 

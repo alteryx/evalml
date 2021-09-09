@@ -15,7 +15,6 @@ from evalml.utils.gen_utils import (
     classproperty,
     convert_to_seconds,
     deprecate_arg,
-    drop_rows_with_nans,
     get_importable_subclasses,
     get_random_seed,
     import_or_raise,
