@@ -11,6 +11,7 @@ Release Notes
         * Fixed bug where ``Oversampler`` could not be copied :pr:`2755`
     * Changes
         * Removed default logging setup and debugging log file :pr:`2645`
+        * Changed the default n_jobs value for ``XGBoostClassifier`` and ``XGBoostRegressor`` to 12 :pr:``
     * Documentation Changes
         * Specified installation steps for Prophet :pr:`2713`
         * Added documentation for data exploration on data check actions :pr:`2696` 
