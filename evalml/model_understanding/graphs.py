@@ -1427,13 +1427,15 @@ def visualize_decision_tree(
     return source_obj
 
 
-def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
+def get_prediction_vs_actual_over_time_data(pipeline, X, y, X_train, y_train, dates):
     """Get the data needed for the prediction_vs_actual_over_time plot.
 
     Arguments:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
         X (pd.DataFrame): Features used to generate new predictions.
         y (pd.Series): Target values to compare predictions against.
+        X_train (pd.DataFrame): Data the pipeline was trained on.
+        y_train (pd.Series): Target values for training data.
         dates (pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
@@ -1441,8 +1443,7 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
     """
 
     dates = infer_feature_types(dates)
-    y = infer_feature_types(y)
-    prediction = pipeline.predict(X, y)
+    prediction = pipeline.predict_in_sample(X, y, X_train=X_train, y_train=y_train)
 
     return pd.DataFrame(
         {
@@ -1453,13 +1454,15 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
     )
 
 
-def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
+def graph_prediction_vs_actual_over_time(pipeline, X, y, X_train, y_train, dates):
     """Plot the target values and predictions against time on the x-axis.
 
     Arguments:
         pipeline (TimeSeriesRegressionPipeline): Fitted time series regression pipeline.
         X (pd.DataFrame): Features used to generate new predictions.
         y (pd.Series): Target values to compare predictions against.
+        X_train (pd.DataFrame): Data the pipeline was trained on.
+        y_train (pd.Series): Target values for training data.
         dates (pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
@@ -1475,7 +1478,9 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
             f"Received {str(pipeline.problem_type)}."
         )
 
-    data = get_prediction_vs_actual_over_time_data(pipeline, X, y, dates)
+    data = get_prediction_vs_actual_over_time_data(
+        pipeline, X, y, X_train, y_train, dates
+    )
 
     data = [
         _go.Scatter(
