@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -500,6 +502,23 @@ def test_imputer_bool_preserved():
         check_dtype=False,
     )
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {0: Boolean}
+
+
+def test_imputer_does_not_erase_ww_info():
+    df_train = pd.DataFrame({"a": [1, 2, 3, 2], "b": ["a", "b", "b", "c"]})
+    df_holdout = pd.DataFrame({"a": [2], "b": [None]})
+    df_train.ww.init(logical_types={"a": "Double", "b": "Categorical"})
+    df_holdout.ww.init(logical_types={"a": "Double", "b": "Categorical"})
+
+    imputer = Imputer()
+    imputer.fit(df_train, None)
+    # Would error out if ww got erased because `b` would be inferred as Unknown, then Double.
+    imputer.transform(df_holdout, None)
+
+    with patch("evalml.pipelines.components.SimpleImputer.transform") as mock_transform:
+        mock_transform.side_effect = [df_holdout[["a"]], df_train[["b"]].iloc[0]]
+        imputer.transform(df_holdout, None)
+    mock_transform.call_args[0][0].ww.schema == df_holdout.ww[["b"]].ww.schema
 
 
 @pytest.mark.parametrize(
