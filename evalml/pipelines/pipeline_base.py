@@ -1,5 +1,6 @@
 import copy
 import inspect
+import logging
 import os
 import sys
 import traceback
@@ -25,7 +26,6 @@ from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
 from evalml.utils import (
-    get_logger,
     import_or_raise,
     infer_feature_types,
     jupyter_check,
@@ -33,8 +33,9 @@ from evalml.utils import (
     log_title,
     safe_repr,
 )
+from evalml.utils.logger import get_logger
 
-logger = get_logger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class PipelineBase(ABC, metaclass=PipelineBaseMeta):
@@ -222,6 +223,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             dict: Dictionary of all component parameters if return_dict is True, else None
         """
+        logger = get_logger(f"{__name__}.describe")
         log_title(logger, self.name)
         logger.info("Problem Type: {}".format(self.problem_type))
         logger.info("Model Family: {}".format(str(self.model_family)))
