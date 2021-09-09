@@ -15,6 +15,9 @@ class PipelineBaseMeta(BaseMeta):
         Args:
             method (callable): Method to wrap.
 
+        Returns:
+            The wrapped method.
+
         Raises:
             PipelineNotYetFittedError: If pipeline is not yet fitted.
         """

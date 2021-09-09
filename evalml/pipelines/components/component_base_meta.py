@@ -12,8 +12,16 @@ class ComponentBaseMeta(BaseMeta):
     def check_for_fit(cls, method):
         """`check_for_fit` wraps a method that validates if `self._is_fitted` is `True`.
 
-        It raises an exception if `False` and calls and returns the
-        wrapped method if `True`.
+        It raises an exception if `False` and calls and returns the wrapped method if `True`.
+
+        Args:
+            method (callable): Method to wrap.
+
+        Returns:
+            The wrapped method.
+
+        Raises:
+            ComponentNotYetFittedError: If component is not yet fitted.
         """
 
         @wraps(method)

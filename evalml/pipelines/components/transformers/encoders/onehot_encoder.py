@@ -101,6 +101,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
         Returns:
             self
+
+        Raises:
+            ValueError: If encoding a column failed.
         """
         top_n = self.parameters["top_n"]
         X = infer_feature_types(X)
@@ -216,6 +219,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
 
         Returns:
             np.ndarray: The unique categories, in the same dtype as they were provided during fit.
+
+        Raises:
+            ValueError: If feature was not provided to one-hot encoder as a training feature.
         """
         try:
             index = self.features_to_encode.index(feature_name)

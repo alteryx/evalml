@@ -46,7 +46,7 @@ def confusion_matrix(y_true, y_predicted, normalize_method="true"):
 
     Args:
         y_true (pd.Series or np.ndarray): True binary labels.
-        y_pred (pd.Series or np.ndarray): Predictions from a binary classifier.
+        y_predicted (pd.Series or np.ndarray): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all', None}): Normalization method to use, if not None. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
 
     Returns:
@@ -73,6 +73,9 @@ def normalize_confusion_matrix(conf_mat, normalize_method="true"):
 
     Returns:
         pd.DataFrame: normalized version of the input confusion matrix. The column header represents the predicted labels while row header represents the actual labels.
+
+    Raises:
+        ValueError: If configuration is invalid, or if the sum of a given axis is zero and normalization by axis is specified.
     """
     conf_mat = infer_feature_types(conf_mat)
     col_names = conf_mat.columns
@@ -196,6 +199,9 @@ def precision_recall_curve(y_true, y_pred_proba, pos_label_idx=-1):
                   * `recall`: Recall values.
                   * `thresholds`: Threshold values used to produce the precision and recall.
                   * `auc_score`: The area under the ROC curve.
+
+    Raises:
+        NoPositiveLabelException: If predicted probabilities do not contain a column at the specified label.
     """
     y_true = infer_feature_types(y_true)
     y_pred_proba = infer_feature_types(y_pred_proba)
@@ -313,11 +319,14 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
     Args:
         y_true (pd.Series or np.ndarray): True labels.
         y_pred_proba (pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
-        custom_class_labels (list or None): If not None, custom labels for classes. Default None.
-        title_addition (str or None): if not None, append to plot title. Default None.
+        custom_class_names (list): If not None, custom labels for classes. Default None.
+        title_addition (str: if not None, append to plot title. Default None.
 
     Returns:
-        plotly.Figure representing the ROC plot generated
+        plotly.Figure representing the ROC plot generated.
+
+    Raises:
+        ValueError: If the number of custom class names does not match number of classes in the input data.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
@@ -583,12 +592,12 @@ def partial_dependence(
         grid_resolution (int): Number of samples of feature(s) for partial dependence plot.  If this value
             is less than the maximum number of categories present in categorical data within X, it will be
             set to the max number of categories + 1. Defaults to 100.
-        kind {'average', 'individual', 'both'}: The type of predictions to return. 'individual' will return the predictions for
+        kind ({'average', 'individual', 'both'}): The type of predictions to return. 'individual' will return the predictions for
             all of the points in the grid for each sample in X. 'average' will return the predictions for all of the points in
             the grid but averaged over all of the samples in X.
 
     Returns:
-        pd.DataFrame, list(pd.DataFrame), or tuple(pd.DataFrame, list(pd.DataFrame)):
+        pd.DataFrame, list[pd.DataFrame], or tuple(pd.DataFrame, list[pd.DataFrame]):
             When `kind='average'`: DataFrame with averaged predictions for all points in the grid averaged
             over all samples of X and the values used to calculate those predictions.
 
@@ -944,8 +953,8 @@ def graph_partial_dependence(
             the partial dependence for each class. This argument does not change behavior for regression or binary
             classification pipelines. For binary classification, the partial dependence for the positive label will
             always be displayed. Defaults to None.
-        grid_resolution (int): Number of samples of feature(s) for partial dependence plot
-        kind {'average', 'individual', 'both'}: Type of partial dependence to plot. 'average' creates a regular partial dependence
+        grid_resolution (int): Number of samples of feature(s) for partial dependence plot.
+        kind ({'average', 'individual', 'both'}): Type of partial dependence to plot. 'average' creates a regular partial dependence
              (PD) graph, 'individual' creates an individual conditional expectation (ICE) plot, and 'both' creates a
              single-figure PD and ICE plot. ICE plots can only be shown for one-way partial dependence plots.
 
@@ -1348,13 +1357,10 @@ def visualize_decision_tree(
 
     Args:
         estimator (ComponentBase): A fitted DecisionTree-based estimator.
-        max_depth (int, optional): The depth to which the tree should be displayed. If set to None (as by default),
-        tree is fully generated.
+        max_depth (int, optional): The depth to which the tree should be displayed. If set to None (as by default), tree is fully generated.
         rotate (bool, optional): Orient tree left to right rather than top-down.
-        filled (bool, optional): Paint nodes to indicate majority class for classification, extremity of values for
-        regression, or purity of node for multi-output.
-        filepath (str, optional): Path to where the graph should be saved. If set to None (as by default), the graph
-        will not be saved.
+        filled (bool, optional): Paint nodes to indicate majority class for classification, extremity of values for regression, or purity of node for multi-output.
+        filepath (str, optional): Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
 
     Returns:
         graphviz.Source: DOT object that can be directly displayed in Jupyter notebooks.
@@ -1433,7 +1439,7 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
         dates (pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
-       pd.DataFrame
+       pd.DataFrame: Predictions vs time.
     """
     dates = infer_feature_types(dates)
     y = infer_feature_types(y)
@@ -1552,9 +1558,13 @@ def t_sne(
         learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
             local minimum, increasing the learning rate may help.
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
+        **kwargs: Additional arbitrary arguments.
 
     Returns:
         np.ndarray (n_samples, n_components)
+
+    Raises:
+        ValueError: If specified parameters are not valid values.
     """
     if not isinstance(n_components, int) or not n_components > 0:
         raise ValueError(

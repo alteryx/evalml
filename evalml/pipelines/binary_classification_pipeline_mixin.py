@@ -8,10 +8,7 @@ class BinaryClassificationPipelineMixin:
 
     @property
     def threshold(self):
-        """Threshold used to make a prediction.
-
-        Defaults to None.
-        """
+        """Threshold used to make a prediction. Defaults to None."""
         return self._threshold
 
     @threshold.setter
@@ -48,10 +45,13 @@ class BinaryClassificationPipelineMixin:
         """Optimize the pipeline threshold given the objective to use. Only used for binary problems with objectives whose thresholds can be tuned.
 
         Args:
-            X (pd.DataFrame): Input features
-            y (pd.Series): Input target values
-            y_pred_proba (pd.Series): The predicted probabilities of the target outputted by the pipeline
+            X (pd.DataFrame): Input features.
+            y (pd.Series): Input target values.
+            y_pred_proba (pd.Series): The predicted probabilities of the target outputted by the pipeline.
             objective (ObjectiveBase): The objective to threshold with. Must have a tunable threshold.
+
+        Raises:
+            ValueError: If objective is not optimizable.
         """
         if self.can_tune_threshold_with_objective(objective):
             targets = self._encode_targets(y)

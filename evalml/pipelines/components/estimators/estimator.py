@@ -76,13 +76,13 @@ class Estimator(ComponentBase):
         """Make predictions using selected features.
 
         Args:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
 
         Returns:
             pd.Series: Predicted values.
 
         Raises:
-            AttributeError: If estimator does not have a predict method or a component_obj that implements predict.
+            MethodPropertyNotFoundError: If estimator does not have a predict method or a component_obj that implements predict.
         """
         try:
             X = infer_feature_types(X)
@@ -99,10 +99,13 @@ class Estimator(ComponentBase):
         """Make probability estimates for labels.
 
         Args:
-            X (pd.DataFrame, or np.ndarray): Features
+            X (pd.DataFrame): Features.
 
         Returns:
             pd.Series: Probability estimates.
+
+        Raises:
+            MethodPropertyNotFoundError: If estimator does not have a predict_proba method or a component_obj that implements predict_proba.
         """
         try:
             X = infer_feature_types(X)
@@ -119,6 +122,9 @@ class Estimator(ComponentBase):
 
         Returns:
             np.ndarray: Importance associated with each feature.
+
+        Raises:
+            MethodPropertyNotFoundError: If estimator does not have a feature_importance method or a component_obj that implements feature_importance.
         """
         try:
             return self._component_obj.feature_importances_

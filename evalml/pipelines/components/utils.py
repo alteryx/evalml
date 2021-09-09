@@ -110,6 +110,10 @@ def handle_component_class(component_class):
 
     Returns:
         ComponentBase
+
+    Raises:
+        ValueError: If input is not a valid component class.
+        MissingComponentError: If the component cannot be found.
     """
     if isinstance(component_class, ComponentBase) or (
         inspect.isclass(component_class) and issubclass(component_class, ComponentBase)
@@ -118,7 +122,7 @@ def handle_component_class(component_class):
     if not isinstance(component_class, str):
         raise ValueError(
             (
-                "component_graph may only contain str or ComponentBase subclasses, not '{}'"
+                "component_class may only contain str or ComponentBase subclasses, not '{}'"
             ).format(type(component_class))
         )
     component_classes = {component.name: component for component in all_components()}

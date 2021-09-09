@@ -233,11 +233,14 @@ def generate_pipeline_code(element):
     """Creates and returns a string that contains the Python imports and code required for running the EvalML pipeline.
 
     Args:
-        element (pipeline instance): The instance of the pipeline to generate string Python code
+        element (pipeline instance): The instance of the pipeline to generate string Python code.
 
     Returns:
         str: String representation of Python code that can be run separately in order to recreate the pipeline instance.
         Does not include code for custom component implementation.
+
+    Raises:
+        ValueError: If element is not a pipeline, or if the pipeline is nonlinear.
     """
     # hold the imports needed and add code to end
     code_strings = []

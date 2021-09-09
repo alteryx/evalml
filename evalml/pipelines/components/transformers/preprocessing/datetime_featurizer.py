@@ -157,8 +157,8 @@ class DateTimeFeaturizer(Transformer):
         """Gets the categories of each datetime feature.
 
         Returns:
-           dict: Dictionary, where each key-value pair is a column name and a dictionary
-           mapping the unique feature values to their integer encoding.
+            dict: Dictionary, where each key-value pair is a column name and a dictionary
+                mapping the unique feature values to their integer encoding.
         """
         return self._categories
 

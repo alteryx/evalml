@@ -22,9 +22,16 @@ def import_or_raise(library, error_msg=None, warning=False):
     """Attempts to import the requested library by name. If the import fails, raises an ImportError or warning.
 
     Args:
-        library (str): the name of the library
-        error_msg (str): error message to return if the import fails
-        warning (bool): if True, import_or_raise gives a warning instead of ImportError. Defaults to False.
+        library (str): The name of the library.
+        error_msg (str): Rrror message to return if the import fails.
+        warning (bool): If True, import_or_raise gives a warning instead of ImportError. Defaults to False.
+
+    Returns:
+        Returns the library if importing succeeded.
+
+    Raises:
+        ImportError: If attempting to import the library fails because the library is not installed.
+        Exception: If importing the library fails.
     """
     try:
         return importlib.import_module(library)
@@ -77,7 +84,13 @@ def get_random_state(seed):
     """Generates a numpy.random.RandomState instance using seed.
 
     Args:
-        seed (None, int, np.random.RandomState object): seed to use to generate numpy.random.RandomState. Must be between SEED_BOUNDS.min_bound and SEED_BOUNDS.max_bound, inclusive. Otherwise, an exception will be thrown.
+        seed (None, int, np.random.RandomState object): seed to use to generate numpy.random.RandomState. Must be between SEED_BOUNDS.min_bound and SEED_BOUNDS.max_bound, inclusive.
+
+    Raises:
+        ValueError: If the input seed is not within the acceptable range.
+
+    Returns:
+        A numpy.random.RandomState instance.
     """
     if isinstance(seed, (int, np.integer)) and (
         seed < SEED_BOUNDS.min_bound or SEED_BOUNDS.max_bound < seed
@@ -103,7 +116,10 @@ def get_random_seed(
         max_bound (None, int): if not default of None, will be max bound when generating seed (exclusive). Must be greater than min_bound.
 
     Returns:
-        int: seed for random number generator
+        int: Seed for random number generator
+
+    Raises:
+        ValueError: If boundaries are not valid.
     """
     if not min_bound < max_bound:
         raise ValueError(
@@ -298,6 +314,7 @@ def pad_with_nans(pd_data, num_to_pad):
 
     Args:
         pd_data (pd.DataFrame or pd.Series): Data to pad.
+        num_to_pad (int): Number of nans to pad.
 
     Returns:
         pd.DataFrame or pd.Series
@@ -347,7 +364,7 @@ def drop_rows_with_nans(*pd_data):
     """Drop rows that have any NaNs in all dataframes or series.
 
     Args:
-        *pd_data (sequence of pd.Series or pd.DataFrame or None)
+        *pd_data: sequence of pd.Series or pd.DataFrame or None
 
     Returns:
         list of pd.DataFrame or pd.Series or None

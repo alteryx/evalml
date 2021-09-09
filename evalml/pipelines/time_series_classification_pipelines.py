@@ -79,6 +79,9 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
 
         Returns:
             pd.Series: Predicted values.
+
+        Raises:
+            ValueError: If final component is not an Estimator.
         """
         if self.estimator is None:
             raise ValueError(
@@ -101,9 +104,13 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
 
         Args:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data.
 
         Returns:
             pd.DataFrame: Probability estimates.
+
+        Raises:
+            ValueError: If final component is not an Estimator.
         """
         if self.estimator is None:
             raise ValueError(

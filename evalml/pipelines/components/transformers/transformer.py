@@ -43,6 +43,9 @@ class Transformer(ComponentBase):
 
         Returns:
             pd.DataFrame: Transformed X
+
+        Raises:
+            MethodPropertyNotFoundError: If transformer does not have a transform method or a component_obj that implements transform.
         """
         X_ww = infer_feature_types(X)
         if y is not None:
@@ -62,11 +65,14 @@ class Transformer(ComponentBase):
         """Fits on X and transforms X.
 
         Args:
-            X (pd.DataFrame): Data to fit and transform
-            y (pd.Series): Target data
+            X (pd.DataFrame): Data to fit and transform.
+            y (pd.Series): Target data.
 
         Returns:
-            pd.DataFrame: Transformed X
+            pd.DataFrame: Transformed X.
+
+        Raises:
+            MethodPropertyNotFoundError: If transformer does not have a transform method or a component_obj that implements transform.
         """
         X_ww = infer_feature_types(X)
         if y is not None:

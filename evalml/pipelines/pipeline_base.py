@@ -430,6 +430,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         Raises:
             RuntimeError: If graphviz is not installed.
+            ValueError: If path is not writeable.
         """
         graphviz = import_or_raise(
             "graphviz", error_msg="Please install graphviz to visualize pipelines."
@@ -484,7 +485,10 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to zero.
 
         Returns:
-            plotly.Figure: A bar graph showing features and their corresponding importance
+            plotly.Figure: A bar graph showing features and their corresponding importance.
+
+        Raises:
+            ValueError: If importance threshold is not valid.
         """
         go = import_or_raise(
             "plotly.graph_objects",
@@ -695,7 +699,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Determine whether the threshold of a binary classification pipeline can be tuned.
 
         Args:
-             pipeline (PipelineBase): Binary classification pipeline.
              objective (ObjectiveBase): Primary AutoMLSearch objective.
 
         Returns:

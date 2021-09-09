@@ -79,6 +79,12 @@ def get_objective(objective, return_instance=False, **kwargs):
         ObjectiveBase if the parameter objective is of type ObjectiveBase. If objective is instead a valid
         objective name, function will return the class corresponding to that name. If return_instance is True,
         an instance of that objective will be returned.
+
+    Raises:
+        TypeError: If objective is None.
+        TypeError: If objective is not a string and not an instance of ObjectiveBase.
+        ObjectiveNotFoundError: If input objective is not a valid objective.
+        ObjectiveCreationError: If objective cannot be created properly.
     """
     if objective is None:
         raise TypeError("Objective parameter cannot be NoneType")

@@ -74,6 +74,9 @@ class SVMClassifier(Estimator):
         """Feature importance only works with linear kernels.
 
         If the kernel isn't linear, we return a numpy array of zeros.
+
+        Returns:
+            Feature importance of fitted SVM classifier or a numpy array of zeroes if the kernel is not linear.
         """
         if self._parameters["kernel"] != "linear":
             return np.zeros(self._component_obj.n_features_in_)

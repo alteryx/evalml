@@ -25,6 +25,9 @@ class TargetImputerMeta(ComponentBaseMeta):
 
         Raises:
             ComponentNotYetFittedError: If component is not fitted.
+
+        Returns:
+            The wrapped input method.
         """
 
         @wraps(method)

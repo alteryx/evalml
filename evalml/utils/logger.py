@@ -9,6 +9,9 @@ def get_logger(name):
 
     Args:
         name (str): Name of the logger to get.
+
+    Returns:
+        The logger object with the associated name.
     """
     logger = logging.getLogger(name)
     if not len(logger.handlers):

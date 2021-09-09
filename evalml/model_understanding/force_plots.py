@@ -14,7 +14,7 @@ def graph_force_plot(pipeline, rows_to_explain, training_data, y, matplotlib=Fal
 
     Args:
         pipeline (PipelineBase): The pipeline to generate the force plot for.
-        rows_to_explain (list(int)): A list of the indices indicating which of the rows of
+        rows_to_explain (list[int]): A list of the indices indicating which of the rows of
             the training_data to explain.
         training_data (pandas.DataFrame): The data used to train the pipeline.
         y (pandas.Series): The target data for the pipeline.

@@ -32,7 +32,11 @@ class SensitivityLowAlert(BinaryClassificationObjective):
         """Determine if an observation is high risk given an alert rate.
 
         Args:
-            ypred_proba (pd.Series): Predicted probabilities
+            ypred_proba (pd.Series): Predicted probabilities.
+            **kwargs: Additional abritrary parameters.
+
+        Returns:
+            pd.Series: Whether or not an observation is high risk given an alert rate.
         """
         ypred_proba = self._standardize_input_type(ypred_proba)
         if len(ypred_proba.unique()) == 1:
@@ -50,11 +54,12 @@ class SensitivityLowAlert(BinaryClassificationObjective):
         """Calculate sensitivity across all predictions, using the top alert_rate percent of observations as the predicted positive class.
 
         Args:
-            y_true (pd.Series): True labels
-            y_predicted (pd.Series): Predicted labels based on alert_rate
+            y_true (pd.Series): True labels.
+            y_predicted (pd.Series): Predicted labels based on alert_rate.
+            **kwargs: Additional abritrary parameters.
 
         Returns:
-            float: sensitivity using the observations with the top scores as the predicted positive class
+            float: sensitivity using the observations with the top scores as the predicted positive class.
         """
         y_true = self._standardize_input_type(y_true)
         y_predicted = self._standardize_input_type(y_predicted)

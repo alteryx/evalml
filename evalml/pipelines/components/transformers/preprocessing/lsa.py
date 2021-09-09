@@ -35,6 +35,8 @@ class LSA(TextTransformer):
             X (pd.DataFrame): The data to transform.
             y (pd.Series, optional): Ignored.
 
+        Returns:
+            self
         """
         X = infer_feature_types(X)
         self._text_columns = self._get_text_columns(X)

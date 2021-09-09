@@ -42,6 +42,9 @@ class FeatureSelector(Transformer):
 
         Returns:
             pd.DataFrame: Transformed X
+
+        Raises:
+            MethodPropertyNotFoundError: If feature selector does not have a transform method or a component_obj that implements transform
         """
         X_ww = infer_feature_types(X)
         self.input_feature_names = list(X_ww.columns.values)

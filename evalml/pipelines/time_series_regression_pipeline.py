@@ -37,6 +37,9 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
 
         Returns:
             pd.Series: Predicted values.
+
+        Raises:
+            ValueError: If final component is not an estimator.
         """
         if self.estimator is None:
             raise ValueError(

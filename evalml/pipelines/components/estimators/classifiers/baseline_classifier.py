@@ -51,6 +51,9 @@ class BaselineClassifier(Estimator):
 
         Returns:
             self
+
+        Raises:
+            ValueError: If y is None.
         """
         if y is None:
             raise ValueError("Cannot fit Baseline classifier if y is None")

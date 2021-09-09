@@ -9,10 +9,14 @@ def handle_problem_types(problem_type):
     """Handles problem_type by either returning the ProblemTypes or converting from a str.
 
     Args:
-        problem_type (str or ProblemTypes): Problem type that needs to be handled
+        problem_type (str or ProblemTypes): Problem type that needs to be handled.
 
     Returns:
-        ProblemTypes
+        ProblemTypes enum
+
+    Raises:
+        KeyError: If input is not a valid ProblemTypes enum value.
+        ValueError: If input is not a string or ProblemTypes object.
     """
     if isinstance(problem_type, str):
         try:
@@ -31,7 +35,7 @@ def detect_problem_type(y):
     """Determine the type of problem is being solved based on the targets (binary vs multiclass classification, regression) Ignores missing and null data.
 
     Args:
-        y (pd.Series): the target labels to predict
+        y (pd.Series): The target labels to predict.
 
     Returns:
         ProblemType: ProblemType Enum
@@ -40,6 +44,9 @@ def detect_problem_type(y):
         >>> y = pd.Series([0, 1, 0, 0, 0, 1, 1, 0, 0, 1, 1])
         >>> problem_type = detect_problem_type(y)
         >>> assert problem_type == ProblemTypes.BINARY
+
+    Raises:
+        ValueError: If the input has less than two classes.
     """
     y = pd.Series(y).dropna()
     num_classes = y.nunique()

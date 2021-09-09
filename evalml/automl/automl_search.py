@@ -128,9 +128,9 @@ def search(
         problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
             When set to 'auto', chooses:
-            - LogLossBinary for binary classification problems,
-            - LogLossMulticlass for multiclass classification problems, and
-            - R2 for regression problems.
+                - LogLossBinary for binary classification problems,
+                - LogLossMulticlass for multiclass classification problems, and
+                - R2 for regression problems.
         mode (str): mode for DefaultAlgorithm. There are two modes: fast and long, where fast is a subset of long. Please look at DefaultAlgorithm for more details.
         max_time (int, str): Maximum time to search for pipelines.
             This will not start a new pipeline search after the duration

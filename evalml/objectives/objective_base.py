@@ -76,10 +76,7 @@ class ObjectiveBase(ABC):
 
     @classproperty
     def positive_only(cls):
-        """If True, this objective is only valid for positive data.
-
-        Defaults to False.
-        """
+        """If True, this objective is only valid for positive data. Defaults to False."""
         return False
 
     def score(self, y_true, y_predicted, X=None, sample_weight=None):
@@ -128,11 +125,11 @@ class ObjectiveBase(ABC):
         """Validates the input based on a few simple checks.
 
         Args:
-            y_predicted (pd.Series, or pd.DataFrame): Predicted values of length [n_samples]
-            y_true (pd.Series): Actual class labels of length [n_samples]
+            y_predicted (pd.Series, or pd.DataFrame): Predicted values of length [n_samples].
+            y_true (pd.Series): Actual class labels of length [n_samples].
 
-        Returns:
-            None
+        Raises:
+            ValueError: If the inputs are malformed.
         """
         if y_predicted.shape[0] != y_true.shape[0]:
             raise ValueError(

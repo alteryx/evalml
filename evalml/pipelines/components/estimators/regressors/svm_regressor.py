@@ -58,6 +58,9 @@ class SVMRegressor(Estimator):
         """Feature importance of fitted SVM regresor.
 
         Only works with linear kernels. If the kernel isn't linear, we return a numpy array of zeros.
+
+        Returns:
+            The feature importance of the fitted SVM regressor, or an array of zeroes if the kernel is not linear.
         """
         if self._parameters["kernel"] != "linear":
             return np.zeros(self._component_obj.n_features_in_)

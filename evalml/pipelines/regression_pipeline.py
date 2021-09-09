@@ -31,6 +31,9 @@ class RegressionPipeline(PipelineBase):
 
         Returns:
             self
+
+        Raises:
+            ValueError: If the target is not numeric.
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)

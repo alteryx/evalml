@@ -20,6 +20,9 @@ class BinaryClassificationObjective(ObjectiveBase):
         This will be false for any objective that works directly with
         predicted probabilities, like log loss and AUC. Otherwise, it
         will be true.
+
+        Returns:
+            bool: Whether or not an objective can be optimized.
         """
         return not cls.score_needs_proba
 
@@ -32,7 +35,10 @@ class BinaryClassificationObjective(ObjectiveBase):
             X (pd.DataFrame, optional): Any extra columns that are needed from training data.
 
         Returns:
-            Optimal threshold for this objective
+            Optimal threshold for this objective.
+
+        Raises:
+            RuntimeError: If objective cannot be optimized.
         """
         ypred_proba = self._standardize_input_type(ypred_proba)
         y_true = self._standardize_input_type(y_true)

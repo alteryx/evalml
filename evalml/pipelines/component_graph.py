@@ -140,8 +140,14 @@ class ComponentGraph:
 
         Args:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                               An empty dictionary {} or None implies using all default values for component parameters. If a component
-                               in the component graph is already instantiated, it will not use any of its parameters defined in this dictionary.
+                An empty dictionary {} or None implies using all default values for component parameters. If a component
+                in the component graph is already instantiated, it will not use any of its parameters defined in this dictionary.
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If component graph is already instantiated or if a component errored while instantiating.
         """
         if self._is_instantiated:
             raise ValueError(
@@ -179,6 +185,9 @@ class ComponentGraph:
         Args:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
@@ -266,6 +275,9 @@ class ComponentGraph:
 
         Returns:
             pd.DataFrame: Transformed output.
+
+        Raises:
+            ValueError: If final component is not a Transformer.
         """
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
@@ -291,6 +303,9 @@ class ComponentGraph:
 
         Returns:
             pd.Series: Predicted values.
+
+        Raises:
+            ValueError: If final component is not an Estimator.
         """
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
@@ -499,7 +514,7 @@ class ComponentGraph:
             list[str]: List of inputs for the component to use.
 
         Raises:
-            KeyError: If the component is not in the graph.
+            ValueError: If the component is not in the graph.
         """
         try:
             component_info = self.component_dict[component_name]
@@ -736,6 +751,9 @@ class ComponentGraph:
 
         Args:
             y: (pd.Series): Final component features.
+
+        Returns:
+            pd.Series: The target with inverse transformation applied.
         """
         data_to_transform = infer_feature_types(y)
         current_component = self.compute_order[-1]

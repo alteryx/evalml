@@ -106,6 +106,9 @@ class PolynomialDetrender(TargetTransformer):
         Returns:
             tuple of pd.DataFrame, pd.Series: The first element are the input features returned without modification.
                 The second element is the target variable y with the trend added back.
+
+        Raises:
+            ValueError: If y is None.
         """
         if y is None:
             raise ValueError("y cannot be None for PolynomialDetrender!")

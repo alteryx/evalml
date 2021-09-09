@@ -77,8 +77,10 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def needs_fitting(self):
         """Returns boolean determining if component needs fitting before calling predict, predict_proba, transform, or feature_importances.
 
-        This can be overridden to False for components that do not need
-        to be fit or whose fit methods do nothing.
+        This can be overridden to False for components that do not need to be fit or whose fit methods do nothing.
+
+        Returns:
+            True.
         """
         return True
 
@@ -122,6 +124,9 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
 
         Returns:
             self
+
+        Raises:
+            MethodPropertyNotFoundError: If component does not have a fit method or a component_obj that implements fit.
         """
         X = infer_feature_types(X)
         if y is not None:

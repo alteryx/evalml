@@ -13,6 +13,7 @@ def handle_model_family(model_family):
 
     Raises:
         KeyError: If input is not a valid model family.
+        ValueError: If input is not a string or ModelFamily object.
     """
     if isinstance(model_family, str):
         try:

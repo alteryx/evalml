@@ -56,6 +56,9 @@ def infer_feature_types(data, feature_types=None):
 
     Returns:
         A Woodwork data structure where the data type of each column was either specified or inferred.
+
+    Raises:
+        ValueError: If there is a mismatch between the dataframe and the woodwork schema.
     """
     if isinstance(data, list):
         data = _list_to_pandas(data)
