@@ -10,9 +10,7 @@ from evalml.pipelines.components.component_base import ComponentBase
 from evalml.pipelines.components.estimators.estimator import Estimator
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.problem_types import ProblemTypes, handle_problem_types
-from evalml.utils import get_importable_subclasses, get_logger
-
-logger = get_logger(__file__)
+from evalml.utils import get_importable_subclasses
 
 
 def _all_estimators():
