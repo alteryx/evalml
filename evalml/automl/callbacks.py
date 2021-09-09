@@ -13,6 +13,15 @@ def raise_error_callback(exception, traceback, automl, **kwargs):
     """Raises the exception thrown by the AutoMLSearch object.
 
     Also logs the exception as an error.
+
+    Args:
+        exception: Exception to log and raise.
+        traceback: Exception traceback to log.
+        automl: AutoMLSearch object.
+        **kwargs: Other relevant keyword arguments to log.
+
+    Raises:
+        exception: Raises the input exception.
     """
     logger.error(f"AutoML search raised a fatal exception: {str(exception)}")
     logger.error("\n".join(traceback))
@@ -23,6 +32,12 @@ def log_error_callback(exception, traceback, automl, **kwargs):
     """Logs the exception thrown as an error.
 
     Will not throw. This is the default behavior for AutoMLSearch.
+
+    Args:
+        exception: Exception to log.
+        traceback: Exception traceback to log.
+        automl: AutoMLSearch object.
+        **kwargs: Other relevant keyword arguments to log.
     """
     fold_num = kwargs.get("fold_num")
     pipeline = kwargs.get("pipeline")

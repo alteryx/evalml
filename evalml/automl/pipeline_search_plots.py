@@ -101,6 +101,9 @@ class PipelineSearchPlots:
     def search_iteration_plot(self, interactive_plot=False):
         """Shows a plot of the best score at each iteration using data gathered during training.
 
+        Args:
+            interactive_plot (bool): Whether or not to show an interactive plot. Defaults to False.
+
         Returns:
             plot
         """

@@ -94,6 +94,10 @@ def calculate_permutation_importance_one_column(
 
     Returns:
         float: Mean feature importance scores over a number of shuffles.
+
+    Raises:
+        ValueError: If pipeline does not support fast permutation importance calculation.
+        ValueError: If precomputed_features is None.
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)

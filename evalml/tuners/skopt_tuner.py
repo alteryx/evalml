@@ -38,6 +38,10 @@ class SKOptTuner(Tuner):
 
         Returns:
             None
+
+        Raises:
+            Exception: If skopt tuner errors.
+            ParameterError: If skopt receives invalid parameters.
         """
         # skip adding nan scores
         if pd.isnull(score):

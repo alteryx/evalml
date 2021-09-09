@@ -81,6 +81,8 @@ def build_engine_from_str(engine_str):
     Returns:
         (EngineBase): Instance of the requested engine.
 
+    Raises:
+        ValueError: If engine_str is not a valid engine.
     """
     valid_engines = [
         "sequential",
@@ -119,41 +121,34 @@ def search(
     """Given data and configuration, run an automl search.
 
     This method will run EvalML's default suite of data checks. If the data checks produce errors, the data check results will be returned before running the automl search. In that case we recommend you alter your data to address these errors and try again.
-
     This method is provided for convenience. If you'd like more control over when each of these steps is run, consider making calls directly to the various pieces like the data checks and AutoMLSearch, instead of using this method.
 
     Args:
         X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
-
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
-
         problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
-
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
             When set to 'auto', chooses:
-
-            - LogLossBinary for binary classification problems,
-            - LogLossMulticlass for multiclass classification problems, and
-            - R2 for regression problems.
-
+              - LogLossBinary for binary classification problems,
+              - LogLossMulticlass for multiclass classification problems, and
+              - R2 for regression problems.
         mode (str): mode for DefaultAlgorithm. There are two modes: fast and long, where fast is a subset of long. Please look at DefaultAlgorithm for more details.
-
         max_time (int, str): Maximum time to search for pipelines.
             This will not start a new pipeline search after the duration
             has elapsed. If it is an integer, then the time will be in seconds.
             For strings, time can be specified as seconds, minutes, or hours.
-
         patience (int): Number of iterations without improvement to stop search early. Must be positive.
             If None, early stopping is disabled. Defaults to None.
-
         tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
             Only applicable if patience is not None. Defaults to None.
-
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
 
     Returns:
         (AutoMLSearch, dict): The automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
+
+    Raises:
+        ValueError: If search configuration is not valid.
     """
     X_train = infer_feature_types(X_train)
     y_train = infer_feature_types(y_train)
@@ -219,30 +214,26 @@ def search_iterative(
     """Given data and configuration, run an automl search.
 
     This method will run EvalML's default suite of data checks. If the data checks produce errors, the data check results will be returned before running the automl search. In that case we recommend you alter your data to address these errors and try again.
-
     This method is provided for convenience. If you'd like more control over when each of these steps is run, consider making calls directly to the various pieces like the data checks and AutoMLSearch, instead of using this method.
 
     Args:
         X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
-
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
-
         problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
-
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
             When set to 'auto', chooses:
-
             - LogLossBinary for binary classification problems,
             - LogLossMulticlass for multiclass classification problems, and
             - R2 for regression problems.
-
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
-        in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
-
-    Other keyword arguments which are provided will be passed to AutoMLSearch.
+            in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+        **kwargs: Other keyword arguments which are provided will be passed to AutoMLSearch.
 
     Returns:
         (AutoMLSearch, dict): the automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
+
+    Raises:
+        ValueError: If the search configuration is invalid.
     """
     X_train = infer_feature_types(X_train)
     y_train = infer_feature_types(y_train)
@@ -955,11 +946,11 @@ class AutoMLSearch:
         """Find the best pipeline for the data set.
 
         Args:
-            feature_types (list, optional): list of feature types, either numerical or categorical.
-                Categorical features will automatically be encoded
-
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
+
+        Raises:
+            AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
         """
         if self._searched:
             logger.info(
@@ -1370,10 +1361,13 @@ class AutoMLSearch:
         """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline initialized with the parameters used to train that pipeline during automl search.
 
         Args:
-            pipeline_id (int): Pipeline to retrieve
+            pipeline_id (int): Pipeline to retrieve.
 
         Returns:
-            PipelineBase: Untrained pipeline instance associated with the provided ID
+            PipelineBase: Untrained pipeline instance associated with the provided ID.
+
+        Raises:
+            PipelineNotFoundError: if pipeline_id is not a valid ID.
         """
         pipeline_results = self.results["pipeline_results"].get(pipeline_id)
         if pipeline_results is None:
@@ -1397,6 +1391,9 @@ class AutoMLSearch:
         Returns:
             Description of specified pipeline. Includes information such as
             type of pipeline components, problem, training time, cross validation, etc.
+
+        Raises:
+            PipelineNotFoundError: If pipeline_id is not a valid ID.
         """
         if pipeline_id not in self._results["pipeline_results"]:
             raise PipelineNotFoundError("Pipeline not found")
@@ -1543,6 +1540,9 @@ class AutoMLSearch:
 
         Returns:
             PipelineBase: A trained instance of the best pipeline and parameters found during automl search. If `train_best_pipeline` is set to False, returns an untrained pipeline instance.
+
+        Raises:
+            PipelineNotFoundError: If this is called before .search() is called.
         """
         if not self._best_pipeline:
             raise PipelineNotFoundError(
@@ -1560,12 +1560,12 @@ class AutoMLSearch:
         """Saves AutoML object at file path.
 
         Args:
-            file_path (str): location to save file
-            pickle_type {"pickle", "cloudpickle"}: the pickling library to use.
-            pickle_protocol (int): the pickle data stream format.
+            file_path (str): Location to save file.
+            pickle_type ({"pickle", "cloudpickle"}): The pickling library to use.
+            pickle_protocol (int): The pickle data stream format.
 
-        Returns:
-            None
+        Raises:
+            ValueError: If pickle_type is not "pickle" or "cloudpickle".
         """
         if pickle_type == "cloudpickle":
             pkl_lib = cloudpickle
@@ -1587,8 +1587,8 @@ class AutoMLSearch:
         """Loads AutoML object at file path.
 
         Args:
-            file_path (str): location to find file to load
-            pickle_type {"pickle", "cloudpickle"}: the pickling library to use. Currently not used since the standard pickle library can handle cloudpickles.
+            file_path (str): Location to find file to load
+            pickle_type ({"pickle", "cloudpickle"}): The pickling library to use. Currently not used since the standard pickle library can handle cloudpickles.
 
         Returns:
             AutoSearchBase object

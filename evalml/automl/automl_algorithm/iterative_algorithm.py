@@ -134,7 +134,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         """Get the next batch of pipelines to evaluate.
 
         Returns:
-            list[PipelineBase]: a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
+            list[PipelineBase]: A list of instances of PipelineBase subclasses, ready to be trained and evaluated.
+
+        Raises:
+            AutoMLAlgorithmException: If no results were reported from the first batch.
         """
         if self._batch_number == 1:
             if len(self._first_batch_results) == 0:
@@ -203,6 +206,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
             trained_pipeline_results (dict): Results from training a pipeline.
+
+        Raises:
+            ValueError: If default parameters are not in the acceptable hyperparameter ranges.
         """
         if pipeline.model_family != ModelFamily.ENSEMBLE:
             if self.batch_number == 1:
