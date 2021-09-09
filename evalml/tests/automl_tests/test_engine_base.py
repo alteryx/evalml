@@ -1,3 +1,4 @@
+import logging
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -9,7 +10,6 @@ from evalml.automl.engine.engine_base import JobLogger
 from evalml.automl.utils import AutoMLConfig
 from evalml.objectives import F1, LogLossBinary
 from evalml.preprocessing import split_data
-from evalml.utils import get_logger
 
 
 def test_train_and_score_pipelines(
@@ -86,7 +86,7 @@ def test_train_and_score_pipelines_error(
             logger=job_log,
         )
     evaluation_result, job_log = result.get("scores"), result.get("logger")
-    logger = get_logger(__file__)
+    logger = logging.getLogger(__name__)
     job_log.write_to_logger(logger)
 
     assert env.mock_fit.call_count == automl.data_splitter.get_n_splits()
@@ -143,7 +143,7 @@ def test_job_logger_warning_and_error_messages(caplog):
     job_log = JobLogger()
     job_log.warning("This is a warning!")
     job_log.error("This is an error!")
-    logger = get_logger(__file__)
+    logger = logging.getLogger(__name__)
     job_log.write_to_logger(logger)
 
     assert "This is a warning!" in caplog.text

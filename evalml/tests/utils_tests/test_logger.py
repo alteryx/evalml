@@ -1,8 +1,5 @@
 import logging
-import os
-import tempfile
-from pathlib import Path
-from unittest.mock import call, patch
+from unittest.mock import patch
 
 import pytest
 
@@ -22,10 +19,6 @@ def logger_env_cleanup(monkeypatch):
     # need to clear out the logger so logger state isn't shared across the unit tests
     if TEST_LOGGER_NAME in logging.Logger.manager.loggerDict:
         del logging.Logger.manager.loggerDict[TEST_LOGGER_NAME]
-    # clean up any patches to the logger env var
-    assert os.environ.get("EVALML_LOG_FILE") is None
-    yield
-    monkeypatch.delenv("EVALML_LOG_FILE", raising=False)
 
 
 def test_get_logger(logger_env_cleanup, capsys, caplog):
@@ -79,148 +72,6 @@ def test_logger_critical(caplog, logger_env_cleanup):
     assert "CRITICAL" in caplog.text
 
 
-@patch("evalml.utils.logger.RotatingFileHandler")
-def test_get_logger_default(
-    mock_RotatingFileHandler, capsys, caplog, logger_env_cleanup
-):
-    assert os.environ.get("EVALML_LOG_FILE") is None
-    logger = get_logger(TEST_LOGGER_NAME)
-    assert len(logger.handlers) == 2
-    mock_RotatingFileHandler.assert_called_with(filename=Path("evalml_debug.log"))
-    assert len(mock_RotatingFileHandler.mock_calls) == 4
-    assert mock_RotatingFileHandler.mock_calls[1] == call().setLevel(logging.DEBUG)
-
-    stdouterr = capsys.readouterr()
-    assert "Warning: cannot write debug logs" not in caplog.text
-    assert "Exception encountered while setting up debug log file" not in caplog.text
-    assert "Warning: cannot write debug logs" not in stdouterr.out
-    assert "Exception encountered while setting up debug log file" not in stdouterr.out
-    assert "Warning: cannot write debug logs" not in stdouterr.err
-    assert "Exception encountered while setting up debug log file" not in stdouterr.err
-
-
-@patch("evalml.utils.logger.RotatingFileHandler")
-def test_get_logger_path_valid(
-    mock_RotatingFileHandler, monkeypatch, capsys, caplog, logger_env_cleanup
-):
-    assert os.environ.get("EVALML_LOG_FILE") is None
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        log_file_path = str(Path(temp_dir, "evalml_debug_custom.log"))
-        monkeypatch.setenv("EVALML_LOG_FILE", log_file_path)
-        assert os.environ.get("EVALML_LOG_FILE") == log_file_path
-
-        logger = get_logger(TEST_LOGGER_NAME)
-        assert len(logger.handlers) == 2
-        mock_RotatingFileHandler.assert_called_with(filename=Path(log_file_path))
-        assert len(mock_RotatingFileHandler.mock_calls) == 4
-        assert mock_RotatingFileHandler.mock_calls[1] == call().setLevel(logging.DEBUG)
-
-    stdouterr = capsys.readouterr()
-    assert "Warning: cannot write debug logs" not in caplog.text
-    assert "Exception encountered while setting up debug log file" not in caplog.text
-    assert "Warning: cannot write debug logs" not in stdouterr.out
-    assert "Exception encountered while setting up debug log file" not in stdouterr.out
-    assert "Warning: cannot write debug logs" not in stdouterr.err
-    assert "Exception encountered while setting up debug log file" not in stdouterr.err
-
-
-@patch("evalml.utils.logger.RotatingFileHandler")
-def test_get_logger_path_invalid(
-    mock_RotatingFileHandler, monkeypatch, capsys, caplog, logger_env_cleanup
-):
-    assert os.environ.get("EVALML_LOG_FILE") is None
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        log_file_path = str(
-            Path(
-                temp_dir, "INVALID", "PATH", "DOES_NOT_EXIST", "evalml_debug_custom.log"
-            )
-        )
-        monkeypatch.setenv("EVALML_LOG_FILE", log_file_path)
-        assert os.environ.get("EVALML_LOG_FILE") == log_file_path
-
-        logger = get_logger(TEST_LOGGER_NAME)
-        assert len(logger.handlers) == 1
-        assert len(mock_RotatingFileHandler.mock_calls) == 0
-        assert mock_RotatingFileHandler.call_count == 0
-
-    stdouterr = capsys.readouterr()
-    assert "Warning: cannot write debug logs" not in caplog.text
-    assert "Exception encountered while setting up debug log file" not in caplog.text
-    assert "Warning: cannot write debug logs" in stdouterr.out
-    assert "Exception encountered while setting up debug log file" not in stdouterr.out
-    assert "Warning: cannot write debug logs" not in stdouterr.err
-    assert "Exception encountered while setting up debug log file" not in stdouterr.err
-
-
-@patch("evalml.utils.logger.RotatingFileHandler")
-def test_get_logger_path_valid_but_dir(
-    mock_RotatingFileHandler, monkeypatch, capsys, caplog, logger_env_cleanup
-):
-    assert os.environ.get("EVALML_LOG_FILE") is None
-
-    with tempfile.TemporaryDirectory() as temp_dir:
-        monkeypatch.setenv("EVALML_LOG_FILE", temp_dir)
-        assert os.environ.get("EVALML_LOG_FILE") == temp_dir
-
-        logger = get_logger(TEST_LOGGER_NAME)
-        assert len(logger.handlers) == 1
-        assert len(mock_RotatingFileHandler.mock_calls) == 0
-        assert mock_RotatingFileHandler.call_count == 0
-
-    stdouterr = capsys.readouterr()
-    assert "Warning: cannot write debug logs" not in caplog.text
-    assert "Exception encountered while setting up debug log file" not in caplog.text
-    assert "Warning: cannot write debug logs" in stdouterr.out
-    assert "Exception encountered while setting up debug log file" not in stdouterr.out
-    assert "Warning: cannot write debug logs" not in stdouterr.err
-    assert "Exception encountered while setting up debug log file" not in stdouterr.err
-
-
-@patch("evalml.utils.logger.RotatingFileHandler")
-def test_get_logger_path_empty(
-    mock_RotatingFileHandler, monkeypatch, capsys, caplog, logger_env_cleanup
-):
-    assert os.environ.get("EVALML_LOG_FILE") is None
-
-    monkeypatch.setenv("EVALML_LOG_FILE", "")
-    assert os.environ.get("EVALML_LOG_FILE") == ""
-
-    logger = get_logger(TEST_LOGGER_NAME)
-    assert len(logger.handlers) == 1
-    assert len(mock_RotatingFileHandler.mock_calls) == 0
-    assert mock_RotatingFileHandler.call_count == 0
-
-    stdouterr = capsys.readouterr()
-    assert "Warning: cannot write debug logs" not in caplog.text
-    assert "Exception encountered while setting up debug log file" not in caplog.text
-    assert "Warning: cannot write debug logs" not in stdouterr.out
-    assert "Exception encountered while setting up debug log file" not in stdouterr.out
-    assert "Warning: cannot write debug logs" not in stdouterr.err
-    assert "Exception encountered while setting up debug log file" not in stdouterr.err
-
-
-@patch("evalml.utils.logger.RotatingFileHandler")
-def test_get_logger_exception(
-    mock_RotatingFileHandler, capsys, caplog, logger_env_cleanup
-):
-    mock_RotatingFileHandler.side_effect = Exception("all your log are belong to us")
-    assert os.environ.get("EVALML_LOG_FILE") is None
-    logger = get_logger(TEST_LOGGER_NAME)
-    assert len(logger.handlers) == 1
-    assert len(mock_RotatingFileHandler.mock_calls) == 1
-    assert mock_RotatingFileHandler.call_count == 1
-
-    stdouterr = capsys.readouterr()
-    assert "Warning: cannot write debug logs" not in caplog.text
-    assert "Exception encountered while setting up debug log file" in caplog.text
-    assert "Warning: cannot write debug logs" not in stdouterr.out
-    assert "Exception encountered while setting up debug log file" in stdouterr.out
-    assert "Warning: cannot write debug logs" not in stdouterr.err
-    assert "Exception encountered while setting up debug log file" not in stdouterr.err
-
-
 @pytest.mark.parametrize(
     "time_passed,answer",
     [(101199, "28:06:39"), (3660, "1:01:00"), (65, "01:05"), (7, "00:07")],
@@ -236,17 +87,20 @@ def test_time_elapsed(mock_time, time_passed, answer):
     "type_, allowed_families, number_, number_min_dep",
     [("binary", None, 8, 5), ("multiclass", 2, 2, 2), ("regression", 3, 3, 3)],
 )
+@pytest.mark.parametrize("verbose", [True, False])
 def test_pipeline_count(
     type_,
     allowed_families,
     number_,
     number_min_dep,
+    verbose,
     X_y_binary,
     X_y_multi,
     X_y_regression,
     caplog,
     has_minimal_dependencies,
 ):
+    caplog.clear()
     if type_ == "binary":
         X, y = X_y_binary
     elif type_ == "multiclass":
@@ -254,7 +108,7 @@ def test_pipeline_count(
     else:
         X, y = X_y_regression
     if not allowed_families:
-        _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_)
+        _ = AutoMLSearch(X_train=X, y_train=y, problem_type=type_, verbose=verbose)
     else:
         if allowed_families == 2:
             _ = AutoMLSearch(
@@ -262,6 +116,7 @@ def test_pipeline_count(
                 y_train=y,
                 problem_type=type_,
                 allowed_model_families=["random_forest", "decision_tree"],
+                verbose=verbose,
             )
         elif allowed_families == 3:
             _ = AutoMLSearch(
@@ -273,8 +128,11 @@ def test_pipeline_count(
                     "decision_tree",
                     "extra_trees",
                 ],
+                verbose=verbose,
             )
     if has_minimal_dependencies:
-        assert f"{number_min_dep} pipelines ready for search" in caplog.text
+        assert (
+            f"{number_min_dep} pipelines ready for search" in caplog.text
+        ) == verbose
     else:
-        assert f"{number_} pipelines ready for search" in caplog.text
+        assert (f"{number_} pipelines ready for search" in caplog.text) == verbose

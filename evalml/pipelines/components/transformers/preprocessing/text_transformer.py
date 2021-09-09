@@ -1,7 +1,4 @@
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils.logger import get_logger
-
-logger = get_logger(__file__)
 
 
 class TextTransformer(Transformer):
