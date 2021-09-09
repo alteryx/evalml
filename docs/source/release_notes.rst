@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``verbose`` flag to ``AutoMLSearch`` to run search in silent mode by default :pr:`2645`
         * Added label encoder to ``XGBoostClassifier`` to remove the warning :pr:`2701`
         * Set ``eval_metric`` to ``logloss`` for ``XGBoostClassifier`` :pr:`2741`
         * Added support for ``woodwork`` versions ``0.7.0`` and ``0.7.1`` :pr:`2743`
@@ -10,6 +11,9 @@ Release Notes
         * Fixed bug where ``Imputer.transform`` would erase ww typing information prior to handing data to the ``SimpleImputer`` :pr:`2752`
         * Fixed bug where ``Oversampler`` could not be copied :pr:`2755`
     * Changes
+        * Deleted ``drop_nan_target_rows`` utility method :pr:`2737`
+        * Removed default logging setup and debugging log file :pr:`2645`
+        * Changed the default n_jobs value for ``XGBoostClassifier`` and ``XGBoostRegressor`` to 12 :pr:`2757`
     * Documentation Changes
         * Specified installation steps for Prophet :pr:`2713`
         * Added documentation for data exploration on data check actions :pr:`2696` 
@@ -19,6 +23,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Removed default logging setup and debugging log file :pr:`2645`
 
 **v0.32.0 Aug. 31, 2021**
     * Enhancements
