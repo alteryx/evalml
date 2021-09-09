@@ -222,7 +222,13 @@ def train_and_score_pipeline(
                     f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})"
                 )
             logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
-            scores = cv_pipeline.score(X_valid, y_valid, objectives=objectives_to_score)
+            scores = cv_pipeline.score(
+                X_valid,
+                y_valid,
+                objectives=objectives_to_score,
+                X_train=X_train,
+                y_train=y_train,
+            )
             logger.debug(
                 f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
             )

@@ -1,5 +1,4 @@
 """Rolling Origin Cross Validation for time series problems."""
-import numpy as np
 from sklearn.model_selection import TimeSeriesSplit as SkTimeSeriesSplit
 from sklearn.model_selection._split import BaseCrossValidator
 
@@ -89,13 +88,4 @@ class TimeSeriesSplit(BaseCrossValidator):
             )
 
         for train, test in self._splitter.split(**split_kwargs):
-            last_train = train[-1]
-            first_test, last_test = test[0], test[-1]
-
-            # Make sure the splits don't extend past our data
-            max_test_index = min(last_test + 1 + self.gap, max_index)
-            max_train_index = min(last_train + 1 + self.gap, max_index)
-
-            new_train = np.arange(0, max_train_index)
-            new_test = np.arange(first_test - self.max_delay, max_test_index)
-            yield new_train, new_test
+            yield train, test

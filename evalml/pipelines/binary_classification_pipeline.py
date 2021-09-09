@@ -52,11 +52,13 @@ class BinaryClassificationPipeline(
         predictions = self._predict_with_objective(X, ypred_proba, objective)
         return infer_feature_types(predictions)
 
-    def predict_proba(self, X):
+    def predict_proba(self, X, X_train=None, y_train=None):
         """Make probability estimates for labels. Assumes that the column at index 1 represents the positive label case.
 
         Args:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             pd.Series: Probability estimates

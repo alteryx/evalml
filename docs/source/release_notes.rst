@@ -7,11 +7,13 @@ Release Notes
         * Set ``eval_metric`` to ``logloss`` for ``XGBoostClassifier`` :pr:`2741`
         * Added support for ``woodwork`` versions ``0.7.0`` and ``0.7.1`` :pr:`2743`
     * Fixes
+        * Fixed bug where ``_catch_warnings`` assumed all warnings were ``PipelineNotUsed`` :pr:`2753`
         * Fixed bug where ``Imputer.transform`` would erase ww typing information prior to handing data to the ``SimpleImputer`` :pr:`2752`
         * Fixed bug where ``Oversampler`` could not be copied :pr:`2755`
     * Changes
         * Deleted ``drop_nan_target_rows`` utility method :pr:`2737`
         * Removed default logging setup and debugging log file :pr:`2645`
+        * Changed the default n_jobs value for ``XGBoostClassifier`` and ``XGBoostRegressor`` to 12 :pr:`2757`
     * Documentation Changes
         * Specified installation steps for Prophet :pr:`2713`
         * Added documentation for data exploration on data check actions :pr:`2696` 
@@ -35,6 +37,8 @@ Release Notes
         * Updated pipeline ``graph()`` to distingush X and y edges :pr:`2654`
         * Added ``DropRowsTransformer`` component :pr:`2692`
         * Added ``DROP_ROWS`` to ``_make_component_list_from_actions`` and clean up metadata :pr:`2694`
+        * Added ``forecast_horizon`` as a required parameter to time series pipelines and ``AutoMLSearch`` :pr:`2697`
+        * Added ``predict_in_sample`` and ``predict_proba_in_sample`` methods to time series pipelines to predict on data where the target is known, e.g. cross-validation :pr:`2697`
     * Fixes
         * Updated Oversampler logic to select best SMOTE based on component input instead of pipeline input :pr:`2695`
         * Added ability to explicitly close DaskEngine resources to improve runtime and reduce Dask warnings :pr:`2667`
@@ -43,9 +47,14 @@ Release Notes
     * Changes
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
+        * Changed ``TimeSeriesBaselineEstimator`` to only work on a time series pipeline with a ``DelayedFeaturesTransformer`` :pr:`2697`
+        * Added ``X_train`` and ``y_train`` as optional parameters to pipeline ``predict``, ``predict_proba``. Only used for time series pipelines :pr:`2697`
+        * Added ``training_data`` and ``training_target`` as optional parameters to ``explain_predictions`` and ``explain_predictions_best_worst`` to support time series pipelines :pr:`2697`
+        * Changed time series pipeline predictions to no longer output series/dataframes padded with NaNs. A prediction will be returned for every row in the `X` input :pr:`2697`
     * Documentation Changes
         * Added user guide documentation for using ``ComponentGraph`` and added ``ComponentGraph`` to API reference :pr:`2673`
         * Updated documentation to make parallelization of AutoML clearer :pr:`2667`
+        * Added a user guide entry for time series modelling :pr:`2697`
     * Testing Changes
         * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
         * Installed numba 0.53 in windows CI to prevent problems installing version 0.54 :pr:`2710`
@@ -56,6 +65,10 @@ Release Notes
         * Renamed the current top level ``search`` method to ``search_iterative`` and defined a new ``search`` method for the ``DefaultAlgorithm`` :pr:`2634`
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
+        * Added ``forecast_horizon`` as a required parameter to time series pipelines and ``AutoMLSearch`` :pr:`2697`
+        * Changed ``TimeSeriesBaselineEstimator`` to only work on a time series pipeline with a ``DelayedFeaturesTransformer`` :pr:`2697`
+        * Added ``X_train`` and ``y_train`` as required parameters for ``predict`` and ``predict_proba`` in time series pipelines :pr:`2697`
+        * Added ``training_data`` and ``training_target`` as required parameters to ``explain_predictions`` and ``explain_predictions_best_worst`` for time series pipelines :pr:`2697`
     
 
 **v0.31.0 Aug. 19, 2021**

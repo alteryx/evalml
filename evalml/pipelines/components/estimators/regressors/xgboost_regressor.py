@@ -19,7 +19,7 @@ class XGBoostRegressor(Estimator):
         min_child_weight (float): Minimum sum of instance weight (hessian) needed in a child. Defaults to 1.0
         n_estimators (int): Number of gradient boosted trees. Equivalent to number of boosting rounds. Defaults to 100.
         random_seed (int): Seed for the random number generator. Defaults to 0.
-        n_jobs (int): Number of parallel threads used to run xgboost. Note that creating thread contention will significantly slow down the algorithm. Defaults to -1.
+        n_jobs (int): Number of parallel threads used to run xgboost. Note that creating thread contention will significantly slow down the algorithm. Defaults to 12.
     """
 
     name = "XGBoost Regressor"
@@ -58,7 +58,7 @@ class XGBoostRegressor(Estimator):
         min_child_weight=1,
         n_estimators=100,
         random_seed=0,
-        n_jobs=-1,
+        n_jobs=12,
         **kwargs,
     ):
         parameters = {

@@ -43,6 +43,8 @@ def explain_predictions(
     include_shap_values=False,
     include_expected_value=False,
     output_format="text",
+    training_data=None,
+    training_target=None,
 ):
     """Creates a report summarizing the top contributing features for each data point in the input features.
 
@@ -58,6 +60,8 @@ def explain_predictions(
         include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
         include_expected_value (bool): Whether the expected value should be included in the table. Default is False.
         output_format (str): Either "text", "dict", or "dataframe". Default is "text".
+        training_data (pd.DataFrame, np.ndarray): Data the pipeline was trained on. Required and only used for time series pipelines.
+        training_target (pd.Series, np.ndarray): Targets used to train the pipeline. Required and only used for time series pipelines.
 
     Returns:
         str, dict, or pd.DataFrame: A report explaining the top contributing features to each prediction for each row of input_features.
@@ -83,7 +87,9 @@ def explain_predictions(
             f"Explained indices should be between 0 and {len(input_features) - 1}"
         )
 
-    pipeline_features = pipeline.compute_estimator_features(input_features, y)
+    pipeline_features = pipeline.compute_estimator_features(
+        input_features, y, training_data, training_target
+    )
 
     data = _ReportData(
         pipeline,
@@ -140,6 +146,8 @@ def explain_predictions_best_worst(
     metric=None,
     output_format="text",
     callback=None,
+    training_data=None,
+    training_target=None,
 ):
     """Creates a report summarizing the top contributing features for the best and worst points in the dataset as measured by error to true labels.
 
@@ -161,6 +169,8 @@ def explain_predictions_best_worst(
         callback (callable): Function to be called with incremental updates. Has the following parameters:
             - progress_stage: stage of computation
             - time_elapsed: total time in seconds that has elapsed since start of call
+        training_data (pd.DataFrame, np.ndarray): Data the pipeline was trained on. Required and only used for time series pipelines.
+        training_target (pd.Series, np.ndarray): Targets used to train the pipeline. Required and only used for time series pipelines.
 
     Returns:
         str, dict, or pd.DataFrame: A report explaining the top contributing features for the best/worst predictions in the input_features.
@@ -207,7 +217,9 @@ def explain_predictions_best_worst(
     try:
         if is_regression(pipeline.problem_type):
             if is_time_series(pipeline.problem_type):
-                y_pred = pipeline.predict(input_features, y=y_true)
+                y_pred = pipeline.predict_in_sample(
+                    input_features, y_true, training_data, training_target
+                )
             else:
                 y_pred = pipeline.predict(input_features)
             y_pred_values = None
@@ -215,8 +227,12 @@ def explain_predictions_best_worst(
             errors = metric(y_true_no_nan, y_pred_no_nan)
         else:
             if is_time_series(pipeline.problem_type):
-                y_pred = pipeline.predict_proba(input_features, y=y_true)
-                y_pred_values = pipeline.predict(input_features, y=y_true)
+                y_pred = pipeline.predict_proba_in_sample(
+                    input_features, y_true, training_data, training_target
+                )
+                y_pred_values = pipeline.predict_in_sample(
+                    input_features, y_true, training_data, training_target
+                )
             else:
                 y_pred = pipeline.predict_proba(input_features)
                 y_pred_values = pipeline.predict(input_features)
@@ -230,7 +246,7 @@ def explain_predictions_best_worst(
             exceptions={metric.__name__: (e, tb)}, scored_successfully={}
         )
 
-    errors = pd.Series(errors, index=y_pred_no_nan.index)
+    errors = pd.Series(errors)
     sorted_scores = errors.sort_values()
     best_indices = sorted_scores.index[:num_to_explain]
     worst_indices = sorted_scores.index[-num_to_explain:]
@@ -239,7 +255,9 @@ def explain_predictions_best_worst(
         start_time, timer(), ExplainPredictionsStage.COMPUTE_FEATURE_STAGE, callback
     )
 
-    pipeline_features = pipeline.compute_estimator_features(input_features, y_true)
+    pipeline_features = pipeline.compute_estimator_features(
+        input_features, y_true, training_data, training_target
+    )
 
     _update_progress(
         start_time, timer(), ExplainPredictionsStage.COMPUTE_SHAP_VALUES_STAGE, callback

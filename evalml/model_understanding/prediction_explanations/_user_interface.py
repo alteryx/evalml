@@ -499,10 +499,6 @@ def _make_single_prediction_shap_table(
     """
     pipeline_features_row = pipeline_features.iloc[[index_to_explain]]
     input_features_row = input_features.iloc[[index_to_explain]]
-    if pipeline_features_row.isna().any(axis=None):
-        raise ValueError(
-            f"Requested index ({index_to_explain}) produces NaN in features."
-        )
 
     shap_values, expected_value = _compute_shap_values(
         pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0)

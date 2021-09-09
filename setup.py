@@ -31,5 +31,6 @@ setup(
     data_files=[('evalml/tests/data', ['evalml/tests/data/tips.csv',
                                        'evalml/tests/data/titanic.csv',
                                        'evalml/tests/data/churn.csv',
-                                       'evalml/tests/data/fraud_transactions.csv.gz'])],
+                                       'evalml/tests/data/fraud_transactions.csv.gz']),
+                ('evalml/demos/data', ['evalml/demos/data/daily-min-temperatures.csv'])],
 )
