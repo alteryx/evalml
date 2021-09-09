@@ -124,7 +124,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
 
         Returns:
-            pd.Series: Estimated probabilities
+            pd.Series: Estimated probabilities.
         """
         if self.estimator is None:
             raise ValueError(
@@ -216,7 +216,7 @@ class TimeSeriesBinaryClassificationPipeline(
             objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
 
         Returns:
-            pd.Series: Estimated labels
+            pd.Series: Estimated labels.
         """
         if objective is not None:
             objective = get_objective(objective, return_instance=True)

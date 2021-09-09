@@ -352,7 +352,7 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon):
         forecast_horizon (int): Positive forecast_horizon parameter.
 
     Returns:
-        TimeSeriesPipelineBase
+        TimeSeriesPipelineBase, a time series pipeline corresponding to the problem type.
 
     """
     pipeline_class, pipeline_name = {
