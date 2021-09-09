@@ -72,10 +72,13 @@ class TimeSeriesBaselineEstimator(Estimator):
 
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
-            y (pd.Series): Target data.
+            y (pd.Series): Target data. Defaults to None.
 
         Returns:
             pd.Series: Predicted values.
+
+        Raises:
+            ValueError: If input y is None.
         """
         if y is None:
             raise ValueError(
@@ -93,10 +96,13 @@ class TimeSeriesBaselineEstimator(Estimator):
 
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
-            y (pd.Series): Target data.
+            y (pd.Series): Target data. Defaults to None.
 
         Returns:
             pd.DataFrame: Predicted probability values.
+
+        Raises:
+            ValueError: If input y is None.
         """
         if y is None:
             raise ValueError(

@@ -53,6 +53,9 @@ class BaselineRegressor(Estimator):
 
         Returns:
             self
+
+        Raises:
+            ValueError: If input y is None.
         """
         if y is None:
             raise ValueError("Cannot fit Baseline regressor if y is None")
