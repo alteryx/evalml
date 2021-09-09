@@ -15,7 +15,6 @@ from evalml.utils.gen_utils import (
     classproperty,
     convert_to_seconds,
     deprecate_arg,
-    drop_rows_with_nans,
     get_importable_subclasses,
     get_random_seed,
     import_or_raise,
@@ -302,45 +301,6 @@ def test_pad_with_nans_with_series_name():
     data = pd.Series([1, 2, 3], name=name)
     padded = pad_with_nans(data, 1)
     _check_equality(padded, pd.Series([np.nan, 1, 2, 3], name=name, dtype="float64"))
-
-
-@pytest.mark.parametrize(
-    "data, expected",
-    [
-        (
-            [pd.Series([None, 1.0, 2.0, 3]), pd.DataFrame({"a": [1.0, 2.0, 3, None]})],
-            [
-                pd.Series([1.0, 2.0], index=pd.Int64Index([1, 2])),
-                pd.DataFrame({"a": [2.0, 3.0]}, index=pd.Int64Index([1, 2])),
-            ],
-        ),
-        (
-            [
-                pd.Series([None, 1.0, 2.0, 3]),
-                pd.DataFrame({"a": [3.0, 4.0, None, None]}),
-            ],
-            [
-                pd.Series([1.0], index=pd.Int64Index([1])),
-                pd.DataFrame({"a": [4.0]}, index=pd.Int64Index([1])),
-            ],
-        ),
-        (
-            [pd.DataFrame(), pd.Series([None, 1.0, 2.0, 3.0])],
-            [
-                pd.DataFrame(),
-                pd.Series([1.0, 2.0, 3.0], index=pd.Int64Index([1, 2, 3])),
-            ],
-        ),
-        (
-            [pd.DataFrame({"a": [1.0, 2.0, None]}), pd.Series([])],
-            [pd.DataFrame({"a": [1.0, 2.0]}), pd.Series([])],
-        ),
-    ],
-)
-def test_drop_nan(data, expected):
-    no_nan_1, no_nan_2 = drop_rows_with_nans(*data)
-    _check_equality(no_nan_1, expected[0], check_index_type=False)
-    _check_equality(no_nan_2, expected[1], check_index_type=False)
 
 
 def test_rename_column_names_to_numeric():
