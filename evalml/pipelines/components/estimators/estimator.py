@@ -80,6 +80,9 @@ class Estimator(ComponentBase):
 
         Returns:
             pd.Series: Predicted values.
+
+        Raises:
+            AttributeError: If estimator does not have a predict method or a component_obj that implements predict.
         """
         try:
             X = infer_feature_types(X)

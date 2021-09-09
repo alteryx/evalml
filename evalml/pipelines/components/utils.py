@@ -37,7 +37,7 @@ def allowed_model_families(problem_type):
     """List the model types allowed for a particular problem type.
 
     Args:
-        problem_types (ProblemTypes or str): ProblemTypes enum or string.
+        problem_type (ProblemTypes or str): ProblemTypes enum or string.
 
     Returns:
         list[ModelFamily]: A list of model families.
@@ -65,6 +65,10 @@ def get_estimators(problem_type, model_families=None):
 
     Returns:
         list[class]: A list of estimator subclasses.
+
+    Raises:
+        TypeError: If the model_families parameter is not a list.
+        RuntimeError: If a model family is not valid for the problem type.
     """
     if model_families is not None and not isinstance(model_families, list):
         raise TypeError("model_families parameter is not a list.")
@@ -104,7 +108,7 @@ def handle_component_class(component_class):
     will return that without modification.
 
     Args:
-        component (str, ComponentBase): Input to be standardized.
+        component_class (str, ComponentBase): Input to be standardized.
 
     Returns:
         ComponentBase
@@ -265,6 +269,9 @@ def generate_component_code(element):
     Returns:
         String representation of Python code that can be run separately in order to recreate the component instance.
         Does not include code for custom component implementation.
+
+    Raises:
+        ValueError: If the input element is not a component instance.
     """
     # hold the imports needed and add code to end
     code_strings = []
@@ -295,12 +302,15 @@ def make_balancing_dictionary(y, sampling_ratio):
     """Makes dictionary for oversampler components. Find ratio of each class to the majority. If the ratio is smaller than the sampling_ratio, we want to oversample, otherwise, we don't want to sample at all, and we leave the data as is.
 
     Args:
-        y (pd.Series): Target data
-        sampling_ratio (float): The balanced ratio we want the samples to meet
+        y (pd.Series): Target data.
+        sampling_ratio (float): The balanced ratio we want the samples to meet.
 
     Returns:
         dict: Dictionary where keys are the classes, and the corresponding values are the counts of samples
         for each class that will satisfy sampling_ratio.
+
+    Raises:
+        ValueError: If sampling ratio is not in the range (0, 1] or the target is empty.
     """
     if sampling_ratio <= 0 or sampling_ratio > 1:
         raise ValueError(

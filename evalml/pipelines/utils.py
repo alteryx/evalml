@@ -194,10 +194,13 @@ def make_pipeline(
              An empty dictionary or None implies using all default values for component parameters.
          sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
              Defaults to None
-         extra_components (list(ComponentBase)): List of extra components to be added after preprocessing components. Defaults to None.
+         extra_components (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
 
     Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
+
+    Raises:
+        ValueError: If estimator is not valid for the given problem type, or sampling is not supported for the given problem type.
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)

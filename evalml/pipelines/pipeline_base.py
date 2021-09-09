@@ -132,6 +132,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """A short summary of the pipeline structure, describing the list of components used.
 
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
+
+        Returns:
+            A string describing the pipeline structure.
         """
         component_graph = [
             type(self.component_graph.component_instances[component])
@@ -254,6 +257,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         Args:
             X (pd.DataFrame): Input data to the pipeline to transform.
+            y (pd.Series): Target data.
 
         Returns:
             pd.DataFrame: New transformed features.
@@ -421,6 +425,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         Returns:
             graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
+
+        Raises:
+            RuntimeError: If graphviz is not installed.
         """
         graphviz = import_or_raise(
             "graphviz", error_msg="Please install graphviz to visualize pipelines."
@@ -521,9 +528,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Args:
             file_path (str): Location to save file.
             pickle_protocol (int): The pickle data stream format.
-
-        Returns:
-            None
         """
         with open(file_path, "wb") as f:
             cloudpickle.dump(self, f, protocol=pickle_protocol)
@@ -708,6 +712,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         Args:
             y (pd.Series): Final component features.
+
+        Returns:
+            pd.Series: The inverse transform of the target.
         """
         return self.component_graph.inverse_transform(y)
 

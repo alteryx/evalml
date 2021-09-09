@@ -1459,6 +1459,9 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
 
     Returns:
         plotly.Figure: Showing the prediction vs actual over time.
+
+    Raises:
+        ValueError: If the pipeline is not a time-series regression pipeline.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
@@ -1507,6 +1510,10 @@ def get_linear_coefficients(estimator, features=None):
 
     Returns:
         pd.DataFrame: Displaying the features by importance.
+
+    Raises:
+        ValueError: If the model is not a linear model.
+        NotFittedError: If the model is not yet fitted.
     """
     if not estimator.model_family == ModelFamily.LINEAR_MODEL:
         raise ValueError(
@@ -1541,9 +1548,9 @@ def t_sne(
         X (np.ndarray, pd.DataFrame): Data to be transformed. Must be numeric.
         n_components (int, optional): Dimension of the embedded space.
         perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
-        algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
+            algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
         learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
-        local minimum, increasing the learning rate may help.
+            local minimum, increasing the learning rate may help.
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
 
     Returns:
@@ -1583,16 +1590,20 @@ def graph_t_sne(
     Args:
         X (np.ndarray, pd.DataFrame): Data to be transformed. Must be numeric.
         n_components (int, optional): Dimension of the embedded space.
-        perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning
-        algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
+        perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning.
+            algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
         learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
-        local minimum, increasing the learning rate may help.
+            local minimum, increasing the learning rate may help.
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
         marker_line_width (int, optional): Determines the line width of the marker boundary.
         marker_size (int, optional): Determines the size of the marker.
+        **kwargs: Additional keyword arguments to pass.
 
     Returns:
         plotly.Figure: Figure representing the transformed data.
+
+    Raises:
+        ValueError: If marker_line_width or marker_size are not valid values.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"

@@ -56,6 +56,9 @@ class PolynomialDetrender(TargetTransformer):
 
         Returns:
             self
+
+        Raises:
+            ValueError: If y is None.
         """
         if y is None:
             raise ValueError("y cannot be None for PolynomialDetrender!")

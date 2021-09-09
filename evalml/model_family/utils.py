@@ -6,10 +6,13 @@ def handle_model_family(model_family):
     """Handles model_family by either returning the ModelFamily or converting from a string.
 
     Args:
-        model_family (str or ModelFamily): Model type that needs to be handled
+        model_family (str or ModelFamily): Model type that needs to be handled.
 
     Returns:
         ModelFamily
+
+    Raises:
+        KeyError: If input is not a valid model family.
     """
     if isinstance(model_family, str):
         try:

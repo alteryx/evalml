@@ -46,6 +46,9 @@ class PCA(Transformer):
 
         Returns:
             self
+
+        Raises:
+            ValueError: If input data is not all numeric.
         """
         X = infer_feature_types(X)
         if not is_all_numeric(X):
@@ -62,6 +65,9 @@ class PCA(Transformer):
 
         Returns:
             pd.DataFrame: Transformed data.
+
+        Raises:
+            ValueError: If input data is not all numeric.
         """
         X_ww = infer_feature_types(X)
         if not is_all_numeric(X_ww):
@@ -83,6 +89,9 @@ class PCA(Transformer):
 
         Returns:
             pd.DataFrame: Transformed data.
+
+        Raises:
+            ValueError: If input data is not all numeric.
         """
         X_ww = infer_feature_types(X)
         if not is_all_numeric(X_ww):

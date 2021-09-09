@@ -189,8 +189,6 @@ def get_importable_subclasses(base_class, used_in_automl=True):
 
     Args:
         base_class (abc.ABCMeta): Base class to find all of the subclasses for.
-        args (list): Args used to instantiate the subclass. [{}] for a pipeline, and [] for
-            all other classes.
         used_in_automl: Not all components/pipelines/estimators are used in automl search. If True,
             only include those subclasses that are used in the search. This would mean excluding classes related to
             ExtraTrees, ElasticNet, and Baseline estimators.
@@ -406,9 +404,9 @@ def save_plot(
         fig (Figure): Figure to be saved.
         filepath (str or Path, optional): Location to save file. Default is with filename "test_plot".
         format (str): Extension for figure to be saved as. Ignored if interactive is True and fig
-        is of type plotly.Figure. Defaults to 'png'.
+            is of type plotly.Figure. Defaults to 'png'.
         interactive (bool, optional): If True and fig is of type plotly.Figure, saves the fig as interactive
-        instead of static, and format will be set to 'html'. Defaults to False.
+            instead of static, and format will be set to 'html'. Defaults to False.
         return_filepath (bool, optional): Whether to return the final filepath the image is saved to. Defaults to False.
 
     Returns:

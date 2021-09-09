@@ -20,8 +20,11 @@ class TargetImputerMeta(ComponentBaseMeta):
     def check_for_fit(cls, method):
         """`check_for_fit` wraps a method that validates if `self._is_fitted` is `True`.
 
-        It raises an exception if `False` and calls and returns the
-        wrapped method if `True`.
+        Args:
+            method (callable): Method to wrap.
+
+        Raises:
+            ComponentNotYetFittedError: If component is not fitted.
         """
 
         @wraps(method)
@@ -75,6 +78,9 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
 
         Returns:
             self
+
+        Raises:
+            TypeError: If target is filled with all null values.
         """
         if y is None:
             return self

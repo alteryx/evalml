@@ -448,6 +448,9 @@ class ComponentGraph:
 
         Returns:
             ComponentBase object
+
+        Raises:
+            ValueError: If the component is not in the graph.
         """
         try:
             return self.component_instances[component_name]
@@ -459,6 +462,9 @@ class ComponentGraph:
 
         Returns:
             ComponentBase object
+
+        Raises:
+            ValueError: If the component graph has no edges.
         """
         if len(self.compute_order) == 0:
             raise ValueError("Cannot get last component from edgeless graph")
@@ -470,6 +476,9 @@ class ComponentGraph:
 
         Returns:
             list: All estimator objects within the graph.
+
+        Raises:
+            ValueError: If the component graph is not yet instantiated.
         """
         if not isinstance(self.get_last_component(), ComponentBase):
             raise ValueError(
@@ -489,6 +498,9 @@ class ComponentGraph:
 
         Returns:
             list[str]: List of inputs for the component to use.
+
+        Raises:
+            KeyError: If the component is not in the graph.
         """
         try:
             component_info = self.component_dict[component_name]
@@ -530,6 +542,9 @@ class ComponentGraph:
 
         Returns:
             graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
+
+        Raises:
+            RuntimeError: If graphviz is not installed.
         """
         graphviz = import_or_raise(
             "graphviz", error_msg="Please install graphviz to visualize pipelines."

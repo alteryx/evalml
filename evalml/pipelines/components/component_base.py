@@ -163,11 +163,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """Saves component at file path.
 
         Args:
-            file_path (str): Location to save file
+            file_path (str): Location to save file.
             pickle_protocol (int): The pickle data stream format.
-
-        Returns:
-            None
         """
         with open(file_path, "wb") as f:
             cloudpickle.dump(self, f, protocol=pickle_protocol)
@@ -177,7 +174,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         """Loads component at file path.
 
         Args:
-            file_path (str): Location to load file
+            file_path (str): Location to load file.
 
         Returns:
             ComponentBase object

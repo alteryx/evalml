@@ -166,6 +166,9 @@ class ARIMARegressor(Estimator):
 
         Returns:
             self
+
+        Raises:
+            ValueError: If X was passed to `fit` but not passed in `predict`.
         """
         if y is None:
             raise ValueError("ARIMA Regressor requires y as input.")
@@ -189,6 +192,9 @@ class ARIMARegressor(Estimator):
 
         Returns:
             pd.Series: Predicted values.
+
+        Raises:
+            ValueError: If X was passed to `fit` but not passed in `predict`.
         """
         X, y = self._manage_woodwork(X, y)
         dates, X = self._get_dates(X, y)

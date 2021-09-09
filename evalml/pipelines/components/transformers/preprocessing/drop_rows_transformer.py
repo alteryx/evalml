@@ -33,6 +33,9 @@ class DropRowsTransformer(Transformer):
 
         Returns:
             self
+
+        Raises:
+            ValueError: If indices to drop do not exist in input features or target.
         """
         X_t = infer_feature_types(X)
         y_t = infer_feature_types(y) if y is not None else None
