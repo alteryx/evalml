@@ -10,6 +10,7 @@ Release Notes
         * Fixed bug where ``Imputer.transform`` would erase ww typing information prior to handing data to the ``SimpleImputer`` :pr:`2752`
         * Fixed bug where ``Oversampler`` could not be copied :pr:`2755`
     * Changes
+        * Deleted ``drop_nan_target_rows`` utility method :pr:`2737`
         * Removed default logging setup and debugging log file :pr:`2645`
         * Changed the default n_jobs value for ``XGBoostClassifier`` and ``XGBoostRegressor`` to 12 :pr:`2757`
     * Documentation Changes
