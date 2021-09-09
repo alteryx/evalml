@@ -119,12 +119,12 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             )
 
         features_to_concat = [
-            X_train.iloc[-last_row_of_training :],
+            X_train.iloc[-last_row_of_training:],
             gap_features,
             X,
         ]
         targets_to_concat = [
-            y_train.iloc[-last_row_of_training :],
+            y_train.iloc[-last_row_of_training:],
             gap_target,
             y,
         ]
