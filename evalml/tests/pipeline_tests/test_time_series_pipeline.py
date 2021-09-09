@@ -340,6 +340,91 @@ def test_predict_and_predict_in_sample(
     assert (preds_in_sample.index == target.iloc[20:].index).all()
 
 
+@pytest.mark.parametrize(
+    "pipeline_class,estimator_name",
+    [
+        (TimeSeriesRegressionPipeline, "Random Forest Regressor"),
+        (TimeSeriesBinaryClassificationPipeline, "Random Forest Classifier"),
+        (TimeSeriesMulticlassClassificationPipeline, "Random Forest Classifier"),
+    ],
+)
+@patch("evalml.pipelines.components.RandomForestClassifier.predict")
+@patch("evalml.pipelines.components.RandomForestRegressor.predict")
+def test_predict_and_predict_in_sample_with_date_index(
+    mock_regressor_predict,
+    mock_classifier_predict,
+    pipeline_class,
+    estimator_name,
+    ts_data,
+):
+
+    X, target = ts_data
+    X["date"] = X.index
+    mock_to_check = mock_classifier_predict
+    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
+        target = target % 2
+    elif pipeline_class == TimeSeriesMulticlassClassificationPipeline:
+        target = target % 3
+    else:
+        mock_to_check = mock_regressor_predict
+    mock_to_check.side_effect = lambda x, y: target.iloc[: x.shape[0]]
+
+    component_graph = [
+        "DateTime Featurization Component",
+        "Delayed Feature Transformer",
+        estimator_name,
+    ]
+    delayer_params = {
+        "date_index": "date",
+        "gap": 1,
+        "max_delay": 3,
+        "forecast_horizon": 1,
+        "delay_features": True,
+        "delay_target": True,
+    }
+    parameters = {
+        "pipeline": {
+            "date_index": "date",
+            "gap": 1,
+            "max_delay": 3,
+            "forecast_horizon": 1,
+        },
+        "Delayed Feature Transformer": delayer_params,
+        estimator_name: {"n_jobs": 1},
+    }
+
+    feature_pipeline = pipeline_class(
+        ["DateTime Featurization Component", "Delayed Feature Transformer"],
+        parameters=parameters,
+    )
+    feature_pipeline.fit(X, target)
+    expected_features = feature_pipeline.transform(X, target)
+
+    expected_features_in_sample = expected_features.ww.iloc[20:]
+    expected_features_pred = expected_features[20 + 1 : 20 + 1 + 1]
+
+    pl = pipeline_class(component_graph=component_graph, parameters=parameters)
+
+    pl.fit(X.iloc[:20], target.iloc[:20])
+    preds_in_sample = pl.predict_in_sample(
+        X.iloc[20:], target.iloc[20:], X.iloc[:20], target.iloc[:20]
+    )
+    assert_frame_equal(mock_to_check.call_args[0][0], expected_features_in_sample)
+    mock_to_check.reset_mock()
+    preds = pl.predict(
+        X.iloc[20 + 1 : 20 + 1 + 1],
+        None,
+        X_train=X.iloc[:20],
+        y_train=target.iloc[:20],
+    )
+    assert_frame_equal(mock_to_check.call_args[0][0], expected_features_pred)
+
+    assert len(preds) == 1
+    assert (preds.index == target.iloc[20 + 1 : 20 + 1 + 1].index).all()
+    assert len(preds_in_sample) == len(target.iloc[20:])
+    assert (preds_in_sample.index == target.iloc[20:].index).all()
+
+
 @pytest.mark.parametrize("only_use_y", [False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize(
