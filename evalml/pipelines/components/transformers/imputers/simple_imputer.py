@@ -3,10 +3,7 @@ from sklearn.impute import SimpleImputer as SkImputer
 from woodwork.logical_types import NaturalLanguage
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types,
-)
+from evalml.utils import infer_feature_types
 
 
 class SimpleImputer(Transformer):
@@ -80,7 +77,7 @@ class SimpleImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X = infer_feature_types(X)
-        original_logical_types = X.ww.schema.logical_types
+        original_schema = X.ww.schema
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (X.dtypes == bool).all():
@@ -98,12 +95,13 @@ class SimpleImputer(Transformer):
             }
         )
 
-        X = self._component_obj.transform(X)
-        X = pd.DataFrame(X, columns=not_all_null_cols)
+        X_t = self._component_obj.transform(X)
+        X_t = pd.DataFrame(X_t, columns=not_all_null_cols)
         if not_all_null_cols:
-            X.index = original_index
+            X_t.index = original_index
+        X_t.ww.init(schema=original_schema._get_subset_schema(X_t.columns))
 
-        return _retain_custom_types_and_initalize_woodwork(original_logical_types, X)
+        return X_t
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X

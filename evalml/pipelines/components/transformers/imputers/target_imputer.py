@@ -1,15 +1,13 @@
 from functools import wraps
 
 import pandas as pd
+import woodwork as ww
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import ComponentBaseMeta
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types,
-)
+from evalml.utils import infer_feature_types
 
 
 class TargetImputerMeta(ComponentBaseMeta):
@@ -108,13 +106,12 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
 
         # Return early since bool dtype doesn't support nans and sklearn errors if all cols are bool
         if (y_df.dtypes == bool).all():
-            return X, _retain_custom_types_and_initalize_woodwork(
-                y_ww.ww.logical_type, y
-            )
+            return X, y_ww
 
         transformed = self._component_obj.transform(y_df)
         y_t = pd.Series(transformed[:, 0], index=y_ww.index)
-        return X, _retain_custom_types_and_initalize_woodwork(y_ww.ww.logical_type, y_t)
+        y_t = ww.init_series(y_t, y_ww.ww.logical_type, y_ww.ww.semantic_tags)
+        return X, y_t
 
     def fit_transform(self, X, y):
         """Fits on and transforms the input target data.
