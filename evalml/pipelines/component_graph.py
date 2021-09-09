@@ -21,9 +21,8 @@ from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import get_logger, import_or_raise, infer_feature_types
-
-logger = get_logger(__file__)
+from evalml.utils import import_or_raise, infer_feature_types
+from evalml.utils.logger import get_logger
 
 
 class ComponentGraph:
@@ -519,6 +518,7 @@ class ComponentGraph:
         Returns:
             dict: Dictionary of all component parameters if return_dict is True, else None
         """
+        logger = get_logger(f"{__name__}.describe")
         components = {}
         for number, component in enumerate(self.component_instances.values(), 1):
             component_string = str(number) + ". " + component.name

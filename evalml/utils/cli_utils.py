@@ -12,11 +12,10 @@ from psutil._common import bytes2human
 import evalml
 from evalml.utils import get_logger
 
-logger = get_logger(__file__)
-
 
 def print_info():
     """Prints information about the system, evalml, and dependencies of evalml."""
+    logger = get_logger(__name__)
     logger.info("EvalML version: %s" % evalml.__version__)
     logger.info("EvalML installation directory: %s" % get_evalml_root())
     print_sys_info()
@@ -25,6 +24,7 @@ def print_info():
 
 def print_sys_info():
     """Prints system information."""
+    logger = get_logger(__name__)
     logger.info("\nSYSTEM INFO")
     logger.info("-----------")
     sys_info = get_sys_info()
@@ -34,6 +34,7 @@ def print_sys_info():
 
 def print_deps():
     """Prints the version number of each dependency."""
+    logger = get_logger(__name__)
     logger.info("\nINSTALLED VERSIONS")
     logger.info("------------------")
     installed_packages = get_installed_packages()

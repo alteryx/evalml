@@ -8,13 +8,11 @@ from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.pipelines.components.component_base_meta import ComponentBaseMeta
 from evalml.utils import (
     classproperty,
-    get_logger,
     infer_feature_types,
     log_subtitle,
     safe_repr,
 )
-
-logger = get_logger(__file__)
+from evalml.utils.logger import get_logger
 
 
 class ComponentBase(ABC, metaclass=ComponentBaseMeta):
@@ -146,6 +144,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         Returns:
             None or dict: Returns dictionary if return_dict is True, else None.
         """
+        logger = get_logger(f"{__name__}.describe")
         if print_name:
             title = self.name
             log_subtitle(logger, title)

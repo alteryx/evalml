@@ -8,9 +8,6 @@ from evalml.data_checks import (
     DataCheckWarning,
 )
 from evalml.utils import infer_feature_types
-from evalml.utils.logger import get_logger
-
-logger = get_logger(__file__)
 
 
 class NoVarianceDataCheck(DataCheck):

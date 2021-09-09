@@ -1,8 +1,9 @@
 """Callbacks available to pass to AutoML."""
-from evalml.exceptions import PipelineScoreError
-from evalml.utils.logger import get_logger
+import logging
 
-logger = get_logger(__file__)
+from evalml.exceptions import PipelineScoreError
+
+logger = logging.getLogger(__name__)
 
 
 def silent_error_callback(exception, traceback, automl, **kwargs):
@@ -43,21 +44,20 @@ def log_error_callback(exception, traceback, automl, **kwargs):
     pipeline = kwargs.get("pipeline")
     trace = "\n".join(traceback) if traceback else ""
     if isinstance(exception, PipelineScoreError):
-        logger.info(
-            f"\t\t\tFold {fold_num}: Encountered an error scoring the following objectives: {', '.join(exception.exceptions)}."
+        logger.warning(
+            f"\t\t\t{pipeline.name} fold {fold_num}: Encountered an error scoring the following objectives: {', '.join(exception.exceptions)}."
         )
-        logger.info(
-            f"\t\t\tFold {fold_num}: The scores for these objectives will be replaced with nan."
+        logger.warning(
+            f"\t\t\t{pipeline.name} fold {fold_num}: The scores for these objectives will be replaced with nan."
         )
         trace += f"\n{exception.message}"
     else:
-        logger.info(f"\t\t\tFold {fold_num}: Encountered an error.")
-        logger.info(f"\t\t\tFold {fold_num}: All scores will be replaced with nan.")
-    logger.info(
-        f"\t\t\tFold {fold_num}: Please check the log file for the current hyperparameters and stack trace."
-    )
-    logger.info(
+        logger.warning(f"\t\t\t{pipeline.name} fold {fold_num}: Encountered an error.")
+        logger.warning(
+            f"\t\t\t{pipeline.name} fold {fold_num}: All scores will be replaced with nan."
+        )
+    logger.error(
         f"\t\t\tFold {fold_num}: Exception during automl search: {str(exception)}"
     )
-    logger.debug(f"\t\t\tFold {fold_num}: Parameters:\n\t{pipeline.parameters}")
-    logger.debug(f"\t\t\tFold {fold_num}: Traceback:\n{trace}")
+    logger.error(f"\t\t\tFold {fold_num}: Parameters:\n\t{pipeline.parameters}")
+    logger.error(f"\t\t\tFold {fold_num}: Traceback:\n{trace}")
