@@ -579,7 +579,7 @@ class AutoMLSearch:
         self.random_seed = random_seed
         self.n_jobs = n_jobs
 
-        if not self.plot:
+        if not self.plot and self.verbose:
             self.logger.warning(
                 "Unable to import plotly; skipping pipeline search plotting\n"
             )
