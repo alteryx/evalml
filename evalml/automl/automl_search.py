@@ -847,21 +847,28 @@ class AutoMLSearch:
         self._engine.close()
 
     def _catch_warnings(self, warning_list):
-        # we find the value(s) that we must throw any ParameterNotUsedWarnings for
-        final_message = set([])
+        parameter_not_used_warnings = []
         raised_messages = []
         for msg in warning_list:
             if isinstance(msg.message, ParameterNotUsedWarning):
-                if len(final_message) == 0:
-                    final_message = final_message.union(msg.message.components)
-                else:
-                    final_message = final_message.intersection(msg.message.components)
-            # Only raise the same warning from multiple pipelines once
+                parameter_not_used_warnings.append(msg.message)
+            # Raise non-PNU warnings immediately, but only once per warning
             elif str(msg.message) not in raised_messages:
                 warnings.warn(msg.message)
                 raised_messages.append(str(msg.message))
 
-        if len(final_message):
+        # Raise PNU warnings, iff the warning was raised in every pipeline
+        if (
+            len(parameter_not_used_warnings) == len(self.allowed_pipelines)
+            and len(parameter_not_used_warnings) > 0
+        ):
+            final_message = set([])
+            for msg in parameter_not_used_warnings:
+                if len(final_message) == 0:
+                    final_message = final_message.union(msg.components)
+                else:
+                    final_message = final_message.intersection(msg.components)
+
             warnings.warn(ParameterNotUsedWarning(final_message))
 
     def _get_batch_number(self):
