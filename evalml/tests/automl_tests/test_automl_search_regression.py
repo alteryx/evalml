@@ -427,6 +427,7 @@ def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, X_y_regress
         "date_index": "Date",
         "gap": 0,
         "max_delay": 0,
+        "forecast_horizon": 10,
         "delay_target": False,
         "delay_features": True,
     }

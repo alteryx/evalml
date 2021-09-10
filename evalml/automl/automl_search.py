@@ -47,12 +47,12 @@ from evalml.pipelines import (
     ComponentGraph,
     MulticlassClassificationPipeline,
     RegressionPipeline,
-    TimeSeriesBinaryClassificationPipeline,
-    TimeSeriesMulticlassClassificationPipeline,
-    TimeSeriesRegressionPipeline,
 )
 from evalml.pipelines.components.utils import get_estimators
-from evalml.pipelines.utils import make_pipeline
+from evalml.pipelines.utils import (
+    make_pipeline,
+    make_timeseries_baseline_pipeline,
+)
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -235,7 +235,7 @@ def search_iterative(
             - R2 for regression problems.
 
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
-        in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+        in time series problems, values should be passed in for the date_index, gap, forecast_horizon, and max_delay variables.
 
     Other keyword arguments which are provided will be passed to AutoMLSearch.
 
@@ -367,7 +367,7 @@ class AutoMLSearch:
             max_iterations have precedence over stopping the search.
 
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+            in time series problems, values should be passed in for the date_index, gap, forecast_horizon, and max_delay variables.
 
         train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
@@ -931,13 +931,13 @@ class AutoMLSearch:
 
     def _validate_problem_configuration(self, problem_configuration=None):
         if is_time_series(self.problem_type):
-            required_parameters = {"date_index", "gap", "max_delay"}
+            required_parameters = {"date_index", "gap", "max_delay", "forecast_horizon"}
             if not problem_configuration or not all(
                 p in problem_configuration for p in required_parameters
             ):
                 raise ValueError(
-                    "user_parameters must be a dict containing values for at least the date_index, gap, and max_delay "
-                    f"parameters. Received {problem_configuration}."
+                    "user_parameters must be a dict containing values for at least the date_index, gap, max_delay, "
+                    f"and forecast_horizon parameters. Received {problem_configuration}."
                 )
         return problem_configuration or {}
 
@@ -1215,38 +1215,10 @@ class AutoMLSearch:
                 parameters={"Baseline Classifier": {"strategy": "mean"}},
             )
         else:
-            pipeline_class, pipeline_name = {
-                ProblemTypes.TIME_SERIES_REGRESSION: (
-                    TimeSeriesRegressionPipeline,
-                    "Time Series Baseline Regression Pipeline",
-                ),
-                ProblemTypes.TIME_SERIES_MULTICLASS: (
-                    TimeSeriesMulticlassClassificationPipeline,
-                    "Time Series Baseline Multiclass Pipeline",
-                ),
-                ProblemTypes.TIME_SERIES_BINARY: (
-                    TimeSeriesBinaryClassificationPipeline,
-                    "Time Series Baseline Binary Pipeline",
-                ),
-            }[self.problem_type]
-            date_index = self.problem_configuration["date_index"]
             gap = self.problem_configuration["gap"]
-            max_delay = self.problem_configuration["max_delay"]
-            baseline = pipeline_class(
-                component_graph=["Time Series Baseline Estimator"],
-                custom_name=pipeline_name,
-                parameters={
-                    "pipeline": {
-                        "date_index": date_index,
-                        "gap": gap,
-                        "max_delay": max_delay,
-                    },
-                    "Time Series Baseline Estimator": {
-                        "date_index": date_index,
-                        "gap": gap,
-                        "max_delay": max_delay,
-                    },
-                },
+            forecast_horizon = self.problem_configuration["forecast_horizon"]
+            baseline = make_timeseries_baseline_pipeline(
+                self.problem_type, gap, forecast_horizon
             )
         return baseline
 

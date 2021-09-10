@@ -89,12 +89,14 @@ class ClassificationPipeline(PipelineBase):
         """
         return self.component_graph.predict(X)
 
-    def predict(self, X, objective=None):
+    def predict(self, X, objective=None, X_train=None, y_train=None):
         """Make predictions using selected features.
 
         Arguments:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
             objective (Object or string): The objective to use to make predictions
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             pd.Series: Estimated labels
@@ -105,11 +107,13 @@ class ClassificationPipeline(PipelineBase):
         )
         return infer_feature_types(predictions)
 
-    def predict_proba(self, X):
+    def predict_proba(self, X, X_train=None, y_train=None):
         """Make probability estimates for labels.
 
         Arguments:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             pd.DataFrame: Probability estimates
@@ -128,13 +132,15 @@ class ClassificationPipeline(PipelineBase):
         )
         return infer_feature_types(proba)
 
-    def score(self, X, y, objectives):
+    def score(self, X, y, objectives, X_train=None, y_train=None):
         """Evaluate model performance on objectives
 
         Arguments:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
             y (pd.Series, or np.ndarray): True labels of length [n_samples]
             objectives (list): List of objectives to score
+            X_train (pd.DataFrame or np.ndarray): Training data. Ignored. Only used for time series.
+            y_train (pd.Series): Training labels. Ignored. Only used for time series.
 
         Returns:
             dict: Ordered dictionary of objective scores
@@ -147,16 +153,12 @@ class ClassificationPipeline(PipelineBase):
             X, y, y_predicted, y_predicted_proba, objectives
         )
 
-    def _compute_predictions(self, X, y, objectives, time_series=False):
+    def _compute_predictions(self, X, y, objectives):
         """Compute predictions/probabilities based on objectives."""
         y_predicted = None
         y_predicted_proba = None
         if any(o.score_needs_proba for o in objectives):
-            y_predicted_proba = (
-                self.predict_proba(X, y) if time_series else self.predict_proba(X)
-            )
+            y_predicted_proba = self.predict_proba(X)
         if any(not o.score_needs_proba for o in objectives):
-            y_predicted = (
-                self._predict(X, y, pad=True) if time_series else self._predict(X)
-            )
+            y_predicted = self._predict(X)
         return y_predicted, y_predicted_proba
