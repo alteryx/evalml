@@ -1591,6 +1591,7 @@ def t_sne(
         learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
         local minimum, increasing the learning rate may help.
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
+        **kwargs: Additional abritrary parameters.
 
     Returns:
         np.ndarray (n_samples, n_components).
