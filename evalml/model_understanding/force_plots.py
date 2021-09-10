@@ -58,7 +58,7 @@ def graph_force_plot(pipeline, rows_to_explain, training_data, y, matplotlib=Fal
 
 
 def force_plot(pipeline, rows_to_explain, training_data, y):
-    r"""Function to generate the data required to build a force plot.
+    """Function to generate the data required to build a force plot.
 
     Args:
         pipeline (PipelineBase): The pipeline to generate the force plot for.
