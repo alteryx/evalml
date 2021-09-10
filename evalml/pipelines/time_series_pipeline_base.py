@@ -171,14 +171,17 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         """Predict on future data where the target is known, e.g. cross validation.
 
         Args:
-            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
-            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples]
+            X (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray): Future target of shape [n_samples]
             X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
             y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
             objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
 
         Returns:
-            pd.Series: Estimated labels
+            pd.Series: Estimated labels.
+
+        Raises:
+            ValueError: If final component is not an Estimator.
         """
         if self.estimator is None:
             raise ValueError(
@@ -203,10 +206,15 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
         Args:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
-            objective (str, ObjectiveBase): Used in classification problems to threshold the predictions.
             objective (Object or string): The objective to use to make predictions.
-            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
-            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
+            X_train (pd.DataFrame or np.ndarray or None): Training data.
+            y_train (pd.Series or None): Training labels.
+
+        Raises:
+            ValueError: If final component is not an Estimator.
+
+        Returns:
+            Predictions.
         """
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         if self.estimator is None:

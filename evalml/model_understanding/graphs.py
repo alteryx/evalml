@@ -113,10 +113,10 @@ def graph_confusion_matrix(
         y_true (pd.Series or np.ndarray): True binary labels.
         y_pred (pd.Series or np.ndarray): Predictions from a binary classifier.
         normalize_method ({'true', 'pred', 'all', None}): Normalization method to use, if not None. Supported options are: 'true' to normalize by row, 'pred' to normalize by column, or 'all' to normalize by all values. Defaults to 'true'.
-        title_addition (str or None): if not None, append to plot title. Defaults to None.
+        title_addition (str or None): If not None, append to plot title. Defaults to None.
 
     Returns:
-        plotly.Figure representing the confusion matrix plot generated
+        plotly.Figure representing the confusion matrix plot generated.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
@@ -194,11 +194,10 @@ def precision_recall_curve(y_true, y_pred_proba, pos_label_idx=-1):
 
     Returns:
         list: Dictionary containing metrics used to generate a precision-recall plot, with the following keys:
-
-                  * `precision`: Precision values.
-                  * `recall`: Recall values.
-                  * `thresholds`: Threshold values used to produce the precision and recall.
-                  * `auc_score`: The area under the ROC curve.
+            * `precision`: Precision values.
+            * `recall`: Recall values.
+            * `thresholds`: Threshold values used to produce the precision and recall.
+            * `auc_score`: The area under the ROC curve.
 
     Raises:
         NoPositiveLabelException: If predicted probabilities do not contain a column at the specified label.
@@ -231,7 +230,7 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
     Args:
         y_true (pd.Series or np.ndarray): True binary labels.
         y_pred_proba (pd.Series or np.ndarray): Predictions from a binary classifier, before thresholding has been applied. Note this should be the predicted probability for the "true" label.
-        title_addition (str or None): If not None, append to plot title. Default None.
+        title_addition (str or None): If not None, append to plot title. Defaults to None.
 
     Returns:
         plotly.Figure representing the precision-recall plot generated
@@ -274,10 +273,10 @@ def roc_curve(y_true, y_pred_proba):
     Returns:
         list(dict): A list of dictionaries (with one for each class) is returned. Binary classification problems return a list with one dictionary.
             Each dictionary contains metrics used to generate an ROC plot with the following keys:
-                  * `fpr_rate`: False positive rate.
-                  * `tpr_rate`: True positive rate.
-                  * `threshold`: Threshold values used to produce each pair of true/false positive rates.
-                  * `auc_score`: The area under the ROC curve.
+            * `fpr_rate`: False positive rate.
+            * `tpr_rate`: True positive rate.
+            * `threshold`: Threshold values used to produce each pair of true/false positive rates.
+            * `auc_score`: The area under the ROC curve.
     """
     y_true = infer_feature_types(y_true).to_numpy()
     y_pred_proba = infer_feature_types(y_pred_proba).to_numpy()
@@ -320,7 +319,7 @@ def graph_roc_curve(y_true, y_pred_proba, custom_class_names=None, title_additio
         y_true (pd.Series or np.ndarray): True labels.
         y_pred_proba (pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied. Note this should a one dimensional array with the predicted probability for the "true" label in the binary case.
         custom_class_names (list): If not None, custom labels for classes. Defaults to None.
-        title_addition (str): if not None, append to plot title. Defaults to None.
+        title_addition (str): If not None, append to plot title. Defaults to None.
 
     Returns:
         plotly.Figure representing the ROC plot generated.
@@ -591,9 +590,9 @@ def partial_dependence(
         X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at.
         features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
-            If features is an int, it must be the index of the feature to use.
-            If features is a string, it must be a valid column name in X.
-            If features is a tuple of int/strings, it must contain valid column integers/names in X.
+            - If features is an int, it must be the index of the feature to use.
+            - If features is a string, it must be a valid column name in X.
+            - If features is a tuple of int/strings, it must contain valid column integers/names in X.
         percentiles (tuple[float]): The lower and upper percentile used to create the extreme values for the grid.
             Must be in [0, 1]. Defaults to (0.05, 0.95).
         grid_resolution (int): Number of samples of feature(s) for partial dependence plot.  If this value
@@ -631,8 +630,7 @@ def partial_dependence(
         PartialDependenceError: If the provided pipeline isn't fitted.
         PartialDependenceError: If the provided pipeline is a Baseline pipeline.
         PartialDependenceError: If any of the features passed in are completely NaN.
-        PartialDependenceError: If any of the features are low-variance. Defined as having one value occurring more than the upper
-            percentile passed by the user. By default 95%.
+        PartialDependenceError: If any of the features are low-variance. Defined as having one value occurring more than the upper percentile passed by the user. By default 95%.
         ValueError: Error during call to scikit-learn's partial dependence method.
         Exception: All other errors during calculation.
     """
@@ -955,24 +953,24 @@ def graph_partial_dependence(
         X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at.
         features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
-            If features is an int, it must be the index of the feature to use.
-            If features is a string, it must be a valid column name in X.
-            If features is a tuple of strings, it must contain valid column int/names in X.
+            - If features is an int, it must be the index of the feature to use.
+            - If features is a string, it must be a valid column name in X.
+            - If features is a tuple of strings, it must contain valid column int/names in X.
         class_label (string, optional): Name of class to plot for multiclass problems. If None, will plot
             the partial dependence for each class. This argument does not change behavior for regression or binary
             classification pipelines. For binary classification, the partial dependence for the positive label will
             always be displayed. Defaults to None.
         grid_resolution (int): Number of samples of feature(s) for partial dependence plot.
         kind ({'average', 'individual', 'both'}): Type of partial dependence to plot. 'average' creates a regular partial dependence
-             (PD) graph, 'individual' creates an individual conditional expectation (ICE) plot, and 'both' creates a
-             single-figure PD and ICE plot. ICE plots can only be shown for one-way partial dependence plots.
+            (PD) graph, 'individual' creates an individual conditional expectation (ICE) plot, and 'both' creates a
+            single-figure PD and ICE plot. ICE plots can only be shown for one-way partial dependence plots.
 
     Returns:
         plotly.graph_objects.Figure: figure object containing the partial dependence data for plotting
 
     Raises:
-        PartialDependenceError: if a graph is requested for a class name that isn't present in the pipeline.
-        PartialDependenceError: if an ICE plot is requested for a two-way partial dependence.
+        PartialDependenceError: If a graph is requested for a class name that isn't present in the pipeline.
+        PartialDependenceError: If an ICE plot is requested for a two-way partial dependence.
     """
     X = infer_feature_types(X)
     if isinstance(features, (list, tuple)):
@@ -1197,14 +1195,13 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
         y_true (pd.Series, or np.ndarray): The real target values of the data
         y_pred (pd.Series, or np.ndarray): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
-                                 between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
-                                 Defaults to None.
+            between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow. Defaults to None.
 
     Returns:
         pd.DataFrame with the following columns:
-                * `prediction`: Predicted values from regression model.
-                * `actual`: Real target values.
-                * `outlier`: Colors indicating which values are in the threshold for what is considered an outlier value.
+            * `prediction`: Predicted values from regression model.
+            * `actual`: Real target values.
+            * `outlier`: Colors indicating which values are in the threshold for what is considered an outlier value.
 
     Raises:
         ValueError: If threshold is not positive.
@@ -1239,8 +1236,7 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
         y_true (pd.Series): The real target values of the data
         y_pred (pd.Series): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
-                                 between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
-                                 Defaults to None.
+            between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow. Defaults to None.
 
     Returns:
         plotly.Figure representing the predicted vs. actual values graph.
