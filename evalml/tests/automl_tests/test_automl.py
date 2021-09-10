@@ -5019,6 +5019,25 @@ def test_pipeline_parameter_warnings_only_parameternotused(
     assert str(warning) == "Big bad warning"
 
 
+def test_pipeline_parameter_warnings_with_other_types():
+    # Data that will trigger a UserWarning from `TargetLeakageDataCheck`
+    X = pd.DataFrame({"a": [1, 2, 2, 1, 2, 1, 2, 2, 1, 1] * 505})
+    y = [0.946, 0.972, 1.154, 0.954, 0.969, 1.222, 1.038, 0.999, 0.973, 0.897] * 505
+
+    with pytest.warns(None) as w:
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="regression",
+            allowed_model_families=["random_forest", "linear_model"],
+            max_batches=1,
+            pipeline_parameters={"Decision Tree Classifier": {"max_depth": 1}},
+        )
+    assert len(w) == 2
+    assert isinstance(w[0].message, UserWarning)
+    assert isinstance(w[1].message, ParameterNotUsedWarning)
+
+
 @pytest.mark.parametrize("nans", [None, pd.NA, np.nan])
 @patch("evalml.pipelines.components.Estimator.fit")
 @patch(

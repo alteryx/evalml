@@ -855,9 +855,7 @@ class AutoMLSearch:
                 if len(final_message) == 0:
                     final_message = final_message.union(msg.message.components)
                 else:
-                    final_message = final_message.intersection(
-                        msg.message.components
-                    )
+                    final_message = final_message.intersection(msg.message.components)
             # Only raise the same warning from multiple pipelines once
             elif str(msg.message) not in raised_messages:
                 warnings.warn(msg.message)
