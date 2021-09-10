@@ -12,6 +12,7 @@ Release Notes
 
     **Breaking Changes**
 
+
 **v0.32.0 Aug. 31, 2021**
     * Enhancements
         * Allow string for ``engine`` parameter for ``AutoMLSearch``:pr:`2667`
@@ -32,6 +33,7 @@ Release Notes
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
     * Documentation Changes
+        * Added user guide documentation for using ``ComponentGraph`` and added ``ComponentGraph`` to API reference :pr:`2673`
         * Updated documentation to make parallelization of AutoML clearer :pr:`2667`
     * Testing Changes
         * Removes the process-level parallelism from the ``test_cancel_job`` test :pr:`2666`
@@ -43,7 +45,6 @@ Release Notes
         * Renamed the current top level ``search`` method to ``search_iterative`` and defined a new ``search`` method for the ``DefaultAlgorithm`` :pr:`2634`
         * Replaced ``SMOTEOversampler``, ``SMOTENOversampler`` and ``SMOTENCOversampler`` with consolidated ``Oversampler`` component :pr:`2695`
         * Removed ``LinearRegressor`` from the list of default ``AutoMLSearch`` estimators due to poor performance :pr:`2660`
-    
 
 **v0.31.0 Aug. 19, 2021**
     * Enhancements

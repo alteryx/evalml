@@ -53,12 +53,12 @@ def _make_rows(
         display_text = symbol * min(int(abs(value) // 0.2) + 1, 5)
 
         # At this point, the feature is either in the original data or the data
-        # the final estimator sees. So if it is not a pipeline feature, it is
-        # an original feature
-        if feature_name in pipeline_features.columns:
-            feature_value = pipeline_features[feature_name].iloc[0]
-        else:
+        # the final estimator sees, or both. We use the original feature value if possible
+        is_original_feature = feature_name in original_features.columns
+        if is_original_feature:
             feature_value = original_features[feature_name].iloc[0]
+        else:
+            feature_value = pipeline_features[feature_name].iloc[0]
 
         if convert_numeric_to_string:
             if pd.api.types.is_number(feature_value) and not pd.api.types.is_bool(
@@ -505,10 +505,6 @@ def _make_single_prediction_shap_table(
     """
     pipeline_features_row = pipeline_features.iloc[[index_to_explain]]
     input_features_row = input_features.iloc[[index_to_explain]]
-    if pipeline_features_row.isna().any(axis=None):
-        raise ValueError(
-            f"Requested index ({index_to_explain}) produces NaN in features."
-        )
 
     shap_values, expected_value = _compute_shap_values(
         pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0)

@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -364,3 +366,15 @@ def test_oversampler_sampling_k_neighbors(minority, expected, fails):
     overs.fit_transform(X_ww, y)
     assert overs._component_obj.k_neighbors == expected
     assert overs.parameters["k_neighbors"] == expected
+
+
+def test_oversampler_copy(X_y_binary):
+    X, y = X_y_binary
+
+    oversampler = Oversampler()
+    oversampler_copy = copy.deepcopy(oversampler)
+    assert oversampler == oversampler_copy
+
+    oversampler.fit(X, y)
+    oversampler_fit_copy = copy.deepcopy(oversampler)
+    assert oversampler == oversampler_fit_copy

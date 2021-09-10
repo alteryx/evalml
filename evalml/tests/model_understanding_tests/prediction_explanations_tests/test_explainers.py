@@ -871,6 +871,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(
         abs_error_mock.return_value = pd.Series([4.0, 1.0], dtype="float64")
         mock_default_metrics.__getitem__.return_value = abs_error_mock
         pipeline.predict.return_value = ww.init_series(pd.Series([2, 1]))
+        pipeline.predict_in_sample.return_value = ww.init_series(pd.Series([2, 1]))
         y_true = pd.Series([3, 2], index=custom_index)
         answer = _add_custom_index(
             answer,
@@ -886,7 +887,11 @@ def test_explain_predictions_best_worst_and_explain_predictions(
         proba = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
         proba.ww.init()
         pipeline.predict_proba.return_value = proba
+        pipeline.predict_proba_in_sample.return_value = proba
         pipeline.predict.return_value = ww.init_series(pd.Series(["malignant"] * 2))
+        pipeline.predict_in_sample.return_value = ww.init_series(
+            pd.Series(["malignant"] * 2)
+        )
         y_true = pd.Series(["malignant", "benign"], index=custom_index)
         answer = _add_custom_index(
             answer,
@@ -907,7 +912,11 @@ def test_explain_predictions_best_worst_and_explain_predictions(
         )
         proba.ww.init()
         pipeline.predict_proba.return_value = proba
+        pipeline.predict_proba_in_sample.return_value = proba
         pipeline.predict.return_value = ww.init_series(
+            pd.Series(["setosa", "versicolor"])
+        )
+        pipeline.predict_in_sample.return_value = ww.init_series(
             pd.Series(["setosa", "versicolor"])
         )
         y_true = pd.Series(["setosa", "versicolor"], index=custom_index)
@@ -924,6 +933,8 @@ def test_explain_predictions_best_worst_and_explain_predictions(
         y=y_true,
         indices_to_explain=[0, 1],
         output_format=output_format,
+        training_data=input_features,
+        training_target=y_true,
     )
     if output_format == "text":
         compare_two_tables(report.splitlines(), explain_predictions_answer.splitlines())
@@ -941,6 +952,8 @@ def test_explain_predictions_best_worst_and_explain_predictions(
         y_true=y_true,
         num_to_explain=1,
         output_format=output_format,
+        training_data=input_features,
+        training_target=y_true,
     )
     if output_format == "text":
         compare_two_tables(best_worst_report.splitlines(), answer.splitlines())
@@ -1068,19 +1081,27 @@ def test_explain_predictions_time_series(ts_data):
     ts_pipeline = TimeSeriesRegressionPipeline(
         component_graph=["Delayed Feature Transformer", "Random Forest Regressor"],
         parameters={
-            "pipeline": {"date_index": None, "gap": 1, "max_delay": 2},
+            "pipeline": {
+                "date_index": None,
+                "gap": 0,
+                "max_delay": 2,
+                "forecast_horizon": 1,
+            },
             "Random Forest Regressor": {"n_jobs": 1},
         },
     )
-
-    ts_pipeline.fit(X, y)
+    X_train, y_train = X[:15], y[:15]
+    X_validation, y_validation = X[15:], y[15:]
+    ts_pipeline.fit(X_train, y_train)
 
     exp = explain_predictions(
         pipeline=ts_pipeline,
-        input_features=X,
-        y=y,
+        input_features=X_validation,
+        y=y_validation,
         indices_to_explain=[5, 11],
         output_format="dict",
+        training_data=X_train,
+        training_target=y_train,
     )
 
     # Check that the computed features to be explained aren't NaN.
@@ -1088,15 +1109,6 @@ def test_explain_predictions_time_series(ts_data):
         assert not np.isnan(
             np.array(exp["explanations"][exp_idx]["explanations"][0]["feature_values"])
         ).any()
-
-    with pytest.raises(ValueError, match="Requested index"):
-        explain_predictions(
-            pipeline=ts_pipeline,
-            input_features=X,
-            y=y,
-            indices_to_explain=[1, 11],
-            output_format="text",
-        )
 
 
 @pytest.mark.parametrize("output_format", ["text", "dict", "dataframe"])
@@ -1117,13 +1129,26 @@ def test_explain_predictions_best_worst_time_series(
 
     ts_pipeline = pipeline_class(
         component_graph=["Delayed Feature Transformer", estimator],
-        parameters={"pipeline": {"date_index": None, "gap": 1, "max_delay": 2}},
+        parameters={
+            "pipeline": {
+                "date_index": None,
+                "gap": 0,
+                "max_delay": 2,
+                "forecast_horizon": 1,
+            }
+        },
     )
-
-    ts_pipeline.fit(X, y)
+    X_train, y_train = X[:15], y[:15]
+    X_validation, y_validation = X[15:], y[15:]
+    ts_pipeline.fit(X_train, y_train)
 
     exp = explain_predictions_best_worst(
-        pipeline=ts_pipeline, input_features=X, y_true=y, output_format=output_format
+        pipeline=ts_pipeline,
+        input_features=X_validation,
+        y_true=y_validation,
+        output_format=output_format,
+        training_data=X_train,
+        training_target=y_train,
     )
 
     if output_format == "dict":
@@ -1757,3 +1782,111 @@ def test_explain_predictions_url_email(df_with_url_and_email):
         .isnull()
         .any()
     )
+
+
+@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
+def test_explain_predictions_report_shows_original_value_if_possible(
+    pipeline_class, estimator, fraud_100
+):
+    X, y = fraud_100
+    X.ww.set_types({"country": "NaturalLanguage"})
+    component_graph = [
+        "Imputer",
+        "DateTime Featurization Component",
+        "Text Featurization Component",
+        "One Hot Encoder",
+        "Standard Scaler",
+        estimator,
+    ]
+    parameters = {
+        estimator: {"n_jobs": 1},
+    }
+    pipeline = pipeline_class(component_graph=component_graph, parameters=parameters)
+
+    y = transform_y_for_problem_type(pipeline.problem_type, y)
+
+    pipeline.fit(X, y)
+
+    report = explain_predictions(
+        pipeline, X, y, indices_to_explain=[0], output_format="dict", top_k_features=20
+    )
+    expected_feature_values = set(X.ww.iloc[0, :].tolist())
+    for explanation in report["explanations"][0]["explanations"]:
+        assert set(explanation["feature_names"]) == set(X.columns)
+        assert set(explanation["feature_values"]) == expected_feature_values
+
+    X_null = X.ww.copy()
+    X_null.loc[0, "lat"] = None
+    X_null.ww.init(schema=X.ww.schema)
+
+    report = explain_predictions(
+        pipeline,
+        X_null,
+        y,
+        indices_to_explain=[0],
+        output_format="dict",
+        top_k_features=20,
+    )
+    for explanation in report["explanations"][0]["explanations"]:
+        assert set(explanation["feature_names"]) == set(X.columns)
+        for feature_name, feature_value in zip(
+            explanation["feature_names"], explanation["feature_values"]
+        ):
+            if feature_name == "lat":
+                assert np.isnan(feature_value)
+
+
+def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
+    fraud_100,
+):
+    X, y = fraud_100
+    X.ww.set_types({"country": "NaturalLanguage"})
+    component_graph = [
+        "Imputer",
+        "DateTime Featurization Component",
+        "Text Featurization Component",
+        "One Hot Encoder",
+        "Standard Scaler",
+        "Random Forest Classifier",
+    ]
+    parameters = {
+        "Random Forest Classifier": {"n_jobs": 1},
+    }
+    pipeline = BinaryClassificationPipeline(
+        component_graph=component_graph, parameters=parameters
+    )
+
+    y = transform_y_for_problem_type(pipeline.problem_type, y)
+
+    pipeline.fit(X, y)
+    report = explain_predictions_best_worst(
+        pipeline, X, y, num_to_explain=1, output_format="dict", top_k_features=20
+    )
+
+    for index, explanation in enumerate(report["explanations"]):
+        for exp in explanation["explanations"]:
+            assert set(exp["feature_names"]) == set(X.columns)
+            assert set(exp["feature_values"]) == set(
+                X.ww.iloc[explanation["predicted_values"]["index_id"], :]
+            )
+
+    X_null = X.ww.copy()
+    X_null.loc[0:2, "lat"] = None
+    X_null.ww.init(schema=X.ww.schema)
+
+    report = explain_predictions_best_worst(
+        pipeline,
+        X_null.ww.iloc[:2],
+        y.ww.iloc[:2],
+        num_to_explain=1,
+        output_format="dict",
+        top_k_features=20,
+    )
+    for explanation in report["explanations"]:
+        for exp in explanation["explanations"]:
+            assert set(exp["feature_names"]) == set(X.columns)
+            for feature_name, feature_value in zip(
+                exp["feature_names"], exp["feature_values"]
+            ):
+                if feature_name == "lat":
+                    assert np.isnan(feature_value)

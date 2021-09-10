@@ -8,11 +8,7 @@ from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.pipelines.time_series_pipeline_base import TimeSeriesPipelineBase
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    drop_rows_with_nans,
-    infer_feature_types,
-    pad_with_nans,
-)
+from evalml.utils import infer_feature_types
 
 
 class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPipeline):
@@ -35,8 +31,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """Fit a time series classification pipeline.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (pd.Series, np.ndarray): The target training targets of length [n_samples]
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
+            y (pd.Series, np.ndarray): The target training targets of length [n_samples].
 
         Returns:
             self
@@ -57,90 +53,125 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             y_arg = y
         return self.estimator.predict_proba(features, y=y_arg)
 
-    def _predict(self, X, y, objective=None, pad=False):
-        features = self.compute_estimator_features(X, y)
-        features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
-        predictions = self._estimator_predict(features_no_nan, y_no_nan)
-        if pad:
-            padded = pad_with_nans(
-                predictions, max(0, features.shape[0] - predictions.shape[0])
-            )
-            return infer_feature_types(padded)
-        return predictions
-
-    def predict(self, X, y=None, objective=None):
-        """Make predictions using selected features.
+    def predict_proba_in_sample(self, X_holdout, y_holdout, X_train, y_train):
+        """Predict on future data where the target is known, e.g. cross validation.
 
         Arguments:
-            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
-            y (pd.Series, np.ndarray, None): The target training targets of length [n_samples].
-            objective (Object or string): The objective to use to make predictions.
+            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features].
+            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples].
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features].
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
 
         Returns:
-            pd.Series: Predicted values.
+            pd.Series: Estimated probabilities.
         """
         if self.estimator is None:
             raise ValueError(
-                "Cannot call predict() on a component graph because the final component is not an Estimator."
+                "Cannot call predict_proba_in_sample() on a component graph because the final component is not an Estimator."
             )
-        X, y = self._convert_to_woodwork(X, y)
-        y = self._encode_targets(y)
-        n_features = max(len(y), X.shape[0])
-        predictions = self._predict(X, y, objective=objective, pad=False)
-        # In case gap is 0 and this is a baseline pipeline, we drop the nans in the
-        # predictions before decoding them
-        predictions = pd.Series(
-            self._decode_targets(predictions.dropna()), name=self.input_target_name
+        y_holdout = self._encode_targets(y_holdout)
+        y_train = self._encode_targets(y_train)
+        features = self.compute_estimator_features(
+            X_holdout, y_holdout, X_train, y_train
         )
-        padded = pad_with_nans(predictions, max(0, n_features - predictions.shape[0]))
-        return infer_feature_types(padded)
+        proba = self._estimator_predict_proba(features, y_holdout)
+        proba.index = y_holdout.index
+        proba = proba.ww.rename(
+            columns={
+                col: new_col
+                for col, new_col in zip(proba.columns, self._encoder.classes_)
+            }
+        )
+        return infer_feature_types(proba)
 
-    def predict_proba(self, X, y=None):
-        """Make probability estimates for labels.
+    def predict_in_sample(self, X, y, X_train, y_train, objective=None):
+        """Predict on future data where the target is known, e.g. cross validation.
 
         Arguments:
-            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
+            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features].
+            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples].
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features].
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
+            objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
 
         Returns:
-            pd.DataFrame: Probability estimates.
+            pd.Series: Estimated labels.
+        """
+        if self.estimator is None:
+            raise ValueError(
+                "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
+            )
+
+        y = self._encode_targets(y)
+        y_train = self._encode_targets(y_train)
+        features = self.compute_estimator_features(X, y, X_train, y_train)
+        predictions = self._estimator_predict(features, y)
+        predictions.index = y.index
+        predictions = self.inverse_transform(predictions)
+        predictions = pd.Series(
+            self._decode_targets(predictions),
+            name=self.input_target_name,
+            index=y.index,
+        )
+        return infer_feature_types(predictions)
+
+    def predict_proba(self, X, X_train=None, y_train=None):
+        """Predict on future data where the target is unknown.
+
+        Arguments:
+            X (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features].
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features].
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
+
+        Returns:
+            pd.Series: Estimated probabilities.
         """
         if self.estimator is None:
             raise ValueError(
                 "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
             )
-        X, y = self._convert_to_woodwork(X, y)
-        y = self._encode_targets(y)
-        features = self.compute_estimator_features(X, y)
-        features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
-        proba = self._estimator_predict_proba(features_no_nan, y_no_nan)
-        proba.columns = self._encoder.classes_
-        padded = pad_with_nans(proba, max(0, features.shape[0] - proba.shape[0]))
-        return infer_feature_types(padded)
+        X_train, y_train = self._convert_to_woodwork(X_train, y_train)
+        y_holdout = self._create_empty_series(y_train)
+        X, y_holdout = self._convert_to_woodwork(X, y_holdout)
+        y_holdout.index = X.index
+        return self.predict_proba_in_sample(X, y_holdout, X_train, y_train)
 
-    def score(self, X, y, objectives):
+    def _compute_predictions(self, X, y, X_train, y_train, objectives):
+        y_predicted = None
+        y_predicted_proba = None
+        if any(o.score_needs_proba for o in objectives):
+            y_predicted_proba = self.predict_proba_in_sample(X, y, X_train, y_train)
+        if any(not o.score_needs_proba for o in objectives):
+            y_predicted = self.predict_in_sample(X, y, X_train, y_train)
+            y_predicted = self._encode_targets(y_predicted)
+        return y_predicted, y_predicted_proba
+
+    def score(self, X, y, objectives, X_train=None, y_train=None):
         """Evaluate model performance on current and additional objectives.
 
         Arguments:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series): True labels of length [n_samples].
             objectives (list): Non-empty list of objectives to score on.
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features].
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
 
         Returns:
             dict: Ordered dictionary of objective scores.
         """
         X, y = self._convert_to_woodwork(X, y)
+        X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         objectives = self.create_objectives(objectives)
-        y_encoded = self._encode_targets(y)
-        y_shifted = y_encoded.shift(-self.gap)
         y_predicted, y_predicted_proba = self._compute_predictions(
-            X, y, objectives, time_series=True
-        )
-        y_shifted, y_predicted, y_predicted_proba = drop_rows_with_nans(
-            y_shifted, y_predicted, y_predicted_proba
+            X,
+            y,
+            X_train,
+            y_train,
+            objectives,
         )
         return self._score_all_objectives(
             X,
-            y_shifted,
+            self._encode_targets(y),
             y_predicted,
             y_pred_proba=y_predicted_proba,
             objectives=objectives,
@@ -148,8 +179,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
 
 
 class TimeSeriesBinaryClassificationPipeline(
-    BinaryClassificationPipelineMixin,
     TimeSeriesClassificationPipeline,
+    BinaryClassificationPipelineMixin,
 ):
     """Pipeline base class for time series binary classification problems.
 
@@ -168,10 +199,25 @@ class TimeSeriesBinaryClassificationPipeline(
 
     problem_type = ProblemTypes.TIME_SERIES_BINARY
 
-    def _predict(self, X, y, objective=None, pad=False):
-        features = self.compute_estimator_features(X, y)
-        features_no_nan, y_no_nan = drop_rows_with_nans(features, y)
+    def _select_y_pred_for_score(self, X, y, y_pred, y_pred_proba, objective):
+        y_pred_to_use = y_pred
+        if self.threshold is not None and not objective.score_needs_proba:
+            y_pred_to_use = self._predict_with_objective(X, y_pred_proba, objective)
+        return y_pred_to_use
 
+    def predict_in_sample(self, X, y, X_train, y_train, objective=None):
+        """Predict on future data where the target is known, e.g. cross validation.
+
+        Arguments:
+            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features].
+            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples].
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures].
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
+            objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
+
+        Returns:
+            pd.Series: Estimated labels.
+        """
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
             if not objective.is_defined_for_problem_type(self.problem_type):
@@ -179,21 +225,23 @@ class TimeSeriesBinaryClassificationPipeline(
                     f"Objective {objective.name} is not defined for time series binary classification."
                 )
 
-        if self.threshold is None:
-            predictions = self._estimator_predict(features_no_nan, y_no_nan)
-        else:
-            proba = self._estimator_predict_proba(features_no_nan, y_no_nan)
+        if self.threshold is not None:
+            proba = self.predict_proba_in_sample(X, y, X_train, y_train)
             proba = proba.iloc[:, 1]
             if objective is None:
                 predictions = proba > self.threshold
             else:
                 predictions = objective.decision_function(
-                    proba, threshold=self.threshold, X=features_no_nan
+                    proba, threshold=self.threshold, X=X
                 )
-        if pad:
-            predictions = pad_with_nans(
-                predictions, max(0, features.shape[0] - predictions.shape[0])
+            predictions = pd.Series(
+                self._decode_targets(predictions),
+                name=self.input_target_name,
+                index=y.index,
             )
+        else:
+            predictions = super().predict_in_sample(X, y, X_train, y_train)
+
         return infer_feature_types(predictions)
 
     @staticmethod

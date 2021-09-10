@@ -1,10 +1,10 @@
+import logging
+
 import numpy as np
 
 from .binary_classification_objective import BinaryClassificationObjective
 
-from evalml.utils.logger import get_logger
-
-logger = get_logger(__file__)
+logger = logging.getLogger(__name__)
 
 
 class SensitivityLowAlert(BinaryClassificationObjective):

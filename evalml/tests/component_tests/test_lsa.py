@@ -57,7 +57,7 @@ def test_lsa_no_text():
     assert len(X_t.columns) == 2
 
 
-def test_some_missing_col_names(text_df, caplog):
+def test_some_missing_col_names(text_df):
     X = text_df
     expected_col_names = set(
         ["LSA(col_1)[0]", "LSA(col_1)[1]", "LSA(col_2)[0]", "LSA(col_2)[1]"]

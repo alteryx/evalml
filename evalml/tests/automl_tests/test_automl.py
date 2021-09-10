@@ -218,14 +218,17 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
     "automl_type",
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
+@pytest.mark.parametrize("verbose", [True, False])
 def test_pipeline_limits(
     automl_type,
+    verbose,
     caplog,
     AutoMLTestEnv,
     X_y_binary,
     X_y_multi,
     X_y_regression,
 ):
+    caplog.clear()
     if automl_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         score_value = {"Log Loss Binary": 1.0}
@@ -242,12 +245,13 @@ def test_pipeline_limits(
         problem_type=automl_type,
         optimize_thresholds=False,
         max_iterations=1,
+        verbose=verbose,
     )
     env = AutoMLTestEnv(automl_type)
     with env.test_context(score_return_value=score_value):
         automl.search()
     out = caplog.text
-    assert "Searching up to 1 pipelines. " in out
+    assert ("Searching up to 1 pipelines. " in out) == verbose
     assert len(automl.results["pipeline_results"]) == 1
 
     caplog.clear()
@@ -257,11 +261,12 @@ def test_pipeline_limits(
         problem_type=automl_type,
         optimize_thresholds=False,
         max_time=1,
+        verbose=verbose,
     )
     with env.test_context(score_return_value=score_value):
         automl.search()
     out = caplog.text
-    assert "Will stop searching for new pipelines after 1 seconds" in out
+    assert ("Will stop searching for new pipelines after 1 seconds" in out) == verbose
     assert len(automl.results["pipeline_results"]) >= 1
 
     caplog.clear()
@@ -272,23 +277,36 @@ def test_pipeline_limits(
         optimize_thresholds=False,
         max_time=1,
         max_iterations=5,
+        verbose=verbose,
     )
     with env.test_context(score_return_value=score_value):
         automl.search()
     out = caplog.text
-    assert "Searching up to 5 pipelines. " in out
-    assert "Will stop searching for new pipelines after 1 seconds" in out
+    if verbose:
+        assert "Searching up to 5 pipelines. " in out
+        assert "Will stop searching for new pipelines after 1 seconds" in out
+    else:
+        assert "Searching up to 5 pipelines. " not in out
+        assert "Will stop searching for new pipelines after 1 seconds" not in out
     assert len(automl.results["pipeline_results"]) <= 5
 
     caplog.clear()
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type=automl_type, optimize_thresholds=False
+        X_train=X,
+        y_train=y,
+        problem_type=automl_type,
+        optimize_thresholds=False,
+        verbose=verbose,
     )
     with env.test_context(score_return_value=score_value):
         automl.search()
     out = caplog.text
-    assert "Using default limit of max_batches=1." in out
-    assert "Searching up to 1 batches for a total of" in out
+    if verbose:
+        assert "Using default limit of max_batches=1." in out
+        assert "Searching up to 1 batches for a total of" in out
+    else:
+        assert "Using default limit of max_batches=1." not in out
+        assert "Searching up to 1 batches for a total of" not in out
     assert len(automl.results["pipeline_results"]) > 4
 
     caplog.clear()
@@ -298,19 +316,22 @@ def test_pipeline_limits(
         problem_type=automl_type,
         optimize_thresholds=False,
         max_time=1e-16,
+        verbose=verbose,
     )
     with env.test_context(score_return_value=score_value):
         automl.search()
     out = caplog.text
-    assert "Will stop searching for new pipelines after 0 seconds" in out
+    assert ("Will stop searching for new pipelines after 0 seconds" in out) == verbose
     # search will always run at least one pipeline
     assert len(automl.results["pipeline_results"]) >= 1
+    caplog.clear()
 
 
 def test_pipeline_fit_raises(AutoMLTestEnv, X_y_binary, caplog):
     X, y = X_y_binary
     # Don't train the best pipeline, since this test mocks the pipeline.fit() method and causes it to raise an exception,
     # which we don't want to raise while fitting the best pipeline.
+    caplog.clear()
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -338,9 +359,14 @@ def test_pipeline_fit_raises(AutoMLTestEnv, X_y_binary, caplog):
 
 
 def test_pipeline_score_raises(AutoMLTestEnv, X_y_binary, caplog):
+    caplog.clear()
     X, y = X_y_binary
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", max_iterations=1, n_jobs=1
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=1,
+        n_jobs=1,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(
@@ -363,6 +389,7 @@ def test_pipeline_score_raises(AutoMLTestEnv, X_y_binary, caplog):
 
 @patch("evalml.objectives.AUC.score")
 def test_objective_score_raises(mock_score, X_y_binary, caplog):
+    caplog.clear()
     msg = "all your model are belong to us"
     mock_score.side_effect = Exception(msg)
     X, y = X_y_binary
@@ -671,6 +698,7 @@ def test_automl_serialization(pickle_type, X_y_binary, tmpdir):
         optimize_thresholds=False,
         max_iterations=num_max_iterations,
         n_jobs=1,
+        verbose=True,
     )
     automl.search()
 
@@ -1379,7 +1407,9 @@ def test_get_pipeline(AutoMLTestEnv, X_y_binary):
 
 
 @pytest.mark.parametrize("return_dict", [True, False])
-def test_describe_pipeline(return_dict, caplog, X_y_binary, AutoMLTestEnv):
+@pytest.mark.parametrize("verbose", [True, False])
+def test_describe_pipeline(return_dict, verbose, caplog, X_y_binary, AutoMLTestEnv):
+    caplog.clear()
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,
@@ -1387,13 +1417,14 @@ def test_describe_pipeline(return_dict, caplog, X_y_binary, AutoMLTestEnv):
         problem_type="binary",
         optimize_thresholds=False,
         max_iterations=1,
+        verbose=verbose,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1.0}):
         automl.search()
     out = caplog.text
 
-    assert "Searching up to 1 pipelines. " in out
+    assert ("Searching up to 1 pipelines. " in out) == verbose
 
     assert len(automl.results["pipeline_results"]) == 1
     caplog.clear()
@@ -2019,7 +2050,14 @@ def test_percent_better_than_baseline_in_rankings(
     Pipeline2.score = mock_score_2
 
     pipeline_parameters = (
-        {"pipeline": {"date_index": None, "gap": 0, "max_delay": 0}}
+        {
+            "pipeline": {
+                "date_index": None,
+                "gap": 0,
+                "max_delay": 0,
+                "forecast_horizon": 2,
+            }
+        }
         if problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION
         else {}
     )
@@ -2044,7 +2082,12 @@ def test_percent_better_than_baseline_in_rankings(
             max_iterations=3,
             objective=objective,
             additional_objectives=[],
-            problem_configuration={"date_index": None, "gap": 0, "max_delay": 0},
+            problem_configuration={
+                "date_index": None,
+                "gap": 0,
+                "max_delay": 0,
+                "forecast_horizon": 2,
+            },
             train_best_pipeline=False,
             n_jobs=1,
         )
@@ -2206,7 +2249,14 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     DummyPipeline.score = mock_score_1
     parameters = {}
     if problem_type_enum == ProblemTypes.TIME_SERIES_REGRESSION:
-        parameters = {"pipeline": {"date_index": None, "gap": 6, "max_delay": 3}}
+        parameters = {
+            "pipeline": {
+                "date_index": None,
+                "gap": 6,
+                "max_delay": 3,
+                "forecast_horizon": 3,
+            }
+        }
     # specifying problem_configuration for all problem types for conciseness
     automl = AutoMLSearch(
         X_train=X,
@@ -2214,7 +2264,12 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         problem_type=problem_type,
         max_iterations=2,
         objective="auto",
-        problem_configuration={"date_index": None, "gap": 1, "max_delay": 1},
+        problem_configuration={
+            "date_index": None,
+            "gap": 1,
+            "max_delay": 1,
+            "forecast_horizon": 3,
+        },
         optimize_thresholds=False,
         additional_objectives=additional_objectives,
     )
@@ -2228,7 +2283,14 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         pipelines_per_batch=5,
         ensembling=False,
         text_in_ensembling=False,
-        pipeline_params={"pipeline": {"date_index": None, "gap": 1, "max_delay": 1}},
+        pipeline_params={
+            "pipeline": {
+                "date_index": None,
+                "gap": 1,
+                "max_delay": 1,
+                "forecast_horizon": 2,
+            }
+        },
         custom_hyperparameters=None,
     )
     automl._SLEEP_TIME = 0.00001
@@ -2256,7 +2318,12 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
 def test_time_series_regression_with_parameters(ts_data):
     X, y = ts_data
     X.index.name = "Date"
-    problem_configuration = {"date_index": "Date", "gap": 1, "max_delay": 0}
+    problem_configuration = {
+        "date_index": "Date",
+        "gap": 1,
+        "max_delay": 0,
+        "forecast_horizon": 2,
+    }
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -2416,6 +2483,7 @@ def test_max_iteration_works_with_stacked_ensemble(
         objective="Log Loss Binary",
         optimize_thresholds=False,
         ensembling=use_ensembling,
+        verbose=True,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.8}):
@@ -2532,7 +2600,10 @@ def test_early_stopping_negative(X_y_binary):
         )
 
 
-def test_early_stopping(caplog, logistic_regression_binary_pipeline_class, X_y_binary):
+@pytest.mark.parametrize("verbose", [True, False])
+def test_early_stopping(
+    verbose, caplog, logistic_regression_binary_pipeline_class, X_y_binary
+):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,
@@ -2545,6 +2616,7 @@ def test_early_stopping(caplog, logistic_regression_binary_pipeline_class, X_y_b
         tolerance=0.05,
         random_seed=0,
         n_jobs=1,
+        verbose=verbose,
     )
     mock_results = {"search_order": [0, 1, 2, 3], "pipeline_results": {}}
 
@@ -2564,7 +2636,9 @@ def test_early_stopping(caplog, logistic_regression_binary_pipeline_class, X_y_b
 
     assert not automl._should_continue()
     out = caplog.text
-    assert "2 iterations without improvement. Stopping search early." in out
+    assert (
+        "2 iterations without improvement. Stopping search early." in out
+    ) == verbose
 
 
 def test_automl_one_allowed_component_graph_ensembling_disabled(
@@ -2698,7 +2772,8 @@ def test_automl_max_batches_less_than_ensembling_disabled(
 
 
 @pytest.mark.parametrize("max_batches", [1, 2, 5, 10])
-def test_max_batches_output(max_batches, AutoMLTestEnv, X_y_binary, caplog):
+@pytest.mark.parametrize("verbose", [True, False])
+def test_max_batches_output(max_batches, verbose, AutoMLTestEnv, X_y_binary, caplog):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,
@@ -2707,13 +2782,17 @@ def test_max_batches_output(max_batches, AutoMLTestEnv, X_y_binary, caplog):
         max_iterations=None,
         optimize_thresholds=False,
         max_batches=max_batches,
+        verbose=verbose,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
         automl.search()
 
     output = caplog.text
-    assert output.count("Batch Number") == max_batches
+    if verbose:
+        assert output.count("Batch Number") == max_batches
+    else:
+        assert output.count("Batch Number") == 0
 
 
 def test_max_batches_plays_nice_with_other_stopping_criteria(AutoMLTestEnv, X_y_binary):
@@ -3444,7 +3523,7 @@ def test_automl_validates_problem_configuration(ts_data):
         ).problem_configuration
         == {}
     )
-    msg = "user_parameters must be a dict containing values for at least the date_index, gap, and max_delay parameters"
+    msg = "user_parameters must be a dict containing values for at least the date_index, gap, max_delay, and forecast_horizon parameters"
     with pytest.raises(ValueError, match=msg):
         AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression")
     with pytest.raises(ValueError, match=msg):
@@ -3466,9 +3545,19 @@ def test_automl_validates_problem_configuration(ts_data):
         X_train=X,
         y_train=y,
         problem_type="time series regression",
-        problem_configuration={"date_index": "Date", "max_delay": 2, "gap": 3},
+        problem_configuration={
+            "date_index": "Date",
+            "max_delay": 2,
+            "gap": 3,
+            "forecast_horizon": 2,
+        },
     ).problem_configuration
-    assert problem_config == {"date_index": "Date", "max_delay": 2, "gap": 3}
+    assert problem_config == {
+        "date_index": "Date",
+        "max_delay": 2,
+        "gap": 3,
+        "forecast_horizon": 2,
+    }
 
 
 @patch("evalml.objectives.BinaryClassificationObjective.optimize_threshold")
@@ -3603,7 +3692,12 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(
         X_train=X,
         y_train=y,
         problem_type="time series regression",
-        problem_configuration={"date_index": None, "gap": 6, "max_delay": 3},
+        problem_configuration={
+            "date_index": None,
+            "gap": 6,
+            "max_delay": 3,
+            "forecast_horizon": 7,
+        },
         max_iterations=1,
     )
     env = AutoMLTestEnv("time series regression")
@@ -3612,12 +3706,21 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(
 
     # Best pipeline is baseline pipeline because we only run one iteration
     assert automl.best_pipeline.parameters == {
-        "pipeline": {"date_index": None, "gap": 6, "max_delay": 3},
-        "Time Series Baseline Estimator": {
+        "pipeline": {
             "date_index": None,
             "gap": 6,
-            "max_delay": 3,
+            "max_delay": 0,
+            "forecast_horizon": 7,
         },
+        "Delayed Feature Transformer": {
+            "date_index": None,
+            "delay_features": False,
+            "delay_target": True,
+            "max_delay": 0,
+            "gap": 6,
+            "forecast_horizon": 7,
+        },
+        "Time Series Baseline Estimator": {"forecast_horizon": 7, "gap": 6},
     }
 
 
@@ -3646,7 +3749,12 @@ def test_automl_does_not_include_positive_only_objectives_by_default(
         X_train=X,
         y_train=y,
         problem_type=problem_type,
-        problem_configuration={"date_index": None, "gap": 0, "max_delay": 0},
+        problem_configuration={
+            "date_index": None,
+            "gap": 0,
+            "max_delay": 0,
+            "forecast_horizon": 2,
+        },
     )
     assert search.objective not in only_positive
     assert all([obj not in only_positive for obj in search.additional_objectives])
@@ -4016,7 +4124,10 @@ def test_automl_check_high_variance_logs_warning(AutoMLTestEnv, X_y_binary, capl
     env = AutoMLTestEnv("binary")
 
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=False,
     )
     with env.test_context(score_return_value={"Log Loss Binary": 1}):
         automl.search()
@@ -4526,7 +4637,12 @@ def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
             X,
             y,
             problem_type=problem_type,
-            problem_configuration={"date_index": None, "gap": 0, "max_delay": 2},
+            problem_configuration={
+                "date_index": None,
+                "gap": 0,
+                "max_delay": 2,
+                "forecast_horizon": 9,
+            },
         )
         assert len(warn) == 1
         message = "Time series support in evalml is still in beta, which means we are still actively building its core features"
@@ -4646,7 +4762,6 @@ def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
     )
 
 
-@pytest.mark.parametrize("gap", [0, 1])
 @pytest.mark.parametrize(
     "problem_type",
     [
@@ -4655,49 +4770,53 @@ def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
         if is_time_series(problem_type)
     ],
 )
-def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_type, gap):
+def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_type):
     X = pd.DataFrame({"a": [4, 5, 6, 7, 8]})
     y = pd.Series([0, 1, 1, 0, 1])
     expected_predictions_proba = pd.DataFrame(
         {
-            0: pd.Series([1, 0, 0, 1, 0], dtype="float64"),
-            1: pd.Series([0, 1, 1, 0, 1], dtype="float64"),
+            0: pd.Series([1.0], index=[4]),
+            1: pd.Series([0.0], index=[4]),
         }
     )
     if problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        y = pd.Series([0, 1, 2, 2, 1])
+        y = pd.Series([0, 2, 0, 1, 1])
         expected_predictions_proba = pd.DataFrame(
             {
-                0: pd.Series([1, 0, 0, 0, 0], dtype="float64"),
-                1: pd.Series([0, 1, 0, 0, 1], dtype="float64"),
-                2: pd.Series([0, 0, 1, 1, 0], dtype="float64"),
+                0: pd.Series([0.0], index=[4]),
+                1: pd.Series([1.0], index=[4]),
+                2: pd.Series([0.0], index=[4]),
             }
         )
-    if gap == 0:
-        # Shift to pad the first row with Nans
-        expected_predictions_proba = expected_predictions_proba.shift(1)
 
     automl = AutoMLSearch(
         X,
         y,
         problem_type=problem_type,
-        problem_configuration={"date_index": None, "gap": gap, "max_delay": 1},
+        problem_configuration={
+            "date_index": None,
+            "gap": 0,
+            "max_delay": 1,
+            "forecast_horizon": 1,
+        },
     )
     baseline = automl._get_baseline_pipeline()
-    baseline.fit(X, y)
+    X_train, y_train = X[:4], y[:4]
+    X_validation = X[4:]
+    baseline.fit(X_train, y_train)
 
-    expected_predictions = y.shift(1) if gap == 0 else y
-    expected_predictions = expected_predictions.reset_index(drop=True)
-    if not expected_predictions.isnull().values.any():
+    expected_predictions = y.shift(1)[4:]
+    if problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
         expected_predictions = expected_predictions.astype("int64")
-
-    pd.testing.assert_series_equal(expected_predictions, baseline.predict(X, y))
+    preds = baseline.predict(X_validation, None, X_train, y_train)
+    pd.testing.assert_series_equal(expected_predictions, preds)
     if is_classification(problem_type):
         pd.testing.assert_frame_equal(
-            expected_predictions_proba, baseline.predict_proba(X, y)
+            expected_predictions_proba,
+            baseline.predict_proba(X_validation, X_train, y_train),
         )
     np.testing.assert_allclose(
-        baseline.feature_importance.iloc[:, 1], np.array([0.0] * X.shape[1])
+        baseline.feature_importance.iloc[:, 1], np.array([0.0] * X_validation.shape[1])
     )
 
 
@@ -4710,6 +4829,7 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
         ("Accuracy Binary", False),
     ],
 )
+@pytest.mark.parametrize("verbose", [True, False])
 @patch(
     "evalml.objectives.binary_classification_objective.BinaryClassificationObjective.optimize_threshold",
     return_value=0.65,
@@ -4718,6 +4838,7 @@ def test_automl_alternate_thresholding_objective(
     mock_optimize,
     objective,
     errors,
+    verbose,
     X_y_binary,
     caplog,
 ):
@@ -4740,10 +4861,11 @@ def test_automl_alternate_thresholding_objective(
         problem_type="binary",
         alternate_thresholding_objective=objective,
         max_iterations=1,
+        verbose=verbose,
     )
     automl.search()
     mock_optimize.assert_called()
-    assert "Optimal threshold found" in caplog.text
+    assert ("Optimal threshold found" in caplog.text) == verbose
     assert automl.best_pipeline.threshold == 0.65
 
 
@@ -4777,6 +4899,7 @@ def test_automl_thresholding_train_pipelines(mock_objective, threshold, X_y_bina
 
 @pytest.mark.parametrize("columns", [[], ["unknown_col"], ["unknown1, unknown2"]])
 def test_automl_drop_unknown_columns(columns, AutoMLTestEnv, X_y_binary, caplog):
+    caplog.clear()
     X, y = X_y_binary
     X = pd.DataFrame(X)
     for col in columns:
@@ -4789,6 +4912,7 @@ def test_automl_drop_unknown_columns(columns, AutoMLTestEnv, X_y_binary, caplog)
         problem_type="binary",
         optimize_thresholds=False,
         max_batches=2,
+        verbose=True,
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
@@ -4836,10 +4960,20 @@ def test_data_splitter_gives_pipelines_same_data(
     elif automl_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
     elif automl_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        problem_configuration = {"gap": 1, "max_delay": 1, "date_index": 0}
+        problem_configuration = {
+            "gap": 1,
+            "max_delay": 1,
+            "date_index": 0,
+            "forecast_horizon": 10,
+        }
         X, y = X_y_regression
     else:
-        problem_configuration = {"gap": 1, "max_delay": 1, "date_index": 0}
+        problem_configuration = {
+            "gap": 1,
+            "max_delay": 1,
+            "date_index": 0,
+            "forecast_horizon": 10,
+        }
         X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -4943,6 +5077,29 @@ def test_pipeline_parameter_warnings_component_graphs(
     assert len(w) == (1 if len(set_values) else 0)
     if len(w):
         assert w[0].message.components == set_values
+
+
+@patch(
+    "evalml.data_checks.target_distribution_data_check.TargetDistributionDataCheck.validate"
+)
+def test_pipeline_parameter_warnings_only_parameternotused(
+    mock_data_check, X_y_regression
+):
+    mock_data_check.side_effect = UserWarning("Big bad warning")
+    X, y = X_y_regression
+    # Make sure it doesn't throw an error trying to access warning.components
+    with pytest.raises(UserWarning) as cw:
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="regression",
+            allowed_model_families=["random_forest"],
+            max_batches=3,
+        )
+    # But that it does throw a warning
+    warning = cw.value
+    assert isinstance(warning, UserWarning)
+    assert str(warning) == "Big bad warning"
 
 
 @pytest.mark.parametrize("nans", [None, pd.NA, np.nan])

@@ -60,22 +60,22 @@ def test_time_series_split(max_delay, gap, date_index, X_none, y_none):
 
     answer = [
         (
-            pd.date_range("2020-10-01", f"2020-10-{10 + gap}"),
-            pd.date_range(f"2020-10-{11 - max_delay}", f"2020-10-{17 + gap}"),
+            pd.date_range("2020-10-01", f"2020-10-10"),
+            pd.date_range(f"2020-10-11", f"2020-10-17"),
         ),
         (
-            pd.date_range("2020-10-01", f"2020-10-{17 + gap}"),
-            pd.date_range(f"2020-10-{18 - max_delay}", f"2020-10-{24 + gap}"),
+            pd.date_range("2020-10-01", f"2020-10-17"),
+            pd.date_range(f"2020-10-18", f"2020-10-24"),
         ),
         (
-            pd.date_range("2020-10-01", f"2020-10-{24 + gap}"),
-            pd.date_range(f"2020-10-{25 - max_delay}", "2020-10-31"),
+            pd.date_range("2020-10-01", f"2020-10-24"),
+            pd.date_range(f"2020-10-25", "2020-10-31"),
         ),
     ]
     answer_dt = [
-        (pd.Index(range(10 + gap)), pd.Index(range(10 - max_delay, 17 + gap))),
-        (pd.Index(range(17 + gap)), pd.Index(range(17 - max_delay, 24 + gap))),
-        (pd.Index(range(24 + gap)), pd.Index(range(24 - max_delay, 31))),
+        (pd.Index(range(10)), pd.Index(range(10, 17))),
+        (pd.Index(range(17)), pd.Index(range(17, 24))),
+        (pd.Index(range(24)), pd.Index(range(24, 31))),
     ]
 
     if X_none:
