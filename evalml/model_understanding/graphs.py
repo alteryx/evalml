@@ -198,6 +198,9 @@ def precision_recall_curve(y_true, y_pred_proba, pos_label_idx=-1):
                   * `recall`: Recall values.
                   * `thresholds`: Threshold values used to produce the precision and recall.
                   * `auc_score`: The area under the ROC curve.
+
+    Raises:
+        NoPositiveLabelException: If predicted probabilities do not contain a column at the specified label.
     """
     y_true = infer_feature_types(y_true)
     y_pred_proba = infer_feature_types(y_pred_proba)
@@ -383,6 +386,9 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
 
     Returns:
         plotly.Figure, a bar graph showing features and their respective permutation importance.
+
+    Raises:
+        ValueError: If importance_threshold is not greater than or equal to 0.
     """
     go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
@@ -431,19 +437,21 @@ def graph_permutation_importance(pipeline, X, y, objective, importance_threshold
 
 
 def binary_objective_vs_threshold(pipeline, X, y, objective, steps=100):
-    """Computes objective score as a function of potential binary classification
-        decision thresholds for a fitted binary classification pipeline.
+    """Computes objective score as a function of potential binary classification decision thresholds for a fitted binary classification pipeline.
 
     Args:
-        pipeline (BinaryClassificationPipeline obj): Fitted binary classification pipeline
-        X (pd.DataFrame): The input data used to compute objective score
-        y (pd.Series): The target labels
-        objective (ObjectiveBase obj, str): Objective used to score
-        steps (int): Number of intervals to divide and calculate objective score at
+        pipeline (BinaryClassificationPipeline obj): Fitted binary classification pipeline.
+        X (pd.DataFrame): The input data used to compute objective score.
+        y (pd.Series): The target labels.
+        objective (ObjectiveBase obj, str): Objective used to score.
+        steps (int): Number of intervals to divide and calculate objective score at.
 
     Returns:
-        pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold
+        pd.DataFrame: DataFrame with thresholds and the corresponding objective score calculated at each threshold.
 
+    Raises:
+        ValueError: If objective is not a binary classification objective.
+        ValueError: If objective's `score_needs_proba` is not False.
     """
     objective = get_objective(objective, return_instance=True)
     if not objective.is_defined_for_problem_type(ProblemTypes.BINARY):
@@ -510,8 +518,7 @@ def _is_feature_of_type(feature, X, ltype):
 
 
 def _put_categorical_feature_first(features, first_feature_categorical):
-    """If the user is doing a two-way partial dependence plot and one of the features is categorical,
-    we need to make sure the categorical feature is the first element in the tuple that's passed to sklearn.
+    """If the user is doing a two-way partial dependence plot and one of the features is categorical, we need to make sure the categorical feature is the first element in the tuple that's passed to sklearn.
 
     This is because in the two-way grid calculation, sklearn will try to coerce every element of the grid to the
     type of the first feature in the tuple. If we put the categorical feature first, the grid will be of type 'object'
@@ -570,11 +577,11 @@ def _raise_value_error_if_mostly_one_value(df, percentile):
 def partial_dependence(
     pipeline, X, features, percentiles=(0.05, 0.95), grid_resolution=100, kind="average"
 ):
-    """Calculates one or two-way partial dependence.  If a single integer or
-    string is given for features, one-way partial dependence is calculated. If
+    """Calculates one or two-way partial dependence.
+
+    If a single integer or string is given for features, one-way partial dependence is calculated. If
     a tuple of two integers or strings is given, two-way partial dependence
-    is calculated with the first feature in the y-axis and second feature in the
-    x-axis.
+    is calculated with the first feature in the y-axis and second feature in the x-axis.
 
     Args:
         pipeline (PipelineBase or subclass): Fitted pipeline
@@ -589,7 +596,7 @@ def partial_dependence(
         grid_resolution (int): Number of samples of feature(s) for partial dependence plot.  If this value
             is less than the maximum number of categories present in categorical data within X, it will be
             set to the max number of categories + 1. Defaults to 100.
-        kind {'average', 'individual', 'both'}: The type of predictions to return. 'individual' will return the predictions for
+        kind ({'average', 'individual', 'both'}): The type of predictions to return. 'individual' will return the predictions for
             all of the points in the grid for each sample in X. 'average' will return the predictions for all of the points in
             the grid but averaged over all of the samples in X.
 
@@ -624,7 +631,6 @@ def partial_dependence(
         PartialDependenceError: if any of the features are low-variance. Defined as having one value occurring more than the upper
             percentile passed by the user. By default 95%.
     """
-
     try:
         # Dynamically set the grid resolution to the maximum number of values
         # in the categorical/datetime variables if there are more categories/datetime values than resolution cells
@@ -937,8 +943,9 @@ def _update_fig_with_two_way_partial_dependence(
 def graph_partial_dependence(
     pipeline, X, features, class_label=None, grid_resolution=100, kind="average"
 ):
-    """Create an one-way or two-way partial dependence plot.  Passing a single integer or
-    string as features will create a one-way partial dependence plot with the feature values
+    """Create an one-way or two-way partial dependence plot.
+
+    Passing a single integer or string as features will create a one-way partial dependence plot with the feature values
     plotted against the partial dependence.  Passing features a tuple of int/strings will create
     a two-way partial dependence plot with a contour of feature[0] in the y-axis, feature[1]
     in the x-axis and the partial dependence in the z-axis.
@@ -1191,7 +1198,7 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
         y_pred (pd.Series, or np.ndarray): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
                                  between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
-                                 Defaults to None
+                                 Defaults to None.
 
     Returns:
         pd.DataFrame with the following columns:
@@ -1224,14 +1231,14 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
 
 
 def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
-    """Generate a scatter plot comparing the true and predicted values. Used for regression plotting
+    """Generate a scatter plot comparing the true and predicted values. Used for regression plotting.
 
     Args:
-        y_true (pd.Series): The real target values of the data
+        y_true (pd.Series): The real target values of the data.
         y_pred (pd.Series): The predicted values outputted by the regression model.
         outlier_threshold (int, float): A positive threshold for what is considered an outlier value. This value is compared to the absolute difference
                                  between each value of y_true and y_pred. Values within this threshold will be blue, otherwise they will be yellow.
-                                 Defaults to None
+                                 Defaults to None.
 
     Returns:
         plotly.Figure representing the predicted vs. actual values graph
@@ -1308,13 +1315,13 @@ def _tree_parse(est, feature_names):
 
 
 def decision_tree_data_from_estimator(estimator):
-    """Return data for a fitted tree in a restructured format
+    """Return data for a fitted tree in a restructured format.
 
     Args:
         estimator (ComponentBase): A fitted DecisionTree-based estimator.
 
     Returns:
-        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
+        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure.
     """
     if not estimator.model_family == ModelFamily.DECISION_TREE:
         raise ValueError(
@@ -1331,7 +1338,7 @@ def decision_tree_data_from_estimator(estimator):
 
 
 def decision_tree_data_from_pipeline(pipeline_):
-    """Return data for a fitted pipeline with  in a restructured format
+    """Return data for a fitted pipeline in a restructured format.
 
     Args:
         pipeline_ (PipelineBase): A pipeline with a DecisionTree-based estimator.
@@ -1357,7 +1364,7 @@ def decision_tree_data_from_pipeline(pipeline_):
 def visualize_decision_tree(
     estimator, max_depth=None, rotate=False, filled=False, filepath=None
 ):
-    """Generate an image visualizing the decision tree
+    """Generate an image visualizing the decision tree.
 
     Args:
         estimator (ComponentBase): A fitted DecisionTree-based estimator.
@@ -1444,7 +1451,6 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
     Returns:
        pd.DataFrame
     """
-
     dates = infer_feature_types(dates)
     y = infer_feature_types(y)
     prediction = pipeline.predict(X, y)
