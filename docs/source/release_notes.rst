@@ -6,6 +6,7 @@ Release Notes
         * Added label encoder to ``XGBoostClassifier`` to remove the warning :pr:`2701`
         * Set ``eval_metric`` to ``logloss`` for ``XGBoostClassifier`` :pr:`2741`
         * Added support for ``woodwork`` versions ``0.7.0`` and ``0.7.1`` :pr:`2743`
+        * Changed ``explain_predictions`` functions to display original feature values :pr:`2759`
     * Fixes
         * Fixed bug where ``_catch_warnings`` assumed all warnings were ``PipelineNotUsed`` :pr:`2753`
         * Fixed bug where ``Imputer.transform`` would erase ww typing information prior to handing data to the ``SimpleImputer`` :pr:`2752`
