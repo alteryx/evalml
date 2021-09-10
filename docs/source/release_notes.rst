@@ -2,6 +2,17 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.32.1 Sep. 10, 2021**
+    * Enhancements
         * Added ``verbose`` flag to ``AutoMLSearch`` to run search in silent mode by default :pr:`2645`
         * Added label encoder to ``XGBoostClassifier`` to remove the warning :pr:`2701`
         * Set ``eval_metric`` to ``logloss`` for ``XGBoostClassifier`` :pr:`2741`
