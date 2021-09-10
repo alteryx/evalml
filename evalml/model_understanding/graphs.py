@@ -1638,7 +1638,6 @@ def graph_t_sne(
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
         marker_line_width (int, optional): Determines the line width of the marker boundary.
         marker_size (int, optional): Determines the size of the marker.
-        **kwargs: Additional abritrary parameters.
 
     Returns:
         plotly.Figure: Figure representing the transformed data.
