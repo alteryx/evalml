@@ -1592,7 +1592,7 @@ def t_sne(
         **kwargs: Additional abritrary parameters.
 
     Returns:
-        np.ndarray (n_samples, n_components).
+        np.ndarray (n_samples, n_components): TSNE output.
 
     Raises:
         ValueError: If specified parameters are not valid values.
