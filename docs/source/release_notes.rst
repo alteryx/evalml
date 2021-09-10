@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug where ``Oversampler`` could not be copied :pr:`2755`
     * Changes
     * Documentation Changes
     * Testing Changes
