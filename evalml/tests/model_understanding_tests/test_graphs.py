@@ -43,7 +43,6 @@ from evalml.pipelines import (
     LinearRegressor,
     MulticlassClassificationPipeline,
     RegressionPipeline,
-    TimeSeriesRegressionPipeline,
 )
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_state, infer_feature_types
@@ -995,56 +994,46 @@ def test_graph_prediction_vs_actual(data_type):
     assert fig_dict["data"][2]["name"] == ">= outlier_threshold"
 
 
-def test_get_prediction_vs_actual_over_time_data(ts_data):
-    X, y = ts_data
-    X_train, y_train = X.iloc[:15], y.iloc[:15]
-    X_test, y_test = X.iloc[15:], y.iloc[15:]
-
-    pipeline = TimeSeriesRegressionPipeline(
-        ["Elastic Net Regressor"],
-        parameters={
-            "pipeline": {
-                "gap": 0,
-                "max_delay": 2,
-                "forecast_horizon": 1,
-                "date_index": None,
-            }
-        },
+@patch("evalml.pipelines.ClassificationPipeline.predict")
+@pytest.mark.parametrize("data_type", ["pd", "ww"])
+def test_get_prediction_vs_actual_over_time_data(
+    mock_predict, data_type, logistic_regression_binary_pipeline_class, make_data_type
+):
+    mock_predict.return_value = pd.Series([0] * 20)
+    X = make_data_type(data_type, pd.DataFrame())
+    y = make_data_type(data_type, pd.Series([0] * 20))
+    dates = make_data_type(
+        data_type, pd.Series(pd.date_range("2000-05-19", periods=20, freq="D"))
     )
 
-    pipeline.fit(X_train, y_train)
-    results = get_prediction_vs_actual_over_time_data(
-        pipeline, X_test, y_test, X_train, y_train, pd.Series(X_test.index)
-    )
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    results = get_prediction_vs_actual_over_time_data(pipeline, X, y, dates)
     assert isinstance(results, pd.DataFrame)
     assert list(results.columns) == ["dates", "target", "prediction"]
 
 
-def test_graph_prediction_vs_actual_over_time(ts_data):
+def test_graph_prediction_vs_actual_over_time():
     go = pytest.importorskip(
         "plotly.graph_objects",
         reason="Skipping plotting test because plotly not installed",
     )
 
-    X, y = ts_data
-    X_train, y_train = X.iloc[:15], y.iloc[:15]
-    X_test, y_test = X.iloc[15:], y.iloc[15:]
+    class MockPipeline:
+        problem_type = ProblemTypes.TIME_SERIES_REGRESSION
 
-    pipeline = TimeSeriesRegressionPipeline(
-        ["Elastic Net Regressor"],
-        parameters={
-            "pipeline": {
-                "gap": 0,
-                "max_delay": 2,
-                "forecast_horizon": 1,
-                "date_index": None,
-            }
-        },
-    )
-    pipeline.fit(X_train, y_train)
+        def predict(self, X, y):
+            y = infer_feature_types(y)
+            preds = y + 10
+            preds.index = range(100, 161)
+            return preds
 
+    y = pd.Series(np.arange(61), index=range(200, 261))
+    dates = pd.Series(pd.date_range("2020-03-01", "2020-04-30"))
+    pipeline = MockPipeline()
+
+    # For this test it doesn't matter what the features are
     fig = graph_prediction_vs_actual_over_time(
-        pipeline, X_test, y_test, X_train, y_train, pd.Series(X_test.index)
+        pipeline, X=pd.DataFrame(), y=y, dates=dates
     )
 
     assert isinstance(fig, go.Figure)
@@ -1056,12 +1045,12 @@ def test_graph_prediction_vs_actual_over_time(ts_data):
     )
     assert len(fig_dict["data"]) == 2
     assert fig_dict["data"][0]["line"]["color"] == "#1f77b4"
-    assert len(fig_dict["data"][0]["x"]) == X_test.shape[0]
+    assert len(fig_dict["data"][0]["x"]) == 61
     assert not np.isnan(fig_dict["data"][0]["y"]).all()
-    assert len(fig_dict["data"][0]["y"]) == X_test.shape[0]
+    assert len(fig_dict["data"][0]["y"]) == 61
     assert fig_dict["data"][1]["line"]["color"] == "#d62728"
-    assert len(fig_dict["data"][1]["x"]) == X_test.shape[0]
-    assert len(fig_dict["data"][1]["y"]) == X_test.shape[0]
+    assert len(fig_dict["data"][1]["x"]) == 61
+    assert len(fig_dict["data"][1]["y"]) == 61
     assert not np.isnan(fig_dict["data"][1]["y"]).all()
 
 
@@ -1076,9 +1065,7 @@ def test_graph_prediction_vs_actual_over_time_value_error():
 
     error_msg = "graph_prediction_vs_actual_over_time only supports time series regression pipelines! Received regression."
     with pytest.raises(ValueError, match=error_msg):
-        graph_prediction_vs_actual_over_time(
-            NotTSPipeline(), None, None, None, None, None
-        )
+        graph_prediction_vs_actual_over_time(NotTSPipeline(), None, None, None)
 
 
 def test_decision_tree_data_from_estimator_not_fitted(tree_estimators):
