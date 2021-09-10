@@ -624,14 +624,14 @@ def partial_dependence(
             feature value pair.
 
     Raises:
+        ValueError: Error during call to scikit-learn's partial dependence method.
+        Exception: All other errors during calculation.
         PartialDependenceError: if the user provides a tuple of not exactly two features.
         PartialDependenceError: if the provided pipeline isn't fitted.
         PartialDependenceError: if the provided pipeline is a Baseline pipeline.
         PartialDependenceError: if any of the features passed in are completely NaN
         PartialDependenceError: if any of the features are low-variance. Defined as having one value occurring more than the upper
             percentile passed by the user. By default 95%.
-        ValueError: Error during call to scikit-learn's partial dependence method.
-        Exception: All other errors during calculation.
     """
     try:
         # Dynamically set the grid resolution to the maximum number of values
@@ -1591,7 +1591,6 @@ def t_sne(
         learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
         local minimum, increasing the learning rate may help.
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
-        **kwargs: Additional keyword arguments to pass.
 
     Returns:
         np.ndarray (n_samples, n_components).
@@ -1640,7 +1639,7 @@ def graph_t_sne(
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
         marker_line_width (int, optional): Determines the line width of the marker boundary.
         marker_size (int, optional): Determines the size of the marker.
-        **kwargs: Additional keyword arguments to pass.
+        **kwargs: Additional abritrary parameters.
 
     Returns:
         plotly.Figure: Figure representing the transformed data.
