@@ -630,6 +630,8 @@ def partial_dependence(
         PartialDependenceError: if any of the features passed in are completely NaN
         PartialDependenceError: if any of the features are low-variance. Defined as having one value occurring more than the upper
             percentile passed by the user. By default 95%.
+        ValueError: Error during call to scikit-learn's partial dependence method.
+        Exception: All other errors during calculation.
     """
     try:
         # Dynamically set the grid resolution to the maximum number of values
@@ -951,9 +953,9 @@ def graph_partial_dependence(
     in the x-axis and the partial dependence in the z-axis.
 
     Args:
-        pipeline (PipelineBase or subclass): Fitted pipeline
+        pipeline (PipelineBase or subclass): Fitted pipeline.
         X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values
-            for feature where partial dependence will be calculated at
+            for feature where partial dependence will be calculated at.
         features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
             If features is an int, it must be the index of the feature to use.
             If features is a string, it must be a valid column name in X.
@@ -962,8 +964,8 @@ def graph_partial_dependence(
             the partial dependence for each class. This argument does not change behavior for regression or binary
             classification pipelines. For binary classification, the partial dependence for the positive label will
             always be displayed. Defaults to None.
-        grid_resolution (int): Number of samples of feature(s) for partial dependence plot
-        kind {'average', 'individual', 'both'}: Type of partial dependence to plot. 'average' creates a regular partial dependence
+        grid_resolution (int): Number of samples of feature(s) for partial dependence plot.
+        kind ({'average', 'individual', 'both'}): Type of partial dependence to plot. 'average' creates a regular partial dependence
              (PD) graph, 'individual' creates an individual conditional expectation (ICE) plot, and 'both' creates a
              single-figure PD and ICE plot. ICE plots can only be shown for one-way partial dependence plots.
 
@@ -1206,6 +1208,8 @@ def get_prediction_vs_actual_data(y_true, y_pred, outlier_threshold=None):
                 * `actual`: Real target values.
                 * `outlier`: Colors indicating which values are in the threshold for what is considered an outlier value.
 
+    Raises:
+        ValueError: If threshold is not positive.
     """
     if outlier_threshold and outlier_threshold <= 0:
         raise ValueError(
@@ -1243,6 +1247,8 @@ def graph_prediction_vs_actual(y_true, y_pred, outlier_threshold=None):
     Returns:
         plotly.Figure representing the predicted vs. actual values graph
 
+    Raises:
+        ValueError: If threshold is not positive.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
@@ -1322,6 +1328,10 @@ def decision_tree_data_from_estimator(estimator):
 
     Returns:
         OrderedDict: An OrderedDict of OrderedDicts describing a tree structure.
+
+    Raises:
+        ValueError: If estimator is not a decision tree-based estimator.
+        NotFittedError: If estimator is not yet fitted.
     """
     if not estimator.model_family == ModelFamily.DECISION_TREE:
         raise ValueError(
@@ -1344,7 +1354,11 @@ def decision_tree_data_from_pipeline(pipeline_):
         pipeline_ (PipelineBase): A pipeline with a DecisionTree-based estimator.
 
     Returns:
-        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure
+        OrderedDict: An OrderedDict of OrderedDicts describing a tree structure.
+
+    Raises:
+        ValueError: If estimator is not a decision tree-based estimator.
+        NotFittedError: If estimator is not yet fitted.
     """
     if not pipeline_.model_family == ModelFamily.DECISION_TREE:
         raise ValueError(
@@ -1378,6 +1392,10 @@ def visualize_decision_tree(
 
     Returns:
         graphviz.Source: DOT object that can be directly displayed in Jupyter notebooks.
+
+    Raises:
+        ValueError: If estimator is not a decision tree-based estimator.
+        NotFittedError: If estimator is not yet fitted.
     """
     if not estimator.model_family == ModelFamily.DECISION_TREE:
         raise ValueError(
@@ -1449,7 +1467,7 @@ def get_prediction_vs_actual_over_time_data(pipeline, X, y, dates):
         dates (pd.Series): Dates corresponding to target values and predictions.
 
     Returns:
-       pd.DataFrame
+        pd.DataFrame: Predictions vs. time.
     """
     dates = infer_feature_types(dates)
     y = infer_feature_types(y)
@@ -1475,6 +1493,9 @@ def graph_prediction_vs_actual_over_time(pipeline, X, y, dates):
 
     Returns:
         plotly.Figure: Showing the prediction vs actual over time.
+
+    Raises:
+        ValueError: If the pipeline is not a time-series regression pipeline.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
@@ -1523,6 +1544,10 @@ def get_linear_coefficients(estimator, features=None):
 
     Returns:
         pd.DataFrame: Displaying the features by importance.
+
+    Raises:
+        ValueError: If the model is not a linear model.
+        NotFittedError: If the model is not yet fitted.
     """
     if not estimator.model_family == ModelFamily.LINEAR_MODEL:
         raise ValueError(
@@ -1561,9 +1586,13 @@ def t_sne(
         learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad
         local minimum, increasing the learning rate may help.
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
+        **kwargs: Additional keyword arguments to pass.
 
     Returns:
-        np.ndarray (n_samples, n_components)
+        np.ndarray (n_samples, n_components).
+
+    Raises:
+        ValueError: If specified parameters are not valid values.
     """
     if not isinstance(n_components, int) or not n_components > 0:
         raise ValueError(
@@ -1606,10 +1635,13 @@ def graph_t_sne(
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
         marker_line_width (int, optional): Determines the line width of the marker boundary.
         marker_size (int, optional): Determines the size of the marker.
+        **kwargs: Additional keyword arguments to pass.
 
     Returns:
-        plotly.Figure representing the transformed data
+        plotly.Figure: Figure representing the transformed data.
 
+    Raises:
+        ValueError: If marker_line_width or marker_size are not valid values.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
