@@ -585,10 +585,11 @@ def partial_dependence(
         pipeline (PipelineBase or subclass): Fitted pipeline.
         X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values
             for feature where partial dependence will be calculated at.
-        features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
-        - If features is an int, it must be the index of the feature to use.
-        - If features is a string, it must be a valid column name in X.
-        - If features is a tuple of int/strings, it must contain valid column integers/names in X.
+        features (int, string, tuple[int or string]): The target feature for which
+            to create the partial dependence plot for.
+            - If features is an int, it must be the index of the feature to use.
+            - If features is a string, it must be a valid column name in X.
+            - If features is a tuple of int/strings, it must contain valid column integers/names in X.
         percentiles (tuple[float]): The lower and upper percentile used to create the extreme values for the grid.
             Must be in [0, 1]. Defaults to (0.05, 0.95).
         grid_resolution (int): Number of samples of feature(s) for partial dependence plot.  If this value
@@ -946,12 +947,12 @@ def graph_partial_dependence(
 
     Args:
         pipeline (PipelineBase or subclass): Fitted pipeline.
-        X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values
-            for feature where partial dependence will be calculated at.
-        features (int, string, tuple[int or string]): The target feature for which to create the partial dependence plot for.
-        - If features is an int, it must be the index of the feature to use.
-        - If features is a string, it must be a valid column name in X.
-         - If features is a tuple of strings, it must contain valid column int/names in X.
+        X (pd.DataFrame, np.ndarray): The input data used to generate a grid of values for feature where partial dependence will be calculated at.
+        features (int, string, tuple[int or string]): The target feature for which to
+            create the partial dependence plot for.
+            - If features is an int, it must be the index of the feature to use.
+            - If features is a string, it must be a valid column name in X.
+            - If features is a tuple of strings, it must contain valid column int/names in X.
         class_label (string, optional): Name of class to plot for multiclass problems. If None, will plot
             the partial dependence for each class. This argument does not change behavior for regression or binary
             classification pipelines. For binary classification, the partial dependence for the positive label will
@@ -962,7 +963,7 @@ def graph_partial_dependence(
             single-figure PD and ICE plot. ICE plots can only be shown for one-way partial dependence plots.
 
     Returns:
-        plotly.graph_objects.Figure: figure object containing the partial dependence data for plotting
+        plotly.graph_objects.Figure: Figure object containing the partial dependence data for plotting.
 
     Raises:
         PartialDependenceError: If a graph is requested for a class name that isn't present in the pipeline.
