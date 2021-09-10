@@ -3,6 +3,16 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+**v0.32.1 Sep. 10, 2021**
+    * Enhancements
+    * Fixes
         * Fixed bug where ``Oversampler`` could not be copied :pr:`2755`
     * Changes
     * Documentation Changes
