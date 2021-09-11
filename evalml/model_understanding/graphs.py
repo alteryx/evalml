@@ -1578,16 +1578,21 @@ def t_sne(
     metric="euclidean",
     **kwargs,
 ):
-    """Get the transformed output after fitting X to the embedded space using t SNE.
+    """Get the transformed output after fitting X to the embedded space using t-SNE.
 
      Args:
         X (np.ndarray, pd.DataFrame): Data to be transformed. Must be numeric.
         n_components (int, optional): Dimension of the embedded space.
         perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
+        learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad local minimum, increasing the learning rate may help.
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
+        kwargs: Arbitrary keyword arguments.
 
     Returns:
         np.ndarray (n_samples, n_components): TSNE output.
+
+    Raises:
+        ValueError: If specified parameters are not valid values.
     """
     if not isinstance(n_components, int) or not n_components > 0:
         raise ValueError(
@@ -1618,18 +1623,23 @@ def graph_t_sne(
     marker_size=7,
     **kwargs,
 ):
-    """Plot high dimensional data into lower dimensional space using t SNE.
+    """Plot high dimensional data into lower dimensional space using t-SNE.
 
     Args:
         X (np.ndarray, pd.DataFrame): Data to be transformed. Must be numeric.
         n_components (int, optional): Dimension of the embedded space.
         perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
+        learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad local minimum, increasing the learning rate may help.
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
         marker_line_width (int, optional): Determines the line width of the marker boundary.
         marker_size (int, optional): Determines the size of the marker.
+        kwargs: Arbitrary keyword arguments.
 
     Returns:
         plotly.Figure: Figure representing the transformed data.
+
+    Raises:
+        ValueError: If marker_line_width or marker_size are not valid values.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
