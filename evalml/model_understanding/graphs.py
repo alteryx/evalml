@@ -1585,7 +1585,7 @@ def t_sne(
         n_components (int, optional): Dimension of the embedded space.
         perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
-        **kwargs: Arbitrary keyword arguments.
+        *\*\kwargs: Arbitrary keyword arguments.
 
     Returns:
         np.ndarray (n_samples, n_components): TSNE output.
@@ -1628,7 +1628,7 @@ def graph_t_sne(
         metric (str, optional): The metric to use when calculating distance between instances in a feature array.
         marker_line_width (int, optional): Determines the line width of the marker boundary.
         marker_size (int, optional): Determines the size of the marker.
-        **kwargs: Arbitrary keyword arguments.
+        \*\*kwargs: Arbitrary keyword arguments.
 
     Returns:
         plotly.Figure: Figure representing the transformed data.
