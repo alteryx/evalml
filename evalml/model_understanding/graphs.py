@@ -1637,7 +1637,7 @@ def graph_t_sne(
         plotly.Figure: Figure representing the transformed data.
 
     Raises:
-        ValueError: If marker_line_width or marker_size are not valid values.
+        ValueError: If marker line width or marker size are not valid values.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
