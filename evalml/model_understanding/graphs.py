@@ -1589,9 +1589,6 @@ def t_sne(
 
     Returns:
         np.ndarray (n_samples, n_components): TSNE output.
-
-    Raises:
-        ValueError: If specified parameters are not valid values.
     """
     if not isinstance(n_components, int) or not n_components > 0:
         raise ValueError(
@@ -1635,9 +1632,6 @@ def graph_t_sne(
 
     Returns:
         plotly.Figure: Figure representing the transformed data.
-
-    Raises:
-        ValueError: If marker line width or marker size are not valid values.
     """
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
