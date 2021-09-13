@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added support for training-only components in pipelines and component graphs :pr:`2776`
     * Fixes
+        * Fixed bug where warnings during ``make_pipeline`` were not being raised to the user :pr:`2765`
     * Changes
     * Testing Changes
 
