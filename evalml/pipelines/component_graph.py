@@ -13,9 +13,6 @@ from evalml.exceptions.exceptions import (
     ParameterNotUsedWarning,
 )
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
-from evalml.pipelines.components.transformers.samplers.base_sampler import (
-    BaseSampler,
-)
 from evalml.pipelines.components.transformers.transformer import (
     TargetTransformer,
 )
