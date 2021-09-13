@@ -84,16 +84,17 @@ class Undersampler(BaseSampler):
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
 
-    # def _initialize_sampler(self, X, y):
-    #     """Helper function to initialize the undersampler component object.
+    def _initialize_sampler(self, X, y):
+        """Helper function to initialize the undersampler component object.
 
-    #     Arguments:
-    #         y (pd.Series): The target data
-    #     """
-    #     param_dic = self._dictionary_to_params(
-    #         self.parameters["sampling_ratio_dict"], y
-    #     )
-    #     param_dic.pop("n_jobs", None)
+        Arguments:
+            y (pd.Series): The target data
+        """
+        pass
+        # param_dic = self._dictionary_to_params(
+        #     self.parameters["sampling_ratio_dict"], y
+        # )
+        # param_dic.pop("n_jobs", None)
 
     def transform(self, X, y=None):
         X_ww, y_ww = self._prepare_data(X, y)
