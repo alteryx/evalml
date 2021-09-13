@@ -1,15 +1,11 @@
 import pandas as pd
-from woodwork.logical_types import Categorical
 
 from ..transformer import Transformer
 
 from evalml.pipelines.components.transformers.encoders.onehot_encoder import (
     OneHotEncoderMeta,
 )
-from evalml.utils import (
-    import_or_raise,
-    infer_feature_types,
-)
+from evalml.utils import import_or_raise, infer_feature_types
 
 
 class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import woodwork as ww
-from woodwork.logical_types import Datetime, Ordinal, Unknown
+from woodwork.logical_types import Unknown
 
 from evalml.utils.gen_utils import is_all_numeric
 
@@ -108,48 +108,6 @@ def infer_feature_types(data, feature_types=None):
         ww_data = data.copy()
         ww_data.ww.init(logical_types=feature_types)
         return convert_all_nan_unknown_to_double(ww_data)
-
-
-def _retain_custom_types_and_initalize_woodwork(
-    old_logical_types, new_dataframe, ltypes_to_ignore=None
-):
-    """
-    Helper method which will take an old Woodwork data structure and a new pandas data structure and return a
-    new data structure that will try to retain as many logical types from the old data structure that exist in the new
-    pandas data structure as possible.
-
-    Arguments:
-        old_logical_types (Dict): Logical types to try to retain.
-        new_dataframe (pd.DataFrame): Pandas data structure
-        ltypes_to_ignore (list): List of Woodwork logical types to ignore. Columns from the old DataFrame that have a logical type
-        specified in this list will not have their logical types carried over to the new DataFrame returned
-
-    Returns:
-        A new DataFrame where any of the columns that exist in the old input DataFrame and the new DataFrame try to retain
-        the original logical type, if possible and not specified to be ignored.
-    """
-    if isinstance(new_dataframe, pd.Series):
-        return ww.init_series(new_dataframe, old_logical_types)
-    if ltypes_to_ignore is None:
-        ltypes_to_ignore = []
-
-    new_logical_types = {}
-    for (k, v) in old_logical_types.items():
-        if isinstance(v, (Ordinal, Datetime)):
-            new_logical_types[k] = v
-        else:
-            new_logical_types[k] = type(v)
-
-    col_intersection = set(new_logical_types.keys()).intersection(
-        set(new_dataframe.columns)
-    )
-    retained_logical_types = {
-        col: ltype
-        for col, ltype in new_logical_types.items()
-        if col in col_intersection and ltype not in ltypes_to_ignore
-    }
-    new_dataframe.ww.init(logical_types=retained_logical_types)
-    return new_dataframe
 
 
 def _convert_numeric_dataset_pandas(X, y):

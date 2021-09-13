@@ -26,7 +26,6 @@ from .cli_utils import (
     print_sys_info,
 )
 from .woodwork_utils import (
-    _retain_custom_types_and_initalize_woodwork,
     infer_feature_types,
     _convert_numeric_dataset_pandas,
 )
