@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug where warnings during ``make_pipeline`` were not being raised to the user :pr:`2765`
     * Changes
     * Testing Changes
 
@@ -25,7 +26,6 @@ Release Notes
         * Fixed bug where ``_catch_warnings`` assumed all warnings were ``PipelineNotUsed`` :pr:`2753`
         * Fixed bug where ``Imputer.transform`` would erase ww typing information prior to handing data to the ``SimpleImputer`` :pr:`2752`
         * Fixed bug where ``Oversampler`` could not be copied :pr:`2755`
-        * Fixed bug where warnings during `make_pipeline` were not being raised to the user :pr:`2765`
     * Changes
         * Deleted ``drop_nan_target_rows`` utility method :pr:`2737`
         * Removed default logging setup and debugging log file :pr:`2645`
