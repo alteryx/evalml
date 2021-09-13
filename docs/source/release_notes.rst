@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Changed woodwork initialization to use partial schemas :pr:`2774`
     * Testing Changes
 
 .. warning::
