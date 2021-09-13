@@ -39,13 +39,15 @@ class RegressionPipeline(PipelineBase):
         self._fit(X, y)
         return self
 
-    def score(self, X, y, objectives):
+    def score(self, X, y, objectives, X_train=None, y_train=None):
         """Evaluate model performance on current and additional objectives
 
         Arguments:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
             y (pd.Series, or np.ndarray): True values of length [n_samples]
             objectives (list): Non-empty list of objectives to score on
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             dict: Ordered dictionary of objective scores
@@ -56,7 +58,7 @@ class RegressionPipeline(PipelineBase):
             X, y, y_predicted, y_pred_proba=None, objectives=objectives
         )
 
-    def predict(self, X, objective=None):
+    def predict(self, X, objective=None, X_train=None, y_train=None):
         X = infer_feature_types(X)
         predictions = self.component_graph.predict(X)
         predictions = self.inverse_transform(predictions)

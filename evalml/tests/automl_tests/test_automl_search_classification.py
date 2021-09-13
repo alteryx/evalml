@@ -1088,8 +1088,14 @@ def test_automl_supports_time_series_classification(
                     "date_index": None,
                     "gap": 0,
                     "max_delay": 0,
+                    "forecast_horizon": 1,
                 },
-                "pipeline": {"date_index": None, "gap": 0, "max_delay": 0},
+                "pipeline": {
+                    "date_index": None,
+                    "gap": 0,
+                    "max_delay": 0,
+                    "forecast_horizon": 1,
+                },
             },
         )
         score_return_value = {"Log Loss Binary": 0.2}
@@ -1103,8 +1109,14 @@ def test_automl_supports_time_series_classification(
                     "date_index": None,
                     "gap": 0,
                     "max_delay": 0,
+                    "forecast_horizon": 1,
                 },
-                "pipeline": {"date_index": None, "gap": 0, "max_delay": 0},
+                "pipeline": {
+                    "date_index": None,
+                    "gap": 0,
+                    "max_delay": 0,
+                    "forecast_horizon": 1,
+                },
             },
         )
         score_return_value = {"Log Loss Multiclass": 0.25}
@@ -1114,6 +1126,7 @@ def test_automl_supports_time_series_classification(
         "date_index": None,
         "gap": 0,
         "max_delay": 0,
+        "forecast_horizon": 1,
         "delay_target": False,
         "delay_features": True,
     }
@@ -1156,6 +1169,7 @@ def test_automl_time_series_classification_threshold(
     configuration = {
         "date_index": None,
         "gap": 0,
+        "forecast_horizon": 1,
         "max_delay": 0,
         "delay_target": False,
         "delay_features": True,
@@ -1553,7 +1567,14 @@ def test_time_series_pipeline_parameter_warnings(
     pipeline_parameters, set_values, AutoMLTestEnv, X_y_binary
 ):
     pipeline_parameters.update(
-        {"pipeline": {"date_index": None, "gap": 0, "max_delay": 0}}
+        {
+            "pipeline": {
+                "date_index": None,
+                "gap": 0,
+                "max_delay": 0,
+                "forecast_horizon": 2,
+            }
+        }
     )
     X, y = X_y_binary
     configuration = {
@@ -1562,6 +1583,7 @@ def test_time_series_pipeline_parameter_warnings(
         "max_delay": 0,
         "delay_target": False,
         "delay_features": True,
+        "forecast_horizon": 2,
     }
     with warnings.catch_warnings(record=True) as w:
         warnings.filterwarnings("always", category=ParameterNotUsedWarning)

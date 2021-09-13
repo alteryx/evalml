@@ -1,4 +1,5 @@
 import pandas as pd
+import woodwork as ww
 
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
@@ -38,6 +39,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         self.date_index = pipeline_params["date_index"]
         self.gap = pipeline_params["gap"]
         self.max_delay = pipeline_params["max_delay"]
+        self.forecast_horizon = pipeline_params["forecast_horizon"]
         super().__init__(
             component_graph,
             custom_name=custom_name,
@@ -67,11 +69,161 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         self._fit(X, y)
         return self
 
+    @staticmethod
+    def _move_index_forward(index, gap):
+        """Fill in the index of the gap features and values with the right values."""
+        if isinstance(index, (pd.DatetimeIndex, pd.PeriodIndex, pd.TimedeltaIndex)):
+            return index.shift(gap)
+        else:
+            return index + gap
+
+    @staticmethod
+    def _are_datasets_separated_by_gap(train_index, test_index, gap):
+        """Determine if the train and test datasets are separated by gap number of units.
+
+        This will be true when users are predicting on unseen data but not during cross
+        validation since the target is known.
+        """
+        gap_difference = gap + 1
+        index_difference = test_index[0] - train_index[-1]
+        if isinstance(
+            train_index, (pd.DatetimeIndex, pd.PeriodIndex, pd.TimedeltaIndex)
+        ):
+            gap_difference *= test_index.freq
+        return index_difference == gap_difference
+
+    def _add_training_data_to_X_Y(self, X, y, X_train, y_train):
+        """Append the training data to the holdout data.
+
+        Need to do this so that we have all the data we need to compute lagged features on the holdout set.
+        """
+        last_row_of_training = self.forecast_horizon + self.max_delay + self.gap
+        gap_features = pd.DataFrame()
+        gap_target = pd.Series()
+        if (
+            self._are_datasets_separated_by_gap(X_train.index, X.index, self.gap)
+            and self.gap
+        ):
+            # The training data does not have the gap dates so don't need to include them
+            last_row_of_training -= self.gap
+
+            # Instead, we'll create some dummy data to represent the missing gap dates
+            # These do not show up in the features used for prediction
+            gap_features = X_train.iloc[[-1] * self.gap]
+            gap_features.index = self._move_index_forward(
+                X_train.index[-self.gap :], self.gap
+            )
+            gap_target = y_train.iloc[[-1] * self.gap]
+            gap_target.index = self._move_index_forward(
+                y_train.index[-self.gap :], self.gap
+            )
+
+        features_to_concat = [
+            X_train.iloc[-last_row_of_training:],
+            gap_features,
+            X,
+        ]
+        targets_to_concat = [
+            y_train.iloc[-last_row_of_training:],
+            gap_target,
+            y,
+        ]
+        padded_features = pd.concat(features_to_concat, axis=0)
+        padded_target = pd.concat(targets_to_concat, axis=0)
+
+        padded_features.ww.init(schema=X_train.ww.schema)
+        padded_target = ww.init_series(
+            padded_target, logical_type=y_train.ww.logical_type
+        )
+        return padded_features, padded_target
+
+    def compute_estimator_features(self, X, y=None, X_train=None, y_train=None):
+        """Transforms the data by applying all pre-processing components.
+
+        Arguments:
+            X (pd.DataFrame): Input data to the pipeline to transform.
+            y (pd.Series): Targets corresponding to the pipeline targets.
+            X_train (pd.DataFrame): Training data used to generate generates from past observations.
+            y_train (pd.Series): Training targets used to generate features from past observations.
+
+        Returns:
+            pd.DataFrame: New transformed features.
+        """
+        if y_train is None:
+            y_train = pd.Series()
+        X_train, y_train = self._convert_to_woodwork(X_train, y_train)
+        X, y = self._convert_to_woodwork(X, y)
+
+        empty_training_data = X_train.empty or y_train.empty
+        if empty_training_data:
+            features_holdout = super().compute_estimator_features(X, y)
+        else:
+            padded_features, padded_target = self._add_training_data_to_X_Y(
+                X, y, X_train, y_train
+            )
+            features = super().compute_estimator_features(
+                padded_features, padded_target
+            )
+            features_holdout = features.iloc[-len(y) :]
+        return features_holdout
+
+    def predict_in_sample(self, X, y, X_train, y_train, objective=None):
+        """Predict on future data where the target is known, e.g. cross validation.
+
+        Arguments:
+            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
+            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples]
+            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
+            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
+            objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
+
+        Returns:
+            pd.Series: Estimated labels
+        """
+        if self.estimator is None:
+            raise ValueError(
+                "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
+            )
+        target = infer_feature_types(y)
+        features = self.compute_estimator_features(X, target, X_train, y_train)
+        predictions = self._estimator_predict(features, target)
+        predictions.index = y.index
+        predictions = self.inverse_transform(predictions)
+        predictions = predictions.rename(self.input_target_name)
+        return infer_feature_types(predictions)
+
+    def _create_empty_series(self, y_train):
+        return ww.init_series(
+            pd.Series([y_train.iloc[0]] * self.forecast_horizon),
+            logical_type=y_train.ww.logical_type,
+        )
+
+    def predict(self, X, objective=None, X_train=None, y_train=None):
+        """Predict on future data where target is not known.
+
+        Arguments:
+            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
+            objective (str, ObjectiveBase): Used in classification problems to threshold the predictions.
+            objective (Object or string): The objective to use to make predictions.
+            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
+            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
+        """
+        X_train, y_train = self._convert_to_woodwork(X_train, y_train)
+        if self.estimator is None:
+            raise ValueError(
+                "Cannot call predict() on a component graph because the final component is not an Estimator."
+            )
+        y_holdout = self._create_empty_series(y_train)
+        X, y_holdout = self._convert_to_woodwork(X, y_holdout)
+        y_holdout.index = X.index
+        return self.predict_in_sample(
+            X, y_holdout, X_train, y_train, objective=objective
+        )
+
     def _fit(self, X, y):
         self.input_target_name = y.name
         X_t = self.component_graph.fit_features(X, y)
-        y_shifted = y.shift(-self.gap)
-        X_t, y_shifted = drop_rows_with_nans(X_t, y_shifted)
+        X_t, y_shifted = drop_rows_with_nans(X_t, y)
 
         if self.estimator is not None:
             self.estimator.fit(X_t, y_shifted)

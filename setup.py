@@ -11,7 +11,7 @@ extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
     name='evalml',
-    version='0.32.0',
+    version='0.32.1',
     author='Alteryx, Inc.',
     author_email='support@featurelabs.com',
     description='EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.',
@@ -31,5 +31,6 @@ setup(
     data_files=[('evalml/tests/data', ['evalml/tests/data/tips.csv',
                                        'evalml/tests/data/titanic.csv',
                                        'evalml/tests/data/churn.csv',
-                                       'evalml/tests/data/fraud_transactions.csv.gz'])],
+                                       'evalml/tests/data/fraud_transactions.csv.gz']),
+                ('evalml/demos/data', ['evalml/demos/data/daily-min-temperatures.csv'])],
 )

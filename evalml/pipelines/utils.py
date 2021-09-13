@@ -2,17 +2,17 @@ import logging
 
 from woodwork import logical_types
 
+from . import (
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline,
+    TimeSeriesRegressionPipeline,
+)
 from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
 )
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
-from .time_series_classification_pipelines import (
-    TimeSeriesBinaryClassificationPipeline,
-    TimeSeriesMulticlassClassificationPipeline,
-)
-from .time_series_regression_pipeline import TimeSeriesRegressionPipeline
 
 from evalml.data_checks import DataCheckActionCode, TargetDistributionDataCheck
 from evalml.model_family import ModelFamily
@@ -341,3 +341,58 @@ def _make_component_list_from_actions(actions):
     if cols_to_drop:
         components.append(DropColumns(columns=cols_to_drop))
     return components
+
+
+def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon):
+    """Make a baseline pipeline for time series regression problems.
+
+    Arguments:
+        problem_type: One of TIME_SERIES_REGRESSION, TIME_SERIES_MULTICLASS, TIME_SERIES_BINARY
+        gap (int): Non-negative gap parameter.
+        forecast_horizon (int): Positive forecast_horizon parameter.
+
+    Returns:
+        TimeSeriesPipelineBase, a time series pipeline corresponding to the problem type.
+
+    """
+    pipeline_class, pipeline_name = {
+        ProblemTypes.TIME_SERIES_REGRESSION: (
+            TimeSeriesRegressionPipeline,
+            "Time Series Baseline Regression Pipeline",
+        ),
+        ProblemTypes.TIME_SERIES_MULTICLASS: (
+            TimeSeriesMulticlassClassificationPipeline,
+            "Time Series Baseline Multiclass Pipeline",
+        ),
+        ProblemTypes.TIME_SERIES_BINARY: (
+            TimeSeriesBinaryClassificationPipeline,
+            "Time Series Baseline Binary Pipeline",
+        ),
+    }[problem_type]
+    baseline = pipeline_class(
+        component_graph=[
+            "Delayed Feature Transformer",
+            "Time Series Baseline Estimator",
+        ],
+        custom_name=pipeline_name,
+        parameters={
+            "pipeline": {
+                "date_index": None,
+                "gap": gap,
+                "max_delay": 0,
+                "forecast_horizon": forecast_horizon,
+            },
+            "Delayed Feature Transformer": {
+                "max_delay": 0,
+                "gap": gap,
+                "forecast_horizon": forecast_horizon,
+                "delay_target": True,
+                "delay_features": False,
+            },
+            "Time Series Baseline Estimator": {
+                "gap": gap,
+                "forecast_horizon": forecast_horizon,
+            },
+        },
+    )
+    return baseline
