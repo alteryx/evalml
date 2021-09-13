@@ -2,6 +2,19 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+        * Added docstring linting packages ``pydocstyle`` and ``darglint`` to `make-lint` command :pr:`2670`
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.32.1 Sep. 10, 2021**
+    * Enhancements
         * Added ``verbose`` flag to ``AutoMLSearch`` to run search in silent mode by default :pr:`2645`
         * Added label encoder to ``XGBoostClassifier`` to remove the warning :pr:`2701`
         * Set ``eval_metric`` to ``logloss`` for ``XGBoostClassifier`` :pr:`2741`
@@ -24,8 +37,7 @@ Release Notes
         * Changed time series pipeline predictions to no longer output series/dataframes padded with NaNs. A prediction will be returned for every row in the `X` input :pr:`2697`
     * Documentation Changes
         * Specified installation steps for Prophet :pr:`2713`
-        * Added documentation for data exploration on data check actions :pr:`2696` 
-        * Added docstring linting package ``pydocstyle`` and rule to `make-lint` command :pr:`2670`
+        * Added documentation for data exploration on data check actions :pr:`2696`
         * Added a user guide entry for time series modelling :pr:`2697`
     * Testing Changes
         * Fixed flaky ``TargetDistributionDataCheck`` test for very_lognormal distribution :pr:`2748`

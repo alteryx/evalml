@@ -32,7 +32,7 @@ def handle_problem_types(problem_type):
 
 
 def detect_problem_type(y):
-    """Determine the type of problem is being solved based on the targets (binary vs multiclass classification, regression) Ignores missing and null data.
+    """Determine the type of problem is being solved based on the targets (binary vs multiclass classification, regression). Ignores missing and null data.
 
     Args:
         y (pd.Series): The target labels to predict.

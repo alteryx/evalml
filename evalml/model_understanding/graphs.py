@@ -518,7 +518,7 @@ def _is_feature_of_type(feature, X, ltype):
 
 
 def _put_categorical_feature_first(features, first_feature_categorical):
-    """If the user is doing a two-way partial dependence plot and one of the features is categorical, we need to make sure the categorical feature is the first element in the tuple that's passed to sklearn.
+    """If the user is doing a two-way partial dependence plot and one of the features is categorical, we need to ensure the categorical feature is the first element in the tuple that's passed to sklearn.
 
     This is because in the two-way grid calculation, sklearn will try to coerce every element of the grid to the
     type of the first feature in the tuple. If we put the categorical feature first, the grid will be of type 'object'
