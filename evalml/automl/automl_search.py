@@ -858,9 +858,8 @@ class AutoMLSearch:
                 raised_messages.append(str(msg.message))
 
         # Raise PNU warnings, iff the warning was raised in every pipeline
-        if (
-            len(parameter_not_used_warnings) == len(self.allowed_pipelines)
-            and len(parameter_not_used_warnings)
+        if len(parameter_not_used_warnings) == len(self.allowed_pipelines) and len(
+            parameter_not_used_warnings
         ):
             final_message = set([])
             for msg in parameter_not_used_warnings:
