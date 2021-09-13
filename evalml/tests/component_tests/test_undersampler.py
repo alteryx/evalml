@@ -17,6 +17,27 @@ def test_init():
     assert undersampler.parameters == parameters
 
 
+def test_undersampler_errors():
+    with pytest.raises(ValueError, match="sampling_ratio must be"):
+        Undersampler(sampling_ratio=1.01)
+
+    with pytest.raises(ValueError, match="sampling_ratio must be"):
+        Undersampler(sampling_ratio=-1)
+
+    with pytest.raises(ValueError, match="min_sample must be"):
+        Undersampler(min_samples=0)
+
+    with pytest.raises(ValueError, match="min_percentage must be"):
+        Undersampler(min_percentage=0)
+
+    with pytest.raises(ValueError, match="min_percentage must be"):
+        Undersampler(min_percentage=0.6)
+
+    with pytest.raises(ValueError, match="min_percentage must be"):
+        Undersampler(min_percentage=-1.3)
+
+
+
 def test_undersampler_raises_error_if_y_is_None():
     X = pd.DataFrame([[i] for i in range(5)])
     undersampler = Undersampler()

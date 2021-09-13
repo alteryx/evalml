@@ -91,14 +91,9 @@ class Undersampler(BaseSampler):
             y (pd.Series): The target data
         """
         pass
-        # param_dic = self._dictionary_to_params(
-        #     self.parameters["sampling_ratio_dict"], y
-        # )
-        # param_dic.pop("n_jobs", None)
 
     def transform(self, X, y=None):
         X_ww, y_ww = self._prepare_data(X, y)
-        # self._initialize_sampler(X, y_ww)
         index_df = pd.Series(y_ww.index)
         indices = self.fit_resample(X_ww, y_ww)
 
