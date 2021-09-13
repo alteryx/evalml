@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug where warnings during ``make_pipeline`` were not being raised to the user :pr:`2765`
     * Changes
         * Changed woodwork initialization to use partial schemas :pr:`2774`
     * Testing Changes

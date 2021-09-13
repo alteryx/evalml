@@ -579,7 +579,7 @@ class AutoMLSearch:
         self.random_seed = random_seed
         self.n_jobs = n_jobs
 
-        if not self.plot:
+        if not self.plot and self.verbose:
             self.logger.warning(
                 "Unable to import plotly; skipping pipeline search plotting\n"
             )
@@ -847,19 +847,28 @@ class AutoMLSearch:
         self._engine.close()
 
     def _catch_warnings(self, warning_list):
-        if len(warning_list) == len(self.allowed_pipelines) and len(warning_list) > 0:
-            # we find the value(s) that we must throw any ParameterNotUsedWarnings for
+        parameter_not_used_warnings = []
+        raised_messages = []
+        for msg in warning_list:
+            if isinstance(msg.message, ParameterNotUsedWarning):
+                parameter_not_used_warnings.append(msg.message)
+            # Raise non-PNU warnings immediately, but only once per warning
+            elif str(msg.message) not in raised_messages:
+                warnings.warn(msg.message)
+                raised_messages.append(str(msg.message))
+
+        # Raise PNU warnings, iff the warning was raised in every pipeline
+        if len(parameter_not_used_warnings) == len(self.allowed_pipelines) and len(
+            parameter_not_used_warnings
+        ):
             final_message = set([])
-            for idx, msg in enumerate(warning_list):
-                if isinstance(msg.message, ParameterNotUsedWarning):
-                    if idx == 0:
-                        final_message = final_message.union(msg.message.components)
-                    else:
-                        final_message = final_message.intersection(
-                            msg.message.components
-                        )
-            if len(final_message):
-                warnings.warn(ParameterNotUsedWarning(final_message))
+            for msg in parameter_not_used_warnings:
+                if len(final_message) == 0:
+                    final_message = final_message.union(msg.components)
+                else:
+                    final_message = final_message.intersection(msg.components)
+
+            warnings.warn(ParameterNotUsedWarning(final_message))
 
     def _get_batch_number(self):
         batch_number = 1
