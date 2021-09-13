@@ -69,7 +69,7 @@ class Transformer(ComponentBase):
             y_ww = infer_feature_types(y)
         try:
             X_t = self._component_obj.fit_transform(X_ww, y_ww)
-            X_t.ww.init(schema=X_ww.schema)
+            X_t.ww.init(schema=X_ww.ww.schema)
             return X_t
         except AttributeError:
             try:
