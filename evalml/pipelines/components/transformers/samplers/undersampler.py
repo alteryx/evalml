@@ -1,6 +1,5 @@
 import numpy as np
 import pandas as pd
-import copy
 
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
     BaseSampler,
@@ -54,36 +53,6 @@ class Undersampler(BaseSampler):
             raise ValueError(
                 f"min_percentage must be between 0 and 0.5, inclusive, but received {min_percentage}"
             )
-        self.sampling_ratio = sampling_ratio
-        self.min_samples = min_samples
-        self.min_percentage = min_percentage
-        self.random_seed = random_seed
-        self.random_state = np.random.RandomState(self.random_seed)
-        self.sampling_ratio_dict = sampling_ratio_dict or {}
-        # parameters = {
-        #     "sampling_ratio": sampling_ratio,
-        #     "min_samples": min_samples,
-        #     "min_percentage": min_percentage,
-        #     "sampling_ratio_dict": sampling_ratio_dict,
-        # }
-        # if sampling_ratio <= 0 or sampling_ratio > 1:
-        #     raise ValueError(
-        #         f"sampling_ratio must be within (0, 1], but received {sampling_ratio}"
-        #     )
-        # if min_samples <= 0:
-        #     raise ValueError(
-        #         f"min_sample must be greater than 0, but received {min_samples}"
-        #     )
-        # if min_percentage <= 0 or min_percentage > 0.5:
-        #     raise ValueError(
-        #         f"min_percentage must be between 0 and 0.5, inclusive, but received {min_percentage}"
-        #     )
-        # self.sampling_ratio = sampling_ratio
-        # self.min_samples = min_samples
-        # self.min_percentage = min_percentage
-        # self.random_seed = random_seed
-        # self.random_state = np.random.RandomState(self.random_seed)
-        # self.sampling_ratio_dict = sampling_ratio_dict or {}
 
         parameters = {
             "sampling_ratio": sampling_ratio,
@@ -91,26 +60,44 @@ class Undersampler(BaseSampler):
             "min_percentage": min_percentage,
             "sampling_ratio_dict": sampling_ratio_dict,
         }
+        if sampling_ratio <= 0 or sampling_ratio > 1:
+            raise ValueError(
+                f"sampling_ratio must be within (0, 1], but received {sampling_ratio}"
+            )
+        if min_samples <= 0:
+            raise ValueError(
+                f"min_sample must be greater than 0, but received {min_samples}"
+            )
+        if min_percentage <= 0 or min_percentage > 0.5:
+            raise ValueError(
+                f"min_percentage must be between 0 and 0.5, inclusive, but received {min_percentage}"
+            )
+        self.sampling_ratio = sampling_ratio
+        self.min_samples = min_samples
+        self.min_percentage = min_percentage
+        self.random_seed = random_seed
+        self.random_state = np.random.RandomState(self.random_seed)
+        self.sampling_ratio_dict = sampling_ratio_dict or {}
+
         parameters.update(kwargs)
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
 
-    def _initialize_sampler(self, X, y):
-        """Helper function to initialize the undersampler component object.
+    # def _initialize_sampler(self, X, y):
+    #     """Helper function to initialize the undersampler component object.
 
-        Arguments:
-            y (pd.Series): The target data
-        """
-        param_dic = self._dictionary_to_params(
-            self.parameters["sampling_ratio_dict"], y
-        )
-        param_dic.pop("n_jobs", None)
-
+    #     Arguments:
+    #         y (pd.Series): The target data
+    #     """
+    #     param_dic = self._dictionary_to_params(
+    #         self.parameters["sampling_ratio_dict"], y
+    #     )
+    #     param_dic.pop("n_jobs", None)
 
     def transform(self, X, y=None):
         X_ww, y_ww = self._prepare_data(X, y)
-        self._initialize_sampler(X, y_ww)
+        # self._initialize_sampler(X, y_ww)
         index_df = pd.Series(y_ww.index)
         indices = self.fit_resample(X_ww, y_ww)
 
