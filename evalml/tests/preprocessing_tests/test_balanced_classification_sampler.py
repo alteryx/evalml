@@ -3,7 +3,9 @@ import random
 import pandas as pd
 import pytest
 
-from evalml.preprocessing.data_splitters import BalancedClassificationSampler
+from evalml.pipelines.components.transformers.samplers import (
+    BalancedClassificationSampler,
+)
 
 
 @pytest.mark.parametrize(

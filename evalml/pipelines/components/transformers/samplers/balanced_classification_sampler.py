@@ -1,10 +1,12 @@
 import numpy as np
 
-from evalml.preprocessing.data_splitters.sampler_base import SamplerBase
+from evalml.pipelines.components.transformers.samplers.base_sampler import (
+    BaseSampler,
+)
 from evalml.utils.woodwork_utils import infer_feature_types
 
 
-class BalancedClassificationSampler(SamplerBase):
+class BalancedClassificationSampler(BaseSampler):
     """Class for balanced classification downsampler.
 
     Arguments:
