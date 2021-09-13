@@ -105,7 +105,6 @@ def test_undersampler_sampling_dict(sampling_ratio_dict, expected_dict_values):
     assert len(new_X) == sum(expected_dict_values.values())
     assert new_y.value_counts().to_dict() == expected_dict_values
     assert undersampler.random_seed == 12
-    assert undersampler._component_obj.random_seed == 12
 
 
 def test_undersampler_dictionary_overrides_ratio():

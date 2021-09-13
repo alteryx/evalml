@@ -1,11 +1,7 @@
-from random import random
-
 import numpy as np
 import pandas as pd
+import copy
 
-# from evalml.pipelines.components.transformers.samplers.balanced_classification_sampler import (
-#     BalancedClassificationSampler,
-# )
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
     BaseSampler,
 )
@@ -46,12 +42,6 @@ class Undersampler(BaseSampler):
         random_seed=0,
         **kwargs,
     ):
-        parameters = {
-            "sampling_ratio": sampling_ratio,
-            "min_samples": min_samples,
-            "min_percentage": min_percentage,
-            "sampling_ratio_dict": sampling_ratio_dict,
-        }
         if sampling_ratio <= 0 or sampling_ratio > 1:
             raise ValueError(
                 f"sampling_ratio must be within (0, 1], but received {sampling_ratio}"
@@ -70,7 +60,37 @@ class Undersampler(BaseSampler):
         self.random_seed = random_seed
         self.random_state = np.random.RandomState(self.random_seed)
         self.sampling_ratio_dict = sampling_ratio_dict or {}
+        # parameters = {
+        #     "sampling_ratio": sampling_ratio,
+        #     "min_samples": min_samples,
+        #     "min_percentage": min_percentage,
+        #     "sampling_ratio_dict": sampling_ratio_dict,
+        # }
+        # if sampling_ratio <= 0 or sampling_ratio > 1:
+        #     raise ValueError(
+        #         f"sampling_ratio must be within (0, 1], but received {sampling_ratio}"
+        #     )
+        # if min_samples <= 0:
+        #     raise ValueError(
+        #         f"min_sample must be greater than 0, but received {min_samples}"
+        #     )
+        # if min_percentage <= 0 or min_percentage > 0.5:
+        #     raise ValueError(
+        #         f"min_percentage must be between 0 and 0.5, inclusive, but received {min_percentage}"
+        #     )
+        # self.sampling_ratio = sampling_ratio
+        # self.min_samples = min_samples
+        # self.min_percentage = min_percentage
+        # self.random_seed = random_seed
+        # self.random_state = np.random.RandomState(self.random_seed)
+        # self.sampling_ratio_dict = sampling_ratio_dict or {}
 
+        parameters = {
+            "sampling_ratio": sampling_ratio,
+            "min_samples": min_samples,
+            "min_percentage": min_percentage,
+            "sampling_ratio_dict": sampling_ratio_dict,
+        }
         parameters.update(kwargs)
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
@@ -86,10 +106,7 @@ class Undersampler(BaseSampler):
             self.parameters["sampling_ratio_dict"], y
         )
         param_dic.pop("n_jobs", None)
-        # sampler = BalancedClassificationSampler(
-        #     **param_dic, random_seed=self.random_seed
-        # )
-        # self._component_obj = sampler
+
 
     def transform(self, X, y=None):
         X_ww, y_ww = self._prepare_data(X, y)
@@ -160,6 +177,13 @@ class Undersampler(BaseSampler):
         Returns:
             list: Indices to keep for training data
         """
+
+        if self.parameters["sampling_ratio_dict"]:
+            self.sampling_ratio_dict = self._convert_dictionary(
+                self.parameters["sampling_ratio_dict"], y
+            )
+        # self.parameters.pop("n_jobs", None)
+
         y = infer_feature_types(y)
 
         if len(self.sampling_ratio_dict):
@@ -171,6 +195,7 @@ class Undersampler(BaseSampler):
             # iterate through the classes we need to undersample and remove the number of samples we need to remove
             for key, value in result.items():
                 indices = y.index[y == key].values
+                # import pdb; pdb.set_trace()
                 indices_to_remove = self.random_state.choice(
                     indices, value, replace=False
                 )
