@@ -1,3 +1,2 @@
 from .undersampler import Undersampler
 from .oversampler import Oversampler
-from .balanced_classification_sampler import BalancedClassificationSampler
