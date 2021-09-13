@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Refactored and removed ``SamplerBase`` class :pr:`2775`
     * Testing Changes
 
 .. warning::

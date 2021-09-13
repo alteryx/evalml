@@ -22,6 +22,7 @@ class BalancedClassificationSampler(BaseSampler):
             Must be between 0 and 0.5, inclusive. Defaults to 0.1.
         random_seed (int): The seed to use for random sampling. Defaults to 0.
     """
+    name = "Balanced Classification Sampler"
 
     def __init__(
         self,
@@ -49,6 +50,15 @@ class BalancedClassificationSampler(BaseSampler):
         self.min_percentage = min_percentage
         self.random_state = np.random.RandomState(self.random_seed)
         self.sampling_ratio_dict = sampling_ratio_dict or {}
+
+    def _initialize_sampler(self, X, y):
+        """Helper function to initialize the sampler component object.
+
+        Arguments:
+            X (pd.DataFrame): Features.
+            y (pd.Series): The target data.
+        """
+        pass
 
     def _find_ideal_samples(self, y):
         """Returns dictionary of examples to drop for each class if we need to resample.
