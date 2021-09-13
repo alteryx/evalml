@@ -338,7 +338,7 @@ class ComponentGraph:
             if isinstance(component_instance, Transformer):
                 if fit:
                     output = component_instance.fit_transform(x_inputs, y_input)
-                elif isinstance(component_instance, BaseSampler):
+                elif component_instance.training_only:
                     output = x_inputs, y_input
                 else:
                     output = component_instance.transform(x_inputs, y_input)

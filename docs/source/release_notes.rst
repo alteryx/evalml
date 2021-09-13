@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added support for training-only components in pipelines and component graphs :pr:`2776`
     * Fixes
     * Changes
     * Testing Changes
