@@ -81,7 +81,7 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
         X_t = self._component_obj.transform(X, y)
 
         X_t_df = pd.DataFrame(X_t, columns=X_ww.columns, index=X_ww.index)
-        columns = X_ww.ww.select(exclude="categorical").columns
+        columns = X_ww.ww.select(exclude="categorical", return_schema=True).columns
         X_t_df.ww.init(schema=X_ww.ww.schema._get_subset_schema(columns))
         return X_t_df
 

@@ -34,7 +34,9 @@ class StandardScaler(Transformer):
         X_t = self._component_obj.transform(X)
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
 
-        columns = X.ww.select(exclude=[Integer, Categorical, Boolean]).columns
+        columns = X.ww.select(
+            exclude=[Integer, Categorical, Boolean], return_schema=True
+        ).columns
         X_t_df.ww.init(schema=original_schema._get_subset_schema(columns))
         return X_t_df
 
