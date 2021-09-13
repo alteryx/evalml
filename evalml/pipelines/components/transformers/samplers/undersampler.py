@@ -60,18 +60,6 @@ class Undersampler(BaseSampler):
             "min_percentage": min_percentage,
             "sampling_ratio_dict": sampling_ratio_dict,
         }
-        if sampling_ratio <= 0 or sampling_ratio > 1:
-            raise ValueError(
-                f"sampling_ratio must be within (0, 1], but received {sampling_ratio}"
-            )
-        if min_samples <= 0:
-            raise ValueError(
-                f"min_sample must be greater than 0, but received {min_samples}"
-            )
-        if min_percentage <= 0 or min_percentage > 0.5:
-            raise ValueError(
-                f"min_percentage must be between 0 and 0.5, inclusive, but received {min_percentage}"
-            )
         self.sampling_ratio = sampling_ratio
         self.min_samples = min_samples
         self.min_percentage = min_percentage
