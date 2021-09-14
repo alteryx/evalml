@@ -33,6 +33,7 @@ from evalml.pipelines import (
 from evalml.pipelines.component_graph import ComponentGraph
 from evalml.pipelines.components import (
     DropNullColumns,
+    DropRowsTransformer,
     ElasticNetClassifier,
     Imputer,
     LogisticRegressionClassifier,
@@ -2756,9 +2757,6 @@ def test_pipeline_transform_with_final_estimator(
         pipeline.transform(X, y)
 
 
-from evalml.pipelines.components import DropRowsTransformer
-
-
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 def test_training_only_component_in_pipeline_fit(mock_fit):
     X = pd.DataFrame(
@@ -2811,6 +2809,7 @@ def test_training_only_component_in_pipeline_predict():
     assert len(preds) == 10
     preds = pipeline.predict_proba(X)
     assert len(preds) == 10
+
 
 def test_training_only_component_in_pipeline_transform():
     X = pd.DataFrame(
