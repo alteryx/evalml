@@ -1,3 +1,4 @@
+"""Baseline regressor that uses a simple strategy to make predictions. This is useful as a simple baseline regressor to compare with other regressors."""
 import numpy as np
 import pandas as pd
 
@@ -8,11 +9,9 @@ from evalml.utils import infer_feature_types
 
 
 class BaselineRegressor(Estimator):
-    """
-    Baseline regressor that uses a simple strategy to make predictions.
-    This is useful as a simple baseline regressor to compare with other regressors.
+    """Baseline regressor that uses a simple strategy to make predictions. This is useful as a simple baseline regressor to compare with other regressors.
 
-    Arguments:
+    Args:
         strategy (str): Method used to predict. Valid options are "mean", "median". Defaults to "mean".
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -46,6 +45,18 @@ class BaselineRegressor(Estimator):
         )
 
     def fit(self, X, y=None):
+        """Fits baseline regression component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If input y is None.
+        """
         if y is None:
             raise ValueError("Cannot fit Baseline regressor if y is None")
         X = infer_feature_types(X)
@@ -59,6 +70,14 @@ class BaselineRegressor(Estimator):
         return self
 
     def predict(self, X):
+        """Make predictions using the baseline regression strategy.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.Series: Predicted values.
+        """
         X = infer_feature_types(X)
         predictions = pd.Series([self._prediction_value] * len(X))
         return infer_feature_types(predictions)
@@ -68,7 +87,6 @@ class BaselineRegressor(Estimator):
         """Returns importance associated with each feature. Since baseline regressors do not use input features to calculate predictions, returns an array of zeroes.
 
         Returns:
-            np.ndarray (float): An array of zeroes
-
+            np.ndarray (float): An array of zeroes.
         """
         return np.zeros(self._num_features)

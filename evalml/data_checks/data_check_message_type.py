@@ -1,3 +1,4 @@
+"""Enum for type of data check message."""
 from enum import Enum
 
 

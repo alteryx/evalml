@@ -1,3 +1,4 @@
+"""Component graph for a pipeline as a directed acyclic graph (DAG)."""
 import inspect
 import warnings
 
@@ -24,7 +25,7 @@ from evalml.utils.logger import get_logger
 class ComponentGraph:
     """Component graph for a pipeline as a directed acyclic graph (DAG).
 
-    Arguments:
+    Args:
         component_dict (dict): A dictionary which specifies the components and edges between components that should be used to create the component graph. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
@@ -132,13 +133,18 @@ class ComponentGraph:
         return defaults
 
     def instantiate(self, parameters):
-        """Instantiates all uninstantiated components within the graph using the given parameters. An error will be
-        raised if a component is already instantiated but the parameters dict contains arguments for that component.
+        """Instantiates all uninstantiated components within the graph using the given parameters. An error will be raised if a component is already instantiated but the parameters dict contains arguments for that component.
 
-        Arguments:
+        Args:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
-                               An empty dictionary {} or None implies using all default values for component parameters. If a component
-                               in the component graph is already instantiated, it will not use any of its parameters defined in this dictionary.
+                An empty dictionary {} or None implies using all default values for component parameters. If a component
+                in the component graph is already instantiated, it will not use any of its parameters defined in this dictionary.
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If component graph is already instantiated or if a component errored while instantiating.
         """
         if self._is_instantiated:
             raise ValueError(
@@ -173,9 +179,12 @@ class ComponentGraph:
     def fit(self, X, y):
         """Fit each component in the graph.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
@@ -186,7 +195,7 @@ class ComponentGraph:
     def fit_features(self, X, y):
         """Fit all components save the final one, usually an estimator.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples].
 
@@ -196,10 +205,9 @@ class ComponentGraph:
         return self._fit_transform_features_helper(True, X, y)
 
     def compute_final_component_features(self, X, y=None):
-        """Transform all components save the final one, and gathers the data from any number of parents
-        to get all the information that should be fed to the final component.
+        """Transform all components save the final one, and gathers the data from any number of parents to get all the information that should be fed to the final component.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples]. Defaults to None.
 
@@ -211,7 +219,7 @@ class ComponentGraph:
     def _fit_transform_features_helper(self, needs_fitting, X, y=None):
         """Transform all components save the final one, and returns the data that should be fed to the final component, usually an estimator.
 
-        Arguments:
+        Args:
             needs_fitting (boolean): Determines if components should be fit.
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             y (pd.Series): The target training data of length [n_samples]. Defaults to None.
@@ -258,12 +266,15 @@ class ComponentGraph:
     def transform(self, X, y=None):
         """Transform the input using the component graph.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Input features of shape [n_samples, n_features].
             y (pd.Series): The target data of length [n_samples]. Defaults to None.
 
         Returns:
             pd.DataFrame: Transformed output.
+
+        Raises:
+            ValueError: If final component is not a Transformer.
         """
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
@@ -284,11 +295,14 @@ class ComponentGraph:
     def predict(self, X):
         """Make predictions using selected features.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Input features of shape [n_samples, n_features].
 
         Returns:
             pd.Series: Predicted values.
+
+        Raises:
+            ValueError: If final component is not an Estimator.
         """
         if len(self.compute_order) == 0:
             return infer_feature_types(X)
@@ -304,7 +318,7 @@ class ComponentGraph:
     def _compute_features(self, component_list, X, y=None, fit=False):
         """Transforms the data by applying the given components.
 
-        Arguments:
+        Args:
             component_list (list): The list of component names to compute.
             X (pd.DataFrame): Input data to the pipeline to transform.
             y (pd.Series): The target training data of length [n_samples].
@@ -385,11 +399,11 @@ class ComponentGraph:
         If a feature is then calculated from feature 'a', e.g. 'a_squared', then the provenance would instead
         be {'cats': ['a', 'a_squared', 'b']}.
 
-        Arguments:
+        Args:
             input_feature_names (list(str)): Names of the features in the input dataframe.
 
         Returns:
-           dictionary: mapping of feature name to set feature names that were created from that feature.
+           dict: Dictionary mapping of feature name to set feature names that were created from that feature.
         """
         if not self.compute_order:
             return {}
@@ -440,11 +454,14 @@ class ComponentGraph:
     def get_component(self, component_name):
         """Retrieves a single component object from the graph.
 
-        Arguments:
+        Args:
             component_name (str): Name of the component to retrieve
 
         Returns:
             ComponentBase object
+
+        Raises:
+            ValueError: If the component is not in the graph.
         """
         try:
             return self.component_instances[component_name]
@@ -456,6 +473,9 @@ class ComponentGraph:
 
         Returns:
             ComponentBase object
+
+        Raises:
+            ValueError: If the component graph has no edges.
         """
         if len(self.compute_order) == 0:
             raise ValueError("Cannot get last component from edgeless graph")
@@ -467,6 +487,9 @@ class ComponentGraph:
 
         Returns:
             list: All estimator objects within the graph.
+
+        Raises:
+            ValueError: If the component graph is not yet instantiated.
         """
         if not isinstance(self.get_last_component(), ComponentBase):
             raise ValueError(
@@ -481,11 +504,14 @@ class ComponentGraph:
     def get_inputs(self, component_name):
         """Retrieves all inputs for a given component.
 
-        Arguments:
+        Args:
             component_name (str): Name of the component to look up.
 
         Returns:
             list[str]: List of inputs for the component to use.
+
+        Raises:
+            ValueError: If the component is not in the graph.
         """
         try:
             component_info = self.component_dict[component_name]
@@ -496,9 +522,9 @@ class ComponentGraph:
         return []
 
     def describe(self, return_dict=False):
-        """Outputs component graph details including component parameters
+        """Outputs component graph details including component parameters.
 
-        Arguments:
+        Args:
             return_dict (bool): If True, return dictionary of information about component graph. Defaults to False.
 
         Returns:
@@ -520,14 +546,17 @@ class ComponentGraph:
             return components
 
     def graph(self, name=None, graph_format=None):
-        """Generate an image representing the component graph
+        """Generate an image representing the component graph.
 
-        Arguments:
+        Args:
             name (str): Name of the graph. Defaults to None.
             graph_format (str): file format to save the graph in. Defaults to None.
 
         Returns:
             graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
+
+        Raises:
+            RuntimeError: If graphviz is not installed.
         """
         graphviz = import_or_raise(
             "graphviz", error_msg="Please install graphviz to visualize pipelines."
@@ -585,11 +614,11 @@ class ComponentGraph:
 
     @staticmethod
     def _get_edges(component_dict, edges_to_return="all"):
-        """
-        Gets the edges for a component graph.
+        """Gets the edges for a component graph.
 
-        Arguments:
-            edges (str): The types of edges to return. Defaults to "all".
+        Args:
+            component_dict (dict): Component dictionary to get edges from.
+            edges_to_return (str): The types of edges to return. Defaults to "all".
                 - if "all", returns all types of edges.
                 - if "features", returns only feature edges
                 - if "target", returns only target edges
@@ -613,7 +642,7 @@ class ComponentGraph:
 
     @classmethod
     def generate_order(cls, component_dict):
-        """Regenerated the topologically sorted order of the graph"""
+        """Regenerated the topologically sorted order of the graph."""
         edges = cls._get_edges(component_dict)
         if len(component_dict) == 1:
             return list(component_dict.keys())
@@ -640,17 +669,19 @@ class ComponentGraph:
         return compute_order
 
     def __getitem__(self, index):
+        """Get an element in the component graph."""
         if isinstance(index, int):
             return self.get_component(self.compute_order[index])
         else:
             return self.get_component(index)
 
     def __iter__(self):
+        """Iterator for the component graph."""
         self._i = 0
         return self
 
     def __next__(self):
-        """Iterator for graphs, retrieves the components in the graph in order
+        """Iterator for graphs, retrieves the components in the graph in order.
 
         Returns:
             ComponentBase obj: The next component class or instance in the graph
@@ -663,6 +694,7 @@ class ComponentGraph:
             raise StopIteration
 
     def __eq__(self, other):
+        """Test for equality."""
         if not isinstance(other, self.__class__):
             return False
         random_seed_eq = self.random_seed == other.random_seed
@@ -675,6 +707,7 @@ class ComponentGraph:
         return True
 
     def __repr__(self):
+        """String representation of a component graph."""
         component_strs = []
         for (
             component_name,
@@ -713,8 +746,11 @@ class ComponentGraph:
 
         Components that implement inverse_transform are PolynomialDetrender, LabelEncoder (tbd).
 
-        Arguments:
-            y: (pd.Series): Final component features
+        Args:
+            y: (pd.Series): Final component features.
+
+        Returns:
+            pd.Series: The target with inverse transformation applied.
         """
         data_to_transform = infer_feature_types(y)
         current_component = self.compute_order[-1]

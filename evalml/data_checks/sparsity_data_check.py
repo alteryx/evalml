@@ -1,3 +1,4 @@
+"""Data check that checks if there are any columns with sparsely populated values in the input."""
 from evalml.data_checks import (
     DataCheck,
     DataCheckAction,
@@ -12,9 +13,9 @@ warning_too_unique = "Input columns ({}) for {} problem type are too sparse."
 
 
 class SparsityDataCheck(DataCheck):
-    """Checks if there are any columns with sparsely populated values in the input.
+    """Check if there are any columns with sparsely populated values in the input.
 
-    Arguments:
+    Args:
         problem_type (str or ProblemTypes): The specific problem type to data check for.
             'multiclass' or 'time series multiclass' is the only accepted problem type.
         threshold (float): The threshold value, or percentage of each column's unique values,
@@ -36,10 +37,9 @@ class SparsityDataCheck(DataCheck):
             raise ValueError("Unique count threshold must be positive integer.")
 
     def validate(self, X, y=None):
-        """Calculates what percentage of each column's unique values exceed the count threshold and compare
-        that percentage to the sparsity threshold stored in the class instance.
+        """Calculate what percentage of each column's unique values exceed the count threshold and compare that percentage to the sparsity threshold stored in the class instance.
 
-        Arguments:
+        Args:
             X (pd.DataFrame, np.ndarray): Features.
             y (pd.Series, np.ndarray): Ignored.
 
@@ -96,10 +96,9 @@ class SparsityDataCheck(DataCheck):
 
     @staticmethod
     def sparsity_score(col, count_threshold=10):
-        """This function calculates a sparsity score for the given value counts by calculating the percentage of
-        unique values that exceed the count_threshold.
+        """Calculate a sparsity score for the given value counts by calculating the percentage of unique values that exceed the count_threshold.
 
-        Arguments:
+        Args:
             col (pd.Series): Feature values.
             count_threshold (int): The number of instances below which a value is considered sparse.
                 Default is 10.

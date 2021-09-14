@@ -1,3 +1,4 @@
+"""An undersampling transformer to downsample the majority classes in the dataset."""
 import pandas as pd
 
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
@@ -9,12 +10,11 @@ from evalml.preprocessing.data_splitters.balanced_classification_sampler import 
 
 
 class Undersampler(BaseSampler):
-    """
-    Initializes an undersampling transformer to downsample the majority classes in the dataset.
+    """Initializes an undersampling transformer to downsample the majority classes in the dataset.
 
     This component is only run during training and not during predict.
 
-    Arguments:
+    Args:
         sampling_ratio (float): The smallest minority:majority ratio that is accepted as 'balanced'. For instance, a 1:4 ratio would be
             represented as 0.25, while a 1:1 ratio is 1.0. Must be between 0 and 1, inclusive. Defaults to 0.25.
         sampling_ratio_dict (dict): A dictionary specifying the desired balanced ratio for each target value. For instance, in a binary case where class 1 is the minority, we could specify:
@@ -56,8 +56,9 @@ class Undersampler(BaseSampler):
     def _initialize_sampler(self, X, y):
         """Helper function to initialize the undersampler component object.
 
-        Arguments:
-            y (pd.Series): The target data
+        Args:
+            X (pd.DataFrame): Ignored.
+            y (pd.Series): The target data.
         """
         param_dic = self._dictionary_to_params(
             self.parameters["sampling_ratio_dict"], y
@@ -69,6 +70,15 @@ class Undersampler(BaseSampler):
         self._component_obj = sampler
 
     def transform(self, X, y=None):
+        """Transforms the input data by sampling the data.
+
+        Args:
+            X (pd.DataFrame): Training features.
+            y (pd.Series): Target.
+
+        Returns:
+            pd.DataFrame, pd.Series: Transformed features and target.
+        """
         X_ww, y_ww = self._prepare_data(X, y)
         self._initialize_sampler(X, y_ww)
         index_df = pd.Series(y_ww.index)

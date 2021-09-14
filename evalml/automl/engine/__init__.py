@@ -1,3 +1,4 @@
+"""EvalML Engine classes used to evaluate pipelines in AutoMLSearch."""
 from .engine_base import (
     EngineBase,
     EngineComputation,

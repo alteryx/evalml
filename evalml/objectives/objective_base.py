@@ -1,3 +1,4 @@
+"""Base class for all objectives."""
 from abc import ABC, abstractmethod
 
 import numpy as np
@@ -28,7 +29,13 @@ class ObjectiveBase(ABC):
     @classmethod
     @abstractmethod
     def score_needs_proba(cls):
-        """Returns a boolean determining if the score() method needs probability estimates. This should be true for objectives which work with predicted probabilities, like log loss or AUC, and false for objectives which compare predicted class labels to the actual labels, like F1 or correlation."""
+        """Returns a boolean determining if the score() method needs probability estimates.
+
+        This should be true for objectives which work with predicted
+        probabilities, like log loss or AUC, and false for objectives
+        which compare predicted class labels to the actual labels, like
+        F1 or correlation.
+        """
 
     @property
     @classmethod
@@ -46,14 +53,18 @@ class ObjectiveBase(ABC):
     @classmethod
     @abstractmethod
     def expected_range(cls):
-        """Returns the expected range of the objective, which is not necessarily the possible ranges. For example, our expected R2 range is from [-1, 1], although the actual range is (-inf, 1]."""
+        """Returns the expected range of the objective, which is not necessarily the possible ranges.
+
+        For example, our expected R2 range is from [-1, 1], although the
+        actual range is (-inf, 1].
+        """
 
     @classmethod
     @abstractmethod
     def objective_function(cls, y_true, y_predicted, X=None, sample_weight=None):
-        """Computes the relative value of the provided predictions compared to the actual labels, according a specified metric
+        """Computes the relative value of the provided predictions compared to the actual labels, according a specified metric.
 
-         Arguments:
+         Args:
             y_predicted (pd.Series): Predicted values of length [n_samples]
             y_true (pd.Series): Actual class labels of length [n_samples]
             X (pd.DataFrame or np.ndarray): Extra data of shape [n_samples, n_features] necessary to calculate score
@@ -65,13 +76,13 @@ class ObjectiveBase(ABC):
 
     @classproperty
     def positive_only(cls):
-        """If True, this objective is only valid for positive data. Default False."""
+        """If True, this objective is only valid for positive data. Defaults to False."""
         return False
 
     def score(self, y_true, y_predicted, X=None, sample_weight=None):
         """Returns a numerical score indicating performance based on the differences between the predicted and actual values.
 
-        Arguments:
+        Args:
             y_predicted (pd.Series): Predicted values of length [n_samples]
             y_true (pd.Series): Actual class labels of length [n_samples]
             X (pd.DataFrame or np.ndarray): Extra data of shape [n_samples, n_features] necessary to calculate score
@@ -93,7 +104,7 @@ class ObjectiveBase(ABC):
     def _standardize_input_type(input_data):
         """Standardize input to pandas for scoring.
 
-        Arguments:
+        Args:
             input_data (list, pd.DataFrame, pd.Series, or np.ndarray): A matrix of predictions or predicted probabilities
 
         Returns:
@@ -113,12 +124,12 @@ class ObjectiveBase(ABC):
     def validate_inputs(self, y_true, y_predicted):
         """Validates the input based on a few simple checks.
 
-        Arguments:
-            y_predicted (pd.Series, or pd.DataFrame): Predicted values of length [n_samples]
-            y_true (pd.Series): Actual class labels of length [n_samples]
+        Args:
+            y_predicted (pd.Series, or pd.DataFrame): Predicted values of length [n_samples].
+            y_true (pd.Series): Actual class labels of length [n_samples].
 
-        Returns:
-            None
+        Raises:
+            ValueError: If the inputs are malformed.
         """
         if y_predicted.shape[0] != y_true.shape[0]:
             raise ValueError(
@@ -143,7 +154,7 @@ class ObjectiveBase(ABC):
     def calculate_percent_difference(cls, score, baseline_score):
         """Calculate the percent difference between scores.
 
-        Arguments:
+        Args:
             score (float): A score. Output of the score method of this objective.
             baseline_score (float): A score. Output of the score method of this objective. In practice,
                 this is the score achieved on this objective with a baseline estimator.
@@ -153,7 +164,6 @@ class ObjectiveBase(ABC):
                 as percentages, this will be the difference between the reference score and score. For all other
                 objectives, the difference will be normalized by the reference score.
         """
-
         if pd.isna(score) or pd.isna(baseline_score):
             return np.nan
 
@@ -183,4 +193,5 @@ class ObjectiveBase(ABC):
 
     @classmethod
     def is_defined_for_problem_type(cls, problem_type):
+        """Returns whether or not an objective is defined for a problem type."""
         return handle_problem_types(problem_type) in cls.problem_types

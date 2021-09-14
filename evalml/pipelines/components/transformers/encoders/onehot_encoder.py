@@ -1,3 +1,4 @@
+"""A transformer that encodes categorical features in a one-hot numeric array."""
 import numpy as np
 import pandas as pd
 import woodwork as ww
@@ -20,7 +21,7 @@ class OneHotEncoderMeta(ComponentBaseMeta):
 class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     """A transformer that encodes categorical features in a one-hot numeric array.
 
-    Arguments:
+    Args:
         top_n (int): Number of categories per column to encode. If None, all categories will be encoded.
             Otherwise, the `n` most frequent will be encoded and all others will be dropped. Defaults to 10.
         features_to_encode (list[str]): List of columns to encode. All other columns will remain untouched.
@@ -92,6 +93,18 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         return list(X.ww.select(include=["category"], return_schema=True).columns)
 
     def fit(self, X, y=None):
+        """Fits the one-hot encoder component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If encoding a column failed.
+        """
         top_n = self.parameters["top_n"]
         X = infer_feature_types(X)
         if self.features_to_encode is None:
@@ -158,7 +171,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     def transform(self, X, y=None):
         """One-hot encode the input data.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Features to one-hot encode.
             y (pd.Series): Ignored.
 
@@ -201,10 +214,14 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     def categories(self, feature_name):
         """Returns a list of the unique categories to be encoded for the particular feature, in order.
 
-        Arguments:
-            feature_name (str): the name of any feature provided to one-hot encoder during fit
+        Args:
+            feature_name (str): The name of any feature provided to one-hot encoder during fit.
+
         Returns:
-            np.ndarray: the unique categories, in the same dtype as they were provided during fit
+            np.ndarray: The unique categories, in the same dtype as they were provided during fit.
+
+        Raises:
+            ValueError: If feature was not provided to one-hot encoder as a training feature.
         """
         try:
             index = self.features_to_encode.index(feature_name)
@@ -217,7 +234,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     @staticmethod
     def _make_name_unique(name, seen_before):
         """Helper to make the name unique."""
-
         if name not in seen_before:
             return name
 

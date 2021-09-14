@@ -1,3 +1,4 @@
+"""Transformer to drop rows specified by row indices."""
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
 
@@ -5,8 +6,7 @@ from evalml.utils import infer_feature_types
 class DropRowsTransformer(Transformer):
     """Transformer to drop rows specified by row indices.
 
-
-    Arguments:
+    Args:
         indices_to_drop (list): List of indices to drop in the input data. Defaults to None.
         random_seed (int): Seed for the random number generator. Is not used by this component. Defaults to 0.
     """
@@ -26,6 +26,18 @@ class DropRowsTransformer(Transformer):
         super().__init__(parameters=None, component_obj=None, random_seed=random_seed)
 
     def fit(self, X, y=None):
+        """Fits component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If indices to drop do not exist in input features or target.
+        """
         X_t = infer_feature_types(X)
         y_t = infer_feature_types(y) if y is not None else None
         if self.indices_to_drop is not None:
@@ -51,6 +63,15 @@ class DropRowsTransformer(Transformer):
         return self
 
     def transform(self, X, y=None):
+        """Transforms data using fitted component.
+
+        Args:
+            X (pd.DataFrame): Features.
+            y (pd.Series, optional): Target data.
+
+        Returns:
+            (pd.DataFrame, pd.Series): Data with row indices dropped.
+        """
         X_t = infer_feature_types(X)
         y_t = infer_feature_types(y) if y is not None else None
         if self.indices_to_drop is None or len(self.indices_to_drop) == 0:

@@ -1,3 +1,4 @@
+"""Stacked Ensemble Base Class."""
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
@@ -10,7 +11,7 @@ _nonstackable_model_families = [ModelFamily.BASELINE, ModelFamily.NONE]
 class SklearnStackedEnsembleBase(Estimator):
     """Stacked Ensemble Base Class.
 
-    Arguments:
+    Args:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         final_estimator (Estimator or subclass): The estimator used to combine the base estimators.
@@ -27,6 +28,11 @@ class SklearnStackedEnsembleBase(Estimator):
             Defaults to -1.
             - Note: there could be some multi-process errors thrown for values of `n_jobs != 1`. If this is the case, please use `n_jobs = 1`.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+
+    Raises:
+        EnsembleMissingPipelinesError: If `input_pipelines` is None or an empty list.
+        ValueError: If any of the input pipelines cannot be used in a stacked ensemble.
+
     """
 
     model_family = ModelFamily.ENSEMBLE
@@ -94,7 +100,7 @@ class SklearnStackedEnsembleBase(Estimator):
 
     @property
     def feature_importance(self):
-        """Not implemented for SklearnStackedEnsembleClassifier and SklearnStackedEnsembleRegressor"""
+        """Not implemented for SklearnStackedEnsembleClassifier and SklearnStackedEnsembleRegressor."""
         raise NotImplementedError(
             "feature_importance is not implemented for SklearnStackedEnsembleClassifier and SklearnStackedEnsembleRegressor"
         )
@@ -104,7 +110,7 @@ class SklearnStackedEnsembleBase(Estimator):
         """Returns the default parameters for stacked ensemble classes.
 
         Returns:
-            dict: default parameters for this component.
+            dict: Default parameters for this component.
         """
         return {
             "final_estimator": None,

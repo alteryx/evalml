@@ -1,3 +1,4 @@
+"""A transformer that standardizes input features by removing the mean and scaling to unit variance."""
 import pandas as pd
 from sklearn.preprocessing import StandardScaler as SkScaler
 from woodwork.logical_types import Boolean, Categorical, Integer
@@ -12,9 +13,8 @@ from evalml.utils import (
 class StandardScaler(Transformer):
     """A transformer that standardizes input features by removing the mean and scaling to unit variance.
 
-    Arguments:
+    Args:
         random_seed (int): Seed for the random number generator. Defaults to 0.
-
     """
 
     name = "Standard Scaler"
@@ -31,6 +31,15 @@ class StandardScaler(Transformer):
         )
 
     def transform(self, X, y=None):
+        """Transform data using the fitted standard scaler.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+        """
         X = infer_feature_types(X)
         original_ltypes = X.ww.schema.logical_types
         X = X.ww.select_dtypes(exclude=["datetime"])
@@ -41,6 +50,15 @@ class StandardScaler(Transformer):
         )
 
     def fit_transform(self, X, y=None):
+        """Fit and transform data using the standard scaler component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+        """
         X = infer_feature_types(X)
         X = X.select_dtypes(exclude=["datetime"])
         return self.fit(X, y).transform(X, y)

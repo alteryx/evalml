@@ -1,3 +1,4 @@
+"""Grid Search Optimizer, which generates all of the possible points to search for using a grid."""
 import itertools
 
 from skopt.space import Integer, Real
@@ -9,7 +10,7 @@ from .tuner_exceptions import NoParamsException
 class GridSearchTuner(Tuner):
     """Grid Search Optimizer, which generates all of the possible points to search for using a grid.
 
-    Arguments:
+    Args:
         pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
         n_points (int): The number of points to sample from along each dimension
             defined in the ``space`` argument. Defaults to 10.
@@ -55,17 +56,16 @@ class GridSearchTuner(Tuner):
         self.curr_params = None
 
     def add(self, pipeline_parameters, score):
-        """Not applicable to grid search tuner as generated parameters are
-        not dependent on scores of previous parameters.
+        """Not applicable to grid search tuner as generated parameters are not dependent on scores of previous parameters.
 
-        Arguments:
+        Args:
             pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
             score (float): the score obtained by evaluating the pipeline with the provided parameters
         """
         pass
 
     def propose(self):
-        """Returns parameters from _grid_points iterations
+        """Returns parameters from _grid_points iterations.
 
         If all possible combinations of parameters have been scored, then ``NoParamsException`` is raised.
 
@@ -79,14 +79,13 @@ class GridSearchTuner(Tuner):
         return self._convert_to_pipeline_parameters(params)
 
     def is_search_space_exhausted(self):
-        """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in
-        ``self.curr_params`` to be returned by ``propose()``.
+        """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in ``self.curr_params`` to be returned by ``propose()``.
+
+        Returns:
+            bool: If no more valid parameters exists in the search space, return False.
 
         Raises:
             NoParamsException: If a search space is exhausted, then this exception is thrown.
-
-        Returns:
-            bool: If no more valid parameters exists in the search space, return false.
         """
         try:
             self.curr_params = next(self._grid_points)

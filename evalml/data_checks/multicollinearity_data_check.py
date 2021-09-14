@@ -1,3 +1,4 @@
+"""Data check to check if any set features are likely to be multicollinear."""
 from evalml.data_checks import (
     DataCheck,
     DataCheckMessageCode,
@@ -9,7 +10,7 @@ from evalml.utils import infer_feature_types
 class MulticollinearityDataCheck(DataCheck):
     """Check if any set features are likely to be multicollinear.
 
-    Arguments:
+    Args:
         threshold (float): The threshold to be considered. Defaults to 0.9.
     """
 
@@ -21,7 +22,7 @@ class MulticollinearityDataCheck(DataCheck):
     def validate(self, X, y=None):
         """Check if any set of features are likely to be multicollinear.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): The input features to check.
             y (pd.Series): The target. Ignored.
 
@@ -42,8 +43,6 @@ class MulticollinearityDataCheck(DataCheck):
             ...                   "code": "IS_MULTICOLLINEAR",
             ...                   'details': {'columns': [('col_1', 'col_2')]}}],
             ...     "actions": []}
-
-
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

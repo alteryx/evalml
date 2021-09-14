@@ -1,3 +1,5 @@
+"""Data check that checks if there are any highly-null columns and rows in the input."""
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckAction,
@@ -9,14 +11,13 @@ from evalml.utils import infer_feature_types
 
 
 class HighlyNullDataCheck(DataCheck):
-    """Checks if there are any highly-null columns and rows in the input.
+    """Check if there are any highly-null columns and rows in the input.
 
-    Arguments:
+    Args:
         pct_null_col_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
             that column will be considered highly-null. Defaults to 0.95.
         pct_null_row_threshold(float): If the percentage of NaN values in an input row exceeds this amount,
             that row will be considered highly-null. Defaults to 0.95.
-
     """
 
     def __init__(self, pct_null_col_threshold=0.95, pct_null_row_threshold=0.95):
@@ -33,11 +34,11 @@ class HighlyNullDataCheck(DataCheck):
         self.pct_null_row_threshold = pct_null_row_threshold
 
     def validate(self, X, y=None):
-        """Checks if there are any highly-null columns or rows in the input.
+        """Check if there are any highly-null columns or rows in the input.
 
-        Arguments:
+        Args:
             X (pd.DataFrame, np.ndarray): Features.
-            y (pd.Series, np.ndarray): Ignored.
+            y (pd.Series, np.ndarray): Ignored. Defaults to None.
 
         Returns:
             dict: dict with a DataCheckWarning if there are any highly-null columns or rows.
@@ -73,7 +74,6 @@ class HighlyNullDataCheck(DataCheck):
             ...                   "details": {"column": "lots_of_null", "pct_null_rows": 0.8}}],
             ...    "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [0, 1, 2, 3]}},
             ...                {"code": "DROP_COL", "metadata": {"column": "lots_of_null"}}]}
-
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

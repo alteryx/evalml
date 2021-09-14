@@ -1,3 +1,4 @@
+"""Utility methods for EvalML objectives."""
 from .objective_base import ObjectiveBase
 
 from evalml import objectives
@@ -68,7 +69,7 @@ def get_core_objective_names():
 def get_objective(objective, return_instance=False, **kwargs):
     """Returns the Objective class corresponding to a given objective name.
 
-    Arguments:
+    Args:
         objective (str or ObjectiveBase): Name or instance of the objective class.
         return_instance (bool): Whether to return an instance of the objective. This only applies if objective
             is of type str. Note that the instance will be initialized with default arguments.
@@ -78,6 +79,12 @@ def get_objective(objective, return_instance=False, **kwargs):
         ObjectiveBase if the parameter objective is of type ObjectiveBase. If objective is instead a valid
         objective name, function will return the class corresponding to that name. If return_instance is True,
         an instance of that objective will be returned.
+
+    Raises:
+        TypeError: If objective is None.
+        TypeError: If objective is not a string and not an instance of ObjectiveBase.
+        ObjectiveNotFoundError: If input objective is not a valid objective.
+        ObjectiveCreationError: If objective cannot be created properly.
     """
     if objective is None:
         raise TypeError("Objective parameter cannot be NoneType")
@@ -113,7 +120,7 @@ def get_core_objectives(problem_type):
 
     Core objectives are designed to work out-of-the-box for any dataset.
 
-    Arguments:
+    Args:
         problem_type (str/ProblemTypes): Type of problem
 
     Returns:

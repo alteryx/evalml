@@ -1,3 +1,4 @@
+"""An automl algorithm that consists of two modes: fast and long, where fast is a subset of long."""
 import inspect
 
 import numpy as np
@@ -48,6 +49,21 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     8. Repeat these indefinitely until stopping criterion is met:
         a. For each of the previous top 3 estimators, sample 10 parameters from the tuner. Run all 30 in one batch
         b. Run ensembling
+
+    Args:
+        X (pd.DataFrame): Training data.
+        y (pd.Series): Target data.
+        problem_type (ProblemType): Problem type associated with training data.
+        sampler_name (BaseSampler): Sampler to use for preprocessing.
+        tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
+        random_seed (int): Seed for the random number generator. Defaults to 0.
+        pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
+        custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
+        n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
+        text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
+        top_n (int): top n number of pipelines to use for long mode.
+        num_long_explore_pipelines (int): number of pipelines to explore for each top n pipeline at the start of long mode.
+        num_long_pipelines_per_batch (int): number of pipelines per batch for each top n pipeline through long mode.
     """
 
     def __init__(
@@ -66,23 +82,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         num_long_explore_pipelines=50,
         num_long_pipelines_per_batch=10,
     ):
-        """
-        Arguments:
-            X (pd.DataFrame): Training data
-            y (pd.Series): Target data
-            problem_type (ProblemType): Problem type associated with training data
-            sampler_name (BaseSampler): Sampler to use for preprocessing
-            tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-            pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
-            custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
-            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
-            text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
-            top_n (int): top n number of pipelines to use for long mode.
-            num_long_explore_pipelines (int): number of pipelines to explore for each top n pipeline at the start of long mode.
-            num_long_pipelines_per_batch (int): number of pipelines per batch for each top n pipeline through long mode.
-        """
-
         super().__init__(
             allowed_pipelines=[],
             custom_hyperparameters=custom_hyperparameters,
@@ -286,7 +285,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return self._create_n_pipelines(pipelines, self.num_long_explore_pipelines)
 
     def next_batch(self):
-        """Get the next batch of pipelines to evaluate
+        """Get the next batch of pipelines to evaluate.
 
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
@@ -315,7 +314,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
         """Register results from evaluating a pipeline. In batch number 2, the selected column names from the feature selector are taken to be used in a column selector. Information regarding the best pipeline is updated here as well.
 
-        Arguments:
+        Args:
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
             trained_pipeline_results (dict): Results from training a pipeline.

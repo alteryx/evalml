@@ -1,3 +1,4 @@
+"""Logistic Regression Classifier."""
 import numpy as np
 from sklearn.linear_model import LogisticRegression as SKLogisticRegression
 from skopt.space import Real
@@ -8,10 +9,9 @@ from evalml.problem_types import ProblemTypes
 
 
 class LogisticRegressionClassifier(Estimator):
-    """
-    Logistic Regression Classifier.
+    """Logistic Regression Classifier.
 
-    Arguments:
+    Args:
         penalty ({"l1", "l2", "elasticnet", "none"}): The norm used in penalization. Defaults to "l2".
         C (float): Inverse of regularization strength. Must be a positive float. Defaults to 1.0.
         multi_class ({"auto", "ovr", "multinomial"}): If the option chosen is "ovr", then a binary problem is fit for each label.
@@ -81,6 +81,7 @@ class LogisticRegressionClassifier(Estimator):
 
     @property
     def feature_importance(self):
+        """Feature importance for fitted logistic regression classifier."""
         coef_ = self._component_obj.coef_
         # binary classification case
         if len(coef_) <= 2:

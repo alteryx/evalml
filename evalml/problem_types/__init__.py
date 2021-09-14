@@ -1,3 +1,4 @@
+"""The supported types of machine learning problems."""
 from .problem_types import ProblemTypes
 from .utils import (
     handle_problem_types,

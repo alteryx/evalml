@@ -1,12 +1,13 @@
+"""Messages returned by a DataCheck, tagged by name."""
 from .data_check_message_type import DataCheckMessageType
 
 
 class DataCheckMessage:
     """Base class for a message returned by a DataCheck, tagged by name.
 
-    Arguments:
-        message (str): Message string
-        data_check_name (str): Name of data check
+    Args:
+        message (str): Message string.
+        data_check_name (str): Name of data check.
         message_code (DataCheckMessageCode): Message code associated with message. Defaults to None.
         details (dict): Additional useful information associated with the message. Defaults to None.
     """
@@ -24,7 +25,17 @@ class DataCheckMessage:
         return self.message
 
     def __eq__(self, other):
-        """Checks for equality. Two DataCheckMessage objs are considered equivalent if all of their attributes are equivalent."""
+        """Check for equality.
+
+        Two DataCheckMessage objs are considered equivalent if all of
+        their attributes are equivalent.
+
+        Args:
+            other: An object to compare equality with.
+
+        Returns:
+            bool: True if the other object is considered an equivalent data check message, False otherwise.
+        """
         return (
             self.message_type == other.message_type
             and self.message == other.message
@@ -34,6 +45,7 @@ class DataCheckMessage:
         )
 
     def to_dict(self):
+        """Return a dictionary form of the data check message."""
         message_dict = {
             "message": self.message,
             "data_check_name": self.data_check_name,

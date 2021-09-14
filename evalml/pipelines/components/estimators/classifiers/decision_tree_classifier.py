@@ -1,3 +1,4 @@
+"""Decision Tree Classifier."""
 from sklearn.tree import DecisionTreeClassifier as SKDecisionTreeClassifier
 from skopt.space import Integer
 
@@ -9,7 +10,7 @@ from evalml.problem_types import ProblemTypes
 class DecisionTreeClassifier(Estimator):
     """Decision Tree Classifier.
 
-    Arguments:
+    Args:
         criterion ({"gini", "entropy"}): The function to measure the quality of a split.
             Supported criteria are "gini" for the Gini impurity and "entropy" for the information gain.
             Defaults to "gini".
