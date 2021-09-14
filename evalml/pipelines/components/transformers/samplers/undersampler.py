@@ -26,6 +26,11 @@ class Undersampler(BaseSampler):
             If min_percentage and min_samples are not met, treat this as severely imbalanced, and we will not resample the data.
             Must be between 0 and 0.5, inclusive. Defaults to 0.1.
         random_seed (int): The seed to use for random sampling. Defaults to 0.
+
+    Raises:
+        ValueError: If sampling_ratio is not in the range (0, 1].
+        ValueError: If min_sample is not greater than 0.
+        ValueError: If min_percentage is not between 0 and 0.5, inclusive.
     """
 
     name = "Undersampler"
@@ -102,10 +107,10 @@ class Undersampler(BaseSampler):
         """Returns dictionary of examples to drop for each class if we need to resample.
 
         Arguments:
-            y (pd.Series): Target data passed in
+            y (pd.Series): Target data passed in.
 
         Returns:
-            (dict): dictionary with undersample target class as key, and number of samples to remove as the value.
+            dict: Dictionary with undersample target class as key, and number of samples to remove as the value.
                 If we don't need to resample, returns empty dictionary.
         """
         counts = y.value_counts()
@@ -136,7 +141,7 @@ class Undersampler(BaseSampler):
         """Turns the sampling dict input into a dict of samples to remove for each target, similar to the return of _find_ideal_samples.
 
         Arguments:
-            y (pd.Series): Training data targets
+            y (pd.Series): Training data targets.
 
         Returns:
             (dict): dictionary with undersample target class as key, and number of samples to remove as the value.
@@ -152,11 +157,11 @@ class Undersampler(BaseSampler):
         """Resampling technique for this sampler.
 
         Arguments:
-            X (pd.DataFrame): Training data to fit and resample
-            y (pd.Series): Training data targets to fit and resample
+            X (pd.DataFrame): Training data to fit and resample.
+            y (pd.Series): Training data targets to fit and resample.
 
         Returns:
-            list: Indices to keep for training data
+            list: Indices to keep for training data.
         """
         if self.parameters["sampling_ratio_dict"]:
             self.sampling_ratio_dict = self._convert_dictionary(
@@ -174,7 +179,6 @@ class Undersampler(BaseSampler):
             # iterate through the classes we need to undersample and remove the number of samples we need to remove
             for key, value in result.items():
                 indices = y.index[y == key].values
-                # import pdb; pdb.set_trace()
                 indices_to_remove = self.random_state.choice(
                     indices, value, replace=False
                 )
