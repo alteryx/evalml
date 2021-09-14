@@ -106,6 +106,9 @@ class PipelineSearchPlots:
 
         Returns:
             plot
+
+        Raises:
+            ValueError: If engine_str is not a valid engine.
         """
         if not interactive_plot:
             plot_obj = SearchIterationPlot(self.results, self.objective)

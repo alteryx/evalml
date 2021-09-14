@@ -223,7 +223,7 @@ class TimeSeriesBinaryClassificationPipeline(
             y (pd.Series): Future target of shape [n_samples].
             X_train (pd.DataFrame): Data the pipeline was trained on of shape [n_samples_train, n_feautures].
             y_train (pd.Series): Targets used to train the pipeline of shape [n_samples_train].
-            objective (ObjectiveBase, str): Objective used to threshold predicted probabilities, optional.
+            objective (ObjectiveBase, str): Objective used to threshold predicted probabilities, optional. Defaults to None.
 
         Returns:
             pd.Series: Estimated labels.

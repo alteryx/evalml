@@ -46,7 +46,9 @@ class ClassImbalanceDataCheck(DataCheck):
         self.cv_folds = num_cv_folds * 2
 
     def validate(self, X, y):
-        """Check if any target labels are imbalanced beyond a threshold for binary and multiclass problems Ignores NaN values in target labels if they appear.
+        """Check if any target labels are imbalanced beyond a threshold for binary and multiclass problems.
+
+        Ignores NaN values in target labels if they appear.
 
         Args:
             X (pd.DataFrame, np.ndarray): Features. Ignored.

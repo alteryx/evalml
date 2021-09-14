@@ -28,6 +28,11 @@ class SklearnStackedEnsembleBase(Estimator):
             Defaults to -1.
             - Note: there could be some multi-process errors thrown for values of `n_jobs != 1`. If this is the case, please use `n_jobs = 1`.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+
+    Raises:
+        EnsembleMissingPipelinesError: If `input_pipelines` is None or an empty list.
+        ValueError: If any of the input pipelines cannot be used in a stacked ensemble.
+
     """
 
     model_family = ModelFamily.ENSEMBLE

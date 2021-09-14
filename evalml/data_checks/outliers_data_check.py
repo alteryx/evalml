@@ -82,7 +82,21 @@ class OutliersDataCheck(DataCheck):
 
     @staticmethod
     def _no_outlier_prob(num_records: int, pct_outliers: float) -> float:
-        """Calculate the probability that there are no true outliers in a numeric (integer or float) column. It is based on creating 100,000 samples consisting of a given number of records, and then repeating this over a grid of sample sizes. Each value in a sample is drawn from a log normal distribution, and then the number of potential outliers in the data is determined using the skew adjusted box plot approach based on the medcouple statistic. It was observed that the distribution of the percentage of outliers could be described by a gamma distribution, with the shape and scale parameters changing with the sample size. For each sample size, the shape and scale parameters of the gamma distriubtion were estimated using maximum likelihood methods. The set of estimate shape and scale parameters for different sample size were then used to fit equations that relate these two parameters to the sample size. These equations use a transendental logrithmic functional form that provides a seventh order Taylor series approximation to the two true functional relationships, and was estimated using least squares regression.
+        """Calculate the probability that there are no true outliers in a numeric (integer or float) column.
+
+        It is based on creating 100,000 samples consisting of a given number of records, and then repeating
+        this over a grid of sample sizes. Each value in a sample is drawn from a log normal distribution,
+        and then the number of potential outliers in the data is determined using the skew adjusted box plot
+        approach based on the medcouple statistic.
+
+        It was observed that the distribution of the percentage of outliers could be described by a gamma distribution,
+        with the shape and scale parameters changing with the sample size.
+        For each sample size, the shape and scale parameters of the gamma distriubtion were estimated using maximum
+        likelihood methods. The set of estimate shape and scale parameters for different sample size were then used
+        to fit equations that relate these two parameters to the sample size.
+
+        These equations use a transendental logrithmic functional form that provides a seventh order Taylor series
+        approximation to the two true functional relationships, and was estimated using least squares regression.
 
         Original credit goes to Jad Raad and Dan Putler of Alteryx.
 

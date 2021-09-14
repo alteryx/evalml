@@ -77,7 +77,10 @@ class BaseSampler(Transformer):
         return infer_feature_types(X_new), infer_feature_types(y_new)
 
     def _convert_dictionary(self, sampling_dict, y):
-        """Converts the provided sampling dictionary from a dictionary of ratios to a dictionary of number of samples. Expects the provided dictionary keys to be the target values y, and the associated values to be the min:max ratios. Converts and returns a dictionary with the same keys, but changes the values to be the number of samples rather than ratio.
+        """Converts the provided sampling dictionary from a dictionary of ratios to a dictionary of number of samples.
+
+        Expects the provided dictionary keys to be the target values y, and the associated values to be the min:max ratios.
+        Converts and returns a dictionary with the same keys, but changes the values to be the number of samples rather than ratio.
 
         Args:
             sampling_dict (dict): The input sampling dictionary passed in from user.
