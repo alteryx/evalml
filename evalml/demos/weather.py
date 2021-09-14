@@ -1,3 +1,4 @@
+"""The Australian daily-min-termperatures weather dataset."""
 import os
 
 import pandas as pd

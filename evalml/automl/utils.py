@@ -1,3 +1,4 @@
+"""Utilities useful in AutoML."""
 from collections import namedtuple
 
 import pandas as pd
@@ -32,7 +33,7 @@ _LARGE_DATA_PERCENT_VALIDATION = 0.75
 def get_default_primary_search_objective(problem_type):
     """Get the default primary search objective for a problem type.
 
-    Arguments:
+    Args:
         problem_type (str or ProblemType): problem type of interest.
 
     Returns:
@@ -61,7 +62,7 @@ def make_data_splitter(
 ):
     """Given the training data and ML problem parameters, compute a data splitting method to use during AutoML search.
 
-    Arguments:
+    Args:
         X (pd.DataFrame): The input training data of shape [n_samples, n_features].
         y (pd.Series): The target training data of length [n_samples].
         problem_type (ProblemType): The type of machine learning problem.
@@ -73,6 +74,9 @@ def make_data_splitter(
 
     Returns:
         sklearn.model_selection.BaseCrossValidator: Data splitting method.
+
+    Raises:
+        ValueError: If problem_configuration is not given for a time-series problem.
     """
     random_seed = random_seed
     problem_type = handle_problem_types(problem_type)
@@ -102,9 +106,9 @@ def make_data_splitter(
 def tune_binary_threshold(
     pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning
 ):
-    """Tunes the threshold of a binary pipeline to the X and y thresholding data
+    """Tunes the threshold of a binary pipeline to the X and y thresholding data.
 
-    Arguments:
+    Args:
         pipeline (Pipeline): Pipeline instance to threshold.
         objective (ObjectiveBase): The objective we want to tune with. If not tuneable and best_pipeline is True, will use F1.
         problem_type (ProblemType): The problem type of the pipeline.
@@ -128,14 +132,11 @@ def tune_binary_threshold(
 def check_all_pipeline_names_unique(pipelines):
     """Checks whether all the pipeline names are unique.
 
-    Arguments:
-        pipelines (list(PipelineBase)): List of pipelines to check if all names are unique.
-
-    Returns:
-          None
+    Args:
+        pipelines (list[PipelineBase]): List of pipelines to check if all names are unique.
 
     Raises:
-        ValueError: if any pipeline names are duplicated.
+        ValueError: If any pipeline names are duplicated.
     """
     name_count = pd.Series([p.name for p in pipelines]).value_counts()
     duplicate_names = name_count[name_count > 1].index.tolist()
@@ -168,7 +169,7 @@ AutoMLConfig = namedtuple(
 def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
     """Returns the name of the sampler component to use for AutoMLSearch.
 
-    Arguments:
+    Args:
         X (pd.DataFrame): The input feature data
         y (pd.Series): The input target data
         sampler_method (str): The sampler_type argument passed to AutoMLSearch
@@ -201,14 +202,13 @@ def get_best_sampler_for_data(X, y, sampler_method, sampler_balanced_ratio):
 def get_pipelines_from_component_graphs(
     component_graphs_dict, problem_type, parameters=None, random_seed=0
 ):
-    """
-    Returns created pipelines from passed component graphs based on the specified problem type.
+    """Returns created pipelines from passed component graphs based on the specified problem type.
 
-    Arguments:
+    Args:
         component_graphs_dict (dict): The dict of component graphs.
         problem_type (str or ProblemType): The problem type for which pipelines will be created.
-        parameters (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines.
-        random_seed (int): Random seed.
+        parameters (dict): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
+        random_seed (int): Random seed. Defaults to 0.
 
     Returns:
         list: List of pipelines made from the passed component graphs.

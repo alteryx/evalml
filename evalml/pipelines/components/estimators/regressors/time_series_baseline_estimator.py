@@ -1,3 +1,4 @@
+"""Time series estimator that predicts using the naive forecasting approach."""
 import numpy as np
 
 from evalml.model_family import ModelFamily
@@ -12,7 +13,7 @@ class TimeSeriesBaselineEstimator(Estimator):
 
     This is useful as a simple baseline estimator for time series problems.
 
-    Arguments:
+    Args:
         gap (int): Gap between prediction date and target date and must be a positive integer. If gap is 0, target date will be shifted ahead by 1 time period. Defaults to 1.
         forecast_horizon (int): Number of time steps the model is expected to predict.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -52,6 +53,18 @@ class TimeSeriesBaselineEstimator(Estimator):
         )
 
     def fit(self, X, y=None):
+        """Fits time series baseline estimator to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If input y is None.
+        """
         if y is None:
             raise ValueError("Cannot fit Time Series Baseline Classifier if y is None")
         vals, _ = np.unique(y, return_counts=True)
@@ -59,6 +72,17 @@ class TimeSeriesBaselineEstimator(Estimator):
         return self
 
     def predict(self, X):
+        """Make predictions using fitted time series baseline estimator.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.Series: Predicted values.
+
+        Raises:
+            ValueError: If input y is None.
+        """
         X = infer_feature_types(X)
         feature_name = DelayedFeatureTransformer.target_colname_prefix.format(
             self.start_delay
@@ -71,6 +95,17 @@ class TimeSeriesBaselineEstimator(Estimator):
         return X.ww[feature_name]
 
     def predict_proba(self, X):
+        """Make prediction probabilities using fitted time series baseline estimator.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.DataFrame: Predicted probability values.
+
+        Raises:
+            ValueError: If input y is None.
+        """
         preds = self.predict(X).astype("int")
         proba_arr = np.zeros((len(preds), len(self._classes)))
         proba_arr[np.arange(len(preds)), preds] = 1
@@ -83,7 +118,6 @@ class TimeSeriesBaselineEstimator(Estimator):
         Since baseline estimators do not use input features to calculate predictions, returns an array of zeroes.
 
         Returns:
-            np.ndarray (float): an array of zeroes
-
+            np.ndarray (float): An array of zeroes.
         """
         return np.zeros(1)

@@ -1,3 +1,4 @@
+"""Base class for all components."""
 import copy
 from abc import ABC, abstractmethod
 
@@ -17,7 +18,7 @@ from evalml.utils.logger import get_logger
 class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """Base class for all components.
 
-    Arguments:
+    Args:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
         component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -28,7 +29,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         """Base class for all components.
 
-        Arguments:
+        Args:
             parameters (dict): Dictionary of parameters for the component. Defaults to None.
             component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
             random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -42,39 +43,50 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     @classmethod
     @abstractmethod
     def name(cls):
-        """Returns string name of this component"""
+        """Returns string name of this component."""
 
     @property
     @classmethod
     @abstractmethod
     def model_family(cls):
-        """Returns ModelFamily of this component"""
+        """Returns ModelFamily of this component."""
 
     @property
     @classmethod
     @abstractmethod
     def modifies_features(cls):
         """Returns whether this component modifies (subsets or transforms) the features variable during transform.
-        For Estimator objects, this attribute determines if the return value from `predict` or `predict_proba` should be used as features or targets."""
+
+        For Estimator objects, this attribute determines if the return
+        value from `predict` or `predict_proba` should be used as
+        features or targets.
+        """
 
     @property
     @classmethod
     @abstractmethod
     def modifies_target(cls):
         """Returns whether this component modifies (subsets or transforms) the target variable during transform.
-        For Estimator objects, this attribute determines if the return value from `predict` or `predict_proba` should be used as features or targets."""
+
+        For Estimator objects, this attribute determines if the return
+        value from `predict` or `predict_proba` should be used as
+        features or targets.
+        """
 
     @classproperty
     def needs_fitting(self):
-        """Returns boolean determining if component needs fitting before
-        calling predict, predict_proba, transform, or feature_importances.
-        This can be overridden to False for components that do not need to be fit
-        or whose fit methods do nothing."""
+        """Returns boolean determining if component needs fitting before calling predict, predict_proba, transform, or feature_importances.
+
+        This can be overridden to False for components that do not need to be fit or whose fit methods do nothing.
+
+        Returns:
+            True.
+        """
         return True
 
     @property
     def parameters(self):
-        """Returns the parameters which were used to initialize the component"""
+        """Returns the parameters which were used to initialize the component."""
         return copy.copy(self._parameters)
 
     @classproperty
@@ -84,9 +96,8 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         Our convention is that Component.default_parameters == Component().parameters.
 
         Returns:
-            dict: default parameters for this component.
+            dict: Default parameters for this component.
         """
-
         if cls._default_parameters is None:
             cls._default_parameters = cls().parameters
 
@@ -105,14 +116,17 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         return self.__class__(**self.parameters, random_seed=self.random_seed)
 
     def fit(self, X, y=None):
-        """Fits component to data
+        """Fits component to data.
 
-        Arguments:
-            X (list, pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (list, pd.Series, np.ndarray, optional): The target training data of length [n_samples]
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features]
+            y (pd.Series, optional): The target training data of length [n_samples]
 
         Returns:
             self
+
+        Raises:
+            MethodPropertyNotFoundError: If component does not have a fit method or a component_obj that implements fit.
         """
         X = infer_feature_types(X)
         if y is not None:
@@ -126,14 +140,14 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             )
 
     def describe(self, print_name=False, return_dict=False):
-        """Describe a component and its parameters
+        """Describe a component and its parameters.
 
-        Arguments:
+        Args:
             print_name(bool, optional): whether to print name of component
             return_dict(bool, optional): whether to return description as dictionary in the format {"name": name, "parameters": parameters}
 
         Returns:
-            None or dict: prints and returns dictionary
+            None or dict: Returns dictionary if return_dict is True, else None.
         """
         logger = get_logger(f"{__name__}.describe")
         if print_name:
@@ -150,24 +164,21 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             return component_dict
 
     def save(self, file_path, pickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
-        """Saves component at file path
+        """Saves component at file path.
 
-        Arguments:
-            file_path (str): Location to save file
+        Args:
+            file_path (str): Location to save file.
             pickle_protocol (int): The pickle data stream format.
-
-        Returns:
-            None
         """
         with open(file_path, "wb") as f:
             cloudpickle.dump(self, f, protocol=pickle_protocol)
 
     @staticmethod
     def load(file_path):
-        """Loads component at file path
+        """Loads component at file path.
 
-        Arguments:
-            file_path (str): Location to load file
+        Args:
+            file_path (str): Location to load file.
 
         Returns:
             ComponentBase object
@@ -176,6 +187,7 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
             return cloudpickle.load(f)
 
     def __eq__(self, other):
+        """Check for equality."""
         if not isinstance(other, self.__class__):
             return False
         random_seed_eq = self.random_seed == other.random_seed
@@ -188,9 +200,11 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         return True
 
     def __str__(self):
+        """String representation of a component."""
         return self.name
 
     def __repr__(self):
+        """String representation of a component."""
         parameters_repr = ", ".join(
             [f"{key}={safe_repr(value)}" for key, value in self.parameters.items()]
         )

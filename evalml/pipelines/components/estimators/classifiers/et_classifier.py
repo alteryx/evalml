@@ -1,3 +1,4 @@
+"""Extra Trees Classifier."""
 from sklearn.ensemble import ExtraTreesClassifier as SKExtraTreesClassifier
 from skopt.space import Integer
 
@@ -7,10 +8,9 @@ from evalml.problem_types import ProblemTypes
 
 
 class ExtraTreesClassifier(Estimator):
-    """
-    Extra Trees Classifier.
+    """Extra Trees Classifier.
 
-    Arguments:
+    Args:
         n_estimators (float): The number of trees in the forest. Defaults to 100.
         max_features (int, float or {"auto", "sqrt", "log2"}): The number of features to consider when looking for the best split:
 

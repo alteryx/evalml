@@ -1,3 +1,4 @@
+"""Bayesian Optimizer."""
 import logging
 import warnings
 
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 class SKOptTuner(Tuner):
     """Bayesian Optimizer.
 
-    Arguments:
+    Args:
         pipeline_hyperparameter_ranges (dict): A set of hyperparameter ranges corresponding to a pipeline's parameters.
         random_seed (int): The seed for the random number generator. Defaults to 0.
     """
@@ -30,12 +31,16 @@ class SKOptTuner(Tuner):
     def add(self, pipeline_parameters, score):
         """Add score to sample.
 
-        Arguments:
+        Args:
             pipeline_parameters (dict): A dict of the parameters used to evaluate a pipeline
             score (float): The score obtained by evaluating the pipeline with the provided parameters
 
         Returns:
             None
+
+        Raises:
+            Exception: If skopt tuner errors.
+            ParameterError: If skopt receives invalid parameters.
         """
         # skip adding nan scores
         if pd.isnull(score):
@@ -61,7 +66,7 @@ class SKOptTuner(Tuner):
         """Returns a suggested set of parameters to train and score a pipeline with, based off the search space dimensions and prior samples.
 
         Returns:
-            dict: Proposed pipeline parameters
+            dict: Proposed pipeline parameters.
         """
         with warnings.catch_warnings():
             warnings.simplefilter("ignore")

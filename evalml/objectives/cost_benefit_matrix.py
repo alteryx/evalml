@@ -1,3 +1,4 @@
+"""Cost-benefit matrix objective."""
 import numpy as np
 
 from .binary_classification_objective import BinaryClassificationObjective
@@ -6,16 +7,13 @@ from evalml.model_understanding.graphs import confusion_matrix
 
 
 class CostBenefitMatrix(BinaryClassificationObjective):
-    """
-    Score using a cost-benefit matrix. Scores quantify the benefits of a given value, so greater numeric
-    scores represents a better score. Costs and scores can be negative, indicating that a value is not beneficial.
-    For example, in the case of monetary profit, a negative cost and/or score represents loss of cash flow.
+    """Score using a cost-benefit matrix. Scores quantify the benefits of a given value, so greater numeric scores represents a better score. Costs and scores can be negative, indicating that a value is not beneficial. For example, in the case of monetary profit, a negative cost and/or score represents loss of cash flow.
 
-    Arguments:
-        true_positive (float): Cost associated with true positive predictions
-        true_negative (float): Cost associated with true negative predictions
-        false_positive (float): Cost associated with false positive predictions
-        false_negative (float): Cost associated with false negative predictions
+    Args:
+        true_positive (float): Cost associated with true positive predictions.
+        true_negative (float): Cost associated with true negative predictions.
+        false_positive (float): Cost associated with false positive predictions.
+        false_negative (float): Cost associated with false negative predictions.
     """
 
     name = "Cost Benefit Matrix"
@@ -39,9 +37,9 @@ class CostBenefitMatrix(BinaryClassificationObjective):
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Calculates cost-benefit of the using the predicted and true values.
 
-        Arguments:
-            y_predicted (pd.Series): Predicted labels
-            y_true (pd.Series): True labels
+        Args:
+            y_predicted (pd.Series): Predicted labels.
+            y_true (pd.Series): True labels.
             X (pd.DataFrame): Ignored.
             sample_weight (pd.DataFrame): Ignored.
 

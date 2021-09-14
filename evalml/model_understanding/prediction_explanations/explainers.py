@@ -1,3 +1,4 @@
+"""Prediction explanation tools."""
 import sys
 import traceback
 from collections import namedtuple
@@ -49,11 +50,11 @@ def explain_predictions(
 
     XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
 
-    Arguments:
+    Args:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
         y (pd.Series): Labels for the input data.
-        indices_to_explain (list(int)): List of integer indices to explain.
+        indices_to_explain (list[int]): List of integer indices to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.  Default is 3.
         include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
@@ -63,7 +64,7 @@ def explain_predictions(
         training_target (pd.Series, np.ndarray): Targets used to train the pipeline. Required and only used for time series pipelines.
 
     Returns:
-        str, dict, or pd.DataFrame - A report explaining the top contributing features to each prediction for each row of input_features.
+        str, dict, or pd.DataFrame: A report explaining the top contributing features to each prediction for each row of input_features.
             The report will include the feature names, prediction contribution, and SHAP Value (optional).
 
     Raises:
@@ -114,9 +115,9 @@ def explain_predictions(
 
 
 def _update_progress(start_time, current_time, progress_stage, callback_function):
-    """
-    Helper function for updating progress of a function and making a call to the user-provided callback
-    function, if provided. The callback function should accept the following parameters:
+    """Helper function for updating progress of a function and making a call to the user-provided callback function, if provided.
+
+    The callback function should accept the following parameters:
         - progress_stage: stage of computation
         - time_elapsed: total time in seconds that has elapsed since start of call
     """
@@ -126,6 +127,8 @@ def _update_progress(start_time, current_time, progress_stage, callback_function
 
 
 class ExplainPredictionsStage(Enum):
+    """Enum for prediction stage."""
+
     PREPROCESSING_STAGE = "preprocessing_stage"
     PREDICT_STAGE = "predict_stage"
     COMPUTE_FEATURE_STAGE = "compute_feature_stage"
@@ -150,7 +153,7 @@ def explain_predictions_best_worst(
 
     XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
 
-    Arguments:
+    Args:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
         input_features (pd.DataFrame): Input data to evaluate the pipeline on.
         y_true (pd.Series): True labels for the input data.
@@ -168,15 +171,17 @@ def explain_predictions_best_worst(
             - time_elapsed: total time in seconds that has elapsed since start of call
         training_data (pd.DataFrame, np.ndarray): Data the pipeline was trained on. Required and only used for time series pipelines.
         training_target (pd.Series, np.ndarray): Targets used to train the pipeline. Required and only used for time series pipelines.
+
     Returns:
-        str, dict, or pd.DataFrame - A report explaining the top contributing features for the best/worst predictions in the input_features.
+        str, dict, or pd.DataFrame: A report explaining the top contributing features for the best/worst predictions in the input_features.
             For each of the best/worst rows of input_features, the predicted values, true labels, metric value,
             feature names, prediction contribution, and SHAP Value (optional) will be listed.
 
     Raises:
-        ValueError: if input_features does not have more than twice the requested features to explain.
-        ValueError: if y_true and input_features have mismatched lengths.
-        ValueError: if an output_format outside of "text", "dict" or "dataframe is provided.
+        ValueError: If input_features does not have more than twice the requested features to explain.
+        ValueError: If y_true and input_features have mismatched lengths.
+        ValueError: If an output_format outside of "text", "dict" or "dataframe is provided.
+        PipelineScoreError: If the pipeline errors out while scoring.
     """
     start_time = timer()
     _update_progress(
@@ -287,7 +292,7 @@ def explain_predictions_best_worst(
 def abs_error(y_true, y_pred):
     """Computes the absolute error per data point for regression problems.
 
-    Arguments:
+    Args:
         y_true (pd.Series): True labels.
         y_pred (pd.Series): Predicted values.
 
@@ -300,7 +305,7 @@ def abs_error(y_true, y_pred):
 def cross_entropy(y_true, y_pred_proba):
     """Computes Cross Entropy Loss per data point for classification problems.
 
-    Arguments:
+    Args:
         y_true (pd.Series): True labels encoded as ints.
         y_pred_proba (pd.DataFrame): Predicted probabilities. One column per class.
 

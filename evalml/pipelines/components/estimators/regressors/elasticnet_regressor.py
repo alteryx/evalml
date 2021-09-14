@@ -1,3 +1,4 @@
+"""Elastic Net Regressor."""
 from sklearn.linear_model import ElasticNet as SKElasticNet
 from skopt.space import Real
 
@@ -9,7 +10,7 @@ from evalml.problem_types import ProblemTypes
 class ElasticNetRegressor(Estimator):
     """Elastic Net Regressor.
 
-    Arguments:
+    Args:
         alpha (float): Constant that multiplies the penalty terms. Defaults to 0.0001.
         l1_ratio (float): The mixing parameter, with 0 <= l1_ratio <= 1. Only used if penalty='elasticnet'. Setting l1_ratio=0 is equivalent to using penalty='l2',
             while setting l1_ratio=1 is equivalent to using penalty='l1'. For 0 < l1_ratio <1, the penalty is a combination of L1 and L2. Defaults to 0.15.
@@ -62,4 +63,5 @@ class ElasticNetRegressor(Estimator):
 
     @property
     def feature_importance(self):
+        """Feature importance for fitted ElasticNet regressor."""
         return self._component_obj.coef_

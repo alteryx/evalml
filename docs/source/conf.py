@@ -228,8 +228,7 @@ inheritance_edge_attrs = dict(arrowsize=0.1)
 
 
 class AccessorLevelDocumenter(Documenter):
-    """
-    Documenter subclass for objects on accessor level (methods, attributes).
+    """Documenter subclass for objects on accessor level (methods, attributes).
 
     Referenced pandas-sphinx-theme (https://github.com/pandas-dev/pandas-sphinx-theme)
     and sphinx-doc (https://github.com/sphinx-doc/sphinx/blob/8c7faed6fcbc6b7d40f497698cb80fc10aee1ab3/sphinx/ext/autodoc/__init__.py#L846)
@@ -243,10 +242,7 @@ class AccessorLevelDocumenter(Documenter):
 
 
 class AccessorCallableDocumenter(AccessorLevelDocumenter, MethodDocumenter):
-    """
-    This documenter lets us removes .__call__ from the method signature for
-    callable accessors like Series.plot
-    """
+    """This documenter lets us removes .__call__ from the method signature for callable accessors like Series.plot."""
 
     objtype = "accessorcallable"
     directivetype = "method"
@@ -269,7 +265,7 @@ from sphinx.domains.python import PythonDomain
 
 
 class PatchedPythonDomain(PythonDomain):
-    """To disable cross-reference warning: https://github.com/sphinx-doc/sphinx/issues/3866"""
+    """To disable cross-reference warning: https://github.com/sphinx-doc/sphinx/issues/3866."""
     def resolve_xref(self, env, fromdocname, builder, typ, target, node, contnode):
         if 'refspecific' in node:
             del node['refspecific']

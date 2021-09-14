@@ -1,3 +1,4 @@
+"""Training Validation Split class."""
 import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection._split import BaseCrossValidator
@@ -6,7 +7,7 @@ from sklearn.model_selection._split import BaseCrossValidator
 class TrainingValidationSplit(BaseCrossValidator):
     """Split the training data into training and validation sets.
 
-    Arguments:
+    Args:
         test_size (float): What percentage of data points should be included in the validation
             set. Defalts to the complement of `train_size` if `train_size` is set, and 0.25 otherwise.
         train_size (float): What percentage of data points should be included in the training set.
@@ -33,13 +34,17 @@ class TrainingValidationSplit(BaseCrossValidator):
 
     @staticmethod
     def get_n_splits():
-        """Returns the number of splits of this object"""
+        """Return the number of splits of this object.
+
+        Returns:
+            int: Always returns 1.
+        """
         return 1
 
     def split(self, X, y=None):
-        """Divides the data into training and testing sets
+        """Divide the data into training and testing sets.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Dataframe of points to split
             y (pd.Series): Series of points to split
 

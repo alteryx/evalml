@@ -1,3 +1,4 @@
+"""Utility methods for EvalML pipelines."""
 import logging
 
 from woodwork import logical_types
@@ -58,17 +59,16 @@ def _get_preprocessing_components(
 ):
     """Given input data, target data and an estimator class, construct a recommended preprocessing chain to be combined with the estimator and trained on the provided data.
 
-    Arguments:
-        X (pd.DataFrame): The input data of shape [n_samples, n_features]
-        y (pd.Series): The target data of length [n_samples]
-        problem_type (ProblemTypes or str): Problem type
-        estimator_class (class): A class which subclasses Estimator estimator for pipeline,
-        sampler_name (str): The name of the sampler component to add to the pipeline. Defaults to None
+    Args:
+        X (pd.DataFrame): The input data of shape [n_samples, n_features].
+        y (pd.Series): The target data of length [n_samples].
+        problem_type (ProblemTypes or str): Problem type.
+        estimator_class (class): A class which subclasses Estimator estimator for pipeline.
+        sampler_name (str): The name of the sampler component to add to the pipeline. Defaults to None.
 
     Returns:
-        list[Transformer]: A list of applicable preprocessing components to use with the estimator
+        list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
-
     pp_components = []
 
     if is_regression(problem_type):
@@ -161,7 +161,7 @@ def _get_preprocessing_components(
 
 
 def _get_pipeline_base_class(problem_type):
-    """Returns pipeline base class for problem_type"""
+    """Returns pipeline base class for problem_type."""
     if problem_type == ProblemTypes.BINARY:
         return BinaryClassificationPipeline
     elif problem_type == ProblemTypes.MULTICLASS:
@@ -185,24 +185,24 @@ def make_pipeline(
     sampler_name=None,
     extra_components=None,
 ):
-    """Given input data, target data, an estimator class and the problem type,
-         generates a pipeline class with a preprocessing chain which was recommended based on the inputs.
-         The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
+    """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
-    Arguments:
-         X (pd.DataFrame): The input data of shape [n_samples, n_features]
-         y (pd.Series): The target data of length [n_samples]
-         estimator (Estimator): Estimator for pipeline
-         problem_type (ProblemTypes or str): Problem type for pipeline to generate
+    Args:
+         X (pd.DataFrame): The input data of shape [n_samples, n_features].
+         y (pd.Series): The target data of length [n_samples].
+         estimator (Estimator): Estimator for pipeline.
+         problem_type (ProblemTypes or str): Problem type for pipeline to generate.
          parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
              An empty dictionary or None implies using all default values for component parameters.
          sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
              Defaults to None
-         extra_components (list(ComponentBase)): List of extra components to be added after preprocessing components. Defaults to None.
+         extra_components (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
 
-     Returns:
-         PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator
+    Returns:
+         PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
 
+    Raises:
+        ValueError: If estimator is not valid for the given problem type, or sampling is not supported for the given problem type.
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
@@ -232,12 +232,15 @@ def make_pipeline(
 def generate_pipeline_code(element):
     """Creates and returns a string that contains the Python imports and code required for running the EvalML pipeline.
 
-    Arguments:
-        element (pipeline instance): The instance of the pipeline to generate string Python code
+    Args:
+        element (pipeline instance): The instance of the pipeline to generate string Python code.
 
     Returns:
-        String representation of Python code that can be run separately in order to recreate the pipeline instance.
+        str: String representation of Python code that can be run separately in order to recreate the pipeline instance.
         Does not include code for custom component implementation.
+
+    Raises:
+        ValueError: If element is not a pipeline, or if the pipeline is nonlinear.
     """
     # hold the imports needed and add code to end
     code_strings = []
@@ -259,10 +262,9 @@ def generate_pipeline_code(element):
 def _make_stacked_ensemble_pipeline(
     input_pipelines, problem_type, n_jobs=-1, random_seed=0
 ):
-    """
-    Creates a pipeline with a stacked ensemble estimator.
+    """Creates a pipeline with a stacked ensemble estimator.
 
-    Arguments:
+    Args:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         problem_type (ProblemType): problem type of pipeline
@@ -315,14 +317,13 @@ def _make_stacked_ensemble_pipeline(
 
 
 def _make_component_list_from_actions(actions):
-    """
-    Creates a list of components from the input DataCheckAction list
+    """Creates a list of components from the input DataCheckAction list.
 
-    Arguments:
+    Args:
         actions (list(DataCheckAction)): List of DataCheckAction objects used to create list of components
 
     Returns:
-        List of components used to address the input actions
+        list(ComponentBase): List of components used to address the input actions
     """
     components = []
     cols_to_drop = []
@@ -346,7 +347,7 @@ def _make_component_list_from_actions(actions):
 def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon):
     """Make a baseline pipeline for time series regression problems.
 
-    Arguments:
+    Args:
         problem_type: One of TIME_SERIES_REGRESSION, TIME_SERIES_MULTICLASS, TIME_SERIES_BINARY
         gap (int): Non-negative gap parameter.
         forecast_horizon (int): Positive forecast_horizon parameter.

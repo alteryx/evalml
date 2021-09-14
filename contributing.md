@@ -119,7 +119,12 @@ One of the package maintainers will then review your PR!
 * Make PRs as small as possible! Consider breaking your large changes into separate PRs. This will make code review easier, quicker, less bug-prone and more effective.
 * In the name of every branch you create, include the associated issue number if applicable.
 * If new changes are added to the branch you're basing your changes off of, consider using `git rebase -i base_branch` rather than merging the base branch, to keep history clean.
-* Always include a docstring for public methods and classes. Consider including docstrings for private methods too. Our docstring convention is [`sphinx.ext.napoleon`](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html).
+* Always include a docstring for public methods and classes. Consider including docstrings for private methods too. We use the [Google docstring convention](https://google.github.io/styleguide/pyguide.html#38-comments-and-docstrings), and use the [`sphinx.ext.napoleon`](https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html) extension to parse our docstrings.
+* Although not explicitly enforced by the Google convention, keep the following stylistic conventions for docstrings in mind:
+    - First letter of each argument description should be capitalized.
+    - Docstring sentences should end in periods. This includes descriptions for each argument.
+    - Types should be written in lower-case. For example, use "bool" instead of "Bool".
+    - Always add the default value in the description of the argument, if applicable. For example, "Defaults to 1."
 * Use [PascalCase (upper camel case)](https://en.wikipedia.org/wiki/Camel_case#Variations_and_synonyms) for class names, and [snake_case](https://en.wikipedia.org/wiki/Snake_case) for method and class member names.
 * To distinguish private methods and class attributes from public ones, those which are private should be prefixed with an underscore
 * Any code which doesn't need to be public should be private. Use `@staticmethod` and `@classmethod` where applicable, to indicate no side effects.

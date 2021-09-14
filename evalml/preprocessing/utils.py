@@ -1,3 +1,4 @@
+"""Helpful preprocessing utilities."""
 import pandas as pd
 from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 
@@ -13,18 +14,18 @@ from evalml.utils import infer_feature_types
 def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwargs):
     """Load features and target from file.
 
-    Arguments:
-        path (str): Path to file or a http/ftp/s3 URL
-        index (str): Column for index
-        target (str): Column for target
-        n_rows (int): Number of rows to return
-        drop (list): List of columns to drop
-        verbose (bool): If True, prints information about features and target
+    Args:
+        path (str): Path to file or a http/ftp/s3 URL.
+        index (str): Column for index.
+        target (str): Column for target.
+        n_rows (int): Number of rows to return. Defaults to None.
+        drop (list): List of columns to drop. Defaults to None.
+        verbose (bool): If True, prints information about features and target. Defaults to True.
+        **kwargs: Other keyword arguments that should be passed to panda's `read_csv` method.
 
     Returns:
-       pd.DataFrame, pd.Series: Features matrix and target
+        pd.DataFrame, pd.Series: Features matrix and target.
     """
-
     feature_matrix = pd.read_csv(path, index_col=index, nrows=n_rows, **kwargs)
 
     targets = [target] + (drop or [])
@@ -48,9 +49,9 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
 def split_data(
     X, y, problem_type, problem_configuration=None, test_size=0.2, random_seed=0
 ):
-    """Splits data into train and test sets.
+    """Split data into train and test sets.
 
-    Arguments:
+    Args:
         X (pd.DataFrame or np.ndarray): data of shape [n_samples, n_features]
         y (pd.Series, or np.ndarray): target data of length [n_samples]
         problem_type (str or ProblemTypes): type of supervised learning problem. see evalml.problem_types.problemtype.all_problem_types for a full list.
@@ -60,7 +61,7 @@ def split_data(
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Returns:
-        pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets
+        pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets.
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
@@ -92,11 +93,11 @@ def split_data(
 def number_of_features(dtypes):
     """Get the number of features of each specific dtype in a DataFrame.
 
-    Arguments:
-        dtypes (pd.Series): DataFrame.dtypes to get the number of features for
+    Args:
+        dtypes (pd.Series): DataFrame.dtypes to get the number of features for.
 
     Returns:
-        pd.Series: dtypes and the number of features for each input type
+        pd.Series: dtypes and the number of features for each input type.
     """
     dtype_to_vtype = {
         "bool": "Boolean",
@@ -114,8 +115,8 @@ def number_of_features(dtypes):
 def target_distribution(targets):
     """Get the target distributions.
 
-    Arguments:
-        targets (pd.Series): Target data
+    Args:
+        targets (pd.Series): Target data.
 
     Returns:
         pd.Series: Target data and their frequency distribution as percentages.

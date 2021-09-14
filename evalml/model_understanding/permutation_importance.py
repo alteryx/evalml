@@ -1,3 +1,4 @@
+"""Permutation importance methods."""
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
@@ -12,7 +13,7 @@ def calculate_permutation_importance(
 ):
     """Calculates permutation importance for features.
 
-    Arguments:
+    Args:
         pipeline (PipelineBase or subclass): Fitted pipeline.
         X (pd.DataFrame): The input data used to score and compute permutation importance.
         y (pd.Series): The target data.
@@ -21,8 +22,12 @@ def calculate_permutation_importance(
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+
     Returns:
         pd.DataFrame: Mean feature importance scores over a number of shuffles.
+
+    Raises:
+        ValueError: If objective cannot be used with the given pipeline.
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
@@ -76,7 +81,7 @@ def calculate_permutation_importance_one_column(
 ):
     """Calculates permutation importance for one column in the original dataframe.
 
-    Arguments:
+    Args:
         pipeline (PipelineBase or subclass): Fitted pipeline.
         X (pd.DataFrame): The input data used to score and compute permutation importance.
         y (pd.Series): The target data.
@@ -89,6 +94,10 @@ def calculate_permutation_importance_one_column(
 
     Returns:
         float: Mean feature importance scores over a number of shuffles.
+
+    Raises:
+        ValueError: If pipeline does not support fast permutation importance calculation.
+        ValueError: If precomputed_features is None.
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
@@ -227,9 +236,9 @@ def _calculate_permutation_scores_fast(
 def _slow_permutation_importance(
     pipeline, X, y, objective, col_name=None, n_repeats=5, n_jobs=None, random_seed=None
 ):
-    """
-    If `col_name` is not None, calculates permutation importance for only the column with that name. Otherwise, calculates the
-    permutation importance for all columns in the input dataframe.
+    """If `col_name` is not None, calculates permutation importance for only the column with that name.
+
+    Otherwise, calculates the permutation importance for all columns in the input dataframe.
     """
     baseline_score = _slow_scorer(pipeline, X, y, objective)
     if col_name is None:

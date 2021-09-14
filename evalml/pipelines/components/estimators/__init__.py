@@ -1,3 +1,4 @@
+"""EvalML estimator components."""
 from .estimator import Estimator
 from .classifiers import (
     LogisticRegressionClassifier,

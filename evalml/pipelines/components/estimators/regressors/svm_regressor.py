@@ -1,3 +1,4 @@
+"""Support Vector Machine Regressor."""
 import numpy as np
 from sklearn.svm import SVR
 from skopt.space import Real
@@ -10,7 +11,7 @@ from evalml.problem_types import ProblemTypes
 class SVMRegressor(Estimator):
     """Support Vector Machine Regressor.
 
-    Arguments:
+    Args:
         C (float): The regularization parameter. The strength of the regularization is inversely proportional to C.
             Must be strictly positive. The penalty is a squared l2 penalty. Defaults to 1.0.
         kernel ({"poly", "rbf", "sigmoid"}): Specifies the kernel type to be used in the algorithm. Defaults to "rbf".
@@ -54,8 +55,12 @@ class SVMRegressor(Estimator):
 
     @property
     def feature_importance(self):
-        """Feature importance only works with linear kernels.
-        If the kernel isn't linear, we return a numpy array of zeros
+        """Feature importance of fitted SVM regresor.
+
+        Only works with linear kernels. If the kernel isn't linear, we return a numpy array of zeros.
+
+        Returns:
+            The feature importance of the fitted SVM regressor, or an array of zeroes if the kernel is not linear.
         """
         if self._parameters["kernel"] != "linear":
             return np.zeros(self._component_obj.n_features_in_)

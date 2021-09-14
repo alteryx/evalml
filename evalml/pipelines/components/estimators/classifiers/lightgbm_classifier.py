@@ -1,3 +1,4 @@
+"""LightGBM Classifier."""
 import copy
 
 import numpy as np
@@ -20,7 +21,7 @@ from evalml.utils import (
 class LightGBMClassifier(Estimator):
     """LightGBM Classifier.
 
-    Arguments:
+    Args:
         boosting_type (string): Type of boosting to use. Defaults to "gbdt".
             - 'gbdt' uses traditional Gradient Boosting Decision Tree
             - "dart", uses Dropouts meet Multiple Additive Regression Trees
@@ -171,6 +172,15 @@ class LightGBMClassifier(Estimator):
         return y_encoded
 
     def fit(self, X, y=None):
+        """Fits LightGBM classifier component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         X = infer_feature_types(X)
         X_encoded = self._encode_categories(X, fit=True)
         y_encoded = self._encode_labels(y)
@@ -178,6 +188,14 @@ class LightGBMClassifier(Estimator):
         return self
 
     def predict(self, X):
+        """Make predictions using the fitted LightGBM classifier.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.DataFrame: Predicted values.
+        """
         X_encoded = self._encode_categories(X)
         predictions = super().predict(X_encoded)
         if not self._label_encoder:
@@ -188,5 +206,13 @@ class LightGBMClassifier(Estimator):
         return infer_feature_types(predictions)
 
     def predict_proba(self, X):
+        """Make prediction probabilities using the fitted LightGBM classifier.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.DataFrame: Predicted probability values.
+        """
         X_encoded = self._encode_categories(X)
         return super().predict_proba(X_encoded)

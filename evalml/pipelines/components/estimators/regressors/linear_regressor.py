@@ -1,3 +1,4 @@
+"""Linear Regressor."""
 from sklearn.linear_model import LinearRegression as SKLinearRegression
 
 from evalml.model_family import ModelFamily
@@ -8,7 +9,7 @@ from evalml.problem_types import ProblemTypes
 class LinearRegressor(Estimator):
     """Linear Regressor.
 
-    Arguments:
+    Args:
         fit_intercept (boolean): Whether to calculate the intercept for this model.
             If set to False, no intercept will be used in calculations (i.e. data is expected to be centered).
             Defaults to True.
@@ -54,4 +55,5 @@ class LinearRegressor(Estimator):
 
     @property
     def feature_importance(self):
+        """Feature importance for fitted linear regressor."""
         return self._component_obj.coef_

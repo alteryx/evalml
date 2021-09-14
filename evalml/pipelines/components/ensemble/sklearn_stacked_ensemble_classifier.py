@@ -1,3 +1,4 @@
+"""Scikit-learn Stacked Ensemble Classifier."""
 from sklearn.ensemble import StackingClassifier
 from sklearn.model_selection import StratifiedKFold
 
@@ -10,7 +11,7 @@ from evalml.problem_types import ProblemTypes
 class SklearnStackedEnsembleClassifier(SklearnStackedEnsembleBase):
     """Scikit-learn Stacked Ensemble Classifier.
 
-    Arguments:
+    Args:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         final_estimator (Estimator or subclass): The classifier used to combine the base estimators. If None, uses LogisticRegressionClassifier.

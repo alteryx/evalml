@@ -1,3 +1,4 @@
+"""Component that reduces the number of features by using Principal Component Analysis (PCA)."""
 import pandas as pd
 from sklearn.decomposition import PCA as SkPCA
 from skopt.space import Real
@@ -11,10 +12,9 @@ from evalml.utils import (
 
 
 class PCA(Transformer):
-    """
-    Reduces the number of features by using Principal Component Analysis (PCA).
+    """Reduces the number of features by using Principal Component Analysis (PCA).
 
-    Arguments:
+    Args:
         variance (float): The percentage of the original data variance that should be preserved when reducing the
             number of features. Defaults to 0.95.
         n_components (int): The number of features to maintain after computing SVD. Defaults to None, but will override
@@ -38,6 +38,18 @@ class PCA(Transformer):
         )
 
     def fit(self, X, y=None):
+        """Fits the PCA component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If input data is not all numeric.
+        """
         X = infer_feature_types(X)
         if not is_all_numeric(X):
             raise ValueError("PCA input must be all numeric")
@@ -45,6 +57,18 @@ class PCA(Transformer):
         return self
 
     def transform(self, X, y=None):
+        """Transform data using fitted PCA component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+
+        Raises:
+            ValueError: If input data is not all numeric.
+        """
         X_ww = infer_feature_types(X)
         if not is_all_numeric(X_ww):
             raise ValueError("PCA input must be all numeric")
@@ -57,6 +81,18 @@ class PCA(Transformer):
         return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
 
     def fit_transform(self, X, y=None):
+        """Fit and transform data using the PCA component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+
+        Raises:
+            ValueError: If input data is not all numeric.
+        """
         X_ww = infer_feature_types(X)
         if not is_all_numeric(X_ww):
             raise ValueError("PCA input must be all numeric")

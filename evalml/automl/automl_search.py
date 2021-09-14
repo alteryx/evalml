@@ -1,3 +1,4 @@
+"""EvalML's core AutoML object."""
 import copy
 import logging
 import pickle
@@ -73,12 +74,14 @@ from evalml.utils.logger import (
 def build_engine_from_str(engine_str):
     """Function that converts a convenience string for an parallel engine type and returns an instance of that engine.
 
-    Arguments:
+    Args:
         engine_str (str): String representing the requested engine.
 
     Returns:
         (EngineBase): Instance of the requested engine.
 
+    Raises:
+        ValueError: If engine_str is not a valid engine.
     """
     valid_engines = [
         "sequential",
@@ -117,41 +120,34 @@ def search(
     """Given data and configuration, run an automl search.
 
     This method will run EvalML's default suite of data checks. If the data checks produce errors, the data check results will be returned before running the automl search. In that case we recommend you alter your data to address these errors and try again.
-
     This method is provided for convenience. If you'd like more control over when each of these steps is run, consider making calls directly to the various pieces like the data checks and AutoMLSearch, instead of using this method.
 
-    Arguments:
+    Args:
         X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
-
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
-
         problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
-
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
             When set to 'auto', chooses:
-
             - LogLossBinary for binary classification problems,
             - LogLossMulticlass for multiclass classification problems, and
             - R2 for regression problems.
-
         mode (str): mode for DefaultAlgorithm. There are two modes: fast and long, where fast is a subset of long. Please look at DefaultAlgorithm for more details.
-
         max_time (int, str): Maximum time to search for pipelines.
             This will not start a new pipeline search after the duration
             has elapsed. If it is an integer, then the time will be in seconds.
             For strings, time can be specified as seconds, minutes, or hours.
-
         patience (int): Number of iterations without improvement to stop search early. Must be positive.
             If None, early stopping is disabled. Defaults to None.
-
         tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
             Only applicable if patience is not None. Defaults to None.
-
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
 
     Returns:
-        (AutoMLSearch, dict): the automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
+        (AutoMLSearch, dict): The automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
+
+    Raises:
+        ValueError: If search configuration is not valid.
     """
     X_train = infer_feature_types(X_train)
     y_train = infer_feature_types(y_train)
@@ -217,30 +213,26 @@ def search_iterative(
     """Given data and configuration, run an automl search.
 
     This method will run EvalML's default suite of data checks. If the data checks produce errors, the data check results will be returned before running the automl search. In that case we recommend you alter your data to address these errors and try again.
-
     This method is provided for convenience. If you'd like more control over when each of these steps is run, consider making calls directly to the various pieces like the data checks and AutoMLSearch, instead of using this method.
 
-    Arguments:
+    Args:
         X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
-
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
-
         problem_type (str or ProblemTypes): Type of supervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
-
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
             When set to 'auto', chooses:
-
             - LogLossBinary for binary classification problems,
             - LogLossMulticlass for multiclass classification problems, and
             - R2 for regression problems.
-
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
-        in time series problems, values should be passed in for the date_index, gap, forecast_horizon, and max_delay variables.
-
-    Other keyword arguments which are provided will be passed to AutoMLSearch.
+            in time series problems, values should be passed in for the date_index, gap, forecast_horizon, and max_delay variables.
+        **kwargs: Other keyword arguments which are provided will be passed to AutoMLSearch.
 
     Returns:
         (AutoMLSearch, dict): the automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
+
+    Raises:
+        ValueError: If the search configuration is invalid.
     """
     X_train = infer_feature_types(X_train)
     y_train = infer_feature_types(y_train)
@@ -291,7 +283,7 @@ def search_iterative(
 class AutoMLSearch:
     """Automated Pipeline search.
 
-    Arguments:
+    Args:
         X_train (pd.DataFrame): The input training data of shape [n_samples, n_features]. Required.
 
         y_train (pd.Series): The target training data of length [n_samples]. Required for supervised learning tasks.
@@ -300,7 +292,6 @@ class AutoMLSearch:
 
         objective (str, ObjectiveBase): The objective to optimize for. Used to propose and rank pipelines, but not for optimizing each pipeline during fit-time.
             When set to 'auto', chooses:
-
             - LogLossBinary for binary classification problems,
             - LogLossMulticlass for multiclass classification problems, and
             - R2 for regression problems.
@@ -896,6 +887,8 @@ class AutoMLSearch:
         return objective
 
     def __str__(self):
+        """Returns string representation of the AutoMLSearch object."""
+
         def _print_list(obj_list):
             lines = sorted(["\t{}".format(o.name) for o in obj_list])
             return "\n".join(lines)
@@ -951,7 +944,7 @@ class AutoMLSearch:
         """Presents a prompt to the user asking if they want to stop the search.
 
         Returns:
-            bool: If True, search should terminate early
+            bool: If True, search should terminate early.
         """
         leading_char = "\n"
         start_of_loop = time.time()
@@ -975,12 +968,12 @@ class AutoMLSearch:
     def search(self, show_iteration_plot=True):
         """Find the best pipeline for the data set.
 
-        Arguments:
-            feature_types (list, optional): list of feature types, either numerical or categorical.
-                Categorical features will automatically be encoded
-
+        Args:
             show_iteration_plot (boolean, True): Shows an iteration vs. score plot in Jupyter notebook.
                 Disabled by default in non-Jupyter enviroments.
+
+        Raises:
+            AutoMLSearchException: If all pipelines in the current AutoML batch produced a score of np.nan on the primary objective.
         """
         if self._searched:
             self.logger.error(
@@ -1115,8 +1108,7 @@ class AutoMLSearch:
         self._searched = True
 
     def _find_best_pipeline(self):
-        """Finds the best pipeline in the rankings
-        If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding"""
+        """Finds the best pipeline in the rankings If self._best_pipeline already exists, check to make sure it is different from the current best pipeline before training and thresholding."""
         if len(self.rankings) == 0:
             return
         best_pipeline = self.rankings.iloc[0]
@@ -1135,18 +1127,18 @@ class AutoMLSearch:
             self._best_pipeline = best_pipeline
 
     def _num_pipelines(self):
-        """Return the number of pipeline evaluations which have been made
+        """Return the number of pipeline evaluations which have been made.
 
         Returns:
-            int: the number of pipeline evaluations made in the search
+            int: The number of pipeline evaluations made in the search.
         """
         return len(self._results["pipeline_results"])
 
     def _should_continue(self):
-        """Given the original stopping criterion and current state, should the search continue?
+        """Given the original stopping criterion and current state, return whether or not the search should continue.
 
         Returns:
-            bool: True if yes, False if no.
+            bool: True if search should continue, False otherwise.
         """
         if self._interrupted:
             return False
@@ -1363,14 +1355,16 @@ class AutoMLSearch:
         return high_variance_cv
 
     def get_pipeline(self, pipeline_id):
-        """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline
-        initialized with the parameters used to train that pipeline during automl search.
+        """Given the ID of a pipeline training result, returns an untrained instance of the specified pipeline initialized with the parameters used to train that pipeline during automl search.
 
-        Arguments:
-            pipeline_id (int): pipeline to retrieve
+        Args:
+            pipeline_id (int): Pipeline to retrieve.
 
         Returns:
-            PipelineBase: untrained pipeline instance associated with the provided ID
+            PipelineBase: Untrained pipeline instance associated with the provided ID.
+
+        Raises:
+            PipelineNotFoundError: if pipeline_id is not a valid ID.
         """
         pipeline_results = self.results["pipeline_results"].get(pipeline_id)
         if pipeline_results is None:
@@ -1384,9 +1378,9 @@ class AutoMLSearch:
         return pipeline.new(parameters, random_seed=self.random_seed)
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
-        """Describe a pipeline
+        """Describe a pipeline.
 
-        Arguments:
+        Args:
             pipeline_id (int): pipeline to describe
             return_dict (bool): If True, return dictionary of information
                 about pipeline. Defaults to False.
@@ -1394,6 +1388,9 @@ class AutoMLSearch:
         Returns:
             Description of specified pipeline. Includes information such as
             type of pipeline components, problem, training time, cross validation, etc.
+
+        Raises:
+            PipelineNotFoundError: If pipeline_id is not a valid ID.
         """
         logger = get_logger(f"{__name__}.describe_pipeline")
         if pipeline_id not in self._results["pipeline_results"]:
@@ -1463,7 +1460,7 @@ class AutoMLSearch:
     def add_to_rankings(self, pipeline):
         """Fits and evaluates a given pipeline then adds the results to the automl rankings with the requirement that automl search has been run.
 
-        Arguments:
+        Args:
             pipeline (PipelineBase): pipeline to train and evaluate.
         """
         pipeline_rows = self.full_rankings[
@@ -1489,8 +1486,9 @@ class AutoMLSearch:
     def results(self):
         """Class that allows access to a copy of the results from `automl_search`.
 
-        Returns: dict containing `pipeline_results`: a dict with results from each pipeline,
-                 and `search_order`: a list describing the order the pipelines were searched.
+        Returns:
+            dict: Dictionary containing `pipeline_results`, a dict with results from each pipeline,
+                 and `search_order`, a list describing the order the pipelines were searched.
         """
         return copy.deepcopy(self._results)
 
@@ -1501,7 +1499,7 @@ class AutoMLSearch:
 
     @property
     def full_rankings(self):
-        """Returns a pandas.DataFrame with scoring results from all pipelines searched"""
+        """Returns a pandas.DataFrame with scoring results from all pipelines searched."""
         ascending = True
         if self.objective.greater_is_better:
             ascending = False
@@ -1540,6 +1538,9 @@ class AutoMLSearch:
 
         Returns:
             PipelineBase: A trained instance of the best pipeline and parameters found during automl search. If `train_best_pipeline` is set to False, returns an untrained pipeline instance.
+
+        Raises:
+            PipelineNotFoundError: If this is called before .search() is called.
         """
         if not self._best_pipeline:
             raise PipelineNotFoundError(
@@ -1554,15 +1555,15 @@ class AutoMLSearch:
         pickle_type="cloudpickle",
         pickle_protocol=cloudpickle.DEFAULT_PROTOCOL,
     ):
-        """Saves AutoML object at file path
+        """Saves AutoML object at file path.
 
-        Arguments:
-            file_path (str): location to save file
-            pickle_type {"pickle", "cloudpickle"}: the pickling library to use.
-            pickle_protocol (int): the pickle data stream format.
+        Args:
+            file_path (str): Location to save file.
+            pickle_type ({"pickle", "cloudpickle"}): The pickling library to use.
+            pickle_protocol (int): The pickle data stream format.
 
-        Returns:
-            None
+        Raises:
+            ValueError: If pickle_type is not "pickle" or "cloudpickle".
         """
         if pickle_type == "cloudpickle":
             pkl_lib = cloudpickle
@@ -1581,11 +1582,11 @@ class AutoMLSearch:
         file_path,
         pickle_type="cloudpickle",
     ):
-        """Loads AutoML object at file path
+        """Loads AutoML object at file path.
 
-        Arguments:
-            file_path (str): location to find file to load
-            pickle_type {"pickle", "cloudpickle"}: the pickling library to use. Currently not used since the standard pickle library can handle cloudpickles.
+        Args:
+            file_path (str): Location to find file to load
+            pickle_type ({"pickle", "cloudpickle"}): The pickling library to use. Currently not used since the standard pickle library can handle cloudpickles.
 
         Returns:
             AutoSearchBase object
@@ -1598,8 +1599,8 @@ class AutoMLSearch:
 
         This can be helpful for training pipelines once the search is complete.
 
-        Arguments:
-            pipelines (list(PipelineBase)): List of pipelines to train.
+        Args:
+            pipelines (list[PipelineBase]): List of pipelines to train.
 
         Returns:
             Dict[str, PipelineBase]: Dictionary keyed by pipeline name that maps to the fitted pipeline.
@@ -1638,14 +1639,14 @@ class AutoMLSearch:
     def score_pipelines(self, pipelines, X_holdout, y_holdout, objectives):
         """Score a list of pipelines on the given holdout data.
 
-        Arguments:
-            pipelines (list(PipelineBase)): List of pipelines to train.
+        Args:
+            pipelines (list[PipelineBase]): List of pipelines to train.
             X_holdout (pd.DataFrame): Holdout features.
             y_holdout (pd.Series): Holdout targets for scoring.
-            objectives (list(str), list(ObjectiveBase)): Objectives used for scoring.
+            objectives (list[str], list[ObjectiveBase]): Objectives used for scoring.
 
         Returns:
-            Dict[str, Dict[str, float]]: Dictionary keyed by pipeline name that maps to a dictionary of scores.
+            dict[str, Dict[str, float]]: Dictionary keyed by pipeline name that maps to a dictionary of scores.
             Note that the any pipelines that error out during scoring will not be included in the dictionary
             but the exception and stacktrace will be displayed in the log.
         """
@@ -1690,7 +1691,7 @@ class AutoMLSearch:
 
     @property
     def plot(self):
-        # Return an instance of the plot with the latest scores
+        """Return an instance of the plot with the latest scores."""
         try:
             return PipelineSearchPlots(self.results, self.objective)
         except ImportError:

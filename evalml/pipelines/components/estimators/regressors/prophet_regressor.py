@@ -1,3 +1,4 @@
+"""Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. It works best with time series that have strong seasonal effects and several seasons of historical data. Prophet is robust to missing data and shifts in the trend, and typically handles outliers well."""
 import copy
 
 import numpy as np
@@ -12,12 +13,9 @@ from evalml.utils.gen_utils import classproperty
 
 
 class ProphetRegressor(Estimator):
-    """
-    Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects.
-    It works best with time series that have strong seasonal effects and several seasons of historical data. Prophet is robust to missing data and shifts in the trend, and typically handles outliers well.
+    """Prophet is a procedure for forecasting time series data based on an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects. It works best with time series that have strong seasonal effects and several seasons of historical data. Prophet is robust to missing data and shifts in the trend, and typically handles outliers well.
 
     More information here: https://facebook.github.io/prophet/
-
     """
 
     name = "Prophet Regressor"
@@ -49,7 +47,6 @@ class ProphetRegressor(Estimator):
         stan_backend="CMDSTANPY",
         **kwargs,
     ):
-
         parameters = {
             "changepoint_prior_scale": changepoint_prior_scale,
             "seasonality_prior_scale": seasonality_prior_scale,
@@ -80,6 +77,7 @@ class ProphetRegressor(Estimator):
 
     @staticmethod
     def build_prophet_df(X, y=None, date_column="ds"):
+        """Build the Prophet data to pass fit and predict on."""
         if X is not None:
             X = copy.deepcopy(X)
         if y is not None:
@@ -110,9 +108,17 @@ class ProphetRegressor(Estimator):
         return prophet_df
 
     def fit(self, X, y=None):
+        """Fits Prophet regressor component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         if X is None:
             X = pd.DataFrame()
-
         X, y = super()._manage_woodwork(X, y)
 
         prophet_df = ProphetRegressor.build_prophet_df(
@@ -123,9 +129,17 @@ class ProphetRegressor(Estimator):
         return self
 
     def predict(self, X, y=None):
+        """Make predictions using fitted Prophet regressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data.
+
+        Returns:
+            pd.Series: Predicted values.
+        """
         if X is None:
             X = pd.DataFrame()
-
         X = infer_feature_types(X)
 
         prophet_df = ProphetRegressor.build_prophet_df(
@@ -137,25 +151,21 @@ class ProphetRegressor(Estimator):
         return y_pred
 
     def get_params(self):
+        """Get parameters for the Prophet regressor."""
         return self.__dict__["_parameters"]
 
     @property
     def feature_importance(self):
-        """
-        Returns array of 0's with len(1) as feature_importance is not defined for Prophet regressor.
-        """
+        """Returns array of 0's with len(1) as feature_importance is not defined for Prophet regressor."""
         return np.zeros(1)
 
     @classproperty
     def default_parameters(cls):
         """Returns the default parameters for this component.
 
-        Our convention is that Component.default_parameters == Component().parameters.
-
         Returns:
-            dict: default parameters for this component.
+            dict: Default parameters for this component.
         """
-
         parameters = {
             "changepoint_prior_scale": 0.05,
             "date_index": None,
@@ -164,5 +174,4 @@ class ProphetRegressor(Estimator):
             "seasonality_mode": "additive",
             "stan_backend": "CMDSTANPY",
         }
-
         return parameters
