@@ -37,7 +37,6 @@ def test_undersampler_errors():
         Undersampler(min_percentage=-1.3)
 
 
-
 def test_undersampler_raises_error_if_y_is_None():
     X = pd.DataFrame([[i] for i in range(5)])
     undersampler = Undersampler()
