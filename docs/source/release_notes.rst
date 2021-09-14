@@ -17,6 +17,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Fixed bug where warnings during ``make_pipeline`` were not being raised to the user :pr:`2765`
+        * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
     * Changes
         * Refactored and removed ``SamplerBase`` class :pr:`2775`
     * Documentation Changes
