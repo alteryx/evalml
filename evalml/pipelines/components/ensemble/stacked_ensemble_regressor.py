@@ -8,15 +8,7 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
     """Stacked Ensemble Regressor.
 
     Arguments:
-        final_estimator (Estimator or subclass): The regressor used to combine the base estimators. If None, uses LinearRegressor.
-        cv (int, cross-validation generator or an iterable): Determines the cross-validation splitting strategy used to train final_estimator.
-            For int/None inputs, KFold is used. Defaults to None.
-            Possible inputs for cv are:
-
-            - None: 3-fold cross validation
-            - int: the number of folds in a (Stratified) KFold
-            - An scikit-learn cross-validation generator object
-            - An iterable yielding (train, test) splits
+        final_estimator (Estimator or subclass): The regressor used to combine the base estimators. If None, uses ElasticNetRegressor.
         n_jobs (int or None): Integer describing level of parallelism used for pipelines. None and 1 are equivalent.
             If set to -1, all CPUs are used. For n_jobs greater than -1, (n_cpus + 1 + n_jobs) are used. Defaults to -1.
             - Note: there could be some multi-process errors thrown for values of `n_jobs != 1`. If this is the case, please use `n_jobs = 1`.

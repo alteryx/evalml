@@ -97,7 +97,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.text_in_ensembling = text_in_ensembling
         self._pipeline_params = pipeline_params or {}
         self._custom_hyperparameters = custom_hyperparameters or {}
-        self._selected_cols = None
         self._top_n_pipelines = None
         self.num_long_explore_pipelines = num_long_explore_pipelines
         self.num_long_pipelines_per_batch = num_long_pipelines_per_batch
