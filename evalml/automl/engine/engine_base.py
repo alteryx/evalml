@@ -1,3 +1,4 @@
+"""Base class for EvalML engines."""
 import sys
 import time
 import traceback
@@ -20,8 +21,7 @@ class EngineComputation(ABC):
 
     @abstractmethod
     def get_result(self):
-        """Gets the computation result.
-        Will block until the computation is finished.
+        """Gets the computation result. Will block until the computation is finished.
 
         Raises Exception: If computation fails. Returns traceback.
         """
@@ -36,10 +36,11 @@ class EngineComputation(ABC):
 
 
 class JobLogger:
-    """Mimics the behavior of a python logging.Logger but stores all messages rather than actually logging them.
+    """Mimic the behavior of a python logging.Logger but stores all messages rather than actually logging them.
 
-    This is used during engine jobs so that log messages are recorded after the job completes. This is desired so that
-    all of the messages for a single job are grouped together in the log.
+    This is used during engine jobs so that log messages are recorded
+    after the job completes. This is desired so that all of the messages
+    for a single job are grouped together in the log.
     """
 
     def __init__(self):
@@ -62,7 +63,7 @@ class JobLogger:
         self.logs.append(("error", msg))
 
     def write_to_logger(self, logger):
-        """Write all the messages to the logger. First In First Out order."""
+        """Write all the messages to the logger, first in, first out (FIFO) order."""
         logger_method = {
             "info": logger.info,
             "debug": logger.debug,
@@ -75,8 +76,11 @@ class JobLogger:
 
 
 class EngineBase(ABC):
+    """Base class for EvalML engines."""
+
     @staticmethod
     def setup_job_log():
+        """Set up logger for job."""
         return JobLogger()
 
     @abstractmethod
@@ -95,15 +99,15 @@ class EngineBase(ABC):
 def train_pipeline(pipeline, X, y, automl_config, schema=True):
     """Train a pipeline and tune the threshold if necessary.
 
-    Arguments:
+    Args:
         pipeline (PipelineBase): Pipeline to train.
         X (pd.DataFrame): Features to train on.
         y (pd.Series): Target to train on.
-        automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback
-        schema (bool): Whether to use the schemas for X and y
+        automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback.
+        schema (bool): Whether to use the schemas for X and y. Defaults to True.
 
     Returns:
-        pipeline (PipelineBase): trained pipeline.
+        pipeline (PipelineBase): A trained pipeline instance.
     """
     X_threshold_tuning = None
     y_threshold_tuning = None
@@ -142,13 +146,17 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True):
 def train_and_score_pipeline(
     pipeline, automl_config, full_X_train, full_y_train, logger
 ):
-    """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores
+    """Given a pipeline, config and data, train and score the pipeline and return the CV or TV scores.
 
-    Arguments:
-        pipeline (PipelineBase): The pipeline to score
-        automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback
-        full_X_train (pd.DataFrame): Training features
-        full_y_train (pd.Series): Training target
+    Args:
+        pipeline (PipelineBase): The pipeline to score.
+        automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback.
+        full_X_train (pd.DataFrame): Training features.
+        full_y_train (pd.Series): Training target.
+        logger: Logger object to write to.
+
+    Raises:
+        Exception: If there are missing target values in the training set after data split.
 
     Returns:
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
@@ -293,11 +301,12 @@ def train_and_score_pipeline(
 def evaluate_pipeline(pipeline, automl_config, X, y, logger):
     """Function submitted to the submit_evaluation_job engine method.
 
-    Arguments:
-        pipeline (PipelineBase): The pipeline to score
-        automl_config (AutoMLConfig): The AutoMLSearch object, used to access config and the error callback
-        X (pd.DataFrame): Training features
-        y (pd.Series): Training target
+    Args:
+        pipeline (PipelineBase): The pipeline to score.
+        automl_config (AutoMLConfig): The AutoMLSearch object, used to access config and the error callback.
+        X (pd.DataFrame): Training features.
+        y (pd.Series): Training target.
+        logger: Logger object to write to.
 
     Returns:
         tuple of three items: First - A dict containing cv_score_mean, cv_scores, training_time and a cv_data structure with details.
@@ -318,17 +327,18 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
 
 
 def score_pipeline(pipeline, X, y, objectives, X_schema=None, y_schema=None):
-    """Wrapper around pipeline.score method to make it easy to score pipelines with dask.
+    """Wrap around pipeline.score method to make it easy to score pipelines with dask.
 
-        Arguments:
+    Args:
         pipeline (PipelineBase): The pipeline to score.
         X (pd.DataFrame): Features to score on.
         y (pd.Series): Target used to calcualte scores.
-        X_schema (ww.TableSchema): Schema for features.
-        y_schema (ww.ColumnSchema): Schema for columns.
+        objectives (list[ObjectiveBase]): List of objectives to score on.
+        X_schema (ww.TableSchema): Schema for features. Defaults to None.
+        y_schema (ww.ColumnSchema): Schema for columns. Defaults to None.
 
     Returns:
-       dict containing pipeline scores.
+        dict: Dictionary object containing pipeline scores.
     """
     if X_schema:
         X.ww.init(schema=X_schema)

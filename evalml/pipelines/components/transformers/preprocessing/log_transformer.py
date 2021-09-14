@@ -1,3 +1,4 @@
+"""Component that applies a log transformation to the target data."""
 import numpy as np
 
 from evalml.pipelines.components.transformers.transformer import (
@@ -20,7 +21,7 @@ class LogTransformer(TargetTransformer):
     def fit(self, X, y=None):
         """Fits the LogTransformer.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or np.ndarray): Ignored.
             y (pd.Series, optional): Ignored.
 
@@ -32,7 +33,7 @@ class LogTransformer(TargetTransformer):
     def transform(self, X, y=None):
         """Log transforms the target variable.
 
-        Arguments:
+        Args:
             X (pd.DataFrame, optional): Ignored.
             y (pd.Series): Target data to log transform.
 
@@ -52,7 +53,7 @@ class LogTransformer(TargetTransformer):
     def fit_transform(self, X, y=None):
         """Log transforms the target variable.
 
-        Arguments:
+        Args:
             X (pd.DataFrame, optional): Ignored.
             y (pd.Series): Target variable to log transform.
 
@@ -63,6 +64,15 @@ class LogTransformer(TargetTransformer):
         return self.fit(X, y).transform(X, y)
 
     def inverse_transform(self, y):
+        """Apply exponential to target data.
+
+        Args:
+            y (pd.Series): Target variable.
+
+        Returns:
+            pd.Series: Target with exponential applied.
+
+        """
         y_ww_inv = infer_feature_types(y)
         y_inv = y_ww_inv.apply(np.exp)
         if self.min <= 0:

@@ -1,3 +1,4 @@
+"""Data check that checks if the target data contains certain distributions that may need to be transformed prior training to improve model performance."""
 import numpy as np
 import woodwork as ww
 from scipy.stats import shapiro
@@ -14,13 +15,12 @@ from evalml.utils import infer_feature_types
 
 
 class TargetDistributionDataCheck(DataCheck):
-    """Checks if the target data contains certain distributions that may need to be transformed prior training to
-    improve model performance."""
+    """Check if the target data contains certain distributions that may need to be transformed prior training to improve model performance."""
 
     def validate(self, X, y):
-        """Checks if the target data has a certain distribution.
+        """Check if the target data has a certain distribution.
 
-        Arguments:
+        Args:
             X (pd.DataFrame, np.ndarray): Features. Ignored.
             y (pd.Series, np.ndarray): Target data to check for underlying distributions.
 

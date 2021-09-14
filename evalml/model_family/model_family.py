@@ -1,3 +1,4 @@
+"""Enum for family of machine learning models."""
 from enum import Enum
 
 
@@ -47,6 +48,7 @@ class ModelFamily(Enum):
     """None"""
 
     def __str__(self):
+        """String representation of a ModelFamily enum."""
         model_family_dict = {
             ModelFamily.K_NEIGHBORS.name: "K Nearest Neighbors",
             ModelFamily.RANDOM_FOREST.name: "Random Forest",
@@ -67,6 +69,7 @@ class ModelFamily(Enum):
         return model_family_dict[self.name]
 
     def __repr__(self):
+        """String representation of a ModelFamily enum."""
         return "ModelFamily." + self.name
 
     def is_tree_estimator(self):

@@ -1,3 +1,4 @@
+"""Pipeline base class for time-series classification problems."""
 import pandas as pd
 
 from .binary_classification_pipeline_mixin import (
@@ -14,7 +15,7 @@ from evalml.utils import infer_feature_types
 class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPipeline):
     """Pipeline base class for time series classification problems.
 
-    Arguments:
+    Args:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -30,7 +31,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
     def fit(self, X, y):
         """Fit a time series classification pipeline.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
             y (pd.Series, np.ndarray): The target training targets of length [n_samples].
 
@@ -56,7 +57,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
     def predict_proba_in_sample(self, X_holdout, y_holdout, X_train, y_train):
         """Predict on future data where the target is known, e.g. cross validation.
 
-        Arguments:
+        Args:
             X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features].
             y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples].
             X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features].
@@ -64,6 +65,9 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
 
         Returns:
             pd.Series: Estimated probabilities.
+
+        Raises:
+            ValueError: If the final component is not an Estimator.
         """
         if self.estimator is None:
             raise ValueError(
@@ -87,15 +91,18 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):
         """Predict on future data where the target is known, e.g. cross validation.
 
-        Arguments:
-            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features].
-            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples].
+        Args:
+            X (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features].
+            y (pd.Series, np.ndarray): Future target of shape [n_samples].
             X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features].
             y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
             objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
 
         Returns:
             pd.Series: Estimated labels.
+
+        Raises:
+            ValueError: If final component is not an Estimator.
         """
         if self.estimator is None:
             raise ValueError(
@@ -118,13 +125,16 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
     def predict_proba(self, X, X_train=None, y_train=None):
         """Predict on future data where the target is unknown.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features].
             X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_features].
             y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
 
         Returns:
             pd.Series: Estimated probabilities.
+
+        Raises:
+            ValueError: If final component is not an Estimator.
         """
         if self.estimator is None:
             raise ValueError(
@@ -149,7 +159,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
     def score(self, X, y, objectives, X_train=None, y_train=None):
         """Evaluate model performance on current and additional objectives.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series): True labels of length [n_samples].
             objectives (list): Non-empty list of objectives to score on.
@@ -184,7 +194,7 @@ class TimeSeriesBinaryClassificationPipeline(
 ):
     """Pipeline base class for time series binary classification problems.
 
-    Arguments:
+    Args:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -208,15 +218,18 @@ class TimeSeriesBinaryClassificationPipeline(
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):
         """Predict on future data where the target is known, e.g. cross validation.
 
-        Arguments:
-            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features].
-            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples].
-            X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures].
-            y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train].
-            objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
+        Args:
+            X (pd.DataFrame): Future data of shape [n_samples, n_features].
+            y (pd.Series): Future target of shape [n_samples].
+            X_train (pd.DataFrame): Data the pipeline was trained on of shape [n_samples_train, n_feautures].
+            y_train (pd.Series): Targets used to train the pipeline of shape [n_samples_train].
+            objective (ObjectiveBase, str): Objective used to threshold predicted probabilities, optional. Defaults to None.
 
         Returns:
             pd.Series: Estimated labels.
+
+        Raises:
+            ValueError: If objective is not defined for time-series binary classification problems.
         """
         if objective is not None:
             objective = get_objective(objective, return_instance=True)
@@ -255,7 +268,7 @@ class TimeSeriesBinaryClassificationPipeline(
 class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipeline):
     """Pipeline base class for time series multiclass classification problems.
 
-    Arguments:
+    Args:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph

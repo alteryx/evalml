@@ -1,12 +1,12 @@
+"""Load the churn dataset, which can be used for binary classification problems."""
 import evalml
 from evalml.preprocessing import load_data
 
 
 def load_churn(n_rows=None, verbose=True):
-    """Load credit card fraud dataset.
-        The fraud dataset can be used for binary classification problems.
+    """Load churn dataset, which can be used for binary classification problems.
 
-    Arguments:
+    Args:
         n_rows (int): Number of rows from the dataset to return
         verbose (bool): Whether to print information about features and labels
 

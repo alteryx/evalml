@@ -1,3 +1,4 @@
+"""Exceptions used in EvalML."""
 from enum import Enum
 
 
@@ -8,7 +9,7 @@ class MethodPropertyNotFoundError(Exception):
 
 
 class PipelineNotFoundError(Exception):
-    """An exception raised when a particular pipeline is not found in automl search results"""
+    """An exception raised when a particular pipeline is not found in automl search results."""
 
     pass
 
@@ -20,7 +21,7 @@ class ObjectiveNotFoundError(Exception):
 
 
 class MissingComponentError(Exception):
-    """An exception raised when a component is not found in all_components()"""
+    """An exception raised when a component is not found in all_components()."""
 
     pass
 
@@ -52,7 +53,7 @@ class EnsembleMissingPipelinesError(Exception):
 class PipelineScoreError(Exception):
     """An exception raised when a pipeline errors while scoring any objective in a list of objectives.
 
-    Arguments:
+    Args:
         exceptions (dict): A dictionary mapping an objective name (str) to a tuple of the form (exception, traceback).
             All of the objectives that errored will be stored here.
         scored_successfully (dict): A dictionary mapping an objective name (str) to a score value. All of the objectives
@@ -81,7 +82,7 @@ class DataCheckInitError(Exception):
 
 
 class NullsInColumnWarning(UserWarning):
-    """Warning thrown when there are null values in the column of interest"""
+    """Warning thrown when there are null values in the column of interest."""
 
 
 class ObjectiveCreationError(Exception):
@@ -89,7 +90,7 @@ class ObjectiveCreationError(Exception):
 
 
 class NoPositiveLabelException(Exception):
-    """Exception when a particular classification label for the 'positive' class cannot be found in the column index or unique values"""
+    """Exception when a particular classification label for the 'positive' class cannot be found in the column index or unique values."""
 
 
 class ParameterNotUsedWarning(UserWarning):

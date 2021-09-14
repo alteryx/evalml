@@ -1,3 +1,4 @@
+"""LightGBM Regressor."""
 import copy
 
 import pandas as pd
@@ -18,7 +19,7 @@ from evalml.utils import (
 class LightGBMRegressor(Estimator):
     """LightGBM Regressor.
 
-    Arguments:
+    Args:
         boosting_type (string): Type of boosting to use. Defaults to "gbdt".
             - 'gbdt' uses traditional Gradient Boosting Decision Tree
             - "dart", uses Dropouts meet Multiple Additive Regression Trees
@@ -84,7 +85,6 @@ class LightGBMRegressor(Estimator):
         random_seed=0,
         **kwargs,
     ):
-
         parameters = {
             "boosting_type": boosting_type,
             "learning_rate": learning_rate,
@@ -147,6 +147,15 @@ class LightGBMRegressor(Estimator):
         return X_encoded
 
     def fit(self, X, y=None):
+        """Fits LightGBM regressor to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         X_encoded = self._encode_categories(X, fit=True)
         if y is not None:
             y = infer_feature_types(y)
@@ -154,5 +163,13 @@ class LightGBMRegressor(Estimator):
         return self
 
     def predict(self, X):
+        """Make predictions using fitted LightGBM regressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.Series: Predicted values.
+        """
         X_encoded = self._encode_categories(X)
         return super().predict(X_encoded)

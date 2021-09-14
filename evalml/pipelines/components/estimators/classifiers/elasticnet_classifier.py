@@ -1,3 +1,4 @@
+"""Elastic Net Classifier. Uses Logistic Regression with elasticnet penalty as the base estimator."""
 import warnings
 
 import numpy as np
@@ -10,10 +11,9 @@ from evalml.problem_types import ProblemTypes
 
 
 class ElasticNetClassifier(Estimator):
-    """
-    Elastic Net Classifier. Uses Logistic Regression with elasticnet penalty as the base estimator.
+    """Elastic Net Classifier. Uses Logistic Regression with elasticnet penalty as the base estimator.
 
-    Arguments:
+    Args:
         penalty ({"l1", "l2", "elasticnet", "none"}): The norm used in penalization. Defaults to "elasticnet".
         C (float): Inverse of regularization strength. Must be a positive float. Defaults to 1.0.
         l1_ratio (float): The mixing parameter, with 0 <= l1_ratio <= 1. Only used if penalty='elasticnet'. Setting l1_ratio=0 is equivalent to using penalty='l2',
@@ -83,11 +83,21 @@ class ElasticNetClassifier(Estimator):
         )
 
     def fit(self, X, y):
+        """Fits ElasticNet classifier component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         warnings.filterwarnings("ignore", message="The max_iter was reached")
         return super().fit(X, y)
 
     @property
     def feature_importance(self):
+        """Feature importance for fitted ElasticNet classifier."""
         coef_ = self._component_obj.coef_
         # binary classification case
         if len(coef_) <= 2:

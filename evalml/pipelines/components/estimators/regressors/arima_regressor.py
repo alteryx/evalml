@@ -1,3 +1,4 @@
+"""Autoregressive Integrated Moving Average Model. The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order. More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima_model.ARIMA.html."""
 import numpy as np
 import pandas as pd
 from skopt.space import Integer
@@ -9,14 +10,11 @@ from evalml.utils import import_or_raise, infer_feature_types
 
 
 class ARIMARegressor(Estimator):
-    """
-    Autoregressive Integrated Moving Average Model.
-    The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order.
-    More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima_model.ARIMA.html
+    """Autoregressive Integrated Moving Average Model. The three parameters (p, d, q) are the AR order, the degree of differencing, and the MA order. More information here: https://www.statsmodels.org/devel/generated/statsmodels.tsa.arima_model.ARIMA.html.
 
     Currently ARIMARegressor isn't supported via conda install. It's recommended that it be installed via PyPI.
 
-    Arguments:
+    Args:
         date_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
         trend (str): Controls the deterministic trend. Options are ['n', 'c', 't', 'ct'] where 'c' is a constant term,
             't' indicates a linear trend, and 'ct' is both. Can also be an iterable when defining a polynomial, such
@@ -160,6 +158,18 @@ class ARIMARegressor(Estimator):
             return X, y, None
 
     def fit(self, X, y=None):
+        """Fits ARIMA regressor to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples].
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If X was passed to `fit` but not passed in `predict`.
+        """
         if y is None:
             raise ValueError("ARIMA Regressor requires y as input.")
 
@@ -174,6 +184,18 @@ class ARIMARegressor(Estimator):
         return self
 
     def predict(self, X, y=None):
+        """Make predictions using fitted ARIMA regressor.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            y (pd.Series): Target data.
+
+        Returns:
+            pd.Series: Predicted values.
+
+        Raises:
+            ValueError: If X was passed to `fit` but not passed in `predict`.
+        """
         X, y = self._manage_woodwork(X, y)
         dates, X = self._get_dates(X, y)
         X, y, fh_ = self._format_dates(dates, X, y, predict=True)
@@ -196,7 +218,5 @@ class ARIMARegressor(Estimator):
 
     @property
     def feature_importance(self):
-        """
-        Returns array of 0's with a length of 1 as feature_importance is not defined for ARIMA regressor.
-        """
+        """Returns array of 0's with a length of 1 as feature_importance is not defined for ARIMA regressor."""
         return np.zeros(1)

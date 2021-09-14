@@ -1,3 +1,4 @@
+"""A component that fits and predicts given data."""
 from abc import abstractmethod
 
 from pandas.core.indexes import range
@@ -17,9 +18,9 @@ class Estimator(ComponentBase):
     uses standard keyword arguments and calls `super().__init__()` with a parameters dict. You may also override the
     `fit`, `transform`, `fit_transform` and other methods in this class if appropriate.
 
-    To see some examples, check out the definitions of any Estimator component.
+    To see some examples, check out the definitions of any Estimator component subclass.
 
-    Arguments:
+    Args:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
         component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -37,7 +38,7 @@ class Estimator(ComponentBase):
     @classmethod
     @abstractmethod
     def supported_problem_types(cls):
-        """Problem types this estimator supports"""
+        """Problem types this estimator supports."""
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         self.input_feature_names = None
@@ -57,6 +58,15 @@ class Estimator(ComponentBase):
         return X, y
 
     def fit(self, X, y=None):
+        """Fits estimator to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            self
+        """
         X, y = self._manage_woodwork(X, y)
         self.input_feature_names = list(X.columns)
         self._component_obj.fit(X, y)
@@ -65,11 +75,14 @@ class Estimator(ComponentBase):
     def predict(self, X):
         """Make predictions using selected features.
 
-        Arguments:
-            X (pd.DataFrame, np.ndarray): Data of shape [n_samples, n_features]
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
 
         Returns:
-            pd.Series: Predicted values
+            pd.Series: Predicted values.
+
+        Raises:
+            MethodPropertyNotFoundError: If estimator does not have a predict method or a component_obj that implements predict.
         """
         try:
             X = infer_feature_types(X)
@@ -85,11 +98,14 @@ class Estimator(ComponentBase):
     def predict_proba(self, X):
         """Make probability estimates for labels.
 
-        Arguments:
-            X (pd.DataFrame, or np.ndarray): Features
+        Args:
+            X (pd.DataFrame): Features.
 
         Returns:
-            pd.Series: Probability estimates
+            pd.Series: Probability estimates.
+
+        Raises:
+            MethodPropertyNotFoundError: If estimator does not have a predict_proba method or a component_obj that implements predict_proba.
         """
         try:
             X = infer_feature_types(X)
@@ -105,7 +121,10 @@ class Estimator(ComponentBase):
         """Returns importance associated with each feature.
 
         Returns:
-            np.ndarray: Importance associated with each feature
+            np.ndarray: Importance associated with each feature.
+
+        Raises:
+            MethodPropertyNotFoundError: If estimator does not have a feature_importance method or a component_obj that implements feature_importance.
         """
         try:
             return self._component_obj.feature_importances_
@@ -115,6 +134,7 @@ class Estimator(ComponentBase):
             )
 
     def __eq__(self, other):
+        """Check for equality."""
         return (
             super().__eq__(other)
             and self.supported_problem_types == other.supported_problem_types

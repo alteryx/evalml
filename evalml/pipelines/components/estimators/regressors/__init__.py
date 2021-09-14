@@ -1,3 +1,4 @@
+"""Regression model components."""
 from .elasticnet_regressor import ElasticNetRegressor
 from .linear_regressor import LinearRegressor
 from .lightgbm_regressor import LightGBMRegressor

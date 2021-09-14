@@ -1,3 +1,4 @@
+"""Base class for all data checks."""
 from abc import ABC, abstractmethod
 
 from evalml.data_checks.data_check_message_type import DataCheckMessageType
@@ -5,19 +6,22 @@ from evalml.utils import classproperty
 
 
 class DataCheck(ABC):
-    """Base class for all data checks. Data checks are a set of heuristics used to determine if there are problems with input data."""
+    """Base class for all data checks.
+
+    Data checks are a set of heuristics used to determine if there are
+    problems with input data.
+    """
 
     @classproperty
     def name(cls):
-        """Returns a name describing the data check."""
+        """Return a name describing the data check."""
         return str(cls.__name__)
 
     @abstractmethod
     def validate(self, X, y=None):
-        """
-        Inspects and validates the input data, runs any necessary calculations or algorithms, and returns a list of warnings and errors if applicable.
+        """Inspect and validate the input data, runs any necessary calculations or algorithms, and returns a list of warnings and errors if applicable.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): The input data of shape [n_samples, n_features]
             y (pd.Series, optional): The target data of length [n_samples]
 

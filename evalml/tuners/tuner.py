@@ -1,14 +1,15 @@
+"""Base Tuner class."""
 from abc import ABC, abstractmethod
 
 from skopt.space import Categorical, Integer, Real
 
 
 class Tuner(ABC):
-    """Defines API for base Tuner classes.
+    """Base Tuner class.
 
     Tuners implement different strategies for sampling from a search space. They're used in EvalML to search the space of pipeline hyperparameters.
 
-    Arguments:
+    Args:
         pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters.
         random_seed (int): The random state. Defaults to 0.
     """
@@ -54,7 +55,7 @@ class Tuner(ABC):
                 self._search_space_ranges.append(parameter_range)
 
     def _convert_to_flat_parameters(self, pipeline_parameters):
-        """Convert from pipeline parameters to a flat list of values"""
+        """Convert from pipeline parameters to a flat list of values."""
         flat_parameter_values = []
         for flat_parameter_name in self._search_space_names:
             component_name, parameter_name = self._parameter_names_map[
@@ -75,7 +76,7 @@ class Tuner(ABC):
         return flat_parameter_values
 
     def _convert_to_pipeline_parameters(self, flat_parameters):
-        """Convert from a flat list of values to a dict of pipeline parameters"""
+        """Convert from a flat list of values to a dict of pipeline parameters."""
         pipeline_parameters = {
             component_name: dict() for component_name in self._component_names
         }
@@ -92,7 +93,7 @@ class Tuner(ABC):
     def add(self, pipeline_parameters, score):
         """Register a set of hyperparameters with the score obtained from training a pipeline with those hyperparameters.
 
-        Arguments:
+        Args:
             pipeline_parameters (dict): a dict of the parameters used to evaluate a pipeline
             score (float): the score obtained by evaluating the pipeline with the provided parameters
 

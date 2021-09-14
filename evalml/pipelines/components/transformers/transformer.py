@@ -1,3 +1,4 @@
+"""A component that may or may not need fitting that transforms data. These components are used before an estimator."""
 from abc import abstractmethod
 
 import pandas as pd
@@ -12,8 +13,7 @@ from evalml.utils import (
 
 
 class Transformer(ComponentBase):
-    """A component that may or may not need fitting that transforms data.
-    These components are used before an estimator.
+    """A component that may or may not need fitting that transforms data. These components are used before an estimator.
 
     To implement a new Transformer, define your own class which is a subclass of Transformer, including
     a name and a list of acceptable ranges for any parameters to be tuned during the automl search (hyperparameters).
@@ -23,7 +23,7 @@ class Transformer(ComponentBase):
 
     To see some examples, check out the definitions of any Transformer component.
 
-    Arguments:
+    Args:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
         component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -37,12 +37,15 @@ class Transformer(ComponentBase):
     def transform(self, X, y=None):
         """Transforms data X.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Target data.
 
         Returns:
             pd.DataFrame: Transformed X
+
+        Raises:
+            MethodPropertyNotFoundError: If transformer does not have a transform method or a component_obj that implements transform.
         """
         X_ww = infer_feature_types(X)
         if y is not None:
@@ -59,14 +62,17 @@ class Transformer(ComponentBase):
         )
 
     def fit_transform(self, X, y=None):
-        """Fits on X and transforms X
+        """Fits on X and transforms X.
 
-        Arguments:
-            X (pd.DataFrame): Data to fit and transform
-            y (pd.Series): Target data
+        Args:
+            X (pd.DataFrame): Data to fit and transform.
+            y (pd.Series): Target data.
 
         Returns:
-            pd.DataFrame: Transformed X
+            pd.DataFrame: Transformed X.
+
+        Raises:
+            MethodPropertyNotFoundError: If transformer does not have a transform method or a component_obj that implements transform.
         """
         X_ww = infer_feature_types(X)
         if y is not None:
@@ -96,9 +102,9 @@ class TargetTransformer(Transformer):
     def inverse_transform(self, y):
         """Inverts the transformation done by the transform method.
 
-         Arguments:
+         Args:
             y (pd.Series): Target transformed by this component.
 
         Returns:
-            pd.Seriesø: Target without the transformation.
+            pd.Series: Target without the transformation.
         """
