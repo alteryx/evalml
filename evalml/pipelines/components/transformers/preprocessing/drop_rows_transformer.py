@@ -13,6 +13,7 @@ class DropRowsTransformer(Transformer):
 
     name = "Drop Rows Transformer"
     modifies_target = True
+    training_only = True
     hyperparameter_ranges = {}
     """{}"""
 

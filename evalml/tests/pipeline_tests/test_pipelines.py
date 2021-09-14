@@ -2754,3 +2754,80 @@ def test_pipeline_transform_with_final_estimator(
         ),
     ):
         pipeline.transform(X, y)
+
+
+from evalml.pipelines.components import DropRowsTransformer
+
+
+@patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
+def test_training_only_component_in_pipeline_fit(mock_fit):
+    X = pd.DataFrame(
+        {
+            "a": [i for i in range(9)] + [np.nan],
+            "b": [i % 3 for i in range(10)],
+            "c": [i % 7 for i in range(10)],
+        }
+    )
+    y = pd.Series([0] * 5 + [1] * 5)
+    pipeline = BinaryClassificationPipeline(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Drop Rows Transformer": [DropRowsTransformer, "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Drop Rows Transformer.x",
+                "Drop Rows Transformer.y",
+            ],
+        },
+        parameters={"Drop Rows Transformer": {"indices_to_drop": [9]}},
+    )
+    pipeline.fit(X, y)
+    assert len(mock_fit.call_args[0][0]) == 9
+
+
+def test_training_only_component_in_pipeline_predict():
+    X = pd.DataFrame(
+        {
+            "a": [i for i in range(9)] + [np.nan],
+            "b": [i % 3 for i in range(10)],
+            "c": [i % 7 for i in range(10)],
+        }
+    )
+    y = pd.Series([0] * 5 + [1] * 5)
+    pipeline = BinaryClassificationPipeline(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Drop Rows Transformer": [DropRowsTransformer, "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Drop Rows Transformer.x",
+                "Drop Rows Transformer.y",
+            ],
+        },
+        parameters={"Drop Rows Transformer": {"indices_to_drop": [9]}},
+    )
+    pipeline.fit(X, y)
+    preds = pipeline.predict(X)
+    assert len(preds) == 10
+    preds = pipeline.predict_proba(X)
+    assert len(preds) == 10
+
+def test_training_only_component_in_pipeline_transform():
+    X = pd.DataFrame(
+        {
+            "a": [i for i in range(9)] + [np.nan],
+            "b": [i % 3 for i in range(10)],
+            "c": [i % 7 for i in range(10)],
+        }
+    )
+    y = pd.Series([0] * 5 + [1] * 5)
+    pipeline = BinaryClassificationPipeline(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Drop Rows Transformer": [DropRowsTransformer, "Imputer.x", "y"],
+        },
+        parameters={"Drop Rows Transformer": {"indices_to_drop": [9]}},
+    )
+    pipeline.fit(X, y)
+    transformed = pipeline.transform(X)
+    assert len(transformed) == 10
