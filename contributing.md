@@ -124,6 +124,7 @@ One of the package maintainers will then review your PR!
     - First letter of each argument description should be capitalized.
     - Docstring sentences should end in periods. This includes descriptions for each argument.
     - Types should be written in lower-case. For example, use "bool" instead of "Bool".
+    - Always add the default value in the description of the argument, if applicable. For example, "Defaults to 1."
 * Use [PascalCase (upper camel case)](https://en.wikipedia.org/wiki/Camel_case#Variations_and_synonyms) for class names, and [snake_case](https://en.wikipedia.org/wiki/Snake_case) for method and class member names.
 * To distinguish private methods and class attributes from public ones, those which are private should be prefixed with an underscore
 * Any code which doesn't need to be public should be private. Use `@staticmethod` and `@classmethod` where applicable, to indicate no side effects.
