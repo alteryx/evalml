@@ -153,7 +153,6 @@ class Undersampler(BaseSampler):
             self.sampling_ratio_dict = self._convert_dictionary(
                 self.parameters["sampling_ratio_dict"], y
             )
-        # self.parameters.pop("n_jobs", None)
 
         y = infer_feature_types(y)
 
