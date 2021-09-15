@@ -93,8 +93,8 @@ def test_feature_selector_component_obj_missing_transform():
 
 
 def test_feature_selectors_drop_columns_maintains_woodwork():
-    X = pd.DataFrame({'a':[1, 2, 3], 'b':[2, 4, 6], 'c':[1, 2, 3], 'd':[1, 2, 3]})
-    X.ww.init(logical_types={'a':'double', 'b':'categorical'})
+    X = pd.DataFrame({"a": [1, 2, 3], "b": [2, 4, 6], "c": [1, 2, 3], "d": [1, 2, 3]})
+    X.ww.init(logical_types={"a": "double", "b": "categorical"})
     y = pd.Series([0, 1, 1])
 
     rf_classifier, rf_regressor = make_rf_feature_selectors()

@@ -110,7 +110,9 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
 
         transformed = self._component_obj.transform(y_df)
         y_t = pd.Series(transformed[:, 0], index=y_ww.index)
-        y_t = ww.init_series(y_t, y_ww.ww.logical_type, y_ww.ww.semantic_tags)
+        y_t = ww.init_series(
+            y_t, logical_type=y_ww.ww.logical_type, semantic_tags=y_ww.ww.semantic_tags
+        )
         return X, y_t
 
     def fit_transform(self, X, y):

@@ -89,14 +89,12 @@ class PerColumnImputer(Transformer):
         original_schema = X_ww.ww.schema
 
         cols_to_drop = []
-        cols_to_keep = []
         for column, imputer in self.imputers.items():
             transformed = imputer.transform(X_ww[[column]])
             if transformed.empty:
                 cols_to_drop.append(column)
             else:
-                cols_to_keep.append(column)
                 X_ww.ww[column] = transformed[column]
         X_t = X_ww.ww.drop(cols_to_drop)
-        X_t.ww.init(schema=original_schema._get_subset_schema(cols_to_keep))
+        X_t.ww.init(schema=original_schema._get_subset_schema(X_t.columns))
         return X_t

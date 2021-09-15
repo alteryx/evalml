@@ -29,15 +29,14 @@ class StandardScaler(Transformer):
 
     def transform(self, X, y=None):
         X = infer_feature_types(X)
-        original_schema = X.ww.schema
         X = X.ww.select_dtypes(exclude=["datetime"])
         X_t = self._component_obj.transform(X)
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
 
-        columns = X.ww.select(
+        schema = X.ww.select(
             exclude=[Integer, Categorical, Boolean], return_schema=True
-        ).columns
-        X_t_df.ww.init(schema=original_schema._get_subset_schema(columns))
+        )
+        X_t_df.ww.init(schema=schema)
         return X_t_df
 
     def fit_transform(self, X, y=None):

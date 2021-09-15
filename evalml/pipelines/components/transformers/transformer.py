@@ -1,7 +1,5 @@
 from abc import abstractmethod
 
-import pandas as pd
-
 from evalml.exceptions import MethodPropertyNotFoundError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
@@ -58,7 +56,7 @@ class Transformer(ComponentBase):
             y_ww = infer_feature_types(y)
 
         try:
-            return self.fit(X, y).transform(X, y)
+            return self.fit(X_ww, y_ww).transform(X_ww, y_ww)
         except MethodPropertyNotFoundError as e:
             raise e
 
