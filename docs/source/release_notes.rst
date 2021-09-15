@@ -3,6 +3,18 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.33.0 Sep. 15, 2021**
+    * Enhancements
+    * Fixes
         * Fixed bug where warnings during ``make_pipeline`` were not being raised to the user :pr:`2765`
     * Changes
         * Refactored and removed ``SamplerBase`` class :pr:`2775`
