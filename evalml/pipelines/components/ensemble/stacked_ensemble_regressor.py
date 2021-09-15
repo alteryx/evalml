@@ -1,3 +1,4 @@
+"""Stacked Ensemble Regressor."""
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ElasticNetRegressor
 from evalml.pipelines.components.ensemble import StackedEnsembleBase

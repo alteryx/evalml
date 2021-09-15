@@ -346,32 +346,46 @@ def _make_stacked_ensemble_pipeline(
 
     if not use_sklearn:
 
-        def _make_new_component_name(model_type, component_name):
-            return str(model_type) + " Pipeline - " + component_name
+        def _make_new_component_name(model_type, component_name, idx=None):
+            idx = " " + str(idx) if idx is not None else ""
+            return f"{str(model_type)} Pipeline{idx} - {component_name}"
 
         component_graph = {}
         final_components = []
+        used_model_families = []
         problem_type = None
 
         for pipeline in input_pipelines:
-            model_type = pipeline.component_graph[-1].model_family
+            model_family = pipeline.component_graph[-1].model_family
+            model_family_idx = (
+                used_model_families.count(model_family) + 1
+                if used_model_families.count(model_family) > 0
+                else None
+            )
+            used_model_families.append(model_family)
             final_component = None
             ensemble_y = "y"
             for name, component_list in pipeline.component_graph.component_dict.items():
                 new_component_list = []
-                new_component_name = _make_new_component_name(model_type, name)
+                new_component_name = _make_new_component_name(
+                    model_family, name, model_family_idx
+                )
                 for i, item in enumerate(component_list):
                     if i == 0:
                         fitted_comp = handle_component_class(item)
                         new_component_list.append(fitted_comp)
                     elif isinstance(item, str) and item not in ["X", "y"]:
                         new_component_list.append(
-                            _make_new_component_name(model_type, item)
+                            _make_new_component_name(
+                                model_family, item, model_family_idx
+                            )
                         )
                     else:
                         new_component_list.append(item)
                     if i != 0 and item.endswith(".y"):
-                        ensemble_y = _make_new_component_name(model_type, item)
+                        ensemble_y = _make_new_component_name(
+                            model_family, item, model_family_idx
+                        )
                 component_graph[new_component_name] = new_component_list
                 final_component = new_component_name
             final_components.append(final_component)

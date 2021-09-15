@@ -1,3 +1,4 @@
+"""Stacked Ensemble Classifier."""
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ElasticNetClassifier
 from evalml.pipelines.components.ensemble import StackedEnsembleBase
