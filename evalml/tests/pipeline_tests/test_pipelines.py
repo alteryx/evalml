@@ -2777,13 +2777,14 @@ def test_training_only_component_in_pipeline_fit(mock_fit):
                 "Drop Rows Transformer.y",
             ],
         },
-        parameters={"Drop Rows Transformer": {"indices_to_drop": [9]}},
+        parameters={"Drop Rows Transformer": {"indices_to_drop": [0, 9]}},
     )
     pipeline.fit(X, y)
-    assert len(mock_fit.call_args[0][0]) == 9
+    assert len(mock_fit.call_args[0][0]) == 8
 
 
 def test_training_only_component_in_pipeline_predict():
+    # Test that calling predict() will not evaluate any training-only transformations
     X = pd.DataFrame(
         {
             "a": [i for i in range(9)] + [np.nan],
@@ -2812,6 +2813,7 @@ def test_training_only_component_in_pipeline_predict():
 
 
 def test_training_only_component_in_pipeline_transform():
+    # Test that calling transform() will evaluate all training-only transformations
     X = pd.DataFrame(
         {
             "a": [i for i in range(9)] + [np.nan],
@@ -2825,8 +2827,8 @@ def test_training_only_component_in_pipeline_transform():
             "Imputer": ["Imputer", "X", "y"],
             "Drop Rows Transformer": [DropRowsTransformer, "Imputer.x", "y"],
         },
-        parameters={"Drop Rows Transformer": {"indices_to_drop": [9]}},
+        parameters={"Drop Rows Transformer": {"indices_to_drop": [0, 9]}},
     )
     pipeline.fit(X, y)
     transformed = pipeline.transform(X)
-    assert len(transformed) == 10
+    assert len(transformed) == 8
