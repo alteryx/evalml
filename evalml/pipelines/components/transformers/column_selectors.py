@@ -1,3 +1,4 @@
+"""Initalizes an transformer that selects specified columns in input data."""
 from abc import abstractmethod
 
 from evalml.pipelines.components.transformers import Transformer
@@ -5,10 +6,9 @@ from evalml.utils import infer_feature_types
 
 
 class ColumnSelector(Transformer):
-    """
-    Initalizes an transformer that drops specified columns in input data.
+    """Initalizes an transformer that selects specified columns in input data.
 
-    Arguments:
+    Args:
         columns (list(string)): List of column names, used to determine which columns to select.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -40,7 +40,7 @@ class ColumnSelector(Transformer):
     def fit(self, X, y=None):
         """Fits the transformer by checking if column names are present in the dataset.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Data to check.
             y (pd.Series, optional): Targets.
 
@@ -52,6 +52,15 @@ class ColumnSelector(Transformer):
         return self
 
     def transform(self, X, y=None):
+        """Transform data using fitted column selector component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+        """
         X = infer_feature_types(X)
         self._check_input_for_columns(X)
         cols = self.parameters.get("columns") or []
@@ -60,10 +69,9 @@ class ColumnSelector(Transformer):
 
 
 class DropColumns(ColumnSelector):
-    """
-    Drops specified columns in input data.
+    """Drops specified columns in input data.
 
-    Arguments:
+    Args:
         columns (list(string)): List of column names, used to determine which columns to drop.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -79,7 +87,7 @@ class DropColumns(ColumnSelector):
     def transform(self, X, y=None):
         """Transforms data X by dropping columns.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Targets.
 
@@ -90,10 +98,9 @@ class DropColumns(ColumnSelector):
 
 
 class SelectColumns(ColumnSelector):
-    """
-    Selects specified columns in input data.
+    """Selects specified columns in input data.
 
-    Arguments:
+    Args:
         columns (list(string)): List of column names, used to determine which columns to select.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -109,7 +116,7 @@ class SelectColumns(ColumnSelector):
     def transform(self, X, y=None):
         """Transforms data X by selecting columns.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Targets.
 
@@ -120,10 +127,9 @@ class SelectColumns(ColumnSelector):
 
 
 class SelectByType(ColumnSelector):
-    """
-    Selects columns by specified Woodwork logical type or semantic tag in input data.
+    """Selects columns by specified Woodwork logical type or semantic tag in input data.
 
-    Arguments:
+    Args:
         column_types (string, ww.LogicalType, list(string), list(ww.LogicalType)): List of Woodwork types or tags, used to determine which columns to select.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -152,6 +158,15 @@ class SelectByType(ColumnSelector):
         return X.ww.select(cols)
 
     def transform(self, X, y=None):
+        """Transforms data X by selecting columns.
+
+        Args:
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, optional): Targets.
+
+        Returns:
+            pd.DataFrame: Transformed X.
+        """
         X = infer_feature_types(X)
         self._check_input_for_columns(X)
         cols = self.parameters.get("column_types") or []

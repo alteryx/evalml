@@ -1,3 +1,4 @@
+"""Component that imputes missing target data according to a specified imputation strategy."""
 from functools import wraps
 
 import pandas as pd
@@ -11,12 +12,20 @@ from evalml.utils import infer_feature_types
 
 
 class TargetImputerMeta(ComponentBaseMeta):
-    """A version of the ComponentBaseMeta class which handles when input features is None"""
+    """A version of the ComponentBaseMeta class which handles when input features is None."""
 
     @classmethod
     def check_for_fit(cls, method):
         """`check_for_fit` wraps a method that validates if `self._is_fitted` is `True`.
-        It raises an exception if `False` and calls and returns the wrapped method if `True`.
+
+        Args:
+            method (callable): Method to wrap.
+
+        Raises:
+            ComponentNotYetFittedError: If component is not fitted.
+
+        Returns:
+            The wrapped input method.
         """
 
         @wraps(method)
@@ -35,7 +44,7 @@ class TargetImputerMeta(ComponentBaseMeta):
 class TargetImputer(Transformer, metaclass=TargetImputerMeta):
     """Imputes missing target data according to a specified imputation strategy.
 
-    Arguments:
+    Args:
         impute_strategy (string): Impute strategy to use. Valid values include "mean", "median", "most_frequent", "constant" for
            numerical data, and "most_frequent", "constant" for object data types. Defaults to "most_frequent".
         fill_value (string): When impute_strategy == "constant", fill_value is used to replace missing data.
@@ -62,15 +71,17 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
         )
 
     def fit(self, X, y):
-        """Fits imputer to target data. 'None' values are converted to np.nan before imputation and are
-            treated as the same.
+        """Fits imputer to target data. 'None' values are converted to np.nan before imputation and are treated as the same.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]. Ignored.
             y (pd.Series, optional): The target training data of length [n_samples].
 
         Returns:
             self
+
+        Raises:
+            TypeError: If target is filled with all null values.
         """
         if y is None:
             return self
@@ -89,14 +100,13 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
     def transform(self, X, y):
         """Transforms input target data by imputing missing values. 'None' and np.nan values are treated as the same.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Features. Ignored.
             y (pd.Series): Target data to impute.
 
         Returns:
             (pd.DataFrame, pd.Series): The original X, transformed y
         """
-
         if X is not None:
             X = infer_feature_types(X)
         if y is None:
@@ -118,7 +128,7 @@ class TargetImputer(Transformer, metaclass=TargetImputerMeta):
     def fit_transform(self, X, y):
         """Fits on and transforms the input target data.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Features. Ignored.
             y (pd.Series): Target data to impute.
 

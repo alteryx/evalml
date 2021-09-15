@@ -1,3 +1,4 @@
+"""EvalML pipelines."""
 from .components import (
     Estimator,
     OneHotEncoder,

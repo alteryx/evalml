@@ -1,3 +1,4 @@
+"""Components that transform data."""
 from .transformer import Transformer
 from .encoders import OneHotEncoder, TargetEncoder
 from .feature_selection import (

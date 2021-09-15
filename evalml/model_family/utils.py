@@ -1,16 +1,20 @@
+"""Utility methods for EvalML's model families."""
 from .model_family import ModelFamily
 
 
 def handle_model_family(model_family):
-    """Handles model_family by either returning the ModelFamily or converting from a string
+    """Handles model_family by either returning the ModelFamily or converting from a string.
 
-    Arguments:
-        model_family (str or ModelFamily): Model type that needs to be handled
+    Args:
+        model_family (str or ModelFamily): Model type that needs to be handled.
 
     Returns:
         ModelFamily
-    """
 
+    Raises:
+        KeyError: If input is not a valid model family.
+        ValueError: If input is not a string or ModelFamily object.
+    """
     if isinstance(model_family, str):
         try:
             tpe = ModelFamily[model_family.upper()]

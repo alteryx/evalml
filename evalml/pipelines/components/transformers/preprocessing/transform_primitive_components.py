@@ -1,3 +1,4 @@
+"""Components that extract features from the input data."""
 from abc import abstractmethod
 
 import featuretools as ft
@@ -30,7 +31,8 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
     def _get_feature_types_for_featuretools(self, X):
         """Get a mapping from column name to the feature tools type.
 
-        This is needed for dfs. Hopefully, once the ww/ft integration is complete this will be redundant.
+        This is needed for dfs. Hopefully, once the ww/ft integration is
+        complete this will be redundant.
         """
 
     def _make_entity_set(self, X):
@@ -104,7 +106,7 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
 class EmailFeaturizer(_ExtractFeaturesWithTransformPrimitives):
     """Transformer that can automatically extract features from emails.
 
-    Arguments:
+    Args:
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -127,7 +129,7 @@ class EmailFeaturizer(_ExtractFeaturesWithTransformPrimitives):
 class URLFeaturizer(_ExtractFeaturesWithTransformPrimitives):
     """Transformer that can automatically extract features from URL.
 
-    Arguments:
+    Args:
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 

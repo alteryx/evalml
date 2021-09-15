@@ -1,3 +1,4 @@
+"""Transformer that can automatically featurize text columns using featuretools' nlp_primitives."""
 import string
 
 import featuretools as ft
@@ -19,7 +20,7 @@ class TextFeaturizer(TextTransformer):
     LSA (Latent Semantic Analysis). Calling transform on this component will replace any text columns
     in the given dataset with these numeric columns.
 
-    Arguments:
+    Args:
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -39,7 +40,7 @@ class TextFeaturizer(TextTransformer):
         super().__init__(random_seed=random_seed, **kwargs)
 
     def _clean_text(self, X):
-        """Remove all non-alphanum chars other than spaces, and make lowercase"""
+        """Remove all non-alphanum chars other than spaces, and make lowercase."""
 
         def normalize(text):
             text = text.translate(str.maketrans("", "", string.punctuation))
@@ -73,11 +74,11 @@ class TextFeaturizer(TextTransformer):
         return es
 
     def fit(self, X, y=None):
-        """Fits component to data
+        """Fits component to data.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
-            y (pd.Series, np.ndarray, optional): The target training data of length [n_samples]
+            y (pd.Series): The target training data of length [n_samples]
 
         Returns:
             self
@@ -113,9 +114,9 @@ class TextFeaturizer(TextTransformer):
         return provenance
 
     def transform(self, X, y=None):
-        """Transforms data X by creating new features using existing text columns
+        """Transforms data X by creating new features using existing text columns.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): The data to transform.
             y (pd.Series, optional): Ignored.
 

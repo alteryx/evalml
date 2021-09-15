@@ -1,3 +1,4 @@
+"""Random Search Optimizer."""
 from skopt import Space
 
 from evalml.tuners import NoParamsException, Tuner
@@ -7,7 +8,7 @@ from evalml.utils import get_random_state
 class RandomSearchTuner(Tuner):
     """Random Search Optimizer.
 
-    Arguments:
+    Args:
         pipeline_hyperparameter_ranges (dict): a set of hyperparameter ranges corresponding to a pipeline's parameters
         with_replacement (bool): If false, only unique hyperparameters will be shown
         replacement_max_attempts (int): The maximum number of tries to get a unique
@@ -39,10 +40,9 @@ class RandomSearchTuner(Tuner):
         self.curr_params = None
 
     def add(self, pipeline_parameters, score):
-        """Not applicable to random search tuner as generated parameters are
-        not dependent on scores of previous parameters.
+        """Not applicable to random search tuner as generated parameters are not dependent on scores of previous parameters.
 
-        Arguments:
+        Args:
             pipeline_parameters (dict): A dict of the parameters used to evaluate a pipeline
             score (float): The score obtained by evaluating the pipeline with the provided parameters
         """
@@ -71,14 +71,13 @@ class RandomSearchTuner(Tuner):
         return self._convert_to_pipeline_parameters(params)
 
     def is_search_space_exhausted(self):
-        """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in
-        ``self.curr_params`` to be returned by ``propose()``.
+        """Checks if it is possible to generate a set of valid parameters. Stores generated parameters in ``self.curr_params`` to be returned by ``propose()``.
+
+        Returns:
+            bool: If no more valid parameters exists in the search space, return False.
 
         Raises:
             NoParamsException: If a search space is exhausted, then this exception is thrown.
-
-        Returns:
-            bool: If no more valid parameters exists in the search space, return false.
         """
         if self._with_replacement:
             return False

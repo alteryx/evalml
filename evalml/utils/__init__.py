@@ -1,3 +1,4 @@
+"""Utility methods."""
 from .logger import get_logger, log_subtitle, log_title
 from .gen_utils import (
     classproperty,

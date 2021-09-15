@@ -1,3 +1,4 @@
+"""Pipeline subclass for all classification pipelines."""
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder
 
@@ -8,7 +9,7 @@ from evalml.utils import infer_feature_types
 class ClassificationPipeline(PipelineBase):
     """Pipeline subclass for all classification pipelines.
 
-    Arguments:
+    Args:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -36,16 +37,14 @@ class ClassificationPipeline(PipelineBase):
         )
 
     def fit(self, X, y):
-        """Build a classification model. For string and categorical targets, classes are sorted
-            by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
+        """Build a classification model. For string and categorical targets, classes are sorted by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, np.ndarray): The target training labels of length [n_samples]
 
         Returns:
             self
-
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
@@ -63,9 +62,11 @@ class ClassificationPipeline(PipelineBase):
 
     def _decode_targets(self, y):
         """Converts encoded numerical values to their original target values.
+
         Note: we cast y as ints first to address boolean values that may be returned from
         calculating predictions which we would not be able to otherwise transform if we
-        originally had integer targets."""
+        originally had integer targets.
+        """
         return self._encoder.inverse_transform(y.astype(int))
 
     @property
@@ -80,9 +81,9 @@ class ClassificationPipeline(PipelineBase):
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
 
-        Arguments:
-            X (pd.DataFrame): Data of shape [n_samples, n_features]
-            objective (Object or string): The objective to use to make predictions
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            objective (Object or string): The objective to use to make predictions.
 
         Returns:
             pd.Series: Estimated labels
@@ -92,14 +93,14 @@ class ClassificationPipeline(PipelineBase):
     def predict(self, X, objective=None, X_train=None, y_train=None):
         """Make predictions using selected features.
 
-        Arguments:
-            X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features]
-            objective (Object or string): The objective to use to make predictions
-            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
-            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            objective (Object or string): The objective to use to make predictions.
+            X_train (pd.DataFrame): Training data. Ignored. Only used for time series.
+            y_train (pd.Series): Training labels. Ignored. Only used for time series.
 
         Returns:
-            pd.Series: Estimated labels
+            pd.Series: Estimated labels.
         """
         predictions = self._predict(X, objective=objective)
         predictions = pd.Series(
@@ -110,13 +111,16 @@ class ClassificationPipeline(PipelineBase):
     def predict_proba(self, X, X_train=None, y_train=None):
         """Make probability estimates for labels.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
             X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
             y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
 
         Returns:
             pd.DataFrame: Probability estimates
+
+        Raises:
+            ValueError: If final component is not an estimator.
         """
         if self.estimator is None:
             raise ValueError(
@@ -133,17 +137,17 @@ class ClassificationPipeline(PipelineBase):
         return infer_feature_types(proba)
 
     def score(self, X, y, objectives, X_train=None, y_train=None):
-        """Evaluate model performance on objectives
+        """Evaluate model performance on objectives.
 
-        Arguments:
-            X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features]
-            y (pd.Series, or np.ndarray): True labels of length [n_samples]
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features]
+            y (pd.Series): True labels of length [n_samples]
             objectives (list): List of objectives to score
-            X_train (pd.DataFrame or np.ndarray): Training data. Ignored. Only used for time series.
+            X_train (pd.DataFrame): Training data. Ignored. Only used for time series.
             y_train (pd.Series): Training labels. Ignored. Only used for time series.
 
         Returns:
-            dict: Ordered dictionary of objective scores
+            dict: Ordered dictionary of objective scores.
         """
         y = infer_feature_types(y)
         objectives = self.create_objectives(objectives)

@@ -1,3 +1,4 @@
+"""Base class for all binary classification objectives."""
 import numpy as np
 from scipy.optimize import minimize_scalar
 
@@ -15,19 +16,29 @@ class BinaryClassificationObjective(ObjectiveBase):
     @property
     def can_optimize_threshold(cls):
         """Returns a boolean determining if we can optimize the binary classification objective threshold.
-        This will be false for any objective that works directly with predicted probabilities, like log loss and AUC. Otherwise, it will be true."""
+
+        This will be false for any objective that works directly with
+        predicted probabilities, like log loss and AUC. Otherwise, it
+        will be true.
+
+        Returns:
+            bool: Whether or not an objective can be optimized.
+        """
         return not cls.score_needs_proba
 
     def optimize_threshold(self, ypred_proba, y_true, X=None):
         """Learn a binary classification threshold which optimizes the current objective.
 
-        Arguments:
+        Args:
             ypred_proba (pd.Series): The classifier's predicted probabilities
             y_true (pd.Series): The ground truth for the predictions.
             X (pd.DataFrame, optional): Any extra columns that are needed from training data.
 
         Returns:
-            Optimal threshold for this objective
+            Optimal threshold for this objective.
+
+        Raises:
+            RuntimeError: If objective cannot be optimized.
         """
         ypred_proba = self._standardize_input_type(ypred_proba)
         y_true = self._standardize_input_type(y_true)
@@ -53,7 +64,7 @@ class BinaryClassificationObjective(ObjectiveBase):
     def decision_function(self, ypred_proba, threshold=0.5, X=None):
         """Apply a learned threshold to predicted probabilities to get predicted classes.
 
-        Arguments:
+        Args:
             ypred_proba (pd.Series, np.ndarray): The classifier's predicted probabilities
             threshold (float, optional): Threshold used to make a prediction. Defaults to 0.5.
             X (pd.DataFrame, optional): Any extra columns that are needed from training data.
@@ -65,6 +76,7 @@ class BinaryClassificationObjective(ObjectiveBase):
         return ypred_proba > threshold
 
     def validate_inputs(self, y_true, y_predicted):
+        """Validate inputs for scoring."""
         super().validate_inputs(y_true, y_predicted)
         if len(np.unique(y_true)) > 2:
             raise ValueError("y_true contains more than two unique values")

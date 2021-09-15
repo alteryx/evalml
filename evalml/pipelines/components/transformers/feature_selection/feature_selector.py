@@ -1,3 +1,4 @@
+"""Component that selects top features based on importance weights."""
 import pandas as pd
 
 from evalml.exceptions import MethodPropertyNotFoundError
@@ -6,10 +7,9 @@ from evalml.utils import infer_feature_types
 
 
 class FeatureSelector(Transformer):
-    """
-    Selects top features based on importance weights.
+    """Selects top features based on importance weights.
 
-    Arguments:
+    Args:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
         component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -19,7 +19,7 @@ class FeatureSelector(Transformer):
         """Get names of selected features.
 
         Returns:
-            list[str]: List of the names of features selected
+            list[str]: List of the names of features selected.
         """
         selected_masks = self._component_obj.get_support()
         return [
@@ -33,12 +33,15 @@ class FeatureSelector(Transformer):
     def transform(self, X, y=None):
         """Transforms input data by selecting features. If the component_obj does not have a transform method, will raise an MethodPropertyNotFoundError exception.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Data to transform.
             y (pd.Series, optional): Target data. Ignored.
 
         Returns:
             pd.DataFrame: Transformed X
+
+        Raises:
+            MethodPropertyNotFoundError: If feature selector does not have a transform method or a component_obj that implements transform
         """
         X_ww = infer_feature_types(X)
         self.input_feature_names = list(X_ww.columns.values)
@@ -56,4 +59,13 @@ class FeatureSelector(Transformer):
         return features
 
     def fit_transform(self, X, y=None):
+        """Fit and transform data using the feature selector.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            pd.DataFrame: Transformed data.
+        """
         return self.fit(X, y).transform(X, y)

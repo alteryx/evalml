@@ -1,3 +1,4 @@
+"""Component that selects top features based on importance weights using a Random Forest classifier."""
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier as SKRandomForestClassifier
 from sklearn.feature_selection import SelectFromModel as SkSelect
@@ -7,10 +8,9 @@ from .feature_selector import FeatureSelector
 
 
 class RFClassifierSelectFromModel(FeatureSelector):
-    """
-    Selects top features based on importance weights using a Random Forest classifier.
+    """Selects top features based on importance weights using a Random Forest classifier.
 
-    Arguments:
+    Args:
         number_features (int): The maximum number of features to select.
             If both percent_features and number_features are specified, take the greater number of features. Defaults to 0.5.
             Defaults to None.

@@ -1,3 +1,4 @@
+"""Pipeline base class for time-series problems."""
 import pandas as pd
 import woodwork as ww
 
@@ -7,10 +8,9 @@ from evalml.utils import drop_rows_with_nans, infer_feature_types
 
 
 class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
-
     """Pipeline base class for time series problems.
 
-    Arguments:
+    Args:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -58,7 +58,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
     def fit(self, X, y):
         """Fit a time series pipeline.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
             y (pd.Series, np.ndarray): The target training targets of length [n_samples].
 
@@ -140,7 +140,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
     def compute_estimator_features(self, X, y=None, X_train=None, y_train=None):
         """Transforms the data by applying all pre-processing components.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Input data to the pipeline to transform.
             y (pd.Series): Targets corresponding to the pipeline targets.
             X_train (pd.DataFrame): Training data used to generate generates from past observations.
@@ -170,15 +170,18 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):
         """Predict on future data where the target is known, e.g. cross validation.
 
-        Arguments:
-            X_holdout (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
-            y_holdout (pd.Series, np.ndarray): Future target of shape [n_samples]
+        Args:
+            X (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features]
+            y (pd.Series, np.ndarray): Future target of shape [n_samples]
             X_train (pd.DataFrame, np.ndarray): Data the pipeline was trained on of shape [n_samples_train, n_feautures]
             y_train (pd.Series, np.ndarray): Targets used to train the pipeline of shape [n_samples_train]
             objective (ObjectiveBase, str, None): Objective used to threshold predicted probabilities, optional.
 
         Returns:
-            pd.Series: Estimated labels
+            pd.Series: Estimated labels.
+
+        Raises:
+            ValueError: If final component is not an Estimator.
         """
         if self.estimator is None:
             raise ValueError(
@@ -201,12 +204,17 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
     def predict(self, X, objective=None, X_train=None, y_train=None):
         """Predict on future data where target is not known.
 
-        Arguments:
+        Args:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
-            objective (str, ObjectiveBase): Used in classification problems to threshold the predictions.
             objective (Object or string): The objective to use to make predictions.
-            X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
-            y_train (pd.Series or None): Training labels. Ignored. Only used for time series.
+            X_train (pd.DataFrame or np.ndarray or None): Training data.
+            y_train (pd.Series or None): Training labels.
+
+        Raises:
+            ValueError: If final component is not an Estimator.
+
+        Returns:
+            Predictions.
         """
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         if self.estimator is None:

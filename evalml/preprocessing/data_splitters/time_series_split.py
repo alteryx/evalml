@@ -1,3 +1,4 @@
+"""Rolling Origin Cross Validation for time series problems."""
 from sklearn.model_selection import TimeSeriesSplit as SkTimeSeriesSplit
 from sklearn.model_selection._split import BaseCrossValidator
 
@@ -10,7 +11,7 @@ class TimeSeriesSplit(BaseCrossValidator):
     desired amount. If the data that will be split already has all the features and appropriate target values, and
     then set max_delay and gap to 0.
 
-    Arguments:
+    Args:
         max_delay (int): Max delay value for feature engineering. Time series pipelines create delayed features
             from existing features. This process will introduce NaNs into the first max_delay number of rows. The
             splitter uses the last max_delay number of rows from the previous split as the first max_delay number
@@ -28,7 +29,16 @@ class TimeSeriesSplit(BaseCrossValidator):
         self._splitter = SkTimeSeriesSplit(n_splits=n_splits)
 
     def get_n_splits(self, X=None, y=None, groups=None):
-        """Get the number of data splits."""
+        """Get the number of data splits.
+
+        Args:
+            X (pd.DataFrame, None): Features to split.
+            y (pd.DataFrame, None): Target variable to split. Defaults to None.
+            groups: Ignored but kept for compatibility with sklearn API. Defaults to None.
+
+        Returns:
+            Number of splits.
+        """
         return self._splitter.n_splits
 
     @staticmethod
@@ -42,13 +52,16 @@ class TimeSeriesSplit(BaseCrossValidator):
         This method can handle passing in empty or None X and y data but note that X and y cannot be None or empty
         at the same time.
 
-        Arguments:
+        Args:
             X (pd.DataFrame, None): Features to split.
-            y (pd.DataFrame, None): Target variable to split.
-            groups: Ignored but kept for compatibility with sklearn api.
+            y (pd.DataFrame, None): Target variable to split. Defaults to None.
+            groups: Ignored but kept for compatibility with sklearn API. Defaults to None.
 
-        Returns:
+        Yields:
             Iterator of (train, test) indices tuples.
+
+        Raises:
+            ValueError: If one of the proposed splits would be empty.
         """
         # Sklearn splitters always assume a valid X is passed but we need to support the
         # TimeSeriesPipeline convention of being able to pass in empty X dataframes

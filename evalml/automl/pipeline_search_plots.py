@@ -1,7 +1,15 @@
+"""Plots displayed during pipeline search."""
 from evalml.utils import import_or_raise, jupyter_check
 
 
 class SearchIterationPlot:
+    """Search iteration plot.
+
+    Args:
+        results (dict): Dictionary of current results.
+        objective (ObjectiveBase): Objective that AutoML is optimizing for.
+    """
+
     def __init__(self, results, objective):
         self._go = import_or_raise(
             "plotly.graph_objects",
@@ -35,6 +43,7 @@ class SearchIterationPlot:
         self._go = None
 
     def update(self, results, objective):
+        """Update the search plot."""
         if len(results["search_order"]) > 0 and len(results["pipeline_results"]) > 0:
             iter_idx = results["search_order"]
             pipeline_res = results["pipeline_results"]
@@ -74,14 +83,14 @@ class SearchIterationPlot:
 
 
 class PipelineSearchPlots:
-    """Plots for the AutoMLSearch class."""
+    """Plots for the AutoMLSearch class during search.
+
+    Args:
+        results (dict): Dictionary of current results.
+        objective (ObjectiveBase): Objective that AutoML is optimizing for.
+    """
 
     def __init__(self, results, objective):
-        """Make plots for the AutoMLSearch class.
-
-        Arguments:
-            data (AutoMLSearch): Automated pipeline search object
-        """
         self._go = import_or_raise(
             "plotly.graph_objects",
             error_msg="Cannot find dependency plotly.graph_objects",
@@ -92,8 +101,14 @@ class PipelineSearchPlots:
     def search_iteration_plot(self, interactive_plot=False):
         """Shows a plot of the best score at each iteration using data gathered during training.
 
+        Args:
+            interactive_plot (bool): Whether or not to show an interactive plot. Defaults to False.
+
         Returns:
             plot
+
+        Raises:
+            ValueError: If engine_str is not a valid engine.
         """
         if not interactive_plot:
             plot_obj = SearchIterationPlot(self.results, self.objective)

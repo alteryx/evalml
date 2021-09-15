@@ -1,3 +1,4 @@
+"""Transformer that delays input features and target variable for time series problems."""
 import pandas as pd
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
 from woodwork import logical_types
@@ -9,7 +10,7 @@ from evalml.utils import infer_feature_types
 class DelayedFeatureTransformer(Transformer):
     """Transformer that delays input features and target variable for time series problems.
 
-    Arguments:
+    Args:
         date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
         max_delay (int): Maximum number of time units to delay each feature. Defaults to 2.
         forecast_horizon (int): The number of time periods the pipeline is expected to forecast.
@@ -63,7 +64,7 @@ class DelayedFeatureTransformer(Transformer):
     def fit(self, X, y=None):
         """Fits the DelayFeatureTransformer.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features]
             y (pd.Series, optional): The target training data of length [n_samples]
 
@@ -100,7 +101,7 @@ class DelayedFeatureTransformer(Transformer):
 
         If y is not None, it will also compute the delayed values for the target variable.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
             y (pd.Series, or None): Target.
 
@@ -134,4 +135,13 @@ class DelayedFeatureTransformer(Transformer):
         return X_ww.ww.drop(original_features)
 
     def fit_transform(self, X, y):
+        """Fit the component and transform the input data.
+
+        Args:
+            X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
+            y (pd.Series, or None): Target.
+
+        Returns:
+            pd.DataFrame: Transformed X.
+        """
         return self.fit(X, y).transform(X, y)

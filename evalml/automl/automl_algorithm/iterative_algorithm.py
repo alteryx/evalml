@@ -1,3 +1,4 @@
+"""An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance."""
 import inspect
 from operator import itemgetter
 
@@ -22,10 +23,9 @@ _ESTIMATOR_FAMILY_ORDER = [
 
 
 class IterativeAlgorithm(AutoMLAlgorithm):
-    """
-    An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
+    """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
-    Arguments:
+    Args:
         allowed_pipelines (list(class)): A list of PipelineBase instances indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
         max_iterations (int): The maximum number of iterations to be evaluated.
         tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
@@ -57,7 +57,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
     ):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
-        Arguments:
+        Args:
             allowed_pipelines (list(class)): A list of PipelineBase instances indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
             max_iterations (int): The maximum number of iterations to be evaluated.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
@@ -69,7 +69,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
             pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
             custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
-            _estimator_family_order (list(ModelFamily) or None): specify the sort order for the first batch. Defaults to None, which uses _ESTIMATOR_FAMILY_ORDER.
+            _estimator_family_order (list[ModelFamily]): specify the sort order for the first batch. Defaults to None, which uses _ESTIMATOR_FAMILY_ORDER.
         """
         self._estimator_family_order = (
             _estimator_family_order or _ESTIMATOR_FAMILY_ORDER
@@ -131,10 +131,13 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     )
 
     def next_batch(self):
-        """Get the next batch of pipelines to evaluate
+        """Get the next batch of pipelines to evaluate.
 
         Returns:
-            list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
+            list[PipelineBase]: A list of instances of PipelineBase subclasses, ready to be trained and evaluated.
+
+        Raises:
+            AutoMLAlgorithmException: If no results were reported from the first batch.
         """
         if self._batch_number == 1:
             if len(self._first_batch_results) == 0:
@@ -197,12 +200,15 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         return next_batch
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
-        """Register results from evaluating a pipeline
+        """Register results from evaluating a pipeline.
 
-        Arguments:
+        Args:
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
             trained_pipeline_results (dict): Results from training a pipeline.
+
+        Raises:
+            ValueError: If default parameters are not in the acceptable hyperparameter ranges.
         """
         if pipeline.model_family != ModelFamily.ENSEMBLE:
             if self.batch_number == 1:

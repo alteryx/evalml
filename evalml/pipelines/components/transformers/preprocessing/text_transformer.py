@@ -1,10 +1,11 @@
+"""Base class for all transformers working with text features."""
 from evalml.pipelines.components.transformers import Transformer
 
 
 class TextTransformer(Transformer):
     """Base class for all transformers working with text features.
 
-    Arguments:
+    Args:
         component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """

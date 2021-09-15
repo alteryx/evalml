@@ -1,3 +1,4 @@
+"""Base machine learning pipeline class."""
 import copy
 import inspect
 import logging
@@ -39,10 +40,9 @@ logger = logging.getLogger(__name__)
 
 
 class PipelineBase(ABC, metaclass=PipelineBaseMeta):
-    """
-    Machine learning pipeline made out of transformers and an Estimator.
+    """Machine learning pipeline.
 
-    Arguments:
+    Args:
         component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
@@ -131,7 +131,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     @property
     def summary(self):
         """A short summary of the pipeline structure, describing the list of components used.
+
         Example: Logistic Regression Classifier w/ Simple Imputer + One Hot Encoder
+
+        Returns:
+            A string describing the pipeline structure.
         """
         component_graph = [
             type(self.component_graph.component_instances[component])
@@ -181,7 +185,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return component_dict
 
     def _validate_estimator_problem_type(self):
-        """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`"""
+        """Validates this pipeline's problem_type against that of the estimator from `self.component_graph`."""
         if (
             self.estimator is None
         ):  # Allow for pipelines that do not end with an estimator
@@ -195,33 +199,34 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             )
 
     def __getitem__(self, index):
+        """Get an element in the component graph."""
         if isinstance(index, slice):
             raise NotImplementedError("Slicing pipelines is currently not supported.")
         return self.component_graph[index]
 
     def __setitem__(self, index, value):
+        """Set an element in the component graph."""
         raise NotImplementedError("Setting pipeline components is not supported.")
 
     def get_component(self, name):
-        """Returns component by name
+        """Returns component by name.
 
-        Arguments:
-            name (str): Name of component
+        Args:
+            name (str): Name of component.
 
         Returns:
             Component: Component to return
-
         """
         return self.component_graph.get_component(name)
 
     def describe(self, return_dict=False):
-        """Outputs pipeline details including component parameters
+        """Outputs pipeline details including component parameters.
 
-        Arguments:
+        Args:
             return_dict (bool): If True, return dictionary of information about pipeline. Defaults to False.
 
         Returns:
-            dict: Dictionary of all component parameters if return_dict is True, else None
+            dict: Dictionary of all component parameters if return_dict is True, else None.
         """
         logger = get_logger(f"{__name__}.describe")
         log_title(logger, self.name)
@@ -252,9 +257,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def compute_estimator_features(self, X, y=None, X_train=None, y_train=None):
         """Transforms the data by applying all pre-processing components.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Input data to the pipeline to transform.
-            y (pd.Series or None): Targets corresponding to X. optional.
+            y (pd.Series or None): Targets corresponding to X. Optional.
             X_train (pd.DataFrame or np.ndarray or None): Training data. Only used for time series.
             y_train (pd.Series or None): Training labels.  Only used for time series.
 
@@ -272,19 +277,18 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def fit(self, X, y):
         """Build a model.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
             y (pd.Series, np.ndarray): The target training data of length [n_samples].
 
         Returns:
             self
-
         """
 
     def transform(self, X, y=None):
         """Transform the input.
 
-        Arguments:
+        Args:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series): The target data of length [n_samples]. Defaults to None.
 
@@ -296,7 +300,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def predict(self, X, objective=None, X_train=None, y_train=None):
         """Make predictions using selected features.
 
-        Arguments:
+        Args:
             X (pd.DataFrame, or np.ndarray): Data of shape [n_samples, n_features].
             objective (Object or string): The objective to use to make predictions.
             X_train (pd.DataFrame or np.ndarray or None): Training data. Ignored. Only used for time series.
@@ -314,7 +318,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def score(self, X, y, objectives, X_train=None, y_train=None):
         """Evaluate model performance on current and additional objectives.
 
-        Arguments:
+        Args:
             X (pd.DataFrame or np.ndarray): Data of shape [n_samples, n_features].
             y (pd.Series, np.ndarray): True labels of length [n_samples].
             objectives (list): Non-empty list of objectives to score on.
@@ -334,7 +338,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
         Will raise a PipelineScoreError if any objectives fail.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): The feature matrix.
             y (pd.Series): The target data.
             y_pred (pd.Series): The pipeline predictions.
@@ -411,7 +415,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """Importance associated with each feature. Features dropped by the feature selection are excluded.
 
         Returns:
-            pd.DataFrame including feature names and their corresponding importance
+            pd.DataFrame: Feature names and their corresponding importance
         """
         feature_names = self.input_feature_names[self._estimator_name]
         importance = list(
@@ -424,11 +428,15 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def graph(self, filepath=None):
         """Generate an image representing the pipeline graph.
 
-        Arguments:
+        Args:
             filepath (str, optional): Path to where the graph should be saved. If set to None (as by default), the graph will not be saved.
 
         Returns:
             graphviz.Digraph: Graph object that can be directly displayed in Jupyter notebooks.
+
+        Raises:
+            RuntimeError: If graphviz is not installed.
+            ValueError: If path is not writeable.
         """
         graphviz = import_or_raise(
             "graphviz", error_msg="Please install graphviz to visualize pipelines."
@@ -477,13 +485,16 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return graph
 
     def graph_feature_importance(self, importance_threshold=0):
-        """Generate a bar graph of the pipeline's feature importance
+        """Generate a bar graph of the pipeline's feature importance.
 
-        Arguments:
+        Args:
             importance_threshold (float, optional): If provided, graph features with a permutation importance whose absolute value is larger than importance_threshold. Defaults to zero.
 
         Returns:
-            plotly.Figure, a bar graph showing features and their corresponding importance
+            plotly.Figure: A bar graph showing features and their corresponding importance.
+
+        Raises:
+            ValueError: If importance threshold is not valid.
         """
         go = import_or_raise(
             "plotly.graph_objects",
@@ -524,24 +535,21 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return fig
 
     def save(self, file_path, pickle_protocol=cloudpickle.DEFAULT_PROTOCOL):
-        """Saves pipeline at file path
+        """Saves pipeline at file path.
 
-        Arguments:
-            file_path (str): location to save file
-            pickle_protocol (int): the pickle data stream format.
-
-        Returns:
-            None
+        Args:
+            file_path (str): Location to save file.
+            pickle_protocol (int): The pickle data stream format.
         """
         with open(file_path, "wb") as f:
             cloudpickle.dump(self, f, protocol=pickle_protocol)
 
     @staticmethod
     def load(file_path):
-        """Loads pipeline at file path
+        """Loads pipeline at file path.
 
-        Arguments:
-            file_path (str): location to load file
+        Args:
+            file_path (str): Location to load file.
 
         Returns:
             PipelineBase object
@@ -563,13 +571,13 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         )
 
     def new(self, parameters, random_seed=0):
-        """Constructs a new instance of the pipeline with the same component graph but with a different set of parameters.
-            Not to be confused with python's __new__ method.
+        """Constructs a new instance of the pipeline with the same component graph but with a different set of parameters. Not to be confused with python's __new__ method.
 
-        Arguments:
+        Args:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                  An empty dictionary or None implies using all default values for component parameters. Defaults to None.
             random_seed (int): Seed for the random number generator. Defaults to 0.
+
         Returns:
             A new instance of this pipeline with identical components.
         """
@@ -581,6 +589,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         )
 
     def __eq__(self, other):
+        """Check for equality."""
         if not isinstance(other, self.__class__):
             return False
         random_seed_eq = self.random_seed == other.random_seed
@@ -599,9 +608,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return True
 
     def __str__(self):
+        """String representation of the component graph."""
         return self.name
 
     def __repr__(self):
+        """String representation of the component graph."""
+
         def repr_component(parameters):
             return ", ".join(
                 [f"'{key}': {safe_repr(value)}" for key, value in parameters.items()]
@@ -635,9 +647,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return f"pipeline = {(type(self).__name__)}(component_graph={component_dict_str}, {additional_args_str})"
 
     def __iter__(self):
+        """Iterator for the component graph."""
         return self
 
     def __next__(self):
+        """Get the next element in the component graph."""
         return next(self.component_graph)
 
     def _get_feature_provenance(self):
@@ -675,6 +689,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     @staticmethod
     def create_objectives(objectives):
+        """Create objective instances from a list of strings or objective classes."""
         objective_instances = []
         for objective in objectives:
             try:
@@ -689,13 +704,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def can_tune_threshold_with_objective(self, objective):
         """Determine whether the threshold of a binary classification pipeline can be tuned.
 
-        Arguments:
-             pipeline (PipelineBase): Binary classification pipeline.
+        Args:
              objective (ObjectiveBase): Primary AutoMLSearch objective.
 
-         Returns:
+        Returns:
              bool: True if the pipeline threshold can be tuned.
-
         """
         return (
             is_binary(self.problem_type)
@@ -706,18 +719,20 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
     def inverse_transform(self, y):
         """Apply component inverse_transform methods to estimator predictions in reverse order.
 
-        Components that implement inverse_transform are PolynomialDetrender, LabelEncoder (tbd).
+        Components that implement inverse_transform are PolynomialDetrender, LogTransformer, LabelEncoder (tbd).
 
-        Arguments:
-            y (pd.Series): Final component features
+        Args:
+            y (pd.Series): Final component features.
+
+        Returns:
+            pd.Series: The inverse transform of the target.
         """
         return self.component_graph.inverse_transform(y)
 
     def get_hyperparameter_ranges(self, custom_hyperparameters):
-        """
-        Returns hyperparameter ranges from all components as a dictionary.
+        """Returns hyperparameter ranges from all components as a dictionary.
 
-        Arguments:
+        Args:
             custom_hyperparameters (dict): Custom hyperparameters for the pipeline.
 
         Returns:

@@ -1,3 +1,4 @@
+"""Enum defining the supported types of machine learning problems."""
 from enum import Enum
 
 from evalml.utils import classproperty
@@ -20,6 +21,7 @@ class ProblemTypes(Enum):
     """Time series multiclass classification problem."""
 
     def __str__(self):
+        """String representation of the ProblemTypes enum."""
         problem_type_dict = {
             ProblemTypes.BINARY.name: "binary",
             ProblemTypes.MULTICLASS.name: "multiclass",
@@ -39,6 +41,6 @@ class ProblemTypes(Enum):
         """Get a list of all defined problem types.
 
         Returns:
-            list(ProblemTypes): list
+            list(ProblemTypes): List of all defined problem types.
         """
         return list(cls)

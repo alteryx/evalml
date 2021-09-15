@@ -1,3 +1,4 @@
+"""Load and return the wine dataset, which can be used for multiclass classification problems."""
 import woodwork as ww
 
 import evalml

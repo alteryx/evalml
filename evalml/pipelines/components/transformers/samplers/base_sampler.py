@@ -1,3 +1,4 @@
+"""Base Sampler component. Used as the base class of all sampler components."""
 import copy
 from abc import abstractmethod
 
@@ -6,10 +7,9 @@ from evalml.utils.woodwork_utils import infer_feature_types
 
 
 class BaseSampler(Transformer):
-    """
-    Base Sampler component. Used as the base class of all sampler components.
+    """Base Sampler component. Used as the base class of all sampler components.
 
-    Arguments:
+    Args:
         parameters (dict): Dictionary of parameters for the component. Defaults to None.
         component_obj (obj): Third-party objects useful in component implementation. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -21,12 +21,15 @@ class BaseSampler(Transformer):
     def fit(self, X, y):
         """Fits the sampler to the data.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Input features.
             y (pd.Series): Target.
 
         Returns:
             self
+
+        Raises:
+            ValueError: If y is None.
         """
         if y is None:
             raise ValueError("y cannot be None")
@@ -38,7 +41,7 @@ class BaseSampler(Transformer):
     def _initialize_sampler(self, X, y):
         """Helper function to initialize the sampler component object.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Features.
             y (pd.Series): The target data.
         """
@@ -46,11 +49,11 @@ class BaseSampler(Transformer):
     def _prepare_data(self, X, y):
         """Transforms the input data to pandas data structure that our sampler can ingest.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Training features.
             y (pd.Series): Target.
 
-         Returns:
+        Returns:
             pd.DataFrame, pd.Series: Prepared X and y data as pandas types
         """
         X = infer_feature_types(X)
@@ -62,7 +65,7 @@ class BaseSampler(Transformer):
     def transform(self, X, y=None):
         """Transforms the input data by sampling the data.
 
-        Arguments:
+        Args:
             X (pd.DataFrame): Training features.
             y (pd.Series): Target.
 
@@ -75,10 +78,11 @@ class BaseSampler(Transformer):
 
     def _convert_dictionary(self, sampling_dict, y):
         """Converts the provided sampling dictionary from a dictionary of ratios to a dictionary of number of samples.
+
         Expects the provided dictionary keys to be the target values y, and the associated values to be the min:max ratios.
         Converts and returns a dictionary with the same keys, but changes the values to be the number of samples rather than ratio.
 
-        Arguments:
+        Args:
             sampling_dict (dict): The input sampling dictionary passed in from user.
             y (pd.Series): The target values.
 
@@ -110,10 +114,9 @@ class BaseSampler(Transformer):
         return new_dic
 
     def _dictionary_to_params(self, sampling_dict, y):
-        """If a sampling ratio dictionary is provided, add the updated sampling dictionary to the
-        parameters and return the updated parameter dictionary. Otherwise, simply return the current parameters.
+        """If a sampling ratio dictionary is provided, add the updated sampling dictionary to the parameters and return the updated parameter dictionary. Otherwise, simply return the current parameters.
 
-        Arguments:
+        Args:
             sampling_dict (dict): The input sampling dictionary passed in from user.
             y (pd.Series): The target values.
 
@@ -129,4 +132,13 @@ class BaseSampler(Transformer):
         return param_copy
 
     def fit_transform(self, X, y):
+        """Fit and transform data using the sampler component.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series, optional): The target training data of length [n_samples].
+
+        Returns:
+            (pd.DataFrame, pd.Series): Transformed data.
+        """
         return self.fit(X, y).transform(X, y)

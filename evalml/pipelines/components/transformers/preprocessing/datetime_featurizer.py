@@ -1,3 +1,4 @@
+"""Transformer that can automatically extract features from datetime columns."""
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
 
@@ -56,10 +57,9 @@ def _extract_hour(col, encode_as_categories=False):
 
 
 class DateTimeFeaturizer(Transformer):
-    """
-    Transformer that can automatically extract features from datetime columns.
+    """Transformer that can automatically extract features from datetime columns.
 
-    Arguments:
+    Args:
         features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour". Defaults to None.
         encode_as_categories (bool): Whether day-of-week and month features should be encoded as pandas "category" dtype.
             This allows OneHotEncoders to encode these features. Defaults to False.
@@ -111,6 +111,15 @@ class DateTimeFeaturizer(Transformer):
         )
 
     def fit(self, X, y=None):
+        """Fit the datetime featurizer component.
+
+        Args:
+            X (pd.DataFrame): Input features.
+            y (pd.Series, optional): Target data. Ignored.
+
+        Returns:
+            self
+        """
         X = infer_feature_types(X)
         self._date_time_col_names = list(
             X.ww.select("datetime", return_schema=True).columns
@@ -118,10 +127,10 @@ class DateTimeFeaturizer(Transformer):
         return self
 
     def transform(self, X, y=None):
-        """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns
+        """Transforms data X by creating new features using existing DateTime columns, and then dropping those DateTime columns.
 
-        Arguments:
-            X (pd.DataFrame): Data to transform
+        Args:
+            X (pd.DataFrame): Input features.
             y (pd.Series, optional): Ignored.
 
         Returns:
@@ -148,8 +157,8 @@ class DateTimeFeaturizer(Transformer):
         """Gets the categories of each datetime feature.
 
         Returns:
-           Dictionary, where each key-value pair is a column name and a dictionary
-           mapping the unique feature values to their integer encoding.
+            dict: Dictionary, where each key-value pair is a column name and a dictionary
+                mapping the unique feature values to their integer encoding.
         """
         return self._categories
 
