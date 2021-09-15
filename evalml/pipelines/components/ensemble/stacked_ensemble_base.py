@@ -1,3 +1,4 @@
+"""Stacked Ensemble Base."""
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
 from evalml.utils import classproperty
@@ -43,7 +44,7 @@ class StackedEnsembleBase(Estimator):
 
     @property
     def feature_importance(self):
-        """Not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor"""
+        """Not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor."""
         raise NotImplementedError(
             "feature_importance is not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor"
         )

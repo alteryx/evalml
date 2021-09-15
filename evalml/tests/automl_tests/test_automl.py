@@ -5266,6 +5266,7 @@ def test_automl_enesmbler_allowed_component_graphs(
         allowed_component_graphs=component_graphs,
         ensembling=True,
         max_batches=4,
+        verbose=True,
     )
     automl.search()
     assert "Stacked Ensemble Regression Pipeline" in caplog.text
@@ -5289,6 +5290,7 @@ def test_automl_enesmbler_allowed_component_graphs(
         allowed_component_graphs=component_graphs,
         ensembling=True,
         max_batches=4,
+        verbose=True,
     )
     automl.search()
     assert "Stacked Ensemble Regression Pipeline" in caplog.text
