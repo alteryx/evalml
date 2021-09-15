@@ -31,6 +31,7 @@ class Transformer(ComponentBase):
     modifies_features = True
     modifies_target = False
 
+    @abstractmethod
     def transform(self, X, y=None):
         """Transforms data X.
 
@@ -41,18 +42,6 @@ class Transformer(ComponentBase):
         Returns:
             pd.DataFrame: Transformed X
         """
-        X_ww = infer_feature_types(X)
-        if y is not None:
-            y = infer_feature_types(y)
-        try:
-            X_t = self._component_obj.transform(X, y)
-        except AttributeError:
-            raise MethodPropertyNotFoundError(
-                "Transformer requires a transform method or a component_obj that implements transform"
-            )
-        X_t_df = pd.DataFrame(X_t, columns=X_ww.columns, index=X_ww.index)
-        X_t_df.ww.init(schema=X_ww.ww.schema)
-        return X_t_df
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X
@@ -67,15 +56,11 @@ class Transformer(ComponentBase):
         X_ww = infer_feature_types(X)
         if y is not None:
             y_ww = infer_feature_types(y)
+
         try:
-            X_t = self._component_obj.fit_transform(X_ww, y_ww)
-            X_t.ww.init(schema=X_ww.ww.schema)
-            return X_t
-        except AttributeError:
-            try:
-                return self.fit(X, y).transform(X, y)
-            except MethodPropertyNotFoundError as e:
-                raise e
+            return self.fit(X, y).transform(X, y)
+        except MethodPropertyNotFoundError as e:
+            raise e
 
     def _get_feature_provenance(self):
         return {}

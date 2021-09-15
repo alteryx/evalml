@@ -103,6 +103,9 @@ def test_classes():
     class MockTransformer(Transformer):
         name = "Mock Transformer"
 
+        def transform(self, X, y=None):
+            return X
+
     return MockComponent, MockEstimator, MockTransformer
 
 
@@ -534,12 +537,6 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
     X, y = X_y_binary
     MockComponent, MockEstimator, MockTransformer = test_classes
 
-    class MockTransformerWithFit(Transformer):
-        name = "Mock Transformer"
-
-        def fit(self, X, y=None):
-            return self
-
     component = MockComponent()
     with pytest.raises(
         MethodPropertyNotFoundError,
@@ -566,28 +563,18 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
         estimator.feature_importance
 
     transformer = MockTransformer()
-    transformer_with_fit = MockTransformerWithFit()
     transformer._is_fitted = True
     with pytest.raises(
         MethodPropertyNotFoundError,
         match="Component requires a fit method or a component_obj that implements fit",
     ):
         transformer.fit(X, y)
-    with pytest.raises(
-        MethodPropertyNotFoundError,
-        match="Transformer requires a transform method or a component_obj that implements transform",
-    ):
         transformer.transform(X)
     with pytest.raises(
         MethodPropertyNotFoundError,
         match="Component requires a fit method or a component_obj that implements fit",
     ):
         transformer.fit_transform(X)
-    with pytest.raises(
-        MethodPropertyNotFoundError,
-        match="Transformer requires a transform method or a component_obj that implements transform",
-    ):
-        transformer_with_fit.fit_transform(X)
 
 
 def test_component_fit(X_y_binary):
@@ -622,6 +609,9 @@ def test_component_fit_transform(X_y_binary):
         def fit_transform(self, X, y=None):
             return X
 
+        def transform(self, X, y=None):
+            return X
+
         def __init__(self):
             parameters = {}
             super().__init__(parameters=parameters, component_obj=None, random_seed=0)
@@ -632,6 +622,9 @@ def test_component_fit_transform(X_y_binary):
 
         def fit_transform(self, X, y=None):
             raise RuntimeError
+
+        def transform(self, X, y=None):
+            return X
 
         def __init__(self):
             parameters = {}
@@ -651,17 +644,6 @@ def test_component_fit_transform(X_y_binary):
             parameters = {}
             super().__init__(parameters=parameters, component_obj=None, random_seed=0)
 
-    class MockTransformerWithOnlyFit(Transformer):
-        name = "Mock Transformer"
-        hyperparameter_ranges = {}
-
-        def fit(self, X, y=None):
-            return self
-
-        def __init__(self):
-            parameters = {}
-            super().__init__(parameters=parameters, component_obj=None, random_seed=0)
-
     # convert data to pd DataFrame, because the component classes don't
     # standardize to pd DataFrame
     X = pd.DataFrame(X)
@@ -676,10 +658,6 @@ def test_component_fit_transform(X_y_binary):
 
     component = MockTransformerWithFitAndTransform()
     assert isinstance(component.fit_transform(X, y), pd.DataFrame)
-
-    component = MockTransformerWithOnlyFit()
-    with pytest.raises(MethodPropertyNotFoundError):
-        component.fit_transform(X, y)
 
 
 def test_model_family_components(test_classes):
@@ -1004,6 +982,9 @@ def test_transformer_check_for_fit(X_y_binary):
                 random_seed=random_seed,
             )
 
+        def transform(self, X, y=None):
+            return X
+
         def inverse_transform(self, X, y=None):
             return X, y
 
@@ -1028,7 +1009,7 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
         def fit(self, X, y):
             return self
 
-        def transform(self, X):
+        def transform(self, X, y=None):
             df = pd.DataFrame()
             df.ww.init()
             return df
@@ -1039,7 +1020,7 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
         def fit(self, X, y):
             return self
 
-        def transform(self, X):
+        def transform(self, X, y=None):
             df = pd.DataFrame()
             df.ww.init()
             return df
