@@ -3,9 +3,22 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Fixed bug where warnings during ``make_pipeline`` were not being raised to the user :pr:`2765`
     * Changes
         * Changed woodwork initialization to use partial schemas :pr:`2774`
+        * Made ``Transformer.transform()`` an abstract method :pr:`2744`
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.33.0 Sep. 15, 2021**
+    * Enhancements
+    * Fixes
+        * Fixed bug where warnings during ``make_pipeline`` were not being raised to the user :pr:`2765`
+    * Changes
         * Refactored and removed ``SamplerBase`` class :pr:`2775`
     * Documentation Changes
         * Added docstring linting packages ``pydocstyle`` and ``darglint`` to `make-lint` command :pr:`2670`
