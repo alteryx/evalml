@@ -6,8 +6,9 @@ Release Notes
     * Fixes
         * Fixed bug where warnings during ``make_pipeline`` were not being raised to the user :pr:`2765`
     * Changes
-        * Added docstring linting packages ``pydocstyle`` and ``darglint`` to `make-lint` command :pr:`2670`
+        * Refactored and removed ``SamplerBase`` class :pr:`2775`
     * Documentation Changes
+        * Added docstring linting packages ``pydocstyle`` and ``darglint`` to `make-lint` command :pr:`2670`
     * Testing Changes
 
 .. warning::
