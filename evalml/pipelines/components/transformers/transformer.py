@@ -60,6 +60,8 @@ class Transformer(ComponentBase):
         X_ww = infer_feature_types(X)
         if y is not None:
             y_ww = infer_feature_types(y)
+        else:
+            y_ww = y
 
         try:
             return self.fit(X_ww, y_ww).transform(X_ww, y_ww)

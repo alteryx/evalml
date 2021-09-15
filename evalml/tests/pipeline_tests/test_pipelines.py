@@ -920,6 +920,9 @@ def test_no_default_parameters():
             self.c = c
             super().__init__()
 
+        def transform(self, X, y=None):
+            return X
+
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = [MockComponent, "Logistic Regression Classifier"]
 
