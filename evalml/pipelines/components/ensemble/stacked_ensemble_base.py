@@ -27,7 +27,7 @@ class StackedEnsembleBase(Estimator):
         random_seed=0,
         **kwargs,
     ):
-        final_estimator = final_estimator or self._default_final_estimator
+        final_estimator = final_estimator or self._default_final_estimator()
 
         parameters = {
             "final_estimator": final_estimator,
@@ -49,13 +49,13 @@ class StackedEnsembleBase(Estimator):
         )
 
     @classproperty
-    def default_parameters(self, cls):
+    def default_parameters(cls):
         """Returns the default parameters for stacked ensemble classes.
 
         Returns:
             dict: default parameters for this component.
         """
         return {
-            "final_estimator": self._default_final_estimator,
+            "final_estimator": cls._default_final_estimator,
             "n_jobs": -1,
         }

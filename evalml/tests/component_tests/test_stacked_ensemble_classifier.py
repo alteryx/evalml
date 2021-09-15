@@ -21,7 +21,7 @@ def test_stacked_model_family():
 
 def test_stacked_default_parameters():
     assert StackedEnsembleClassifier.default_parameters == {
-        "final_estimator": None,
+        "final_estimator": StackedEnsembleClassifier._default_final_estimator,
         "n_jobs": -1,
     }
 

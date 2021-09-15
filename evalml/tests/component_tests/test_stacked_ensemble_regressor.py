@@ -17,7 +17,7 @@ def test_stacked_model_family():
 
 def test_stacked_default_parameters():
     assert StackedEnsembleRegressor.default_parameters == {
-        "final_estimator": None,
+        "final_estimator": StackedEnsembleRegressor._default_final_estimator,
         "n_jobs": -1,
     }
 

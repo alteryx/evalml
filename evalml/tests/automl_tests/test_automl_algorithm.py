@@ -16,6 +16,9 @@ class DummyAlgorithm(AutoMLAlgorithm):
             return self._dummy_pipelines.pop()
         raise StopIteration("No more pipelines!")
 
+    def _transform_parameters(self, pipeline, proposed_parameters):
+        return super()._transform_parameters(pipeline, proposed_parameters)
+
 
 def test_automl_algorithm_dummy():
     algo = DummyAlgorithm()
