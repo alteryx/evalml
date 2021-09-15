@@ -50,13 +50,9 @@ class FeatureSelector(Transformer):
                 "Feature selector requires a transform method or a component_obj that implements transform"
             )
 
-        X_dtypes = X_ww.dtypes.to_dict()
         selected_col_names = self.get_names()
-        col_types = {key: X_dtypes[key] for key in selected_col_names}
-        features = pd.DataFrame(
-            X_t, columns=selected_col_names, index=X_ww.index
-        ).astype(col_types)
-        features.ww.init(schema=X_ww.ww.schema)
+        features = pd.DataFrame(X_t, columns=selected_col_names, index=X_ww.index)
+        features.ww.init(schema=X_ww.ww.schema._get_subset_schema(selected_col_names))
         return features
 
     def fit_transform(self, X, y=None):
