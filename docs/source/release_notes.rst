@@ -19,6 +19,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Fixed bug where warnings during ``make_pipeline`` were not being raised to the user :pr:`2765`
+        * Fixed bug where ``score_pipelines`` method of ``AutoMLSearch`` would not work for time series problems :pr:`2786`
     * Changes
         * Refactored and removed ``SamplerBase`` class :pr:`2775`
     * Documentation Changes
