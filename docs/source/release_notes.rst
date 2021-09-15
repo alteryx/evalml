@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
+        * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -17,7 +18,6 @@ Release Notes
     * Enhancements
     * Fixes
         * Fixed bug where warnings during ``make_pipeline`` were not being raised to the user :pr:`2765`
-        * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
     * Changes
         * Refactored and removed ``SamplerBase`` class :pr:`2775`
     * Documentation Changes
