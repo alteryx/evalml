@@ -14,7 +14,7 @@ from evalml.pipelines import (
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline,
 )
-from evalml.pipelines.components import DelayedFeatureTransformer
+from evalml.pipelines.components import DelayedFeatureTransformer, Transformer
 from evalml.pipelines.utils import _get_pipeline_base_class
 from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes
@@ -984,6 +984,66 @@ def test_binary_predict_pipeline_use_objective(
         X_validation, y_validation, ["precision", "auc", fraud_cost], X_train, y_train
     )
     mock_decision_function.assert_called()
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+@patch("evalml.pipelines.LogisticRegressionClassifier.fit")
+@patch("evalml.pipelines.components.ElasticNetRegressor.fit")
+def test_time_series_pipeline_fit_with_transformed_target(
+    mock_en_fit, mock_lr_fit, problem_type, ts_data
+):
+    class AddTwo(Transformer):
+        """Add Two to target for testing."""
+
+        modifies_target = True
+        modifies_features = False
+
+        name = "AddTwo"
+        hyperparameter_ranges = {}
+
+        def __init__(self, drop_old_columns=True, random_seed=0):
+            super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
+
+        def fit(self, X, y):
+            return self
+
+        def transform(self, X, y):
+            return infer_feature_types(X), infer_feature_types(y) + 2
+
+    X, y = ts_data
+    y = y % 2
+
+    if is_classification(problem_type):
+        estimator = "Logistic Regression Classifier"
+        mock_to_check = mock_lr_fit
+    else:
+        estimator = "Elastic Net Regressor"
+        mock_to_check = mock_en_fit
+
+    pipeline_class = _get_pipeline_base_class(problem_type)
+    pipeline = pipeline_class(
+        component_graph={
+            "AddTwo": [AddTwo, "X", "y"],
+            "Estimator": [estimator, "X", "AddTwo.y"],
+        },
+        parameters={
+            "pipeline": {
+                "gap": 0,
+                "max_delay": 2,
+                "date_index": None,
+                "forecast_horizon": 3,
+            },
+        },
+    )
+    pipeline.fit(X, y)
+    pd.testing.assert_series_equal(mock_to_check.call_args[0][1], y + 2)
 
 
 def test_time_series_pipeline_with_detrender(ts_data):
