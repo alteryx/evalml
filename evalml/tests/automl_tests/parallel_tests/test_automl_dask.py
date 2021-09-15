@@ -294,6 +294,11 @@ def test_score_pipelines_passes_X_train_y_train(
     X_test, y_test = X[50:], y[50:]
     X_train, y_train = pd.DataFrame(X_train), pd.Series(y_train)
     X_test, y_test = pd.DataFrame(X_test), pd.Series(y_test)
+
+    if is_multiclass(problem_type) or is_binary(problem_type):
+        y_train = y_train.astype("int64")
+        y_test = y_test.astype("int64")
+
     automl = AutoMLSearch(
         X_train=X_train,
         y_train=y_train,
