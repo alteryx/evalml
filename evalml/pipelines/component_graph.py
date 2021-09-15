@@ -203,7 +203,7 @@ class ComponentGraph:
             y (pd.Series): The target training data of length [n_samples].
 
         Returns:
-            Tuple: pd.DataFrame, pd.Series: Transformed features and target.
+            Tuple (pd.DataFrame, pd.Series): Transformed features and target.
         """
         return self._fit_transform_features_helper(True, X, y)
 
