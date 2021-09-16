@@ -164,4 +164,4 @@ def test_stacked_same_model_family():
 
     assert "Linear Pipeline - Elastic Net" in pipeline.component_graph.compute_order
     assert "Linear Pipeline 2 - Elastic Net" in pipeline.component_graph.compute_order
-    assert "Linear Pipeline 1 - EN" in pipeline.component_graph.compute_order
+    assert "Linear Pipeline - EN" in pipeline.component_graph.compute_order
