@@ -3,6 +3,8 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
+        * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
     * Changes
         * Changed woodwork initialization to use partial schemas :pr:`2774`
         * Made ``Transformer.transform()`` an abstract method :pr:`2744`

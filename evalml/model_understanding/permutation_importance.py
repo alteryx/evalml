@@ -325,5 +325,6 @@ def _fast_scorer(pipeline, features, X, y, objective):
         preds = pipeline.estimator.predict_proba(features)
     else:
         preds = pipeline.estimator.predict(features)
+    preds = pipeline.inverse_transform(preds)
     score = pipeline._score(X, y, preds, objective)
     return score if objective.greater_is_better else -score
