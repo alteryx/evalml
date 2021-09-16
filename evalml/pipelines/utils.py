@@ -368,6 +368,9 @@ def _make_stacked_ensemble_pipeline(
                     if i == 0:
                         fitted_comp = handle_component_class(item)
                         new_component_list.append(fitted_comp)
+                        parameters[new_component_name] = pipeline.parameters.get(
+                            name, {}
+                        )
                     elif isinstance(item, str) and item not in ["X", "y"]:
                         new_component_list.append(
                             _make_new_component_name(

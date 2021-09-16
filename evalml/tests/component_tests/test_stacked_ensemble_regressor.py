@@ -4,10 +4,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from evalml import pipelines
 from evalml.model_family import ModelFamily
 from evalml.pipelines import RegressionPipeline
 from evalml.pipelines.components import RandomForestRegressor
 from evalml.pipelines.components.ensemble import StackedEnsembleRegressor
+from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
 
 
@@ -111,3 +113,56 @@ def test_stacked_feature_importance(mock_fit, X_y_regression):
         match="feature_importance is not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor",
     ):
         clf.feature_importance
+
+
+def test_stacked_same_model_family():
+    graph_en = {
+        "Imputer": ["Imputer", "X", "y"],
+        "Target Imputer": ["Target Imputer", "X", "y"],
+        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "Target Imputer.y"],
+        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest": ["Random Forest Regressor", "OneHot_RandomForest.x", "y"],
+        "Elastic Net": ["Elastic Net Regressor", "OneHot_ElasticNet.x", "y"],
+        "EN": [
+            "Elastic Net Regressor",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "y",
+        ],
+    }
+
+    graph_rf = {
+        "Imputer": ["Imputer", "X", "y"],
+        "Target Imputer": ["Target Imputer", "X", "y"],
+        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "Target Imputer.y"],
+        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest": ["Random Forest Regressor", "OneHot_RandomForest.x", "y"],
+        "Elastic Net": ["Elastic Net Regressor", "OneHot_ElasticNet.x", "y"],
+        "Linear Regressor": [
+            "Linear Regressor",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "y",
+        ],
+    }
+
+    RegressionPipeline(component_graph=graph_en)
+    RegressionPipeline(component_graph=graph_rf)
+
+    input_pipelines = [
+        RegressionPipeline(component_graph=graph_en),
+        RegressionPipeline(component_graph=graph_rf),
+    ]
+
+    pipeline = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines,
+        problem_type=ProblemTypes.REGRESSION,
+        use_sklearn=False,
+    )
+
+    assert "Linear Pipeline - Imputer" in pipeline.component_graph.compute_order
+    assert "Linear Pipeline 2 - Imputer" in pipeline.component_graph.compute_order
+
+    assert "Linear Pipeline - Elastic Net" in pipeline.component_graph.compute_order
+    assert "Linear Pipeline 2 - Elastic Net" in pipeline.component_graph.compute_order
+    assert "Linear Pipeline 1 - EN" in pipeline.component_graph.compute_order
