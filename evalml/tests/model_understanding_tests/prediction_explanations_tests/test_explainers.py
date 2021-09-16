@@ -139,7 +139,7 @@ def test_time_series_training_target_and_training_data_are_not_None(
     mock_ts_pipeline = MagicMock(problem_type=problem_type)
 
     if training_data is not None and training_target is not None:
-        pytest.xfail("No exception raised in this  case")
+        pytest.xfail("No exception raised in this case")
 
     with pytest.raises(
         ValueError, match="training_target and training_data are not None"
