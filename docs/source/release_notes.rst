@@ -6,6 +6,7 @@ Release Notes
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
+        * Fixed bug where ``score_pipelines`` method of ``AutoMLSearch`` would not work for time series problems :pr:`2786`
     * Changes
     * Documentation Changes
     * Testing Changes

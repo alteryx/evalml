@@ -92,7 +92,9 @@ class EngineBase(ABC):
         """Submit job for pipeline training."""
 
     @abstractmethod
-    def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
+    def submit_scoring_job(
+        self, automl_config, pipeline, X, y, objectives, X_train=None, y_train=None
+    ):
         """Submit job for pipeline scoring."""
 
 
@@ -326,14 +328,18 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
     )
 
 
-def score_pipeline(pipeline, X, y, objectives, X_schema=None, y_schema=None):
+def score_pipeline(
+    pipeline, X, y, objectives, X_train=None, y_train=None, X_schema=None, y_schema=None
+):
     """Wrap around pipeline.score method to make it easy to score pipelines with dask.
 
     Args:
         pipeline (PipelineBase): The pipeline to score.
         X (pd.DataFrame): Features to score on.
-        y (pd.Series): Target used to calcualte scores.
+        y (pd.Series): Target used to calculate scores.
         objectives (list[ObjectiveBase]): List of objectives to score on.
+        X_train (pd.DataFrame): Training features. Used for feature engineering in time series.
+        y_train (pd.Series): Training target. Used for feature engineering in time series.
         X_schema (ww.TableSchema): Schema for features. Defaults to None.
         y_schema (ww.ColumnSchema): Schema for columns. Defaults to None.
 
@@ -344,4 +350,4 @@ def score_pipeline(pipeline, X, y, objectives, X_schema=None, y_schema=None):
         X.ww.init(schema=X_schema)
     if y_schema:
         y.ww.init(schema=y_schema)
-    return pipeline.score(X, y, objectives)
+    return pipeline.score(X, y, objectives, X_train=X_train, y_train=y_train)

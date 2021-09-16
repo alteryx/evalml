@@ -141,7 +141,9 @@ class DaskEngine(EngineBase):
         )
         return DaskComputation(dask_future)
 
-    def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
+    def submit_scoring_job(
+        self, automl_config, pipeline, X, y, objectives, X_train=None, y_train=None
+    ):
         """Send scoring job to cluster.
 
         Args:
@@ -149,6 +151,8 @@ class DaskEngine(EngineBase):
             pipeline (pipeline.PipelineBase): Pipeline to train.
             X (pd.DataFrame): Input data for modeling.
             y (pd.Series): Target data for modeling.
+            X_train (pd.DataFrame): Training features. Used for feature engineering in time series.
+            y_train (pd.Series): Training target. Used for feature engineering in time series.
             objectives (list[ObjectiveBase]): List of objectives to score on.
 
         Returns:
@@ -159,6 +163,7 @@ class DaskEngine(EngineBase):
         X_schema = X.ww.schema
         y_schema = y.ww.schema
         X, y = self.send_data_to_cluster(X, y)
+        X_train, y_train = self.send_data_to_cluster(X_train, y_train)
         dask_future = self.client.submit(
             score_pipeline,
             pipeline=pipeline,
@@ -167,6 +172,8 @@ class DaskEngine(EngineBase):
             objectives=objectives,
             X_schema=X_schema,
             y_schema=y_schema,
+            X_train=X_train,
+            y_train=y_train,
         )
         computation = DaskComputation(dask_future)
         computation.meta_data["pipeline_name"] = pipeline.name
