@@ -86,8 +86,8 @@ class LightGBMClassifier(Estimator):
     def __init__(
         self,
         boosting_type="gbdt",
-        learning_rate=0.1,
-        n_estimators=100,
+        learning_rate=0.5,
+        n_estimators=10,
         max_depth=0,
         num_leaves=31,
         min_child_samples=20,

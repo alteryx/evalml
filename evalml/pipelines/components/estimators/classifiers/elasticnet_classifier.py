@@ -61,7 +61,7 @@ class ElasticNetClassifier(Estimator):
         self,
         penalty="elasticnet",
         C=1.0,
-        l1_ratio=0.15,
+        l1_ratio=0.35,
         multi_class="auto",
         solver="saga",
         n_jobs=-1,

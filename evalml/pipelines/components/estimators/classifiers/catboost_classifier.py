@@ -57,9 +57,9 @@ class CatBoostClassifier(Estimator):
 
     def __init__(
         self,
-        n_estimators=10,
+        n_estimators=5,
         eta=0.03,
-        max_depth=6,
+        max_depth=4,
         bootstrap_type=None,
         silent=True,
         allow_writing_files=False,

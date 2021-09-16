@@ -58,7 +58,7 @@ class LogisticRegressionClassifier(Estimator):
 
     def __init__(
         self,
-        penalty="l2",
+        penalty="l1",
         C=1.0,
         multi_class="auto",
         solver="lbfgs",
