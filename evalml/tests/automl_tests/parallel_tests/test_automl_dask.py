@@ -290,10 +290,8 @@ def test_score_pipelines_passes_X_train_y_train(
     else:
         X, y = X_y_regression
 
-    X_train, y_train = X[:50], y[:50]
-    X_test, y_test = X[50:], y[50:]
-    X_train, y_train = pd.DataFrame(X_train), pd.Series(y_train)
-    X_test, y_test = pd.DataFrame(X_test), pd.Series(y_test)
+    X_train, y_train = pd.DataFrame(X[:50]), pd.Series(y[:50])
+    X_test, y_test = pd.DataFrame(X[50:]), pd.Series(y[50:])
 
     if is_multiclass(problem_type) or is_binary(problem_type):
         y_train = y_train.astype("int64")
