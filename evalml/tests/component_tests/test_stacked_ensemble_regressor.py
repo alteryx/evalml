@@ -4,7 +4,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml import pipelines
 from evalml.model_family import ModelFamily
 from evalml.pipelines import RegressionPipeline
 from evalml.pipelines.components import RandomForestRegressor
