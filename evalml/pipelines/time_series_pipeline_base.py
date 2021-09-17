@@ -113,7 +113,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             raise ValueError(
                 f"Holdout data X must have {self.forecast_horizon}  rows (value of forecast horizon) "
                 "and its index needs to "
-                f"start {self.gap} values ahead of the training index. "
+                f"start {self.gap + 1} values ahead of the training index. "
                 f"Data received - Length X: {len(X)}, "
                 f"X index start: {X.index[0]}, X_train index end {X.index[-1]}."
             )

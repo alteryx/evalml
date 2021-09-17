@@ -381,7 +381,6 @@ def test_predict_and_predict_in_sample(
     preds_in_sample = pl.predict_in_sample(
         X.iloc[20:], target.iloc[20:], X.iloc[:20], target.iloc[:20]
     )
-    breakpoint()
     assert_frame_equal(mock_to_check.call_args[0][0], expected_features_in_sample)
     mock_to_check.reset_mock()
     preds = pl.predict(
@@ -805,8 +804,9 @@ def test_binary_classification_predictions_thresholded_properly(
     mock_objs = [mock_decode, mock_predict]
     mock_decode.return_value = ww.init_series(pd.Series([0, 1]))
     X, y = X_y_binary
-    X_train, y_train = X[:60], y[:60]
-    X_validation = X[60:63]
+    X, y = pd.DataFrame(X), pd.Series(y)
+    X_train, y_train = X.iloc[:60], y.iloc[:60]
+    X_validation = X.iloc[60:63]
     binary_pipeline = dummy_ts_binary_pipeline_class(
         parameters={
             "Logistic Regression Classifier": {"n_jobs": 1},
@@ -869,6 +869,7 @@ def test_binary_predict_pipeline_objective_mismatch(
     X_y_binary, dummy_ts_binary_pipeline_class
 ):
     X, y = X_y_binary
+    X, y = pd.DataFrame(X), pd.Series(y)
     binary_pipeline = dummy_ts_binary_pipeline_class(
         parameters={
             "Logistic Regression Classifier": {"n_jobs": 1},
@@ -946,8 +947,9 @@ def test_time_series_pipeline_not_fitted_error(
             }
         )
 
-    X_train, y_train = X[:80], y[:80]
-    X_holdout = X[80:]
+    X, y = pd.DataFrame(X), pd.Series(y)
+    X_train, y_train = X.iloc[:80], y.iloc[:80]
+    X_holdout = X.iloc[80:]
 
     with pytest.raises(PipelineNotYetFittedError):
         clf.predict(X_holdout, None, X_train, y_train)
