@@ -237,7 +237,7 @@ def test_order_x_and_y():
         "OHE": [OneHotEncoder, "Imputer.x", "y"],
         "Random Forest": [RandomForestClassifier, "OHE.x", "y"],
     }
-    component_graph = ComponentGraph(graph).instantiate({})
+    component_graph = ComponentGraph(graph).instantiate()
     assert component_graph.compute_order == ["Imputer", "OHE", "Random Forest"]
 
 
@@ -289,10 +289,14 @@ def test_instantiate_with_parameters(example_graph):
     assert component_graph.get_component("Elastic Net").parameters["max_iter"] == 100
 
 
-def test_instantiate_without_parameters(example_graph):
+@pytest.mark.parametrize("parameters", [None, {}])
+def test_instantiate_without_parameters(parameters, example_graph):
     graph = example_graph
     component_graph = ComponentGraph(graph)
-    component_graph.instantiate({})
+    if parameters is not None:
+        component_graph.instantiate(parameters)
+    else:
+        component_graph.instantiate()
     assert (
         component_graph.get_component("OneHot_RandomForest").parameters["top_n"] == 10
     )
@@ -314,7 +318,7 @@ def test_instantiate_without_parameters(example_graph):
 
 def test_reinstantiate(example_graph):
     component_graph = ComponentGraph(example_graph)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     with pytest.raises(ValueError, match="Cannot reinstantiate a component graph"):
         component_graph.instantiate({"OneHot": {"top_n": 7}})
 
@@ -363,7 +367,7 @@ def test_get_estimators(example_graph):
     with pytest.raises(ValueError, match="Cannot get estimators until"):
         component_graph.get_estimators()
 
-    component_graph.instantiate({})
+    component_graph.instantiate()
     assert component_graph.get_estimators() == [
         RandomForestClassifier(),
         ElasticNetClassifier(),
@@ -371,7 +375,7 @@ def test_get_estimators(example_graph):
     ]
 
     component_graph = ComponentGraph({"Imputer": ["Imputer", "X", "y"]})
-    component_graph.instantiate({})
+    component_graph.instantiate()
     assert component_graph.get_estimators() == []
 
 
@@ -393,7 +397,7 @@ def test_parents(example_graph):
     with pytest.raises(ValueError, match="not in the graph"):
         component_graph.get_inputs("Fake component")
 
-    component_graph.instantiate({})
+    component_graph.instantiate()
     assert component_graph.get_inputs("Imputer") == ["X", "y"]
     assert component_graph.get_inputs("OneHot_RandomForest") == ["Imputer.x", "y"]
     assert component_graph.get_inputs("OneHot_ElasticNet") == ["Imputer.x", "y"]
@@ -419,7 +423,7 @@ def test_get_last_component(example_graph):
     component_graph = ComponentGraph(example_graph)
     assert component_graph.get_last_component() == LogisticRegressionClassifier
 
-    component_graph.instantiate({})
+    component_graph.instantiate()
     assert component_graph.get_last_component() == LogisticRegressionClassifier()
 
     component_graph = ComponentGraph({"Imputer": [Imputer, "X", "y"]})
@@ -441,7 +445,7 @@ def test_fit_component_graph(
     mock_fit_transform.return_value = pd.DataFrame(X)
     mock_predict_proba.return_value = pd.DataFrame(y)
     mock_predict_proba.return_value.ww.init()
-    component_graph = ComponentGraph(example_graph).instantiate({})
+    component_graph = ComponentGraph(example_graph).instantiate()
     component_graph.fit(X, y)
 
     assert mock_fit_transform.call_count == 3
@@ -467,7 +471,7 @@ def test_fit_correct_inputs(
     expected_y = pd.Series(index=y.index).fillna(0)
     mock_imputer_fit_transform.return_value = tuple((expected_x, expected_y))
     mock_ohe_fit_transform.return_value = expected_x
-    component_graph = ComponentGraph(graph).instantiate({})
+    component_graph = ComponentGraph(graph).instantiate()
     component_graph.fit(X, y)
     assert_frame_equal(expected_x, mock_ohe_fit_transform.call_args[0][0])
     assert_series_equal(expected_y, mock_ohe_fit_transform.call_args[0][1])
@@ -481,7 +485,7 @@ def test_component_graph_fit_features(
 ):
     X, y = X_y_binary
     component_graph = ComponentGraph(example_graph)
-    component_graph.instantiate({})
+    component_graph.instantiate()
 
     mock_X_t = pd.DataFrame(np.ones(pd.DataFrame(X).shape))
     mock_fit_transform.return_value = mock_X_t
@@ -504,7 +508,7 @@ def test_predict(mock_predict, mock_predict_proba, mock_fit, example_graph, X_y_
     mock_predict_proba.return_value = pd.DataFrame(y)
     mock_predict_proba.return_value.ww.init()
     mock_predict.return_value = pd.Series(y)
-    component_graph = ComponentGraph(example_graph).instantiate({})
+    component_graph = ComponentGraph(example_graph).instantiate()
     component_graph.fit(X, y)
 
     component_graph.predict(X)
@@ -532,7 +536,7 @@ def test_predict_multiclass(
     )
     mock_predict_proba.return_value.ww.init()
     mock_predict.return_value = pd.Series(y)
-    component_graph = ComponentGraph(example_graph).instantiate({})
+    component_graph = ComponentGraph(example_graph).instantiate()
     component_graph.fit(X, y)
     final_estimator_input = component_graph.compute_final_component_features(X, y)
     assert final_estimator_input.columns.to_list() == [
@@ -564,7 +568,7 @@ def test_predict_regression(
     X, y = X_y_multi
     mock_predict.return_value = pd.Series(y)
     mock_predict_proba.side_effect = MethodPropertyNotFoundError
-    component_graph = ComponentGraph(example_regression_graph).instantiate({})
+    component_graph = ComponentGraph(example_regression_graph).instantiate()
     component_graph.fit(X, y)
     final_estimator_input = component_graph.compute_final_component_features(X, y)
     assert final_estimator_input.columns.to_list() == [
@@ -605,7 +609,7 @@ def test_predict_repeat_estimator(
         ],
     }
     component_graph = ComponentGraph(graph)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     component_graph.fit(X, y)
 
     assert (
@@ -648,7 +652,7 @@ def test_compute_final_component_features(
             "Col 1 Elastic Net.x": np.ones(X.shape[0]),
         }
     )
-    component_graph = ComponentGraph(example_graph).instantiate({})
+    component_graph = ComponentGraph(example_graph).instantiate()
     component_graph.fit(X, y)
 
     X_t = component_graph.compute_final_component_features(X)
@@ -664,7 +668,7 @@ def test_compute_final_component_features_single_component(mock_transform, X_y_b
     mock_transform.return_value = X
     component_graph = ComponentGraph(
         {"Dummy Component": [DummyTransformer, "X", "y"]}
-    ).instantiate({})
+    ).instantiate()
     component_graph.fit(X, y)
 
     X_t = component_graph.compute_final_component_features(X)
@@ -679,7 +683,7 @@ def test_fit_y_parent(mock_fit_transform, X_y_binary):
         "OHE": [OneHotEncoder, "Imputer.x", "y"],
         "Random Forest": [RandomForestClassifier, "OHE.x", "y"],
     }
-    component_graph = ComponentGraph(graph).instantiate({})
+    component_graph = ComponentGraph(graph).instantiate()
     mock_fit_transform.return_value = tuple((pd.DataFrame(X), pd.Series(y)))
 
     component_graph.fit(X, y)
@@ -690,7 +694,7 @@ def test_predict_empty_graph(X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
     component_graph = ComponentGraph()
-    component_graph.instantiate({})
+    component_graph.instantiate()
 
     component_graph.fit(X, y)
     X_t = component_graph.transform(X, y)
@@ -760,7 +764,7 @@ def test_computation_input_custom_index(index, example_graph):
     X.ww.init(logical_types={"categories": "categorical"})
 
     component_graph = ComponentGraph(example_graph)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     component_graph.fit(X, y)
 
     X_t = component_graph.predict(X)
@@ -816,7 +820,7 @@ def test_component_graph_evaluation_plumbing(
         ],
     }
     component_graph = ComponentGraph(graph)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     X = pd.DataFrame({"feature1": np.zeros(6), "feature2": np.zeros(6)})
     y = pd.Series(np.zeros(6))
     component_graph.fit(X, y)
@@ -1031,7 +1035,7 @@ def test_component_graph_dataset_with_different_types():
     )
 
     component_graph = ComponentGraph(graph)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     assert component_graph.input_feature_names == {}
     component_graph.fit(X, y)
 
@@ -1405,7 +1409,7 @@ def test_component_graph_get_inputs_with_sampler():
     }
 
     component_graph = ComponentGraph(graph)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     assert component_graph.get_inputs("Imputer") == ["X", "y"]
     assert component_graph.get_inputs("OneHot") == ["Imputer.x", "y"]
     assert component_graph.get_inputs("Undersampler") == ["OneHot.x", "y"]
@@ -1447,7 +1451,7 @@ def test_component_graph_dataset_with_target_imputer():
     }
 
     component_graph = ComponentGraph(graph)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     assert component_graph.get_inputs("Target Imputer") == ["X", "y"]
     assert component_graph.get_inputs("OneHot") == [
         "Target Imputer.x",
@@ -1491,7 +1495,7 @@ def test_component_graph_sampler_y_passes(mock_estimator_fit):
     }
 
     component_graph = ComponentGraph(component_graph)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     component_graph.fit(X, y)
     assert len(mock_estimator_fit.call_args[0][0]) == len(
         mock_estimator_fit.call_args[0][1]
@@ -1535,11 +1539,11 @@ def test_component_graph_equality(example_graph):
         same_graph_different_order, random_seed=0
     )
 
-    component_graph.instantiate({})
-    component_graph_eq.instantiate({})
-    component_graph_different_seed.instantiate({})
-    component_graph_not_eq.instantiate({})
-    component_graph_different_order.instantiate({})
+    component_graph.instantiate()
+    component_graph_eq.instantiate()
+    component_graph_different_seed.instantiate()
+    component_graph_not_eq.instantiate()
+    component_graph_different_order.instantiate()
 
     assert component_graph == component_graph
     assert component_graph == component_graph_eq
@@ -1583,7 +1587,7 @@ def test_component_graph_equality_same_graph():
 @pytest.mark.parametrize("return_dict", [True, False])
 def test_describe_component_graph(return_dict, example_graph, caplog):
     component_graph = ComponentGraph(example_graph, random_seed=0)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     expected_component_graph_dict = {
         "Imputer": {
             "name": "Imputer",
@@ -1920,7 +1924,7 @@ def test_component_graph_inverse_transform(
     X, y = X_y_regression
     y = pd.Series(np.abs(y))
     X = pd.DataFrame(X)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     component_graph.fit(X, y)
     predictions = component_graph.predict(X)
     answer = component_graph.inverse_transform(predictions)
@@ -1950,7 +1954,7 @@ def test_final_component_features_does_not_have_target():
             ],
         }
     )
-    cg.instantiate({})
+    cg.instantiate()
     cg.fit(X, y)
 
     final_features = cg.compute_final_component_features(X, y)
@@ -1986,7 +1990,7 @@ def test_component_graph_with_X_y_inputs_X(mock_fit):
     }
 
     component_graph = ComponentGraph(graph)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     mock_fit.return_value = X
     assert component_graph.get_inputs("DummyColumnNameTransformer") == ["X", "y"]
     assert component_graph.get_inputs("Imputer") == [
@@ -2023,7 +2027,7 @@ def test_component_graph_with_X_y_inputs_y(mock_fit, mock_fit_transform):
     }
     mock_fit_transform.return_value = X
     component_graph = ComponentGraph(graph)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     assert component_graph.get_inputs("Log") == ["X", "y"]
     assert component_graph.get_inputs("Imputer") == ["Log.x", "y"]
     assert component_graph.get_inputs("Random Forest") == ["Imputer.x", "Log.y"]
@@ -2218,7 +2222,7 @@ def test_component_graph_compute_final_component_features_with_sampler(
     }
 
     component_graph = ComponentGraph(component_graph)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     component_graph.fit(X, y)
     assert len(mock_estimator_fit.call_args[0][0]) == len(
         mock_estimator_fit.call_args[0][1]
@@ -2254,7 +2258,7 @@ def test_component_graph_transform(
     mock_rf_predict.return_value = y
 
     component_graph = ComponentGraph(component_dict)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     component_graph.fit(X, y)
     transformed_X = component_graph.transform(X, y)
     assert_frame_equal(transformed_X, dummy_return_value)
@@ -2265,7 +2269,7 @@ def test_component_graph_transform(
         "OHE": ["One Hot Encoder", "Random Forest Classifier.x", "y"],
     }
     component_graph = ComponentGraph(component_dict_with_estimator)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     component_graph.fit(X, y)
     transformed_X = component_graph.transform(X, y)
     assert_frame_equal(transformed_X, dummy_return_value)
@@ -2295,7 +2299,7 @@ def test_component_graph_transform_with_target_transformer(
     mock_target_imputer_transform.return_value = tuple([X, y])
 
     component_graph = ComponentGraph(component_dict)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     component_graph.fit(X, y)
     transformed = component_graph.transform(X, y)
     assert_frame_equal(transformed[0], X)
@@ -2310,7 +2314,7 @@ def test_component_graph_transform_with_estimator_end(X_y_binary):
         "RF": ["Random Forest Classifier", "OHE.x", "y"],
     }
     component_graph = ComponentGraph(component_dict)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     component_graph.fit(X, y)
     with pytest.raises(
         ValueError,
@@ -2328,7 +2332,7 @@ def test_component_graph_predict_with_transformer_end(X_y_binary):
         "OHE": ["One Hot Encoder", "Imputer.x", "y"],
     }
     component_graph = ComponentGraph(component_dict)
-    component_graph.instantiate({})
+    component_graph.instantiate()
     component_graph.fit(X, y)
     with pytest.raises(
         ValueError,

@@ -132,13 +132,13 @@ class ComponentGraph:
                 defaults[component.name] = component.default_parameters
         return defaults
 
-    def instantiate(self, parameters):
+    def instantiate(self, parameters=None):
         """Instantiates all uninstantiated components within the graph using the given parameters. An error will be raised if a component is already instantiated but the parameters dict contains arguments for that component.
 
         Args:
             parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
                 An empty dictionary {} or None implies using all default values for component parameters. If a component
-                in the component graph is already instantiated, it will not use any of its parameters defined in this dictionary.
+                in the component graph is already instantiated, it will not use any of its parameters defined in this dictionary. Defaults to None.
 
         Returns:
             self

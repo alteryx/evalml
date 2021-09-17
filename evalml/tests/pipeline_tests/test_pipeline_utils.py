@@ -83,6 +83,16 @@ def get_test_data_from_configuration():
                     "https://github.com/alteryx/featuretools",
                 ]
                 * 2,
+                "ip": [
+                    "0.0.0.0",
+                    "1.1.1.101",
+                    "1.1.101.1",
+                    "1.101.1.1",
+                    "101.1.1.1",
+                    "192.168.1.1",
+                    "255.255.255.255",
+                ]
+                * 2,
             }
         )
         y = pd.Series([0, 0, 1, 0, 0, 1, 1] * 2)
@@ -128,10 +138,12 @@ def get_test_data_from_configuration():
         ("only text", ["text"]),
         ("only dates", ["dates"]),
         ("only numerical", ["numerical"]),
+        ("only ip", ["ip"]),
         ("only all_null", ["all_null"]),
         ("only categorical", ["categorical"]),
         ("text with other features", ["text", "numerical", "categorical"]),
         ("url with other features", ["url", "numerical", "categorical"]),
+        ("ip with other features", ["ip", "numerical", "categorical"]),
         ("email with other features", ["email", "numerical", "categorical"]),
     ],
 )
@@ -177,10 +189,9 @@ def test_make_pipeline(
                 [OneHotEncoder]
                 if estimator_class.model_family != ModelFamily.CATBOOST
                 and (
-                    "categorical" in column_names
-                    or (
-                        any(ltype in column_names for ltype in ["url", "email"])
-                        and input_type == "ww"
+                    any(
+                        ltype in column_names
+                        for ltype in ["url", "email", "categorical"]
                     )
                 )
                 else []
@@ -209,18 +220,19 @@ def test_make_pipeline(
                 else []
             )
             email_featurizer = [EmailFeaturizer] if "email" in column_names else []
-            url_featurizer = (
-                [URLFeaturizer] if "url" in column_names and input_type == "ww" else []
-            )
+            url_featurizer = [URLFeaturizer] if "url" in column_names else []
             imputer = (
                 []
-                if (column_names == ["dates"] and input_type == "ww")
-                or ((column_names in [["text"], ["dates"]]) and input_type == "pd")
+                if ((column_names in [["ip"], ["dates"]]) and input_type == "ww")
+                or (
+                    (column_names in [["ip"], ["text"], ["dates"]])
+                    and input_type == "pd"
+                )
                 else [Imputer]
             )
             drop_col = (
                 [DropColumns]
-                if any(ltype in column_names for ltype in ["url", "text"])
+                if any(ltype in column_names for ltype in ["text"])
                 and input_type == "pd"
                 else []
             )

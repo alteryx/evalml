@@ -19,7 +19,10 @@ def test_model_family():
 
 
 def test_problem_types():
-    assert set(LightGBMRegressor.supported_problem_types) == {ProblemTypes.REGRESSION}
+    assert set(LightGBMRegressor.supported_problem_types) == {
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    }
 
 
 def test_lightgbm_regressor_random_seed_bounds_seed(X_y_regression):
