@@ -10,12 +10,14 @@ Release Notes
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
         * Fixed bug where ``score_pipelines`` method of ``AutoMLSearch`` would not work for time series problems :pr:`2786`
     * Changes
+        * Deleted ``EmptyDataChecks`` class :pr:`2794`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Deleted ``EmptyDataChecks`` class :pr:`2794`
 
 
 **v0.33.0 Sep. 15, 2021**
