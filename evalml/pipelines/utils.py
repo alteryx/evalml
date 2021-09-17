@@ -272,7 +272,7 @@ def _make_stacked_ensemble_pipeline(
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         problem_type (ProblemType): problem type of pipeline
-        final_estimator (Estimator): Metalearner to use for the ensembler.
+        final_estimator (Estimator): Metalearner to use for the ensembler. Defaults to None.
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             Defaults to -1.
@@ -292,6 +292,7 @@ def _make_stacked_ensemble_pipeline(
                 }
             }
             estimator = SklearnStackedEnsembleClassifier
+            pipeline_name = "Sklearn Stacked Ensemble Classification Pipeline"
         else:
             parameters = {
                 "Stacked Ensemble Classifier": {
@@ -299,6 +300,7 @@ def _make_stacked_ensemble_pipeline(
                 }
             }
             estimator = StackedEnsembleClassifier
+            pipeline_name = "Stacked Ensemble Classification Pipeline"
     else:
         if use_sklearn:
             parameters = {
@@ -309,6 +311,7 @@ def _make_stacked_ensemble_pipeline(
                 }
             }
             estimator = SklearnStackedEnsembleRegressor
+            pipeline_name = "Sklearn Stacked Ensemble Regression Pipeline"
         else:
             parameters = {
                 "Stacked Ensemble Regressor": {
@@ -316,26 +319,12 @@ def _make_stacked_ensemble_pipeline(
                 }
             }
             estimator = StackedEnsembleRegressor
+            pipeline_name = "Stacked Ensemble Regression Pipeline"
 
-    pipeline_class, pipeline_name = {
-        ProblemTypes.BINARY: (
-            BinaryClassificationPipeline,
-            "Sklearn Stacked Ensemble Classification Pipeline"
-            if use_sklearn
-            else "Stacked Ensemble Classification Pipeline",
-        ),
-        ProblemTypes.MULTICLASS: (
-            MulticlassClassificationPipeline,
-            "Sklearn Stacked Ensemble Classification Pipeline"
-            if use_sklearn
-            else "Stacked Ensemble Classification Pipeline",
-        ),
-        ProblemTypes.REGRESSION: (
-            RegressionPipeline,
-            "Sklearn Stacked Ensemble Regression Pipeline"
-            if use_sklearn
-            else "Stacked Ensemble Regression Pipeline",
-        ),
+    pipeline_class = {
+        ProblemTypes.BINARY: BinaryClassificationPipeline,
+        ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
+        ProblemTypes.REGRESSION: RegressionPipeline,
     }[problem_type]
 
     if not use_sklearn:

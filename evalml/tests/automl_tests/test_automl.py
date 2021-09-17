@@ -1597,6 +1597,7 @@ def test_describe_pipeline_with_ensembling(
                 )
         else:
             assert automl_dict is None
+    assert sklearn_pl == 1
 
 
 def test_results_getter(AutoMLTestEnv, X_y_binary):
@@ -5231,7 +5232,7 @@ def test_automl_chooses_engine(engine_choice, X_y_binary):
 @patch("evalml.pipelines.components.RandomForestClassifier.predict")
 @patch("evalml.pipelines.components.ElasticNetClassifier.predict_proba")
 @patch("evalml.pipelines.components.ElasticNetClassifier.predict")
-def test_automl_enesmbler_allowed_component_graphs(
+def test_automl_ensembler_allowed_component_graphs(
     mock_en_predict,
     mock_en_predict_proba,
     mock_rf_predict,
@@ -5240,7 +5241,8 @@ def test_automl_enesmbler_allowed_component_graphs(
     caplog,
 ):
     """
-    Test that ensures that pipelines that are defined as strings or classes are able to be ensembled.
+    Test that graphs defined in allowed_component_graphs are able to be put in an ensemble pipeline.
+    Also ensures that pipelines that are defined as strings or classes are able to be ensembled.
     """
     X, y = X_y_regression
     mock_en_predict_proba.return_value = np.ones(len(y))

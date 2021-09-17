@@ -106,6 +106,32 @@ def test_stacked_ensemble_nondefault_y(X_y_binary):
     y_pred = pl.predict(X)
     assert len(y_pred) == len(y)
     assert not np.isnan(y_pred).all()
+
+
+def test_stacked_ensemble_keep_estimator_parameters(X_y_binary):
+    pytest.importorskip(
+        "imblearn.over_sampling",
+        reason="Skipping nondefault y test because imblearn not installed",
+    )
+    X, y = X_y_binary
+    input_pipelines = [
+        BinaryClassificationPipeline(
+            {
+                "OS": ["Oversampler", "X", "y"],
+                "rf": [RandomForestClassifier, "OS.x", "OS.y"],
+            },
+            parameters={"OS": {"k_neighbors_default": 10}},
+        ),
+        BinaryClassificationPipeline(
+            [RandomForestClassifier],
+            parameters={"Random Forest Classifier": {"n_estimators": 22}},
+        ),
+    ]
+
+    pl = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines,
+        problem_type=ProblemTypes.BINARY,
+    )
     assert (
         pl.get_component("Random Forest Pipeline - OS").parameters[
             "k_neighbors_default"
