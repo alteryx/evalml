@@ -33,6 +33,7 @@ class Estimator(ComponentBase):
 
     modifies_features = True
     modifies_target = False
+    training_only = False
 
     @property
     @classmethod

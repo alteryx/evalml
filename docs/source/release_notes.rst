@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added validation that ``training_data`` and ``training_target`` are not ``None`` in prediction explanations :pr:`2787`
+        * Added support for training-only components in pipelines and component graphs :pr:`2776`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
