@@ -99,7 +99,9 @@ class SequentialEngine(EngineBase):
             schema=False,
         )
 
-    def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
+    def submit_scoring_job(
+        self, automl_config, pipeline, X, y, objectives, X_train=None, y_train=None
+    ):
         """Submit a job to score a pipeline.
 
         Args:
@@ -107,6 +109,8 @@ class SequentialEngine(EngineBase):
             pipeline (pipeline.PipelineBase): Pipeline to train.
             X (pd.DataFrame): Input data for modeling.
             y (pd.Series): Target data for modeling.
+            X_train (pd.DataFrame): Training features. Used for feature engineering in time series.
+            y_train (pd.Series): Training target. Used for feature engineering in time series.
             objectives (list[ObjectiveBase]): List of objectives to score on.
 
         Returns:
@@ -121,6 +125,8 @@ class SequentialEngine(EngineBase):
             objectives=objectives,
             X_schema=X.ww.schema,
             y_schema=y.ww.schema,
+            X_train=X_train,
+            y_train=y_train,
         )
         computation.meta_data["pipeline_name"] = pipeline.name
         return computation

@@ -2,18 +2,24 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added validation that ``training_data`` and ``training_target`` are not ``None`` in prediction explanations :pr:`2787`
+        * Added support for training-only components in pipelines and component graphs :pr:`2776`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
+        * Fixed bug where ``score_pipelines`` method of ``AutoMLSearch`` would not work for time series problems :pr:`2786`
     * Changes
         * Changed woodwork initialization to use partial schemas :pr:`2774`
         * Made ``Transformer.transform()`` an abstract method :pr:`2744`
+        * Deleted ``EmptyDataChecks`` class :pr:`2794`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Made ``Transformer.transform()`` an abstract method :pr:`2744`
+        * Deleted ``EmptyDataChecks`` class :pr:`2794`
 
 
 **v0.33.0 Sep. 15, 2021**

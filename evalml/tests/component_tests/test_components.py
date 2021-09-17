@@ -94,6 +94,7 @@ def test_classes():
         model_family = ModelFamily.NONE
         modifies_features = True
         modifies_target = False
+        training_only = False
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
@@ -128,6 +129,7 @@ class MockFitComponent(ComponentBase):
     name = "Mock Fit Component"
     modifies_features = True
     modifies_target = False
+    training_only = False
 
     def __init__(self, param_a=2, param_b=10, random_seed=0):
         parameters = {"param_a": param_a, "param_b": param_b}
@@ -1281,12 +1283,14 @@ def test_component_equality_different_classes():
         model_family = ModelFamily.NONE
         modifies_features = True
         modifies_target = False
+        training_only = False
 
     class MockComponentWithADifferentName(ComponentBase):
         name = "Mock Component"
         model_family = ModelFamily.NONE
         modifies_features = True
         modifies_target = False
+        training_only = False
 
     assert MockComponent() != MockComponentWithADifferentName()
 
@@ -1297,6 +1301,7 @@ def test_component_equality_subclasses():
         model_family = ModelFamily.NONE
         modifies_features = True
         modifies_target = False
+        training_only = False
 
     class MockEstimatorSubclass(MockComponent):
         pass
@@ -1310,6 +1315,7 @@ def test_component_equality():
         model_family = ModelFamily.NONE
         modifies_features = True
         modifies_target = False
+        training_only = False
 
         def __init__(self, param_1=0, param_2=0, random_seed=0, **kwargs):
             parameters = {"param_1": param_1, "param_2": param_2}

@@ -28,6 +28,7 @@ class Transformer(ComponentBase):
     """ModelFamily.NONE"""
     modifies_features = True
     modifies_target = False
+    training_only = False
 
     @abstractmethod
     def transform(self, X, y=None):
