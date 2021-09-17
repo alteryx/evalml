@@ -233,7 +233,11 @@ class ComponentGraph:
             self.input_feature_names.update({self.compute_order[0]: list(X.columns)})
             return X, y
         component_outputs = self._compute_features(
-            self.compute_order[:-1], X, y=y, fit=needs_fitting
+            self.compute_order[:-1],
+            X,
+            y=y,
+            fit=needs_fitting,
+            evaluate_training_only_components=needs_fitting,
         )
         x_inputs, y_output = self._consolidate_inputs_for_component(
             component_outputs, self.compute_order[-1], X, y
@@ -287,7 +291,7 @@ class ComponentGraph:
             )
 
         outputs = self._compute_features(
-            self.compute_order, X, y, fit=False, evaluate_training=True
+            self.compute_order, X, y, fit=False, evaluate_training_only_components=True
         )
         output_x = infer_feature_types(outputs.get(f"{final_component_name}.x"))
         output_y = outputs.get(f"{final_component_name}.y", None)
@@ -315,11 +319,18 @@ class ComponentGraph:
             raise ValueError(
                 "Cannot call predict() on a component graph because the final component is not an Estimator."
             )
-        outputs = self._compute_features(self.compute_order, X, evaluate_training=False)
+        outputs = self._compute_features(
+            self.compute_order, X, evaluate_training_only_components=False
+        )
         return infer_feature_types(outputs.get(f"{final_component}.x"))
 
     def _compute_features(
-        self, component_list, X, y=None, fit=False, evaluate_training=False
+        self,
+        component_list,
+        X,
+        y=None,
+        fit=False,
+        evaluate_training_only_components=False,
     ):
         """Transforms the data by applying the given components.
 
@@ -328,7 +339,7 @@ class ComponentGraph:
             X (pd.DataFrame): Input data to the pipeline to transform.
             y (pd.Series): The target training data of length [n_samples].
             fit (boolean): Whether to fit the estimators as well as transform it. Defaults to False.
-            evaluate_training (boolean): Whether to evaluate training-only components (such as the samplers). Defaults to False.
+            evaluate_training_only_components (boolean): Whether to evaluate training-only components (such as the samplers) during transform or predict. Defaults to False.
 
         Returns:
             dict: Outputs from each component.
@@ -354,7 +365,10 @@ class ComponentGraph:
             if isinstance(component_instance, Transformer):
                 if fit:
                     output = component_instance.fit_transform(x_inputs, y_input)
-                elif component_instance.training_only and evaluate_training is False:
+                elif (
+                    component_instance.training_only
+                    and evaluate_training_only_components is False
+                ):
                     output = x_inputs, y_input
                 else:
                     output = component_instance.transform(x_inputs, y_input)

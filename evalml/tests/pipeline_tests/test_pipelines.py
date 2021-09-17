@@ -2776,8 +2776,10 @@ def test_training_only_component_in_pipeline_fit(mock_fit, X_y_binary):
     assert len(mock_fit.call_args[0][0]) == len(X) - 2
 
 
-def test_training_only_component_in_pipeline_predict(X_y_binary):
-    # Test that calling predict() will not evaluate any training-only transformations
+def test_training_only_component_in_pipeline_predict_and_compute_estimator_features(
+    X_y_binary,
+):
+    # Test that calling predict() and `compute_estimator_features` will not evaluate any training-only transformations
     X, y = X_y_binary
     pipeline = BinaryClassificationPipeline(
         {
@@ -2796,6 +2798,8 @@ def test_training_only_component_in_pipeline_predict(X_y_binary):
     assert len(preds) == len(X)
     preds = pipeline.predict_proba(X)
     assert len(preds) == len(X)
+    estimator_features = pipeline.compute_estimator_features(X, y)
+    assert len(estimator_features) == len(X)
 
 
 def test_training_only_component_in_pipeline_transform(X_y_binary):

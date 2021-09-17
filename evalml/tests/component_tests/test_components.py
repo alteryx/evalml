@@ -94,6 +94,7 @@ def test_classes():
         model_family = ModelFamily.NONE
         modifies_features = True
         modifies_target = False
+        training_only = False
 
     class MockEstimator(Estimator):
         name = "Mock Estimator"
