@@ -21,6 +21,7 @@ from evalml.exceptions import (
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
+    DropRowsTransformer,
     ElasticNetClassifier,
     Estimator,
     Imputer,
@@ -2343,3 +2344,42 @@ def test_component_graph_with_invalid_y_edge(X_y_binary):
     }
     with pytest.raises(ValueError, match="OHE.y is not a valid input edge"):
         ComponentGraph(component_dict)
+
+
+def test_training_only_component_in_component_graph_fit_features(X_y_binary):
+    # Test that calling fit_features() will evaluate all training-only transformations
+    X, y = X_y_binary
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "Drop Rows Transformer": [DropRowsTransformer, "Imputer.x", "y"],
+        "RF": [
+            "Random Forest Classifier",
+            "Drop Rows Transformer.x",
+            "Drop Rows Transformer.y",
+        ],
+    }
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({"Drop Rows Transformer": {"indices_to_drop": [0, 9]}})
+    transformed_X, transformed_y = component_graph.fit_features(X, y)
+    assert len(transformed_X) == len(X) - 2
+
+
+def test_training_only_component_in_component_graph_compute_final_component_features(
+    X_y_binary,
+):
+    # Test that calling compute_final_component_features() will not evaluate all training-only transformations
+    X, y = X_y_binary
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "Drop Rows Transformer": [DropRowsTransformer, "Imputer.x", "y"],
+        "RF": [
+            "Random Forest Classifier",
+            "Drop Rows Transformer.x",
+            "Drop Rows Transformer.y",
+        ],
+    }
+    component_graph = ComponentGraph(component_dict)
+    component_graph.instantiate({"Drop Rows Transformer": {"indices_to_drop": [0, 9]}})
+    component_graph.fit(X, y)
+    transformed_X = component_graph.compute_final_component_features(X, y)
+    assert len(transformed_X) == len(X)

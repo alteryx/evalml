@@ -73,6 +73,12 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         features or targets.
         """
 
+    @property
+    @classmethod
+    @abstractmethod
+    def training_only(cls):
+        """Returns whether or not this component should be evaluated during training-time only, or during both training and prediction time."""
+
     @classproperty
     def needs_fitting(self):
         """Returns boolean determining if component needs fitting before calling predict, predict_proba, transform, or feature_importances.
