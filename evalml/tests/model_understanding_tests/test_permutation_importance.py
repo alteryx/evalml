@@ -8,7 +8,11 @@ from evalml.model_understanding.permutation_importance import (
     calculate_permutation_importance,
     calculate_permutation_importance_one_column,
 )
-from evalml.pipelines import BinaryClassificationPipeline, Transformer
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    RegressionPipeline,
+    Transformer,
+)
 from evalml.pipelines.components import (
     PCA,
     DateTimeFeaturizer,
@@ -163,6 +167,14 @@ class DagReuseFeatures(BinaryClassificationPipeline):
     }
 
 
+class PipelineWithTargetTransformer(RegressionPipeline):
+    component_graph = {
+        "Log": ["Log Transformer", "X", "y"],
+        "SelectNumeric": ["Select Columns Transformer", "X", "y"],
+        "Estimator": ["Random Forest Regressor", "SelectNumeric.x", "Log.y"],
+    }
+
+
 test_cases = [
     (
         LinearPipelineWithDropCols,
@@ -286,6 +298,10 @@ test_cases = [
             "Drop Columns Transformer": {"columns": ["amount_doubled"]},
         },
     ),
+    (
+        PipelineWithTargetTransformer,
+        {"SelectNumeric": {"columns": ["card_id", "store_id", "lat", "lng"]}},
+    ),
 ]
 
 
@@ -311,19 +327,23 @@ def test_fast_permutation_importance_matches_slow_output(
         )
     X, y = fraud_100
 
+    objective = "Log Loss Binary"
     if pipeline_class == LinearPipelineWithTextFeatures:
         X.ww.set_types(logical_types={"provider": "NaturalLanguage"})
+    elif pipeline_class == PipelineWithTargetTransformer:
+        y = X.ww.pop("amount")
+        objective = "R2"
 
     mock_supports_fast_importance.return_value = True
     parameters["Random Forest Classifier"] = {"n_jobs": 1}
     pipeline = pipeline_class(pipeline_class.component_graph, parameters=parameters)
     pipeline.fit(X, y)
     fast_scores = calculate_permutation_importance(
-        pipeline, X, y, objective="Log Loss Binary", random_seed=0
+        pipeline, X, y, objective=objective, random_seed=0
     )
     mock_supports_fast_importance.return_value = False
     slow_scores = calculate_permutation_importance(
-        pipeline, X, y, objective="Log Loss Binary", random_seed=0
+        pipeline, X, y, objective=objective, random_seed=0
     )
 
     # The row order is not guaranteed to be equal in the case of ties
@@ -343,6 +363,9 @@ def test_fast_permutation_importance_matches_slow_output(
         "region",
         "amount",
     ]:
+        if col == "amount" and pipeline_class == PipelineWithTargetTransformer:
+            # amount is the target for this pipeline
+            continue
         mock_supports_fast_importance.return_value = True
         permutation_importance_one_col_fast = (
             calculate_permutation_importance_one_column(
@@ -350,7 +373,7 @@ def test_fast_permutation_importance_matches_slow_output(
                 X,
                 y,
                 col,
-                "Log Loss Binary",
+                objective=objective,
                 fast=True,
                 precomputed_features=precomputed_features,
             )
@@ -359,7 +382,7 @@ def test_fast_permutation_importance_matches_slow_output(
         mock_supports_fast_importance.return_value = False
         permutation_importance_one_col_slow = (
             calculate_permutation_importance_one_column(
-                pipeline, X, y, col, "Log Loss Binary", fast=False
+                pipeline, X, y, col, objective=objective, fast=False
             )
         )
         np.testing.assert_almost_equal(

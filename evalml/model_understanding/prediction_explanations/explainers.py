@@ -86,6 +86,13 @@ def explain_predictions(
         raise ValueError(
             f"Explained indices should be between 0 and {len(input_features) - 1}"
         )
+    if is_time_series(pipeline.problem_type) and (
+        training_target is None or training_data is None
+    ):
+        raise ValueError(
+            "Prediction explanations for time series pipelines requires that training_target and "
+            "training_data are not None"
+        )
 
     pipeline_features = pipeline.compute_estimator_features(
         input_features, y, training_data, training_target
@@ -213,6 +220,13 @@ def explain_predictions_best_worst(
     _update_progress(
         start_time, timer(), ExplainPredictionsStage.PREDICT_STAGE, callback
     )
+    if is_time_series(pipeline.problem_type) and (
+        training_target is None or training_data is None
+    ):
+        raise ValueError(
+            "Prediction explanations for time series pipelines requires that training_target and "
+            "training_data are not None"
+        )
 
     try:
         if is_regression(pipeline.problem_type):

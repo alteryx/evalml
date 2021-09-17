@@ -82,7 +82,7 @@ class DaskPipelineWithScoreError(BinaryClassificationPipeline):
             random_seed=random_seed,
         )
 
-    def score(self, X, y, objectives):
+    def score(self, X, y, objectives, X_train=None, y_train=None):
         raise PipelineScoreError(
             exceptions={"AUC": (Exception(), []), "Log Loss Binary": (Exception(), [])},
             scored_successfully={
@@ -183,7 +183,7 @@ class DaskSchemaCheckPipeline(BinaryClassificationPipeline):
         assert y.ww.schema == self.y_schema_to_check
         return super().fit(X, y)
 
-    def score(self, X, y, objectives):
+    def score(self, X, y, objectives, X_train=None, y_train=None):
         assert X.ww.schema == self.X_schema_to_check
         assert y.ww.schema == self.y_schema_to_check
         return super().score(X, y, objectives)

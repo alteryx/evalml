@@ -200,7 +200,7 @@ class ComponentGraph:
             y (pd.Series): The target training data of length [n_samples].
 
         Returns:
-            pd.DataFrame: Transformed values.
+            Tuple (pd.DataFrame, pd.Series): Transformed features and target.
         """
         return self._fit_transform_features_helper(True, X, y)
 
@@ -214,7 +214,8 @@ class ComponentGraph:
         Returns:
             pd.DataFrame: Transformed values.
         """
-        return self._fit_transform_features_helper(False, X, y)
+        features, _ = self._fit_transform_features_helper(False, X, y)
+        return features
 
     def _fit_transform_features_helper(self, needs_fitting, X, y=None):
         """Transform all components save the final one, and returns the data that should be fed to the final component, usually an estimator.
@@ -225,23 +226,23 @@ class ComponentGraph:
             y (pd.Series): The target training data of length [n_samples]. Defaults to None.
 
         Returns:
-            pd.DataFrame: Transformed values.
+           Tuple: pd.DataFrame, pd.Series: Transformed features and target.
         """
         if len(self.compute_order) <= 1:
             X = infer_feature_types(X)
             self.input_feature_names.update({self.compute_order[0]: list(X.columns)})
-            return X
+            return X, y
         component_outputs = self._compute_features(
             self.compute_order[:-1], X, y=y, fit=needs_fitting
         )
-        x_inputs, _ = self._consolidate_inputs_for_component(
+        x_inputs, y_output = self._consolidate_inputs_for_component(
             component_outputs, self.compute_order[-1], X, y
         )
         if needs_fitting:
             self.input_feature_names.update(
                 {self.compute_order[-1]: list(x_inputs.columns)}
             )
-        return x_inputs
+        return x_inputs, y_output
 
     def _consolidate_inputs_for_component(
         self, component_outputs, component, X, y=None
