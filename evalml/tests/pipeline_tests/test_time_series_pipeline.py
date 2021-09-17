@@ -30,6 +30,65 @@ from evalml.utils import infer_feature_types
     ],
 )
 @pytest.mark.parametrize(
+    "thing_thats_wrong", ["not-right-length", "not-separated-by-gap", "both"]
+)
+@pytest.mark.parametrize("gap", [0, 1, 5])
+@pytest.mark.parametrize("forecast_horizon", [1, 5, 10])
+@patch("evalml.pipelines.components.LinearRegressor.fit")
+@patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
+def test_time_series_pipeline_validates_holdout_data(
+    mock_fit_lr,
+    mock_fit_linear,
+    forecast_horizon,
+    gap,
+    thing_thats_wrong,
+    pipeline_class,
+    estimator,
+    ts_data,
+):
+    pl = pipeline_class(
+        component_graph=[estimator],
+        parameters={
+            "pipeline": {
+                "date_index": None,
+                "gap": gap,
+                "max_delay": 2,
+                "forecast_horizon": forecast_horizon,
+            }
+        },
+    )
+    X, y = ts_data
+    X_train, y_train = X.iloc[:15], y.iloc[:15]
+    if thing_thats_wrong == "not-right-length":
+        X = X.iloc[15 + gap : 15 + gap + forecast_horizon + 2]
+    elif thing_thats_wrong == "not-separated-by-gap":
+        X = X.iloc[15 + gap + 2 : 15 + gap + 2 + forecast_horizon]
+    else:
+        X = X.iloc[15 + gap + 2 : 15 + gap + 2 + forecast_horizon + 1]
+
+    pl.fit(X_train, y_train)
+
+    with pytest.raises(
+        ValueError, match=f"Holdout data X must have {forecast_horizon}"
+    ):
+        pl.predict(X, None, X_train, y_train)
+
+    if hasattr(pl, "predict_proba"):
+        with pytest.raises(
+            ValueError, match=f"Holdout data X must have {forecast_horizon}"
+        ):
+            pl.predict_proba(X, X_train, y_train)
+
+
+@pytest.mark.parametrize(
+    "pipeline_class,estimator",
+    [
+        (TimeSeriesRegressionPipeline, "Linear Regressor"),
+        (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
+        (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier"),
+    ],
+)
+@pytest.mark.parametrize(
     "components",
     [["One Hot Encoder"], ["Delayed Feature Transformer", "One Hot Encoder"]],
 )
@@ -322,6 +381,7 @@ def test_predict_and_predict_in_sample(
     preds_in_sample = pl.predict_in_sample(
         X.iloc[20:], target.iloc[20:], X.iloc[:20], target.iloc[:20]
     )
+    breakpoint()
     assert_frame_equal(mock_to_check.call_args[0][0], expected_features_in_sample)
     mock_to_check.reset_mock()
     preds = pl.predict(
