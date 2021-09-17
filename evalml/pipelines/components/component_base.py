@@ -25,7 +25,6 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     """
 
     _default_parameters = None
-    training_only = False
 
     def __init__(self, parameters=None, component_obj=None, random_seed=0, **kwargs):
         """Base class for all components.
@@ -73,6 +72,12 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
         value from `predict` or `predict_proba` should be used as
         features or targets.
         """
+
+    @property
+    @classmethod
+    @abstractmethod
+    def training_only(cls):
+        """Returns whether or not this component should be evaluated during training-time only, or during both training and prediction time."""
 
     @classproperty
     def needs_fitting(self):

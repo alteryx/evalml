@@ -2758,15 +2758,8 @@ def test_pipeline_transform_with_final_estimator(
 
 
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
-def test_training_only_component_in_pipeline_fit(mock_fit):
-    X = pd.DataFrame(
-        {
-            "a": [i for i in range(9)] + [np.nan],
-            "b": [i % 3 for i in range(10)],
-            "c": [i % 7 for i in range(10)],
-        }
-    )
-    y = pd.Series([0] * 5 + [1] * 5)
+def test_training_only_component_in_pipeline_fit(mock_fit, X_y_binary):
+    X, y = X_y_binary
     pipeline = BinaryClassificationPipeline(
         {
             "Imputer": ["Imputer", "X", "y"],
@@ -2780,19 +2773,12 @@ def test_training_only_component_in_pipeline_fit(mock_fit):
         parameters={"Drop Rows Transformer": {"indices_to_drop": [0, 9]}},
     )
     pipeline.fit(X, y)
-    assert len(mock_fit.call_args[0][0]) == 8
+    assert len(mock_fit.call_args[0][0]) == len(X) - 2
 
 
-def test_training_only_component_in_pipeline_predict():
+def test_training_only_component_in_pipeline_predict(X_y_binary):
     # Test that calling predict() will not evaluate any training-only transformations
-    X = pd.DataFrame(
-        {
-            "a": [i for i in range(9)] + [np.nan],
-            "b": [i % 3 for i in range(10)],
-            "c": [i % 7 for i in range(10)],
-        }
-    )
-    y = pd.Series([0] * 5 + [1] * 5)
+    X, y = X_y_binary
     pipeline = BinaryClassificationPipeline(
         {
             "Imputer": ["Imputer", "X", "y"],
@@ -2807,21 +2793,14 @@ def test_training_only_component_in_pipeline_predict():
     )
     pipeline.fit(X, y)
     preds = pipeline.predict(X)
-    assert len(preds) == 10
+    assert len(preds) == len(X)
     preds = pipeline.predict_proba(X)
-    assert len(preds) == 10
+    assert len(preds) == len(X)
 
 
-def test_training_only_component_in_pipeline_transform():
+def test_training_only_component_in_pipeline_transform(X_y_binary):
     # Test that calling transform() will evaluate all training-only transformations
-    X = pd.DataFrame(
-        {
-            "a": [i for i in range(9)] + [np.nan],
-            "b": [i % 3 for i in range(10)],
-            "c": [i % 7 for i in range(10)],
-        }
-    )
-    y = pd.Series([0] * 5 + [1] * 5)
+    X, y = X_y_binary
     pipeline = BinaryClassificationPipeline(
         {
             "Imputer": ["Imputer", "X", "y"],
@@ -2831,4 +2810,4 @@ def test_training_only_component_in_pipeline_transform():
     )
     pipeline.fit(X, y)
     transformed = pipeline.transform(X)
-    assert len(transformed) == 8
+    assert len(transformed) == len(X) - 2
