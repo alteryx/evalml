@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Updated to work with Woodwork 0.8.1 :pr:`2783`
         * Added validation that ``training_data`` and ``training_target`` are not ``None`` in prediction explanations :pr:`2787`
         * Added support for training-only components in pipelines and component graphs :pr:`2776`
         * Added default argument for the parameters value for ``ComponentGraph.instantiate`` :pr:`2796`
