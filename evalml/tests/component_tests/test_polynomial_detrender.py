@@ -104,7 +104,7 @@ def test_polynomial_detrender_needs_monotonic_index(ts_data):
 
     with pytest.raises(
         ValueError,
-        match="The \\(time\\) index must be sorted \\(monotonically increasing\\)",
+        match="The \\(time\\) index of input must be sorted monotonically increasing",
     ):
         y_shuffled = y.sample(frac=1, replace=False)
         detrender.fit_transform(X, y_shuffled)
