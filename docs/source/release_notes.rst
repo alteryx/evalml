@@ -31,7 +31,7 @@ Release Notes
     * Documentation Changes
         * Added docstring linting packages ``pydocstyle`` and ``darglint`` to `make-lint` command :pr:`2670`
     * Testing Changes
-        * Fixed regex error for non-monotonically increasing ``PolynomialDetrender`` test :pr:``
+        * Fixed regex error for non-monotonically increasing ``PolynomialDetrender`` test :pr:`2809`
 
 .. warning::
 
