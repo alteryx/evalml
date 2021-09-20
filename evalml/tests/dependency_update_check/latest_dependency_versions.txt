@@ -26,7 +26,7 @@ scikit-optimize==0.8.1
 scipy==1.7.1
 seaborn==0.11.2
 shap==0.39.0
-sktime==0.7.0
+sktime==0.8.0
 statsmodels==0.12.2
 texttable==1.6.4
 woodwork==0.8.1
