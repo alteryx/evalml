@@ -1,3 +1,4 @@
+import json
 import os
 import warnings
 from collections import OrderedDict, defaultdict
@@ -5213,4 +5214,45 @@ def test_automl_chooses_engine(engine_choice, X_y_binary):
         ):
             automl = AutoMLSearch(
                 X_train=X, y_train=y, problem_type="binary", engine=engine_choice
+            )
+
+
+def test_graph_automl(X_y_multi):
+    X, y = X_y_multi
+    X = pd.DataFrame(X, columns=[f"Column_{i}" for i in range(20)])
+
+    component_graph = {
+        "Imputer": ["Imputer", "X", "y"],
+        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "y"],
+        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
+        "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
+        "Logistic Regression": [
+            "Logistic Regression Classifier",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "y",
+        ],
+    }
+    automl_parameters_ = {
+        "OneHot_ElasticNet": {"top_n": 5},
+        "Random Forest": {"n_estimators": 201},
+        "Elastic Net": {"C": 0.42, "l1_ratio": 0.2},
+    }
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="multiclass",
+        allowed_component_graphs={"Name_0": ComponentGraph(component_graph)},
+        pipeline_parameters=automl_parameters_,
+        max_batches=2,
+    )
+
+    dag_str = automl.allowed_pipelines[0].graph_json()
+    dag_json = json.loads(dag_str)
+    for node_, params_ in automl_parameters_.items():
+        for key_, val_ in params_.items():
+            assert (
+                dag_json["Nodes"][node_]["attributes"][key_]
+                == automl_parameters_[node_][key_]
             )

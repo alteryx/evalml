@@ -1,6 +1,7 @@
 """Base machine learning pipeline class."""
 import copy
 import inspect
+import json
 import logging
 import os
 import sys
@@ -115,6 +116,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self._pipeline_params = None
         if parameters is not None:
             self._pipeline_params = parameters.get("pipeline", {})
+        print(f"Parameters: {parameters}")
+        print(f"Pipeline params: {self._pipeline_params}")
 
         self._custom_name = custom_name
 
@@ -424,6 +427,62 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         importance.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importance, columns=["feature", "importance"])
         return df
+
+    def graph_json(self):
+        """Generates a JSON with nodes consisting of the component names and parameters, and edges detailing component relationships.
+
+        Returns:
+            dag_json (str): A serialized JSON representation of a DAG structure.
+        """
+        from pprint import pprint
+
+        dag_json = {"Nodes": {"X": "X", "y": "y"}, "Edges": {}}
+
+        for (
+            component_name,
+            component_info,
+        ) in self.component_graph.component_dict.items():
+            dag_json["Nodes"][component_name] = {
+                "class": component_info[0]
+                if isinstance(component_info[0], str)
+                else component_info[0].name,
+                "attributes": self.parameters[component_name]
+                if component_name in self.parameters
+                else None,
+            }
+
+        for (
+            component_name,
+            component_info,
+        ) in self.component_graph.component_dict.items():
+            for input_ in component_info[1:]:
+                from_comp = input_[:-2]
+                if input_.endswith(".x"):
+                    dag_json["Edges"][f"from_{from_comp}_to_{component_name}"] = {
+                        "from": from_comp,
+                        "to": component_name,
+                        "data": f"X modified by {from_comp}",
+                    }
+                elif input_ == "X":
+                    dag_json["Edges"][f"from_X_to_{component_name}"] = {
+                        "from": "X",
+                        "to": component_name,
+                        "data": "Original X input",
+                    }
+                elif input_.endswith(".y"):
+                    dag_json["Edges"][f"from_{from_comp}_to_{component_name}"] = {
+                        "from": from_comp,
+                        "to": component_name,
+                        "data": f"y modified by {from_comp}",
+                    }
+                else:
+                    dag_json["Edges"][f"from_y_to_{component_name}"] = {
+                        "from": "y",
+                        "to": component_name,
+                        "data": "Original y input",
+                    }
+
+        return json.dumps(dag_json)
 
     def graph(self, filepath=None):
         """Generate an image representing the pipeline graph.

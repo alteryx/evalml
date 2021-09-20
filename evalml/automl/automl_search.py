@@ -311,7 +311,7 @@ class AutoMLSearch:
             Only applicable if patience is not None. Defaults to None.
 
         allowed_component_graphs (dict): A dictionary of lists or ComponentGraphs indicating the component graphs allowed in the search.
-            The format should follow { "Name_0": [list_of_components], "Name_1": [ComponentGraph(...)] }
+            The format should follow { "Name_0": [list_of_components], "Name_1": ComponentGraph(...) }
 
             The default of None indicates all pipeline component graphs for this problem type are allowed. Setting this field will cause
             allowed_model_families to be ignored.

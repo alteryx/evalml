@@ -1,3 +1,4 @@
+import json
 import os
 from unittest.mock import patch
 
@@ -5,7 +6,19 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.pipelines import BinaryClassificationPipeline, ComponentGraph
+from evalml import AutoMLSearch
+from evalml.pipelines import (
+    BinaryClassificationPipeline,
+    ComponentGraph,
+    OneHotEncoder,
+    RandomForestClassifier,
+)
+from evalml.pipelines.components import (
+    DropNullColumns,
+    Imputer,
+    TargetImputer,
+    Undersampler,
+)
 
 
 @pytest.fixture
@@ -207,3 +220,49 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipel
     with pytest.warns(None) as graph_valid:
         clf.graph_feature_importance()
         import_check.assert_called_with("ipywidgets", warning=True)
+
+
+@pytest.mark.parametrize("graph_type", ["graph", "list"])
+def test_component_as_json(
+    graph_type, linear_regression_pipeline_class, nonlinear_binary_pipeline_class
+):
+    pipeline_ = linear_regression_pipeline_class({})
+    if graph_type == "graph":
+        pipeline_ = nonlinear_binary_pipeline_class({})
+    expected_nodes = pipeline_.component_graph.component_dict
+    dag_str = pipeline_.graph_json()
+
+    assert isinstance(dag_str, str)
+    dag_json = json.loads(dag_str)
+    assert isinstance(dag_json, dict)
+    assert len(expected_nodes.keys()) == len(dag_json["Nodes"].keys()) - 2
+    assert dag_json["Nodes"].keys() - expected_nodes.keys() == {"X", "y"}
+    for node_, graph_ in expected_nodes.items():
+        assert node_ in dag_json["Nodes"]
+        assert (
+            graph_[0].name
+            if graph_type == "list"
+            else graph_[0] == dag_json["Nodes"][node_]["class"]
+        )
+        for comp_ in graph_[1:]:
+            if comp_ == "X":
+                edge_ = "from_{}_to_{}"
+                from_ = "X"
+                data_ = "Original X input"
+            elif comp_ == "y":
+                edge_ = "from_{}_to_{}"
+                from_ = "y"
+                data_ = "Original y input"
+            elif comp_.endswith(".x"):
+                edge_ = "from_{}_to_{}"
+                from_ = comp_[:-2]
+                data_ = "X modified by {}"
+            else:
+                edge_ = "from_{}_to_{}"
+                from_ = comp_[:-2]
+                data_ = "y modified by {}"
+            assert dag_json["Edges"][edge_.format(from_, node_)][
+                "data"
+            ] == data_.format(from_)
+            assert dag_json["Edges"][edge_.format(from_, node_)]["from"] == from_
+            assert dag_json["Edges"][edge_.format(from_, node_)]["to"] == node_
