@@ -434,8 +434,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             dag_json (str): A serialized JSON representation of a DAG structure.
         """
-        from pprint import pprint
-
         dag_json = {"Nodes": {"X": "X", "y": "y"}, "Edges": {}}
 
         for (

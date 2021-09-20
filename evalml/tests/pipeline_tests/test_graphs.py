@@ -6,19 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml import AutoMLSearch
-from evalml.pipelines import (
-    BinaryClassificationPipeline,
-    ComponentGraph,
-    OneHotEncoder,
-    RandomForestClassifier,
-)
-from evalml.pipelines.components import (
-    DropNullColumns,
-    Imputer,
-    TargetImputer,
-    Undersampler,
-)
+from evalml.pipelines import BinaryClassificationPipeline, ComponentGraph
 
 
 @pytest.fixture
