@@ -58,13 +58,16 @@ def test_time_series_pipeline_validates_holdout_data(
         },
     )
     X, y = ts_data
-    X_train, y_train = X.iloc[:15], y.iloc[:15]
+    TRAIN_LENGTH = 15
+    X_train, y_train = X.iloc[:TRAIN_LENGTH], y.iloc[:TRAIN_LENGTH]
     if thing_thats_wrong == "not-right-length":
-        X = X.iloc[15 + gap : 15 + gap + forecast_horizon + 2]
+        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon + 2]
     elif thing_thats_wrong == "not-separated-by-gap":
-        X = X.iloc[15 + gap + 2 : 15 + gap + 2 + forecast_horizon]
+        X = X.iloc[TRAIN_LENGTH + gap + 2 : TRAIN_LENGTH + gap + 2 + forecast_horizon]
     else:
-        X = X.iloc[15 + gap + 2 : 15 + gap + 2 + forecast_horizon + 1]
+        X = X.iloc[
+            TRAIN_LENGTH + gap + 2 : TRAIN_LENGTH + gap + 2 + forecast_horizon + 1
+        ]
 
     pl.fit(X_train, y_train)
 

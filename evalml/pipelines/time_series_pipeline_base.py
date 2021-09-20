@@ -97,9 +97,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
-            objective (Object or string): The objective to use to make predictions.
             X_train (pd.DataFrame): Training data.
-            y_train (pd.Series): Training labels.
 
         Raises:
             ValueError: If holdout data does not have forecast_horizon entries or if datasets
@@ -251,7 +249,6 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         self._validate_holdout_datasets(X, X_train)
         y_holdout = self._create_empty_series(y_train)
         y_holdout = infer_feature_types(y_holdout)
-        self._validate_holdout_datasets(X, X_train)
         y_holdout.index = X.index
         return self.predict_in_sample(
             X, y_holdout, X_train, y_train, objective=objective
