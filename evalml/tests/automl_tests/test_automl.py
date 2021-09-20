@@ -5079,17 +5079,20 @@ def test_pipeline_parameter_warnings_component_graphs(
         assert w[0].message.components == set_values
 
 
-@patch(
-    "evalml.pipelines.utils._get_preprocessing_components"
-)
+@patch("evalml.pipelines.utils._get_preprocessing_components")
 @pytest.mark.parametrize("verbose", [True, False])
-def test_pipeline_parameter_warnings_with_other_types(mock_get_preprocessing_components, verbose, X_y_regression):
+def test_pipeline_parameter_warnings_with_other_types(
+    mock_get_preprocessing_components, verbose, X_y_regression
+):
     X, y = X_y_regression
+
     def dummy_mock_get_preprocessing_components(*args, **kwargs):
-        warnings.warn(UserWarning('dummy test warning'))
+        warnings.warn(UserWarning("dummy test warning"))
         return ["Imputer"]
 
-    mock_get_preprocessing_components.side_effect = dummy_mock_get_preprocessing_components
+    mock_get_preprocessing_components.side_effect = (
+        dummy_mock_get_preprocessing_components
+    )
     with pytest.warns(None) as warnings_logged:
         AutoMLSearch(
             X_train=X,
@@ -5099,7 +5102,7 @@ def test_pipeline_parameter_warnings_with_other_types(mock_get_preprocessing_com
             pipeline_parameters={"Decision Tree Classifier": {"max_depth": 1}},
             verbose=verbose,
         )
-    
+
     assert len(warnings_logged) == 2
     assert isinstance(warnings_logged[0].message, UserWarning)
     assert isinstance(warnings_logged[1].message, ParameterNotUsedWarning)

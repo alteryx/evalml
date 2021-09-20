@@ -13,6 +13,7 @@ Release Notes
         * Fixed bug where ``score_pipelines`` method of ``AutoMLSearch`` would not work for time series problems :pr:`2786`
     * Changes
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
+        * Removed data check for log distributions in ``make_pipeline`` :pr:`2806`
     * Documentation Changes
     * Testing Changes
 

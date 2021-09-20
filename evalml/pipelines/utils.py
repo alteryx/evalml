@@ -15,7 +15,7 @@ from .multiclass_classification_pipeline import (
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
-from evalml.data_checks import DataCheckActionCode, TargetDistributionDataCheck
+from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
@@ -46,7 +46,6 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
-    is_regression,
     is_time_series,
 )
 from evalml.utils import import_or_raise, infer_feature_types
