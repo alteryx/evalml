@@ -1,10 +1,17 @@
 import numpy as np
+import pandas as pd
 import pytest
 
 from evalml.automl import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.engine import CFEngine, DaskEngine, SequentialEngine
+from evalml.problem_types import (
+    ProblemTypes,
+    is_binary,
+    is_multiclass,
+    is_time_series,
+)
 from evalml.tests.automl_tests.dask_test_utils import (
     DaskPipelineFast,
     DaskPipelineSlow,
@@ -266,3 +273,62 @@ def test_automl_closes_engines(engine_str, X_y_binary_cls):
     )
     automl.close_engine()
     assert automl._engine.is_closed
+
+
+@pytest.mark.parametrize(
+    "engine_str",
+    engine_strs + ["sequential"],
+)
+@pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
+def test_score_pipelines_passes_X_train_y_train(
+    problem_type, engine_str, X_y_binary, X_y_regression, X_y_multi, AutoMLTestEnv
+):
+    if is_binary(problem_type):
+        X, y = X_y_binary
+    elif is_multiclass(problem_type):
+        X, y = X_y_multi
+    else:
+        X, y = X_y_regression
+
+    X_train, y_train = pd.DataFrame(X[:50]), pd.Series(y[:50])
+    X_test, y_test = pd.DataFrame(X[50:]), pd.Series(y[50:])
+
+    if is_multiclass(problem_type) or is_binary(problem_type):
+        y_train = y_train.astype("int64")
+        y_test = y_test.astype("int64")
+
+    automl = AutoMLSearch(
+        X_train=X_train,
+        y_train=y_train,
+        problem_type=problem_type,
+        max_iterations=5,
+        optimize_thresholds=False,
+        problem_configuration={
+            "date_index": None,
+            "gap": 0,
+            "forecast_horizon": 1,
+            "max_delay": 2,
+        },
+        engine=engine_str,
+    )
+
+    env = AutoMLTestEnv(problem_type)
+    with env.test_context(score_return_value={automl.objective.name: 3.12}):
+        automl.search()
+
+    with env.test_context(score_return_value={automl.objective.name: 3.12}):
+        automl.score_pipelines(
+            automl.allowed_pipelines, X_test, y_test, [automl.objective]
+        )
+
+    expected_X_train, expected_y_train = None, None
+    if is_time_series(problem_type):
+        expected_X_train, expected_y_train = X_train, y_train
+    assert len(env.mock_score.mock_calls) == len(automl.allowed_pipelines)
+    for mock_call in env.mock_score.mock_calls:
+        if expected_X_train is not None:
+            pd.testing.assert_frame_equal(mock_call[2]["X_train"], expected_X_train)
+            pd.testing.assert_series_equal(mock_call[2]["y_train"], expected_y_train)
+        else:
+            assert mock_call[2]["X_train"] == expected_X_train
+            assert mock_call[2]["y_train"] == expected_y_train

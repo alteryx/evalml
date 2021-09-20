@@ -1662,9 +1662,18 @@ class AutoMLSearch:
 
         computations = []
         for pipeline in pipelines:
+            X_train, y_train = None, None
+            if is_time_series(self.problem_type):
+                X_train, y_train = self.X_train, self.y_train
             computations.append(
                 self._engine.submit_scoring_job(
-                    self.automl_config, pipeline, X_holdout, y_holdout, objectives
+                    self.automl_config,
+                    pipeline,
+                    X_holdout,
+                    y_holdout,
+                    objectives,
+                    X_train=X_train,
+                    y_train=y_train,
                 )
             )
 

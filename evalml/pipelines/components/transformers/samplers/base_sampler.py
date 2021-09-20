@@ -17,6 +17,7 @@ class BaseSampler(Transformer):
 
     modifies_features = True
     modifies_target = True
+    training_only = True
 
     def fit(self, X, y):
         """Fits the sampler to the data.

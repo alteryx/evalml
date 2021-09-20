@@ -64,7 +64,10 @@ class LightGBMRegressor(Estimator):
     }"""
     model_family = ModelFamily.LIGHTGBM
     """ModelFamily.LIGHTGBM"""
-    supported_problem_types = [ProblemTypes.REGRESSION]
+    supported_problem_types = [
+        ProblemTypes.REGRESSION,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ]
     """[ProblemTypes.REGRESSION]"""
 
     SEED_MIN = 0

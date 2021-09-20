@@ -123,6 +123,49 @@ def test_explain_predictions_value_errors():
         )
 
 
+@pytest.mark.parametrize("training_target", [None, pd.Series([1, 2, 3])])
+@pytest.mark.parametrize("training_data", [None, pd.DataFrame({"a": [1, 2, 3]})])
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ],
+)
+def test_time_series_training_target_and_training_data_are_not_None(
+    training_target, training_data, problem_type
+):
+    mock_ts_pipeline = MagicMock(problem_type=problem_type)
+
+    if training_data is not None and training_target is not None:
+        pytest.xfail("No exception raised in this case")
+
+    with pytest.raises(
+        ValueError, match="training_target and training_data are not None"
+    ):
+        explain_predictions(
+            mock_ts_pipeline,
+            pd.DataFrame({"a": [0, 1, 2, 3, 4]}),
+            y=pd.Series([1, 2, 3, 4, 5]),
+            indices_to_explain=[2],
+            training_data=training_data,
+            training_target=training_target,
+        )
+
+    with pytest.raises(
+        ValueError, match="training_target and training_data are not None"
+    ):
+        explain_predictions_best_worst(
+            mock_ts_pipeline,
+            pd.DataFrame({"a": [0, 1, 2, 3, 4]}),
+            y_true=pd.Series([1, 2, 3, 4, 5]),
+            num_to_explain=1,
+            training_data=training_data,
+            training_target=training_target,
+        )
+
+
 def test_output_format_checked():
     input_features, y_true = pd.DataFrame(data=[range(15)]), pd.Series(range(15))
     with pytest.raises(

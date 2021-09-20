@@ -33,6 +33,7 @@ from evalml.pipelines import (
 from evalml.pipelines.component_graph import ComponentGraph
 from evalml.pipelines.components import (
     DropNullColumns,
+    DropRowsTransformer,
     ElasticNetClassifier,
     Imputer,
     LogisticRegressionClassifier,
@@ -2754,3 +2755,63 @@ def test_pipeline_transform_with_final_estimator(
         ),
     ):
         pipeline.transform(X, y)
+
+
+@patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
+def test_training_only_component_in_pipeline_fit(mock_fit, X_y_binary):
+    X, y = X_y_binary
+    pipeline = BinaryClassificationPipeline(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Drop Rows Transformer": [DropRowsTransformer, "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Drop Rows Transformer.x",
+                "Drop Rows Transformer.y",
+            ],
+        },
+        parameters={"Drop Rows Transformer": {"indices_to_drop": [0, 9]}},
+    )
+    pipeline.fit(X, y)
+    assert len(mock_fit.call_args[0][0]) == len(X) - 2
+
+
+def test_training_only_component_in_pipeline_predict_and_compute_estimator_features(
+    X_y_binary,
+):
+    # Test that calling predict() and `compute_estimator_features` will not evaluate any training-only transformations
+    X, y = X_y_binary
+    pipeline = BinaryClassificationPipeline(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Drop Rows Transformer": [DropRowsTransformer, "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Drop Rows Transformer.x",
+                "Drop Rows Transformer.y",
+            ],
+        },
+        parameters={"Drop Rows Transformer": {"indices_to_drop": [9]}},
+    )
+    pipeline.fit(X, y)
+    preds = pipeline.predict(X)
+    assert len(preds) == len(X)
+    preds = pipeline.predict_proba(X)
+    assert len(preds) == len(X)
+    estimator_features = pipeline.compute_estimator_features(X, y)
+    assert len(estimator_features) == len(X)
+
+
+def test_training_only_component_in_pipeline_transform(X_y_binary):
+    # Test that calling transform() will evaluate all training-only transformations
+    X, y = X_y_binary
+    pipeline = BinaryClassificationPipeline(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Drop Rows Transformer": [DropRowsTransformer, "Imputer.x", "y"],
+        },
+        parameters={"Drop Rows Transformer": {"indices_to_drop": [0, 9]}},
+    )
+    pipeline.fit(X, y)
+    transformed = pipeline.transform(X)
+    assert len(transformed) == len(X) - 2
