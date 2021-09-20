@@ -4,8 +4,6 @@ from scipy.stats import gamma
 
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
-    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning,
 )
