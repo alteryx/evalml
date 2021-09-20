@@ -212,7 +212,9 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipel
 
 @pytest.mark.parametrize("graph_type", ["graph", "list"])
 def test_component_as_json(
-    graph_type, linear_regression_pipeline_class, nonlinear_binary_with_target_pipeline_class
+    graph_type,
+    linear_regression_pipeline_class,
+    nonlinear_binary_with_target_pipeline_class,
 ):
     pipeline_ = linear_regression_pipeline_class({})
     if graph_type == "graph":
