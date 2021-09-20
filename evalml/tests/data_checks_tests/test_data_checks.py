@@ -17,7 +17,6 @@ from evalml.data_checks import (
     DataCheckWarning,
     DateTimeFormatDataCheck,
     DefaultDataChecks,
-    EmptyDataChecks,
     TargetDistributionDataCheck,
 )
 from evalml.exceptions import DataCheckInitError
@@ -110,19 +109,6 @@ def test_data_checks(X_y_binary):
         ],
         "actions": [],
     }
-
-
-@pytest.mark.parametrize("input_type", ["pd", "ww", "np"])
-def test_empty_data_checks(input_type, X_y_binary):
-    X, y = X_y_binary
-    if input_type != "np":
-        X = pd.DataFrame(X)
-        y = pd.Series(y)
-    if input_type == "ww":
-        X.ww.init()
-        y = ww.init_series(y)
-    data_checks = EmptyDataChecks()
-    assert data_checks.validate(X, y) == {"warnings": [], "errors": [], "actions": []}
 
 
 messages = [

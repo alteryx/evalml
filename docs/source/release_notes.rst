@@ -2,17 +2,26 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Updated to work with Woodwork 0.8.1 :pr:`2783`
+        * Added validation that ``training_data`` and ``training_target`` are not ``None`` in prediction explanations :pr:`2787`
+        * Added support for training-only components in pipelines and component graphs :pr:`2776`
+        * Added default argument for the parameters value for ``ComponentGraph.instantiate`` :pr:`2796`
+        * Added ``TIME_SERIES_REGRESSION`` to ``LightGBMRegressor's`` supported problem types :pr:`2793`
         * Provide a JSON representation of a pipeline's DAG structure :pr:``
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
+        * Fixed bug where ``score_pipelines`` method of ``AutoMLSearch`` would not work for time series problems :pr:`2786`
     * Changes
+        * Deleted ``EmptyDataChecks`` class :pr:`2794`
     * Documentation Changes
     * Testing Changes
+        * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
 
 .. warning::
 
     **Breaking Changes**
+        * Deleted ``EmptyDataChecks`` class :pr:`2794`
 
 
 **v0.33.0 Sep. 15, 2021**

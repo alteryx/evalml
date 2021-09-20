@@ -147,7 +147,9 @@ class CFEngine(EngineBase):
         )
         return CFComputation(future)
 
-    def submit_scoring_job(self, automl_config, pipeline, X, y, objectives):
+    def submit_scoring_job(
+        self, automl_config, pipeline, X, y, objectives, X_train=None, y_train=None
+    ):
         """Send scoring job to cluster.
 
         Args:
@@ -155,6 +157,8 @@ class CFEngine(EngineBase):
             pipeline (pipeline.PipelineBase): Pipeline to train.
             X (pd.DataFrame): Input data for modeling.
             y (pd.Series): Target data for modeling.
+            X_train (pd.DataFrame): Training features. Used for feature engineering in time series.
+            y_train (pd.Series): Training target. Used for feature engineering in time series.
             objectives (list[ObjectiveBase]): Objectives to score on.
 
         Returns:
@@ -172,6 +176,8 @@ class CFEngine(EngineBase):
             objectives=objectives,
             X_schema=X_schema,
             y_schema=y_schema,
+            X_train=X_train,
+            y_train=y_train,
         )
         computation = CFComputation(future)
         computation.meta_data["pipeline_name"] = pipeline.name
