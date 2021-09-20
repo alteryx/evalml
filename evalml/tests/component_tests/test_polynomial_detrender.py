@@ -105,7 +105,7 @@ def test_polynomial_detrender_needs_monotonic_index(ts_data):
     with pytest.raises(ValueError) as exec_info:
         y_shuffled = y.sample(frac=1, replace=False)
         detrender.fit_transform(X, y_shuffled)
-        assert "monotonically" in str(exec_info.value)
+    assert "monotonically" in str(exec_info.value)
 
     with pytest.raises(
         NotImplementedError,
