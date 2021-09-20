@@ -14,8 +14,6 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import BaseCrossValidator
 
-from dask import distributed as dd
-
 from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 
 from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm

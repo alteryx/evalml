@@ -1,5 +1,6 @@
 """A Future-like wrapper around jobs created by the DaskEngine."""
 import joblib
+
 from dask.distributed import Client, LocalCluster
 
 from evalml.automl.engine.engine_base import (
