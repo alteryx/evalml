@@ -141,8 +141,10 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
                 "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
             )
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
+        X = infer_feature_types(X)
+        self._validate_holdout_datasets(X, X_train)
         y_holdout = self._create_empty_series(y_train)
-        X, y_holdout = self._convert_to_woodwork(X, y_holdout)
+        y_holdout = infer_feature_types(y_holdout)
         y_holdout.index = X.index
         return self.predict_proba_in_sample(X, y_holdout, X_train, y_train)
 

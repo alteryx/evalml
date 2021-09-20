@@ -30,6 +30,68 @@ from evalml.utils import infer_feature_types
     ],
 )
 @pytest.mark.parametrize(
+    "thing_thats_wrong", ["not-right-length", "not-separated-by-gap", "both"]
+)
+@pytest.mark.parametrize("gap", [0, 1, 5])
+@pytest.mark.parametrize("forecast_horizon", [1, 5, 10])
+@patch("evalml.pipelines.components.LinearRegressor.fit")
+@patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
+def test_time_series_pipeline_validates_holdout_data(
+    mock_fit_lr,
+    mock_fit_linear,
+    forecast_horizon,
+    gap,
+    thing_thats_wrong,
+    pipeline_class,
+    estimator,
+    ts_data,
+):
+    pl = pipeline_class(
+        component_graph=[estimator],
+        parameters={
+            "pipeline": {
+                "date_index": None,
+                "gap": gap,
+                "max_delay": 2,
+                "forecast_horizon": forecast_horizon,
+            }
+        },
+    )
+    X, y = ts_data
+    TRAIN_LENGTH = 15
+    X_train, y_train = X.iloc[:TRAIN_LENGTH], y.iloc[:TRAIN_LENGTH]
+    if thing_thats_wrong == "not-right-length":
+        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon + 2]
+    elif thing_thats_wrong == "not-separated-by-gap":
+        X = X.iloc[TRAIN_LENGTH + gap + 2 : TRAIN_LENGTH + gap + 2 + forecast_horizon]
+    else:
+        X = X.iloc[
+            TRAIN_LENGTH + gap + 2 : TRAIN_LENGTH + gap + 2 + forecast_horizon + 1
+        ]
+
+    pl.fit(X_train, y_train)
+
+    with pytest.raises(
+        ValueError, match=f"Holdout data X must have {forecast_horizon}"
+    ):
+        pl.predict(X, None, X_train, y_train)
+
+    if hasattr(pl, "predict_proba"):
+        with pytest.raises(
+            ValueError, match=f"Holdout data X must have {forecast_horizon}"
+        ):
+            pl.predict_proba(X, X_train, y_train)
+
+
+@pytest.mark.parametrize(
+    "pipeline_class,estimator",
+    [
+        (TimeSeriesRegressionPipeline, "Linear Regressor"),
+        (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
+        (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier"),
+    ],
+)
+@pytest.mark.parametrize(
     "components",
     [["One Hot Encoder"], ["Delayed Feature Transformer", "One Hot Encoder"]],
 )
@@ -745,8 +807,9 @@ def test_binary_classification_predictions_thresholded_properly(
     mock_objs = [mock_decode, mock_predict]
     mock_decode.return_value = ww.init_series(pd.Series([0, 1]))
     X, y = X_y_binary
-    X_train, y_train = X[:60], y[:60]
-    X_validation = X[60:63]
+    X, y = pd.DataFrame(X), pd.Series(y)
+    X_train, y_train = X.iloc[:60], y.iloc[:60]
+    X_validation = X.iloc[60:63]
     binary_pipeline = dummy_ts_binary_pipeline_class(
         parameters={
             "Logistic Regression Classifier": {"n_jobs": 1},
@@ -809,6 +872,7 @@ def test_binary_predict_pipeline_objective_mismatch(
     X_y_binary, dummy_ts_binary_pipeline_class
 ):
     X, y = X_y_binary
+    X, y = pd.DataFrame(X), pd.Series(y)
     binary_pipeline = dummy_ts_binary_pipeline_class(
         parameters={
             "Logistic Regression Classifier": {"n_jobs": 1},
@@ -886,8 +950,9 @@ def test_time_series_pipeline_not_fitted_error(
             }
         )
 
-    X_train, y_train = X[:80], y[:80]
-    X_holdout = X[80:]
+    X, y = pd.DataFrame(X), pd.Series(y)
+    X_train, y_train = X.iloc[:80], y.iloc[:80]
+    X_holdout = X.iloc[80:]
 
     with pytest.raises(PipelineNotYetFittedError):
         clf.predict(X_holdout, None, X_train, y_train)
