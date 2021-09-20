@@ -8,3 +8,4 @@ nbval==0.9.3
 IPython>=5.0.0
 codecov==2.1.11
 PyYAML==5.4
+ipywidgets>=7.5
