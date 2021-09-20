@@ -66,7 +66,7 @@ jobs:
           pip install -r core-requirements.txt
           pip install -r test-requirements.txt
           # "!" negates return code. exit nonzero if any of these deps are found
-          ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
+          ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|category_encoders"
           exit $?
       - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel') }}
         name: Installing Dependencies
