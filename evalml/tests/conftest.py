@@ -791,7 +791,7 @@ def nonlinear_binary_pipeline_class(example_graph):
 def nonlinear_binary_with_target_pipeline_class(example_pass_target_graph):
     class NonLinearBinaryWithTargetPipeline(BinaryClassificationPipeline):
         custom_name = "Non Linear Binary With Target Pipeline"
-        component_graph = example_graph
+        component_graph = example_pass_target_graph
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(

@@ -116,8 +116,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         self._pipeline_params = None
         if parameters is not None:
             self._pipeline_params = parameters.get("pipeline", {})
-        print(f"Parameters: {parameters}")
-        print(f"Pipeline params: {self._pipeline_params}")
 
         self._custom_name = custom_name
 
