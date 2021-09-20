@@ -2024,6 +2024,7 @@ def test_predict_has_input_target_name(
         )
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = X_y_binary
+        X, y = pd.DataFrame(X), pd.Series(y)
         X_validation = X[50:52]
         X, y = X[:50], y[:50]
         clf = time_series_binary_classification_pipeline_class(
@@ -2044,6 +2045,7 @@ def test_predict_has_input_target_name(
         )
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         X, y = X_y_multi
+        X, y = pd.DataFrame(X), pd.Series(y)
         X_validation = X[50:52]
         X, y = X[:50], y[:50]
         clf = time_series_multiclass_classification_pipeline_class(

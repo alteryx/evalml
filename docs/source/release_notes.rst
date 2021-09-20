@@ -8,6 +8,7 @@ Release Notes
         * Added default argument for the parameters value for ``ComponentGraph.instantiate`` :pr:`2796`
         * Added ``TIME_SERIES_REGRESSION`` to ``LightGBMRegressor's`` supported problem types :pr:`2793`
         * Provide a JSON representation of a pipeline's DAG structure :pr:`2812`
+        * Added validation to holdout data passed to ``predict`` and ``predict_proba`` for time series :pr:`2804`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
