@@ -15,6 +15,7 @@ Release Notes
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
     * Documentation Changes
     * Testing Changes
+        * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
 
 .. warning::
 
