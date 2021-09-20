@@ -16,6 +16,7 @@ Release Notes
         * Removed data check for log distributions in ``make_pipeline`` :pr:`2806`
     * Documentation Changes
     * Testing Changes
+        * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
 
 .. warning::
 
