@@ -4,6 +4,8 @@ from scipy.stats import gamma
 
 from evalml.data_checks import (
     DataCheck,
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning,
 )
@@ -80,6 +82,16 @@ class OutliersDataCheck(DataCheck):
                 data_check_name=self.name,
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
                 details={"columns": has_outliers, "rows": outlier_row_indices},
+            ).to_dict()
+        )
+        all_rows_with_indices = []
+        for row_indices in outlier_row_indices.values():
+            all_rows_with_indices.extend(row_indices)
+        all_rows_with_indices.sort()
+        results["actions"].append(
+            DataCheckAction(
+                DataCheckActionCode.DROP_ROWS,
+                metadata={"indices": all_rows_with_indices},
             ).to_dict()
         )
         return results

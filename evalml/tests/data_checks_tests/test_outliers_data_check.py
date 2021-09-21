@@ -37,7 +37,7 @@ def test_outliers_data_check_warnings():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0, 3, 5, 10]}}],
     }
 
 
@@ -75,7 +75,7 @@ def test_outliers_data_check_input_formats():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0, 3, 5, 10]}}],
     }
 
     # test Woodwork
@@ -94,7 +94,7 @@ def test_outliers_data_check_input_formats():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0, 3, 5, 10]}}],
     }
 
 
@@ -119,7 +119,7 @@ def test_outliers_data_check_string_cols():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0]}}],
     }
 
 
@@ -157,5 +157,5 @@ def test_outliers_data_check_warnings_has_nan():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [3, 5, 10]}}],
     }
