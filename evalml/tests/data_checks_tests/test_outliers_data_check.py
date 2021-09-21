@@ -30,7 +30,10 @@ def test_outliers_data_check_warnings():
                 message="Column(s) '3', '25', '55', '72' are likely to have outlier data.",
                 data_check_name=outliers_data_check_name,
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                details={"columns": [3, 25, 55, 72]},
+                details={
+                    "columns": [3, 25, 55, 72],
+                    "rows": {3: [0], 25: [3], 55: [5], 72: [10]},
+                },
             ).to_dict()
         ],
         "errors": [],
@@ -65,7 +68,10 @@ def test_outliers_data_check_input_formats():
                 message="Column(s) '3', '25', '55', '72' are likely to have outlier data.",
                 data_check_name=outliers_data_check_name,
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                details={"columns": [3, 25, 55, 72]},
+                details={
+                    "columns": [3, 25, 55, 72],
+                    "rows": {3: [0], 25: [3], 55: [5], 72: [10]},
+                },
             ).to_dict()
         ],
         "errors": [],
@@ -81,7 +87,10 @@ def test_outliers_data_check_input_formats():
                 message="Column(s) '3', '25', '55', '72' are likely to have outlier data.",
                 data_check_name=outliers_data_check_name,
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                details={"columns": [3, 25, 55, 72]},
+                details={
+                    "columns": [3, 25, 55, 72],
+                    "rows": {3: [0], 25: [3], 55: [5], 72: [10]},
+                },
             ).to_dict()
         ],
         "errors": [],
@@ -106,7 +115,7 @@ def test_outliers_data_check_string_cols():
                 message="Column(s) 'd' are likely to have outlier data.",
                 data_check_name=outliers_data_check_name,
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                details={"columns": ["d"]},
+                details={"columns": ["d"], "rows": {"d": [0]}},
             ).to_dict()
         ],
         "errors": [],
@@ -144,7 +153,7 @@ def test_outliers_data_check_warnings_has_nan():
                 message="Column(s) '25', '55', '72' are likely to have outlier data.",
                 data_check_name=outliers_data_check_name,
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                details={"columns": [25, 55, 72]},
+                details={"columns": [25, 55, 72], "rows": {25: [3], 55: [5], 72: [10]}},
             ).to_dict()
         ],
         "errors": [],

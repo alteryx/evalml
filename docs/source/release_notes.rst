@@ -7,6 +7,9 @@ Release Notes
         * Added support for training-only components in pipelines and component graphs :pr:`2776`
         * Added default argument for the parameters value for ``ComponentGraph.instantiate`` :pr:`2796`
         * Added ``TIME_SERIES_REGRESSION`` to ``LightGBMRegressor's`` supported problem types :pr:`2793`
+        * Added validation to holdout data passed to ``predict`` and ``predict_proba`` for time series :pr:`2804`
+        * Added information about which row indices are outliers in ``OutliersDataCheck`` :pr:`2818`
+        * Added verbose flag to top level ``search()`` method :pr:`2813`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
@@ -17,6 +20,7 @@ Release Notes
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
     * Documentation Changes
     * Testing Changes
+        * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
 
 .. warning::
 
