@@ -428,16 +428,16 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     def graph_json(self):
         """Generates a JSON with nodes consisting of the component names and parameters, and edges detailing component relationships.
-           This can be used to build graphs across a variety of tools.
 
-            Template: {"Edges": {"from_parent_node_to_child_node" : {"data": what_value_is_passed,
-                                                                     "from": "parent_node",
-                                                                     "to": "child_node"},
-                                ...},
-                      "Nodes": {"component_name": {"class": class_name,
-                                                   "attributes": parameters_attributes},
-                                ...}
-                     }
+        This can be used to build graphs across a variety of tools.
+        Template: {"Edges": {"from_parent_node_to_child_node" : {"data": what_value_is_passed,
+                                                                 "from": "parent_node",
+                                                                 "to": "child_node"},
+                            ...},
+                    "Nodes": {"component_name": {"class": class_name,
+                                                 "attributes": parameters_attributes},
+                            ...}
+                    }
 
         Returns:
             dag_json (str): A serialized JSON representation of a DAG structure.
