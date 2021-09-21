@@ -4,10 +4,7 @@ from sklearn.preprocessing import StandardScaler as SkScaler
 from woodwork.logical_types import Boolean, Categorical, Integer
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types,
-)
+from evalml.utils import infer_feature_types
 
 
 class StandardScaler(Transformer):
@@ -41,13 +38,15 @@ class StandardScaler(Transformer):
             pd.DataFrame: Transformed data.
         """
         X = infer_feature_types(X)
-        original_ltypes = X.ww.schema.logical_types
         X = X.ww.select_dtypes(exclude=["datetime"])
         X_t = self._component_obj.transform(X)
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
-        return _retain_custom_types_and_initalize_woodwork(
-            original_ltypes, X_t_df, ltypes_to_ignore=[Integer, Categorical, Boolean]
+
+        schema = X.ww.select(
+            exclude=[Integer, Categorical, Boolean], return_schema=True
         )
+        X_t_df.ww.init(schema=schema)
+        return X_t_df
 
     def fit_transform(self, X, y=None):
         """Fit and transform data using the standard scaler component.

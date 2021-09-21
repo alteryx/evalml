@@ -16,6 +16,8 @@ Release Notes
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
         * Fixed bug where ``score_pipelines`` method of ``AutoMLSearch`` would not work for time series problems :pr:`2786`
     * Changes
+        * Changed woodwork initialization to use partial schemas :pr:`2774`
+        * Made ``Transformer.transform()`` an abstract method :pr:`2744`
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
         * Removed data check for checking log distributions in ``make_pipeline`` :pr:`2806`
     * Documentation Changes
@@ -25,6 +27,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Made ``Transformer.transform()`` an abstract method :pr:`2744`
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
         * Removed data check for checking log distributions in ``make_pipeline`` :pr:`2806`
 
