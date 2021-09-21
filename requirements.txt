@@ -3,7 +3,7 @@ plotly>=5.0.0
 kaleido>=0.1.0
 ipywidgets>=7.5
 xgboost>=1.4.2
-catboost>=0.20
+catboost>=0.22
 lightgbm>=2.3.1
 matplotlib>=3.3.3
 graphviz>=0.13;platform_system!='Windows'
@@ -11,5 +11,5 @@ seaborn>=0.11.1
 category_encoders>=2.2.2
 statsmodels >= 0.12.2
 imbalanced-learn>=0.8.0
-pmdarima==1.8.0
+pmdarima==1.8.2
 sktime>=0.7.0;python_version<"3.9"
