@@ -16,6 +16,7 @@ Release Notes
         * Fixed bug where ``score_pipelines`` method of ``AutoMLSearch`` would not work for time series problems :pr:`2786`
     * Changes
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
+        * Removed data check for checking log distributions in ``make_pipeline`` :pr:`2806`
     * Documentation Changes
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
@@ -24,6 +25,7 @@ Release Notes
 
     **Breaking Changes**
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
+        * Removed data check for checking log distributions in ``make_pipeline`` :pr:`2806`
 
 
 **v0.33.0 Sep. 15, 2021**
