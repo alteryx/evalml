@@ -5242,7 +5242,6 @@ def test_automl_ensembler_allowed_component_graphs(
 ):
     """
     Test that graphs defined in allowed_component_graphs are able to be put in an ensemble pipeline.
-    Also ensures that pipelines that are defined as strings or classes are able to be ensembled.
     """
     X, y = X_y_regression
     mock_en_predict_proba.return_value = np.ones(len(y))
@@ -5272,27 +5271,10 @@ def test_automl_ensembler_allowed_component_graphs(
     )
     automl.search()
     assert "Stacked Ensemble Regression Pipeline" in caplog.text
-
-    component_graphs = {
-        "Pipeline1": {
-            "Imputer": [Imputer, "X", "y"],
-            "Log Transformer": [LogTransformer, "X", "y"],
-            "RF": [RandomForestRegressor, "Imputer.x", "Log Transformer.y"],
-        },
-        "Pipeline2": {
-            "Imputer": [Imputer, "X", "y"],
-            "Log Transformer": [LogTransformer, "X", "y"],
-            "EN": [ElasticNetRegressor, "Imputer.x", "Log Transformer.y"],
-        },
-    }
-    automl = AutoMLSearch(
-        X,
-        y,
-        "regression",
-        allowed_component_graphs=component_graphs,
-        ensembling=True,
-        max_batches=4,
-        verbose=True,
+    assert "Stacked Ensemble Regression Pipeline" in list(
+        automl.rankings["pipeline_name"]
     )
-    automl.search()
-    assert "Stacked Ensemble Regression Pipeline" in caplog.text
+    ensemble_result = automl.rankings[
+        automl.rankings["pipeline_name"] == "Stacked Ensemble Regression Pipeline"
+    ]
+    assert not np.isnan(float(ensemble_result["mean_cv_score"]))

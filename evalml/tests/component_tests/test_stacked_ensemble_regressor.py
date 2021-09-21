@@ -6,7 +6,12 @@ import pytest
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import RegressionPipeline
-from evalml.pipelines.components import RandomForestRegressor
+from evalml.pipelines.components import (
+    ElasticNetRegressor,
+    Imputer,
+    LogTransformer,
+    RandomForestRegressor,
+)
 from evalml.pipelines.components.ensemble import StackedEnsembleRegressor
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
@@ -165,3 +170,66 @@ def test_stacked_same_model_family():
     assert "Linear Pipeline - Elastic Net" in pipeline.component_graph.compute_order
     assert "Linear Pipeline 2 - Elastic Net" in pipeline.component_graph.compute_order
     assert "Linear Pipeline - EN" in pipeline.component_graph.compute_order
+
+
+def test_automl_ensembler_str_and_classes():
+    """
+    Test that ensures that pipelines that are defined as strings or classes are able to be ensembled.
+    """
+
+    def check_for_components(pl):
+        pl_components = pl.component_graph.compute_order
+        expected_components = [
+            "Linear Pipeline - Imputer",
+            "Linear Pipeline - Log Transformer",
+            "Linear Pipeline - EN",
+            "Random Forest Pipeline - Imputer",
+            "Random Forest Pipeline - Log Transformer",
+            "Random Forest Pipeline - RF",
+        ]
+        for component in expected_components:
+            assert component in pl_components
+
+    reg_pl_1 = RegressionPipeline(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Log Transformer": ["Log Transformer", "X", "y"],
+            "RF": ["Random Forest Regressor", "Imputer.x", "Log Transformer.y"],
+        }
+    )
+    reg_pl_2 = RegressionPipeline(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Log Transformer": ["Log Transformer", "X", "y"],
+            "EN": ["Elastic Net Regressor", "Imputer.x", "Log Transformer.y"],
+        }
+    )
+
+    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+        input_pipelines=[reg_pl_1, reg_pl_2],
+        problem_type=ProblemTypes.REGRESSION,
+        use_sklearn=False,
+    )
+    check_for_components(ensemble_pipeline)
+
+    reg_pl_1 = RegressionPipeline(
+        {
+            "Imputer": [Imputer, "X", "y"],
+            "Log Transformer": [LogTransformer, "X", "y"],
+            "RF": [RandomForestRegressor, "Imputer.x", "Log Transformer.y"],
+        }
+    )
+    reg_pl_2 = RegressionPipeline(
+        {
+            "Imputer": [Imputer, "X", "y"],
+            "Log Transformer": [LogTransformer, "X", "y"],
+            "EN": [ElasticNetRegressor, "Imputer.x", "Log Transformer.y"],
+        }
+    )
+
+    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+        input_pipelines=[reg_pl_1, reg_pl_2],
+        problem_type=ProblemTypes.REGRESSION,
+        use_sklearn=False,
+    )
+    check_for_components(ensemble_pipeline)
