@@ -150,8 +150,8 @@ def _fast_permutation_importance(
 
     Only used for pipelines that support this optimization.
     """
-    if is_classification(pipeline.problem_type):
-        y = pipeline._encode_targets(y)
+    # if is_classification(pipeline.problem_type):
+    #     y = pipeline._encode_targets(y)
 
     baseline_score = _fast_scorer(pipeline, precomputed_features, X, y, objective)
     if col_name is None:

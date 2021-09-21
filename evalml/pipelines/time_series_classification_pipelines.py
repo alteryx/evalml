@@ -40,7 +40,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """
         X, y = self._convert_to_woodwork(X, y)
         self._encoder.fit(y)
-        y = self._encode_targets(y)
+        # y = self._encode_targets(y)
         self._fit(X, y)
         return self
 
@@ -73,8 +73,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             raise ValueError(
                 "Cannot call predict_proba_in_sample() on a component graph because the final component is not an Estimator."
             )
-        y_holdout = self._encode_targets(y_holdout)
-        y_train = self._encode_targets(y_train)
+        # y_holdout = self._encode_targets(y_holdout)
+        # y_train = self._encode_targets(y_train)
         features = self.compute_estimator_features(
             X_holdout, y_holdout, X_train, y_train
         )
@@ -109,8 +109,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
             )
 
-        y = self._encode_targets(y)
-        y_train = self._encode_targets(y_train)
+        # y = self._encode_targets(y)
+        # y_train = self._encode_targets(y_train)
         features = self.compute_estimator_features(X, y, X_train, y_train)
         predictions = self._estimator_predict(features, y)
         predictions.index = y.index
@@ -155,7 +155,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             y_predicted_proba = self.predict_proba_in_sample(X, y, X_train, y_train)
         if any(not o.score_needs_proba for o in objectives):
             y_predicted = self.predict_in_sample(X, y, X_train, y_train)
-            y_predicted = self._encode_targets(y_predicted)
+            # y_predicted = self._encode_targets(y_predicted)
         return y_predicted, y_predicted_proba
 
     def score(self, X, y, objectives, X_train=None, y_train=None):
@@ -183,7 +183,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         )
         return self._score_all_objectives(
             X,
-            self._encode_targets(y),
+            # self._encode_targets(y),
             y_predicted,
             y_pred_proba=y_predicted_proba,
             objectives=objectives,
@@ -249,8 +249,13 @@ class TimeSeriesBinaryClassificationPipeline(
                 predictions = objective.decision_function(
                     proba, threshold=self.threshold, X=X
                 )
+            # predictions = pd.Series(
+            #     self._decode_targets(predictions),
+            #     name=self.input_target_name,
+            #     index=y.index,
+            # )
             predictions = pd.Series(
-                self._decode_targets(predictions),
+                predictions,
                 name=self.input_target_name,
                 index=y.index,
             )

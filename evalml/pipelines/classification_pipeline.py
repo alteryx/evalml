@@ -48,26 +48,26 @@ class ClassificationPipeline(PipelineBase):
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        self._encoder.fit(y)
-        y = self._encode_targets(y)
+        # self._encoder.fit(y)
+        # y = self._encode_targets(y)
         self._fit(X, y)
         return self
 
-    def _encode_targets(self, y):
-        """Converts target values from their original values to integer values that can be processed."""
-        try:
-            return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
-        except ValueError as e:
-            raise ValueError(str(e))
+    # def _encode_targets(self, y):
+    #     """Converts target values from their original values to integer values that can be processed."""
+    #     try:
+    #         return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
+    #     except ValueError as e:
+    #         raise ValueError(str(e))
 
-    def _decode_targets(self, y):
-        """Converts encoded numerical values to their original target values.
+    # def _decode_targets(self, y):
+    #     """Converts encoded numerical values to their original target values.
 
-        Note: we cast y as ints first to address boolean values that may be returned from
-        calculating predictions which we would not be able to otherwise transform if we
-        originally had integer targets.
-        """
-        return self._encoder.inverse_transform(y.astype(int))
+    #     Note: we cast y as ints first to address boolean values that may be returned from
+    #     calculating predictions which we would not be able to otherwise transform if we
+    #     originally had integer targets.
+    #     """
+    #     return self._encoder.inverse_transform(y.astype(int))
 
     @property
     def classes_(self):
@@ -103,9 +103,9 @@ class ClassificationPipeline(PipelineBase):
             pd.Series: Estimated labels.
         """
         predictions = self._predict(X, objective=objective)
-        predictions = pd.Series(
-            self._decode_targets(predictions), name=self.input_target_name
-        )
+        # predictions = pd.Series(
+        #     self._decode_targets(predictions), name=self.input_target_name
+        # )
         return infer_feature_types(predictions)
 
     def predict_proba(self, X, X_train=None, y_train=None):
@@ -151,7 +151,7 @@ class ClassificationPipeline(PipelineBase):
         """
         y = infer_feature_types(y)
         objectives = self.create_objectives(objectives)
-        y = self._encode_targets(y)
+        # y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
         return self._score_all_objectives(
             X, y, y_predicted, y_predicted_proba, objectives
