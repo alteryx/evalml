@@ -11,7 +11,6 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
 )
 from evalml.pipelines.components import (
-    Oversampler,
     RandomForestClassifier,
     StackedEnsembleClassifier,
 )

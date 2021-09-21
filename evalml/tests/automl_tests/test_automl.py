@@ -58,12 +58,6 @@ from evalml.pipelines import (
     RegressionPipeline,
     SklearnStackedEnsembleClassifier,
 )
-from evalml.pipelines.components import (
-    ElasticNetRegressor,
-    Imputer,
-    LogTransformer,
-    RandomForestRegressor,
-)
 from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators,
@@ -1533,6 +1527,7 @@ def test_describe_pipeline_with_ensembling(
     ]
 
     num_sklearn_pl = 0
+
     for i, ensemble_id in enumerate(ensemble_ids):
         sklearn_pl = (
             True if "Sklearn" in automl.get_pipeline(ensemble_id).name else False
