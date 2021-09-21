@@ -800,12 +800,6 @@ def nonlinear_binary_with_target_pipeline_class(example_pass_target_graph):
                 custom_name=self.custom_name,
             )
 
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
     return NonLinearBinaryWithTargetPipeline
 
 
