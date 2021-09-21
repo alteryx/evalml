@@ -10,7 +10,11 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
 )
-from evalml.pipelines.components import RandomForestClassifier, Oversampler, StackedEnsembleClassifier
+from evalml.pipelines.components import (
+    Oversampler,
+    RandomForestClassifier,
+    StackedEnsembleClassifier,
+)
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
 
@@ -99,7 +103,10 @@ def test_stacked_ensemble_nondefault_y():
                 "OS": ["Oversampler", "X", "y"],
                 "rf": [RandomForestClassifier, "OS.x", "OS.y"],
             },
-            parameters={"OS": {"sampling_ratio": 0.5}, "Random Forest Classifier": {"n_estimators": 22}},
+            parameters={
+                "OS": {"sampling_ratio": 0.5},
+                "Random Forest Classifier": {"n_estimators": 22},
+            },
         ),
     ]
 
