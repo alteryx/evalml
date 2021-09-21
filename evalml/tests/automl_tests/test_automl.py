@@ -1597,7 +1597,7 @@ def test_describe_pipeline_with_ensembling(
                 )
         else:
             assert automl_dict is None
-    assert sklearn_pl == 1
+    assert num_sklearn_pl == 2
 
 
 def test_results_getter(AutoMLTestEnv, X_y_binary):
