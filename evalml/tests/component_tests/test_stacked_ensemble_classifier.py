@@ -3,14 +3,14 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from sklearn import datasets
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
 )
-from evalml.pipelines.components import RandomForestClassifier
-from evalml.pipelines.components.ensemble import StackedEnsembleClassifier
+from evalml.pipelines.components import RandomForestClassifier, Oversampler, StackedEnsembleClassifier
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
 
@@ -78,23 +78,28 @@ def test_stacked_problem_types():
     ]
 
 
-def test_stacked_ensemble_nondefault_y(X_y_binary):
+def test_stacked_ensemble_nondefault_y():
     pytest.importorskip(
         "imblearn.over_sampling",
         reason="Skipping nondefault y test because imblearn not installed",
     )
-    X, y = X_y_binary
+    X, y = datasets.make_classification(
+        n_samples=100, n_features=20, weights={0: 0.1, 1: 0.9}, random_state=0
+    )
     input_pipelines = [
         BinaryClassificationPipeline(
             {
                 "OS": ["Oversampler", "X", "y"],
                 "rf": [RandomForestClassifier, "OS.x", "OS.y"],
             },
-            parameters={"OS": {"k_neighbors_default": 10}},
+            parameters={"OS": {"sampling_ratio": 0.5}},
         ),
         BinaryClassificationPipeline(
-            [RandomForestClassifier],
-            parameters={"Random Forest Classifier": {"n_estimators": 22}},
+            {
+                "OS": ["Oversampler", "X", "y"],
+                "rf": [RandomForestClassifier, "OS.x", "OS.y"],
+            },
+            parameters={"OS": {"sampling_ratio": 0.5}, "Random Forest Classifier": {"n_estimators": 22}},
         ),
     ]
 
