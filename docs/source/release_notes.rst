@@ -18,6 +18,7 @@ Release Notes
         * Changed woodwork initialization to use partial schemas :pr:`2774`
         * Made ``Transformer.transform()`` an abstract method :pr:`2744`
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
+        * Removed data check for checking log distributions in ``make_pipeline`` :pr:`2806`
     * Documentation Changes
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
@@ -27,6 +28,7 @@ Release Notes
     **Breaking Changes**
         * Made ``Transformer.transform()`` an abstract method :pr:`2744`
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
+        * Removed data check for checking log distributions in ``make_pipeline`` :pr:`2806`
 
 
 **v0.33.0 Sep. 15, 2021**
