@@ -235,22 +235,14 @@ def test_component_as_json(
             else graph_[0] == dag_json["Nodes"][node_]["class"]
         )
         for comp_ in graph_[1:]:
-            if comp_ == "X":
+            if comp_ == "X" or comp_ == "y":
                 edge_ = "from_{}_to_{}"
-                from_ = "X"
-                data_ = "Original X input"
-            elif comp_ == "y":
-                edge_ = "from_{}_to_{}"
-                from_ = "y"
-                data_ = "Original y input"
-            elif comp_.endswith(".x"):
+                from_ = comp_
+                data_ = f"Original {comp_} input"
+            elif comp_.endswith(".x") or comp_.endswith(".y"):
                 edge_ = "from_{}_to_{}"
                 from_ = comp_[:-2]
-                data_ = "X modified by {}"
-            else:
-                edge_ = "from_{}_to_{}"
-                from_ = comp_[:-2]
-                data_ = "y modified by {}"
+                data_ = f"{'X' if comp_[-1] == 'x' else 'y'} modified by {from_}"
             assert dag_json["Edges"][edge_.format(from_, node_)][
                 "data"
             ] == data_.format(from_)

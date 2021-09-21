@@ -428,6 +428,16 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     def graph_json(self):
         """Generates a JSON with nodes consisting of the component names and parameters, and edges detailing component relationships.
+           This can be used to build graphs across a variety of tools.
+
+            Template: {"Edges": {"from_parent_node_to_child_node" : {"data": what_value_is_passed,
+                                                                     "from": "parent_node",
+                                                                     "to": "child_node"},
+                                ...},
+                      "Nodes": {"component_name": {"class": class_name,
+                                                   "attributes": parameters_attributes},
+                                ...}
+                     }
 
         Returns:
             dag_json (str): A serialized JSON representation of a DAG structure.
@@ -453,29 +463,17 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         ) in self.component_graph.component_dict.items():
             for input_ in component_info[1:]:
                 from_comp = input_[:-2]
-                if input_.endswith(".x"):
+                if input_.endswith(".x") or input_.endswith(".y"):
                     dag_json["Edges"][f"from_{from_comp}_to_{component_name}"] = {
                         "from": from_comp,
                         "to": component_name,
-                        "data": f"X modified by {from_comp}",
+                        "data": f"{'X' if input_[-1] == 'x' else 'y'} modified by {from_comp}",
                     }
-                elif input_ == "X":
-                    dag_json["Edges"][f"from_X_to_{component_name}"] = {
-                        "from": "X",
+                elif input_ == "X" or input_ == "y":
+                    dag_json["Edges"][f"from_{input_}_to_{component_name}"] = {
+                        "from": input_,
                         "to": component_name,
-                        "data": "Original X input",
-                    }
-                elif input_.endswith(".y"):
-                    dag_json["Edges"][f"from_{from_comp}_to_{component_name}"] = {
-                        "from": from_comp,
-                        "to": component_name,
-                        "data": f"y modified by {from_comp}",
-                    }
-                else:
-                    dag_json["Edges"][f"from_y_to_{component_name}"] = {
-                        "from": "y",
-                        "to": component_name,
-                        "data": "Original y input",
+                        "data": f"Original {input_} input",
                     }
 
         return json.dumps(dag_json)
