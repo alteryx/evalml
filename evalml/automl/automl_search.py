@@ -116,6 +116,7 @@ def search(
     patience=None,
     tolerance=None,
     problem_configuration=None,
+    verbose=False,
 ):
     """Given data and configuration, run an automl search.
 
@@ -142,6 +143,7 @@ def search(
             Only applicable if patience is not None. Defaults to None.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+        verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
     Returns:
         (AutoMLSearch, dict): The automl search object containing pipelines and rankings, and the results from running the data checks. If the data check results contain errors, automl search will not be run and an automl search object will not be returned.
@@ -188,6 +190,7 @@ def search(
         "max_time": max_time,
         "patience": patience,
         "tolerance": tolerance,
+        "verbose": verbose,
     }
 
     data_checks = DefaultDataChecks(
