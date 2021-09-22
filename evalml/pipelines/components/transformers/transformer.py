@@ -68,21 +68,3 @@ class Transformer(ComponentBase):
 
     def _get_feature_provenance(self):
         return {}
-
-
-class TargetTransformer(Transformer):
-    """A component that transforms the target."""
-
-    modifies_features = False
-    modifies_target = True
-
-    @abstractmethod
-    def inverse_transform(self, y):
-        """Inverts the transformation done by the transform method.
-
-         Args:
-            y (pd.Series): Target transformed by this component.
-
-        Returns:
-            pd.Series: Target without the transformation.
-        """

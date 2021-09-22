@@ -14,9 +14,6 @@ from evalml.exceptions.exceptions import (
     ParameterNotUsedWarning,
 )
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
-from evalml.pipelines.components.transformers.transformer import (
-    TargetTransformer,
-)
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import import_or_raise, infer_feature_types
 from evalml.utils.logger import get_logger
@@ -778,7 +775,7 @@ class ComponentGraph:
             parent_y = self._get_parent_y(current_component)
             if parent_y:
                 component = self.get_component(parent_y)
-                if isinstance(component, TargetTransformer):
+                if hasattr(component, 'inverse_transform'):
                     data_to_transform = component.inverse_transform(data_to_transform)
                 current_component = parent_y
             else:

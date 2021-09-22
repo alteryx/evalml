@@ -75,9 +75,6 @@ from evalml.pipelines.components.transformers.preprocessing.log_transformer impo
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
     BaseSampler,
 )
-from evalml.pipelines.components.transformers.transformer import (
-    TargetTransformer,
-)
 from evalml.pipelines.components.utils import (
     _all_estimators,
     _all_transformers,
@@ -1631,13 +1628,13 @@ def test_component_modifies_feature_or_target():
     for component_class in all_components():
         if (
             issubclass(component_class, BaseSampler)
-            or issubclass(component_class, TargetTransformer)
+            or hasattr(component_class, "inverse_transform")
             or component_class in [TargetImputer, DropRowsTransformer]
         ):
             assert component_class.modifies_target
         else:
             assert not component_class.modifies_target
-        if issubclass(component_class, TargetTransformer) or component_class in [
+        if hasattr(component_class, "inverse_transform") or component_class in [
             TargetImputer
         ]:
             assert not component_class.modifies_features
@@ -1649,7 +1646,7 @@ def test_component_parameters_supported_by_list_API():
     for component_class in all_components():
         if (
             issubclass(component_class, BaseSampler)
-            or issubclass(component_class, TargetTransformer)
+            or hasattr(component_class, "inverse_transform")
             or component_class in [TargetImputer, DropRowsTransformer]
         ):
             assert not component_class._supported_by_list_API

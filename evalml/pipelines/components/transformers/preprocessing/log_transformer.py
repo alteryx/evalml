@@ -1,19 +1,19 @@
 """Component that applies a log transformation to the target data."""
 import numpy as np
 
-from evalml.pipelines.components.transformers.transformer import (
-    TargetTransformer,
-)
+from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
 
 
-class LogTransformer(TargetTransformer):
+class LogTransformer(Transformer):
     """Applies a log transformation to the target data."""
 
     name = "Log Transformer"
 
     hyperparameter_ranges = {}
     """{}"""
+    modifies_features = False
+    modifies_target = True
 
     def __init__(self, random_seed=0):
         super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
