@@ -84,9 +84,11 @@ class OutliersDataCheck(DataCheck):
                 details={"columns": has_outliers, "rows": outlier_row_indices},
             ).to_dict()
         )
-        all_rows_with_indices = []
+        all_rows_with_indices_set = set()
         for row_indices in outlier_row_indices.values():
-            all_rows_with_indices.extend(row_indices)
+            all_rows_with_indices_set.update(row_indices)
+
+        all_rows_with_indices = list(all_rows_with_indices_set)
         all_rows_with_indices.sort()
         results["actions"].append(
             DataCheckAction(
