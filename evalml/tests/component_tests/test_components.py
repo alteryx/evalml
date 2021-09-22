@@ -91,7 +91,6 @@ from evalml.problem_types import ProblemTypes
 def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
-        model_family = ModelFamily.NONE
         modifies_features = True
         modifies_target = False
         training_only = False
@@ -125,7 +124,6 @@ def test_estimator_needs_fitting_false():
 
 
 class MockFitComponent(ComponentBase):
-    model_family = ModelFamily.NONE
     name = "Mock Fit Component"
     modifies_features = True
     modifies_target = False
@@ -516,7 +514,7 @@ def test_describe_component():
 
 def test_missing_attributes(X_y_binary):
     class MockComponentName(ComponentBase):
-        model_family = ModelFamily.NONE
+        pass
 
     with pytest.raises(TypeError):
         MockComponentName()
@@ -663,10 +661,8 @@ def test_component_fit_transform(X_y_binary):
 
 
 def test_model_family_components(test_classes):
-    MockComponent, MockEstimator, MockTransformer = test_classes
+    _, MockEstimator, _ = test_classes
 
-    assert MockComponent.model_family == ModelFamily.NONE
-    assert MockTransformer.model_family == ModelFamily.NONE
     assert MockEstimator.model_family == ModelFamily.LINEAR_MODEL
 
 
