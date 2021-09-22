@@ -2820,3 +2820,76 @@ def test_training_only_component_in_pipeline_transform(X_y_binary):
     pipeline.fit(X, y)
     transformed = pipeline.transform(X)
     assert len(transformed) == len(X) - 2
+
+
+def test_component_graph_pipeline():
+    component_graph1 = ComponentGraph(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Undersampler": ["Undersampler", "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Undersampler.x",
+                "Undersampler.y",
+            ],
+        }
+    )
+
+    component_graph2 = ComponentGraph(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Linear Regressor": [
+                "Linear Regressor",
+                "Imputer.x",
+                "y",
+            ],
+        }
+    )
+
+    component_graph3 = ComponentGraph(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Undersampler": ["Undersampler", "Imputer.x", "y"],
+        }
+    )
+
+    BinaryClassificationPipeline(component_graph1)
+    RegressionPipeline(component_graph2)
+    BinaryClassificationPipeline(component_graph3)
+    with pytest.raises(
+        ValueError, match="Problem type regression not valid for this component graph"
+    ):
+        RegressionPipeline(component_graph1)
+
+
+def test_component_graph_pipeline_initialized():
+    component_graph1 = ComponentGraph(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Undersampler": ["Undersampler", "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Undersampler.x",
+                "Undersampler.y",
+            ],
+        }
+    )
+    component_graph1.instantiate({"Imputer": {"numeric_impute_strategy": "mean"}})
+    assert (
+        component_graph1.component_instances["Imputer"].parameters[
+            "numeric_impute_strategy"
+        ]
+        == "mean"
+    )
+
+    # make sure the value gets overwritten when reinitialized
+    bcp = BinaryClassificationPipeline(
+        component_graph1, parameters={"Imputer": {"numeric_impute_strategy": "median"}}
+    )
+    assert bcp.parameters["Imputer"]["numeric_impute_strategy"] == "median"
+    assert (
+        bcp.component_graph.component_instances["Imputer"].parameters[
+            "numeric_impute_strategy"
+        ]
+        == "median"
+    )
