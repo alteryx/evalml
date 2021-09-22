@@ -38,6 +38,12 @@ class Estimator(ComponentBase):
     @property
     @classmethod
     @abstractmethod
+    def model_family(cls):
+        """Returns ModelFamily of this component."""
+
+    @property
+    @classmethod
+    @abstractmethod
     def supported_problem_types(cls):
         """Problem types this estimator supports."""
 
