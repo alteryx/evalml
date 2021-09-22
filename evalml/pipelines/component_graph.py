@@ -775,7 +775,7 @@ class ComponentGraph:
             parent_y = self._get_parent_y(current_component)
             if parent_y:
                 component = self.get_component(parent_y)
-                if hasattr(component, 'inverse_transform'):
+                if hasattr(component, "inverse_transform"):
                     data_to_transform = component.inverse_transform(data_to_transform)
                 current_component = parent_y
             else:
