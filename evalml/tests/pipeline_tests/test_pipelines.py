@@ -400,32 +400,8 @@ def test_nonlinear_model_family(example_graph):
                 random_seed=random_seed,
             )
 
-    class DummyTransformerEndPipeline(BinaryClassificationPipeline):
-        component_graph = {
-            "Imputer": ["Imputer", "X", "y"],
-            "OneHot": ["One Hot Encoder", "Imputer.x", "y"],
-            "Random Forest": ["Random Forest Classifier", "OneHot.x", "y"],
-            "Logistic Regression": ["Logistic Regression Classifier", "OneHot.x", "y"],
-            "Scaler": [
-                "Standard Scaler",
-                "Random Forest.x",
-                "Logistic Regression.x",
-                "y",
-            ],
-        }
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                random_seed=random_seed,
-            )
-
     nlbp = DummyNonlinearPipeline({})
-    nltp = DummyTransformerEndPipeline({})
-
     assert nlbp.model_family == ModelFamily.LINEAR_MODEL
-    assert nltp.model_family == ModelFamily.NONE
 
 
 def test_parameters(logistic_regression_binary_pipeline_class):
