@@ -138,9 +138,9 @@ def check_execution():
     executed_notebooks = _get_notebooks_with_executions(notebooks)
     if executed_notebooks:
         executed_notebooks = ["\t" + notebook for notebook in executed_notebooks]
-        different_versions = "\n".join(executed_notebooks)
+        executed_notebooks = "\n".join(executed_notebooks)
         raise SystemExit(
-            f"The following notebooks have executed outputs:\n {different_versions}\n"
+            f"The following notebooks have executed outputs:\n {executed_notebooks}\n"
             "Please run make lint-fix to fix this."
         )
 
