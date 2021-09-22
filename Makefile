@@ -10,6 +10,7 @@ clean:
 lint:
 	isort --check-only evalml
 	python docs/notebook_version_standardizer.py check-versions
+	python docs/notebook_version_standardizer.py check-execution
 	black evalml -t py39 --check
 	pydocstyle evalml/ --convention=google --add-ignore=D107 --add-select=D400 --match-dir='^(?!(tests)).*'
 	flake8 evalml
