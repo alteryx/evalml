@@ -21,6 +21,7 @@ Release Notes
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
         * Removed data check for checking log distributions in ``make_pipeline`` :pr:`2806`
         * Changed the minimum ``woodwork`` version to 0.8.0 :pr:`2783`
+        * Pinned ``woodwork`` version to 0.8.0 :pr:`2832`
         * Removed ``model_family`` attribute from ``ComponentBase`` and transformers :pr:`2828`
     * Documentation Changes
     * Testing Changes
