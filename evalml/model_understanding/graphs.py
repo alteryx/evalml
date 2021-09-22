@@ -8,11 +8,6 @@ import numpy as np
 import pandas as pd
 import woodwork as ww
 from sklearn.exceptions import NotFittedError
-from sklearn.inspection import partial_dependence as sk_partial_dependence
-from sklearn.inspection._partial_dependence import (
-    _grid_from_X,
-    _partial_dependence_brute,
-)
 from sklearn.manifold import TSNE
 from sklearn.metrics import auc as sklearn_auc
 from sklearn.metrics import confusion_matrix as sklearn_confusion_matrix
@@ -32,6 +27,10 @@ from evalml.exceptions import (
     PartialDependenceErrorCode,
 )
 from evalml.model_family import ModelFamily
+from evalml.model_understanding._partial_dependence import (
+    _grid_for_dates,
+    _partial_dependence,
+)
 from evalml.model_understanding.permutation_importance import (
     calculate_permutation_importance,
 )
@@ -653,6 +652,11 @@ def partial_dependence(
             is_datetime = [_is_feature_of_type(features, X, ww.logical_types.Datetime)]
 
         if isinstance(features, (list, tuple)):
+            if any(is_datetime) and len(features) > 1:
+                raise PartialDependenceError(
+                    "Two-way partial dependence is not supported for datetime columns.",
+                    code=PartialDependenceErrorCode.TWO_WAY_REQUESTED_FOR_DATES,
+                )
             if len(features) != 2:
                 raise PartialDependenceError(
                     "Too many features given to graph_partial_dependence.  Only one or two-way partial "
@@ -667,17 +671,11 @@ def partial_dependence(
                     "Features provided must be a tuple entirely of integers or strings, not a mixture of both.",
                     code=PartialDependenceErrorCode.FEATURES_ARGUMENT_INCORRECT_TYPES,
                 )
-            X_features = (
-                X.ww.iloc[:, list(features)]
-                if isinstance(features[0], int)
-                else X.ww[list(features)]
-            )
+            feature_names = _get_feature_names_from_str_or_col_index(X, features)
         else:
-            X_features = (
-                X.ww.iloc[:, [features]]
-                if isinstance(features, int)
-                else X.ww[[features]]
-            )
+            feature_names = _get_feature_names_from_str_or_col_index(X, [features])
+
+        X_features = X.ww.loc[:, feature_names]
         X_unknown = X_features.ww.select("unknown")
         if len(X_unknown.columns):
             # We drop the unknown columns in the pipelines, so we cannot calculate partial dependence for these
@@ -698,23 +696,21 @@ def partial_dependence(
             )
 
         X_cats = X_features.ww.select("categorical")
-        if any(is_categorical):
-            max_num_cats = max(X_cats.ww.describe().loc["nunique"])
-            grid_resolution = max([max_num_cats + 1, grid_resolution])
-
         X_dt = X_features.ww.select("datetime")
 
-        if isinstance(features, (list, tuple)):
-            feature_names = _get_feature_names_from_str_or_col_index(X, features)
-            if any(is_datetime):
-                raise PartialDependenceError(
-                    "Two-way partial dependence is not supported for datetime columns.",
-                    code=PartialDependenceErrorCode.TWO_WAY_REQUESTED_FOR_DATES,
+        if any(is_categorical):
+            custom_range = {
+                cat: list(X_cats[cat].dropna().unique()) for cat in X_cats.columns
+            }
+        elif any(is_datetime):
+            custom_range = {
+                date: _grid_for_dates(
+                    X_dt.ww.loc[:, date], percentiles, grid_resolution
                 )
-            if any(is_categorical):
-                features = _put_categorical_feature_first(features, is_categorical[0])
+                for date in X_dt.columns
+            }
         else:
-            feature_names = _get_feature_names_from_str_or_col_index(X, [features])
+            custom_range = {}
 
         if not pipeline._is_fitted:
             raise PartialDependenceError(
@@ -738,54 +734,17 @@ def partial_dependence(
             )
 
         _raise_value_error_if_mostly_one_value(feature_list, percentiles[1])
-        wrapped = evalml.pipelines.components.utils.scikit_learn_wrapped_estimator(
-            pipeline
-        )
 
         try:
-            if any(is_datetime):
-                timestamps = np.array(
-                    [X_dt - pd.Timestamp("1970-01-01")] // np.timedelta64(1, "s")
-                ).reshape(-1, 1)
-                grid, values = _grid_from_X(
-                    timestamps, percentiles=percentiles, grid_resolution=grid_resolution
-                )
-                grid_dates = pd.to_datetime(
-                    pd.Series(grid.squeeze()), unit="s"
-                ).values.reshape(-1, 1)
-                # convert values to dates for the output
-                value_dates = pd.to_datetime(pd.Series(values[0]), unit="s")
-                # need to pass in the feature as an int index rather than string
-                feature_index = (
-                    X.columns.tolist().index(features)
-                    if isinstance(features, str)
-                    else features
-                )
-                averaged_predictions, predictions = _partial_dependence_brute(
-                    wrapped, grid_dates, [feature_index], X, response_method="auto"
-                )
-                # reshape based on the way scikit-learn reshapes the data
-                predictions = predictions.reshape(
-                    -1, X.shape[0], *[val.shape[0] for val in values]
-                )
-
-                averaged_predictions = averaged_predictions.reshape(
-                    -1, *[val.shape[0] for val in values]
-                )
-                preds = {
-                    "average": averaged_predictions,
-                    "individual": predictions,
-                    "values": [value_dates],
-                }
-            else:
-                preds = sk_partial_dependence(
-                    wrapped,
-                    X=X,
-                    features=features,
-                    percentiles=percentiles,
-                    grid_resolution=grid_resolution,
-                    kind=kind,
-                )
+            preds = _partial_dependence(
+                pipeline,
+                X=X,
+                features=feature_names,
+                percentiles=percentiles,
+                grid_resolution=grid_resolution,
+                kind=kind,
+                custom_range=custom_range,
+            )
         except ValueError as e:
             if "percentiles are too close to each other" in str(e):
                 raise PartialDependenceError(
