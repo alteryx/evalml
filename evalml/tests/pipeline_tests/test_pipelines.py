@@ -2829,9 +2829,15 @@ def test_component_graph_pipeline():
         }
     )
 
-    BinaryClassificationPipeline(component_graph1)
-    RegressionPipeline(component_graph2)
-    BinaryClassificationPipeline(component_graph3)
+    assert (
+        BinaryClassificationPipeline(component_graph1).component_graph
+        == component_graph1
+    )
+    assert RegressionPipeline(component_graph2).component_graph == component_graph2
+    assert (
+        BinaryClassificationPipeline(component_graph3).component_graph
+        == component_graph3
+    )
     with pytest.raises(
         ValueError, match="Problem type regression not valid for this component graph"
     ):

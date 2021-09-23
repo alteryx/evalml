@@ -11,7 +11,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
     """Pipeline base class for time series problems.
 
     Args:
-        component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
+        component_graph (ComponentGraph, list, dict): ComponentGraph instance, list of components in order, or dictionary of components.
+            Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
             [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
