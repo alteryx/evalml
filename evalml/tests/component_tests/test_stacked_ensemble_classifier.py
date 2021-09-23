@@ -289,3 +289,90 @@ def test_stacked_ensemble_keep_estimator_parameters(X_y_binary):
         ).parameters["n_estimators"]
         == 22
     )
+
+
+@patch("evalml.pipelines.components.StackedEnsembleClassifier.fit")
+@patch("evalml.pipelines.components.ElasticNetClassifier.fit")
+@patch("evalml.pipelines.components.RandomForestClassifier.fit")
+@patch("evalml.pipelines.components.ElasticNetClassifier.predict_proba")
+@patch("evalml.pipelines.components.RandomForestClassifier.predict_proba")
+def test_ensembler_use_component_preds_binary(
+    mock_rf_predict_proba,
+    mock_en_predict_proba,
+    mock_rf_fit,
+    mock_en_fit,
+    mock_ensembler,
+    X_y_binary,
+):
+    X, y = X_y_binary
+
+    mock_en_predict_proba_series = pd.Series(np.zeros(len(y)))
+    mock_en_predict_proba_series.ww.init()
+    mock_en_predict_proba.return_value = mock_en_predict_proba_series
+
+    mock_rf_predict_proba_series = pd.Series(np.ones(len(y)))
+    mock_rf_predict_proba_series.ww.init()
+    mock_rf_predict_proba.return_value = mock_rf_predict_proba_series
+
+    reg_pl_1 = BinaryClassificationPipeline([RandomForestClassifier])
+    reg_pl_2 = BinaryClassificationPipeline([ElasticNetClassifier])
+
+    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+        input_pipelines=[reg_pl_1, reg_pl_2],
+        problem_type=ProblemTypes.BINARY,
+        use_sklearn=False,
+    )
+    ensemble_pipeline.fit(X, y)
+    ensemble_input, _ = mock_ensembler.call_args[0]
+
+    assert ensemble_input.shape == (100, 2)
+    assert ensemble_input["Linear Pipeline - Elastic Net Classifier.x"].equals(
+        pd.Series(np.zeros(len(y)))
+    )
+    assert ensemble_input["Random Forest Pipeline - Random Forest Classifier.x"].equals(
+        pd.Series(np.ones(len(y)))
+    )
+
+
+@patch("evalml.pipelines.components.StackedEnsembleClassifier.fit")
+@patch("evalml.pipelines.components.ElasticNetClassifier.fit")
+@patch("evalml.pipelines.components.RandomForestClassifier.fit")
+@patch("evalml.pipelines.components.ElasticNetClassifier.predict_proba")
+@patch("evalml.pipelines.components.RandomForestClassifier.predict_proba")
+def test_ensembler_use_component_preds_multi(
+    mock_rf_predict_proba,
+    mock_en_predict_proba,
+    mock_rf_fit,
+    mock_en_fit,
+    mock_ensembler,
+    X_y_multi,
+):
+    X, y = X_y_multi
+
+    mock_en_predict_proba_df = pd.DataFrame(np.zeros((len(y), 3)))
+    mock_en_predict_proba_df.ww.init()
+    mock_en_predict_proba.return_value = mock_en_predict_proba_df
+
+    mock_rf_predict_proba_df = pd.DataFrame(np.ones((len(y), 3)))
+    mock_rf_predict_proba_df.ww.init()
+    mock_rf_predict_proba.return_value = mock_rf_predict_proba_df
+
+    reg_pl_1 = MulticlassClassificationPipeline([RandomForestClassifier])
+    reg_pl_2 = MulticlassClassificationPipeline([ElasticNetClassifier])
+
+    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+        input_pipelines=[reg_pl_1, reg_pl_2],
+        problem_type=ProblemTypes.MULTICLASS,
+        use_sklearn=False,
+    )
+    ensemble_pipeline.fit(X, y)
+    ensemble_input, _ = mock_ensembler.call_args[0]
+
+    assert ensemble_input.shape == (100, 6)
+    for i in range(0, 3):
+        assert ensemble_input[
+            f"Col {i} Linear Pipeline - Elastic Net Classifier.x"
+        ].equals(pd.Series(np.zeros(len(y))))
+        assert ensemble_input[
+            f"Col {i} Random Forest Pipeline - Random Forest Classifier.x"
+        ].equals(pd.Series(np.ones(len(y))))

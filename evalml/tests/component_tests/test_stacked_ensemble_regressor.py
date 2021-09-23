@@ -3,6 +3,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import RegressionPipeline
@@ -230,3 +231,46 @@ def test_ensembler_str_and_classes():
         use_sklearn=False,
     )
     check_for_components(ensemble_pipeline)
+
+
+@patch("evalml.pipelines.components.StackedEnsembleRegressor.fit")
+@patch("evalml.pipelines.components.ElasticNetRegressor.fit")
+@patch("evalml.pipelines.components.RandomForestRegressor.fit")
+@patch("evalml.pipelines.components.ElasticNetRegressor.predict_proba")
+@patch("evalml.pipelines.components.RandomForestRegressor.predict_proba")
+def test_ensembler_use_component_preds(
+    mock_rf_predict_proba,
+    mock_en_predict_proba,
+    mock_rf_fit,
+    mock_en_fit,
+    mock_ensembler,
+    X_y_regression,
+):
+    X, y = X_y_regression
+
+    mock_en_predict_proba_series = pd.Series(np.zeros(len(y)))
+    mock_en_predict_proba_series.ww.init()
+    mock_en_predict_proba.return_value = mock_en_predict_proba_series
+
+    mock_rf_predict_proba_series = pd.Series(np.ones(len(y)))
+    mock_rf_predict_proba_series.ww.init()
+    mock_rf_predict_proba.return_value = mock_rf_predict_proba_series
+
+    reg_pl_1 = RegressionPipeline([RandomForestRegressor])
+    reg_pl_2 = RegressionPipeline([ElasticNetRegressor])
+
+    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+        input_pipelines=[reg_pl_1, reg_pl_2],
+        problem_type=ProblemTypes.REGRESSION,
+        use_sklearn=False,
+    )
+    ensemble_pipeline.fit(X, y)
+    ensemble_input, _ = mock_ensembler.call_args[0]
+
+    assert ensemble_input.shape == (100, 2)
+    assert ensemble_input["Linear Pipeline - Elastic Net Regressor.x"].equals(
+        pd.Series(np.zeros(len(y)))
+    )
+    assert ensemble_input["Random Forest Pipeline - Random Forest Regressor.x"].equals(
+        pd.Series(np.ones(len(y)))
+    )
