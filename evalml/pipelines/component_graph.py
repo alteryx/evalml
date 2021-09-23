@@ -15,8 +15,9 @@ from evalml.exceptions.exceptions import (
 )
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import import_or_raise, infer_feature_types
-from evalml.utils.logger import get_logger
+from evalml.utils import get_logger, import_or_raise, infer_feature_types
+
+logger = get_logger(__file__)
 
 
 class ComponentGraph:
@@ -380,6 +381,7 @@ class ComponentGraph:
             else:
                 if fit:
                     component_instance.fit(x_inputs, y_input)
+
                 if fit and component_name == self.compute_order[-1]:
                     # Don't call predict on the final component during fit
                     output = None
