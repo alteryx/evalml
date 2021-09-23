@@ -28,8 +28,8 @@ from evalml.exceptions import (
 )
 from evalml.model_family import ModelFamily
 from evalml.model_understanding._partial_dependence import (
-    _grid_for_dates,
     _partial_dependence,
+    _range_for_dates,
 )
 from evalml.model_understanding.permutation_importance import (
     calculate_permutation_importance,
@@ -704,7 +704,7 @@ def partial_dependence(
             }
         elif any(is_datetime):
             custom_range = {
-                date: _grid_for_dates(
+                date: _range_for_dates(
                     X_dt.ww.loc[:, date], percentiles, grid_resolution
                 )
                 for date in X_dt.columns
