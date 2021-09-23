@@ -33,6 +33,7 @@ Release Notes
         * Added the ability of ``AutoMLSearch`` to accept a ``SequentialEngine`` instance as engine input :pr:`2838`
         * Added new label encoder component to EvalML :pr:`2853`
         * Added our own partial dependence implementation :pr:`2834`
+        * Add new ensembler component :pr:`2653`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
@@ -60,6 +61,7 @@ Release Notes
         * Made ``Transformer.transform()`` an abstract method :pr:`2744`
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
         * Removed data check for checking log distributions in ``make_pipeline`` :pr:`2806`
+        * Deleted scikit-learn ensembler :pr:`2819`
 
 
 **v0.33.0 Sep. 15, 2021**
