@@ -58,7 +58,7 @@ def _fix_execution_and_output(notebook):
     with open(notebook, "r") as f:
         source = json.load(f)
         for cells in source["cells"]:
-            if cells["cell_type"] == "code" and cells["execution_count"] != 'null':
+            if cells["cell_type"] == "code" and cells["execution_count"] != None:
                 cells["execution_count"] = None
                 cells["outputs"] = []
         source["metadata"]["kernelspec"]["display_name"] = "Python 3"
