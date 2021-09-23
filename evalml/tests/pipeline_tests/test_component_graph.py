@@ -35,9 +35,6 @@ from evalml.pipelines.components import (
     Transformer,
     Undersampler,
 )
-from evalml.pipelines.components.transformers.transformer import (
-    TargetTransformer,
-)
 from evalml.utils import infer_feature_types
 
 
@@ -1649,8 +1646,10 @@ def test_describe_component_graph(return_dict, example_graph, caplog):
         assert component.name in out
 
 
-class LogTransform(TargetTransformer):
+class LogTransform(Transformer):
     name = "Log Transform"
+    modifies_features = False
+    modifies_target = True
 
     def __init__(self, parameters=None, random_seed=0):
         super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
@@ -1669,8 +1668,10 @@ class LogTransform(TargetTransformer):
         return infer_feature_types(np.exp(y))
 
 
-class DoubleTransform(TargetTransformer):
+class DoubleTransform(Transformer):
     name = "Double Transform"
+    modifies_features = False
+    modifies_target = True
 
     def __init__(self, parameters=None, random_seed=0):
         super().__init__(parameters={}, component_obj=None, random_seed=random_seed)
