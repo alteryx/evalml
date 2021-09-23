@@ -5080,36 +5080,21 @@ def test_pipeline_parameter_warnings_component_graphs(
         assert w[0].message.components == set_values
 
 
-@patch(
-    "evalml.data_checks.target_distribution_data_check.TargetDistributionDataCheck.validate"
-)
-def test_pipeline_parameter_warnings_only_parameternotused(
-    mock_data_check, X_y_regression
-):
-    mock_data_check.side_effect = UserWarning("Big bad warning")
-    X, y = X_y_regression
-    # Make sure it doesn't throw an error trying to access warning.components
-    with pytest.raises(UserWarning) as cw:
-        AutoMLSearch(
-            X_train=X,
-            y_train=y,
-            problem_type="regression",
-            allowed_model_families=["random_forest"],
-            max_batches=3,
-        )
-    # But that it does throw a warning
-    warning = cw.value
-    assert isinstance(warning, UserWarning)
-    assert str(warning) == "Big bad warning"
-
-
+@patch("evalml.pipelines.utils._get_preprocessing_components")
 @pytest.mark.parametrize("verbose", [True, False])
-def test_pipeline_parameter_warnings_with_other_types(verbose):
-    # Data that will trigger a UserWarning from `TargetLeakageDataCheck`
-    X = pd.DataFrame({"a": [1, 2, 2, 1, 2, 1, 2, 2, 1, 1] * 505})
-    y = [0.946, 0.972, 1.154, 0.954, 0.969, 1.222, 1.038, 0.999, 0.973, 0.897] * 505
+def test_pipeline_parameter_warnings_with_other_types(
+    mock_get_preprocessing_components, verbose, X_y_regression
+):
+    X, y = X_y_regression
 
-    with pytest.warns(None) as w:
+    def dummy_mock_get_preprocessing_components(*args, **kwargs):
+        warnings.warn(UserWarning("dummy test warning"))
+        return ["Imputer"]
+
+    mock_get_preprocessing_components.side_effect = (
+        dummy_mock_get_preprocessing_components
+    )
+    with pytest.warns(None) as warnings_logged:
         AutoMLSearch(
             X_train=X,
             y_train=y,
@@ -5118,9 +5103,10 @@ def test_pipeline_parameter_warnings_with_other_types(verbose):
             pipeline_parameters={"Decision Tree Classifier": {"max_depth": 1}},
             verbose=verbose,
         )
-    assert len(w) == 2
-    assert isinstance(w[0].message, UserWarning)
-    assert isinstance(w[1].message, ParameterNotUsedWarning)
+
+    assert len(warnings_logged) == 2
+    assert isinstance(warnings_logged[0].message, UserWarning)
+    assert isinstance(warnings_logged[1].message, ParameterNotUsedWarning)
 
 
 @pytest.mark.parametrize("nans", [None, pd.NA, np.nan])

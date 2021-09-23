@@ -400,32 +400,8 @@ def test_nonlinear_model_family(example_graph):
                 random_seed=random_seed,
             )
 
-    class DummyTransformerEndPipeline(BinaryClassificationPipeline):
-        component_graph = {
-            "Imputer": ["Imputer", "X", "y"],
-            "OneHot": ["One Hot Encoder", "Imputer.x", "y"],
-            "Random Forest": ["Random Forest Classifier", "OneHot.x", "y"],
-            "Logistic Regression": ["Logistic Regression Classifier", "OneHot.x", "y"],
-            "Scaler": [
-                "Standard Scaler",
-                "Random Forest.x",
-                "Logistic Regression.x",
-                "y",
-            ],
-        }
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                random_seed=random_seed,
-            )
-
     nlbp = DummyNonlinearPipeline({})
-    nltp = DummyTransformerEndPipeline({})
-
     assert nlbp.model_family == ModelFamily.LINEAR_MODEL
-    assert nltp.model_family == ModelFamily.NONE
 
 
 def test_parameters(logistic_regression_binary_pipeline_class):
@@ -920,6 +896,9 @@ def test_no_default_parameters():
             self.b = b
             self.c = c
             super().__init__()
+
+        def transform(self, X, y=None):
+            return X
 
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = [MockComponent, "Logistic Regression Classifier"]
@@ -2817,3 +2796,81 @@ def test_training_only_component_in_pipeline_transform(X_y_binary):
     pipeline.fit(X, y)
     transformed = pipeline.transform(X)
     assert len(transformed) == len(X) - 2
+
+
+def test_component_graph_pipeline():
+    classification_cg = ComponentGraph(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Undersampler": ["Undersampler", "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Undersampler.x",
+                "Undersampler.y",
+            ],
+        }
+    )
+
+    regression_cg = ComponentGraph(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Linear Regressor": [
+                "Linear Regressor",
+                "Imputer.x",
+                "y",
+            ],
+        }
+    )
+
+    no_estimator_cg = ComponentGraph(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Undersampler": ["Undersampler", "Imputer.x", "y"],
+        }
+    )
+
+    assert (
+        BinaryClassificationPipeline(classification_cg).component_graph
+        == classification_cg
+    )
+    assert RegressionPipeline(regression_cg).component_graph == regression_cg
+    assert (
+        BinaryClassificationPipeline(no_estimator_cg).component_graph == no_estimator_cg
+    )
+    with pytest.raises(
+        ValueError, match="Problem type regression not valid for this component graph"
+    ):
+        RegressionPipeline(classification_cg)
+
+
+def test_component_graph_pipeline_initialized():
+    component_graph1 = ComponentGraph(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Undersampler": ["Undersampler", "Imputer.x", "y"],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Undersampler.x",
+                "Undersampler.y",
+            ],
+        }
+    )
+    component_graph1.instantiate({"Imputer": {"numeric_impute_strategy": "mean"}})
+    assert (
+        component_graph1.component_instances["Imputer"].parameters[
+            "numeric_impute_strategy"
+        ]
+        == "mean"
+    )
+
+    # make sure the value gets overwritten when reinitialized
+    bcp = BinaryClassificationPipeline(
+        component_graph1, parameters={"Imputer": {"numeric_impute_strategy": "median"}}
+    )
+    assert bcp.parameters["Imputer"]["numeric_impute_strategy"] == "median"
+    assert (
+        bcp.component_graph.component_instances["Imputer"].parameters[
+            "numeric_impute_strategy"
+        ]
+        == "median"
+    )

@@ -3,10 +3,7 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers.simple_imputer import (
     SimpleImputer,
 )
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types,
-)
+from evalml.utils import infer_feature_types
 
 
 class PerColumnImputer(Transformer):
@@ -90,7 +87,7 @@ class PerColumnImputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X_ww = infer_feature_types(X)
-        original_logical_types = X_ww.ww.schema.logical_types
+        original_schema = X_ww.ww.schema
 
         cols_to_drop = []
         for column, imputer in self.imputers.items():
@@ -100,4 +97,5 @@ class PerColumnImputer(Transformer):
             else:
                 X_ww.ww[column] = transformed[column]
         X_t = X_ww.ww.drop(cols_to_drop)
-        return _retain_custom_types_and_initalize_woodwork(original_logical_types, X_t)
+        X_t.ww.init(schema=original_schema._get_subset_schema(X_t.columns))
+        return X_t

@@ -1,15 +1,9 @@
 """A component that may or may not need fitting that transforms data. These components are used before an estimator."""
 from abc import abstractmethod
 
-import pandas as pd
-
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types,
-)
+from evalml.utils import infer_feature_types
 
 
 class Transformer(ComponentBase):
@@ -29,12 +23,11 @@ class Transformer(ComponentBase):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    model_family = ModelFamily.NONE
-    """ModelFamily.NONE"""
     modifies_features = True
     modifies_target = False
     training_only = False
 
+    @abstractmethod
     def transform(self, X, y=None):
         """Transforms data X.
 
@@ -48,19 +41,6 @@ class Transformer(ComponentBase):
         Raises:
             MethodPropertyNotFoundError: If transformer does not have a transform method or a component_obj that implements transform.
         """
-        X_ww = infer_feature_types(X)
-        if y is not None:
-            y = infer_feature_types(y)
-        try:
-            X_t = self._component_obj.transform(X, y)
-        except AttributeError:
-            raise MethodPropertyNotFoundError(
-                "Transformer requires a transform method or a component_obj that implements transform"
-            )
-        X_t_df = pd.DataFrame(X_t, columns=X_ww.columns, index=X_ww.index)
-        return _retain_custom_types_and_initalize_woodwork(
-            X_ww.ww.logical_types, X_t_df
-        )
 
     def fit_transform(self, X, y=None):
         """Fits on X and transforms X.
@@ -78,16 +58,13 @@ class Transformer(ComponentBase):
         X_ww = infer_feature_types(X)
         if y is not None:
             y_ww = infer_feature_types(y)
+        else:
+            y_ww = y
+
         try:
-            X_t = self._component_obj.fit_transform(X_ww, y_ww)
-            return _retain_custom_types_and_initalize_woodwork(
-                X_ww.ww.logical_types, X_t
-            )
-        except AttributeError:
-            try:
-                return self.fit(X, y).transform(X, y)
-            except MethodPropertyNotFoundError as e:
-                raise e
+            return self.fit(X_ww, y_ww).transform(X_ww, y_ww)
+        except MethodPropertyNotFoundError as e:
+            raise e
 
     def _get_feature_provenance(self):
         return {}

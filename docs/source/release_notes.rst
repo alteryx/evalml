@@ -11,12 +11,21 @@ Release Notes
         * Added validation to holdout data passed to ``predict`` and ``predict_proba`` for time series :pr:`2804`
         * Added information about which row indices are outliers in ``OutliersDataCheck`` :pr:`2818`
         * Added verbose flag to top level ``search()`` method :pr:`2813`
+        * Added support for linting jupyter notebooks and clearing the executed cells :pr:`2829`
+        * Added "DROP_ROWS" action to output of ``OutliersDataCheck.validate()`` :pr:`2820`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
         * Fixed bug where ``score_pipelines`` method of ``AutoMLSearch`` would not work for time series problems :pr:`2786`
+        * Add tests to verify ``ComponentGraph`` support by pipelines :pr:`2830`
     * Changes
+        * Changed woodwork initialization to use partial schemas :pr:`2774`
+        * Made ``Transformer.transform()`` an abstract method :pr:`2744`
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
+        * Removed data check for checking log distributions in ``make_pipeline`` :pr:`2806`
+        * Changed the minimum ``woodwork`` version to 0.8.0 :pr:`2783`
+        * Pinned ``woodwork`` version to 0.8.0 :pr:`2832`
+        * Removed ``model_family`` attribute from ``ComponentBase`` and transformers :pr:`2828`
     * Documentation Changes
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
@@ -24,7 +33,9 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Made ``Transformer.transform()`` an abstract method :pr:`2744`
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
+        * Removed data check for checking log distributions in ``make_pipeline`` :pr:`2806`
 
 
 **v0.33.0 Sep. 15, 2021**

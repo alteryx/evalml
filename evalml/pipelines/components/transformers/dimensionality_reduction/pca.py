@@ -4,11 +4,7 @@ from sklearn.decomposition import PCA as SkPCA
 from skopt.space import Real
 
 from evalml.pipelines.components.transformers import Transformer
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types,
-    is_all_numeric,
-)
+from evalml.utils import infer_feature_types, is_all_numeric
 
 
 class PCA(Transformer):
@@ -78,7 +74,8 @@ class PCA(Transformer):
             index=X_ww.index,
             columns=[f"component_{i}" for i in range(X_t.shape[1])],
         )
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        X_t.ww.init()
+        return X_t
 
     def fit_transform(self, X, y=None):
         """Fit and transform data using the PCA component.
@@ -102,4 +99,5 @@ class PCA(Transformer):
             index=X_ww.index,
             columns=[f"component_{i}" for i in range(X_t.shape[1])],
         )
-        return _retain_custom_types_and_initalize_woodwork(X_ww, X_t)
+        X_t.ww.init()
+        return X_t

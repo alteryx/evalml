@@ -53,6 +53,9 @@ class DummyTransformer(Transformer):
     def fit(self, X, y):
         return self
 
+    def transform(self, X, y=None):
+        return X
+
 
 class TransformerA(DummyTransformer):
     """copy class"""
