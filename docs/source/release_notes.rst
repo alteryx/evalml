@@ -10,7 +10,7 @@ Release Notes
         * Added validation to holdout data passed to ``predict`` and ``predict_proba`` for time series :pr:`2804`
         * Added information about which row indices are outliers in ``OutliersDataCheck`` :pr:`2818`
         * Added verbose flag to top level ``search()`` method :pr:`2813`
-        * Added support for linting jupyter notebooks and clearing the executed cells and empty cells :pr:`2829` pr::`2837`
+        * Added support for linting jupyter notebooks and clearing the executed cells and empty cells :pr:`2829` pr:`2837`
         * Added "DROP_ROWS" action to output of ``OutliersDataCheck.validate()`` :pr:`2820`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
