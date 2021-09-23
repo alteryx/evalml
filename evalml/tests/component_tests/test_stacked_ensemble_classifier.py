@@ -11,6 +11,9 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
 )
 from evalml.pipelines.components import (
+    ElasticNetClassifier,
+    Imputer,
+    LogTransformer,
     RandomForestClassifier,
     StackedEnsembleClassifier,
 )
@@ -79,82 +82,6 @@ def test_stacked_problem_types():
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]
-
-
-def test_stacked_ensemble_nondefault_y():
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping nondefault y test because imblearn not installed",
-    )
-    X, y = datasets.make_classification(
-        n_samples=100, n_features=20, weights={0: 0.1, 1: 0.9}, random_state=0
-    )
-    input_pipelines = [
-        BinaryClassificationPipeline(
-            {
-                "OS": ["Oversampler", "X", "y"],
-                "rf": [RandomForestClassifier, "OS.x", "OS.y"],
-            },
-            parameters={"OS": {"sampling_ratio": 0.5}},
-        ),
-        BinaryClassificationPipeline(
-            {
-                "OS": ["Oversampler", "X", "y"],
-                "rf": [RandomForestClassifier, "OS.x", "OS.y"],
-            },
-            parameters={
-                "OS": {"sampling_ratio": 0.5},
-                "Random Forest Classifier": {"n_estimators": 22},
-            },
-        ),
-    ]
-
-    pl = _make_stacked_ensemble_pipeline(
-        input_pipelines=input_pipelines,
-        problem_type=ProblemTypes.BINARY,
-    )
-    pl.fit(X, y)
-    y_pred = pl.predict(X)
-    assert len(y_pred) == len(y)
-    assert not np.isnan(y_pred).all()
-
-
-def test_stacked_ensemble_keep_estimator_parameters(X_y_binary):
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping nondefault y test because imblearn not installed",
-    )
-    X, y = X_y_binary
-    input_pipelines = [
-        BinaryClassificationPipeline(
-            {
-                "OS": ["Oversampler", "X", "y"],
-                "rf": [RandomForestClassifier, "OS.x", "OS.y"],
-            },
-            parameters={"OS": {"k_neighbors_default": 10}},
-        ),
-        BinaryClassificationPipeline(
-            [RandomForestClassifier],
-            parameters={"Random Forest Classifier": {"n_estimators": 22}},
-        ),
-    ]
-
-    pl = _make_stacked_ensemble_pipeline(
-        input_pipelines=input_pipelines,
-        problem_type=ProblemTypes.BINARY,
-    )
-    assert (
-        pl.get_component("Random Forest Pipeline - OS").parameters[
-            "k_neighbors_default"
-        ]
-        == 10
-    )
-    assert (
-        pl.get_component(
-            "Random Forest Pipeline 2 - Random Forest Classifier"
-        ).parameters["n_estimators"]
-        == 22
-    )
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
@@ -227,3 +154,138 @@ def test_stacked_feature_importance(mock_fit, X_y_binary, X_y_multi, problem_typ
         match="feature_importance is not implemented for StackedEnsembleClassifier and StackedEnsembleRegressor",
     ):
         clf.feature_importance
+
+
+def test_ensembler_str_and_classes():
+    """
+    Test that ensures that pipelines that are defined as strings or classes are able to be ensembled.
+    """
+
+    def check_for_components(pl):
+        pl_components = pl.component_graph.compute_order
+        expected_components = [
+            "Linear Pipeline - Imputer",
+            "Linear Pipeline - Log Transformer",
+            "Linear Pipeline - EN",
+            "Random Forest Pipeline - Imputer",
+            "Random Forest Pipeline - Log Transformer",
+            "Random Forest Pipeline - RF",
+        ]
+        for component in expected_components:
+            assert component in pl_components
+
+    reg_pl_1 = BinaryClassificationPipeline(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Log Transformer": ["Log Transformer", "X", "y"],
+            "RF": ["Random Forest Classifier", "Imputer.x", "Log Transformer.y"],
+        }
+    )
+    reg_pl_2 = BinaryClassificationPipeline(
+        {
+            "Imputer": ["Imputer", "X", "y"],
+            "Log Transformer": ["Log Transformer", "X", "y"],
+            "EN": ["Elastic Net Classifier", "Imputer.x", "Log Transformer.y"],
+        }
+    )
+
+    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+        input_pipelines=[reg_pl_1, reg_pl_2],
+        problem_type=ProblemTypes.BINARY,
+        use_sklearn=False,
+    )
+    check_for_components(ensemble_pipeline)
+
+    reg_pl_1 = BinaryClassificationPipeline(
+        {
+            "Imputer": [Imputer, "X", "y"],
+            "Log Transformer": [LogTransformer, "X", "y"],
+            "RF": [RandomForestClassifier, "Imputer.x", "Log Transformer.y"],
+        }
+    )
+    reg_pl_2 = BinaryClassificationPipeline(
+        {
+            "Imputer": [Imputer, "X", "y"],
+            "Log Transformer": [LogTransformer, "X", "y"],
+            "EN": [ElasticNetClassifier, "Imputer.x", "Log Transformer.y"],
+        }
+    )
+
+    ensemble_pipeline = _make_stacked_ensemble_pipeline(
+        input_pipelines=[reg_pl_1, reg_pl_2],
+        problem_type=ProblemTypes.REGRESSION,
+        use_sklearn=False,
+    )
+    check_for_components(ensemble_pipeline)
+
+
+def test_stacked_ensemble_nondefault_y():
+    pytest.importorskip(
+        "imblearn.over_sampling",
+        reason="Skipping nondefault y test because imblearn not installed",
+    )
+    X, y = datasets.make_classification(
+        n_samples=100, n_features=20, weights={0: 0.1, 1: 0.9}, random_state=0
+    )
+    input_pipelines = [
+        BinaryClassificationPipeline(
+            {
+                "OS": ["Oversampler", "X", "y"],
+                "rf": [RandomForestClassifier, "OS.x", "OS.y"],
+            },
+            parameters={"OS": {"sampling_ratio": 0.5}},
+        ),
+        BinaryClassificationPipeline(
+            {
+                "OS": ["Oversampler", "X", "y"],
+                "rf": [RandomForestClassifier, "OS.x", "OS.y"],
+            },
+            parameters={
+                "OS": {"sampling_ratio": 0.5},
+                "Random Forest Classifier": {"n_estimators": 22},
+            },
+        ),
+    ]
+
+    pl = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines,
+        problem_type=ProblemTypes.BINARY,
+    )
+    pl.fit(X, y)
+    y_pred = pl.predict(X)
+    assert len(y_pred) == len(y)
+    assert not np.isnan(y_pred).all()
+
+
+def test_stacked_ensemble_keep_estimator_parameters(X_y_binary):
+    X, y = X_y_binary
+    input_pipelines = [
+        BinaryClassificationPipeline(
+            {
+                "Impute": [Imputer, "X", "y"],
+                "Random Forest Classifier": [RandomForestClassifier, "Impute.x", "y"],
+            },
+            parameters={"Impute": {"numeric_fill_value": 10}},
+        ),
+        BinaryClassificationPipeline(
+            [RandomForestClassifier],
+            parameters={"Random Forest Classifier": {"n_estimators": 22}},
+        ),
+    ]
+
+    pl = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines,
+        problem_type=ProblemTypes.BINARY,
+    )
+    assert (
+        pl.get_component("Random Forest Pipeline - Impute").parameters[
+            "numeric_fill_value"
+        ]
+        == 10
+    )
+    assert (
+        pl.get_component(
+            "Random Forest Pipeline 2 - Random Forest Classifier"
+        ).parameters["n_estimators"]
+        == 22
+    )

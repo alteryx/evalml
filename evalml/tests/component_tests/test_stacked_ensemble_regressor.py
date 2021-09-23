@@ -135,7 +135,7 @@ def test_stacked_same_model_family():
         ],
     }
 
-    graph_rf = {
+    graph_linear = {
         "Imputer": ["Imputer", "X", "y"],
         "Target Imputer": ["Target Imputer", "X", "y"],
         "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "Target Imputer.y"],
@@ -150,12 +150,9 @@ def test_stacked_same_model_family():
         ],
     }
 
-    RegressionPipeline(component_graph=graph_en)
-    RegressionPipeline(component_graph=graph_rf)
-
     input_pipelines = [
         RegressionPipeline(component_graph=graph_en),
-        RegressionPipeline(component_graph=graph_rf),
+        RegressionPipeline(component_graph=graph_linear),
     ]
 
     pipeline = _make_stacked_ensemble_pipeline(
@@ -172,7 +169,7 @@ def test_stacked_same_model_family():
     assert "Linear Pipeline - EN" in pipeline.component_graph.compute_order
 
 
-def test_automl_ensembler_str_and_classes():
+def test_ensembler_str_and_classes():
     """
     Test that ensures that pipelines that are defined as strings or classes are able to be ensembled.
     """
