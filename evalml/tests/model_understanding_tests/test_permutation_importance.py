@@ -449,23 +449,11 @@ class PipelineWithCustomComponent(BinaryClassificationPipeline):
         )
 
 
-class SklearnStackedEnsemblePipeline(BinaryClassificationPipeline):
-    component_graph = ["Sklearn Stacked Ensemble Classifier"]
-
-    def __init__(self, parameters, random_seed=0):
-        super().__init__(
-            self.component_graph,
-            parameters=parameters,
-            random_seed=random_seed,
-        )
-
-
 pipelines_that_do_not_support_fast_permutation_importance = [
     PipelineWithDimReduction,
     PipelineWithDFS,
     PipelineWithCustomComponent,
     EnsembleDag,
-    SklearnStackedEnsemblePipeline,
 ]
 
 
@@ -473,12 +461,7 @@ pipelines_that_do_not_support_fast_permutation_importance = [
     "pipeline_class", pipelines_that_do_not_support_fast_permutation_importance
 )
 def test_supports_fast_permutation_importance(pipeline_class):
-    params = {
-        "Sklearn Stacked Ensemble Classifier": {
-            "input_pipelines": [PipelineWithDFS({})]
-        }
-    }
-    assert not pipeline_class(params)._supports_fast_permutation_importance
+    assert not pipeline_class({})._supports_fast_permutation_importance
 
 
 def test_get_permutation_importance_invalid_objective(
@@ -677,18 +660,13 @@ def test_get_permutation_importance_one_column_pipeline_does_not_support_fast(
     X_y_binary, pipeline_class
 ):
     X, y = X_y_binary
-    params = {
-        "Sklearn Stacked Ensemble Classifier": {
-            "input_pipelines": [PipelineWithDFS({})]
-        }
-    }
-    assert not pipeline_class(params)._supports_fast_permutation_importance
+    assert not pipeline_class({})._supports_fast_permutation_importance
     with pytest.raises(
         ValueError,
         match="Pipeline does not support fast permutation importance calculation",
     ):
         calculate_permutation_importance_one_column(
-            pipeline_class(params), X, y, 0, "log loss binary", fast=True
+            pipeline_class({}), X, y, 0, "log loss binary", fast=True
         )
 
 

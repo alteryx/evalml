@@ -22,8 +22,6 @@ from evalml.pipelines.components import (
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
-    SklearnStackedEnsembleClassifier,
-    SklearnStackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
     TextFeaturizer,
@@ -33,6 +31,7 @@ from evalml.pipelines.components import (
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_component_list_from_actions,
+    _make_stacked_ensemble_pipeline,
     generate_pipeline_code,
     get_estimators,
     make_pipeline,
@@ -282,10 +281,8 @@ def test_stacked_estimator_in_pipeline(
 ):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
-        base_pipeline_class = BinaryClassificationPipeline
-        stacking_component_name = SklearnStackedEnsembleClassifier.name
         input_pipelines = [
-            BinaryClassificationPipeline([classifier])
+            BinaryClassificationPipeline(["Simple Imputer", classifier])
             for classifier in stackable_classifiers
         ]
         comparison_pipeline = logistic_regression_binary_pipeline_class(
@@ -294,10 +291,8 @@ def test_stacked_estimator_in_pipeline(
         objective = "Log Loss Binary"
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
-        base_pipeline_class = MulticlassClassificationPipeline
-        stacking_component_name = SklearnStackedEnsembleClassifier.name
         input_pipelines = [
-            MulticlassClassificationPipeline([classifier])
+            MulticlassClassificationPipeline(["Simple Imputer", classifier])
             for classifier in stackable_classifiers
         ]
         comparison_pipeline = logistic_regression_multiclass_pipeline_class(
@@ -306,21 +301,15 @@ def test_stacked_estimator_in_pipeline(
         objective = "Log Loss Multiclass"
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
-        base_pipeline_class = RegressionPipeline
-        stacking_component_name = SklearnStackedEnsembleRegressor.name
         input_pipelines = [
-            RegressionPipeline([regressor]) for regressor in stackable_regressors
+            RegressionPipeline(["Simple Imputer", regressor])
+            for regressor in stackable_regressors
         ]
         comparison_pipeline = linear_regression_pipeline_class(
             parameters={"Linear Regressor": {"n_jobs": 1}}
         )
         objective = "R2"
-    parameters = {
-        stacking_component_name: {"input_pipelines": input_pipelines, "n_jobs": 1}
-    }
-    graph = ["Simple Imputer", stacking_component_name]
-
-    pipeline = base_pipeline_class(component_graph=graph, parameters=parameters)
+    pipeline = _make_stacked_ensemble_pipeline(input_pipelines, problem_type)
     pipeline.fit(X, y)
     comparison_pipeline.fit(X, y)
     assert not np.isnan(pipeline.predict(X)).values.any()
@@ -330,9 +319,7 @@ def test_stacked_estimator_in_pipeline(
 
     if problem_type == ProblemTypes.BINARY or problem_type == ProblemTypes.MULTICLASS:
         assert not np.isnan(pipeline.predict_proba(X)).values.any()
-        assert pipeline_score <= comparison_pipeline_score
-    else:
-        assert pipeline_score >= comparison_pipeline_score
+    assert pipeline_score <= comparison_pipeline_score
 
 
 def test_make_component_list_from_actions():

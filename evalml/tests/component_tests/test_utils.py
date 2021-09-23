@@ -31,12 +31,12 @@ def test_all_components(
     is_using_conda,
     is_using_windows,
 ):
-    # The total number of minimal components is 44
-    # The total number of components is 55
+    # The total number of minimal components is 42
+    # The total number of components is 54
     # Depending on the environment the detrender/Arima and/or Prophet will not be installed
 
     if has_minimal_dependencies:
-        n_components = 45
+        n_components = 42
     elif is_using_conda:
         # No prophet and no arima
         n_components = 54
@@ -50,7 +50,7 @@ def test_all_components(
         # No detrender or arima
         n_components = 54
     else:
-        n_components = 55
+        n_components = 53
     assert len(all_components()) == n_components
 
 

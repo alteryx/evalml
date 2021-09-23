@@ -5,12 +5,14 @@ Release Notes
         * Added human-readable pipeline explanations to model understanding :pr:`2861`
     * Fixes
     * Changes
+        * Deleted scikit-learn ensembler :pr:`2819`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Deleted scikit-learn ensembler :pr:`2819`
 
 
 **v0.34.0 Sep. 30, 2021**
@@ -28,6 +30,7 @@ Release Notes
         * Added the ability of ``AutoMLSearch`` to accept a ``SequentialEngine`` instance as engine input :pr:`2838`
         * Added new label encoder component to EvalML :pr:`2853`
         * Added our own partial dependence implementation :pr:`2834`
+        * Add new ensembler component :pr:`2653`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
@@ -45,6 +48,7 @@ Release Notes
         * Removed ``model_family`` attribute from ``ComponentBase`` and transformers :pr:`2828`
         * Limited ``scikit-learn`` until new features and errors can be addressed :pr:`2842`
         * Show DeprecationWarning when Sklearn Ensemblers are called :pr:`2859`
+    * Documentation Changes
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
         * Added a test to make sure pip versions match conda versions :pr:`2851`
@@ -122,7 +126,6 @@ Release Notes
         * Updated pipeline ``graph()`` to distingush X and y edges :pr:`2654`
         * Added ``DropRowsTransformer`` component :pr:`2692`
         * Added ``DROP_ROWS`` to ``_make_component_list_from_actions`` and clean up metadata :pr:`2694`
-        * Add new ensembler component :pr:`2653`
     * Fixes
         * Updated Oversampler logic to select best SMOTE based on component input instead of pipeline input :pr:`2695`
         * Added ability to explicitly close DaskEngine resources to improve runtime and reduce Dask warnings :pr:`2667`
