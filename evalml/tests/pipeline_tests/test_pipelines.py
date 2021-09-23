@@ -2799,7 +2799,7 @@ def test_training_only_component_in_pipeline_transform(X_y_binary):
 
 
 def test_component_graph_pipeline():
-    component_graph1 = ComponentGraph(
+    classification_cg = ComponentGraph(
         {
             "Imputer": ["Imputer", "X", "y"],
             "Undersampler": ["Undersampler", "Imputer.x", "y"],
@@ -2811,7 +2811,7 @@ def test_component_graph_pipeline():
         }
     )
 
-    component_graph2 = ComponentGraph(
+    regression_cg = ComponentGraph(
         {
             "Imputer": ["Imputer", "X", "y"],
             "Linear Regressor": [
@@ -2822,7 +2822,7 @@ def test_component_graph_pipeline():
         }
     )
 
-    component_graph3 = ComponentGraph(
+    no_estimator_cg = ComponentGraph(
         {
             "Imputer": ["Imputer", "X", "y"],
             "Undersampler": ["Undersampler", "Imputer.x", "y"],
@@ -2830,18 +2830,18 @@ def test_component_graph_pipeline():
     )
 
     assert (
-        BinaryClassificationPipeline(component_graph1).component_graph
-        == component_graph1
+        BinaryClassificationPipeline(classification_cg).component_graph
+        == classification_cg
     )
-    assert RegressionPipeline(component_graph2).component_graph == component_graph2
+    assert RegressionPipeline(regression_cg).component_graph == regression_cg
     assert (
-        BinaryClassificationPipeline(component_graph3).component_graph
-        == component_graph3
+        BinaryClassificationPipeline(no_estimator_cg).component_graph
+        == no_estimator_cg
     )
     with pytest.raises(
         ValueError, match="Problem type regression not valid for this component graph"
     ):
-        RegressionPipeline(component_graph1)
+        RegressionPipeline(classification_cg)
 
 
 def test_component_graph_pipeline_initialized():
