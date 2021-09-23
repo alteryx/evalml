@@ -1506,6 +1506,7 @@ def test_describe_pipeline_with_ensembling(
         ensembling=True,
         optimize_thresholds=False,
         error_callback=raise_error_callback,
+        verbose=True,
     )
 
     score_side_effect = [
