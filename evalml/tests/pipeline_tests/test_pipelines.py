@@ -2835,8 +2835,7 @@ def test_component_graph_pipeline():
     )
     assert RegressionPipeline(regression_cg).component_graph == regression_cg
     assert (
-        BinaryClassificationPipeline(no_estimator_cg).component_graph
-        == no_estimator_cg
+        BinaryClassificationPipeline(no_estimator_cg).component_graph == no_estimator_cg
     )
     with pytest.raises(
         ValueError, match="Problem type regression not valid for this component graph"
