@@ -12,6 +12,7 @@ from .classifiers import (
     DecisionTreeClassifier,
     KNeighborsClassifier,
     SVMClassifier,
+    VowpalWabbitClassifier,
 )
 from .regressors import (
     LinearRegressor,

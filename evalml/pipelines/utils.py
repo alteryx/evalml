@@ -107,10 +107,10 @@ def _get_preprocessing_components(
     if len(text_columns) > 0:
         pp_components.append(TextFeaturizer)
 
-    if len(input_logical_types.intersection(types_imputer_handles)) or len(
-        text_columns
-    ):
-        pp_components.append(Imputer)
+    # if len(input_logical_types.intersection(types_imputer_handles)) or len(
+    #     text_columns
+    # ):
+    #     pp_components.append(Imputer)
 
     datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
 
