@@ -1093,7 +1093,7 @@ def load_fraud_local(n_rows=None):
 
 
 @pytest.fixture
-def fraud_local():
+def frau_local():
     X, y = load_fraud_local()
     X.ww.set_types(logical_types={"provider": "Categorical", "region": "Categorical"})
     return X, y

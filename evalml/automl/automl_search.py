@@ -911,7 +911,9 @@ class AutoMLSearch:
                     current_computation_index = 0
                     computations_left_to_process = len(computations)
                 while self._should_continue() and computations_left_to_process > 0:
-                    computation, has_been_processed = computations[current_computation_index]
+                    computation, has_been_processed = computations[
+                        current_computation_index
+                    ]
                     if computation.done() and not has_been_processed:
                         evaluation = computation.get_result()
                         data, pipeline, job_log = (
