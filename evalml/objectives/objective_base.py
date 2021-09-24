@@ -131,24 +131,25 @@ class ObjectiveBase(ABC):
         Raises:
             ValueError: If the inputs are malformed.
         """
-        if y_predicted.shape[0] != y_true.shape[0]:
-            raise ValueError(
-                "Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(
-                    len(y_predicted), len(y_true)
+        if y_true is not None:
+            if y_predicted.shape[0] != y_true.shape[0]:
+                raise ValueError(
+                    "Inputs have mismatched dimensions: y_predicted has shape {}, y_true has shape {}".format(
+                        len(y_predicted), len(y_true)
+                    )
                 )
-            )
-        if len(y_true) == 0:
-            raise ValueError("Length of inputs is 0")
-        if np.isnan(y_true).any() or np.isinf(y_true).any():
-            raise ValueError("y_true contains NaN or infinity")
-        # y_predicted could be a 1d vector (predictions) or a 2d vector (classifier predicted probabilities)
-        y_pred_flat = y_predicted.to_numpy().flatten()
-        if np.isnan(y_pred_flat).any() or np.isinf(y_pred_flat).any():
-            raise ValueError("y_predicted contains NaN or infinity")
-        if self.score_needs_proba and np.any([(y_pred_flat < 0) | (y_pred_flat > 1)]):
-            raise ValueError(
-                "y_predicted contains probability estimates not within [0, 1]"
-            )
+            if len(y_true) == 0:
+                raise ValueError("Length of inputs is 0")
+            if np.isnan(y_true).any() or np.isinf(y_true).any():
+                raise ValueError("y_true contains NaN or infinity")
+            # y_predicted could be a 1d vector (predictions) or a 2d vector (classifier predicted probabilities)
+            y_pred_flat = y_predicted.to_numpy().flatten()
+            if np.isnan(y_pred_flat).any() or np.isinf(y_pred_flat).any():
+                raise ValueError("y_predicted contains NaN or infinity")
+            if self.score_needs_proba and np.any([(y_pred_flat < 0) | (y_pred_flat > 1)]):
+                raise ValueError(
+                    "y_predicted contains probability estimates not within [0, 1]"
+                )
 
     @classmethod
     def calculate_percent_difference(cls, score, baseline_score):

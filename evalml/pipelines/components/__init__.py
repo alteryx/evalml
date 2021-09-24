@@ -26,6 +26,8 @@ from .estimators import (
     SVMClassifier,
     SVMRegressor,
     ARIMARegressor,
+    BaselineClusterer,
+    DBSCANClusterer,
 )
 from .transformers import (
     Transformer,

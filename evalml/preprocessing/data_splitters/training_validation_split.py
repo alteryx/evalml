@@ -60,3 +60,37 @@ class TrainingValidationSplit(BaseCrossValidator):
             random_state=self.random_seed,
         )
         return iter([(train, test)])
+
+class NoSplit(BaseCrossValidator):
+    """Don't split the training data into training and validation sets.
+
+    Args:
+        random_seed (int): The seed to use for random sampling. Defaults to 0.
+    """
+
+    def __init__(
+        self,
+        random_seed=0,
+    ):
+        self.random_seed = random_seed
+
+    @staticmethod
+    def get_n_splits():
+        """Return the number of splits of this object.
+
+        Returns:
+            int: Always returns 0.
+        """
+        return 0
+
+    def split(self, X, y=None):
+        """Divide the data into training and testing sets.
+
+        Args:
+            X (pd.DataFrame): Dataframe of points to split
+            y (pd.Series): Series of points to split
+
+        Returns:
+            list: Indices to split data into training and test set
+        """
+        return iter([(np.arange(X.shape[0]), np.array([None]*X.shape[0]))])

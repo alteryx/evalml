@@ -37,6 +37,7 @@ from .components import (
     SVMRegressor,
     ARIMARegressor,
     ProphetRegressor,
+    DBSCANClusterer,
 )
 
 from .component_graph import ComponentGraph
@@ -45,6 +46,7 @@ from .classification_pipeline import ClassificationPipeline
 from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import MulticlassClassificationPipeline
 from .regression_pipeline import RegressionPipeline
+from .clustering_pipeline import ClusterPipeline
 from .time_series_classification_pipelines import (
     TimeSeriesClassificationPipeline,
     TimeSeriesBinaryClassificationPipeline,

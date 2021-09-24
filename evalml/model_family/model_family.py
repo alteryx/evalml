@@ -44,6 +44,9 @@ class ModelFamily(Enum):
     PROPHET = "prophet"
     """Prophet model family."""
 
+    DENSITY = "density"
+    """Density clustering model family"""
+
     NONE = "none"
     """None"""
 
@@ -63,6 +66,7 @@ class ModelFamily(Enum):
             ModelFamily.ENSEMBLE.name: "Ensemble",
             ModelFamily.ARIMA.name: "ARIMA",
             ModelFamily.PROPHET.name: "Prophet",
+            ModelFamily.DENSITY.name: "Density",
             ModelFamily.NONE.name: "None",
         }
 

@@ -16,6 +16,7 @@ from evalml.pipelines import (
 from evalml.preprocessing.data_splitters import (
     TimeSeriesSplit,
     TrainingValidationSplit,
+    NoSplit,
 )
 from evalml.problem_types import (
     ProblemTypes,
@@ -47,6 +48,7 @@ def get_default_primary_search_objective(problem_type):
         "time series regression": "R2",
         "time series binary": "Log Loss Binary",
         "time series multiclass": "Log Loss Multiclass",
+        "clustering": "Silhouette Coefficient",
     }[problem_type.value]
     return get_objective(objective_name, return_instance=True)
 
@@ -95,6 +97,8 @@ def make_data_splitter(
         return TrainingValidationSplit(
             test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle
         )
+    if problem_type == ProblemTypes.CLUSTERING:
+        return NoSplit()
     if problem_type == ProblemTypes.REGRESSION:
         return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:

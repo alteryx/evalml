@@ -45,6 +45,7 @@ from evalml.objectives import (
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
+    ClusterPipeline,
     ComponentGraph,
     MulticlassClassificationPipeline,
     RegressionPipeline,
@@ -439,19 +440,19 @@ class AutoMLSearch:
             self.logger = get_logger(f"{__name__}.verbose")
         else:
             self.logger = logging.getLogger(__name__)
-        if X_train is None:
-            raise ValueError(
-                "Must specify training data as a 2d array using the X_train argument"
-            )
-        if y_train is None:
-            raise ValueError(
-                "Must specify training data target values as a 1d vector using the y_train argument"
-            )
         try:
             self.problem_type = handle_problem_types(problem_type)
         except ValueError:
             raise ValueError(
-                "choose one of (binary, multiclass, regression) as problem_type"
+                "choose one of (binary, multiclass, regression, cluster) as problem_type"
+            )        
+        if X_train is None:
+            raise ValueError(
+                "Must specify training data as a 2d array using the X_train argument"
+            )
+        if y_train is None and self.problem_type is not ProblemTypes.CLUSTERING:
+            raise ValueError(
+                "Must specify training data target values as a 1d vector using the y_train argument"
             )
 
         if is_time_series(self.problem_type):
@@ -784,18 +785,32 @@ class AutoMLSearch:
                 "Invalid type provided for 'engine'.  Requires string, DaskEngine instance, or CFEngine instance."
             )
 
-        self.automl_config = AutoMLConfig(
-            self.data_splitter,
-            self.problem_type,
-            self.objective,
-            self.additional_objectives,
-            self.alternate_thresholding_objective,
-            self.optimize_thresholds,
-            self.error_callback,
-            self.random_seed,
-            self.X_train.ww.schema,
-            self.y_train.ww.schema,
-        )
+        if self.problem_type != ProblemTypes.CLUSTERING:
+            self.automl_config = AutoMLConfig(
+                self.data_splitter,
+                self.problem_type,
+                self.objective,
+                self.additional_objectives,
+                self.alternate_thresholding_objective,
+                self.optimize_thresholds,
+                self.error_callback,
+                self.random_seed,
+                self.X_train.ww.schema,
+                self.y_train.ww.schema,
+            )
+        else:
+            self.automl_config = AutoMLConfig(
+                self.data_splitter,
+                self.problem_type,
+                self.objective,
+                self.additional_objectives,
+                self.alternate_thresholding_objective,
+                self.optimize_thresholds,
+                self.error_callback,
+                self.random_seed,
+                self.X_train.ww.schema,
+                None,
+            )
         self.allowed_model_families = list(
             set([p.model_family for p in (self.allowed_pipelines)])
         )
@@ -1214,6 +1229,12 @@ class AutoMLSearch:
                 component_graph=["Baseline Regressor"],
                 custom_name="Mean Baseline Regression Pipeline",
                 parameters={"Baseline Classifier": {"strategy": "mean"}},
+            )
+        elif self.problem_type == ProblemTypes.CLUSTERING:
+            baseline = ClusterPipeline(
+                component_graph=["Baseline Clusterer"],
+                custom_name="Individual Cluster Baseline Clustering Pipeline",
+                parameters={"Baseline Clusterer": {"strategy": "all"}},
             )
         else:
             gap = self.problem_configuration["gap"]

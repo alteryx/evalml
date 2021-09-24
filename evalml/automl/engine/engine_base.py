@@ -189,8 +189,16 @@ def train_and_score_pipeline(
             )
             break
         logger.debug(f"\t\tTraining and scoring on fold {i}")
-        X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
-        y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
+        try:
+            X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
+        except TypeError:
+            X_train = full_X_train
+            X_valid = None
+        if full_y_train is not None:
+            y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
+        else:
+            y_train = None
+            y_valid = None
         if is_binary(automl_config.problem_type) or is_multiclass(
             automl_config.problem_type
         ):
@@ -226,13 +234,22 @@ def train_and_score_pipeline(
                     f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})"
                 )
             logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
-            scores = cv_pipeline.score(
-                X_valid,
-                y_valid,
-                objectives=objectives_to_score,
-                X_train=X_train,
-                y_train=y_train,
-            )
+            if X_valid is not None:
+                scores = cv_pipeline.score(
+                    X_valid,
+                    y_valid,
+                    objectives=objectives_to_score,
+                    X_train=X_train,
+                    y_train=y_train,
+                )
+            else:
+                scores = cv_pipeline.score(
+                    X_train,
+                    y_train,
+                    objectives=objectives_to_score,
+                    X_train=X_train,
+                    y_train=y_train,
+                )
             logger.debug(
                 f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
             )
@@ -269,8 +286,11 @@ def train_and_score_pipeline(
         ordered_scores = OrderedDict()
         ordered_scores.update({automl_config.objective.name: score})
         ordered_scores.update(scores)
-        ordered_scores.update({"# Training": y_train.shape[0]})
-        ordered_scores.update({"# Validation": y_valid.shape[0]})
+        ordered_scores.update({"# Training": X_train.shape[0]})
+        if X_valid is not None:
+            ordered_scores.update({"# Validation": X_valid.shape[0]})
+        else:
+            ordered_scores.update({"# Validation": 0})
 
         evaluation_entry = {
             "all_objective_scores": ordered_scores,
@@ -319,7 +339,8 @@ def evaluate_pipeline(pipeline, automl_config, X, y, logger):
     logger.info(f"{pipeline.name}:")
 
     X.ww.init(schema=automl_config.X_schema)
-    y.ww.init(schema=automl_config.y_schema)
+    if y is not None:
+        y.ww.init(schema=automl_config.y_schema)
 
     return train_and_score_pipeline(
         pipeline,

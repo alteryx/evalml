@@ -9,6 +9,7 @@ from . import (
     TimeSeriesRegressionPipeline,
 )
 from .binary_classification_pipeline import BinaryClassificationPipeline
+from .clustering_pipeline import ClusterPipeline
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
 )
@@ -167,6 +168,8 @@ def _get_pipeline_base_class(problem_type):
         return MulticlassClassificationPipeline
     elif problem_type == ProblemTypes.REGRESSION:
         return RegressionPipeline
+    elif problem_type == ProblemTypes.CLUSTERING:
+        return ClusterPipeline
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
         return TimeSeriesRegressionPipeline
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:

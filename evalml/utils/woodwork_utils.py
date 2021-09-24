@@ -60,6 +60,8 @@ def infer_feature_types(data, feature_types=None):
     Raises:
         ValueError: If there is a mismatch between the dataframe and the woodwork schema.
     """
+    if data is None:
+        return data
     if isinstance(data, list):
         data = _list_to_pandas(data)
     elif isinstance(data, np.ndarray):

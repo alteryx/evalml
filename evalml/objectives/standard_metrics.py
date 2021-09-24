@@ -8,11 +8,27 @@ from sklearn.preprocessing import label_binarize
 
 from ..utils import classproperty
 from .binary_classification_objective import BinaryClassificationObjective
+from .clustering_objective import ClusteringObjective
 from .multiclass_classification_objective import (
     MulticlassClassificationObjective,
 )
 from .regression_objective import RegressionObjective
 from .time_series_regression_objective import TimeSeriesRegressionObjective
+
+
+class SilhouetteCoefficient(ClusteringObjective):
+    """Silhouette Coefficient for clustering."""
+
+    name = "Silhouette Coefficient"
+    greater_is_better = True
+    score_needs_proba = False
+    perfect_score = 1.0
+    is_bounded_like_percentage = False
+    expected_range = [-1, 1]
+
+    def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
+        """Objective function for silhouette coefficient for clustering."""
+        return metrics.silhouette_score(X, y_predicted, metric="euclidean")
 
 
 class AccuracyBinary(BinaryClassificationObjective):
