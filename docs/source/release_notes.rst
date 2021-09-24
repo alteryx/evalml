@@ -26,6 +26,7 @@ Release Notes
         * Changed the minimum ``woodwork`` version to 0.8.0 :pr:`2783`
         * Pinned ``woodwork`` version to 0.8.0 :pr:`2832`
         * Removed ``model_family`` attribute from ``ComponentBase`` and transformers :pr:`2828`
+        * Limited ``scikit-learn`` until new features and errors can be addressed :pr:`2842`
     * Documentation Changes
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
