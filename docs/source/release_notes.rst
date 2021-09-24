@@ -17,6 +17,7 @@ Release Notes
     * Changes
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
         * Removed data check for checking log distributions in ``make_pipeline`` :pr:`2806`
+        * Removed encoding on pipeline level in favor of a label encoder component :pr:`2821`
     * Documentation Changes
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
