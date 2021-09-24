@@ -428,12 +428,11 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return df
 
     def graph_json(self):
-        """Generates a JSON with nodes consisting of the component names and parameters, and edges detailing
-        from which component (from_component_name) information is being passed to (to_component_name).
-        x_edges specifies from which component  feature data is being passed to.
-        y_edges specifies from which component target data is being passed to.
+        """Generates a JSON with nodes consisting of the component names and parameters, and edges detailing component relationships.
 
-        This can be used to build graphs across a variety of tools.
+        x_edges specifies from which component feature data is being passed.
+        y_edges specifies from which component target data is being passed.
+        This can be used to build graphs across a variety of visualization tools.
         Template: {"Nodes": {"component_name": {"Name": class_name,
                                                 "Attributes": parameters_attributes},
                             ...}
