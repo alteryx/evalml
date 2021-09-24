@@ -449,20 +449,28 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             dag_json (str): A serialized JSON representation of a DAG structure.
         """
-        nodes = {comp_: {"Attributes": att_.parameters, "Name": att_.name} for comp_, att_ in self.component_graph.component_instances.items()}
+        nodes = {
+            comp_: {"Attributes": att_.parameters, "Name": att_.name}
+            for comp_, att_ in self.component_graph.component_instances.items()
+        }
 
-        x_edges = self.component_graph._get_edges(self.component_graph.component_dict, "features")
-        y_edges = self.component_graph._get_edges(self.component_graph.component_dict, "target")
-        for component_name, component_info in self.component_graph.component_dict.items():
+        x_edges = self.component_graph._get_edges(
+            self.component_graph.component_dict, "features"
+        )
+        y_edges = self.component_graph._get_edges(
+            self.component_graph.component_dict, "target"
+        )
+        for (
+            component_name,
+            component_info,
+        ) in self.component_graph.component_dict.items():
             for parent in component_info[1:]:
                 if parent == "X":
                     x_edges.append(("X", component_name))
                 elif parent == "y":
                     y_edges.append(("y", component_name))
         nodes.update({"X": "X", "y": "y"})
-        graph_as_json = {"Nodes": nodes,
-                         "x_edges": x_edges,
-                         "y_edges": y_edges}
+        graph_as_json = {"Nodes": nodes, "x_edges": x_edges, "y_edges": y_edges}
 
         return json.dumps(graph_as_json)
 

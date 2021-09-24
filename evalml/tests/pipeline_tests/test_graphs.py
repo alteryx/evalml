@@ -235,11 +235,11 @@ def test_component_as_json(
         assert comp_name == dag_json["Nodes"][node_]["Name"]
         for comp_ in graph_[1:]:
             if comp_ == "X":
-                x_edges_set.add(('X', node_))
+                x_edges_set.add(("X", node_))
             elif comp_.endswith(".x"):
                 x_edges_set.add((comp_[:-2], node_))
             elif comp_ == "y":
-                y_edges_set.add(('y', node_))
+                y_edges_set.add(("y", node_))
             else:
                 y_edges_set.add((comp_[:-2], node_))
     assert x_edges_set == set(tuple(edge_) for edge_ in dag_json["x_edges"])
