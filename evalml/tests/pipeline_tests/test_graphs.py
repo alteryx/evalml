@@ -227,24 +227,20 @@ def test_component_as_json(
     assert isinstance(dag_json, dict)
     assert len(expected_nodes.keys()) == len(dag_json["Nodes"].keys()) - 2
     assert dag_json["Nodes"].keys() - expected_nodes.keys() == {"X", "y"}
+    x_edges_set = set()
+    y_edges_set = set()
     for node_, graph_ in expected_nodes.items():
         assert node_ in dag_json["Nodes"]
-        assert (
-            graph_[0].name
-            if graph_type == "list"
-            else graph_[0] == dag_json["Nodes"][node_]["class"]
-        )
+        comp_name = graph_[0].name if graph_type == "list" else graph_[0]
+        assert comp_name == dag_json["Nodes"][node_]["Name"]
         for comp_ in graph_[1:]:
-            if comp_ == "X" or comp_ == "y":
-                edge_ = "from_{}_to_{}"
-                from_ = comp_
-                data_ = f"Original {comp_} input"
-            elif comp_.endswith(".x") or comp_.endswith(".y"):
-                edge_ = "from_{}_to_{}"
-                from_ = comp_[:-2]
-                data_ = f"{'X' if comp_[-1] == 'x' else 'y'} modified by {from_}"
-            assert dag_json["Edges"][edge_.format(from_, node_)][
-                "data"
-            ] == data_.format(from_)
-            assert dag_json["Edges"][edge_.format(from_, node_)]["from"] == from_
-            assert dag_json["Edges"][edge_.format(from_, node_)]["to"] == node_
+            if comp_ == "X":
+                x_edges_set.add(('X', node_))
+            elif comp_.endswith(".x"):
+                x_edges_set.add((comp_[:-2], node_))
+            elif comp_ == "y":
+                y_edges_set.add(('y', node_))
+            else:
+                y_edges_set.add((comp_[:-2], node_))
+    assert x_edges_set == set(tuple(edge_) for edge_ in dag_json["x_edges"])
+    assert y_edges_set == set(tuple(edge_) for edge_ in dag_json["y_edges"])

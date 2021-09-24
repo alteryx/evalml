@@ -428,56 +428,43 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         return df
 
     def graph_json(self):
-        """Generates a JSON with nodes consisting of the component names and parameters, and edges detailing component relationships.
+        """Generates a JSON with nodes consisting of the component names and parameters, and edges detailing
+        from which component (from_component_name) information is being passed to (to_component_name).
+        x_edges specifies from which component  feature data is being passed to.
+        y_edges specifies from which component target data is being passed to.
 
         This can be used to build graphs across a variety of tools.
-        Template: {"Edges": {"from_parent_node_to_child_node" : {"data": what_value_is_passed,
-                                                                 "from": "parent_node",
-                                                                 "to": "child_node"},
-                            ...},
-                    "Nodes": {"component_name": {"class": class_name,
-                                                 "attributes": parameters_attributes},
+        Template: {"Nodes": {"component_name": {"Name": class_name,
+                                                "Attributes": parameters_attributes},
                             ...}
-                    }
+                    },
+                   "x_edges": [[from_component_name, to_component_name],
+                               [from_component_name, to_component_name],
+                               ...],
+                   "y_edges": [[from_component_name, to_component_name],
+                              [from_component_name, to_component_name],
+                              ...]
+                   }
 
         Returns:
             dag_json (str): A serialized JSON representation of a DAG structure.
         """
-        dag_json = {"Nodes": {"X": "X", "y": "y"}, "Edges": {}}
+        nodes = {comp_: {"Attributes": att_.parameters, "Name": att_.name} for comp_, att_ in self.component_graph.component_instances.items()}
 
-        for (
-            component_name,
-            component_info,
-        ) in self.component_graph.component_dict.items():
-            dag_json["Nodes"][component_name] = {
-                "class": component_info[0]
-                if isinstance(component_info[0], str)
-                else component_info[0].name,
-                "attributes": self.parameters[component_name]
-                if component_name in self.parameters
-                else None,
-            }
+        x_edges = self.component_graph._get_edges(self.component_graph.component_dict, "features")
+        y_edges = self.component_graph._get_edges(self.component_graph.component_dict, "target")
+        for component_name, component_info in self.component_graph.component_dict.items():
+            for parent in component_info[1:]:
+                if parent == "X":
+                    x_edges.append(("X", component_name))
+                elif parent == "y":
+                    y_edges.append(("y", component_name))
+        nodes.update({"X": "X", "y": "y"})
+        graph_as_json = {"Nodes": nodes,
+                         "x_edges": x_edges,
+                         "y_edges": y_edges}
 
-        for (
-            component_name,
-            component_info,
-        ) in self.component_graph.component_dict.items():
-            for input_ in component_info[1:]:
-                from_comp = input_[:-2]
-                if input_.endswith(".x") or input_.endswith(".y"):
-                    dag_json["Edges"][f"from_{from_comp}_to_{component_name}"] = {
-                        "from": from_comp,
-                        "to": component_name,
-                        "data": f"{'X' if input_[-1] == 'x' else 'y'} modified by {from_comp}",
-                    }
-                elif input_ == "X" or input_ == "y":
-                    dag_json["Edges"][f"from_{input_}_to_{component_name}"] = {
-                        "from": input_,
-                        "to": component_name,
-                        "data": f"Original {input_} input",
-                    }
-
-        return json.dumps(dag_json)
+        return json.dumps(graph_as_json)
 
     def graph(self, filepath=None):
         """Generate an image representing the pipeline graph.
