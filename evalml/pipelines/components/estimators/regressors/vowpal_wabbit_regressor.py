@@ -7,8 +7,8 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 
 
-class VowpalWabbitClassifier(Estimator):
-    """Vowpal Wabbit Classifier.
+class VowpalWabbitRegressor(Estimator):
+    """Vowpal Wabbit Regressor.
 
     Args:
         random_seed (int): Seed for the random number generator. Defaults to 0.

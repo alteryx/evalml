@@ -37,7 +37,8 @@ from .components import (
     SVMRegressor,
     ARIMARegressor,
     ProphetRegressor,
-    VowpalWabbitClassifier,
+    VowpalWabbitBinaryClassifier,
+    VowpalWabbitMulticlassClassifier,
 )
 
 from .component_graph import ComponentGraph

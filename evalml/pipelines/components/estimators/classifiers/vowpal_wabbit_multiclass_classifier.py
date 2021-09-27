@@ -7,7 +7,7 @@ from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
 
 
-class VowpalWabbitClassifier(Estimator):
+class VowpalWabbitMulticlassClassifier(Estimator):
     """Vowpal Wabbit Classifier.
 
     Args:
@@ -23,9 +23,9 @@ class VowpalWabbitClassifier(Estimator):
     model_family = ModelFamily.VOWPAL_WABBIT
     """ModelFamily.VOWPAL_WABBIT"""
     supported_problem_types = [
-        ProblemTypes.BINARY,
+        # ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,  # VWMultiClassifier? Or supported by this?
-        ProblemTypes.TIME_SERIES_BINARY,
+        # ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]
     """[
