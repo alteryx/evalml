@@ -53,6 +53,9 @@ class ModelFamily(Enum):
     HIERARCHY = "hierarchy"
     """Hierarchical clustering model family"""
 
+    DISTRIBUTION = "distribution"
+    """ Distribution clustering model family"""
+
     NONE = "none"
     """None"""
 
@@ -75,6 +78,7 @@ class ModelFamily(Enum):
             ModelFamily.DENSITY.name: "Density",
             ModelFamily.CENTROID.name: "Centroid",
             ModelFamily.HIERARCHY.name: "Hierarchy",
+            ModelFamily.DISTRIBUTION.name: "Distribution",
             ModelFamily.NONE.name: "None",
         }
 

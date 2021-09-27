@@ -32,5 +32,6 @@ from .clusters import (
     AgglomerativeClusterer,
     BaselineClusterer,
     DBSCANClusterer,
+    GaussianMixtureClusterer,
     KMeansClusterer,
 )

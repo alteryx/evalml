@@ -29,6 +29,7 @@ from .estimators import (
     AgglomerativeClusterer,
     BaselineClusterer,
     DBSCANClusterer,
+    GaussianMixtureClusterer,
     KMeansClusterer,
 )
 from .transformers import (

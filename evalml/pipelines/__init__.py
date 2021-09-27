@@ -39,6 +39,7 @@ from .components import (
     ProphetRegressor,
     AgglomerativeClusterer,
     DBSCANClusterer,
+    GaussianMixtureClusterer,
     KMeansClusterer,
 )
 
