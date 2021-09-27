@@ -47,6 +47,9 @@ class ModelFamily(Enum):
     DENSITY = "density"
     """Density clustering model family"""
 
+    CENTROID = "centroid"
+    """Centroid clustering model family"""
+
     NONE = "none"
     """None"""
 
@@ -67,6 +70,7 @@ class ModelFamily(Enum):
             ModelFamily.ARIMA.name: "ARIMA",
             ModelFamily.PROPHET.name: "Prophet",
             ModelFamily.DENSITY.name: "Density",
+            ModelFamily.CENTROID.name: "Centroid",
             ModelFamily.NONE.name: "None",
         }
 

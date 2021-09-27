@@ -38,6 +38,7 @@ from .components import (
     ARIMARegressor,
     ProphetRegressor,
     DBSCANClusterer,
+    KMeansClusterer,
 )
 
 from .component_graph import ComponentGraph

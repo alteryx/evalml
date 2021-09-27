@@ -28,6 +28,7 @@ from .estimators import (
     ARIMARegressor,
     BaselineClusterer,
     DBSCANClusterer,
+    KMeansClusterer,
 )
 from .transformers import (
     Transformer,

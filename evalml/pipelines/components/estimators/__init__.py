@@ -31,4 +31,5 @@ from .regressors import (
 from .clusters import (
     BaselineClusterer,
     DBSCANClusterer,
+    KMeansClusterer,
 )

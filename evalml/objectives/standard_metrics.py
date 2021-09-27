@@ -28,7 +28,10 @@ class SilhouetteCoefficient(ClusteringObjective):
 
     def objective_function(self, y_true, y_predicted, X=None, sample_weight=None):
         """Objective function for silhouette coefficient for clustering."""
-        return metrics.silhouette_score(X, y_predicted, metric="euclidean")
+        try:
+            return metrics.silhouette_score(X, y_predicted, metric="euclidean")
+        except ValueError:
+            return 0
 
 
 class AccuracyBinary(BinaryClassificationObjective):
