@@ -5290,28 +5290,25 @@ def test_baseline_pipeline_properly_initalized(
         X, y = X_y_binary
         score_value = {"Log Loss Binary": 1.0}
         expected_pipeline = BinaryClassificationPipeline(
-            component_graph={"Baseline Classifier": ["Baseline Classifier", "X", "y"]},
-            parameters={"Baseline Classifier": {"strategy": "mode"}},
+            component_graph=["Baseline Classifier"],
             custom_name="Mode Baseline Binary Classification Pipeline",
-            random_seed=0,
+            parameters={"Baseline Classifier": {"strategy": "mode"}},
         )
     elif automl_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
         score_value = {"Log Loss Multiclass": 1.0}
         expected_pipeline = MulticlassClassificationPipeline(
-            component_graph={"Baseline Classifier": ["Baseline Classifier", "X", "y"]},
-            parameters={"Baseline Classifier": {"strategy": "mode"}},
+            component_graph=["Baseline Classifier"],
             custom_name="Mode Baseline Multiclass Classification Pipeline",
-            random_seed=0,
+            parameters={"Baseline Classifier": {"strategy": "mode"}},
         )
     elif automl_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         score_value = {"R2": 1.0}
         expected_pipeline = RegressionPipeline(
-            component_graph={"Baseline Regressor": ["Baseline Regressor", "X", "y"]},
-            parameters={"Baseline Regressor": {"strategy": "mean"}},
+            component_graph=["Baseline Regressor"],
             custom_name="Mean Baseline Regression Pipeline",
-            random_seed=0,
+            parameters={"Baseline Regressor": {"strategy": "mean"}},
         )
 
     automl = AutoMLSearch(
