@@ -50,6 +50,9 @@ class ModelFamily(Enum):
     CENTROID = "centroid"
     """Centroid clustering model family"""
 
+    HIERARCHY = "hierarchy"
+    """Hierarchical clustering model family"""
+
     NONE = "none"
     """None"""
 
@@ -71,6 +74,7 @@ class ModelFamily(Enum):
             ModelFamily.PROPHET.name: "Prophet",
             ModelFamily.DENSITY.name: "Density",
             ModelFamily.CENTROID.name: "Centroid",
+            ModelFamily.HIERARCHY.name: "Hierarchy",
             ModelFamily.NONE.name: "None",
         }
 

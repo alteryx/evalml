@@ -26,6 +26,7 @@ from .estimators import (
     SVMClassifier,
     SVMRegressor,
     ARIMARegressor,
+    AgglomerativeClusterer,
     BaselineClusterer,
     DBSCANClusterer,
     KMeansClusterer,

@@ -29,6 +29,7 @@ from .regressors import (
     ProphetRegressor,
 )
 from .clusters import (
+    AgglomerativeClusterer,
     BaselineClusterer,
     DBSCANClusterer,
     KMeansClusterer,

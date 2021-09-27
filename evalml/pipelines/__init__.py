@@ -37,6 +37,7 @@ from .components import (
     SVMRegressor,
     ARIMARegressor,
     ProphetRegressor,
+    AgglomerativeClusterer,
     DBSCANClusterer,
     KMeansClusterer,
 )
