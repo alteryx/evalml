@@ -5273,3 +5273,57 @@ def test_automl_ensembler_allowed_component_graphs(
         automl.rankings["pipeline_name"] == "Stacked Ensemble Regression Pipeline"
     ]
     assert not np.isnan(float(ensemble_result["mean_cv_score"]))
+
+
+@pytest.mark.parametrize(
+    "automl_type",
+    [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
+)
+def test_baseline_pipeline_properly_initalized(
+    automl_type,
+    AutoMLTestEnv,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
+):
+    if automl_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+        score_value = {"Log Loss Binary": 1.0}
+        expected_pipeline = BinaryClassificationPipeline(
+            component_graph={"Baseline Classifier": ["Baseline Classifier", "X", "y"]},
+            parameters={"Baseline Classifier": {"strategy": "mode"}},
+            custom_name="Mode Baseline Binary Classification Pipeline",
+            random_seed=0,
+        )
+    elif automl_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+        score_value = {"Log Loss Multiclass": 1.0}
+        expected_pipeline = MulticlassClassificationPipeline(
+            component_graph={"Baseline Classifier": ["Baseline Classifier", "X", "y"]},
+            parameters={"Baseline Classifier": {"strategy": "mode"}},
+            custom_name="Mode Baseline Multiclass Classification Pipeline",
+            random_seed=0,
+        )
+    elif automl_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+        score_value = {"R2": 1.0}
+        expected_pipeline = RegressionPipeline(
+            component_graph={"Baseline Regressor": ["Baseline Regressor", "X", "y"]},
+            parameters={"Baseline Regressor": {"strategy": "mean"}},
+            custom_name="Mean Baseline Regression Pipeline",
+            random_seed=0,
+        )
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=automl_type,
+        optimize_thresholds=False,
+        max_iterations=1,
+    )
+    env = AutoMLTestEnv(automl_type)
+    with env.test_context(score_return_value=score_value):
+        automl.search()
+
+    baseline_pipeline = automl.get_pipeline(0)
+    assert expected_pipeline == baseline_pipeline
