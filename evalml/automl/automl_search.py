@@ -777,7 +777,7 @@ class AutoMLSearch:
 
         if isinstance(engine, str):
             self._engine = build_engine_from_str(engine)
-        elif isinstance(engine, (DaskEngine, CFEngine)):
+        elif isinstance(engine, (DaskEngine, CFEngine, SequentialEngine)):
             self._engine = engine
         else:
             raise TypeError(
