@@ -14,6 +14,6 @@ shap>=0.36.0
 texttable>=1.6.2
 woodwork==0.8.0
 dask>=2.12.0
-featuretools>=0.26.1
+featuretools==1.0.0rc1
 nlp-primitives>=1.1.0
 networkx>=2.5,<2.6
