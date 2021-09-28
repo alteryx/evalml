@@ -32,6 +32,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
+        * Added a test to make sure pip versions match conda versions :pr:`2851`
 
 .. warning::
 
