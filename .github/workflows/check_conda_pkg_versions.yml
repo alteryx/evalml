@@ -30,6 +30,7 @@ jobs:
           virtualenv test_python -q
           source test_python/bin/activate
           pip install -r test-requirements.txt
+          pip install requirements-parser>=0.2.0
       - name: Clone Feedstock & Check Versions
         run: |
           git clone -b latest_release_changes --single-branch https://github.com/conda-forge/evalml-core-feedstock
