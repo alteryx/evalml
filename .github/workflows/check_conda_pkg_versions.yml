@@ -1,0 +1,41 @@
+name: Build conda package
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [ opened, synchronize ]
+    paths:
+#      - 'requirements.txt'
+#      - 'core-requirements.txt'
+#      - 'evalml/tests/dependency_update_check/*.txt'
+
+jobs:
+  build_conda_pkg:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Install Dependencies
+        run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          make installdeps-test
+      - name: Clone Feedstock, Copy to Container, and Run Update
+        run: |
+          git clone -b latest_release_changes --single-branch https://github.com/conda-forge/evalml-core-feedstock
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          mkdir evalml-core-feedstock/evalml
+          cp -r `ls -A | grep -v "evalml-core-feedstock"` ./evalml-core-feedstock/evalml/
+          python .github/conda_version_check.py
