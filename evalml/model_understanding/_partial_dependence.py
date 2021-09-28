@@ -142,10 +142,10 @@ def _partial_dependence_calculation(pipeline, grid, features, X):
     else:
         prediction_method = pipeline.predict_proba
 
+    X_eval = X.ww.copy()
     for _, new_values in grid.iterrows():
-        X_eval = X.copy()
         for i, variable in enumerate(features):
-            X_eval.loc[:, variable] = new_values[i]
+            X_eval.ww[variable] = pd.Series([new_values[i]] * X_eval.shape[0])
 
         pred = prediction_method(X_eval)
 

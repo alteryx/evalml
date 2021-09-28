@@ -1534,15 +1534,18 @@ def test_partial_dependence_categorical_nan(fraud_100):
     )
     pl.fit(X, y)
 
-    dep = partial_dependence(pl, X, features="provider", grid_resolution=5)
+    GRID_RESOLUTION = 5
+    dep = partial_dependence(
+        pl, X, features="provider", grid_resolution=GRID_RESOLUTION
+    )
 
     assert dep.shape[0] == X["provider"].dropna().nunique()
     assert not dep["feature_values"].isna().any()
     assert not dep["partial_dependence"].isna().any()
 
     dep2way = partial_dependence(
-        pl, X, features=("amount", "provider"), grid_resolution=5
+        pl, X, features=("amount", "provider"), grid_resolution=GRID_RESOLUTION
     )
     assert not dep2way.isna().any().any()
-    # Minus 1 in the columns because there is `class_label`
-    assert dep2way.shape == (5, X["provider"].dropna().nunique() + 1)
+    # Plus 1 in the columns because there is `class_label`
+    assert dep2way.shape == (GRID_RESOLUTION, X["provider"].dropna().nunique() + 1)
