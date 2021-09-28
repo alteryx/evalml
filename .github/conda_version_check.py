@@ -7,7 +7,7 @@ import os
 CONDA_RECIPE = "/Users/freddy.boulton/sources/personal/evalml-core-feedstock/recipe/meta.yaml"
 EVALML_PATH = "/Users/freddy.boulton/sources/evalml/"
 
-IGNORE_PACKAGES = {"python", "pmdarima"}
+IGNORE_PACKAGES = {"python", "pmdarima", "pyzmq"}
 CONDA_TO_PIP_NAME = {"python-kaleido": "kaleido", 'py-xgboost': 'xgboost', 'matplotlib-base': 'matplotlib',
                      'python-graphviz': 'graphviz'}
 

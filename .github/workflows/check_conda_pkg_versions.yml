@@ -33,7 +33,7 @@ jobs:
           pip install requirements-parser>=0.2.0
       - name: Clone Feedstock & Check Versions
         run: |
-          git clone -b latest_release_changes_fixed --single-branch https://github.com/conda-forge/evalml-core-feedstock
+          git clone -b latest_release_changes --single-branch https://github.com/conda-forge/evalml-core-feedstock
           virtualenv test_python -q
           source test_python/bin/activate
           mkdir evalml-core-feedstock/evalml
