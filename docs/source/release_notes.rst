@@ -12,12 +12,14 @@ Release Notes
         * Added verbose flag to top level ``search()`` method :pr:`2813`
         * Added support for linting jupyter notebooks and clearing the executed cells and empty cells :pr:`2829` :pr:`2837`
         * Added "DROP_ROWS" action to output of ``OutliersDataCheck.validate()`` :pr:`2820`
+        * Added the ability of ``AutoMLSearch`` to accept a ``SequentialEngine`` instance as engine input :pr:`2838`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
         * Fixed bug where ``score_pipelines`` method of ``AutoMLSearch`` would not work for time series problems :pr:`2786`
         * Removed ``TargetTransformer`` class :pr:`2833`
         * Added tests to verify ``ComponentGraph`` support by pipelines :pr:`2830`
+        * Fixed incorrect parameter for baseline regression pipeline in ``AutoMLSearch`` :pr:`2847`
     * Changes
         * Changed woodwork initialization to use partial schemas :pr:`2774`
         * Made ``Transformer.transform()`` an abstract method :pr:`2744`
@@ -26,6 +28,7 @@ Release Notes
         * Changed the minimum ``woodwork`` version to 0.8.0 :pr:`2783`
         * Pinned ``woodwork`` version to 0.8.0 :pr:`2832`
         * Removed ``model_family`` attribute from ``ComponentBase`` and transformers :pr:`2828`
+        * Limited ``scikit-learn`` until new features and errors can be addressed :pr:`2842`
     * Documentation Changes
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
