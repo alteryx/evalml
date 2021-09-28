@@ -1,5 +1,5 @@
 """A transformer that encodes target labels using values between 0 and num_classes - 1."""
-import pandas as pd
+import woodwork as ww
 from sklearn.preprocessing import LabelEncoder as SKLabelEncoder
 
 from ..transformer import Transformer
@@ -36,6 +36,9 @@ class LabelEncoder(Transformer):
 
         Returns:
             self
+
+        Raises:
+            ValueError: If input `y` is None.
         """
         if y is None:
             raise ValueError("y cannot be None!")
@@ -51,13 +54,16 @@ class LabelEncoder(Transformer):
 
         Returns:
             pd.DataFrame, pd.Series: The original features and an encoded version of the target.
+
+        Raises:
+            ValueError: If input `y` is None.
         """
         if y is None:
             raise ValueError("y cannot be None!")
 
         y_ww = infer_feature_types(y)
         y_t = self._component_obj.transform(y_ww)
-        return X, infer_feature_types(y_t)
+        return X, ww.init_series(y_t)
 
     def fit_transform(self, X, y):
         """Fit and transform data using the label encoder.
@@ -79,5 +85,12 @@ class LabelEncoder(Transformer):
 
         Returns:
             pd.Series: The decoded version of the target.
+
+        Raises:
+            ValueError: If input `y` is None.
         """
-        return self._component_obj.inverse_transform(y)
+        if y is None:
+            raise ValueError("y cannot be None!")
+
+        y_it = self._component_obj.inverse_transform(y)
+        return ww.init_series(y_it)
