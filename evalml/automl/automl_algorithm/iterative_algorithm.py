@@ -98,10 +98,10 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.number_features = number_features
         self._first_batch_results = []
         self._best_pipeline_info = {}
-        self.ensembling = ensembling and len(self.allowed_pipelines) > 1
+        self.ensembling = ensembling
         self._pipeline_params = pipeline_params or {}
         self._custom_hyperparameters = custom_hyperparameters or {}
-
+        self.text_in_ensembling = text_in_ensembling
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
         else:
@@ -235,38 +235,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
 
+        self.ensembling = self.ensembling and len(self.allowed_pipelines) > 1
         self.logger.info(f"{len(self.allowed_pipelines)} pipelines ready for search.")
-
-        run_ensembling = self.ensembling
-        if run_ensembling and len(self.allowed_pipelines) == 1:
-            self.logger.warning(
-                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
-            )
-            run_ensembling = False
-
-        if run_ensembling and len(self.allowed_pipelines) == 1:
-            self.logger.warning(
-                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
-            )
-            run_ensembling = False
-
-        if run_ensembling and self.max_iterations is not None:
-            # Baseline + first batch + each pipeline iteration + 1
-            first_ensembling_iteration = (
-                1
-                + len(self.allowed_pipelines)
-                + len(self.allowed_pipelines) * self._pipelines_per_batch
-                + 1
-            )
-            if self.max_iterations < first_ensembling_iteration:
-                run_ensembling = False
-                self.logger.warning(
-                    f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling."
-                )
-            else:
-                self.logger.info(
-                    f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that."
-                )
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate.

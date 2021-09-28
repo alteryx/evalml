@@ -173,11 +173,27 @@ def test_iterative_algorithm_empty(
 )
 @patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_results(
-    mock_opt_tell, mock_stack, ensembling_value, dummy_binary_pipeline_classes
+    mock_opt_tell,
+    mock_stack,
+    ensembling_value,
+    dummy_binary_pipeline_classes,
+    X_y_binary,
+    make_data_type,
 ):
-    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes()
+
     algo = IterativeAlgorithm(
-        allowed_pipelines=dummy_binary_pipeline_classes, ensembling=ensembling_value
+        X=X,
+        y=y,
+        problem_type="binary",
+        allowed_component_graphs=allowed_component_graphs,
+        ensembling=ensembling_value,
     )
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
@@ -264,11 +280,25 @@ def test_iterative_algorithm_results(
 )
 @patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_passes_pipeline_params(
-    mock_opt_tell, mock_stack, ensembling_value, dummy_binary_pipeline_classes
+    mock_opt_tell,
+    mock_stack,
+    X_y_binary,
+    make_data_type,
+    ensembling_value,
+    dummy_binary_pipeline_classes,
 ):
-    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(
-        allowed_pipelines=dummy_binary_pipeline_classes,
+        X=X,
+        y=y,
+        problem_type="binary",
+        allowed_component_graphs=allowed_component_graphs,
         ensembling=ensembling_value,
         pipeline_params={
             "pipeline": {"gap": 2, "max_delay": 10, "forecast_horizon": 3}
@@ -318,10 +348,24 @@ def test_iterative_algorithm_passes_pipeline_params(
 
 
 @patch("evalml.tuners.skopt_tuner.Optimizer.tell")
-def test_iterative_algorithm_passes_njobs(mock_opt_tell, dummy_binary_pipeline_classes):
-    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
+def test_iterative_algorithm_passes_njobs(
+    mock_opt_tell, X_y_binary, make_data_type, dummy_binary_pipeline_classes
+):
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes()
     algo = IterativeAlgorithm(
-        allowed_pipelines=dummy_binary_pipeline_classes, n_jobs=2, ensembling=False
+        X=X,
+        y=y,
+        problem_type="binary",
+        allowed_component_graphs=allowed_component_graphs,
+        n_jobs=2,
+        ensembling=False,
     )
     next_batch = algo.next_batch()
 
@@ -345,7 +389,7 @@ def test_iterative_algorithm_passes_njobs(mock_opt_tell, dummy_binary_pipeline_c
 @pytest.mark.parametrize("is_regression", [True, False])
 @pytest.mark.parametrize("estimator", ["XGBoost", "CatBoost"])
 def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
-    mock_opt_tell, is_regression, estimator
+    mock_opt_tell, X_y_binary, X_y_regression, make_data_type, is_regression, estimator
 ):
     if estimator == "XGBoost":
         pytest.importorskip(
@@ -356,11 +400,25 @@ def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
             "catboost", reason="Skipping test because catboost is not installed."
         )
     if is_regression:
-        pipelines = [RegressionPipeline([f"{estimator} Regressor"])]
+        X, y = X_y_regression
+        component_graphs = {"graph": [f"{estimator} Regressor"]}
+        problem_type = "regression"
     else:
-        pipelines = [BinaryClassificationPipeline([f"{estimator} Classifier"])]
+        X, y = X_y_binary
+        component_graphs = {"graph": [f"{estimator} Classifier"]}
+        problem_type = "binary"
 
-    algo = IterativeAlgorithm(allowed_pipelines=pipelines, n_jobs=2, ensembling=False)
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type=problem_type,
+        allowed_component_graphs=component_graphs,
+        n_jobs=2,
+        ensembling=False,
+    )
     next_batch = algo.next_batch()
 
     # the "best" score will be the 1st dummy pipeline
@@ -369,7 +427,7 @@ def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
         algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
     for _ in range(1, 3):
-        for _ in range(len(pipelines)):
+        for _ in range(len(component_graphs)):
             next_batch = algo.next_batch()
             for parameter_values in [list(p.parameters.values()) for p in next_batch]:
                 assert parameter_values[0]["n_jobs"] == 2
@@ -380,36 +438,35 @@ def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
 
 @pytest.mark.parametrize("ensembling_value", [True, False])
 def test_iterative_algorithm_one_allowed_pipeline(
-    X_y_binary,
-    make_data_type,
-    ensembling_value,
-    logistic_regression_binary_component_graph,
-    logistic_regression_binary_pipeline_class,
+    X_y_binary, make_data_type, ensembling_value, dummy_binary_pipeline_classes
 ):
     X, y = X_y_binary
     X = make_data_type("ww", X)
     y = make_data_type("ww", y)
-
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes()
+    dummy_binary_pipeline_classes = [dummy_binary_pipeline_classes[0]]
+    allowed_component_graphs = {"graph_1": allowed_component_graphs["graph_1"]}
     # Checks that when len(allowed_pipeline) == 1, ensembling is not run, even if set to True
     algo = IterativeAlgorithm(
         X=X,
         y=y,
         problem_type="binary",
-        allowed_component_graphs={
-            "graph_1": logistic_regression_binary_component_graph
-        },
+        allowed_component_graphs=allowed_component_graphs,
         ensembling=ensembling_value,
     )
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-    assert algo.allowed_pipelines == [logistic_regression_binary_pipeline_class({})]
+    assert algo.allowed_pipelines == dummy_binary_pipeline_classes
 
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()
     assert len(next_batch) == 1
     assert [p.__class__ for p in next_batch] == [
-        logistic_regression_binary_pipeline_class
-    ] * len(next_batch)
+        p.__class__ for p in dummy_binary_pipeline_classes
+    ]
     assert algo.pipeline_number == 1
     assert algo.batch_number == 1
     assert all(
@@ -429,8 +486,8 @@ def test_iterative_algorithm_one_allowed_pipeline(
         assert len(next_batch) == algo.pipelines_per_batch
         assert all((p.random_seed == algo.random_seed) for p in next_batch)
         assert [p.__class__ for p in next_batch] == [
-            logistic_regression_binary_pipeline_class
-        ] * len(next_batch)
+            dummy_binary_pipeline_classes[0].__class__
+        ] * algo.pipelines_per_batch
         assert algo.pipeline_number == last_pipeline_number + len(next_batch)
         last_pipeline_number = algo.pipeline_number
         assert algo.batch_number == last_batch_number + 1
@@ -443,9 +500,9 @@ def test_iterative_algorithm_one_allowed_pipeline(
         assert any(
             [
                 p
-                != logistic_regression_binary_pipeline_class(
-                    {}
-                ).component_graph.default_parameters
+                != dummy_binary_pipeline_classes[0]
+                .__class__({})
+                .component_graph.default_parameters
                 for p in all_parameters
             ]
         )
@@ -454,11 +511,25 @@ def test_iterative_algorithm_one_allowed_pipeline(
 @pytest.mark.parametrize("text_in_ensembling", [True, False])
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
 def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(
-    n_jobs, text_in_ensembling, dummy_binary_pipeline_classes
+    n_jobs,
+    X_y_binary,
+    make_data_type,
+    text_in_ensembling,
+    dummy_binary_pipeline_classes,
 ):
-    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes()
+
     algo = IterativeAlgorithm(
-        allowed_pipelines=dummy_binary_pipeline_classes,
+        X=X,
+        y=y,
+        problem_type="binary",
+        allowed_component_graphs=allowed_component_graphs,
         ensembling=True,
         text_in_ensembling=text_in_ensembling,
         n_jobs=n_jobs,
@@ -494,13 +565,30 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(
 @pytest.mark.parametrize("text_in_ensembling", [True, False])
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
 def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
-    n_jobs, text_in_ensembling, linear_regression_pipeline_class
+    n_jobs, text_in_ensembling, X_y_regression, make_data_type
 ):
-    algo = IterativeAlgorithm(
-        allowed_pipelines=[
-            linear_regression_pipeline_class({}),
-            linear_regression_pipeline_class({}),
+    X, y = X_y_regression
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    allowed_component_graphs = {
+        "graph_1": [
+            "One Hot Encoder",
+            "Imputer",
+            "Standard Scaler",
+            "Linear Regressor",
         ],
+        "graph_2": [
+            "One Hot Encoder",
+            "Imputer",
+            "Standard Scaler",
+            "Linear Regressor",
+        ],
+    }
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type="regression",
+        allowed_component_graphs=allowed_component_graphs,
         ensembling=True,
         text_in_ensembling=text_in_ensembling,
         n_jobs=n_jobs,
@@ -538,10 +626,18 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
     [1, "hello", 1.3, -1.0006, Categorical([1, 3, 4]), Integer(2, 4), Real(2, 6)],
 )
 def test_iterative_algorithm_pipeline_params(
+    X_y_binary,
+    make_data_type,
     parameters,
     dummy_binary_pipeline_classes,
 ):
-    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes(parameters)
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes(parameters)
 
     if isinstance(parameters, (Categorical, Integer, Real)):
         with pytest.raises(
@@ -549,7 +645,10 @@ def test_iterative_algorithm_pipeline_params(
             match="Pipeline parameters should not contain skopt.Space variables",
         ):
             IterativeAlgorithm(
-                allowed_pipelines=dummy_binary_pipeline_classes,
+                X=X,
+                y=y,
+                problem_type="binary",
+                allowed_component_graphs=allowed_component_graphs,
                 random_seed=0,
                 pipeline_params={
                     "pipeline": {"gap": 2, "max_delay": 10, "forecast_horizon": 3},
@@ -559,7 +658,10 @@ def test_iterative_algorithm_pipeline_params(
         return
     else:
         algo = IterativeAlgorithm(
-            allowed_pipelines=dummy_binary_pipeline_classes,
+            X=X,
+            y=y,
+            problem_type="binary",
+            allowed_component_graphs=allowed_component_graphs,
             random_seed=0,
             pipeline_params={
                 "pipeline": {"gap": 2, "max_delay": 10, "forecast_horizon": 3},
@@ -609,16 +711,29 @@ def test_iterative_algorithm_pipeline_params(
     ],
 )
 def test_iterative_algorithm_custom_hyperparameters(
-    parameters, hyperparameters, dummy_binary_pipeline_classes
+    parameters,
+    hyperparameters,
+    X_y_binary,
+    make_data_type,
+    dummy_binary_pipeline_classes,
 ):
-    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes(parameters)
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes(parameters)
 
     if not isinstance(hyperparameters, (Categorical, Integer, Real)):
         with pytest.raises(
             ValueError, match="Custom hyperparameters should only contain skopt"
         ):
             IterativeAlgorithm(
-                allowed_pipelines=dummy_binary_pipeline_classes,
+                X=X,
+                y=y,
+                problem_type="binary",
+                allowed_component_graphs=allowed_component_graphs,
                 random_seed=0,
                 pipeline_params={"Mock Classifier": {"dummy_parameter": parameters}},
                 custom_hyperparameters={
@@ -628,7 +743,10 @@ def test_iterative_algorithm_custom_hyperparameters(
         return
     else:
         algo = IterativeAlgorithm(
-            allowed_pipelines=dummy_binary_pipeline_classes,
+            X=X,
+            y=y,
+            problem_type="binary",
+            allowed_component_graphs=allowed_component_graphs,
             random_seed=0,
             pipeline_params={"Mock Classifier": {"dummy_parameter": parameters}},
             custom_hyperparameters={
@@ -674,10 +792,22 @@ def test_iterative_algorithm_custom_hyperparameters(
         assert all_dummies == {1, 3, 4} if parameters == 1 else all_dummies == {2, 3, 4}
 
 
-def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classes):
-    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
+def test_iterative_algorithm_pipeline_params_kwargs(
+    X_y_binary, make_data_type, dummy_binary_pipeline_classes
+):
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes()
+
     algo = IterativeAlgorithm(
-        allowed_pipelines=dummy_binary_pipeline_classes,
+        X=X,
+        y=y,
+        problem_type="binary",
+        allowed_component_graphs=allowed_component_graphs,
         pipeline_params={
             "Mock Classifier": {"dummy_parameter": "dummy", "fake_param": "fake"}
         },
@@ -695,13 +825,28 @@ def test_iterative_algorithm_pipeline_params_kwargs(dummy_binary_pipeline_classe
 
 
 def test_iterative_algorithm_results_best_pipeline_info_id(
-    dummy_binary_pipeline_classes, logistic_regression_binary_pipeline_class
+    X_y_binary,
+    make_data_type,
+    dummy_binary_pipeline_classes,
+    logistic_regression_binary_component_graph,
 ):
-    allowed_pipelines = [
-        dummy_binary_pipeline_classes()[0],
-        logistic_regression_binary_pipeline_class({}),
-    ]
-    algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines)
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes()
+    allowed_component_graphs = {
+        "graph_1": allowed_component_graphs["graph_1"],
+        "graph_2": logistic_regression_binary_component_graph,
+    }
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type="binary",
+        allowed_component_graphs=allowed_component_graphs,
+    )
 
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()
@@ -731,12 +876,14 @@ def test_iterative_algorithm_results_best_pipeline_info_id(
     [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS],
 )
 def test_iterative_algorithm_first_batch_order(
-    problem_type, X_y_binary, has_minimal_dependencies
+    problem_type, X_y_binary, make_data_type, has_minimal_dependencies
 ):
     X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
     estimators = get_estimators(problem_type, None)
     pipelines = [make_pipeline(X, y, e, problem_type) for e in estimators]
-    algo = IterativeAlgorithm(allowed_pipelines=pipelines)
+    algo = IterativeAlgorithm(X=X, y=y, problem_type=problem_type)
 
     # initial batch contains one of each pipeline, with default parameters
     next_batch = algo.next_batch()
@@ -794,11 +941,12 @@ def test_iterative_algorithm_first_batch_order(
 
 
 def test_iterative_algorithm_first_batch_order_param(
-    X_y_binary, has_minimal_dependencies
+    X_y_binary, make_data_type, has_minimal_dependencies
 ):
     X, y = X_y_binary
-    estimators = get_estimators("binary", None)
-    pipelines = [make_pipeline(X, y, e, "binary") for e in estimators]
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
     # put random forest first
     estimator_family_order = [
         ModelFamily.RANDOM_FOREST,
@@ -810,7 +958,7 @@ def test_iterative_algorithm_first_batch_order_param(
         ModelFamily.CATBOOST,
     ]
     algo = IterativeAlgorithm(
-        allowed_pipelines=pipelines, _estimator_family_order=estimator_family_order
+        X=X, y=y, problem_type="binary", _estimator_family_order=estimator_family_order
     )
     next_batch = algo.next_batch()
     estimators_in_first_batch = [p.estimator.name for p in next_batch]
@@ -849,12 +997,12 @@ def test_iterative_algorithm_sampling_params(
         )
     X, y = mock_imbalanced_data_X_y(problem_type, "some", "small")
     estimators = get_estimators(problem_type, None)
-    pipelines = [
-        make_pipeline(X, y, e, problem_type, sampler_name=sampler) for e in estimators
-    ]
     algo = IterativeAlgorithm(
-        allowed_pipelines=pipelines,
+        X=X,
+        y=y,
+        problem_type=problem_type,
         random_seed=0,
+        sampler_name=sampler,
     )
     next_batch = algo.next_batch()
     for p in next_batch:
