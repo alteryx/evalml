@@ -7,9 +7,9 @@ on:
   pull_request:
     types: [ opened, synchronize ]
     paths:
-#      - 'requirements.txt'
-#      - 'core-requirements.txt'
-#      - 'evalml/tests/dependency_update_check/*.txt'
+      - 'requirements.txt'
+      - 'core-requirements.txt'
+      - 'evalml/tests/dependency_update_check/*.txt'
 
 jobs:
   check_versions:
