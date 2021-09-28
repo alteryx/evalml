@@ -29,7 +29,7 @@ jobs:
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
-          pip install PyYAML==5.4
+          pip install PyYAML==5.4 requirements
       - name: Clone Feedstock & Check Versions
         run: |
           git clone -b latest_release_changes --single-branch https://github.com/conda-forge/evalml-core-feedstock
