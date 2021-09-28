@@ -12,7 +12,7 @@ on:
 #      - 'evalml/tests/dependency_update_check/*.txt'
 
 jobs:
-  build_conda_pkg:
+  check_versions:
     runs-on: ubuntu-latest
     steps:
       - name: Set up Python 3.8
