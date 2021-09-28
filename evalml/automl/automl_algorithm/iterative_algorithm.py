@@ -1,5 +1,7 @@
 """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance."""
 import inspect
+import logging
+import warnings
 from operator import itemgetter
 
 import numpy as np
@@ -7,8 +9,16 @@ from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
+from evalml.automl.utils import get_pipelines_from_component_graphs
+from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
-from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
+from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.utils import (
+    _make_stacked_ensemble_pipeline,
+    make_pipeline,
+)
+from evalml.problem_types import is_time_series
+from evalml.utils.logger import get_logger
 
 _ESTIMATOR_FAMILY_ORDER = [
     ModelFamily.LINEAR_MODEL,
@@ -42,7 +52,12 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
     def __init__(
         self,
-        allowed_pipelines=None,
+        X,
+        y,
+        problem_type,
+        sampler_name=None,
+        allowed_model_families=None,
+        allowed_component_graphs=None,
         max_iterations=None,
         tuner_class=None,
         random_seed=0,
@@ -54,6 +69,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         pipeline_params=None,
         custom_hyperparameters=None,
         _estimator_family_order=None,
+        verbose=False,
     ):
         """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
@@ -71,13 +87,37 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
             _estimator_family_order (list[ModelFamily]): specify the sort order for the first batch. Defaults to None, which uses _ESTIMATOR_FAMILY_ORDER.
         """
+        self.X = X
+        self.y = y
+        self.problem_type = problem_type
+        self.random_seed = random_seed
+        self.sampler_name = sampler_name
+        self.allowed_model_families = allowed_model_families
+        self.pipelines_per_batch = pipelines_per_batch
+        self.n_jobs = n_jobs
+        self.number_features = number_features
+        self._first_batch_results = []
+        self._best_pipeline_info = {}
+        self.ensembling = ensembling and len(self.allowed_pipelines) > 1
+        self._pipeline_params = pipeline_params or {}
+        self._custom_hyperparameters = custom_hyperparameters or {}
+
+        if verbose:
+            self.logger = get_logger(f"{__name__}.verbose")
+        else:
+            self.logger = logging.getLogger(__name__)
+
         self._estimator_family_order = (
             _estimator_family_order or _ESTIMATOR_FAMILY_ORDER
         )
         indices = []
         pipelines_to_sort = []
         pipelines_end = []
-        for pipeline in allowed_pipelines or []:
+
+        self.allowed_component_graphs = allowed_component_graphs
+        self._create_pipelines()
+
+        for pipeline in self.allowed_pipelines or []:
             if pipeline.model_family in self._estimator_family_order:
                 indices.append(
                     self._estimator_family_order.index(pipeline.model_family)
@@ -91,24 +131,15 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 sorted(zip(indices, pipelines_to_sort), key=lambda pair: pair[0]) or []
             )
         ]
-        allowed_pipelines = pipelines_start + pipelines_end
+        self.allowed_pipelines = pipelines_start + pipelines_end
 
         super().__init__(
-            allowed_pipelines=allowed_pipelines,
+            allowed_pipelines=self.allowed_pipelines,
             custom_hyperparameters=custom_hyperparameters,
             max_iterations=max_iterations,
             tuner_class=tuner_class,
             random_seed=random_seed,
         )
-        self.pipelines_per_batch = pipelines_per_batch
-        self.n_jobs = n_jobs
-        self.number_features = number_features
-        self._first_batch_results = []
-        self._best_pipeline_info = {}
-        self.ensembling = ensembling and len(self.allowed_pipelines) > 1
-        self.text_in_ensembling = text_in_ensembling
-        self._pipeline_params = pipeline_params or {}
-        self._custom_hyperparameters = custom_hyperparameters or {}
 
         if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
             raise ValueError(
@@ -129,6 +160,113 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         "Custom hyperparameters should only contain skopt.Space variables such as Categorical, Integer,"
                         " and Real!"
                     )
+
+    def _create_pipelines(self):
+        self.allowed_pipelines = []
+        if self.allowed_component_graphs is None:
+            self.logger.info("Generating pipelines to search over...")
+            allowed_estimators = get_estimators(
+                self.problem_type, self.allowed_model_families
+            )
+            if (
+                is_time_series(self.problem_type)
+                and self._pipeline_params["pipeline"]["date_index"]
+            ):
+                if (
+                    pd.infer_freq(
+                        X_train[self._pipeline_params["pipeline"]["date_index"]]
+                    )
+                    == "MS"
+                ):
+                    allowed_estimators = [
+                        estimator
+                        for estimator in allowed_estimators
+                        if estimator.name != "ARIMA Regressor"
+                    ]
+            self.logger.debug(
+                f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}"
+            )
+            drop_columns = (
+                self._pipeline_params["Drop Columns Transformer"]["columns"]
+                if "Drop Columns Transformer" in self._pipeline_params
+                else None
+            )
+            index_and_unknown_columns = list(
+                self.X.ww.select(["index", "unknown"], return_schema=True).columns
+            )
+            unknown_columns = list(
+                self.X.ww.select("unknown", return_schema=True).columns
+            )
+            index_and_unknown_columns = index_and_unknown_columns
+            if len(index_and_unknown_columns) > 0 and drop_columns is None:
+                self._pipeline_params["Drop Columns Transformer"] = {
+                    "columns": index_and_unknown_columns
+                }
+                if len(unknown_columns):
+                    self.logger.info(
+                        f"Removing columns {unknown_columns} because they are of 'Unknown' type"
+                    )
+
+            with warnings.catch_warnings(record=True) as w:
+                warnings.filterwarnings("always", category=ParameterNotUsedWarning)
+                self.allowed_pipelines = [
+                    make_pipeline(
+                        self.X,
+                        self.y,
+                        estimator,
+                        self.problem_type,
+                        parameters=self._pipeline_params,
+                        sampler_name=self.sampler_name,
+                    )
+                    for estimator in allowed_estimators
+                ]
+            self._catch_warnings(w)
+        else:
+            with warnings.catch_warnings(record=True) as w:
+                warnings.filterwarnings("always", category=ParameterNotUsedWarning)
+                self.allowed_pipelines = get_pipelines_from_component_graphs(
+                    self.allowed_component_graphs,
+                    self.problem_type,
+                    self._pipeline_params,
+                    self.random_seed,
+                )
+            self._catch_warnings(w)
+
+        if self.allowed_pipelines == []:
+            raise ValueError("No allowed pipelines to search")
+
+        self.logger.info(f"{len(self.allowed_pipelines)} pipelines ready for search.")
+
+        run_ensembling = self.ensembling
+        if run_ensembling and len(self.allowed_pipelines) == 1:
+            self.logger.warning(
+                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
+            )
+            run_ensembling = False
+
+        if run_ensembling and len(self.allowed_pipelines) == 1:
+            self.logger.warning(
+                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
+            )
+            run_ensembling = False
+
+        if run_ensembling and self.max_iterations is not None:
+            # Baseline + first batch + each pipeline iteration + 1
+            first_ensembling_iteration = (
+                1
+                + len(self.allowed_pipelines)
+                + len(self.allowed_pipelines) * self._pipelines_per_batch
+                + 1
+            )
+            if self.max_iterations < first_ensembling_iteration:
+                run_ensembling = False
+                self.logger.warning(
+                    f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling."
+                )
+            else:
+                self.logger.info(
+                    f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that."
+                )
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate.
@@ -296,3 +434,27 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value
             parameters[name] = component_parameters
         return parameters
+
+    def _catch_warnings(self, warning_list):
+        parameter_not_used_warnings = []
+        raised_messages = []
+        for msg in warning_list:
+            if isinstance(msg.message, ParameterNotUsedWarning):
+                parameter_not_used_warnings.append(msg.message)
+            # Raise non-PNU warnings immediately, but only once per warning
+            elif str(msg.message) not in raised_messages:
+                warnings.warn(msg.message)
+                raised_messages.append(str(msg.message))
+
+        # Raise PNU warnings, iff the warning was raised in every pipeline
+        if len(parameter_not_used_warnings) == len(self.allowed_pipelines) and len(
+            parameter_not_used_warnings
+        ):
+            final_message = set([])
+            for msg in parameter_not_used_warnings:
+                if len(final_message) == 0:
+                    final_message = final_message.union(msg.components)
+                else:
+                    final_message = final_message.intersection(msg.components)
+
+            warnings.warn(ParameterNotUsedWarning(final_message))

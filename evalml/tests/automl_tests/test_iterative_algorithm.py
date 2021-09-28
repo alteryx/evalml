@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from skopt.space import Categorical, Integer, Real
 
+from evalml import problem_types
 from evalml.automl.automl_algorithm import (
     AutoMLAlgorithmException,
     IterativeAlgorithm,
@@ -19,46 +20,6 @@ from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
-
-
-def test_iterative_algorithm_init_iterative():
-    IterativeAlgorithm()
-
-
-def test_iterative_algorithm_init():
-    algo = IterativeAlgorithm()
-    assert algo.pipeline_number == 0
-    assert algo.batch_number == 0
-    assert algo.allowed_pipelines == []
-
-
-def test_make_iterative_algorithm_custom_hyperparameters_error(
-    dummy_binary_pipeline_classes,
-):
-    dummy_binary_pipeline_classes = dummy_binary_pipeline_classes()
-
-    custom_hyperparameters = [
-        {"Imputer": {"numeric_imput_strategy": ["median"]}},
-        {"One Hot Encoder": {"value1": ["value2"]}},
-    ]
-
-    with pytest.raises(
-        ValueError, match="If custom_hyperparameters provided, must be of type dict"
-    ):
-        IterativeAlgorithm(
-            allowed_pipelines=dummy_binary_pipeline_classes,
-            custom_hyperparameters=custom_hyperparameters,
-        )
-
-
-def test_iterative_algorithm_allowed_pipelines(
-    logistic_regression_binary_pipeline_class,
-):
-    allowed_pipelines = [logistic_regression_binary_pipeline_class({})]
-    algo = IterativeAlgorithm(allowed_pipelines=allowed_pipelines)
-    assert algo.pipeline_number == 0
-    assert algo.batch_number == 0
-    assert algo.allowed_pipelines == allowed_pipelines
 
 
 @pytest.fixture
@@ -86,17 +47,109 @@ def dummy_binary_pipeline_classes():
                     random_seed=random_seed,
                 )
 
+        allowed_component_graphs = {
+            "graph_1": [MockEstimator],
+            "graph_2": [MockEstimator],
+            "graph_3": [MockEstimator],
+        }
         return [
             BinaryClassificationPipeline([MockEstimator]),
             BinaryClassificationPipeline([MockEstimator]),
             BinaryClassificationPipeline([MockEstimator]),
-        ]
+        ], allowed_component_graphs
 
     return _method
 
 
-def test_iterative_algorithm_empty(dummy_binary_pipeline_classes):
-    algo = IterativeAlgorithm()
+def test_iterative_algorithm_init_iterative(X_y_binary, make_data_type):
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    IterativeAlgorithm(X=X, y=y, problem_type="binary")
+
+
+def test_iterative_algorithm_init(X_y_binary, make_data_type):
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
+    algo = IterativeAlgorithm(X=X, y=y, problem_type="binary")
+    assert algo.pipeline_number == 0
+    assert algo.batch_number == 0
+    assert len(algo.allowed_pipelines) == 8
+
+
+def test_make_iterative_algorithm_custom_hyperparameters_error(
+    dummy_binary_pipeline_classes, X_y_binary, make_data_type
+):
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes()
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
+    custom_hyperparameters = [
+        {"Imputer": {"numeric_imput_strategy": ["median"]}},
+        {"One Hot Encoder": {"value1": ["value2"]}},
+    ]
+
+    with pytest.raises(
+        ValueError, match="If custom_hyperparameters provided, must be of type dict"
+    ):
+        IterativeAlgorithm(
+            X=X,
+            y=y,
+            problem_type="binary",
+            allowed_component_graphs=allowed_component_graphs,
+            custom_hyperparameters=custom_hyperparameters,
+        )
+
+
+def test_iterative_algorithm_allowed_pipelines(
+    X_y_binary, make_data_type, dummy_binary_pipeline_classes
+):
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes()
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type="binary",
+        allowed_component_graphs=allowed_component_graphs,
+    )
+    assert algo.pipeline_number == 0
+    assert algo.batch_number == 0
+    assert algo.allowed_pipelines == dummy_binary_pipeline_classes
+
+
+def test_iterative_algorithm_empty(
+    X_y_binary, make_data_type, dummy_binary_pipeline_classes
+):
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes()
+
+    with pytest.raises(ValueError, match="No allowed pipelines to search"):
+        IterativeAlgorithm(X=X, y=y, problem_type="binary", allowed_component_graphs={})
+
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type="binary",
+        allowed_component_graphs=allowed_component_graphs,
+    )
+    algo.allowed_pipelines = []
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
@@ -327,11 +380,24 @@ def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
 
 @pytest.mark.parametrize("ensembling_value", [True, False])
 def test_iterative_algorithm_one_allowed_pipeline(
-    ensembling_value, logistic_regression_binary_pipeline_class
+    X_y_binary,
+    make_data_type,
+    ensembling_value,
+    logistic_regression_binary_component_graph,
+    logistic_regression_binary_pipeline_class,
 ):
+    X, y = X_y_binary
+    X = make_data_type("ww", X)
+    y = make_data_type("ww", y)
+
     # Checks that when len(allowed_pipeline) == 1, ensembling is not run, even if set to True
     algo = IterativeAlgorithm(
-        allowed_pipelines=[logistic_regression_binary_pipeline_class({})],
+        X=X,
+        y=y,
+        problem_type="binary",
+        allowed_component_graphs={
+            "graph_1": logistic_regression_binary_component_graph
+        },
         ensembling=ensembling_value,
     )
     assert algo.pipeline_number == 0
