@@ -2,13 +2,11 @@
 import pandas as pd
 from skopt.space import Integer
 
-from evalml.pipelines.components.transformers.transformer import (
-    TargetTransformer,
-)
+from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import import_or_raise, infer_feature_types
 
 
-class PolynomialDetrender(TargetTransformer):
+class PolynomialDetrender(Transformer):
     """Removes trends from time series by fitting a polynomial to the data.
 
     Args:
@@ -22,6 +20,8 @@ class PolynomialDetrender(TargetTransformer):
     """{
         "degree": Integer(1, 3)
     }"""
+    modifies_features = False
+    modifies_target = True
 
     def __init__(self, degree=1, random_seed=0, **kwargs):
         if not isinstance(degree, int):

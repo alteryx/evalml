@@ -1,17 +1,12 @@
 """A transformer that encodes categorical features into target encodings."""
 import pandas as pd
-from woodwork.logical_types import Categorical
 
 from ..transformer import Transformer
 
 from evalml.pipelines.components.transformers.encoders.onehot_encoder import (
     OneHotEncoderMeta,
 )
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    import_or_raise,
-    infer_feature_types,
-)
+from evalml.utils import import_or_raise, infer_feature_types
 
 
 class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
@@ -102,10 +97,11 @@ class TargetEncoder(Transformer, metaclass=OneHotEncoderMeta):
         if y is not None:
             y = infer_feature_types(y)
         X_t = self._component_obj.transform(X, y)
+
         X_t_df = pd.DataFrame(X_t, columns=X_ww.columns, index=X_ww.index)
-        return _retain_custom_types_and_initalize_woodwork(
-            X_ww.ww.logical_types, X_t_df, ltypes_to_ignore=[Categorical]
-        )
+        no_cat_schema = X_ww.ww.select(exclude="category", return_schema=True)
+        X_t_df.ww.init(schema=no_cat_schema)
+        return X_t_df
 
     def fit_transform(self, X, y):
         """Fit and transform data using the target encoder.

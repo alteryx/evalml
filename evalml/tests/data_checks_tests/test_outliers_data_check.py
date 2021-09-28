@@ -37,7 +37,36 @@ def test_outliers_data_check_warnings():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0, 3, 5, 10]}}],
+    }
+
+
+def test_outliers_data_check_warnings_with_duplicate_outlier_indices():
+    a = np.arange(10) * 0.01
+    data = np.tile(a, (100, 10))
+
+    X = pd.DataFrame(data=data)
+    X.iloc[0, 3] = 1000
+    X.iloc[3, 25] = 1000
+    X.iloc[0, 55] = 10000
+    X.iloc[0, 72] = -1000
+    X.iloc[:, 90] = "string_values"
+
+    outliers_check = OutliersDataCheck()
+    assert outliers_check.validate(X) == {
+        "warnings": [
+            DataCheckWarning(
+                message="Column(s) '3', '25', '55', '72' are likely to have outlier data.",
+                data_check_name=outliers_data_check_name,
+                message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                details={
+                    "columns": [3, 25, 55, 72],
+                    "rows": {3: [0], 25: [3], 55: [0], 72: [0]},
+                },
+            ).to_dict()
+        ],
+        "errors": [],
+        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0, 3]}}],
     }
 
 
@@ -75,7 +104,7 @@ def test_outliers_data_check_input_formats():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0, 3, 5, 10]}}],
     }
 
     # test Woodwork
@@ -94,7 +123,7 @@ def test_outliers_data_check_input_formats():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0, 3, 5, 10]}}],
     }
 
 
@@ -119,7 +148,7 @@ def test_outliers_data_check_string_cols():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0]}}],
     }
 
 
@@ -157,5 +186,5 @@ def test_outliers_data_check_warnings_has_nan():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [3, 5, 10]}}],
     }

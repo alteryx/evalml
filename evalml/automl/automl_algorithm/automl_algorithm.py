@@ -2,6 +2,7 @@
 from abc import ABC, abstractmethod
 
 from evalml.exceptions import PipelineNotFoundError
+from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.tuners import SKOptTuner
 
 
@@ -33,12 +34,17 @@ class AutoMLAlgorithm(ABC):
         max_iterations=None,
         tuner_class=None,
         random_seed=0,
+        n_jobs=-1,
     ):
         self.random_seed = random_seed
         self.allowed_pipelines = allowed_pipelines or []
         self.max_iterations = max_iterations
         self._tuner_class = tuner_class or SKOptTuner
         self._tuners = {}
+        self._best_pipeline_info = {}
+        self.text_in_ensembling = False
+        self.n_jobs = n_jobs
+        self._selected_cols = None
         for pipeline in self.allowed_pipelines:
             pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
                 custom_hyperparameters
@@ -55,6 +61,15 @@ class AutoMLAlgorithm(ABC):
 
         Returns:
             list[PipelineBase]: A list of instances of PipelineBase subclasses, ready to be trained and evaluated.
+        """
+
+    @abstractmethod
+    def _transform_parameters(self, pipeline, proposed_parameters):
+        """Given a pipeline parameters dict, make sure pipeline_params, custom_hyperparameters, n_jobs are set properly.
+
+        Arguments:
+            pipeline (PipelineBase): The pipeline object to update the parameters.
+            proposed_parameters (dict): Parameters to use when updating the pipeline.
         """
 
     def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
@@ -83,3 +98,46 @@ class AutoMLAlgorithm(ABC):
     def batch_number(self):
         """Returns the number of batches which have been recommended so far."""
         return self._batch_number
+
+    def _create_ensemble(self):
+        next_batch = []
+
+        # Custom Stacked Pipelines
+        best_pipelines = list(self._best_pipeline_info.values())
+        problem_type = best_pipelines[0]["pipeline"].problem_type
+        n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
+        input_pipelines = []
+        for pipeline_dict in best_pipelines:
+            pipeline = pipeline_dict["pipeline"]
+            pipeline_params = self._transform_parameters(
+                pipeline, pipeline_dict["parameters"]
+            )
+            if (
+                "Select Columns Transformer"
+                in pipeline.component_graph.component_instances
+            ):
+                pipeline_params.update(
+                    {"Select Columns Transformer": {"columns": self._selected_cols}}
+                )
+            input_pipelines.append(
+                pipeline.new(parameters=pipeline_params, random_seed=self.random_seed)
+            )
+
+        ensemble = _make_stacked_ensemble_pipeline(
+            input_pipelines,
+            problem_type,
+            random_seed=self.random_seed,
+            n_jobs=n_jobs_ensemble,
+        )
+        next_batch.append(ensemble)
+
+        # Sklearn Stacked Pipelines
+        ensemble = _make_stacked_ensemble_pipeline(
+            input_pipelines,
+            problem_type,
+            random_seed=self.random_seed,
+            n_jobs=n_jobs_ensemble,
+            use_sklearn=True,
+        )
+        next_batch.append(ensemble)
+        return next_batch
