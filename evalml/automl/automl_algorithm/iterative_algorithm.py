@@ -173,7 +173,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             idx = (self._batch_number - 1) % num_pipelines
             pipeline = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
-                # import pdb; pdb.set_trace()
                 proposed_parameters = self._tuners[pipeline.name].propose()
                 parameters = self._transform_parameters(pipeline, proposed_parameters)
                 next_batch.append(
