@@ -1,21 +1,16 @@
 """A transformer that encodes target labels using values between 0 and num_classes - 1."""
 import pandas as pd
-from woodwork.logical_types import Categorical
+from sklearn.preprocessing import LabelEncoder as SKLabelEncoder
 
 from ..transformer import Transformer
 
-from evalml.pipelines.components.transformers.encoders.onehot_encoder import (
-    OneHotEncoderMeta,
-)
 from evalml.utils import (
     _retain_custom_types_and_initalize_woodwork,
-    import_or_raise,
     infer_feature_types,
 )
-from sklearn.preprocessing import LabelEncoder as SKLabelEncoder
 
 
-class LabelEncoder(Transformer, metaclass=OneHotEncoderMeta):
+class LabelEncoder(Transformer):
     """A transformer that encodes target labels using values between 0 and num_classes - 1.
 
     Args:
@@ -45,7 +40,10 @@ class LabelEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Returns:
             self
         """
-        return super().fit(y)
+        if y is None:
+            raise ValueError("y cannot be None!")
+        self._component_obj.fit(y)
+        return self
 
     def transform(self, X, y=None):
         """Transform the target using the fitted label encoder.
@@ -57,10 +55,12 @@ class LabelEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Returns:
             pd.DataFrame, pd.Series: The original features and an encoded version of the target.
         """
-        if y is not None:
-            y = infer_feature_types(y)
-        y_t = self._component_obj.transform(y)
-        return X, y_t
+        if y is None:
+            raise ValueError("y cannot be None!")
+
+        y_ww = infer_feature_types(y)
+        y_t = self._component_obj.transform(y_ww)
+        return X, infer_feature_types(y_t)
 
     def fit_transform(self, X, y):
         """Fit and transform data using the label encoder.
