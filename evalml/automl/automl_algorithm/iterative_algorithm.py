@@ -138,7 +138,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             custom_hyperparameters=custom_hyperparameters,
             max_iterations=max_iterations,
             tuner_class=tuner_class,
+            text_in_ensembling=self.text_in_ensembling,
             random_seed=random_seed,
+            n_jobs=self.n_jobs,
         )
 
         if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):

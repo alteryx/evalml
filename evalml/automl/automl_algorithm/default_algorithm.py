@@ -74,7 +74,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         pipeline_params=None,
         custom_hyperparameters=None,
         n_jobs=-1,
-        text_in_ensembling=None,
+        text_in_ensembling=False,
         top_n=3,
         num_long_explore_pipelines=50,
         num_long_pipelines_per_batch=10,

@@ -534,6 +534,7 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(
         text_in_ensembling=text_in_ensembling,
         n_jobs=n_jobs,
     )
+
     next_batch = algo.next_batch()
     seen_ensemble = False
     scores = range(0, len(next_batch))

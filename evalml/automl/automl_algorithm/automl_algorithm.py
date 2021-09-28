@@ -33,6 +33,7 @@ class AutoMLAlgorithm(ABC):
         custom_hyperparameters=None,
         max_iterations=None,
         tuner_class=None,
+        text_in_ensembling=False,
         random_seed=0,
         n_jobs=-1,
     ):
@@ -42,7 +43,7 @@ class AutoMLAlgorithm(ABC):
         self._tuner_class = tuner_class or SKOptTuner
         self._tuners = {}
         self._best_pipeline_info = {}
-        self.text_in_ensembling = False
+        self.text_in_ensembling = text_in_ensembling
         self.n_jobs = n_jobs
         self._selected_cols = None
         for pipeline in self.allowed_pipelines:
