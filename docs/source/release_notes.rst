@@ -13,6 +13,7 @@ Release Notes
         * Added support for linting jupyter notebooks and clearing the executed cells :pr:`2829`
         * Added "DROP_ROWS" action to output of ``OutliersDataCheck.validate()`` :pr:`2820`
         * Added the ability of ``AutoMLSearch`` to accept a ``SequentialEngine`` instance as engine input :pr:`2838`
+        * Added new label encoder component to EvalML :pr:``2853``
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
@@ -25,7 +26,6 @@ Release Notes
         * Made ``Transformer.transform()`` an abstract method :pr:`2744`
         * Deleted ``EmptyDataChecks`` class :pr:`2794`
         * Removed data check for checking log distributions in ``make_pipeline`` :pr:`2806`
-        * Removed encoding on pipeline level in favor of a label encoder component :pr:`2821`
         * Changed the minimum ``woodwork`` version to 0.8.0 :pr:`2783`
         * Pinned ``woodwork`` version to 0.8.0 :pr:`2832`
         * Removed ``model_family`` attribute from ``ComponentBase`` and transformers :pr:`2828`

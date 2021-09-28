@@ -4,9 +4,7 @@ from sklearn.preprocessing import LabelEncoder as SKLabelEncoder
 
 from ..transformer import Transformer
 
-from evalml.utils import (
-    infer_feature_types,
-)
+from evalml.utils import infer_feature_types
 
 
 class LabelEncoder(Transformer):
