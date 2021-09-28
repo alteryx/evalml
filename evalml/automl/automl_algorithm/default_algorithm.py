@@ -18,10 +18,7 @@ from evalml.pipelines.components.utils import (
     get_estimators,
     handle_component_class,
 )
-from evalml.pipelines.utils import (
-    _make_stacked_ensemble_pipeline,
-    make_pipeline,
-)
+from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import is_regression
 
 
@@ -100,7 +97,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.text_in_ensembling = text_in_ensembling
         self._pipeline_params = pipeline_params or {}
         self._custom_hyperparameters = custom_hyperparameters or {}
-        self._selected_cols = None
         self._top_n_pipelines = None
         self.num_long_explore_pipelines = num_long_explore_pipelines
         self.num_long_pipelines_per_batch = num_long_pipelines_per_batch
@@ -220,31 +216,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         for pipeline in pipelines:
             self._create_tuner(pipeline)
         return pipelines
-
-    def _create_ensemble(self):
-        input_pipelines = []
-        for pipeline_dict in self._best_pipeline_info.values():
-            pipeline = pipeline_dict["pipeline"]
-            pipeline_params = pipeline_dict["parameters"]
-            parameters = self._transform_parameters(pipeline, pipeline_params)
-            if (
-                "Select Columns Transformer"
-                in pipeline.component_graph.component_instances
-            ):
-                parameters.update(
-                    {"Select Columns Transformer": {"columns": self._selected_cols}}
-                )
-            input_pipelines.append(
-                pipeline.new(parameters=parameters, random_seed=self.random_seed)
-            )
-        n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
-        ensemble = _make_stacked_ensemble_pipeline(
-            input_pipelines,
-            self.problem_type,
-            random_seed=self.random_seed,
-            n_jobs=n_jobs_ensemble,
-        )
-        return [ensemble]
 
     def _create_n_pipelines(self, pipelines, n):
         next_batch = []

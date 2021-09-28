@@ -5,7 +5,6 @@ from sklearn.preprocessing import LabelEncoder as SKLabelEncoder
 from ..transformer import Transformer
 
 from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
     infer_feature_types,
 )
 

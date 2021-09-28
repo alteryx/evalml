@@ -3,10 +3,7 @@ import pandas as pd
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers import SimpleImputer
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types,
-)
+from evalml.utils import infer_feature_types
 
 
 class Imputer(Transformer):
@@ -117,10 +114,10 @@ class Imputer(Transformer):
             pd.DataFrame: Transformed X
         """
         X = infer_feature_types(X)
-        original_ltypes = X.ww.schema.logical_types
         if len(self._all_null_cols) == X.shape[1]:
             df = pd.DataFrame(index=X.index)
-            return _retain_custom_types_and_initalize_woodwork(original_ltypes, df)
+            df.ww.init()
+            return df
 
         X_no_all_null = X.ww.drop(self._all_null_cols)
 
@@ -133,6 +130,5 @@ class Imputer(Transformer):
             X_categorical = X.ww[self._categorical_cols.tolist()]
             imputed = self._categorical_imputer.transform(X_categorical)
             X_no_all_null[X_categorical.columns] = imputed
-        return _retain_custom_types_and_initalize_woodwork(
-            original_ltypes, X_no_all_null
-        )
+
+        return X_no_all_null

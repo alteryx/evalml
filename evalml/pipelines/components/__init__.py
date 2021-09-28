@@ -59,4 +59,9 @@ from .transformers import (
     DropRowsTransformer,
     LabelEncoder,
 )
-from .ensemble import SklearnStackedEnsembleClassifier, SklearnStackedEnsembleRegressor
+from .ensemble import (
+    SklearnStackedEnsembleClassifier,
+    SklearnStackedEnsembleRegressor,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor,
+)

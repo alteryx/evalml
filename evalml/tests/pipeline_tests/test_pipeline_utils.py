@@ -634,6 +634,9 @@ def test_generate_code_pipeline_with_custom_components():
                 parameters=parameters, component_obj=None, random_seed=random_seed
             )
 
+        def transform(self, X, y=None):
+            return X
+
     class CustomEstimator(Estimator):
         name = "My Custom Estimator"
         hyperparameter_ranges = {}
