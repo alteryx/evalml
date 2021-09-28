@@ -26,7 +26,8 @@ def standardize_format(packages):
             continue
         name = CONDA_TO_PIP_NAME.get(package.name, package.name)
         if package.specs:
-            standardized = f"{name}{''.join(package.specs[0])}"
+            all_specs = ",".join([''.join(spec) for spec in package.specs])
+            standardized = f"{name}{all_specs}"
         else:
             standardized = name
         standardized_package_specifiers.append(standardized)
