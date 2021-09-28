@@ -1213,7 +1213,7 @@ class AutoMLSearch:
             baseline = RegressionPipeline(
                 component_graph=["Baseline Regressor"],
                 custom_name="Mean Baseline Regression Pipeline",
-                parameters={"Baseline Classifier": {"strategy": "mean"}},
+                parameters={"Baseline Regressor": {"strategy": "mean"}},
             )
         else:
             gap = self.problem_configuration["gap"]
