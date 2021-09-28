@@ -8,7 +8,8 @@ CONDA_RECIPE = "/Users/freddy.boulton/sources/personal/evalml-core-feedstock/rec
 EVALML_PATH = "/Users/freddy.boulton/sources/evalml/"
 
 IGNORE_PACKAGES = {"python", "pmdarima"}
-CONDA_TO_PIP_NAME = {"python-kaleido": "kaleido", 'py-xgboost': 'xgboost', 'matplotlib-base': 'matplotlib'}
+CONDA_TO_PIP_NAME = {"python-kaleido": "kaleido", 'py-xgboost': 'xgboost', 'matplotlib-base': 'matplotlib',
+                     'python-graphviz': 'graphviz'}
 
 
 @contextmanager
