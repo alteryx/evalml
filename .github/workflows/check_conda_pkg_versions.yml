@@ -1,4 +1,4 @@
-name: Build conda package
+name: Check conda versions
 
 on:
   push:
