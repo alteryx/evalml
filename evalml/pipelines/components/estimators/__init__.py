@@ -13,7 +13,7 @@ from .classifiers import (
     KNeighborsClassifier,
     SVMClassifier,
     VowpalWabbitBinaryClassifier,
-    VowpalWabbitMulticlassClassifier
+    VowpalWabbitMulticlassClassifier,
 )
 from .regressors import (
     LinearRegressor,

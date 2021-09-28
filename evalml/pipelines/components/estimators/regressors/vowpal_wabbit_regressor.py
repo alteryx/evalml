@@ -16,7 +16,10 @@ class VowpalWabbitRegressor(Estimator):
 
     name = "Vowpal Wabbit Regressor"
     hyperparameter_ranges = {
-        # "learning_rate": Real(0.000001, 1),
+        "loss_function": ["squared", "classic", "hinge", "logistic"],
+        "learning_rate": Real(0.0000001, 10),
+        "decay_learning_rate": Real(0.0000001, 1.0),
+        "power_t": Real(0.01, 1.0),
     }
     """"""
     model_family = ModelFamily.VOWPAL_WABBIT
@@ -32,17 +35,23 @@ class VowpalWabbitRegressor(Estimator):
 
     def __init__(
         self,
-        learning_rate=0.1,
+        loss_function="logistic",
+        learning_rate=0.5,
+        decay_learning_rate=0.95,
+        power_t=1.0,
         random_seed=0,
         **kwargs,
     ):
         parameters = {
+            "loss_function": loss_function,
             "learning_rate": learning_rate,
+            "decay_learning_rate": decay_learning_rate,
+            "power_t": power_t,
         }
         parameters.update(kwargs)
-        vw_regressor = VWRegessor(**parameters)
+        vw_classifier = VWRegessor(**parameters)
         super().__init__(
-            parameters=parameters, component_obj=vw_regressor, random_seed=random_seed
+            parameters=parameters, component_obj=vw_classifier, random_seed=random_seed
         )
 
     @property

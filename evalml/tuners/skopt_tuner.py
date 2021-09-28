@@ -69,7 +69,6 @@ class SKOptTuner(Tuner):
             dict: Proposed pipeline parameters.
         """
         with warnings.catch_warnings():
-            warnings.simplefilter("ignore")
             if not len(self._search_space_ranges):
                 return self._convert_to_pipeline_parameters({})
             flat_parameters = self.opt.ask()
