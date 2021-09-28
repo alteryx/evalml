@@ -699,7 +699,7 @@ class AutoMLSearch:
                     + len(self.allowed_component_graphs)
                     + self._pipelines_per_batch
                     * (self.max_batches - 1 - num_ensemble_batches)
-                    + num_ensemble_batches
+                    + num_ensemble_batches * 2
                 )
             else:
                 self.max_iterations = (
@@ -710,7 +710,7 @@ class AutoMLSearch:
 
         if isinstance(engine, str):
             self._engine = build_engine_from_str(engine)
-        elif isinstance(engine, (DaskEngine, CFEngine)):
+        elif isinstance(engine, (DaskEngine, CFEngine, SequentialEngine)):
             self._engine = engine
         else:
             raise TypeError(
@@ -1133,7 +1133,7 @@ class AutoMLSearch:
             baseline = RegressionPipeline(
                 component_graph=["Baseline Regressor"],
                 custom_name="Mean Baseline Regression Pipeline",
-                parameters={"Baseline Classifier": {"strategy": "mean"}},
+                parameters={"Baseline Regressor": {"strategy": "mean"}},
             )
         else:
             gap = self.problem_configuration["gap"]

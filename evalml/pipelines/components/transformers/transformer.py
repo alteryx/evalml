@@ -2,7 +2,6 @@
 from abc import abstractmethod
 
 from evalml.exceptions import MethodPropertyNotFoundError
-from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ComponentBase
 from evalml.utils import infer_feature_types
 
@@ -24,8 +23,6 @@ class Transformer(ComponentBase):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    model_family = ModelFamily.NONE
-    """ModelFamily.NONE"""
     modifies_features = True
     modifies_target = False
     training_only = False
@@ -71,21 +68,3 @@ class Transformer(ComponentBase):
 
     def _get_feature_provenance(self):
         return {}
-
-
-class TargetTransformer(Transformer):
-    """A component that transforms the target."""
-
-    modifies_features = False
-    modifies_target = True
-
-    @abstractmethod
-    def inverse_transform(self, y):
-        """Inverts the transformation done by the transform method.
-
-         Args:
-            y (pd.Series): Target transformed by this component.
-
-        Returns:
-            pd.Series: Target without the transformation.
-        """

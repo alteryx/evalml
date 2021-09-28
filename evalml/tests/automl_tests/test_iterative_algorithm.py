@@ -254,10 +254,10 @@ def test_iterative_algorithm_results(
             # check next batch is stacking ensemble batch
             assert algo.batch_number == (len(dummy_binary_pipeline_classes) + 1) * i
             next_batch = algo.next_batch()
-            assert len(next_batch) == 1
+            assert len(next_batch) == 2
             assert algo.batch_number == last_batch_number + 1
             last_batch_number = algo.batch_number
-            assert algo.pipeline_number == last_pipeline_number + 1
+            assert algo.pipeline_number == last_pipeline_number + 2
             last_pipeline_number = algo.pipeline_number
             scores = np.arange(0, len(next_batch))
             for score, pipeline in zip(scores, next_batch):
@@ -335,7 +335,7 @@ def test_iterative_algorithm_passes_pipeline_params(
 
         if ensembling_value:
             next_batch = algo.next_batch()
-            input_pipelines = next_batch[0].parameters[
+            input_pipelines = next_batch[1].parameters[
                 "Sklearn Stacked Ensemble Classifier"
             ]["input_pipelines"]
             assert all(

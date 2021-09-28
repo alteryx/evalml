@@ -272,23 +272,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             and self._batch_number != 1
             and (self._batch_number) % (len(self._first_batch_results) + 1) == 0
         ):
-            input_pipelines = []
-            for pipeline_dict in self._best_pipeline_info.values():
-                pipeline = pipeline_dict["pipeline"]
-                pipeline_params = pipeline_dict["parameters"]
-                parameters = self._transform_parameters(pipeline, pipeline_params)
-                input_pipelines.append(
-                    pipeline.new(parameters=parameters, random_seed=self.random_seed)
-                )
-            n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
-            ensemble = _make_stacked_ensemble_pipeline(
-                input_pipelines,
-                input_pipelines[0].problem_type,
-                random_seed=self.random_seed,
-                n_jobs=n_jobs_ensemble,
-            )
-
-            next_batch.append(ensemble)
+            next_batch = self._create_ensemble()
         else:
             num_pipelines = (
                 (len(self._first_batch_results) + 1)

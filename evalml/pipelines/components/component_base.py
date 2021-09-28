@@ -48,12 +48,6 @@ class ComponentBase(ABC, metaclass=ComponentBaseMeta):
     @property
     @classmethod
     @abstractmethod
-    def model_family(cls):
-        """Returns ModelFamily of this component."""
-
-    @property
-    @classmethod
-    @abstractmethod
     def modifies_features(cls):
         """Returns whether this component modifies (subsets or transforms) the features variable during transform.
 
