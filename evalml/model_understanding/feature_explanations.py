@@ -1,4 +1,4 @@
-import pandas as pd
+"""Human Readable Pipeline Explanations."""
 
 from evalml.model_family import ModelFamily
 from evalml.model_understanding import calculate_permutation_importance
@@ -25,6 +25,8 @@ def explain(
         min_importance_threshold (float): The minimum percent of total importance a single feature can have to be considered important. Defaults to 0.05.
         objective (str, ObjectiveBase): If importance_method is permutation, the objective to compute importance with. Ignored otherwise, defaults to "auto".
 
+    Raises:
+        ValueError: if any arguments passed in are invalid or the pipeline is not fitted.
     """
     logger = get_logger(f"{__name__}.explain")
 
@@ -96,8 +98,8 @@ def explain(
 def get_influential_features(
     imp_df, max_features=5, min_importance_threshold=0.05, linear_importance=False
 ):
-    """ Finds the most influential and detrimental features from a dataframe of feature importances.
-    
+    """Finds the most influential and detrimental features from a dataframe of feature importances.
+
     Args:
         imp_df (pd.DataFrame): DataFrame containing feature names and associated importances.
         max_features (int): The maximum number of features to include in an explanation. Defaults to 5.
