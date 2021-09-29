@@ -31,15 +31,13 @@ class DFSTransformer(Transformer):
     def _make_entity_set(self, X):
         """Helper method that creates and returns the entity set given the input data."""
         ft_es = EntitySet()
-        del(X.ww)
+        del X.ww
         if self.index not in X.columns:
             es = ft_es.add_dataframe(
                 dataframe=X, dataframe_name="X", index=self.index, make_index=True
             )
         else:
-            es = ft_es.add_dataframe(
-                dataframe=X, dataframe_name="X", index=self.index
-            )
+            es = ft_es.add_dataframe(dataframe=X, dataframe_name="X", index=self.index)
         return es
 
     def fit(self, X, y=None):

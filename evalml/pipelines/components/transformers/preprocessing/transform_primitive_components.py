@@ -46,7 +46,7 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
             dataframe=X_to_transform,
             index="index",
             make_index=True,
-            logical_types=ft_variable_types
+            logical_types=ft_variable_types,
         )
         return es
 
