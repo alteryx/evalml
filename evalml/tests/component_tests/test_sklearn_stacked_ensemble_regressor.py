@@ -1,3 +1,4 @@
+import warnings
 from unittest.mock import patch
 
 import numpy as np
@@ -194,3 +195,18 @@ def test_sklearn_stacked_feature_importance(
         NotImplementedError, match="feature_importance is not implemented"
     ):
         clf.feature_importance
+
+
+def test_component_graph_from_list_deprecation_warning(
+    linear_regression_pipeline_class,
+):
+    input_pipelines = [linear_regression_pipeline_class(parameters={})]
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        SklearnStackedEnsembleRegressor(input_pipelines=input_pipelines)
+        assert len(w) == 1
+        assert issubclass(w[0].category, DeprecationWarning)
+        assert (
+            str(w[0].message)
+            == "Scikit-learn based ensemblers will be completely removed in the next release. Utilize the new `StackedEnsembleRegressor` or `StackedEnsembleClassifier` ensembler instead."
+        )
