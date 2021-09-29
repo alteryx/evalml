@@ -96,6 +96,18 @@ def explain(
 def get_influential_features(
     imp_df, max_features=5, min_importance_threshold=0.05, linear_importance=False
 ):
+    """ Finds the most influential and detrimental features from a dataframe of feature importances.
+    
+    Args:
+        imp_df (pd.DataFrame): DataFrame containing feature names and associated importances.
+        max_features (int): The maximum number of features to include in an explanation. Defaults to 5.
+        min_importance_threshold (float): The minimum percent of total importance a single feature can have to be considered important. Defaults to 0.05.
+        linear_importance (bool): When True, negative feature importances are not considered detrimental. Defaults to False.
+
+    Returns:
+        (list, list, list): Lists of feature names corresponding to heavily influential, somewhat influential, and detrimental features, respectively.
+
+    """
     heavy_importance_threshold = max(0.2, min_importance_threshold + 0.1)
 
     # Separate negative and positive features, if situation calls
@@ -171,20 +183,18 @@ def _fill_template(
             somewhat = somewhat + enumerate_features(somewhat_important)
 
     # Neither!
-    neither = ""
+    neither = "."
     if not (len(heavy) or len(somewhat)):
         neither = " is not strongly influenced by any single feature. Lower the `min_importance_threshold` to see more."
-    else:
-        neither = "."
 
     # Detrimental Description
     detrimental = ""
     if len(detrimental_feats) > 0:
         if len(detrimental_feats) == 1:
-            detrimental = f" The feature {detrimental_feats[0]}"
+            detrimental = f"\nThe feature {detrimental_feats[0]}"
             tag = "this feature."
         else:
-            detrimental = f" The features {detrimental_feats[0]}"
+            detrimental = f"\nThe features {detrimental_feats[0]}"
             detrimental = detrimental + enumerate_features(detrimental_feats)
             tag = "these features."
         detrimental = (
