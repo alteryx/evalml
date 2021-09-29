@@ -29,4 +29,5 @@ from .regressors import (
     SVMRegressor,
     ARIMARegressor,
     ProphetRegressor,
+    VowpalWabbitRegressor,
 )

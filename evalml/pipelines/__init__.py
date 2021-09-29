@@ -39,6 +39,7 @@ from .components import (
     ProphetRegressor,
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
+    VowpalWabbitRegressor,
 )
 
 from .component_graph import ComponentGraph

@@ -1,6 +1,6 @@
 """Vowpal Wabbit Classifier."""
 from skopt.space import Real
-from vowpalwabbit.sklearn_vw import VWRegessor
+from vowpalwabbit.sklearn_vw import VWRegressor
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
@@ -16,7 +16,6 @@ class VowpalWabbitRegressor(Estimator):
 
     name = "Vowpal Wabbit Regressor"
     hyperparameter_ranges = {
-        "loss_function": ["squared", "classic", "hinge", "logistic"],
         "learning_rate": Real(0.0000001, 10),
         "decay_learning_rate": Real(0.0000001, 1.0),
         "power_t": Real(0.01, 1.0),
@@ -35,7 +34,6 @@ class VowpalWabbitRegressor(Estimator):
 
     def __init__(
         self,
-        loss_function="logistic",
         learning_rate=0.5,
         decay_learning_rate=0.95,
         power_t=1.0,
@@ -43,15 +41,14 @@ class VowpalWabbitRegressor(Estimator):
         **kwargs,
     ):
         parameters = {
-            "loss_function": loss_function,
             "learning_rate": learning_rate,
             "decay_learning_rate": decay_learning_rate,
             "power_t": power_t,
         }
         parameters.update(kwargs)
-        vw_classifier = VWRegessor(**parameters)
+        vw_regressor = VWRegressor(**parameters)
         super().__init__(
-            parameters=parameters, component_obj=vw_classifier, random_seed=random_seed
+            parameters=parameters, component_obj=vw_regressor, random_seed=random_seed
         )
 
     @property
