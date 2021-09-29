@@ -820,54 +820,59 @@ def test_iterative_algorithm_first_batch_order(
     estimators_in_first_batch = [p.estimator.name for p in next_batch]
 
     if problem_type == ProblemTypes.REGRESSION:
-        final_estimators = [
+        linear_models = ["Elastic Net Regressor"]
+        extra_dep_estimators = [
             "XGBoost Regressor",
             "LightGBM Regressor",
             "CatBoost Regressor",
         ]
+        core_estimators = [
+            "Random Forest Regressor",
+            "Decision Tree Regressor",
+            "Extra Trees Regressor",
+        ]
     else:
-        final_estimators = [
+        linear_models = ["Elastic Net Classifier", "Logistic Regression Classifier"]
+        extra_dep_estimators = [
             "XGBoost Classifier",
             "LightGBM Classifier",
             "CatBoost Classifier",
         ]
+        core_estimators = [
+            "Random Forest Classifier",
+            "Decision Tree Classifier",
+            "Extra Trees Classifier",
+        ]
     if has_minimal_dependencies:
-        final_estimators = []
-    if problem_type == ProblemTypes.REGRESSION:
-        assert (
-            estimators_in_first_batch
-            == [
-                "Elastic Net Regressor",
-                "Decision Tree Regressor",
-                "Extra Trees Regressor",
-                "Random Forest Regressor",
-            ]
-            + final_estimators
-        )
-    if problem_type == ProblemTypes.BINARY:
-        assert (
-            estimators_in_first_batch
-            == [
-                "Elastic Net Classifier",
-                "Logistic Regression Classifier",
-                "Decision Tree Classifier",
-                "Extra Trees Classifier",
-                "Random Forest Classifier",
-            ]
-            + final_estimators
-        )
-    if problem_type == ProblemTypes.MULTICLASS:
-        assert (
-            estimators_in_first_batch
-            == [
-                "Elastic Net Classifier",
-                "Logistic Regression Classifier",
-                "Decision Tree Classifier",
-                "Extra Trees Classifier",
-                "Random Forest Classifier",
-            ]
-            + final_estimators
-        )
+        extra_dep_estimators = []
+    assert (
+        estimators_in_first_batch
+        == linear_models + extra_dep_estimators + core_estimators
+    )
+    # if problem_type == ProblemTypes.BINARY:
+    #     assert (
+    #         estimators_in_first_batch
+    #         == [
+    #             "Elastic Net Classifier",
+    #             "Logistic Regression Classifier",
+    #             "Decision Tree Classifier",
+    #             "Extra Trees Classifier",
+    #             "Random Forest Classifier",
+    #         ]
+    #         + final_estimators
+    #     )
+    # if problem_type == ProblemTypes.MULTICLASS:
+    #     assert (
+    #         estimators_in_first_batch
+    #         == [
+    #             "Elastic Net Classifier",
+    #             "Logistic Regression Classifier",
+    #             "Decision Tree Classifier",
+    #             "Extra Trees Classifier",
+    #             "Random Forest Classifier",
+    #         ]
+    #         + final_estimators
+    #     )
 
 
 def test_iterative_algorithm_first_batch_order_param(
