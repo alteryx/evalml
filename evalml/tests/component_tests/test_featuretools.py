@@ -51,9 +51,7 @@ def test_featuretools_index(mock_calculate_feature_matrix, mock_dfs, X_y_multi):
     feature.fit(X_new_index)
     feature.transform(X_new_index)
     arg_es = mock_dfs.call_args[1]["entityset"].dataframes[0].index
-    arg_tr = (
-        mock_calculate_feature_matrix.call_args[1]["entityset"].dataframes[0].index
-    )
+    arg_tr = mock_calculate_feature_matrix.call_args[1]["entityset"].dataframes[0].index
     assert arg_es.to_list() == new_index
     assert arg_tr.to_list() == new_index
 
@@ -61,9 +59,7 @@ def test_featuretools_index(mock_calculate_feature_matrix, mock_dfs, X_y_multi):
     feature.fit(X_pd)
     feature.transform(X_pd)
     arg_es = mock_dfs.call_args[1]["entityset"].dataframes[0].index
-    arg_tr = (
-        mock_calculate_feature_matrix.call_args[1]["entityset"].dataframes[0].index
-    )
+    arg_tr = mock_calculate_feature_matrix.call_args[1]["entityset"].dataframes[0].index
     assert arg_es.to_list() == index
     assert arg_tr.to_list() == index
 
