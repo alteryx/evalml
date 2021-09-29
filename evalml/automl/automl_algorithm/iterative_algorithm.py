@@ -18,6 +18,7 @@ from evalml.pipelines.utils import (
     make_pipeline,
 )
 from evalml.problem_types import is_time_series
+from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
 _ESTIMATOR_FAMILY_ORDER = [
@@ -30,6 +31,8 @@ _ESTIMATOR_FAMILY_ORDER = [
     ModelFamily.CATBOOST,
     ModelFamily.ARIMA,
 ]
+
+import pandas as pd
 
 
 class IterativeAlgorithm(AutoMLAlgorithm):
@@ -87,8 +90,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
             _estimator_family_order (list[ModelFamily]): specify the sort order for the first batch. Defaults to None, which uses _ESTIMATOR_FAMILY_ORDER.
         """
-        self.X = X
-        self.y = y
+        self.X = infer_feature_types(X)
+        self.y = infer_feature_types(y)
         self.problem_type = problem_type
         self.random_seed = random_seed
         self.sampler_name = sampler_name
@@ -116,6 +119,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         self.allowed_component_graphs = allowed_component_graphs
         self._create_pipelines()
+        self.ensembling = ensembling and len(self.allowed_pipelines) > 1
 
         for pipeline in self.allowed_pipelines or []:
             if pipeline.model_family in self._estimator_family_order:
@@ -176,7 +180,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             ):
                 if (
                     pd.infer_freq(
-                        X_train[self._pipeline_params["pipeline"]["date_index"]]
+                        self.X[self._pipeline_params["pipeline"]["date_index"]]
                     )
                     == "MS"
                 ):
@@ -237,7 +241,12 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
 
-        self.ensembling = self.ensembling and len(self.allowed_pipelines) > 1
+        self.logger.debug(
+            f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}"
+        )
+        self.logger.debug(
+            f"allowed_model_families set to {self.allowed_model_families}"
+        )
         self.logger.info(f"{len(self.allowed_pipelines)} pipelines ready for search.")
 
     def next_batch(self):

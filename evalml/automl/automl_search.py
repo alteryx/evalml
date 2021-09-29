@@ -50,7 +50,10 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
-from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.components.utils import (
+    get_estimators,
+    handle_component_class,
+)
 from evalml.pipelines.utils import (
     make_pipeline,
     make_timeseries_baseline_pipeline,
@@ -647,67 +650,6 @@ class AutoMLSearch:
                     {"sampling_ratio": self.sampler_balanced_ratio}
                 )
 
-        self.ensembling = self.ensembling and len(self.allowed_component_graphs) > 1
-        run_ensembling = self.ensembling
-        if run_ensembling and len(self.allowed_component_graphs) == 1:
-            self.logger.warning(
-                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
-            )
-            run_ensembling = False
-
-        if run_ensembling and len(self.allowed_component_graphs) == 1:
-            self.logger.warning(
-                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
-            )
-            run_ensembling = False
-
-        if run_ensembling and self.max_iterations is not None:
-            # Baseline + first batch + each pipeline iteration + 1
-            first_ensembling_iteration = (
-                1
-                + len(self.allowed_component_graphs)
-                + len(self.allowed_component_graphs) * self._pipelines_per_batch
-                + 1
-            )
-            if self.max_iterations < first_ensembling_iteration:
-                run_ensembling = False
-                self.logger.warning(
-                    f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling."
-                )
-            else:
-                self.logger.info(
-                    f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_component_graphs) * self._pipelines_per_batch} iterations after that."
-                )
-
-        if self.max_batches and self.max_iterations is None:
-            self.show_batch_output = True
-            if run_ensembling:
-                ensemble_nth_batch = len(self.allowed_component_graphs) + 1
-                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
-                if num_ensemble_batches == 0:
-                    run_ensembling = False
-                    self.logger.warning(
-                        f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling."
-                    )
-                else:
-                    self.logger.info(
-                        f"Ensembling will run every {ensemble_nth_batch} batches."
-                    )
-
-                self.max_iterations = (
-                    1
-                    + len(self.allowed_component_graphs)
-                    + self._pipelines_per_batch
-                    * (self.max_batches - 1 - num_ensemble_batches)
-                    + num_ensemble_batches * 2
-                )
-            else:
-                self.max_iterations = (
-                    1
-                    + len(self.allowed_component_graphs)
-                    + (self._pipelines_per_batch * (self.max_batches - 1))
-                )
-
         if isinstance(engine, str):
             self._engine = build_engine_from_str(engine)
         elif isinstance(engine, (DaskEngine, CFEngine, SequentialEngine)):
@@ -729,16 +671,6 @@ class AutoMLSearch:
             self.X_train.ww.schema,
             self.y_train.ww.schema,
         )
-        self.allowed_model_families = list(
-            set([p.model_family for p in (self.allowed_pipelines)])
-        )
-
-        self.logger.debug(
-            f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}"
-        )
-        self.logger.debug(
-            f"allowed_model_families set to {self.allowed_model_families}"
-        )
 
         text_in_ensembling = (
             len(self.X_train.ww.select("natural_language", return_schema=True).columns)
@@ -751,15 +683,15 @@ class AutoMLSearch:
                 y=self.y_train,
                 problem_type=self.problem_type,
                 sampler_name=self._sampler_name,
+                allowed_component_graphs=self.allowed_component_graphs,
                 allowed_model_families=self.allowed_model_families,
                 max_iterations=self.max_iterations,
-                allowed_pipelines=self.allowed_pipelines,
                 tuner_class=self.tuner_class,
                 random_seed=self.random_seed,
                 n_jobs=self.n_jobs,
                 number_features=self.X_train.shape[1],
                 pipelines_per_batch=self._pipelines_per_batch,
-                ensembling=run_ensembling,
+                ensembling=self.ensembling,
                 text_in_ensembling=text_in_ensembling,
                 pipeline_params=parameters,
                 custom_hyperparameters=custom_hyperparameters,
@@ -779,6 +711,66 @@ class AutoMLSearch:
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")
+
+        self.allowed_model_families = [
+            p.model_family for p in self._automl_algorithm.allowed_pipelines
+        ]
+        self.allowed_pipelines = self._automl_algorithm.allowed_pipelines
+
+        run_ensembling = self.ensembling
+        if run_ensembling and len(self.allowed_pipelines) == 1:
+            self.logger.warning(
+                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
+            )
+            run_ensembling = False
+
+        if run_ensembling and self.max_iterations is not None:
+            # Baseline + first batch + each pipeline iteration + 1
+            first_ensembling_iteration = (
+                1
+                + len(self.allowed_pipelines)
+                + len(self.allowed_pipelines) * self._pipelines_per_batch
+                + 1
+            )
+            if self.max_iterations < first_ensembling_iteration:
+                run_ensembling = False
+                self.logger.warning(
+                    f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling."
+                )
+            else:
+                self.logger.info(
+                    f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that."
+                )
+
+        if self.max_batches and self.max_iterations is None:
+            self.show_batch_output = True
+            if run_ensembling:
+                ensemble_nth_batch = len(self.allowed_pipelines) + 1
+                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
+                if num_ensemble_batches == 0:
+                    run_ensembling = False
+                    self.logger.warning(
+                        f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling."
+                    )
+                else:
+                    self.logger.info(
+                        f"Ensembling will run every {ensemble_nth_batch} batches."
+                    )
+
+                self.max_iterations = (
+                    1
+                    + len(self.allowed_pipelines)
+                    + self._pipelines_per_batch
+                    * (self.max_batches - 1 - num_ensemble_batches)
+                    + num_ensemble_batches * 2
+                )
+            else:
+                self.max_iterations = (
+                    1
+                    + len(self.allowed_pipelines)
+                    + (self._pipelines_per_batch * (self.max_batches - 1))
+                )
+        self._automl_algorithm.ensembling = run_ensembling
 
     def close_engine(self):
         """Function to explicitly close the engine, client, parallel resources."""
@@ -829,7 +821,7 @@ class AutoMLSearch:
             f"Max Time: {self.max_time}\n"
             f"Max Iterations: {self.max_iterations}\n"
             f"Max Batches: {self.max_batches}\n"
-            f"Allowed Pipelines: \n{_print_list(self.allowed_pipelines or [])}\n"
+            f"Allowed Pipelines: \n{_print_list(self._automl_algorithm.allowed_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
             f"Data Splitting: {self.data_splitter}\n"

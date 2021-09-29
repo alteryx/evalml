@@ -2,6 +2,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from evalml import problem_types
 from evalml.automl import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
@@ -195,8 +196,9 @@ def test_automl_immediate_quit(
         optimize_thresholds=False,
     )
     automl._automl_algorithm = IterativeAlgorithm(
-        max_iterations=4,
-        allowed_pipelines=pipelines,
+        X=X,
+        y=y,
+        problem_type="binary",
         tuner_class=SKOptTuner,
         random_seed=0,
         n_jobs=-1,
@@ -207,6 +209,7 @@ def test_automl_immediate_quit(
         pipeline_params={},
         custom_hyperparameters=None,
     )
+    automl._automl_algorithm.allowed_pipelines = pipelines
 
     # Ensure the broken pipeline raises the error
     with pytest.raises(Exception, match="Yikes"):
