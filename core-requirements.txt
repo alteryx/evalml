@@ -14,6 +14,6 @@ shap>=0.36.0
 texttable>=1.6.2
 woodwork==0.8.1
 dask>=2.12.0
-git+https://github.com/alteryx/nlp_primitives.git@ft-1.0.0-dev
+nlp_primitives @ git+https://github.com/alteryx/nlp_primitives.git@ft-1.0.0-dev
 featuretools==1.0.0rc1
 networkx>=2.5,<2.6
