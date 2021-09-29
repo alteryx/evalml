@@ -1,4 +1,5 @@
 """A transformer that encodes target labels using values between 0 and num_classes - 1."""
+import pandas as pd
 import woodwork as ww
 from sklearn.preprocessing import LabelEncoder as SKLabelEncoder
 
@@ -21,10 +22,15 @@ class LabelEncoder(Transformer):
     modifies_features = False
     modifies_target = True
 
-    def __init__(self, random_seed=0):
+    def __init__(self, random_seed=0, **kwargs):
+        parameters = {}
+        parameters.update(kwargs)
+
         label_encoder_obj = SKLabelEncoder()
         super().__init__(
-            parameters={}, component_obj=label_encoder_obj, random_seed=random_seed
+            parameters=parameters,
+            component_obj=label_encoder_obj,
+            random_seed=random_seed,
         )
 
     def fit(self, X, y):
@@ -63,6 +69,7 @@ class LabelEncoder(Transformer):
 
         y_ww = infer_feature_types(y)
         y_t = self._component_obj.transform(y_ww)
+        y_t = pd.Series(y_t, index=y_ww.index)
         return X, ww.init_series(y_t)
 
     def fit_transform(self, X, y):
