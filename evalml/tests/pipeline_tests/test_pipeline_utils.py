@@ -21,7 +21,6 @@ from evalml.pipelines.components import (
     Imputer,
     LinearRegressor,
     LogisticRegressionClassifier,
-    LogTransformer,
     OneHotEncoder,
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
@@ -43,9 +42,7 @@ from evalml.problem_types import ProblemTypes, is_regression, is_time_series
 
 @pytest.fixture
 def get_test_data_from_configuration():
-    def _get_test_data_from_configuration(
-        input_type, problem_type, column_names=None, lognormal_distribution=False
-    ):
+    def _get_test_data_from_configuration(input_type, problem_type, column_names=None):
         X_all = pd.DataFrame(
             {
                 "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
@@ -99,10 +96,7 @@ def get_test_data_from_configuration():
         if problem_type == ProblemTypes.MULTICLASS:
             y = pd.Series([0, 2, 1, 2, 0, 2, 1] * 2)
         elif is_regression(problem_type):
-            if lognormal_distribution:
-                y = pd.Series([1, 1, 1, 2, 3, 6, 9] * 2)
-            else:
-                y = pd.Series([1, 2, 3, 3, 3, 4, 5] * 2)
+            y = pd.Series([1, 2, 3, 3, 3, 4, 5] * 2)
         X = X_all[column_names]
 
         if input_type == "ww":
@@ -125,7 +119,6 @@ def get_test_data_from_configuration():
     return _get_test_data_from_configuration
 
 
-@pytest.mark.parametrize("lognormal_distribution", [True, False])
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 @pytest.mark.parametrize(
@@ -150,7 +143,6 @@ def get_test_data_from_configuration():
 def test_make_pipeline(
     problem_type,
     input_type,
-    lognormal_distribution,
     test_description,
     column_names,
     get_test_data_from_configuration,
@@ -160,7 +152,6 @@ def test_make_pipeline(
         input_type,
         problem_type,
         column_names=column_names,
-        lognormal_distribution=lognormal_distribution,
     )
     estimators = get_estimators(problem_type=problem_type)
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -208,11 +199,6 @@ def test_make_pipeline(
                 if estimator_class.model_family == ModelFamily.LINEAR_MODEL
                 else []
             )
-            log_transformer = (
-                [LogTransformer]
-                if lognormal_distribution and is_regression(problem_type)
-                else []
-            )
             drop_null = [DropNullColumns] if "all_null" in column_names else []
             text_featurizer = (
                 [TextFeaturizer]
@@ -237,8 +223,7 @@ def test_make_pipeline(
                 else []
             )
             expected_components = (
-                log_transformer
-                + email_featurizer
+                email_featurizer
                 + url_featurizer
                 + drop_null
                 + text_featurizer
@@ -648,6 +633,9 @@ def test_generate_code_pipeline_with_custom_components():
             super().__init__(
                 parameters=parameters, component_obj=None, random_seed=random_seed
             )
+
+        def transform(self, X, y=None):
+            return X
 
     class CustomEstimator(Estimator):
         name = "My Custom Estimator"

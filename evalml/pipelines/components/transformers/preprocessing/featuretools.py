@@ -2,10 +2,7 @@
 from featuretools import EntitySet, calculate_feature_matrix, dfs
 
 from evalml.pipelines.components.transformers.transformer import Transformer
-from evalml.utils import (
-    _retain_custom_types_and_initalize_woodwork,
-    infer_feature_types,
-)
+from evalml.utils import infer_feature_types
 
 
 class DFSTransformer(Transformer):
@@ -75,7 +72,8 @@ class DFSTransformer(Transformer):
         X_ww = infer_feature_types(X)
         X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
         es = self._make_entity_set(X_ww)
+
         feature_matrix = calculate_feature_matrix(features=self.features, entityset=es)
-        return _retain_custom_types_and_initalize_woodwork(
-            X_ww.ww.logical_types, feature_matrix
-        )
+        typed_columns = set(X_ww.columns).intersection(set(feature_matrix.columns))
+        feature_matrix.ww.init(schema=X_ww.ww.schema._get_subset_schema(typed_columns))
+        return feature_matrix

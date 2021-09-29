@@ -11,7 +11,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
     """Pipeline base class for time series problems.
 
     Args:
-        component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
+        component_graph (ComponentGraph, list, dict): ComponentGraph instance, list of components in order, or dictionary of components.
+            Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
             [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
@@ -91,6 +92,30 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         ):
             gap_difference *= test_index.freq
         return index_difference == gap_difference
+
+    def _validate_holdout_datasets(self, X, X_train):
+        """Validate the holdout datasets match out expectations.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            X_train (pd.DataFrame): Training data.
+
+        Raises:
+            ValueError: If holdout data does not have forecast_horizon entries or if datasets
+                are not separated by gap.
+        """
+        right_length = len(X) == self.forecast_horizon
+        X_separated_by_gap = self._are_datasets_separated_by_gap(
+            X_train.index, X.index, self.gap
+        )
+        if not (right_length and X_separated_by_gap):
+            raise ValueError(
+                f"Holdout data X must have {self.forecast_horizon}  rows (value of forecast horizon) "
+                "and its index needs to "
+                f"start {self.gap + 1} values ahead of the training index. "
+                f"Data received - Length X: {len(X)}, "
+                f"X index start: {X.index[0]}, X_train index end {X.index[-1]}."
+            )
 
     def _add_training_data_to_X_Y(self, X, y, X_train, y_train):
         """Append the training data to the holdout data.
@@ -221,8 +246,10 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             raise ValueError(
                 "Cannot call predict() on a component graph because the final component is not an Estimator."
             )
+        X = infer_feature_types(X)
+        self._validate_holdout_datasets(X, X_train)
         y_holdout = self._create_empty_series(y_train)
-        X, y_holdout = self._convert_to_woodwork(X, y_holdout)
+        y_holdout = infer_feature_types(y_holdout)
         y_holdout.index = X.index
         return self.predict_in_sample(
             X, y_holdout, X_train, y_train, objective=objective

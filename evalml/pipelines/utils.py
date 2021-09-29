@@ -15,7 +15,7 @@ from .multiclass_classification_pipeline import (
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
-from evalml.data_checks import DataCheckActionCode, TargetDistributionDataCheck
+from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
@@ -35,18 +35,22 @@ from evalml.pipelines.components import (  # noqa: F401
     RandomForestClassifier,
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
     TextFeaturizer,
     Undersampler,
     URLFeaturizer,
 )
-from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.components.utils import (
+    get_estimators,
+    handle_component_class,
+)
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
-    is_regression,
     is_time_series,
 )
 from evalml.utils import import_or_raise, infer_feature_types
@@ -70,11 +74,6 @@ def _get_preprocessing_components(
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
     pp_components = []
-
-    if is_regression(problem_type):
-        for each_action in TargetDistributionDataCheck().validate(X, y)["actions"]:
-            if each_action["metadata"]["transformation_strategy"] == "lognormal":
-                pp_components.append(LogTransformer)
 
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
@@ -260,7 +259,12 @@ def generate_pipeline_code(element):
 
 
 def _make_stacked_ensemble_pipeline(
-    input_pipelines, problem_type, n_jobs=-1, random_seed=0
+    input_pipelines,
+    problem_type,
+    final_estimator=None,
+    n_jobs=-1,
+    random_seed=0,
+    use_sklearn=False,
 ):
     """Creates a pipeline with a stacked ensemble estimator.
 
@@ -268,48 +272,115 @@ def _make_stacked_ensemble_pipeline(
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         problem_type (ProblemType): problem type of pipeline
+        final_estimator (Estimator): Metalearner to use for the ensembler. Defaults to None.
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             Defaults to -1.
+        use_sklearn (bool): If True, instantiates a pipeline with the scikit-learn ensembler. Defaults to False.
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
     parameters = {}
     if is_classification(problem_type):
-        parameters = {
-            "Sklearn Stacked Ensemble Classifier": {
-                "input_pipelines": input_pipelines,
-                "n_jobs": n_jobs,
+        if use_sklearn:
+            parameters = {
+                "Sklearn Stacked Ensemble Classifier": {
+                    "input_pipelines": input_pipelines,
+                    "final_estimator": final_estimator,
+                    "n_jobs": n_jobs,
+                }
             }
-        }
-        estimator = SklearnStackedEnsembleClassifier
+            estimator = SklearnStackedEnsembleClassifier
+            pipeline_name = "Sklearn Stacked Ensemble Classification Pipeline"
+        else:
+            parameters = {
+                "Stacked Ensemble Classifier": {
+                    "n_jobs": n_jobs,
+                }
+            }
+            estimator = StackedEnsembleClassifier
+            pipeline_name = "Stacked Ensemble Classification Pipeline"
     else:
-        parameters = {
-            "Sklearn Stacked Ensemble Regressor": {
-                "input_pipelines": input_pipelines,
-                "n_jobs": n_jobs,
+        if use_sklearn:
+            parameters = {
+                "Sklearn Stacked Ensemble Regressor": {
+                    "input_pipelines": input_pipelines,
+                    "final_estimator": final_estimator,
+                    "n_jobs": n_jobs,
+                }
             }
-        }
-        estimator = SklearnStackedEnsembleRegressor
+            estimator = SklearnStackedEnsembleRegressor
+            pipeline_name = "Sklearn Stacked Ensemble Regression Pipeline"
+        else:
+            parameters = {
+                "Stacked Ensemble Regressor": {
+                    "n_jobs": n_jobs,
+                }
+            }
+            estimator = StackedEnsembleRegressor
+            pipeline_name = "Stacked Ensemble Regression Pipeline"
 
-    pipeline_class, pipeline_name = {
-        ProblemTypes.BINARY: (
-            BinaryClassificationPipeline,
-            "Sklearn Stacked Ensemble Classification Pipeline",
-        ),
-        ProblemTypes.MULTICLASS: (
-            MulticlassClassificationPipeline,
-            "Sklearn Stacked Ensemble Classification Pipeline",
-        ),
-        ProblemTypes.REGRESSION: (
-            RegressionPipeline,
-            "Sklearn Stacked Ensemble Regression Pipeline",
-        ),
+    pipeline_class = {
+        ProblemTypes.BINARY: BinaryClassificationPipeline,
+        ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
+        ProblemTypes.REGRESSION: RegressionPipeline,
     }[problem_type]
 
+    if not use_sklearn:
+
+        def _make_new_component_name(model_type, component_name, idx=None):
+            idx = " " + str(idx) if idx is not None else ""
+            return f"{str(model_type)} Pipeline{idx} - {component_name}"
+
+        component_graph = {}
+        final_components = []
+        used_model_families = []
+        problem_type = None
+
+        for pipeline in input_pipelines:
+            model_family = pipeline.component_graph[-1].model_family
+            model_family_idx = (
+                used_model_families.count(model_family) + 1
+                if used_model_families.count(model_family) > 0
+                else None
+            )
+            used_model_families.append(model_family)
+            final_component = None
+            ensemble_y = "y"
+            for name, component_list in pipeline.component_graph.component_dict.items():
+                new_component_list = []
+                new_component_name = _make_new_component_name(
+                    model_family, name, model_family_idx
+                )
+                for i, item in enumerate(component_list):
+                    if i == 0:
+                        fitted_comp = handle_component_class(item)
+                        new_component_list.append(fitted_comp)
+                        parameters[new_component_name] = pipeline.parameters.get(
+                            name, {}
+                        )
+                    elif isinstance(item, str) and item not in ["X", "y"]:
+                        new_component_list.append(
+                            _make_new_component_name(
+                                model_family, item, model_family_idx
+                            )
+                        )
+                    else:
+                        new_component_list.append(item)
+                    if i != 0 and item.endswith(".y"):
+                        ensemble_y = _make_new_component_name(
+                            model_family, item, model_family_idx
+                        )
+                component_graph[new_component_name] = new_component_list
+                final_component = new_component_name
+            final_components.append(final_component)
+
+        component_graph[estimator.name] = (
+            [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
+        )
     return pipeline_class(
-        [estimator],
+        [estimator] if use_sklearn else component_graph,
         parameters=parameters,
         custom_name=pipeline_name,
         random_seed=random_seed,

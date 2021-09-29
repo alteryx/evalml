@@ -68,15 +68,15 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.ensemble import (
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
+    StackedEnsembleBase,
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor,
 )
 from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
     LogTransformer,
 )
 from evalml.pipelines.components.transformers.samplers.base_sampler import (
     BaseSampler,
-)
-from evalml.pipelines.components.transformers.transformer import (
-    TargetTransformer,
 )
 from evalml.pipelines.components.utils import (
     _all_estimators,
@@ -91,7 +91,6 @@ from evalml.problem_types import ProblemTypes
 def test_classes():
     class MockComponent(ComponentBase):
         name = "Mock Component"
-        model_family = ModelFamily.NONE
         modifies_features = True
         modifies_target = False
         training_only = False
@@ -103,6 +102,9 @@ def test_classes():
 
     class MockTransformer(Transformer):
         name = "Mock Transformer"
+
+        def transform(self, X, y=None):
+            return X
 
     return MockComponent, MockEstimator, MockTransformer
 
@@ -122,7 +124,6 @@ def test_estimator_needs_fitting_false():
 
 
 class MockFitComponent(ComponentBase):
-    model_family = ModelFamily.NONE
     name = "Mock Fit Component"
     modifies_features = True
     modifies_target = False
@@ -513,7 +514,7 @@ def test_describe_component():
 
 def test_missing_attributes(X_y_binary):
     class MockComponentName(ComponentBase):
-        model_family = ModelFamily.NONE
+        pass
 
     with pytest.raises(TypeError):
         MockComponentName()
@@ -535,12 +536,6 @@ def test_missing_attributes(X_y_binary):
 def test_missing_methods_on_components(X_y_binary, test_classes):
     X, y = X_y_binary
     MockComponent, MockEstimator, MockTransformer = test_classes
-
-    class MockTransformerWithFit(Transformer):
-        name = "Mock Transformer"
-
-        def fit(self, X, y=None):
-            return self
 
     component = MockComponent()
     with pytest.raises(
@@ -568,28 +563,18 @@ def test_missing_methods_on_components(X_y_binary, test_classes):
         estimator.feature_importance
 
     transformer = MockTransformer()
-    transformer_with_fit = MockTransformerWithFit()
     transformer._is_fitted = True
     with pytest.raises(
         MethodPropertyNotFoundError,
         match="Component requires a fit method or a component_obj that implements fit",
     ):
         transformer.fit(X, y)
-    with pytest.raises(
-        MethodPropertyNotFoundError,
-        match="Transformer requires a transform method or a component_obj that implements transform",
-    ):
         transformer.transform(X)
     with pytest.raises(
         MethodPropertyNotFoundError,
         match="Component requires a fit method or a component_obj that implements fit",
     ):
         transformer.fit_transform(X)
-    with pytest.raises(
-        MethodPropertyNotFoundError,
-        match="Transformer requires a transform method or a component_obj that implements transform",
-    ):
-        transformer_with_fit.fit_transform(X)
 
 
 def test_component_fit(X_y_binary):
@@ -624,6 +609,9 @@ def test_component_fit_transform(X_y_binary):
         def fit_transform(self, X, y=None):
             return X
 
+        def transform(self, X, y=None):
+            return X
+
         def __init__(self):
             parameters = {}
             super().__init__(parameters=parameters, component_obj=None, random_seed=0)
@@ -634,6 +622,9 @@ def test_component_fit_transform(X_y_binary):
 
         def fit_transform(self, X, y=None):
             raise RuntimeError
+
+        def transform(self, X, y=None):
+            return X
 
         def __init__(self):
             parameters = {}
@@ -648,17 +639,6 @@ def test_component_fit_transform(X_y_binary):
 
         def transform(self, X, y=None):
             return X
-
-        def __init__(self):
-            parameters = {}
-            super().__init__(parameters=parameters, component_obj=None, random_seed=0)
-
-    class MockTransformerWithOnlyFit(Transformer):
-        name = "Mock Transformer"
-        hyperparameter_ranges = {}
-
-        def fit(self, X, y=None):
-            return self
 
         def __init__(self):
             parameters = {}
@@ -679,16 +659,10 @@ def test_component_fit_transform(X_y_binary):
     component = MockTransformerWithFitAndTransform()
     assert isinstance(component.fit_transform(X, y), pd.DataFrame)
 
-    component = MockTransformerWithOnlyFit()
-    with pytest.raises(MethodPropertyNotFoundError):
-        component.fit_transform(X, y)
-
 
 def test_model_family_components(test_classes):
-    MockComponent, MockEstimator, MockTransformer = test_classes
+    _, MockEstimator, _ = test_classes
 
-    assert MockComponent.model_family == ModelFamily.NONE
-    assert MockTransformer.model_family == ModelFamily.NONE
     assert MockEstimator.model_family == ModelFamily.LINEAR_MODEL
 
 
@@ -777,6 +751,8 @@ def test_components_init_kwargs():
         except EnsembleMissingPipelinesError:
             continue
         if component._component_obj is None:
+            continue
+        if isinstance(component, StackedEnsembleBase):
             continue
 
         obj_class = component._component_obj.__class__.__name__
@@ -915,7 +891,12 @@ def test_transformer_transform_output_type(X_y_binary):
         cls
         for cls in all_components()
         if cls
-        not in [SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier]
+        not in [
+            SklearnStackedEnsembleRegressor,
+            SklearnStackedEnsembleClassifier,
+            StackedEnsembleClassifier,
+            StackedEnsembleRegressor,
+        ]
     ],
 )
 def test_default_parameters(cls):
@@ -1006,6 +987,9 @@ def test_transformer_check_for_fit(X_y_binary):
                 random_seed=random_seed,
             )
 
+        def transform(self, X, y=None):
+            return X
+
         def inverse_transform(self, X, y=None):
             return X, y
 
@@ -1030,7 +1014,7 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
         def fit(self, X, y):
             return self
 
-        def transform(self, X):
+        def transform(self, X, y=None):
             df = pd.DataFrame()
             df.ww.init()
             return df
@@ -1041,7 +1025,7 @@ def test_transformer_check_for_fit_with_overrides(X_y_binary):
         def fit(self, X, y):
             return self
 
-        def transform(self, X):
+        def transform(self, X, y=None):
             df = pd.DataFrame()
             df.ww.init()
             return df
@@ -1110,6 +1094,8 @@ def test_all_estimators_check_fit(
         not in [
             SklearnStackedEnsembleClassifier,
             SklearnStackedEnsembleRegressor,
+            StackedEnsembleClassifier,
+            StackedEnsembleRegressor,
             TimeSeriesBaselineEstimator,
         ]
     ] + [test_estimator_needs_fitting_false]
@@ -1236,6 +1222,8 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
             if issubclass(component_class, Estimator) and not (
                 isinstance(component, SklearnStackedEnsembleClassifier)
                 or isinstance(component, SklearnStackedEnsembleRegressor)
+                or isinstance(component, StackedEnsembleClassifier)
+                or isinstance(component, StackedEnsembleRegressor)
             ):
                 assert (
                     component.feature_importance == loaded_component.feature_importance
@@ -1654,13 +1642,13 @@ def test_component_modifies_feature_or_target():
     for component_class in all_components():
         if (
             issubclass(component_class, BaseSampler)
-            or issubclass(component_class, TargetTransformer)
+            or hasattr(component_class, "inverse_transform")
             or component_class in [TargetImputer, DropRowsTransformer]
         ):
             assert component_class.modifies_target
         else:
             assert not component_class.modifies_target
-        if issubclass(component_class, TargetTransformer) or component_class in [
+        if hasattr(component_class, "inverse_transform") or component_class in [
             TargetImputer
         ]:
             assert not component_class.modifies_features
@@ -1672,7 +1660,7 @@ def test_component_parameters_supported_by_list_API():
     for component_class in all_components():
         if (
             issubclass(component_class, BaseSampler)
-            or issubclass(component_class, TargetTransformer)
+            or hasattr(component_class, "inverse_transform")
             or component_class in [TargetImputer, DropRowsTransformer]
         ):
             assert not component_class._supported_by_list_API

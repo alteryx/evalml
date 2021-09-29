@@ -4,6 +4,8 @@ from scipy.stats import gamma
 
 from evalml.data_checks import (
     DataCheck,
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning,
 )
@@ -52,6 +54,7 @@ class OutliersDataCheck(DataCheck):
             return results
 
         has_outliers = []
+        outlier_row_indices = {}
         for col in X.columns:
             box_plot_dict = X.ww[col].ww.box_plot_dict()
             num_records = len(X[col])
@@ -63,6 +66,9 @@ class OutliersDataCheck(DataCheck):
                 and OutliersDataCheck._no_outlier_prob(num_records, pct_outliers) <= 0.9
             ):
                 has_outliers.append(col)
+                outlier_row_indices[col] = (
+                    box_plot_dict["low_indices"] + box_plot_dict["high_indices"]
+                )
 
         if not len(has_outliers):
             return results
@@ -75,7 +81,19 @@ class OutliersDataCheck(DataCheck):
                 message=warning_msg,
                 data_check_name=self.name,
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                details={"columns": has_outliers},
+                details={"columns": has_outliers, "rows": outlier_row_indices},
+            ).to_dict()
+        )
+        all_rows_with_indices_set = set()
+        for row_indices in outlier_row_indices.values():
+            all_rows_with_indices_set.update(row_indices)
+
+        all_rows_with_indices = list(all_rows_with_indices_set)
+        all_rows_with_indices.sort()
+        results["actions"].append(
+            DataCheckAction(
+                DataCheckActionCode.DROP_ROWS,
+                metadata={"indices": all_rows_with_indices},
             ).to_dict()
         )
         return results

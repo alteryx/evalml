@@ -16,7 +16,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
     """Pipeline base class for time series classification problems.
 
     Args:
-        component_graph (list or dict): List of components in order. Accepts strings or ComponentBase subclasses in the list.
+        component_graph (ComponentGraph, list, dict): ComponentGraph instance, list of components in order, or dictionary of components.
+            Accepts strings or ComponentBase subclasses in the list.
             Note that when duplicate components are specified in a list, the duplicate component names will be modified with the
             component's index in the list. For example, the component graph
             [Imputer, One Hot Encoder, Imputer, Logistic Regression Classifier] will have names
@@ -141,8 +142,10 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
                 "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
             )
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
+        X = infer_feature_types(X)
+        self._validate_holdout_datasets(X, X_train)
         y_holdout = self._create_empty_series(y_train)
-        X, y_holdout = self._convert_to_woodwork(X, y_holdout)
+        y_holdout = infer_feature_types(y_holdout)
         y_holdout.index = X.index
         return self.predict_proba_in_sample(X, y_holdout, X_train, y_train)
 
