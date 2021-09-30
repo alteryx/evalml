@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from pytest import importorskip
 from vowpalwabbit.sklearn_vw import VWMultiClassifier
 
 from evalml.model_family import ModelFamily
@@ -7,6 +8,10 @@ from evalml.pipelines.components.estimators.classifiers import (
     VowpalWabbitMulticlassClassifier,
 )
 from evalml.problem_types import ProblemTypes
+
+vw = importorskip(
+    "vowpalwabbit", reason="Skipping test because vowpal wabbit not installed"
+)
 
 
 def test_model_family():
