@@ -2,7 +2,7 @@ import os
 import warnings
 from collections import OrderedDict, defaultdict
 from itertools import product
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock, PropertyMock, call, patch
 
 import cloudpickle
 import numpy as np
@@ -3247,11 +3247,11 @@ def test_search_with_text_and_ensembling(
         ensembling=True,
     )
 
-    call_args = mock_iter.call_args.kwargs
+    call_args = mock_iter.call_args[1]['text_in_ensembling']
     if df_text:
-        assert call_args["text_in_ensembling"] is True
+        assert call_args is True
     else:
-        assert call_args["text_in_ensembling"] is False
+        assert call_args is False
 
 
 def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
