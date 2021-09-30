@@ -42,7 +42,7 @@ Release Notes
         * Added the ability of ``AutoMLSearch`` to accept a ``SequentialEngine`` instance as engine input :pr:`2838`
         * Added new label encoder component to EvalML :pr:`2853`
         * Added our own partial dependence implementation :pr:`2834`
-        * Updated to support Featuretools 1.0.0 :pr:`2848`
+        * Updated to support Featuretools 1.0.0 and nlp-primitives 2.0.0 :pr:`2848`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`

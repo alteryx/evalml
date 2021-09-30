@@ -71,8 +71,8 @@ git-test-prophet:
 
 .PHONY: installdeps
 installdeps:
-	pip install --upgrade pip
-	pip install -e .
+	pip install --upgrade pip -q
+	pip install -e . -q
 
 SITE_PACKAGES_DIR=$$(python -c 'import site; print(site.getsitepackages()[0])')
 .PHONY: installdeps-prophet
