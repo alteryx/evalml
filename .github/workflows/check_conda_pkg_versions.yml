@@ -1,0 +1,39 @@
+name: Check conda versions
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    types: [ opened, synchronize ]
+    paths:
+      - 'requirements.txt'
+      - 'core-requirements.txt'
+      - 'evalml/tests/dependency_update_check/*.txt'
+
+jobs:
+  check_versions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v2
+        with:
+          python-version: 3.8
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+      - name: Install Dependencies
+        run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          pip install -r test-requirements.txt
+          pip install requirements-parser>=0.2.0
+      - name: Clone Feedstock & Check Versions
+        run: |
+          git clone -b latest_release_changes --single-branch https://github.com/conda-forge/evalml-core-feedstock
+          virtualenv test_python -q
+          source test_python/bin/activate
+          python .github/conda_version_check.py
