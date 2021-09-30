@@ -12,9 +12,9 @@ from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import cloudpickle
 import numpy as np
 import pandas as pd
+from dask import distributed as dd
 from sklearn.model_selection import BaseCrossValidator
 
-from dask import distributed as dd
 
 from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 
