@@ -1,16 +1,21 @@
 """Vowpal Wabbit Classifiers."""
+from abc import abstractmethod
+
 from skopt.space import Real
-from vowpalwabbit.sklearn_vw import VWClassifier, VWMultiClassifier
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
+from evalml.utils.gen_utils import import_or_raise
 
 
 class VowpalWabbitBaseClassifier(Estimator):
     """Vowpal Wabbit Base Classifier.
 
     Args:
+        learning_rate (float): Boosting learning rate. Defaults to 0.5.
+        decay_learning_rate (float): Decay factor for learning_rate. Defaults to 0.95.
+        power_t (float): Power on learning rate decay. Defaults to 1.0.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -23,14 +28,6 @@ class VowpalWabbitBaseClassifier(Estimator):
     """"""
     model_family = ModelFamily.VOWPAL_WABBIT
     """ModelFamily.VOWPAL_WABBIT"""
-    supported_problem_types = [
-        ProblemTypes.BINARY,
-        ProblemTypes.TIME_SERIES_BINARY,
-    ]
-    """[
-        ProblemTypes.BINARY,
-        ProblemTypes.TIME_SERIES_BINARY,
-    ]"""
     _vowpal_wabbit_component = None
 
     def __init__(
@@ -49,10 +46,15 @@ class VowpalWabbitBaseClassifier(Estimator):
             "power_t": power_t,
         }
         parameters.update(kwargs)
-        vw_classifier = self._vowpal_wabbit_component(**parameters)
+        vw_class = self._get_component_obj_class()
+        vw_classifier = vw_class(**parameters)
         super().__init__(
             parameters=parameters, component_obj=vw_classifier, random_seed=random_seed
         )
+
+    @abstractmethod
+    def _get_component_obj_class(self):
+        """Get the appropriate Vowpal Wabbit class."""
 
     @property
     def feature_importance(self):
@@ -66,6 +68,9 @@ class VowpalWabbitBinaryClassifier(VowpalWabbitBaseClassifier):
     """Vowpal Wabbit Binary Classifier.
 
     Args:
+        learning_rate (float): Boosting learning rate. Defaults to 0.5.
+        decay_learning_rate (float): Decay factor for learning_rate. Defaults to 0.95.
+        power_t (float): Power on learning rate decay. Defaults to 1.0.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -78,13 +83,21 @@ class VowpalWabbitBinaryClassifier(VowpalWabbitBaseClassifier):
         ProblemTypes.BINARY,
         ProblemTypes.TIME_SERIES_BINARY,
     ]"""
-    _vowpal_wabbit_component = VWClassifier
+
+    def _get_component_obj_class(self):
+        vw_error_msg = "Vowpal Wabbit is not installed. Please install using `pip install vowpalwabbit.`"
+        vw = import_or_raise("vowpalwabbit", error_msg=vw_error_msg)
+        vw_classifier = vw.sklearn_vw.VWClassifier
+        return vw_classifier
 
 
 class VowpalWabbitMulticlassClassifier(VowpalWabbitBaseClassifier):
     """Vowpal Wabbit Multiclass Classifier.
 
     Args:
+        learning_rate (float): Boosting learning rate. Defaults to 0.5.
+        decay_learning_rate (float): Decay factor for learning_rate. Defaults to 0.95.
+        power_t (float): Power on learning rate decay. Defaults to 1.0.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -97,4 +110,9 @@ class VowpalWabbitMulticlassClassifier(VowpalWabbitBaseClassifier):
         ProblemTypes.MULTICLASS,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]"""
-    _vowpal_wabbit_component = VWMultiClassifier
+
+    def _get_component_obj_class(self):
+        vw_error_msg = "Vowpal Wabbit is not installed. Please install using `pip install vowpalwabbit.`"
+        vw = import_or_raise("vowpalwabbit", error_msg=vw_error_msg)
+        vw_classifier = vw.sklearn_vw.VWMultiClassifier
+        return vw_classifier

@@ -204,6 +204,9 @@ Classifiers are components that output a predicted class label.
     evalml.pipelines.components.DecisionTreeClassifier
     evalml.pipelines.components.KNeighborsClassifier
     evalml.pipelines.components.SVMClassifier
+    evalml.pipelines.components.VowpalWabbitBinaryClassifier
+    evalml.pipelines.components.VowpalWabbitMulticlassClassifier
+
 
 Regressors
 -----------
@@ -226,6 +229,7 @@ Regressors are components that output a predicted target value.
     evalml.pipelines.components.DecisionTreeRegressor
     evalml.pipelines.components.LightGBMRegressor
     evalml.pipelines.components.SVMRegressor
+    evalml.pipelines.components.VowpalWabbitRegressor
 
 
 Model Understanding
