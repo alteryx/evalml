@@ -5,7 +5,7 @@ from vowpalwabbit.sklearn_vw import VWClassifier, VWMultiClassifier
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
-import numpy as np
+
 
 class VowpalWabbitBaseClassifier(Estimator):
     """Vowpal Wabbit Base Classifier.
@@ -57,7 +57,9 @@ class VowpalWabbitBaseClassifier(Estimator):
     @property
     def feature_importance(self):
         """Feature importance for Vowpal Wabbit classifiers. This is not implemented."""
-        raise NotImplementedError("Feature importance is not implemented for the Vowpal Wabbit classifiers.")
+        raise NotImplementedError(
+            "Feature importance is not implemented for the Vowpal Wabbit classifiers."
+        )
 
 
 class VowpalWabbitBinaryClassifier(VowpalWabbitBaseClassifier):
@@ -79,7 +81,7 @@ class VowpalWabbitBinaryClassifier(VowpalWabbitBaseClassifier):
     _vowpal_wabbit_component = VWClassifier
 
 
-class VowpalWabbitMulticlassClassifier(Estimator):
+class VowpalWabbitMulticlassClassifier(VowpalWabbitBaseClassifier):
     """Vowpal Wabbit Multiclass Classifier.
 
     Args:

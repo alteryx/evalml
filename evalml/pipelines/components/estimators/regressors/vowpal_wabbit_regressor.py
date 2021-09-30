@@ -54,4 +54,6 @@ class VowpalWabbitRegressor(Estimator):
     @property
     def feature_importance(self):
         """Feature importance for Vowpal Wabbit regressor."""
-        raise NotImplementedError("Feature importance is not implemented for the Vowpal Wabbit regressor.")
+        raise NotImplementedError(
+            "Feature importance is not implemented for the Vowpal Wabbit regressor."
+        )
