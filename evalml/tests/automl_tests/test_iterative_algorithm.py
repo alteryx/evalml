@@ -16,7 +16,7 @@ from evalml.pipelines import (
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
 )
-from evalml.pipelines.components import Estimator
+from evalml.pipelines.components import Estimator, estimators
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
@@ -76,7 +76,19 @@ def test_iterative_algorithm_init(X_y_binary, make_data_type):
     algo = IterativeAlgorithm(X=X, y=y, problem_type="binary")
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-    assert len(algo.allowed_pipelines) == 8
+
+    estimators = get_estimators("binary")
+    assert len(algo.allowed_pipelines) == len(
+        [
+            make_pipeline(
+                X,
+                y,
+                estimator,
+                "binary",
+            )
+            for estimator in estimators
+        ]
+    )
 
 
 def test_make_iterative_algorithm_custom_hyperparameters_error(
