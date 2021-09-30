@@ -197,7 +197,7 @@ def test_sklearn_stacked_feature_importance(
         clf.feature_importance
 
 
-def test_component_graph_from_list_deprecation_warning(
+def test_sklearn_stacked_deprecation_warning(
     linear_regression_pipeline_class,
 ):
     input_pipelines = [linear_regression_pipeline_class(parameters={})]
