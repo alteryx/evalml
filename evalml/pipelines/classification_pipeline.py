@@ -38,6 +38,10 @@ class ClassificationPipeline(PipelineBase):
             parameters=parameters,
             random_seed=random_seed,
         )
+        try:
+            self._encoder = self.component_graph.get_component("Label Encoder")
+        except KeyError:
+            self._encoder = None
 
     def fit(self, X, y):
         """Build a classification model. For string and categorical targets, classes are sorted by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
@@ -51,6 +55,7 @@ class ClassificationPipeline(PipelineBase):
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
+
         self.classes_ = np.unique(y)
         # self.classes_ = self.classes_.sort_values()
         self.classes_ = ww.init_series(self.classes_)
@@ -60,29 +65,29 @@ class ClassificationPipeline(PipelineBase):
         self._fit(X, y)
         return self
 
-    # def _encode_targets(self, y):
-    #     """Converts target values from their original values to integer values that can be processed."""
-    #     try:
-    #         return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
-    #     except ValueError as e:
-    #         raise ValueError(str(e))
+    def _encode_targets(self, y):
+        """Converts target values from their original values to integer values that can be processed."""
+        try:
+            return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
+        except ValueError as e:
+            raise ValueError(str(e))
 
-    # def _decode_targets(self, y):
-    #     """Converts encoded numerical values to their original target values.
+    def _decode_targets(self, y):
+        """Converts encoded numerical values to their original target values.
 
-    #     Note: we cast y as ints first to address boolean values that may be returned from
-    #     calculating predictions which we would not be able to otherwise transform if we
-    #     originally had integer targets.
-    #     """
-    #     return self._encoder.inverse_transform(y.astype(int))
+        Note: we cast y as ints first to address boolean values that may be returned from
+        calculating predictions which we would not be able to otherwise transform if we
+        originally had integer targets.
+        """
+        return self._encoder.inverse_transform(y.astype(int))
 
     # @property
     # def classes_(self):
-    #     """Gets the class names for the problem."""
-    #     # if not hasattr(self._encoder, "classes_"):
-    #     #     raise AttributeError(
-    #     #         "Cannot access class names before fitting the pipeline."
-    #     #     )
+    #     """Gets the class names for the problem."""            
+    #     if not hasattr(self._encoder, "classes_"):
+    #         raise AttributeError(
+    #             "Cannot access class names before fitting the pipeline."
+    #         )
     #     return self._encoder.classes_
 
     def _predict(self, X, objective=None):
