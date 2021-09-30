@@ -121,6 +121,19 @@ def test_get_influential_features_linear_importance():
     assert negative == []
 
 
+def test_get_influential_features_on_boundaries():
+    importance_df = pd.DataFrame(
+        {
+            "feature": ["heavy 1", "heavy 2", "heavy 3", "somewhat 1", "somewhat 2"],
+            "importance": [0.5, 0.2, 0.2, 0.05, 0.05],
+        }
+    )
+    heavy, somewhat, negative = get_influential_features(importance_df)
+    assert heavy == ["heavy 1", "heavy 2", "heavy 3"]
+    assert somewhat == ["somewhat 1", "somewhat 2"]
+    assert negative == []
+
+
 def test_readable_explanation_not_fitted(fraud_100):
     pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100

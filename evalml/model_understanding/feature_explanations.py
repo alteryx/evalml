@@ -48,7 +48,7 @@ def readable_explanation(
                 "multiclass": "log loss multiclass",
                 "regression": "R2",
                 "time series regression": "R2",
-                "time series binary": "log loss linary",
+                "time series binary": "log loss binary",
                 "time series multiclass": "log loss multiclass",
             }[pipeline.problem_type.value]
 
