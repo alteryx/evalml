@@ -35,9 +35,9 @@ def readable_explanation(
             "Pipelines must be fitted in order to run feature explanations."
         )
 
-    if min_importance_threshold > 1 or min_importance_threshold < 0:
+    if min_importance_threshold >= 1 or min_importance_threshold < 0:
         raise ValueError(
-            f"The minimum importance threshold must be a percentage value between 0 and 1, not {min_importance_threshold}."
+            f"The minimum importance threshold must be a percentage value in the range [0, 1), not {min_importance_threshold}."
         )
 
     if importance_method == "permutation":
