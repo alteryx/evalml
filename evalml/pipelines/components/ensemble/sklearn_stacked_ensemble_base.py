@@ -1,5 +1,5 @@
 """Stacked Ensemble Base Class."""
-import warnings
+import logging
 
 from evalml.exceptions import EnsembleMissingPipelinesError
 from evalml.model_family import ModelFamily
@@ -52,7 +52,7 @@ class SklearnStackedEnsembleBase(Estimator):
         random_seed=0,
         **kwargs,
     ):
-        warnings.warn(
+        logging.getLogger(__name__).warn(
             "Scikit-learn based ensemblers will be completely removed in the next release. Utilize the new `StackedEnsembleRegressor` or `StackedEnsembleClassifier` ensembler instead.",
             DeprecationWarning,
         )
