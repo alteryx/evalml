@@ -40,7 +40,7 @@ class ClassificationPipeline(PipelineBase):
         )
         try:
             self._encoder = self.component_graph.get_component("Label Encoder")
-        except KeyError:
+        except ValueError:
             self._encoder = None
 
     def fit(self, X, y):
