@@ -204,10 +204,6 @@ def test_make_data_splitter_error_shuffle_random_state(problem_type, large_data)
 
 
 @patch("evalml.objectives.BinaryClassificationObjective.optimize_threshold")
-@patch(
-    "evalml.pipelines.BinaryClassificationPipeline._encode_targets",
-    side_effect=lambda y: y,
-)
 @patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
@@ -215,7 +211,6 @@ def test_tune_binary_threshold(
     mock_fit,
     mock_score,
     mock_predict_proba,
-    mock_encode_targets,
     mock_optimize_threshold,
     dummy_binary_pipeline_class,
     X_y_binary,

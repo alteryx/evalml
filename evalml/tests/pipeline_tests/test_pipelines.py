@@ -610,18 +610,15 @@ def test_score_nonlinear_regression(
     assert scores == {"R2": 1.0}
 
 
-@patch("evalml.pipelines.BinaryClassificationPipeline._encode_targets")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_binary_single(mock_predict, mock_fit, mock_encode, X_y_binary):
+def test_score_binary_single(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
-    mock_encode.return_value = y
     clf = make_mock_binary_pipeline()
     clf.fit(X, y)
     objective_names = ["f1"]
     scores = clf.score(X, y, objective_names)
-    mock_encode.assert_called()
     mock_fit.assert_called()
     mock_predict.assert_called()
     assert scores == {"F1": 1.0}
