@@ -60,6 +60,7 @@ from .transformers import (
     EmailFeaturizer,
     URLFeaturizer,
     DropRowsTransformer,
+    LabelEncoder,
 )
 from .ensemble import (
     SklearnStackedEnsembleClassifier,
