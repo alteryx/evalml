@@ -1,8 +1,10 @@
+from unittest.mock import PropertyMock, patch
+
 import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.model_understanding import explain, get_influential_features
+from evalml.model_understanding import readable_explanation, get_influential_features
 from evalml.pipelines import BinaryClassificationPipeline
 
 xgboost_component_graph = [
@@ -123,7 +125,7 @@ def test_get_influential_features_linear_importance():
     assert negative == []
 
 
-def test_explain_pipeline_not_fitted(fraud_100):
+def test_readable_explanation_not_fitted(fraud_100):
     pipeline = BinaryClassificationPipeline(xgboost_component_graph)
     X, y = fraud_100
 
@@ -131,16 +133,16 @@ def test_explain_pipeline_not_fitted(fraud_100):
         ValueError,
         match="Pipelines must be fitted in order to run feature explanations",
     ):
-        explain(pipeline, X, y)
+        readable_explanation(pipeline, X, y)
 
     with pytest.raises(
         ValueError,
         match="Pipelines must be fitted in order to run feature explanations",
     ):
-        explain(pipeline, importance_method="feature")
+        readable_explanation(pipeline, importance_method="feature")
 
 
-def test_explain_pipeline_missing_X_y(fraud_100):
+def test_readable_explanation_missing_X_y(fraud_100):
     pipeline = BinaryClassificationPipeline(xgboost_component_graph)
     X, y = fraud_100
     pipeline._is_fitted = True
@@ -148,29 +150,29 @@ def test_explain_pipeline_missing_X_y(fraud_100):
     with pytest.raises(
         ValueError, match="required parameters for explaining pipelines"
     ):
-        explain(pipeline)
+        readable_explanation(pipeline)
 
     with pytest.raises(
         ValueError, match="required parameters for explaining pipelines"
     ):
-        explain(pipeline, X)
+        readable_explanation(pipeline, X)
 
     with pytest.raises(
         ValueError, match="required parameters for explaining pipelines"
     ):
-        explain(pipeline, y=y)
+        readable_explanation(pipeline, y=y)
 
 
-def test_explain_pipeline_invalid_importance(fraud_100):
+def test_readable_explanation_invalid_importance(fraud_100):
     pipeline = BinaryClassificationPipeline(xgboost_component_graph)
     X, y = fraud_100
     pipeline._is_fitted = True
 
     with pytest.raises(ValueError, match="Unknown importance method"):
-        explain(pipeline, importance_method="fake")
+        readable_explanation(pipeline, importance_method="fake")
 
 
-def test_explain_pipeline_invalid_min_threshold(fraud_100):
+def test_readable_explanation_invalid_min_threshold(fraud_100):
     pipeline = BinaryClassificationPipeline(xgboost_component_graph)
     X, y = fraud_100
     pipeline._is_fitted = True
@@ -178,20 +180,20 @@ def test_explain_pipeline_invalid_min_threshold(fraud_100):
     with pytest.raises(
         ValueError, match="minimum importance threshold must be a percentage"
     ):
-        explain(pipeline, X, y, min_importance_threshold=-1)
+        readable_explanation(pipeline, X, y, min_importance_threshold=-1)
 
     with pytest.raises(
         ValueError, match="minimum importance threshold must be a percentage"
     ):
-        explain(pipeline, X, y, min_importance_threshold=2)
+        readable_explanation(pipeline, X, y, min_importance_threshold=2)
 
 
-def test_explain_pipeline_permutation(caplog, fraud_100):
+def test_readable_explanation_permutation(caplog, fraud_100):
     pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
     pipeline.fit(X, y)
 
-    explain(pipeline, X, y, importance_method="permutation")
+    readable_explanation(pipeline, X, y, importance_method="permutation")
 
     out = caplog.text
     expected_influence = "Elastic Net Classifier: The performance of predicting fraud as measured by log loss binary is heavily influenced by lng."
@@ -202,12 +204,12 @@ def test_explain_pipeline_permutation(caplog, fraud_100):
     caplog.clear()
 
 
-def test_explain_pipeline_different_objective(caplog, fraud_100):
+def test_readable_explanation_different_objective(caplog, fraud_100):
     pipeline = BinaryClassificationPipeline(xgboost_component_graph)
     X, y = fraud_100
     pipeline.fit(X, y)
 
-    explain(pipeline, X, y, objective="precision")
+    readable_explanation(pipeline, X, y, objective="precision")
 
     out = caplog.text
     expected_output = "XGBoost Classifier: The performance of predicting fraud as measured by precision is heavily influenced by amount"
@@ -216,12 +218,12 @@ def test_explain_pipeline_different_objective(caplog, fraud_100):
     caplog.clear()
 
 
-def test_explain_pipeline_feature(caplog, fraud_100):
+def test_readable_explanation_feature(caplog, fraud_100):
     pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
     pipeline.fit(X, y)
 
-    explain(pipeline, importance_method="feature")
+    readable_explanation(pipeline, importance_method="feature")
 
     out = caplog.text
     expected_heavy = "Elastic Net Classifier: The output is heavily influenced by datetime_year and store_id"
@@ -231,3 +233,126 @@ def test_explain_pipeline_feature(caplog, fraud_100):
     assert expected_somewhat in out
     assert "detracted from model performance" not in out
     caplog.clear()
+
+
+def test_readable_explanation_sentence_beginning(caplog, fraud_100):
+    pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
+    X, y = fraud_100
+    pipeline.fit(X, y)
+
+    # Objective is not None, target is not None
+    readable_explanation(pipeline, X, y, importance_method="permutation")
+    expected = (
+        f"The performance of predicting {y.name} as measured by log loss binary is"
+    )
+    out = caplog.text
+    assert expected in out
+    caplog.clear()
+
+    # Objective is None, target is not None
+    readable_explanation(pipeline, X, y, importance_method="feature")
+    expected = f"The prediction of {y.name} is"
+    out = caplog.text
+    assert expected in out
+    caplog.clear()
+
+    # Objective is not None, target is None
+    y.name = None
+    readable_explanation(pipeline, X, y, importance_method="permutation")
+    expected = "The log loss binary performance is"
+    out = caplog.text
+    assert expected in out
+    caplog.clear()
+
+    # Objective is None, target is None
+    readable_explanation(pipeline, importance_method="feature")
+    expected = "The output is"
+    out = caplog.text
+    assert expected in out
+    caplog.clear()
+
+
+@patch("evalml.pipelines.PipelineBase.feature_importance", new_callable=PropertyMock)
+def test_readable_explanation_somewhat_important_features(mock_feature_importance, caplog):
+    pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
+    pipeline._is_fitted = True
+    mock_feature_importance.return_value = pd.DataFrame(
+        {
+            "feature": ["heavy 1", "somewhat 1", "somewhat 2", "somewhat 3"],
+            "importance": [0.55, 0.17, 0.15, 0.13],
+        }
+    )
+
+    readable_explanation(pipeline, importance_method="feature")
+    expected_somewhat = (
+        "is somewhat influenced by somewhat 1, somewhat 2, and somewhat 3."
+    )
+    out = caplog.text
+    assert expected_somewhat in out
+    caplog.clear()
+
+    mock_feature_importance.return_value = pd.DataFrame(
+        {
+            "feature": ["heavy 1", "heavy 2", "heavy 3", "somewhat 1"],
+            "importance": [0.32, 0.3, 0.23, 0.15],
+        }
+    )
+    readable_explanation(pipeline, importance_method="feature")
+    expected_somewhat = "is somewhat influenced by somewhat 1."
+    out = caplog.text
+    assert expected_somewhat in out
+    caplog.clear()
+
+
+@patch(
+    "evalml.model_understanding.feature_explanations.calculate_permutation_importance"
+)
+def test_readable_explanation_detrimental_features(
+    mock_permutation_importance, caplog, fraud_100
+):
+    pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
+    X, y = fraud_100
+    pipeline._is_fitted = True
+    mock_permutation_importance.return_value = pd.DataFrame(
+        {
+            "feature": [
+                "heavy 1",
+                "somewhat 1",
+                "somewhat 2",
+                "somewhat 3",
+                "detrimental 1",
+            ],
+            "importance": [0.55, 0.17, 0.15, 0.13, -0.1],
+        }
+    )
+    readable_explanation(pipeline, X, y)
+    expected_detrimental = "The feature detrimental 1 detracted from model performance. We suggest removing this feature"
+    out = caplog.text
+    assert expected_detrimental in out
+    caplog.clear()
+
+    mock_permutation_importance.return_value = pd.DataFrame(
+        {
+            "feature": ["heavy 1", "somewhat 1", "detrimental 1", "detrimental 2"],
+            "importance": [0.55, 0.13, -0.1, -0.25],
+        }
+    )
+    readable_explanation(pipeline, X, y)
+    expected_detrimental = "The features detrimental 1 and detrimental 2 detracted from model performance. We suggest removing these features"
+    out = caplog.text
+    assert expected_detrimental in out
+    caplog.clear()
+
+
+@patch("evalml.pipelines.PipelineBase.feature_importance", new_callable=PropertyMock)
+def test_readable_explanation_neither_heavy_somewhat(mock_feature_importance, caplog):
+    pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
+    pipeline._is_fitted = True
+    mock_feature_importance.return_value = pd.DataFrame(
+        {"feature": np.arange(100), "importance": [0.1] * 25 + [0.05] * 75}
+    )
+
+    readable_explanation(pipeline, importance_method="feature")
+    out = caplog.text
+    expected_neither = "is not strongly influenced by any single feature. Lower the `min_importance_threshold` to see more"
+    assert expected_neither in out

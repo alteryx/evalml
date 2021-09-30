@@ -5,7 +5,7 @@ from evalml.model_understanding import calculate_permutation_importance
 from evalml.utils import get_logger, infer_feature_types
 
 
-def explain(
+def readable_explanation(
     pipeline,
     X=None,
     y=None,
@@ -44,12 +44,12 @@ def explain(
 
         if objective == "auto":
             objective = {
-                "binary": "Log Loss Binary",
-                "multiclass": "Log Loss Multiclass",
+                "binary": "log loss binary",
+                "multiclass": "log loss multiclass",
                 "regression": "R2",
                 "time series regression": "R2",
-                "time series binary": "Log Loss Binary",
-                "time series multiclass": "Log Loss Multiclass",
+                "time series binary": "log loss linary",
+                "time series multiclass": "log loss multiclass",
             }[pipeline.problem_type.value]
 
         if X is None or y is None:
@@ -150,12 +150,12 @@ def _fill_template(
 ):
     if objective is not None:
         if target is not None:
-            beginning = f"{estimator}: The performance of predicting {target} as measured by {objective.lower()}"
+            beginning = f"{estimator}: The performance of predicting {target} as measured by {objective}"
         else:
-            beginning = f"{estimator}: The {objective.lower()} performance"
+            beginning = f"{estimator}: The {objective} performance"
     else:
         if target is not None:
-            beginning = f"{estimator}: The performance of predicting {target}"
+            beginning = f"{estimator}: The prediction of {target}"
         else:
             beginning = f"{estimator}: The output"
 
