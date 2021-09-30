@@ -50,8 +50,8 @@ class VowpalWabbitRegressor(Estimator):
         }
         parameters.update(kwargs)
         vw_error_msg = "Vowpal Wabbit is not installed. Please install using `pip install vowpalwabbit.`"
-        vw = import_or_raise("vowpalwabbit", error_msg=vw_error_msg)
-        vw_regressor_class = vw.sklearn_vw.VWRegressor
+        vw = import_or_raise("vowpalwabbit.sklearn_vw", error_msg=vw_error_msg)
+        vw_regressor_class = vw.VWRegressor
         vw_regressor = vw_regressor_class(**parameters)
         super().__init__(
             parameters=parameters, component_obj=vw_regressor, random_seed=random_seed

@@ -113,6 +113,6 @@ class VowpalWabbitMulticlassClassifier(VowpalWabbitBaseClassifier):
 
     def _get_component_obj_class(self):
         vw_error_msg = "Vowpal Wabbit is not installed. Please install using `pip install vowpalwabbit.`"
-        vw = import_or_raise("vowpalwabbit", error_msg=vw_error_msg)
-        vw_classifier = vw.sklearn_vw.VWMultiClassifier
+        vw = import_or_raise("vowpalwabbit.sklearn_vw", error_msg=vw_error_msg)
+        vw_classifier = vw.VWMultiClassifier
         return vw_classifier
