@@ -3247,7 +3247,7 @@ def test_search_with_text_and_ensembling(
         ensembling=True,
     )
 
-    call_args = mock_iter.call_args[1]['text_in_ensembling']
+    call_args = mock_iter.call_args[1]["text_in_ensembling"]
     if df_text:
         assert call_args is True
     else:
