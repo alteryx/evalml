@@ -155,6 +155,7 @@ def _get_preprocessing_components(
 
     if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
         pp_components.append(StandardScaler)
+    pp_components.append(LogTransformer)
 
     return pp_components
 
