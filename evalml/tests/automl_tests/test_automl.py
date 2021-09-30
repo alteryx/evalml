@@ -25,7 +25,7 @@ from evalml.automl.engine import CFEngine, DaskEngine, SequentialEngine
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
-    get_default_primary_search_objective
+    get_default_primary_search_objective,
 )
 from evalml.exceptions import (
     AutoMLSearchException,

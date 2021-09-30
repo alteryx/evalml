@@ -15,6 +15,7 @@ import pandas as pd
 from dask import distributed as dd
 from sklearn.model_selection import BaseCrossValidator
 
+
 from .pipeline_search_plots import PipelineSearchPlots, SearchIterationPlot
 
 from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
@@ -47,9 +48,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
-from evalml.pipelines.utils import (
-    make_timeseries_baseline_pipeline,
-)
+from evalml.pipelines.utils import make_timeseries_baseline_pipeline
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,

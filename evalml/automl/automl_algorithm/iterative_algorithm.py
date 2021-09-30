@@ -14,9 +14,7 @@ from evalml.automl.utils import get_pipelines_from_component_graphs
 from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.utils import get_estimators
-from evalml.pipelines.utils import (
-    make_pipeline,
-)
+from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import is_time_series
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
