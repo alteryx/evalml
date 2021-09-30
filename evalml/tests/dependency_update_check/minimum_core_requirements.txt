@@ -13,7 +13,7 @@ requirements-parser==0.2.0
 shap==0.36.0
 texttable==1.6.2
 woodwork==0.8.1
-dask==2.12.0
+dask==2.13.0
 nlp_primitives==2.0.0rc1
 featuretools==1.0.0rc1
 networkx==2.5
