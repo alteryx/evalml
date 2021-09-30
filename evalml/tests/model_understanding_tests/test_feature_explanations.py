@@ -4,15 +4,11 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.model_understanding import readable_explanation, get_influential_features
+from evalml.model_understanding import (
+    get_influential_features,
+    readable_explanation,
+)
 from evalml.pipelines import BinaryClassificationPipeline
-
-xgboost_component_graph = [
-    "Imputer",
-    "One Hot Encoder",
-    "DateTime Featurization Component",
-    "XGBoost Classifier",
-]
 
 elasticnet_component_graph = [
     "Imputer",
@@ -126,7 +122,7 @@ def test_get_influential_features_linear_importance():
 
 
 def test_readable_explanation_not_fitted(fraud_100):
-    pipeline = BinaryClassificationPipeline(xgboost_component_graph)
+    pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
 
     with pytest.raises(
@@ -143,7 +139,7 @@ def test_readable_explanation_not_fitted(fraud_100):
 
 
 def test_readable_explanation_missing_X_y(fraud_100):
-    pipeline = BinaryClassificationPipeline(xgboost_component_graph)
+    pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
     pipeline._is_fitted = True
 
@@ -164,7 +160,7 @@ def test_readable_explanation_missing_X_y(fraud_100):
 
 
 def test_readable_explanation_invalid_importance(fraud_100):
-    pipeline = BinaryClassificationPipeline(xgboost_component_graph)
+    pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
     pipeline._is_fitted = True
 
@@ -173,7 +169,7 @@ def test_readable_explanation_invalid_importance(fraud_100):
 
 
 def test_readable_explanation_invalid_min_threshold(fraud_100):
-    pipeline = BinaryClassificationPipeline(xgboost_component_graph)
+    pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
     pipeline._is_fitted = True
 
@@ -205,14 +201,14 @@ def test_readable_explanation_permutation(caplog, fraud_100):
 
 
 def test_readable_explanation_different_objective(caplog, fraud_100):
-    pipeline = BinaryClassificationPipeline(xgboost_component_graph)
+    pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
     pipeline.fit(X, y)
 
     readable_explanation(pipeline, X, y, objective="precision")
 
     out = caplog.text
-    expected_output = "XGBoost Classifier: The performance of predicting fraud as measured by precision is heavily influenced by amount"
+    expected_output = "The performance of predicting fraud as measured by precision"
 
     assert expected_output in out
     caplog.clear()
@@ -273,7 +269,9 @@ def test_readable_explanation_sentence_beginning(caplog, fraud_100):
 
 
 @patch("evalml.pipelines.PipelineBase.feature_importance", new_callable=PropertyMock)
-def test_readable_explanation_somewhat_important_features(mock_feature_importance, caplog):
+def test_readable_explanation_somewhat_important_features(
+    mock_feature_importance, caplog
+):
     pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     pipeline._is_fitted = True
     mock_feature_importance.return_value = pd.DataFrame(
