@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 from pytest import importorskip
-from vowpalwabbit.sklearn_vw import VWRegressor
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators.regressors import (
@@ -10,7 +9,8 @@ from evalml.pipelines.components.estimators.regressors import (
 from evalml.problem_types import ProblemTypes
 
 vw = importorskip(
-    "vowpalwabbit", reason="Skipping test because vowpal wabbit not installed"
+    "vowpalwabbit.sklearn_vw",
+    reason="Skipping test because vowpal wabbit not installed",
 )
 
 
@@ -45,12 +45,12 @@ def test_vw_parameters():
 
 def test_fit_predict(X_y_regression):
     X, y = X_y_regression
-    vw = VowpalWabbitRegressor()
+    vw_regressor = VowpalWabbitRegressor()
 
-    vw.fit(X, y)
-    y_pred_sk = vw.predict(X)
+    vw_regressor.fit(X, y)
+    y_pred_sk = vw_regressor.predict(X)
 
-    clf = VWRegressor(learning_rate=0.5, decay_learning_rate=0.95, power_t=1.0)
+    clf = vw.VWRegressor(learning_rate=0.5, decay_learning_rate=0.95, power_t=1.0)
     clf.fit(X, y)
     y_pred = clf.predict(X)
 

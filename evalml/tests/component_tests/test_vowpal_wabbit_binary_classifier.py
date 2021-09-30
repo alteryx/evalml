@@ -1,7 +1,6 @@
 import numpy as np
 import pytest
 from pytest import importorskip
-from vowpalwabbit.sklearn_vw import VWClassifier
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators.classifiers import (
@@ -10,7 +9,8 @@ from evalml.pipelines.components.estimators.classifiers import (
 from evalml.problem_types import ProblemTypes
 
 vw = importorskip(
-    "vowpalwabbit", reason="Skipping test because vowpal wabbit not installed"
+    "vowpalwabbit.sklearn_vw",
+    reason="Skipping test because vowpal wabbit not installed",
 )
 
 
@@ -49,13 +49,13 @@ def test_vw_parameters():
 
 def test_fit_predict(X_y_binary):
     X, y = X_y_binary
-    vw = VowpalWabbitBinaryClassifier()
+    vw_classifier = VowpalWabbitBinaryClassifier()
 
-    vw.fit(X, y)
-    y_pred_sk = vw.predict(X)
-    y_pred_proba_sk = vw.predict_proba(X)
+    vw_classifier.fit(X, y)
+    y_pred_sk = vw_classifier.predict(X)
+    y_pred_proba_sk = vw_classifier.predict_proba(X)
 
-    clf = VWClassifier(
+    clf = vw.VWClassifier(
         loss_function="logistic",
         learning_rate=0.5,
         decay_learning_rate=0.95,
