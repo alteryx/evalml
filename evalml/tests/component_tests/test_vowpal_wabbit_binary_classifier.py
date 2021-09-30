@@ -1,7 +1,7 @@
 import warnings
 
 import numpy as np
-
+import pytest
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators.classifiers import (
     VowpalWabbitBinaryClassifier,
@@ -52,7 +52,7 @@ def test_fit_predict(X_y_binary):
     y_pred_sk = vw.predict(X)
     y_pred_proba_sk = vw.predict_proba(X)
 
-    clf = VWClassifier()
+    clf = VWClassifier(loss_function="logistic", learning_rate=0.5, decay_learning_rate=0.95, power_t=1.0)
     clf.fit(X, y)
     y_pred = clf.predict(X)
     y_pred_proba = clf.predict_proba(X)
@@ -64,14 +64,8 @@ def test_fit_predict(X_y_binary):
 
 def test_feature_importance(X_y_binary):
     X, y = X_y_binary
-
     vw = VowpalWabbitBinaryClassifier()
-
     vw.fit(X, y)
-
-    clf = VWClassifier()
-    clf.fit(X, y)
-    np.testing.assert_almost_equal(
-        clf.get_coefs()[0], vw.feature_importance, decimal=5
-    )
+    with pytest.raises(NotImplementedError, match="Feature importance is not implemented for the Vowpal Wabbit classifiers"):
+        vw.feature_importance
 

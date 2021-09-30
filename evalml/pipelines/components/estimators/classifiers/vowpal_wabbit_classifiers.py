@@ -57,13 +57,7 @@ class VowpalWabbitBaseClassifier(Estimator):
     @property
     def feature_importance(self):
         """Feature importance for Vowpal Wabbit classifiers. This is not implemented."""
-        coef_ = self._component_obj.get_coefs()
-        # binary classification case
-        if len(coef_) <= 2:
-            return coef_[0]
-        else:
-            # multiclass classification case
-            return np.linalg.norm(coef_, axis=0, ord=2)
+        raise NotImplementedError("Feature importance is not implemented for the Vowpal Wabbit classifiers.")
 
 
 class VowpalWabbitBinaryClassifier(VowpalWabbitBaseClassifier):
