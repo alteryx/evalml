@@ -1683,7 +1683,8 @@ def test_explain_predictions_stacked_ensemble(
         if (
             "Classifier" in e.name
             and not any(
-                s in e.name for s in ["Baseline", "Cat", "Elastic", "KN", "Ensemble"]
+                s in e.name
+                for s in ["Baseline", "Cat", "Elastic", "KN", "Ensemble", "Vowpal"]
             )
         )
     ],

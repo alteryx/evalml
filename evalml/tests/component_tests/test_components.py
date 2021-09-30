@@ -72,6 +72,13 @@ from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
+from evalml.pipelines.components.estimators.classifiers.vowpal_wabbit_classifiers import (
+    VowpalWabbitBinaryClassifier,
+    VowpalWabbitMulticlassClassifier,
+)
+from evalml.pipelines.components.estimators.regressors.vowpal_wabbit_regressor import (
+    VowpalWabbitRegressor,
+)
 from evalml.pipelines.components.transformers.encoders.label_encoder import (
     LabelEncoder,
 )
@@ -1103,6 +1110,9 @@ def test_all_estimators_check_fit(
             StackedEnsembleClassifier,
             StackedEnsembleRegressor,
             TimeSeriesBaselineEstimator,
+            VowpalWabbitBinaryClassifier,
+            VowpalWabbitMulticlassClassifier,
+            VowpalWabbitRegressor,
         ]
     ] + [test_estimator_needs_fitting_false]
     for component_class in estimators_to_check:

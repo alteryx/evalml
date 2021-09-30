@@ -7,7 +7,11 @@ from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import scikit_learn_wrapped_estimator
 from evalml.utils import classproperty
 
-_nonstackable_model_families = [ModelFamily.BASELINE, ModelFamily.NONE]
+_nonstackable_model_families = [
+    ModelFamily.BASELINE,
+    ModelFamily.VOWPAL_WABBIT,
+    ModelFamily.NONE,
+]
 
 
 class SklearnStackedEnsembleBase(Estimator):
