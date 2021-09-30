@@ -80,7 +80,7 @@ class LabelEncoder(Transformer):
             y (pd.Series): The target training data of length [n_samples].
 
         Returns:
-            pd.DataFrame: Transformed data.
+            pd.DataFrame, pd.Series: The original features and an encoded version of the target.
         """
         return self.fit(X, y).transform(X, y)
 
