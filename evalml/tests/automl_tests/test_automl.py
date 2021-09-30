@@ -2,7 +2,7 @@ import os
 import warnings
 from collections import OrderedDict, defaultdict
 from itertools import product
-from unittest.mock import MagicMock, PropertyMock, call, patch
+from unittest.mock import MagicMock, PropertyMock, patch
 
 import cloudpickle
 import numpy as np
