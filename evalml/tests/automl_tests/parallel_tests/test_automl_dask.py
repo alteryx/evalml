@@ -2,7 +2,6 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml import problem_types
 from evalml.automl import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback

@@ -27,13 +27,11 @@ from evalml.automl.utils import (
     check_all_pipeline_names_unique,
     get_best_sampler_for_data,
     get_default_primary_search_objective,
-    get_pipelines_from_component_graphs,
     make_data_splitter,
 )
 from evalml.data_checks import DefaultDataChecks
 from evalml.exceptions import (
     AutoMLSearchException,
-    ParameterNotUsedWarning,
     PipelineNotFoundError,
     PipelineScoreError,
 )
@@ -49,12 +47,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
-from evalml.pipelines.components.utils import (
-    get_estimators,
-    handle_component_class,
-)
 from evalml.pipelines.utils import (
-    make_pipeline,
     make_timeseries_baseline_pipeline,
 )
 from evalml.problem_types import (

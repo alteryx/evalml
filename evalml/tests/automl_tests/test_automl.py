@@ -13,8 +13,7 @@ from joblib import hash as joblib_hash
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
-from evalml import AutoMLSearch, problem_types
-from evalml.automl import automl_algorithm
+from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.automl_search import build_engine_from_str
 from evalml.automl.callbacks import (
@@ -26,8 +25,7 @@ from evalml.automl.engine import CFEngine, DaskEngine, SequentialEngine
 from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
-    get_default_primary_search_objective,
-    get_pipelines_from_component_graphs,
+    get_default_primary_search_objective
 )
 from evalml.exceptions import (
     AutoMLSearchException,
@@ -63,7 +61,6 @@ from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators,
 )
-from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import TrainingValidationSplit
 from evalml.problem_types import (
     ProblemTypes,
@@ -3252,9 +3249,9 @@ def test_search_with_text_and_ensembling(
 
     call_args = mock_iter.call_args.kwargs
     if df_text:
-        assert call_args["text_in_ensembling"] == True
+        assert call_args["text_in_ensembling"] is True
     else:
-        assert call_args["text_in_ensembling"] == False
+        assert call_args["text_in_ensembling"] is False
 
 
 def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):

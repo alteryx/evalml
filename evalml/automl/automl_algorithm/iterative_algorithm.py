@@ -5,6 +5,7 @@ import warnings
 from operator import itemgetter
 
 import numpy as np
+import pandas as pd
 from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
@@ -14,7 +15,6 @@ from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import (
-    _make_stacked_ensemble_pipeline,
     make_pipeline,
 )
 from evalml.problem_types import is_time_series
@@ -31,8 +31,6 @@ _ESTIMATOR_FAMILY_ORDER = [
     ModelFamily.CATBOOST,
     ModelFamily.ARIMA,
 ]
-
-import pandas as pd
 
 
 class IterativeAlgorithm(AutoMLAlgorithm):

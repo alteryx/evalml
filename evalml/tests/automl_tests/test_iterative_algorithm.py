@@ -4,7 +4,6 @@ import numpy as np
 import pytest
 from skopt.space import Categorical, Integer, Real
 
-from evalml import problem_types
 from evalml.automl.automl_algorithm import (
     AutoMLAlgorithmException,
     IterativeAlgorithm,
@@ -12,11 +11,10 @@ from evalml.automl.automl_algorithm import (
 from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
-    RegressionPipeline,
     SklearnStackedEnsembleClassifier,
     SklearnStackedEnsembleRegressor,
 )
-from evalml.pipelines.components import Estimator, estimators
+from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
@@ -894,8 +892,6 @@ def test_iterative_algorithm_first_batch_order(
     X, y = X_y_binary
     X = make_data_type("ww", X)
     y = make_data_type("ww", y)
-    estimators = get_estimators(problem_type, None)
-    pipelines = [make_pipeline(X, y, e, problem_type) for e in estimators]
     algo = IterativeAlgorithm(X=X, y=y, problem_type=problem_type)
 
     # initial batch contains one of each pipeline, with default parameters
@@ -1009,7 +1005,6 @@ def test_iterative_algorithm_sampling_params(
             "Minimal dependencies, so we don't test the oversamplers for iterative algorithm"
         )
     X, y = mock_imbalanced_data_X_y(problem_type, "some", "small")
-    estimators = get_estimators(problem_type, None)
     algo = IterativeAlgorithm(
         X=X,
         y=y,
