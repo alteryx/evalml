@@ -1,16 +1,8 @@
 Release Notes
 -------------
-**Future Releases**
+**v0.34.1rc1 Oct. 1, 2021**
     * Enhancements
         * Updated to support Featuretools 1.0.0 and nlp-primitives 2.0.0 :pr:`2848`
-    * Fixes
-    * Changes
-    * Documentation Changes
-    * Testing Changes
-
-.. warning::
-
-    **Breaking Changes**
 
 
 **v0.34.0 Sep. 30, 2021**
