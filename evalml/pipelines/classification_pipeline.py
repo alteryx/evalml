@@ -2,7 +2,6 @@
 import numpy as np
 import pandas as pd
 import woodwork as ww
-from sklearn.preprocessing import LabelEncoder
 
 from evalml.pipelines import PipelineBase
 from evalml.utils import infer_feature_types
@@ -83,7 +82,7 @@ class ClassificationPipeline(PipelineBase):
 
     # @property
     # def classes_(self):
-    #     """Gets the class names for the problem."""            
+    #     """Gets the class names for the problem."""
     #     if not hasattr(self._encoder, "classes_"):
     #         raise AttributeError(
     #             "Cannot access class names before fitting the pipeline."
@@ -115,6 +114,8 @@ class ClassificationPipeline(PipelineBase):
             pd.Series: Estimated labels.
         """
         predictions = self._predict(X, objective=objective)
+        # predictions = self.inverse_transform(predictions)
+
         # predictions = pd.Series(
         #     self._decode_targets(predictions), name=self.input_target_name
         # )

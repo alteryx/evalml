@@ -4,6 +4,7 @@ import pandas as pd
 from joblib import Parallel, delayed
 
 from evalml.objectives.utils import get_objective
+from evalml.pipelines.components import LabelEncoder
 from evalml.problem_types import is_classification
 from evalml.utils import infer_feature_types
 
@@ -150,8 +151,12 @@ def _fast_permutation_importance(
 
     Only used for pipelines that support this optimization.
     """
-    # if is_classification(pipeline.problem_type):
-    #     y = pipeline._encode_targets(y)
+    # TODO: why is this done here and not at a higher level..?
+    if is_classification(pipeline.problem_type):
+        #     y = pipeline._encode_targets(y)
+        le = LabelEncoder()
+        le.fit(None, y)
+        y = pd.Series(le.transform(None, y)[1], index=y.index, name=y.name)
 
     baseline_score = _fast_scorer(pipeline, precomputed_features, X, y, objective)
     if col_name is None:

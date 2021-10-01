@@ -624,32 +624,27 @@ def test_score_binary_single(mock_predict, mock_fit, X_y_binary):
     assert scores == {"F1": 1.0}
 
 
-@patch("evalml.pipelines.MulticlassClassificationPipeline._encode_targets")
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_multiclass_single(mock_predict, mock_fit, mock_encode, X_y_binary):
+def test_score_multiclass_single(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
-    mock_encode.return_value = y
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
     objective_names = ["f1 micro"]
     scores = clf.score(X, y, objective_names)
-    mock_encode.assert_called()
     mock_fit.assert_called()
     mock_predict.assert_called()
     assert scores == {"F1 Micro": 1.0}
 
 
-@patch("evalml.pipelines.MulticlassClassificationPipeline._encode_targets")
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.ComponentGraph.predict")
 def test_score_nonlinear_multiclass(
-    mock_predict, mock_fit, mock_encode, nonlinear_multiclass_pipeline_class, X_y_multi
+    mock_predict, mock_fit, nonlinear_multiclass_pipeline_class, X_y_multi
 ):
     X, y = X_y_multi
     mock_predict.return_value = pd.Series(y)
-    mock_encode.return_value = pd.Series(y)
     clf = nonlinear_multiclass_pipeline_class({})
     clf.fit(X, y)
     objective_names = ["f1 micro", "precision micro"]

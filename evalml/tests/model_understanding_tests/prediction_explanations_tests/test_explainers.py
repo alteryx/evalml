@@ -1226,13 +1226,13 @@ def test_json_serialization(
         )
     elif problem_type == problem_type.BINARY:
         X, y = X_y_binary
-        y = pd.Series(y).astype("str")
+        # y = pd.Series(y).astype("str")
         pipeline = logistic_regression_binary_pipeline_class(
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
         )
     else:
         X, y = X_y_multi
-        y = pd.Series(y).astype("str")
+        # y = pd.Series(y).astype("str")
         pipeline = logistic_regression_multiclass_pipeline_class(
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
         )
