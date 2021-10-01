@@ -72,6 +72,9 @@ from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
+from evalml.pipelines.components.transformers.encoders.label_encoder import (
+    LabelEncoder,
+)
 from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
     LogTransformer,
 )
@@ -759,6 +762,9 @@ def test_components_init_kwargs():
         module = component._component_obj.__module__
         importlib.import_module(module, obj_class)
         patched = module + "." + obj_class + ".__init__"
+        if component_class == LabelEncoder:
+            # scikit-learn's LabelEncoder found in different module than where we import from
+            patched = module[: module.rindex(".")] + "." + obj_class + ".__init__"
 
         def all_init(self, *args, **kwargs):
             for k, v in kwargs.items():
@@ -768,7 +774,7 @@ def test_components_init_kwargs():
             component = component_class(test_arg="test")
             component_with_different_kwargs = component_class(diff_test_arg="test")
             assert component.parameters["test_arg"] == "test"
-            if not isinstance(component, PolynomialDetrender):
+            if not isinstance(component, (PolynomialDetrender, LabelEncoder)):
                 assert component._component_obj.test_arg == "test"
             # Test equality of different components with same or different kwargs
             assert component == component_class(test_arg="test")
@@ -801,7 +807,7 @@ def test_transformer_transform_output_type(X_y_binary):
     ]
 
     for component_class in _all_transformers():
-        if component_class in [PolynomialDetrender, LogTransformer]:
+        if component_class in [PolynomialDetrender, LogTransformer, LabelEncoder]:
             # Skipping because these tests are handled in their respective test files
             continue
         print("Testing transformer {}".format(component_class.name))
