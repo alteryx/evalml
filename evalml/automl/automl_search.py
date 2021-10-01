@@ -707,11 +707,8 @@ class AutoMLSearch:
             p.model_family for p in self._automl_algorithm.allowed_pipelines
         ]
         self.allowed_pipelines = self._automl_algorithm.allowed_pipelines
-        self.max_iterations = (
-            self._automl_algorithm.max_iterations
-            if isinstance(self._automl_algorithm, IterativeAlgorithm)
-            else self.max_iterations
-        )
+        if _automl_algorithm == "iterative":
+            self.max_iterations = self._automl_algorithm.max_iterations
 
     def close_engine(self):
         """Function to explicitly close the engine, client, parallel resources."""
