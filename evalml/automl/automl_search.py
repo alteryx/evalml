@@ -759,7 +759,7 @@ class AutoMLSearch:
             f"Max Time: {self.max_time}\n"
             f"Max Iterations: {self.max_iterations}\n"
             f"Max Batches: {self.max_batches}\n"
-            f"Allowed Pipelines: \n{_print_list(self._automl_algorithm.allowed_pipelines or [])}\n"
+            f"Allowed Pipelines: \n{_print_list(self.allowed_pipelines or [])}\n"
             f"Patience: {self.patience}\n"
             f"Tolerance: {self.tolerance}\n"
             f"Data Splitting: {self.data_splitter}\n"
