@@ -1236,10 +1236,18 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                 return_dict=True
             )
             if issubclass(component_class, Estimator) and not (
-                isinstance(component, SklearnStackedEnsembleClassifier)
-                or isinstance(component, SklearnStackedEnsembleRegressor)
-                or isinstance(component, StackedEnsembleClassifier)
-                or isinstance(component, StackedEnsembleRegressor)
+                isinstance(
+                    component,
+                    (
+                        SklearnStackedEnsembleClassifier,
+                        SklearnStackedEnsembleRegressor,
+                        StackedEnsembleClassifier,
+                        StackedEnsembleRegressor,
+                        VowpalWabbitBinaryClassifier,
+                        VowpalWabbitMulticlassClassifier,
+                        VowpalWabbitRegressor,
+                    ),
+                )
             ):
                 assert (
                     component.feature_importance == loaded_component.feature_importance
