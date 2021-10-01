@@ -59,17 +59,18 @@ def dummy_binary_pipeline_classes():
     return _method
 
 
-def test_iterative_algorithm_init_iterative(X_y_binary, make_data_type):
+def test_iterative_algorithm_init_iterative(
+    X_y_binary,
+):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+
     IterativeAlgorithm(X=X, y=y, problem_type="binary")
 
 
-def test_iterative_algorithm_init(X_y_binary, make_data_type):
+def test_iterative_algorithm_init(
+    X_y_binary,
+):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
 
     algo = IterativeAlgorithm(X=X, y=y, problem_type="binary")
     assert algo.pipeline_number == 0
@@ -90,15 +91,13 @@ def test_iterative_algorithm_init(X_y_binary, make_data_type):
 
 
 def test_make_iterative_algorithm_custom_hyperparameters_error(
-    dummy_binary_pipeline_classes, X_y_binary, make_data_type
+    dummy_binary_pipeline_classes, X_y_binary
 ):
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
     ) = dummy_binary_pipeline_classes()
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
 
     custom_hyperparameters = [
         {"Imputer": {"numeric_imput_strategy": ["median"]}},
@@ -118,11 +117,9 @@ def test_make_iterative_algorithm_custom_hyperparameters_error(
 
 
 def test_iterative_algorithm_allowed_pipelines(
-    X_y_binary, make_data_type, dummy_binary_pipeline_classes
+    X_y_binary, dummy_binary_pipeline_classes
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
 
     (
         dummy_binary_pipeline_classes,
@@ -139,12 +136,9 @@ def test_iterative_algorithm_allowed_pipelines(
     assert algo.allowed_pipelines == dummy_binary_pipeline_classes
 
 
-def test_iterative_algorithm_empty(
-    X_y_binary, make_data_type, dummy_binary_pipeline_classes
-):
+def test_iterative_algorithm_empty(X_y_binary, dummy_binary_pipeline_classes):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
@@ -188,11 +182,9 @@ def test_iterative_algorithm_results(
     ensembling_value,
     dummy_binary_pipeline_classes,
     X_y_binary,
-    make_data_type,
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
@@ -293,13 +285,11 @@ def test_iterative_algorithm_passes_pipeline_params(
     mock_opt_tell,
     mock_stack,
     X_y_binary,
-    make_data_type,
     ensembling_value,
     dummy_binary_pipeline_classes,
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
@@ -359,11 +349,9 @@ def test_iterative_algorithm_passes_pipeline_params(
 
 @patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_passes_njobs(
-    mock_opt_tell, X_y_binary, make_data_type, dummy_binary_pipeline_classes
+    mock_opt_tell, X_y_binary, dummy_binary_pipeline_classes
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
 
     (
         dummy_binary_pipeline_classes,
@@ -399,7 +387,7 @@ def test_iterative_algorithm_passes_njobs(
 @pytest.mark.parametrize("is_regression", [True, False])
 @pytest.mark.parametrize("estimator", ["XGBoost", "CatBoost"])
 def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
-    mock_opt_tell, X_y_binary, X_y_regression, make_data_type, is_regression, estimator
+    mock_opt_tell, X_y_binary, X_y_regression, is_regression, estimator
 ):
     if estimator == "XGBoost":
         pytest.importorskip(
@@ -417,9 +405,6 @@ def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
         X, y = X_y_binary
         component_graphs = {"graph": [f"{estimator} Classifier"]}
         problem_type = "binary"
-
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
 
     algo = IterativeAlgorithm(
         X=X,
@@ -448,11 +433,10 @@ def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
 
 @pytest.mark.parametrize("ensembling_value", [True, False])
 def test_iterative_algorithm_one_allowed_pipeline(
-    X_y_binary, make_data_type, ensembling_value, dummy_binary_pipeline_classes
+    X_y_binary, ensembling_value, dummy_binary_pipeline_classes
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
@@ -523,13 +507,11 @@ def test_iterative_algorithm_one_allowed_pipeline(
 def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(
     n_jobs,
     X_y_binary,
-    make_data_type,
     text_in_ensembling,
     dummy_binary_pipeline_classes,
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
@@ -576,11 +558,10 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(
 @pytest.mark.parametrize("text_in_ensembling", [True, False])
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
 def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
-    n_jobs, text_in_ensembling, X_y_regression, make_data_type
+    n_jobs, text_in_ensembling, X_y_regression
 ):
     X, y = X_y_regression
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+
     allowed_component_graphs = {
         "graph_1": [
             "One Hot Encoder",
@@ -638,13 +619,11 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
 )
 def test_iterative_algorithm_pipeline_params(
     X_y_binary,
-    make_data_type,
     parameters,
     dummy_binary_pipeline_classes,
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
@@ -725,12 +704,10 @@ def test_iterative_algorithm_custom_hyperparameters(
     parameters,
     hyperparameters,
     X_y_binary,
-    make_data_type,
     dummy_binary_pipeline_classes,
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
@@ -804,11 +781,10 @@ def test_iterative_algorithm_custom_hyperparameters(
 
 
 def test_iterative_algorithm_pipeline_params_kwargs(
-    X_y_binary, make_data_type, dummy_binary_pipeline_classes
+    X_y_binary, dummy_binary_pipeline_classes
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
@@ -837,13 +813,11 @@ def test_iterative_algorithm_pipeline_params_kwargs(
 
 def test_iterative_algorithm_results_best_pipeline_info_id(
     X_y_binary,
-    make_data_type,
     dummy_binary_pipeline_classes,
     logistic_regression_binary_component_graph,
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
@@ -887,11 +861,10 @@ def test_iterative_algorithm_results_best_pipeline_info_id(
     [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS],
 )
 def test_iterative_algorithm_first_batch_order(
-    problem_type, X_y_binary, make_data_type, has_minimal_dependencies
+    problem_type, X_y_binary, has_minimal_dependencies
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
+
     algo = IterativeAlgorithm(X=X, y=y, problem_type=problem_type)
 
     # initial batch contains one of each pipeline, with default parameters
@@ -950,11 +923,9 @@ def test_iterative_algorithm_first_batch_order(
 
 
 def test_iterative_algorithm_first_batch_order_param(
-    X_y_binary, make_data_type, has_minimal_dependencies
+    X_y_binary, has_minimal_dependencies
 ):
     X, y = X_y_binary
-    X = make_data_type("ww", X)
-    y = make_data_type("ww", y)
 
     # put random forest first
     estimator_family_order = [
