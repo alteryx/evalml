@@ -514,21 +514,11 @@ def test_predict_and_predict_in_sample_with_date_index(
 @patch("evalml.pipelines.components.RandomForestRegressor.predict")
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.predict")
-@patch(
-    "evalml.pipelines.TimeSeriesClassificationPipeline._encode_targets",
-    side_effect=lambda y: y,
-)
-@patch(
-    "evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets",
-    side_effect=lambda y: y,
-)
 @patch("evalml.pipelines.PipelineBase._score_all_objectives")
 @patch("evalml.pipelines.TimeSeriesBinaryClassificationPipeline._score_all_objectives")
 def test_score(
     mock_binary_score,
     mock_score,
-    mock_encode_targets,
-    mock_decode_targets,
     mock_classifier_predict,
     mock_classifier_fit,
     mock_regressor_predict,

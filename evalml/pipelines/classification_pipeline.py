@@ -71,14 +71,14 @@ class ClassificationPipeline(PipelineBase):
         except ValueError as e:
             raise ValueError(str(e))
 
-    def _decode_targets(self, y):
-        """Converts encoded numerical values to their original target values.
+    # def _decode_targets(self, y):
+    #     """Converts encoded numerical values to their original target values.
 
-        Note: we cast y as ints first to address boolean values that may be returned from
-        calculating predictions which we would not be able to otherwise transform if we
-        originally had integer targets.
-        """
-        return self._encoder.inverse_transform(y.astype(int))
+    #     Note: we cast y as ints first to address boolean values that may be returned from
+    #     calculating predictions which we would not be able to otherwise transform if we
+    #     originally had integer targets.
+    #     """
+    #     return self._encoder.inverse_transform(y.astype(int))
 
     # @property
     # def classes_(self):
@@ -114,6 +114,7 @@ class ClassificationPipeline(PipelineBase):
             pd.Series: Estimated labels.
         """
         predictions = self._predict(X, objective=objective)
+        predictions = pd.Series(predictions, name=self.input_target_name)
         # predictions = self.inverse_transform(predictions)
 
         # predictions = pd.Series(

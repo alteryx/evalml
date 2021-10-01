@@ -4583,7 +4583,6 @@ def test_score_batch_before_fitting_yields_error_nan_scores(
     }
 
     assert "Score error for Mock Binary Classification Pipeline" in caplog.text
-    assert "This LabelEncoder instance is not fitted yet." in caplog.text
 
 
 def test_high_cv_check_no_warning_for_divide_by_zero(

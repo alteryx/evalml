@@ -6,6 +6,7 @@ import warnings
 import sklearn
 import evalml.demos
 import evalml.model_family
+import evalml.model_understanding
 import evalml.objectives
 import evalml.pipelines
 import evalml.preprocessing

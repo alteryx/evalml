@@ -117,7 +117,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         predictions.index = y.index
         predictions = self.inverse_transform(predictions)
         predictions = pd.Series(
-            self._decode_targets(predictions),
+            predictions,
+            # self._decode_targets(predictions),
             name=self.input_target_name,
             index=y.index,
         )
@@ -252,7 +253,8 @@ class TimeSeriesBinaryClassificationPipeline(
                     proba, threshold=self.threshold, X=X
                 )
             predictions = pd.Series(
-                self._decode_targets(predictions),
+                predictions,
+                # self._decode_targets(predictions),
                 name=self.input_target_name,
                 index=y.index,
             )
