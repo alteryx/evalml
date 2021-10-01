@@ -82,7 +82,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         super().__init__(
             allowed_pipelines=[],
             custom_hyperparameters=custom_hyperparameters,
-            max_iterations=None,
             tuner_class=None,
             random_seed=random_seed,
         )

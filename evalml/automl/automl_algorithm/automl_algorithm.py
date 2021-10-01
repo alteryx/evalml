@@ -31,7 +31,6 @@ class AutoMLAlgorithm(ABC):
         self,
         allowed_pipelines=None,
         custom_hyperparameters=None,
-        max_iterations=None,
         tuner_class=None,
         text_in_ensembling=False,
         random_seed=0,
@@ -39,7 +38,6 @@ class AutoMLAlgorithm(ABC):
     ):
         self.random_seed = random_seed
         self.allowed_pipelines = allowed_pipelines or []
-        self.max_iterations = max_iterations
         self._tuner_class = tuner_class or SKOptTuner
         self._tuners = {}
         self._best_pipeline_info = {}

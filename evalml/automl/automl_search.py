@@ -706,61 +706,11 @@ class AutoMLSearch:
             p.model_family for p in self._automl_algorithm.allowed_pipelines
         ]
         self.allowed_pipelines = self._automl_algorithm.allowed_pipelines
-
-        run_ensembling = self.ensembling
-        if run_ensembling and len(self.allowed_pipelines) == 1:
-            self.logger.warning(
-                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
-            )
-            run_ensembling = False
-
-        if run_ensembling and self.max_iterations is not None:
-            # Baseline + first batch + each pipeline iteration + 1
-            first_ensembling_iteration = (
-                1
-                + len(self.allowed_pipelines)
-                + len(self.allowed_pipelines) * self._pipelines_per_batch
-                + 1
-            )
-            if self.max_iterations < first_ensembling_iteration:
-                run_ensembling = False
-                self.logger.warning(
-                    f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling."
-                )
-            else:
-                self.logger.info(
-                    f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that."
-                )
-
-        if self.max_batches and self.max_iterations is None:
-            self.show_batch_output = True
-            if run_ensembling:
-                ensemble_nth_batch = len(self.allowed_pipelines) + 1
-                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
-                if num_ensemble_batches == 0:
-                    run_ensembling = False
-                    self.logger.warning(
-                        f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling."
-                    )
-                else:
-                    self.logger.info(
-                        f"Ensembling will run every {ensemble_nth_batch} batches."
-                    )
-
-                self.max_iterations = (
-                    1
-                    + len(self.allowed_pipelines)
-                    + self._pipelines_per_batch
-                    * (self.max_batches - 1 - num_ensemble_batches)
-                    + num_ensemble_batches * 2
-                )
-            else:
-                self.max_iterations = (
-                    1
-                    + len(self.allowed_pipelines)
-                    + (self._pipelines_per_batch * (self.max_batches - 1))
-                )
-        self._automl_algorithm.ensembling = run_ensembling
+        self.max_iterations = (
+            self._automl_algorithm.max_iterations
+            if isinstance(self._automl_algorithm, IterativeAlgorithm)
+            else self.max_iterations
+        )
 
     def close_engine(self):
         """Function to explicitly close the engine, client, parallel resources."""

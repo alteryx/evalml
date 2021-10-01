@@ -50,7 +50,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             allowed_model_families to be ignored.
 
             e.g. allowed_component_graphs = { "My_Graph": ["Imputer", "One Hot Encoder", "Random Forest Classifier"] }
-        max_iterations (int): The maximum number of iterations to be evaluated.
+        max_batches (int): The maximum number of batches to be evaluated. Used to determine ensembling.
+        max_iterations (int): The maximum number of iterations to be evaluated. Used to determine ensembling.
         tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
         random_seed (int): Seed for the random number generator. Defaults to 0.
         pipelines_per_batch (int): The number of pipelines to be evaluated in each batch, after the first batch. Defaults to 5.
@@ -72,6 +73,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         sampler_name=None,
         allowed_model_families=None,
         allowed_component_graphs=None,
+        max_batches=None,
         max_iterations=None,
         tuner_class=None,
         random_seed=0,
@@ -103,7 +105,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 allowed_model_families to be ignored.
 
                 e.g. allowed_component_graphs = { "My_Graph": ["Imputer", "One Hot Encoder", "Random Forest Classifier"] }
-            max_iterations (int): The maximum number of iterations to be evaluated.
+            max_batches (int): The maximum number of batches to be evaluated. Used to determine ensembling.
+            max_iterations (int): The maximum number of iterations to be evaluated. Used to determine ensembling.
             tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
             random_seed (int): Seed for the random number generator. Defaults to 0.
             pipelines_per_batch (int): The number of pipelines to be evaluated in each batch, after the first batch. Defaults to 5.
@@ -131,6 +134,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._pipeline_params = pipeline_params or {}
         self._custom_hyperparameters = custom_hyperparameters or {}
         self.text_in_ensembling = text_in_ensembling
+        self.max_batches = max_batches
+        self.max_iterations = max_iterations
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
         else:
@@ -145,7 +150,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         self.allowed_component_graphs = allowed_component_graphs
         self._create_pipelines()
-        self.ensembling = ensembling and len(self.allowed_pipelines) > 1
 
         for pipeline in self.allowed_pipelines or []:
             if pipeline.model_family in self._estimator_family_order:
@@ -166,7 +170,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         super().__init__(
             allowed_pipelines=self.allowed_pipelines,
             custom_hyperparameters=custom_hyperparameters,
-            max_iterations=max_iterations,
             tuner_class=tuner_class,
             text_in_ensembling=self.text_in_ensembling,
             random_seed=random_seed,
@@ -266,6 +269,59 @@ class IterativeAlgorithm(AutoMLAlgorithm):
 
         if self.allowed_pipelines == []:
             raise ValueError("No allowed pipelines to search")
+
+        if self.ensembling and len(self.allowed_pipelines) == 1:
+            self.logger.warning(
+                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
+            )
+            self.ensembling = False
+
+        if self.ensembling and self.max_iterations is not None:
+            # Baseline + first batch + each pipeline iteration + 1
+            first_ensembling_iteration = (
+                1
+                + len(self.allowed_pipelines)
+                + len(self.allowed_pipelines) * self._pipelines_per_batch
+                + 1
+            )
+            if self.max_iterations < first_ensembling_iteration:
+                self.ensembling = False
+                self.logger.warning(
+                    f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling."
+                )
+            else:
+                self.logger.info(
+                    f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that."
+                )
+
+        if self.max_batches and self.max_iterations is None:
+            self.show_batch_output = True
+            if self.ensembling:
+                ensemble_nth_batch = len(self.allowed_pipelines) + 1
+                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
+                if num_ensemble_batches == 0:
+                    self.ensembling = False
+                    self.logger.warning(
+                        f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling."
+                    )
+                else:
+                    self.logger.info(
+                        f"Ensembling will run every {ensemble_nth_batch} batches."
+                    )
+
+                self.max_iterations = (
+                    1
+                    + len(self.allowed_pipelines)
+                    + self._pipelines_per_batch
+                    * (self.max_batches - 1 - num_ensemble_batches)
+                    + num_ensemble_batches * 2
+                )
+            else:
+                self.max_iterations = (
+                    1
+                    + len(self.allowed_pipelines)
+                    + (self._pipelines_per_batch * (self.max_batches - 1))
+                )
 
         self.logger.debug(
             f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}"
