@@ -281,7 +281,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             first_ensembling_iteration = (
                 1
                 + len(self.allowed_pipelines)
-                + len(self.allowed_pipelines) * self._pipelines_per_batch
+                + len(self.allowed_pipelines) * self.pipelines_per_batch
                 + 1
             )
             if self.max_iterations < first_ensembling_iteration:
@@ -291,7 +291,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 )
             else:
                 self.logger.info(
-                    f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that."
+                    f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self.pipelines_per_batch} iterations after that."
                 )
 
         if self.max_batches and self.max_iterations is None:
@@ -312,7 +312,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 self.max_iterations = (
                     1
                     + len(self.allowed_pipelines)
-                    + self._pipelines_per_batch
+                    + self.pipelines_per_batch
                     * (self.max_batches - 1 - num_ensemble_batches)
                     + num_ensemble_batches * 2
                 )
@@ -320,7 +320,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 self.max_iterations = (
                     1
                     + len(self.allowed_pipelines)
-                    + (self._pipelines_per_batch * (self.max_batches - 1))
+                    + (self.pipelines_per_batch * (self.max_batches - 1))
                 )
 
         self.logger.debug(

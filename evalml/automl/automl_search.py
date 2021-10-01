@@ -676,6 +676,7 @@ class AutoMLSearch:
                 allowed_component_graphs=self.allowed_component_graphs,
                 allowed_model_families=self.allowed_model_families,
                 max_iterations=self.max_iterations,
+                max_batches=self.max_batches,
                 tuner_class=self.tuner_class,
                 random_seed=self.random_seed,
                 n_jobs=self.n_jobs,
