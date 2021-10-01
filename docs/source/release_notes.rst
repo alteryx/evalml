@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.34.0 Sep. 30, 2021**
+    * Enhancements
         * Updated to work with Woodwork 0.8.1 :pr:`2783`
         * Added validation that ``training_data`` and ``training_target`` are not ``None`` in prediction explanations :pr:`2787`
         * Added support for training-only components in pipelines and component graphs :pr:`2776`
@@ -33,7 +45,6 @@ Release Notes
         * Removed ``model_family`` attribute from ``ComponentBase`` and transformers :pr:`2828`
         * Limited ``scikit-learn`` until new features and errors can be addressed :pr:`2842`
         * Show DeprecationWarning when Sklearn Ensemblers are called :pr:`2859`
-    * Documentation Changes
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
         * Added a test to make sure pip versions match conda versions :pr:`2851`
