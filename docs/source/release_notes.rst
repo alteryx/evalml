@@ -4,13 +4,14 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Refactored pipeline building logic out of ``AutoMLSearch`` and into ``IterativeAlgorithm`` :pr:`2854`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
-
+        * ``IterativeAlgorithm`` now requires X, y, problem_type as required arguments as well as sampler_name, allowed_model_families, allowed_component_graphs, max_batches, and verbose as optional arguments :pr:`2854`
 
 **v0.34.0 Sep. 30, 2021**
     * Enhancements
