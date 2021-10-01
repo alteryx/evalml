@@ -32,6 +32,7 @@ Release Notes
         * Removed ``model_family`` attribute from ``ComponentBase`` and transformers :pr:`2828`
         * Limited ``scikit-learn`` until new features and errors can be addressed :pr:`2842`
         * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level :pr:`2821`
+        * Show DeprecationWarning when Sklearn Ensemblers are called :pr:`2859`
     * Documentation Changes
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
