@@ -21,7 +21,7 @@ def readable_explanation(
         X (pd.DataFrame): If importance_method is permutation, the holdout X data to compute importance with. Ignored otherwise.
         y (pd.Series): The holdout y data, used to obtain the name of the target class. If importance_method is permutation, used to compute importance with.
         importance_method (str): The method of determining feature importance. One of ["permutation", "feature"]. Defaults to "permutation".
-        max_features (int): The maximum number of features to include in an explanation. Defaults to 5.
+        max_features (int): The maximum number of influential features to include in an explanation. This does not affect the number of detrimental features reported. Defaults to 5.
         min_importance_threshold (float): The minimum percent of total importance a single feature can have to be considered important. Defaults to 0.05.
         objective (str, ObjectiveBase): If importance_method is permutation, the objective to compute importance with. Ignored otherwise, defaults to "auto".
 
@@ -148,16 +148,8 @@ def get_influential_features(
 def _fill_template(
     estimator, target, objective, most_important, somewhat_important, detrimental_feats
 ):
-    if objective is not None:
-        if target is not None:
-            beginning = f"{estimator}: The performance of predicting {target} as measured by {objective}"
-        else:
-            beginning = f"{estimator}: The {objective} performance"
-    else:
-        if target is not None:
-            beginning = f"{estimator}: The prediction of {target}"
-        else:
-            beginning = f"{estimator}: The output"
+    objective_str = f" as measured by {objective}" if objective is not None else ""
+    beginning = f"{estimator}: The output{objective_str}" if target is None else f"{estimator}: The prediction of {target}{objective_str}"
 
     def enumerate_features(feature_list):
         text = "" if len(feature_list) == 2 else ","
