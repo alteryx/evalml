@@ -18,7 +18,8 @@ class DataCheckMessage:
         self.message = message
         self.data_check_name = data_check_name
         self.message_code = message_code
-        self.details = details
+        default_details = {"columns": None, "rows": None}
+        self.details = default_details.update(details)
 
     def __str__(self):
         """String representation of data check message, equivalent to self.message attribute."""
