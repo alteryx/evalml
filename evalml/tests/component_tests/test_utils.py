@@ -39,7 +39,7 @@ def test_all_components(
         n_components = 45
     elif is_using_conda:
         # No prophet and no arima
-        n_components = 53
+        n_components = 57
     elif is_using_windows and not is_running_py_39_or_above:
         # No prophet
         n_components = 58
