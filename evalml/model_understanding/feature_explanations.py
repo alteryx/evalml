@@ -127,19 +127,18 @@ def get_influential_features(
 
     num_feats = min(len(pos_imp_df), max_features)
     imp_features = pos_imp_df[:num_feats]
+
+    heavy_importance = imp_features[
+        imp_features["importance"] >= heavy_importance_threshold
+    ]
+    somewhat_importance = imp_features[
+        imp_features["importance"] < heavy_importance_threshold
+    ]
     return (
+        list(heavy_importance["feature"]),
         list(
-            imp_features[imp_features["importance"] >= heavy_importance_threshold][
-                "feature"
-            ]
-        ),
-        list(
-            imp_features[
-                imp_features["importance"].between(
-                    min_importance_threshold,
-                    heavy_importance_threshold,
-                    inclusive="left",
-                )
+            somewhat_importance[
+                somewhat_importance["importance"] >= min_importance_threshold
             ]["feature"]
         ),
         list(neg_imp_df["feature"]),
