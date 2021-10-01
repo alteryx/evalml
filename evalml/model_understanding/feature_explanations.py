@@ -1,4 +1,5 @@
 """Human Readable Pipeline Explanations."""
+import pandas as pd
 
 from evalml.model_family import ModelFamily
 from evalml.model_understanding import calculate_permutation_importance
@@ -64,7 +65,7 @@ def readable_explanation(
         objective = None
         imp_df = pipeline.feature_importance
     else:
-        raise ValueError(f"Unknown importance method {importance_method}")
+        raise ValueError(f"Unknown importance method {importance_method}.")
 
     linear_importance = False
     if (
@@ -116,7 +117,7 @@ def get_influential_features(
     if linear_importance:
         pos_imp_df = imp_df
         pos_imp_df["importance"] = abs(pos_imp_df["importance"])
-        neg_imp_df = pos_imp_df[pos_imp_df["importance"] < 0]
+        neg_imp_df = pd.DataFrame({"feature": [], "importance": []})
     else:
         neg_imp_df = imp_df[imp_df["importance"] < 0]
         pos_imp_df = imp_df[imp_df["importance"] >= 0]
@@ -149,7 +150,11 @@ def _fill_template(
     estimator, target, objective, most_important, somewhat_important, detrimental_feats
 ):
     objective_str = f" as measured by {objective}" if objective is not None else ""
-    beginning = f"{estimator}: The output{objective_str}" if target is None else f"{estimator}: The prediction of {target}{objective_str}"
+    beginning = (
+        f"{estimator}: The output{objective_str}"
+        if target is None
+        else f"{estimator}: The prediction of {target}{objective_str}"
+    )
 
     def enumerate_features(feature_list):
         text = "" if len(feature_list) == 2 else ","
