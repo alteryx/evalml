@@ -666,19 +666,16 @@ def test_score_regression_list(mock_predict, mock_fit, X_y_binary):
     assert scores == {"R2": 1.0, "MSE": 0.0}
 
 
-@patch("evalml.pipelines.BinaryClassificationPipeline._encode_targets")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_binary_list(mock_predict, mock_fit, mock_encode, X_y_binary):
+def test_score_binary_list(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
-    mock_encode.return_value = y
     clf = make_mock_binary_pipeline()
     clf.fit(X, y)
     objective_names = ["f1", "precision"]
     scores = clf.score(X, y, objective_names)
     mock_fit.assert_called()
-    mock_encode.assert_called()
     mock_predict.assert_called()
     assert scores == {"F1": 1.0, "Precision": 1.0}
 

@@ -54,8 +54,8 @@ class BinaryClassificationPipelineMixin:
             ValueError: If objective is not optimizable.
         """
         if self.can_tune_threshold_with_objective(objective):
-            # targets = self._encode_targets(y)
-            self.threshold = objective.optimize_threshold(y_pred_proba, y, X)
+            targets = self._encode_targets(y)
+            self.threshold = objective.optimize_threshold(y_pred_proba, targets, X)
         else:
             raise ValueError(
                 "Problem type must be binary and objective must be optimizable."

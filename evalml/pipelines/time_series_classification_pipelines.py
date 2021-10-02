@@ -79,14 +79,15 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         features = self.compute_estimator_features(
             X_holdout, y_holdout, X_train, y_train
         )
+        # inverse transform here?
         proba = self._estimator_predict_proba(features, y_holdout)
         proba.index = y_holdout.index
-        proba = proba.ww.rename(
-            columns={
-                col: new_col
-                for col, new_col in zip(proba.columns, self._encoder.classes_)
-            }
-        )
+        # proba = proba.ww.rename(
+        #     columns={
+        #         col: new_col
+        #         for col, new_col in zip(proba.columns, self._encoder.classes_)
+        #     }
+        # )
         return infer_feature_types(proba)
 
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):

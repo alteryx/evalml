@@ -65,8 +65,7 @@ class LabelEncoder(Transformer):
             ValueError: If input `y` is None.
         """
         if y is None:
-            raise ValueError("y cannot be None!")
-
+            return X, y
         y_ww = infer_feature_types(y)
         y_t = self._component_obj.transform(y_ww)
         y_t = pd.Series(y_t, index=y_ww.index)

@@ -64,12 +64,13 @@ class ClassificationPipeline(PipelineBase):
         self._fit(X, y)
         return self
 
-    def _encode_targets(self, y):
-        """Converts target values from their original values to integer values that can be processed."""
-        try:
-            return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
-        except ValueError as e:
-            raise ValueError(str(e))
+    # def _encode_targets(self, y):
+    #     """Converts target values from their original values to integer values that can be processed."""
+    #     try:
+    #         # import pdb; pdb.set_trace()
+    #         return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
+    #     except ValueError as e:
+    #         raise ValueError(str(e))
 
     # def _decode_targets(self, y):
     #     """Converts encoded numerical values to their original target values.
@@ -115,7 +116,7 @@ class ClassificationPipeline(PipelineBase):
         """
         predictions = self._predict(X, objective=objective)
         predictions = pd.Series(predictions, name=self.input_target_name)
-        # predictions = self.inverse_transform(predictions)
+        predictions = self.inverse_transform(predictions)
 
         # predictions = pd.Series(
         #     self._decode_targets(predictions), name=self.input_target_name
@@ -142,12 +143,11 @@ class ClassificationPipeline(PipelineBase):
             )
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X)
-        # proba = proba.ww.rename(
-        #     columns={
-        #         col: new_col
-        #         for col, new_col in zip(proba.columns, self._encoder.classes_)
-        #     }
-        # )
+
+        # to_rename = self.inverse_transform(pd.Series(proba.columns))
+        proba = proba.ww.rename(
+            columns={col: new_col for col, new_col in zip(proba.columns, self.classes_)}
+        )
         return infer_feature_types(proba)
 
     def score(self, X, y, objectives, X_train=None, y_train=None):
