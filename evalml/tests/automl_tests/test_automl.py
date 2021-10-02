@@ -1449,7 +1449,7 @@ def test_describe_pipeline(return_dict, verbose, caplog, X_y_binary, AutoMLTestE
             automl_dict["pipeline_name"]
             == "Mode Baseline Binary Classification Pipeline"
         )
-        assert automl_dict["pipeline_summary"] == "Baseline Classifier"
+        assert automl_dict["pipeline_summary"] == "Baseline Classifier w/ Label Encoder"
         assert automl_dict["parameters"] == {
             "Baseline Classifier": {"strategy": "mode"}
         }

@@ -283,6 +283,7 @@ def test_describe_pipeline(
                         "numeric_fill_value": None,
                     },
                 },
+                "Label Encoder": {"name": "Label Encoder", "parameters": {}},
                 "One Hot Encoder": {
                     "name": "One Hot Encoder",
                     "parameters": {
