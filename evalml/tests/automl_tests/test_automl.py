@@ -4828,6 +4828,8 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
     expected_predictions = y.shift(1)[4:]
     if problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
         expected_predictions = expected_predictions.astype("int64")
+        expected_predictions = pd.Series(expected_predictions, name="target_delay_1")
+
     preds = baseline.predict(X_validation, None, X_train, y_train)
     pd.testing.assert_series_equal(expected_predictions, preds)
     if is_classification(problem_type):
@@ -5289,7 +5291,14 @@ def test_baseline_pipeline_properly_initalized(
         X, y = X_y_binary
         score_value = {"Log Loss Binary": 1.0}
         expected_pipeline = BinaryClassificationPipeline(
-            component_graph=["Baseline Classifier"],
+            component_graph={
+                "Label Encoder": ["Label Encoder", "X", "y"],
+                "Baseline Classifier": [
+                    "Baseline Classifier",
+                    "Label Encoder.x",
+                    "Label Encoder.y",
+                ],
+            },
             custom_name="Mode Baseline Binary Classification Pipeline",
             parameters={"Baseline Classifier": {"strategy": "mode"}},
         )
@@ -5297,7 +5306,14 @@ def test_baseline_pipeline_properly_initalized(
         X, y = X_y_multi
         score_value = {"Log Loss Multiclass": 1.0}
         expected_pipeline = MulticlassClassificationPipeline(
-            component_graph=["Baseline Classifier"],
+            component_graph={
+                "Label Encoder": ["Label Encoder", "X", "y"],
+                "Baseline Classifier": [
+                    "Baseline Classifier",
+                    "Label Encoder.x",
+                    "Label Encoder.y",
+                ],
+            },
             custom_name="Mode Baseline Multiclass Classification Pipeline",
             parameters={"Baseline Classifier": {"strategy": "mode"}},
         )

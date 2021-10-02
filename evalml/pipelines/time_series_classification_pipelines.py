@@ -111,15 +111,12 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
             )
 
-        # y = self._encode_targets(y)
-        # y_train = self._encode_targets(y_train)
         features = self.compute_estimator_features(X, y, X_train, y_train)
         predictions = self._estimator_predict(features, y)
         predictions.index = y.index
-        predictions = self.inverse_transform(predictions)
+        predictions = self.inverse_transform(predictions.astype(int))
         predictions = pd.Series(
             predictions,
-            # self._decode_targets(predictions),
             name=self.input_target_name,
             index=y.index,
         )
