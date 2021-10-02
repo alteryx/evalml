@@ -52,12 +52,34 @@ def pytest_configure(config):
     )
 
 
-def create_mock_pipeline(estimator, problem_type):
+def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
+    est_parameters = (
+        {estimator.name: {"n_jobs": 1}}
+        if estimator.model_family not in [ModelFamily.SVM, ModelFamily.DECISION_TREE]
+        else {}
+    )
+
     if problem_type == ProblemTypes.BINARY:
 
         class MockBinaryPipelineWithOnlyEstimator(BinaryClassificationPipeline):
-            custom_name = f"Pipeline with {estimator.name}"
-            component_graph = [estimator]
+            custom_name = (
+                f"Pipeline with {estimator.name}"
+                if add_label_encoder is False
+                else f"Pipeline with {estimator.name} and label encoder"
+            )
+            component_graph = (
+                [estimator]
+                if add_label_encoder is False
+                else {
+                    "Label Encoder": ["Label Encoder", "X", "y"],
+                    estimator.name: [
+                        estimator,
+                        "Label Encoder.x",
+                        "Label Encoder.y",
+                    ],
+                }
+            )
+            parameters = est_parameters
 
             def __init__(self, parameters, random_seed=0):
                 super().__init__(
@@ -71,8 +93,24 @@ def create_mock_pipeline(estimator, problem_type):
     elif problem_type == ProblemTypes.MULTICLASS:
 
         class MockMulticlassPipelineWithOnlyEstimator(MulticlassClassificationPipeline):
-            custom_name = f"Pipeline with {estimator.name}"
-            component_graph = [estimator]
+            custom_name = (
+                f"Pipeline with {estimator.name}"
+                if add_label_encoder is False
+                else f"Pipeline with {estimator.name} and label encoder"
+            )
+            component_graph = (
+                [estimator]
+                if add_label_encoder is False
+                else {
+                    "Label Encoder": ["Label Encoder", "X", "y"],
+                    estimator.name: [
+                        estimator,
+                        "Label Encoder.x",
+                        "Label Encoder.y",
+                    ],
+                }
+            )
+            parameters = est_parameters
 
             def __init__(self, parameters, random_seed=0):
                 super().__init__(
@@ -88,6 +126,7 @@ def create_mock_pipeline(estimator, problem_type):
         class MockRegressionPipelineWithOnlyEstimator(RegressionPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
+            parameters = est_parameters
 
         return MockRegressionPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
@@ -95,6 +134,7 @@ def create_mock_pipeline(estimator, problem_type):
         class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesRegressionPipeline):
             custom_name = f"Pipeline with {estimator.name}"
             component_graph = [estimator]
+            parameters = est_parameters
 
         return MockTSRegressionPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
@@ -102,8 +142,24 @@ def create_mock_pipeline(estimator, problem_type):
         class MockTSRegressionPipelineWithOnlyEstimator(
             TimeSeriesBinaryClassificationPipeline
         ):
-            custom_name = f"Pipeline with {estimator.name}"
-            component_graph = [estimator]
+            custom_name = (
+                f"Pipeline with {estimator.name}"
+                if add_label_encoder is False
+                else f"Pipeline with {estimator.name} and label encoder"
+            )
+            component_graph = (
+                [estimator]
+                if add_label_encoder is False
+                else {
+                    "Label Encoder": ["Label Encoder", "X", "y"],
+                    estimator.name: [
+                        estimator,
+                        "Label Encoder.x",
+                        "Label Encoder.y",
+                    ],
+                }
+            )
+            parameters = est_parameters
 
         return MockTSRegressionPipelineWithOnlyEstimator
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
@@ -111,8 +167,24 @@ def create_mock_pipeline(estimator, problem_type):
         class MockTSRegressionPipelineWithOnlyEstimator(
             TimeSeriesMulticlassClassificationPipeline
         ):
-            custom_name = f"Pipeline with {estimator.name}"
-            component_graph = [estimator]
+            custom_name = (
+                f"Pipeline with {estimator.name}"
+                if add_label_encoder is False
+                else f"Pipeline with {estimator.name} and label encoder"
+            )
+            component_graph = (
+                [estimator]
+                if add_label_encoder is False
+                else {
+                    "Label Encoder": ["Label Encoder", "X", "y"],
+                    estimator.name: [
+                        estimator,
+                        "Label Encoder.x",
+                        "Label Encoder.y",
+                    ],
+                }
+            )
+            parameters = est_parameters
 
         return MockTSRegressionPipelineWithOnlyEstimator
 
@@ -128,7 +200,10 @@ def all_pipeline_classes():
     ]:
         for problem_type in estimator.supported_problem_types:
             all_possible_pipeline_classes.append(
-                create_mock_pipeline(estimator, problem_type)
+                create_mock_pipeline(estimator, problem_type, add_label_encoder=False)
+            )
+            all_possible_pipeline_classes.append(
+                create_mock_pipeline(estimator, problem_type, add_label_encoder=True)
             )
     return all_possible_pipeline_classes
 
@@ -139,6 +214,17 @@ def all_binary_pipeline_classes(all_pipeline_classes):
         pipeline_class
         for pipeline_class in all_pipeline_classes
         if issubclass(pipeline_class, BinaryClassificationPipeline)
+        and "label encoder" not in pipeline_class.custom_name
+    ]
+
+
+@pytest.fixture
+def all_binary_pipeline_classes_with_encoder(all_pipeline_classes):
+    return [
+        pipeline_class
+        for pipeline_class in all_pipeline_classes
+        if issubclass(pipeline_class, BinaryClassificationPipeline)
+        and "label encoder" in pipeline_class.custom_name
     ]
 
 
@@ -148,6 +234,17 @@ def all_multiclass_pipeline_classes(all_pipeline_classes):
         pipeline_class
         for pipeline_class in all_pipeline_classes
         if issubclass(pipeline_class, MulticlassClassificationPipeline)
+        and "label encoder" not in pipeline_class.custom_name
+    ]
+
+
+@pytest.fixture
+def all_multiclass_pipeline_classes_with_encoder(all_pipeline_classes):
+    return [
+        pipeline_class
+        for pipeline_class in all_pipeline_classes
+        if issubclass(pipeline_class, MulticlassClassificationPipeline)
+        and "label encoder" in pipeline_class.custom_name
     ]
 
 
@@ -938,7 +1035,7 @@ def helper_functions():
         @staticmethod
         def safe_init_pipeline_with_njobs_1(pipeline_class):
             try:
-                estimator = pipeline_class.component_graph[-1]
+                estimator = pipeline_class[-1]
                 estimator_name = (
                     estimator if isinstance(estimator, str) else estimator.name
                 )

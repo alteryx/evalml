@@ -1267,8 +1267,10 @@ def test_targets_data_types_classification_pipelines(
     problem_type,
     target_type,
     all_binary_pipeline_classes,
+    all_binary_pipeline_classes_with_encoder,
     make_data_type,
     all_multiclass_pipeline_classes,
+    all_multiclass_pipeline_classes_with_encoder,
     helper_functions,
 ):
     if data_type == "np" and target_type in ["Int64", "boolean"]:
@@ -1279,6 +1281,9 @@ def test_targets_data_types_classification_pipelines(
     if problem_type == ProblemTypes.BINARY:
         objective = "Log Loss Binary"
         pipeline_classes = all_binary_pipeline_classes
+        if target_type in ["category", "object"]:
+            pipeline_classes = all_binary_pipeline_classes_with_encoder
+
         X, y = breast_cancer_local
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
@@ -1289,6 +1294,9 @@ def test_targets_data_types_classification_pipelines(
             )
         objective = "Log Loss Multiclass"
         pipeline_classes = all_multiclass_pipeline_classes
+
+        if target_type in ["category", "object"]:
+            pipeline_classes = all_multiclass_pipeline_classes_with_encoder
         X, y = wine_local
 
     # Update target types as necessary
@@ -1310,7 +1318,7 @@ def test_targets_data_types_classification_pipelines(
     y = make_data_type(data_type, y)
 
     for pipeline_class in pipeline_classes:
-        pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
+        pipeline = pipeline_class(pipeline_class.parameters)
         pipeline.fit(X, y)
         predictions = pipeline.predict(X, objective)
         assert set(predictions.unique()).issubset(unique_vals)
