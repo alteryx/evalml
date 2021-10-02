@@ -67,7 +67,9 @@ class ClassificationPipeline(PipelineBase):
         """Converts target values from their original values to integer values that can be processed."""
         if self._encoder is not None:
             try:
-                return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
+                return pd.Series(
+                    self._encoder.transform(None, y)[1], index=y.index, name=y.name
+                )
             except ValueError as e:
                 raise ValueError(str(e))
 
@@ -104,6 +106,10 @@ class ClassificationPipeline(PipelineBase):
     def predict(self, X, objective=None, X_train=None, y_train=None):
         """Make predictions using selected features.
 
+        Note: we cast y as ints first to address boolean values that may be returned from
+        calculating predictions which we would not be able to otherwise transform if we
+        originally had integer targets.
+
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             objective (Object or string): The objective to use to make predictions.
@@ -115,7 +121,7 @@ class ClassificationPipeline(PipelineBase):
         """
         predictions = self._predict(X, objective=objective)
         predictions = pd.Series(predictions, name=self.input_target_name)
-        predictions = self.inverse_transform(predictions)
+        predictions = self.inverse_transform(predictions.astype(int))
 
         # predictions = pd.Series(
         #     self._decode_targets(predictions), name=self.input_target_name
@@ -165,7 +171,6 @@ class ClassificationPipeline(PipelineBase):
         y = infer_feature_types(y)
         objectives = self.create_objectives(objectives)
         # y = self._encode_targets(y)
-        # import pdb; pdb.set_trace()
         if self._encoder is not None:
             y = pd.Series(
                 self._encoder.transform(None, y)[1], index=y.index, name=y.name

@@ -97,6 +97,5 @@ class LabelEncoder(Transformer):
         """
         if y is None:
             raise ValueError("y cannot be None!")
-
         y_it = self._component_obj.inverse_transform(y)
         return ww.init_series(y_it)
