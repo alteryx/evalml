@@ -57,7 +57,7 @@ class ClassificationPipeline(PipelineBase):
         self.classes_ = np.unique(y)
         # self.classes_ = self.classes_.sort_values()
         self.classes_ = ww.init_series(self.classes_)
-
+        self.classes_ = list(self.classes_)
         # self._encoder.fit(y)
         # y = self._encode_targets(y)
         self._fit(X, y)

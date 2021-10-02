@@ -664,12 +664,21 @@ def logistic_regression_multiclass_pipeline_class():
         """Logistic Regression Pipeline for binary classification."""
 
         custom_name = "Logistic Regression Multiclass Pipeline"
-        component_graph = [
-            "Imputer",
-            "One Hot Encoder",
-            "Standard Scaler",
-            "Logistic Regression Classifier",
-        ]
+        component_graph = {
+            "Label Encoder": ["Label Encoder", "X", "y"],
+            "Imputer": ["Imputer", "X", "Label Encoder.y"],
+            "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "Label Encoder.y"],
+            "Standard Scaler": [
+                "Standard Scaler",
+                "One Hot Encoder.x",
+                "Label Encoder.y",
+            ],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Standard Scaler.x",
+                "Label Encoder.y",
+            ],
+        }
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
