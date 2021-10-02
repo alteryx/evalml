@@ -1,5 +1,6 @@
 """Utility methods for EvalML pipelines."""
 import logging
+from inspect import isclass
 
 from woodwork import logical_types
 
@@ -43,6 +44,9 @@ from evalml.pipelines.components import (  # noqa: F401
     Undersampler,
     URLFeaturizer,
 )
+from evalml.pipelines.components.transformers.encoders.label_encoder import (
+    LabelEncoder,
+)
 from evalml.pipelines.components.utils import (
     get_estimators,
     handle_component_class,
@@ -84,6 +88,9 @@ def _get_preprocessing_components(
     )
     if len(index_and_unknown_columns) > 0:
         pp_components.append(DropColumns)
+
+    if is_classification(problem_type):
+        pp_components.append(LabelEncoder)
 
     email_columns = list(X.ww.select("EmailAddress", return_schema=True).columns)
     if len(email_columns) > 0:

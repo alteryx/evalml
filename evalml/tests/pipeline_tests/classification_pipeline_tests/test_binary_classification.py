@@ -80,11 +80,8 @@ def test_binary_classification_pipeline_predict(
     mock_predict.return_value = predict
     mock_predict_proba.return_value = proba
 
-    mock_objs = [mock_predict]
     X, y = X_y_binary
-    binary_pipeline = dummy_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    binary_pipeline = dummy_binary_pipeline_class(parameters={})
     # test no objective passed and no custom threshold uses underlying estimator's predict method
     binary_pipeline.fit(X, y)
     binary_pipeline.predict(X)
@@ -93,36 +90,31 @@ def test_binary_classification_pipeline_predict(
 
     # test objective passed but no custom threshold uses underlying estimator's predict method
     binary_pipeline.predict(X, "precision")
-    for mock_obj in mock_objs:
-        mock_obj.assert_called()
-        mock_obj.reset_mock()
-
-    mock_objs = [mock_predict_proba]
-    # test custom threshold set but no objective passed
-    binary_pipeline.threshold = 0.6
-    binary_pipeline._encoder.classes_ = [0, 1]
-    binary_pipeline.predict(X)
     mock_predict.assert_called()
     mock_predict.reset_mock()
 
+    # test custom threshold set but no objective passed
+    binary_pipeline.threshold = 0.6
+    binary_pipeline.classes_ = [0, 1]
+    binary_pipeline.predict(X)
+    mock_predict_proba.assert_called()
+    mock_predict_proba.reset_mock()
     mock_obj_decision.assert_not_called()
     mock_predict.assert_not_called()
 
     # test custom threshold set but no objective passed
     binary_pipeline.threshold = 0.6
     binary_pipeline.predict(X)
-    mock_predict.assert_called()
-    mock_predict.reset_mock()
-
+    mock_predict_proba.assert_called()
+    mock_predict_proba.reset_mock()
     mock_obj_decision.assert_not_called()
     mock_predict.assert_not_called()
 
     # test custom threshold set and objective passed
     binary_pipeline.threshold = 0.6
     binary_pipeline.predict(X, "precision")
-    mock_predict.assert_called()
-    mock_predict.reset_mock()
-
+    mock_predict_proba.assert_called()
+    mock_predict_proba.reset_mock()
     mock_predict.assert_not_called()
     mock_obj_decision.assert_called()
 

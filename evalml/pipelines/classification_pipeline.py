@@ -29,7 +29,6 @@ class ClassificationPipeline(PipelineBase):
         custom_name=None,
         random_seed=0,
     ):
-        # self._encoder = LabelEncoder()
         self.classes_ = None
         super().__init__(
             component_graph,
@@ -64,13 +63,13 @@ class ClassificationPipeline(PipelineBase):
         self._fit(X, y)
         return self
 
-    # def _encode_targets(self, y):
-    #     """Converts target values from their original values to integer values that can be processed."""
-    #     try:
-    #         # import pdb; pdb.set_trace()
-    #         return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
-    #     except ValueError as e:
-    #         raise ValueError(str(e))
+    def _encode_targets(self, y):
+        """Converts target values from their original values to integer values that can be processed."""
+        if self._encoder is not None:
+            try:
+                return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
+            except ValueError as e:
+                raise ValueError(str(e))
 
     # def _decode_targets(self, y):
     #     """Converts encoded numerical values to their original target values.
@@ -166,6 +165,12 @@ class ClassificationPipeline(PipelineBase):
         y = infer_feature_types(y)
         objectives = self.create_objectives(objectives)
         # y = self._encode_targets(y)
+        # import pdb; pdb.set_trace()
+        if self._encoder is not None:
+            y = pd.Series(
+                self._encoder.transform(None, y)[1], index=y.index, name=y.name
+            )
+
         y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
         return self._score_all_objectives(
             X, y, y_predicted, y_predicted_proba, objectives

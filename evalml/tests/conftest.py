@@ -1102,7 +1102,7 @@ class _AutoMLTestEnv:
     """A test environment that makes it easy to test automl behavior with patched pipeline computations.
 
     This class provides a context manager that will automatically patch pipeline fit/score/predict_proba methods,
-    as well as BinaryClassificationObjective.optimize_threshold, and skopt.Optimizer.tell. These are
+    as well as _encode_targets, BinaryClassificationObjective.optimize_threshold, and skopt.Optimizer.tell. These are
     the most time consuming operations during search, so your test will run as fast as possible.
 
     This class is ideal for tests that verify some behavior of AutoMLSearch that can be controlled via the side_effect
@@ -1133,6 +1133,8 @@ class _AutoMLTestEnv:
                 first computation is run in the test environment.
             mock_score (MagicMock): MagicMock corresponding to the pipeline.score method for the latest automl computation.
                 Set to None until the first computation is run in the test environment.
+            mock_encode_targets (MagicMock): MagicMock corresponding to the pipeline._encode_targets method for the latest automl computation.
+                Set to None until the first computation is run in the test environment.
             mock_predict_proba (MagicMock): MagicMock corresponding to the pipeline.predict_proba method for the latest automl computation.
                 Set to None until the first computation is run in the test environment.
             mock_optimize_threshold (MagicMock): MagicMock corresponding to the BinaryClassificationObjective.optimize_threshold for the latest automl computation.
@@ -1143,6 +1145,7 @@ class _AutoMLTestEnv:
         self._mock_tell = None
         self._mock_score = None
         self._mock_get_names = None
+        self._mock_encode_targets = None
         self._mock_predict_proba = None
         self._mock_optimize_threshold = None
 
@@ -1174,6 +1177,7 @@ class _AutoMLTestEnv:
         self._mock_tell = None
         self._mock_score = None
         self._mock_get_names = None
+        self._mock_encode_targets = None
         self._mock_predict_proba = None
         self._mock_optimize_threshold = None
 
@@ -1199,6 +1203,10 @@ class _AutoMLTestEnv:
         return self._get_mock("score")
 
     @property
+    def mock_encode_targets(self):
+        return self._get_mock("encode_targets")
+
+    @property
     def mock_predict_proba(self):
         return self._get_mock("predict_proba")
 
@@ -1217,7 +1225,7 @@ class _AutoMLTestEnv:
         optimize_threshold_return_value=0.2,
     ):
         """A context manager for creating an environment that patches time-consuming pipeline methods.
-        Sets the mock_fit, mock_score, mock_predict_proba, mock_optimize_threshold attributes.
+        Sets the mock_fit, mock_score, mock_encode_targets, mock_predict_proba, mock_optimize_threshold attributes.
 
         Args:
             score_return_value: Passed as the return_value argument of the pipeline.score patch.
@@ -1238,13 +1246,19 @@ class _AutoMLTestEnv:
             "evalml.pipelines.components.FeatureSelector.get_names", return_value=[]
         )
 
-        # For simplicity, we will always mock predict_proba even if the problem is not a
+        # For simplicity, we will always mock predict_proba and _encode_targets even if the problem is not a
         # classification problem. For regression problems, we'll mock BinaryClassificationPipeline but it doesn't
         # matter which one we mock since those methods won't be called for regression.
         pipeline_to_mock = self._pipeline_class
         if is_regression(self.problem_type):
             pipeline_to_mock = "evalml.pipelines.BinaryClassificationPipeline"
 
+        mock_encode_targets = self._patch_method(
+            "_encode_targets",
+            side_effect=lambda y: y,
+            return_value=None,
+            pipeline_class_str=pipeline_to_mock,
+        )
         mock_predict_proba = self._patch_method(
             "predict_proba",
             side_effect=None,
@@ -1270,13 +1284,14 @@ class _AutoMLTestEnv:
             "evalml.automl.AutoMLSearch._sleep_time", new_callable=sleep_time
         )
 
-        with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
+        with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
             # Can think of `yield` as blocking this method until the computation finishes running
             yield
             self._mock_fit = fit
             self._mock_tell = tell
             self._mock_score = score
             self._mock_get_names = get_names
+            self._mock_encode_targets = encode
             self._mock_predict_proba = proba
             self._mock_optimize_threshold = optimize
 
