@@ -781,7 +781,6 @@ def partial_dependence(
                 avg_data.index = np.tile(values[0], avg_pred.shape[0])
 
             if classes is not None:
-                # import pdb; pdb.set_trace()
                 avg_data["class_label"] = np.repeat(classes, len(values[0]))
 
         if kind in ["individual", "both"]:
@@ -826,10 +825,9 @@ def partial_dependence(
         if isinstance(e, PartialDependenceError):
             raise e
         else:
-            # raise PartialDependenceError(
-            #     str(e), PartialDependenceErrorCode.ALL_OTHER_ERRORS
-            # ) from e
-            raise e
+            raise PartialDependenceError(
+                str(e), PartialDependenceErrorCode.ALL_OTHER_ERRORS
+            ) from e
 
 
 def _update_fig_with_two_way_partial_dependence(

@@ -1,5 +1,7 @@
 """Pipeline base class for time-series classification problems."""
+import numpy as np
 import pandas as pd
+import woodwork as ww
 
 from .binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,
@@ -42,6 +44,10 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         X, y = self._convert_to_woodwork(X, y)
         # self._encoder.fit(y)
         # y = self._encode_targets(y)
+        self.classes_ = np.unique(y)
+        # self.classes_ = self.classes_.sort_values()
+        self.classes_ = ww.init_series(self.classes_)
+        self.classes_ = list(self.classes_)
         self._fit(X, y)
         return self
 
