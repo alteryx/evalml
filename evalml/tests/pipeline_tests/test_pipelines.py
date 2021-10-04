@@ -36,6 +36,7 @@ from evalml.pipelines.components import (
     DropRowsTransformer,
     ElasticNetClassifier,
     Imputer,
+    LabelEncoder,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
@@ -240,7 +241,7 @@ def test_indexing(X_y_binary, logistic_regression_binary_pipeline_class):
     )
     clf.fit(X, y)
 
-    assert isinstance(clf[1], OneHotEncoder)
+    assert isinstance(clf[2], OneHotEncoder)
     assert isinstance(clf["Imputer"], Imputer)
 
     setting_err_msg = "Setting pipeline components is not supported."
@@ -2052,6 +2053,7 @@ def test_predict_has_input_target_name(
 
 def test_linear_pipeline_iteration(logistic_regression_binary_pipeline_class):
     expected_order = [
+        LabelEncoder(),
         Imputer(),
         OneHotEncoder(),
         StandardScaler(),
@@ -2066,6 +2068,7 @@ def test_linear_pipeline_iteration(logistic_regression_binary_pipeline_class):
     assert order_again == expected_order
 
     expected_order_params = [
+        LabelEncoder(),
         Imputer(numeric_impute_strategy="median"),
         OneHotEncoder(top_n=2),
         StandardScaler(),
@@ -2126,11 +2129,13 @@ def test_linear_getitem(logistic_regression_binary_pipeline_class):
         {"One Hot Encoder": {"top_n": 4}}
     )
 
-    assert pipeline[0] == Imputer()
-    assert pipeline[1] == OneHotEncoder(top_n=4)
-    assert pipeline[2] == StandardScaler()
-    assert pipeline[3] == LogisticRegressionClassifier()
+    assert pipeline[0] == LabelEncoder()
+    assert pipeline[1] == Imputer()
+    assert pipeline[2] == OneHotEncoder(top_n=4)
+    assert pipeline[3] == StandardScaler()
+    assert pipeline[4] == LogisticRegressionClassifier()
 
+    assert pipeline["Label Encoder"] == LabelEncoder()
     assert pipeline["Imputer"] == Imputer()
     assert pipeline["One Hot Encoder"] == OneHotEncoder(top_n=4)
     assert pipeline["Standard Scaler"] == StandardScaler()

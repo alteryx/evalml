@@ -123,6 +123,7 @@ class ClassificationPipeline(PipelineBase):
         predictions = self._predict(X, objective=objective)
         predictions = pd.Series(predictions, name=self.input_target_name)
         predictions = self.inverse_transform(predictions.astype(int))
+        predictions = pd.Series(predictions, name=self.input_target_name)
 
         # predictions = pd.Series(
         #     self._decode_targets(predictions), name=self.input_target_name
