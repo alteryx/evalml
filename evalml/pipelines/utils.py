@@ -79,6 +79,9 @@ def _get_preprocessing_components(
     """
     pp_components = []
 
+    if is_classification(problem_type):
+        pp_components.append(LabelEncoder)
+
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
@@ -88,9 +91,6 @@ def _get_preprocessing_components(
     )
     if len(index_and_unknown_columns) > 0:
         pp_components.append(DropColumns)
-
-    if is_classification(problem_type):
-        pp_components.append(LabelEncoder)
 
     email_columns = list(X.ww.select("EmailAddress", return_schema=True).columns)
     if len(email_columns) > 0:

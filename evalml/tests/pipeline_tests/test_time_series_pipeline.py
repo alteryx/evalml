@@ -505,7 +505,7 @@ def test_predict_and_predict_in_sample_with_date_index(
 @pytest.mark.parametrize(
     "pipeline_class,estimator_name",
     [
-        (TimeSeriesRegressionPipeline, "Random Forest Regressor"),
+        # (TimeSeriesRegressionPipeline, "Random Forest Regressor"),
         (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
         (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier"),
     ],
@@ -516,7 +516,7 @@ def test_predict_and_predict_in_sample_with_date_index(
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.predict")
 @patch("evalml.pipelines.PipelineBase._score_all_objectives")
 @patch("evalml.pipelines.TimeSeriesBinaryClassificationPipeline._score_all_objectives")
-def test_score(
+def test_ts_score(
     mock_binary_score,
     mock_score,
     mock_classifier_predict,
@@ -585,6 +585,7 @@ def test_score(
 
     # Verify that NaNs are dropped before passed to objectives
     _, target, preds = mock_score.call_args[0]
+    # import pdb; pdb.set_trace()
     assert not target.isna().any()
     assert not preds.isna().any()
 
@@ -604,11 +605,7 @@ def test_score(
 @patch("evalml.pipelines.LogisticRegressionClassifier.predict_proba")
 @patch("evalml.pipelines.LogisticRegressionClassifier.predict")
 @patch("evalml.pipelines.TimeSeriesClassificationPipeline._score_all_objectives")
-@patch("evalml.pipelines.ClassificationPipeline._decode_targets")
-@patch("evalml.pipelines.ClassificationPipeline._encode_targets")
 def test_classification_pipeline_encodes_targets(
-    mock_encode,
-    mock_decode,
     mock_score,
     mock_predict,
     mock_predict_proba,
@@ -616,6 +613,7 @@ def test_classification_pipeline_encodes_targets(
     pipeline_class,
     X_y_binary,
 ):
+    # TODO: switch to check label encoder
     X, y = X_y_binary
     y_series = pd.Series(y)
     df = pd.DataFrame({"negative": y_series, "positive": y_series})
@@ -632,14 +630,22 @@ def test_classification_pipeline_encodes_targets(
     X_train, y_encoded_train = X.iloc[:29], y_encoded.iloc[:29]
     X_holdout, y_encoded_holdout = X.iloc[29:], y_encoded.iloc[29:]
 
-    mock_encode.side_effect = lambda series: series
-    mock_decode.side_effect = lambda series: series
+    # mock_encode.side_effect = lambda series: series
 
     pl = pipeline_class(
-        component_graph=[
-            "Delayed Feature Transformer",
-            "Logistic Regression Classifier",
-        ],
+        component_graph={
+            "Label Encoder": ["Label Encoder", "X", "y"],
+            "Delayed Feature Transformer": [
+                "Delayed Feature Transformer",
+                "Label Encoder.x",
+                "Label Encoder.y",
+            ],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Delayed Feature Transformer.x",
+                "Label Encoder.y",
+            ],
+        },
         parameters={
             "Delayed Feature Transformer": {
                 "date_index": None,
@@ -659,34 +665,35 @@ def test_classification_pipeline_encodes_targets(
     # Check fit encodes target
     pl.fit(X_train, y_encoded_train)
     _, target_passed_to_estimator = mock_fit.call_args[0]
-
     # Check that target is converted to ints. Use .iloc[1:] because the first feature row has NaNs
-    assert_series_equal(
-        target_passed_to_estimator, pl._encode_targets(y_encoded_train.iloc[2:])
+
+    expected_target = (
+        y_encoded_train.iloc[2:].map({"positive": 1, "negative": 0}).astype(int)
     )
+    assert_series_equal(target_passed_to_estimator, expected_target)
 
     # Check predict encodes target
-    mock_encode.reset_mock()
+    # mock_encode.reset_mock()
     pl.predict(X_holdout.iloc[:1], None, X_train, y_encoded_train)
-    assert mock_encode.call_count == 2
+    # assert mock_encode.call_count == 2
 
-    mock_encode.reset_mock()
+    # mock_encode.reset_mock()
     pl.predict_in_sample(
         X_holdout, y_encoded_holdout, X_train, y_encoded_train, objective=None
     )
-    assert mock_encode.call_count == 2
+    # assert mock_encode.call_count == 2
 
     # Check predict proba encodes target
-    mock_encode.reset_mock()
+    # mock_encode.reset_mock()
     pl.predict_proba(X_holdout.iloc[:1], X_train, y_encoded_train)
-    assert mock_encode.call_count == 2
+    # assert mock_encode.call_count == 2
 
-    mock_encode.reset_mock()
+    # mock_encode.reset_mock()
     pl.predict_proba_in_sample(X_holdout, y_encoded_holdout, X_train, y_encoded_train)
-    assert mock_encode.call_count == 2
+    # assert mock_encode.call_count == 2
 
     # Check score encodes target
-    mock_encode.reset_mock()
+    # mock_encode.reset_mock()
     pl.score(
         X_holdout,
         y_encoded_holdout,
@@ -694,7 +701,7 @@ def test_classification_pipeline_encodes_targets(
         y_train=y_encoded_train,
         objectives=["MCC Binary"],
     )
-    assert mock_encode.call_count == 4
+    # assert mock_encode.call_count == 4
 
 
 @pytest.mark.parametrize(
@@ -791,7 +798,6 @@ def test_score_works(
     pl.score(X_valid, y_valid, objectives, X_train, y_train)
 
 
-@patch("evalml.pipelines.TimeSeriesClassificationPipeline._decode_targets")
 @patch("evalml.objectives.BinaryClassificationObjective.decision_function")
 @patch("evalml.pipelines.components.Estimator.predict_proba")
 @patch(
@@ -802,15 +808,13 @@ def test_binary_classification_predictions_thresholded_properly(
     mock_predict,
     mock_predict_proba,
     mock_obj_decision,
-    mock_decode,
     X_y_binary,
     dummy_ts_binary_pipeline_class,
 ):
     proba = pd.DataFrame({0: [1.0, 1.0, 0.0]})
     proba.ww.init()
     mock_predict_proba.return_value = proba
-    mock_objs = [mock_decode, mock_predict]
-    mock_decode.return_value = ww.init_series(pd.Series([0, 1]))
+    mock_objs = [mock_predict]
     X, y = X_y_binary
     X, y = pd.DataFrame(X), pd.Series(y)
     X_train, y_train = X.iloc[:60], y.iloc[:60]
@@ -839,13 +843,13 @@ def test_binary_classification_predictions_thresholded_properly(
         mock_obj.assert_called()
         mock_obj.reset_mock()
 
-    mock_objs = [mock_decode, mock_predict_proba]
+    mock_objs = [mock_predict_proba]
     # test custom threshold set but no objective passed
     proba = pd.DataFrame([[0.1, 0.2], [0.1, 0.2], [0.1, 0.2]])
     proba.ww.init()
     mock_predict_proba.return_value = proba
     binary_pipeline.threshold = 0.6
-    binary_pipeline._encoder.classes_ = [0, 1]
+    # binary_pipeline._encoder.classes_ = [0, 1]
     binary_pipeline.predict(X_validation, None, X_train, y_train)
     for mock_obj in mock_objs:
         mock_obj.assert_called()

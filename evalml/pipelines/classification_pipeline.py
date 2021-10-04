@@ -69,9 +69,10 @@ class ClassificationPipeline(PipelineBase):
             try:
                 return pd.Series(
                     self._encoder.transform(None, y)[1], index=y.index, name=y.name
-                )
+                ).astype(int)
             except ValueError as e:
                 raise ValueError(str(e))
+        return y
 
     # def _decode_targets(self, y):
     #     """Converts encoded numerical values to their original target values.

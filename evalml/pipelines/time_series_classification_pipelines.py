@@ -180,6 +180,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         X, y = self._convert_to_woodwork(X, y)
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         objectives = self.create_objectives(objectives)
+        # import pdb; pdb.set_trace()
         y_predicted, y_predicted_proba = self._compute_predictions(
             X,
             y,
@@ -190,7 +191,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         return self._score_all_objectives(
             X,
             # y,
-            self._encode_targets(y),
+            self._encode_targets(y) if self._encoder is not None else y,
             y_predicted,
             y_pred_proba=y_predicted_proba,
             objectives=objectives,

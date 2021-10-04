@@ -69,7 +69,7 @@ def test_pipeline_has_classes_property(
     #     pipeline.classes_
 
     pipeline.fit(X, y)
-    assert_series_equal(pd.Series(pipeline.classes_), pd.Series(answer))
+    assert_series_equal(ww.init_series(pd.Series(pipeline.classes_)), pd.Series(answer))
 
 
 def test_woodwork_classification_pipeline(

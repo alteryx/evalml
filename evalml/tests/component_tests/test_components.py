@@ -1595,14 +1595,14 @@ def test_estimator_fit_respects_custom_indices(
 
     if estimator_class == SklearnStackedEnsembleRegressor:
         input_pipelines = [
-            helper_functions.safe_init_pipeline_with_njobs_1(
-                linear_regression_pipeline_class
+            linear_regression_pipeline_class(
+                parameters={"Linear Regressor": {"n_jobs": 1}}
             )
         ]
     elif estimator_class == SklearnStackedEnsembleClassifier:
         input_pipelines = [
-            helper_functions.safe_init_pipeline_with_njobs_1(
-                logistic_regression_binary_pipeline_class
+            logistic_regression_binary_pipeline_class(
+                parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
             )
         ]
     else:
