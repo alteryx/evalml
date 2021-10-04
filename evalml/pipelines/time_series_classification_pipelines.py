@@ -120,12 +120,12 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         features = self.compute_estimator_features(X, y, X_train, y_train)
         predictions = self._estimator_predict(features, y)
         predictions.index = y.index
+        # import pdb; pdb.set_trace()
         predictions = self.inverse_transform(predictions.astype(int))
-        predictions = pd.Series(
-            predictions,
-            name=self.input_target_name,
-            index=y.index,
-        )
+        # predictions = predictions.astype(int)
+        predictions = pd.Series(predictions, name=self.input_target_name)
+
+        predictions = predictions.rename(index=dict(zip(predictions.index, y.index)))
         return infer_feature_types(predictions)
 
     def predict_proba(self, X, X_train=None, y_train=None):
@@ -161,7 +161,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             y_predicted_proba = self.predict_proba_in_sample(X, y, X_train, y_train)
         if any(not o.score_needs_proba for o in objectives):
             y_predicted = self.predict_in_sample(X, y, X_train, y_train)
-            # y_predicted = self._encode_targets(y_predicted)
+            y_predicted = self._encode_targets(y_predicted)
         return y_predicted, y_predicted_proba
 
     def score(self, X, y, objectives, X_train=None, y_train=None):
@@ -189,8 +189,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         )
         return self._score_all_objectives(
             X,
-            y,
-            # self._encode_targets(y),
+            # y,
+            self._encode_targets(y),
             y_predicted,
             y_pred_proba=y_predicted_proba,
             objectives=objectives,

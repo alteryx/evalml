@@ -727,8 +727,23 @@ def test_score_works(
     preprocessing = ["Delayed Feature Transformer"]
     if pipeline_class == TimeSeriesRegressionPipeline:
         components = preprocessing + ["Random Forest Regressor"]
+        estimator = "Random Forest Regressor"
+
     else:
-        components = preprocessing + ["Logistic Regression Classifier"]
+        components = {
+            "Label Encoder": ["Label Encoder", "X", "y"],
+            "Delayed Feature Transformer": [
+                "Delayed Feature Transformer",
+                "Label Encoder.x",
+                "Label Encoder.y",
+            ],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Delayed Feature Transformer.x",
+                "Label Encoder.y",
+            ],
+        }
+        estimator = "Logistic Regression Classifier"
 
     pl = pipeline_class(
         component_graph=components,
@@ -740,7 +755,7 @@ def test_score_works(
                 "delay_features": False,
                 "forecast_horizon": 10,
             },
-            components[-1]: {"n_jobs": 1},
+            estimator: {"n_jobs": 1},
         },
     )
     if pl.problem_type == ProblemTypes.TIME_SERIES_BINARY:
