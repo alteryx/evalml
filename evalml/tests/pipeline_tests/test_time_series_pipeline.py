@@ -721,7 +721,7 @@ def test_classification_pipeline_encodes_targets(
     ],
 )
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
-def test_score_works(
+def test_ts_score_works(
     pipeline_class,
     objectives,
     data_type,
@@ -729,31 +729,22 @@ def test_score_works(
     X_y_multi,
     X_y_regression,
     make_data_type,
+    time_series_regression_pipeline_class,
+    time_series_binary_classification_pipeline_class,
+    time_series_multiclass_classification_pipeline_class,
 ):
-
-    preprocessing = ["Delayed Feature Transformer"]
+    pipeline = None
+    estimator = None
     if pipeline_class == TimeSeriesRegressionPipeline:
-        components = preprocessing + ["Random Forest Regressor"]
+        pipeline = time_series_regression_pipeline_class
         estimator = "Random Forest Regressor"
-
+    elif pipeline_class == TimeSeriesBinaryClassificationPipeline:
+        pipeline = time_series_binary_classification_pipeline_class
     else:
-        components = {
-            "Label Encoder": ["Label Encoder", "X", "y"],
-            "Delayed Feature Transformer": [
-                "Delayed Feature Transformer",
-                "Label Encoder.x",
-                "Label Encoder.y",
-            ],
-            "Logistic Regression Classifier": [
-                "Logistic Regression Classifier",
-                "Delayed Feature Transformer.x",
-                "Label Encoder.y",
-            ],
-        }
+        pipeline = time_series_multiclass_classification_pipeline_class
         estimator = "Logistic Regression Classifier"
 
-    pl = pipeline_class(
-        component_graph=components,
+    pl = pipeline(
         parameters={
             "pipeline": {
                 "date_index": None,

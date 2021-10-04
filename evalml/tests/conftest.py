@@ -837,10 +837,19 @@ def time_series_multiclass_classification_pipeline_class():
     class TSMultiPipeline(TimeSeriesMulticlassClassificationPipeline):
         """Logistic Regression Pipeline for time series multiclass classification problems."""
 
-        component_graph = [
-            "Delayed Feature Transformer",
-            "Logistic Regression Classifier",
-        ]
+        component_graph = {
+            "Label Encoder": ["Label Encoder", "X", "y"],
+            "Delayed Feature Transformer": [
+                "Delayed Feature Transformer",
+                "Label Encoder.x",
+                "Label Encoder.y",
+            ],
+            "Logistic Regression Classifier": [
+                "Logistic Regression Classifier",
+                "Delayed Feature Transformer.x",
+                "Label Encoder.y",
+            ],
+        }
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(

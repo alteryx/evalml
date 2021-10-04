@@ -124,8 +124,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         predictions = self._estimator_predict(features, y)
         predictions.index = y.index
         # import pdb; pdb.set_trace()
-        predictions = self.inverse_transform(predictions)
         predictions = predictions.astype(int)
+        predictions = self.inverse_transform(predictions)
         predictions = pd.Series(predictions, name=self.input_target_name)
 
         predictions = predictions.rename(index=dict(zip(predictions.index, y.index)))
