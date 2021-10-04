@@ -510,7 +510,6 @@ def _make_single_prediction_shap_table(
     aggregated_normalized_shap_values = _normalize_shap_values(aggregated_shap_values)
 
     class_names = None
-
     if hasattr(pipeline, "classes_"):
         class_names = pipeline.classes_
 

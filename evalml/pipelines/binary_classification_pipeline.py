@@ -3,7 +3,7 @@ from .binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,
 )
 
-from evalml.objectives.utils import get_objective
+from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types

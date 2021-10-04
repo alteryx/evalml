@@ -4,12 +4,15 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level :pr:`2821`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level. This means that pipelines will no longer automatically encode non-numerical targets. Please use a label encoder if working with classification problems and non-numeric targets. :pr:`2821`
+
 
 
 **v0.34.0 Sep. 30, 2021**
@@ -43,7 +46,6 @@ Release Notes
         * Pinned ``woodwork`` version to 0.8.0 :pr:`2832`
         * Removed ``model_family`` attribute from ``ComponentBase`` and transformers :pr:`2828`
         * Limited ``scikit-learn`` until new features and errors can be addressed :pr:`2842`
-        * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level :pr:`2821`
         * Show DeprecationWarning when Sklearn Ensemblers are called :pr:`2859`
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
