@@ -30,8 +30,6 @@ from evalml.pipelines.components import (
     DecisionTreeRegressor,
     Estimator,
     LogisticRegressionClassifier,
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
 )
 from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
     _nonstackable_model_families,
