@@ -30,7 +30,6 @@ Release Notes
         * Added the ability of ``AutoMLSearch`` to accept a ``SequentialEngine`` instance as engine input :pr:`2838`
         * Added new label encoder component to EvalML :pr:`2853`
         * Added our own partial dependence implementation :pr:`2834`
-        * Add new ensembler component :pr:`2653`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
@@ -48,7 +47,6 @@ Release Notes
         * Removed ``model_family`` attribute from ``ComponentBase`` and transformers :pr:`2828`
         * Limited ``scikit-learn`` until new features and errors can be addressed :pr:`2842`
         * Show DeprecationWarning when Sklearn Ensemblers are called :pr:`2859`
-    * Documentation Changes
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
         * Added a test to make sure pip versions match conda versions :pr:`2851`

@@ -282,7 +282,7 @@ def test_stacked_estimator_in_pipeline(
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         input_pipelines = [
-            BinaryClassificationPipeline(["Simple Imputer", classifier])
+            BinaryClassificationPipeline([classifier])
             for classifier in stackable_classifiers
         ]
         comparison_pipeline = logistic_regression_binary_pipeline_class(
@@ -292,7 +292,7 @@ def test_stacked_estimator_in_pipeline(
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
         input_pipelines = [
-            MulticlassClassificationPipeline(["Simple Imputer", classifier])
+            MulticlassClassificationPipeline([classifier])
             for classifier in stackable_classifiers
         ]
         comparison_pipeline = logistic_regression_multiclass_pipeline_class(
@@ -302,8 +302,7 @@ def test_stacked_estimator_in_pipeline(
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         input_pipelines = [
-            RegressionPipeline(["Simple Imputer", regressor])
-            for regressor in stackable_regressors
+            RegressionPipeline([regressor]) for regressor in stackable_regressors
         ]
         comparison_pipeline = linear_regression_pipeline_class(
             parameters={"Linear Regressor": {"n_jobs": 1}}

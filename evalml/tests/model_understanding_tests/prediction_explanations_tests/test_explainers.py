@@ -21,6 +21,10 @@ from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesRegressionPipeline,
 )
+from evalml.pipelines.components import (
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor,
+)
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.problem_types import (
     ProblemTypes,
@@ -1647,22 +1651,19 @@ def test_categories_aggregated_when_some_are_dropped(
 )
 def test_explain_predictions_stacked_ensemble(
     problem_type,
-    dummy_stacked_ensemble_binary_estimator,
-    dummy_stacked_ensemble_multiclass_estimator,
-    dummy_stacked_ensemble_regressor_estimator,
     X_y_binary,
     X_y_multi,
     X_y_regression,
 ):
     if is_binary(problem_type):
         X, y = X_y_binary
-        pipeline = dummy_stacked_ensemble_binary_estimator
+        pipeline = StackedEnsembleClassifier(random_seed=0)
     elif is_multiclass(problem_type):
         X, y = X_y_multi
-        pipeline = dummy_stacked_ensemble_multiclass_estimator
+        pipeline = StackedEnsembleClassifier(random_seed=0)
     else:
         X, y = X_y_regression
-        pipeline = dummy_stacked_ensemble_regressor_estimator
+        pipeline = StackedEnsembleRegressor(random_seed=0)
 
     with pytest.raises(
         ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"
