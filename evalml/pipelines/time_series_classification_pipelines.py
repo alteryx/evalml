@@ -94,6 +94,9 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         #         for col, new_col in zip(proba.columns, self._encoder.classes_)
         #     }
         # )
+        proba = proba.ww.rename(
+            columns={col: new_col for col, new_col in zip(proba.columns, self.classes_)}
+        )
         return infer_feature_types(proba)
 
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):
@@ -122,7 +125,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         predictions.index = y.index
         # import pdb; pdb.set_trace()
         predictions = self.inverse_transform(predictions)
-        # predictions = predictions.astype(int)
+        predictions = predictions.astype(int)
         predictions = pd.Series(predictions, name=self.input_target_name)
 
         predictions = predictions.rename(index=dict(zip(predictions.index, y.index)))
