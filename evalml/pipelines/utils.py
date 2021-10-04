@@ -1,6 +1,5 @@
 """Utility methods for EvalML pipelines."""
 import logging
-from inspect import isclass
 
 from woodwork import logical_types
 

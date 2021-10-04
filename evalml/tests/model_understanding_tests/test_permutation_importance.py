@@ -13,7 +13,6 @@ from evalml.pipelines import (
     RegressionPipeline,
     Transformer,
 )
-from evalml.pipelines.classification_pipeline import ClassificationPipeline
 from evalml.pipelines.components import (
     PCA,
     DateTimeFeaturizer,

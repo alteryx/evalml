@@ -27,8 +27,8 @@ def test_new_unique_targets_in_score(
         )
         objective = "Log Loss Multiclass"
     pipeline.fit(X, y)
-    # with pytest.raises(ValueError, match="y contains previously unseen labels"):
-    #     pipeline.score(X, pd.Series([4] * len(y)), [objective])
+    with pytest.raises(ValueError, match="y contains previously unseen labels"):
+        pipeline.score(X, pd.Series([4] * len(y)), [objective])
 
 
 @pytest.mark.parametrize(
