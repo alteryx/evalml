@@ -151,9 +151,7 @@ def _fast_permutation_importance(
 
     Only used for pipelines that support this optimization.
     """
-    # TODO: why is this done here and not at a higher level..?
     if is_classification(pipeline.problem_type):
-        #     y = pipeline._encode_targets(y)
         le = LabelEncoder()
         le.fit(None, y)
         y = pd.Series(le.transform(None, y)[1], index=y.index, name=y.name)
