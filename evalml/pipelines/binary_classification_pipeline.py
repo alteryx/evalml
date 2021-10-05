@@ -72,6 +72,6 @@ class BinaryClassificationPipeline(
         if predictions.ndim > 1:
             predictions = predictions.iloc[:, 1]
 
-        print(predictions)
-        print("y", y)
+        # print(predictions)
+        # print("y", y)
         return ClassificationPipeline._score(X, y, predictions, objective)
