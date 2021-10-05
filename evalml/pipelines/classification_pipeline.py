@@ -55,11 +55,8 @@ class ClassificationPipeline(PipelineBase):
         y = infer_feature_types(y)
 
         self.classes_ = np.unique(y)
-        # self.classes_ = self.classes_.sort_values()
         self.classes_ = ww.init_series(self.classes_)
         self.classes_ = list(self.classes_)
-        # self._encoder.fit(y)
-        # y = self._encode_targets(y)
         self._fit(X, y)
         return self
 
@@ -173,13 +170,10 @@ class ClassificationPipeline(PipelineBase):
         y = infer_feature_types(y)
         objectives = self.create_objectives(objectives)
         # y = self._encode_targets(y)
-        # if self.name == "Sklearn Stacked Ensemble Classification Pipeline":
-        # import pdb; pdb.set_trace()
         if self._encoder is not None:
             y = pd.Series(
                 self._encoder.transform(None, y)[1], index=y.index, name=y.name
             )
-
         y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
         return self._score_all_objectives(
             X, y, y_predicted, y_predicted_proba, objectives

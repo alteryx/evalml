@@ -14,12 +14,7 @@ from evalml.model_understanding.prediction_explanations._report_creator_factory 
     _report_creator_factory,
 )
 from evalml.pipelines.components import LabelEncoder
-from evalml.problem_types import (
-    ProblemTypes,
-    is_classification,
-    is_regression,
-    is_time_series,
-)
+from evalml.problem_types import ProblemTypes, is_regression, is_time_series
 from evalml.utils import infer_feature_types
 from evalml.utils.gen_utils import drop_rows_with_nans
 
@@ -259,17 +254,6 @@ def explain_predictions_best_worst(
             y_true_no_nan, y_pred_no_nan, y_pred_values_no_nan = drop_rows_with_nans(
                 y_true, y_pred, y_pred_values
             )
-            # import pdb; pdb.set_trace()
-            # if is_classification(pipeline.problem_type):
-            #     #     y = pipeline._encode_targets(y)
-            #     le = LabelEncoder()
-            #     le.fit(None, y_true_no_nan)
-            #     y_true_no_nan = pd.Series(
-            #         le.transform(None, y_true_no_nan)[1],
-            #         index=y_true_no_nan.index,
-            #         name=y_true_no_nan.name,
-            #     )
-
             errors = metric(y_true_no_nan, y_pred_no_nan)
     except Exception as e:
         tb = traceback.format_tb(sys.exc_info()[2])

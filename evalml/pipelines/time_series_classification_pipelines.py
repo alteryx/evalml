@@ -42,12 +42,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             self
         """
         X, y = self._convert_to_woodwork(X, y)
-        # self._encoder.fit(y)
-        # y = self._encode_targets(y)
         self.classes_ = np.unique(y)
-        # self.classes_ = self.classes_.sort_values()
-        self.classes_ = ww.init_series(self.classes_)
-        self.classes_ = list(self.classes_)
+        self.classes_ = list(ww.init_series(self.classes_))
         self._fit(X, y)
         return self
 
@@ -123,7 +119,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         features = self.compute_estimator_features(X, y, X_train, y_train)
         predictions = self._estimator_predict(features, y)
         predictions.index = y.index
-        # import pdb; pdb.set_trace()
         predictions = predictions.astype(int)
         predictions = self.inverse_transform(predictions)
         predictions = pd.Series(predictions, name=self.input_target_name)
@@ -183,7 +178,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         X, y = self._convert_to_woodwork(X, y)
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         objectives = self.create_objectives(objectives)
-        # import pdb; pdb.set_trace()
         y_predicted, y_predicted_proba = self._compute_predictions(
             X,
             y,
@@ -191,10 +185,14 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             y_train,
             objectives,
         )
+        if self._encoder is not None:
+            y = pd.Series(
+                self._encoder.transform(None, y)[1], index=y.index, name=y.name
+            )
+            # self._encode_targets(y)
         return self._score_all_objectives(
             X,
-            # y,
-            self._encode_targets(y) if self._encoder is not None else y,
+            y,
             y_predicted,
             y_pred_proba=y_predicted_proba,
             objectives=objectives,

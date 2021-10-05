@@ -585,7 +585,6 @@ def test_ts_score(
 
     # Verify that NaNs are dropped before passed to objectives
     _, target, preds = mock_score.call_args[0]
-    # import pdb; pdb.set_trace()
     assert not target.isna().any()
     assert not preds.isna().any()
 
