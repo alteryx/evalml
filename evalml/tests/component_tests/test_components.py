@@ -520,6 +520,51 @@ def test_describe_component():
         }
     except ImportError:
         pass
+    try:
+        vw_binary_classifier = VowpalWabbitBinaryClassifier(
+            loss_function="classic",
+            learning_rate=0.1,
+            decay_learning_rate=1.0,
+            power_t=0.1,
+        )
+        vw_multi_classifier = VowpalWabbitBinaryClassifier(
+            loss_function="classic",
+            learning_rate=0.1,
+            decay_learning_rate=1.0,
+            power_t=0.1,
+        )
+        vw_regressor = VowpalWabbitRegressor(
+            learning_rate=0.1, decay_learning_rate=1.0, power_t=0.1
+        )
+
+        assert vw_binary_classifier.describe(return_dict=True) == {
+            "name": "Vowpal Wabbit Binary Classifier",
+            "parameters": {
+                "loss_function": "classic",
+                "learning_rate": 0.1,
+                "decay_learning_rate": 1.0,
+                "power_t": 0.1,
+            },
+        }
+        assert vw_multi_classifier.describe(return_dict=True) == {
+            "name": "Vowpal Wabbit Binary Classifier",
+            "parameters": {
+                "loss_function": "classic",
+                "learning_rate": 0.1,
+                "decay_learning_rate": 1.0,
+                "power_t": 0.1,
+            },
+        }
+        assert vw_regressor.describe(return_dict=True) == {
+            "name": "Vowpal Wabbit Regressor",
+            "parameters": {
+                "learning_rate": 0.1,
+                "decay_learning_rate": 1.0,
+                "power_t": 0.1,
+            },
+        }
+    except ImportError:
+        pass
 
 
 def test_missing_attributes(X_y_binary):

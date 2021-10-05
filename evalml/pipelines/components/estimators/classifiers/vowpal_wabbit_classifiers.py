@@ -13,6 +13,7 @@ class VowpalWabbitBaseClassifier(Estimator):
     """Vowpal Wabbit Base Classifier.
 
     Args:
+        loss_function (str): Specifies the loss function to use. One of {"squared", "classic", "hinge", "logistic", "quantile"}. Defaults to "logistic".
         learning_rate (float): Boosting learning rate. Defaults to 0.5.
         decay_learning_rate (float): Decay factor for learning_rate. Defaults to 1.0.
         power_t (float): Power on learning rate decay. Defaults to 0.5.
@@ -68,6 +69,7 @@ class VowpalWabbitBinaryClassifier(VowpalWabbitBaseClassifier):
     """Vowpal Wabbit Binary Classifier.
 
     Args:
+        loss_function (str): Specifies the loss function to use. One of {"squared", "classic", "hinge", "logistic", "quantile"}. Defaults to "logistic".
         learning_rate (float): Boosting learning rate. Defaults to 0.5.
         decay_learning_rate (float): Decay factor for learning_rate. Defaults to 1.0.
         power_t (float): Power on learning rate decay. Defaults to 0.5.
@@ -95,6 +97,7 @@ class VowpalWabbitMulticlassClassifier(VowpalWabbitBaseClassifier):
     """Vowpal Wabbit Multiclass Classifier.
 
     Args:
+        loss_function (str): Specifies the loss function to use. One of {"squared", "classic", "hinge", "logistic", "quantile"}. Defaults to "logistic".
         learning_rate (float): Boosting learning rate. Defaults to 0.5.
         decay_learning_rate (float): Decay factor for learning_rate. Defaults to 1.0.
         power_t (float): Power on learning rate decay. Defaults to 0.5.

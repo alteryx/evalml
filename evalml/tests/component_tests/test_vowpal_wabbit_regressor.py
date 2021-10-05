@@ -29,8 +29,8 @@ def test_vw_parameters():
     vw = VowpalWabbitRegressor()
     expected_parameters = {
         "learning_rate": 0.5,
-        "decay_learning_rate": 0.95,
-        "power_t": 1.0,
+        "decay_learning_rate": 1.0,
+        "power_t": 0.5,
     }
     assert vw.parameters == expected_parameters
 
@@ -50,7 +50,7 @@ def test_fit_predict(X_y_regression):
     vw_regressor.fit(X, y)
     y_pred_sk = vw_regressor.predict(X)
 
-    clf = vw.VWRegressor(learning_rate=0.5, decay_learning_rate=0.95, power_t=1.0)
+    clf = vw.VWRegressor(learning_rate=0.5, decay_learning_rate=1.0, power_t=0.5)
     clf.fit(X, y)
     y_pred = clf.predict(X)
 
