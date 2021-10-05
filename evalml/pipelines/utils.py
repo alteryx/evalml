@@ -346,7 +346,7 @@ def _make_stacked_ensemble_pipeline(
         )
         final_components = []
         used_model_families = []
-        problem_type = None
+        # problem_type = None
 
         for pipeline in input_pipelines:
             model_family = pipeline.component_graph[-1].model_family
@@ -377,7 +377,11 @@ def _make_stacked_ensemble_pipeline(
                             )
                         )
                     elif isinstance(item, str) and item == "y":
-                        new_component_list.append("Label Encoder.y")
+                        if is_classification(problem_type):
+                            new_component_list.append("Label Encoder.y")
+                        else:
+                            new_component_list.append("y")
+
                     else:
                         new_component_list.append(item)
                     if i != 0 and item.endswith(".y"):
