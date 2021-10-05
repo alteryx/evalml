@@ -699,12 +699,12 @@ class AutoMLSearch:
                     )
                     for estimator in allowed_estimators
                 ]
-                if self.ensembling:
-                    ensemble_pl = _make_stacked_ensemble_pipeline(
-                        input_pipelines=self.allowed_pipelines,
-                        problem_type=self.problem_type,
-                    )
-                    self.allowed_pipelines.append(ensemble_pl)
+                # if self.ensembling:
+                #     ensemble_pl = _make_stacked_ensemble_pipeline(
+                #         input_pipelines=self.allowed_pipelines,
+                #         problem_type=self.problem_type,
+                #     )
+                #     self.allowed_pipelines.append(ensemble_pl)
             self._catch_warnings(w)
         else:
 

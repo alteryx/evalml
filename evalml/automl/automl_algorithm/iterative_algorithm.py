@@ -8,6 +8,7 @@ from skopt.space import Categorical, Integer, Real
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
 from evalml.model_family import ModelFamily
+from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 
 _ESTIMATOR_FAMILY_ORDER = [
     ModelFamily.LINEAR_MODEL,
@@ -18,7 +19,6 @@ _ESTIMATOR_FAMILY_ORDER = [
     ModelFamily.LIGHTGBM,
     ModelFamily.CATBOOST,
     ModelFamily.ARIMA,
-    ModelFamily.ENSEMBLE,
 ]
 
 
@@ -110,6 +110,36 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._pipeline_params = pipeline_params or {}
         self._custom_hyperparameters = custom_hyperparameters or {}
 
+        if self.ensembling:
+            ensemble_pl = _make_stacked_ensemble_pipeline(
+                input_pipelines=self.allowed_pipelines,
+                problem_type=self.allowed_pipelines[0].problem_type,
+            )
+            pipeline_hyperparameters = ensemble_pl.get_hyperparameter_ranges(
+                custom_hyperparameters
+            )
+            pipeline_flattened_hyperparameters = {}
+            for (
+                component,
+                component_hyperparameters,
+            ) in pipeline_hyperparameters.items():
+                component_flattened_hyperparameters = {}
+                for parameter, range in component_hyperparameters.items():
+                    if isinstance(range, dict):
+                        for key, value in range.items():
+                            component_flattened_hyperparameters[
+                                f"{parameter}_{key}"
+                            ] = value
+                    else:
+                        component_flattened_hyperparameters[parameter] = range
+                pipeline_flattened_hyperparameters[
+                    component
+                ] = component_flattened_hyperparameters
+            pipeline_hyperparameters = pipeline_flattened_hyperparameters
+            self._tuners["ENSEMBLING"] = self._tuner_class(
+                pipeline_hyperparameters, random_seed=self.random_seed
+            )
+
         if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
             raise ValueError(
                 f"If custom_hyperparameters provided, must be of type dict. Received {type(custom_hyperparameters)}"
@@ -159,29 +189,28 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             ]
 
         # One after training all pipelines one round
-        # elif (
-        #     self.ensembling
-        #     and self._batch_number != 1
-        #     and (self._batch_number) % (len(self._first_batch_results) + 1) == 0
-        # ):
-        #     next_batch = self._create_ensemble()
+        elif (
+            self.ensembling
+            and self._batch_number != 1
+            and (self._batch_number) % (len(self._first_batch_results) + 1) == 0
+        ):
+            for i in range(self.pipelines_per_batch):
+                proposed_parameters = self._tuners["ENSEMBLING"].propose()
+                next_batch.append(self._create_ensemble(proposed_parameters))
         else:
-            num_pipelines = len(self._first_batch_results)
+            num_pipelines = num_pipelines = (
+                (len(self._first_batch_results) + 1)
+                if self.ensembling
+                else len(self._first_batch_results)
+            )
             idx = (self._batch_number - 1) % num_pipelines
             pipeline = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline.name].propose()
-                if pipeline.model_family == ModelFamily.ENSEMBLE:
-                    next_batch.append(self._create_ensemble(proposed_parameters))
-                else:
-                    parameters = self._transform_parameters(
-                        pipeline, proposed_parameters
-                    )
-                    next_batch.append(
-                        pipeline.new(
-                            parameters=parameters, random_seed=self.random_seed
-                        )
-                    )
+                parameters = self._transform_parameters(pipeline, proposed_parameters)
+                next_batch.append(
+                    pipeline.new(parameters=parameters, random_seed=self.random_seed)
+                )
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch

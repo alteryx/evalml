@@ -53,25 +53,6 @@ class AutoMLAlgorithm(ABC):
             pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
                 custom_hyperparameters
             )
-            if pipeline.model_family == ModelFamily.ENSEMBLE:
-                pipeline_flattened_hyperparameters = {}
-                for (
-                    component,
-                    component_hyperparameters,
-                ) in pipeline_hyperparameters.items():
-                    component_flattened_hyperparameters = {}
-                    for parameter, range in component_hyperparameters.items():
-                        if isinstance(range, dict):
-                            for key, value in range.items():
-                                component_flattened_hyperparameters[
-                                    f"{parameter}_{key}"
-                                ] = value
-                        else:
-                            component_flattened_hyperparameters[parameter] = range
-                    pipeline_flattened_hyperparameters[
-                        component
-                    ] = component_flattened_hyperparameters
-                pipeline_hyperparameters = pipeline_flattened_hyperparameters
             self._tuners[pipeline.name] = self._tuner_class(
                 pipeline_hyperparameters, random_seed=self.random_seed
             )
