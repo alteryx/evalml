@@ -173,6 +173,8 @@ class ClassificationPipeline(PipelineBase):
         y = infer_feature_types(y)
         objectives = self.create_objectives(objectives)
         # y = self._encode_targets(y)
+        # if self.name == "Sklearn Stacked Ensemble Classification Pipeline":
+        # import pdb; pdb.set_trace()
         if self._encoder is not None:
             y = pd.Series(
                 self._encoder.transform(None, y)[1], index=y.index, name=y.name

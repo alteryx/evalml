@@ -71,4 +71,7 @@ class BinaryClassificationPipeline(
         """Given data, model predictions or predicted probabilities computed on the data, and an objective, evaluate and return the objective score."""
         if predictions.ndim > 1:
             predictions = predictions.iloc[:, 1]
+
+        print(predictions)
+        print("y", y)
         return ClassificationPipeline._score(X, y, predictions, objective)

@@ -339,7 +339,11 @@ def _make_stacked_ensemble_pipeline(
             idx = " " + str(idx) if idx is not None else ""
             return f"{str(model_type)} Pipeline{idx} - {component_name}"
 
-        component_graph = {}
+        component_graph = (
+            {"Label Encoder": ["Label Encoder", "X", "y"]}
+            if is_classification(problem_type)
+            else {}
+        )
         final_components = []
         used_model_families = []
         problem_type = None
@@ -372,6 +376,8 @@ def _make_stacked_ensemble_pipeline(
                                 model_family, item, model_family_idx
                             )
                         )
+                    elif isinstance(item, str) and item == "y":
+                        new_component_list.append("Label Encoder.y")
                     else:
                         new_component_list.append(item)
                     if i != 0 and item.endswith(".y"):
@@ -385,8 +391,21 @@ def _make_stacked_ensemble_pipeline(
         component_graph[estimator.name] = (
             [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
         )
+
+    sk_component_graph = [estimator]
+
+    if use_sklearn and is_classification(problem_type):
+        sk_component_graph = {
+            "Label Encoder": ["Label Encoder", "X", "y"],
+            estimator.name: [
+                estimator.name,
+                "Label Encoder.x",
+                "Label Encoder.y",
+            ],
+        }
+
     return pipeline_class(
-        [estimator] if use_sklearn else component_graph,
+        sk_component_graph if use_sklearn else component_graph,
         parameters=parameters,
         custom_name=pipeline_name,
         random_seed=random_seed,
