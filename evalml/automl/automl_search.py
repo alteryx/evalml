@@ -179,11 +179,11 @@ def search(
 
     max_batches = None
     if mode == "fast":
-        max_batches = 4 # corresponds to end of 'fast' mode
+        max_batches = 4  # corresponds to end of 'fast' mode
     elif mode == "long" and max_time:
-        max_batches = 999 # defers to stopping criterion
+        max_batches = 999  # defers to stopping criterion
     elif mode == "long" and max_time is None:
-        max_batches = 6 # corresponds to end of 'long' exploration phase
+        max_batches = 6  # corresponds to end of 'long' exploration phase
 
     automl_config = {
         "X_train": X_train,
@@ -750,7 +750,11 @@ class AutoMLSearch:
                     f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that."
                 )
 
-        if self.max_batches and self.max_iterations is None and _automl_algorithm == "iterative":
+        if (
+            self.max_batches
+            and self.max_iterations is None
+            and _automl_algorithm == "iterative"
+        ):
             self.show_batch_output = True
             if run_ensembling:
                 ensemble_nth_batch = len(self.allowed_pipelines) + 1
@@ -1051,7 +1055,8 @@ class AutoMLSearch:
                 if self._should_continue():
                     new_pipeline_ids = []
                     log_title(
-                        self.logger, f"Evaluating Batch Number {self._get_batch_number()}"
+                        self.logger,
+                        f"Evaluating Batch Number {self._get_batch_number()}",
                     )
                     for pipeline in current_batch_pipelines:
                         self._pre_evaluation_callback(pipeline)
