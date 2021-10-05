@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug where `long` mode for the top level search method was not respected :pr:`2875`
     * Changes
     * Documentation Changes
     * Testing Changes
