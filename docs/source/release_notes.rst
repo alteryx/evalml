@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added human-readable pipeline explanations to model understanding :pr:`2861`
     * Fixes
     * Changes
         * Refactored pipeline building logic out of ``AutoMLSearch`` and into ``IterativeAlgorithm`` :pr:`2854`

@@ -50,7 +50,7 @@ def test_all_components(
         # No detrender or arima
         n_components = 54
     else:
-        n_components = 56
+        n_components = 55
     assert len(all_components()) == n_components
 
 
