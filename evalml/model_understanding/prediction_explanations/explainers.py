@@ -259,15 +259,16 @@ def explain_predictions_best_worst(
             y_true_no_nan, y_pred_no_nan, y_pred_values_no_nan = drop_rows_with_nans(
                 y_true, y_pred, y_pred_values
             )
-            if is_classification(pipeline.problem_type):
-                #     y = pipeline._encode_targets(y)
-                le = LabelEncoder()
-                le.fit(None, y_true_no_nan)
-                y_true_no_nan = pd.Series(
-                    le.transform(None, y_true_no_nan)[1],
-                    index=y_true_no_nan.index,
-                    name=y_true_no_nan.name,
-                )
+            # import pdb; pdb.set_trace()
+            # if is_classification(pipeline.problem_type):
+            #     #     y = pipeline._encode_targets(y)
+            #     le = LabelEncoder()
+            #     le.fit(None, y_true_no_nan)
+            #     y_true_no_nan = pd.Series(
+            #         le.transform(None, y_true_no_nan)[1],
+            #         index=y_true_no_nan.index,
+            #         name=y_true_no_nan.name,
+            #     )
 
             errors = metric(y_true_no_nan, y_pred_no_nan)
     except Exception as e:
@@ -342,6 +343,13 @@ def cross_entropy(y_true, y_pred_proba):
     Returns:
         np.ndarray
     """
+    le = LabelEncoder()
+    le.fit(None, y_true)
+    y_true = pd.Series(
+        le.transform(None, y_true)[1],
+        index=y_true.index,
+        name=y_true.name,
+    )
     n_data_points = y_pred_proba.shape[0]
     log_likelihood = -np.log(
         y_pred_proba.values[range(n_data_points), y_true.values.astype("int")]
