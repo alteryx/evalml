@@ -1557,7 +1557,7 @@ def test_describe_pipeline_with_ensembling(
                 )
                 assert (
                     automl_dict["pipeline_summary"]
-                    == "Sklearn Stacked Ensemble Classifier"
+                    == "Sklearn Stacked Ensemble Classifier w/ Label Encoder"
                 )
             else:
                 assert (
