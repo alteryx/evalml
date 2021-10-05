@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added human-readable pipeline explanations to model understanding :pr:`2861`
     * Fixes
     * Changes
         * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level :pr:`2821`
