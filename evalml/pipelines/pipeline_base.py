@@ -20,6 +20,7 @@ from .components import (
 from .components.utils import all_components, handle_component_class
 
 from evalml.exceptions import ObjectiveCreationError, PipelineScoreError
+from evalml.model_family import ModelFamily
 from evalml.objectives import get_objective
 from evalml.pipelines import ComponentGraph
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
@@ -731,12 +732,26 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             dict: Dictionary of hyperparameter ranges for each component in the pipeline.
         """
         hyperparameter_ranges = dict()
-        for (
-            component_name,
-            component_class,
-        ) in self.component_graph.component_instances.items():
-            component_hyperparameters = copy.copy(component_class.hyperparameter_ranges)
-            if custom_hyperparameters and component_name in custom_hyperparameters:
-                component_hyperparameters.update(custom_hyperparameters[component_name])
-            hyperparameter_ranges[component_name] = component_hyperparameters
+        if self.model_family == ModelFamily.ENSEMBLE:
+            metalearner = self.component_graph.get_last_component()
+            metalearner_name = metalearner.name
+            component_hyperparameters = copy.copy(metalearner.hyperparameter_ranges)
+            if custom_hyperparameters and metalearner_name in custom_hyperparameters:
+                component_hyperparameters.update(
+                    custom_hyperparameters[metalearner_name]
+                )
+            hyperparameter_ranges[metalearner_name] = component_hyperparameters
+        else:
+            for (
+                component_name,
+                component_class,
+            ) in self.component_graph.component_instances.items():
+                component_hyperparameters = copy.copy(
+                    component_class.hyperparameter_ranges
+                )
+                if custom_hyperparameters and component_name in custom_hyperparameters:
+                    component_hyperparameters.update(
+                        custom_hyperparameters[component_name]
+                    )
+                hyperparameter_ranges[component_name] = component_hyperparameters
         return hyperparameter_ranges

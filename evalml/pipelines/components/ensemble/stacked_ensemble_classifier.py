@@ -31,6 +31,4 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]"""
-    hyperparameter_ranges = {}
-    """{}"""
     _default_final_estimator = ElasticNetClassifier

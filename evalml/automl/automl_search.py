@@ -51,6 +51,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import (
+    _make_stacked_ensemble_pipeline,
     make_pipeline,
     make_timeseries_baseline_pipeline,
 )
@@ -698,6 +699,12 @@ class AutoMLSearch:
                     )
                     for estimator in allowed_estimators
                 ]
+                if self.ensembling:
+                    ensemble_pl = _make_stacked_ensemble_pipeline(
+                        input_pipelines=self.allowed_pipelines,
+                        problem_type=self.problem_type,
+                    )
+                    self.allowed_pipelines.append(ensemble_pl)
             self._catch_warnings(w)
         else:
 

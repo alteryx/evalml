@@ -1,7 +1,11 @@
 """Base class for the AutoML algorithms which power EvalML."""
 from abc import ABC, abstractmethod
 
+from networkx.algorithms.centrality import voterank_alg
+
+from evalml import pipelines
 from evalml.exceptions import PipelineNotFoundError
+from evalml.model_family.model_family import ModelFamily
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.tuners import SKOptTuner
 
@@ -49,6 +53,25 @@ class AutoMLAlgorithm(ABC):
             pipeline_hyperparameters = pipeline.get_hyperparameter_ranges(
                 custom_hyperparameters
             )
+            if pipeline.model_family == ModelFamily.ENSEMBLE:
+                pipeline_flattened_hyperparameters = {}
+                for (
+                    component,
+                    component_hyperparameters,
+                ) in pipeline_hyperparameters.items():
+                    component_flattened_hyperparameters = {}
+                    for parameter, range in component_hyperparameters.items():
+                        if isinstance(range, dict):
+                            for key, value in range.items():
+                                component_flattened_hyperparameters[
+                                    f"{parameter}_{key}"
+                                ] = value
+                        else:
+                            component_flattened_hyperparameters[parameter] = range
+                    pipeline_flattened_hyperparameters[
+                        component
+                    ] = component_flattened_hyperparameters
+                pipeline_hyperparameters = pipeline_flattened_hyperparameters
             self._tuners[pipeline.name] = self._tuner_class(
                 pipeline_hyperparameters, random_seed=self.random_seed
             )
@@ -99,8 +122,8 @@ class AutoMLAlgorithm(ABC):
         """Returns the number of batches which have been recommended so far."""
         return self._batch_number
 
-    def _create_ensemble(self):
-        next_batch = []
+    def _create_ensemble(self, proposed_parameters):
+        # next_batch = []
         best_pipelines = list(self._best_pipeline_info.values())
         problem_type = best_pipelines[0]["pipeline"].problem_type
         n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
@@ -120,12 +143,22 @@ class AutoMLAlgorithm(ABC):
             input_pipelines.append(
                 pipeline.new(parameters=pipeline_params, random_seed=self.random_seed)
             )
-
+        # ensembler_parameters = proposed_parameters.get("Stacked Ensemble Classifier", None) or proposed_parameters.get("Stacked Ensemble Regressor", None)
+        ensembler_parameters = list(proposed_parameters.values())[0]
+        final_estimator = ensembler_parameters["final_estimator"]
+        final_estimator_parameters = {}
+        for key, value in ensembler_parameters.items():
+            if key.startswith(final_estimator.name):
+                estimator_key = key.replace(f"{final_estimator.name}_", "")
+                final_estimator_parameters[estimator_key] = value
         ensemble = _make_stacked_ensemble_pipeline(
             input_pipelines,
             problem_type,
+            final_estimator=final_estimator,
+            final_estimator_parameters=final_estimator_parameters,
             random_seed=self.random_seed,
             n_jobs=n_jobs_ensemble,
         )
-        next_batch.append(ensemble)
-        return next_batch
+        return ensemble
+        # next_batch.append(ensemble)
+        # return next_batch

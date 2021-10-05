@@ -257,7 +257,12 @@ def generate_pipeline_code(element):
 
 
 def _make_stacked_ensemble_pipeline(
-    input_pipelines, problem_type, final_estimator=None, n_jobs=-1, random_seed=0
+    input_pipelines,
+    problem_type,
+    final_estimator=None,
+    final_estimator_parameters=None,
+    n_jobs=-1,
+    random_seed=0,
 ):
     """Creates a pipeline with a stacked ensemble estimator.
 
@@ -286,18 +291,28 @@ def _make_stacked_ensemble_pipeline(
     if is_classification(problem_type):
         parameters = {
             "Stacked Ensemble Classifier": {
+                "final_estimator": final_estimator,
+                "final_estimator_parameters": final_estimator_parameters,
                 "n_jobs": n_jobs,
             }
         }
-        estimator = StackedEnsembleClassifier
+        estimator = StackedEnsembleClassifier(
+            final_estimator=final_estimator,
+            final_estimator_parameters=final_estimator_parameters,
+        )
         pipeline_name = "Stacked Ensemble Classification Pipeline"
     else:
         parameters = {
             "Stacked Ensemble Regressor": {
+                "final_estimator": final_estimator,
+                "final_estimator_parameters": final_estimator_parameters,
                 "n_jobs": n_jobs,
             }
         }
-        estimator = StackedEnsembleRegressor
+        estimator = StackedEnsembleRegressor(
+            final_estimator=final_estimator,
+            final_estimator_parameters=final_estimator_parameters,
+        )
         pipeline_name = "Stacked Ensemble Regression Pipeline"
 
     pipeline_class = {
@@ -343,12 +358,10 @@ def _make_stacked_ensemble_pipeline(
     component_graph[estimator.name] = (
         [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
     )
-
     return pipeline_class(
         component_graph,
         parameters=parameters,
         custom_name=pipeline_name,
-        random_seed=random_seed,
     )
 
 

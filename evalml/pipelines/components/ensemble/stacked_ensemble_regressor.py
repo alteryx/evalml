@@ -27,6 +27,4 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]"""
-    hyperparameter_ranges = {}
-    """{}"""
     _default_final_estimator = ElasticNetRegressor

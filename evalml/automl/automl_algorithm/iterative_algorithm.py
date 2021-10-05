@@ -18,6 +18,7 @@ _ESTIMATOR_FAMILY_ORDER = [
     ModelFamily.LIGHTGBM,
     ModelFamily.CATBOOST,
     ModelFamily.ARIMA,
+    ModelFamily.ENSEMBLE,
 ]
 
 
@@ -158,26 +159,29 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             ]
 
         # One after training all pipelines one round
-        elif (
-            self.ensembling
-            and self._batch_number != 1
-            and (self._batch_number) % (len(self._first_batch_results) + 1) == 0
-        ):
-            next_batch = self._create_ensemble()
+        # elif (
+        #     self.ensembling
+        #     and self._batch_number != 1
+        #     and (self._batch_number) % (len(self._first_batch_results) + 1) == 0
+        # ):
+        #     next_batch = self._create_ensemble()
         else:
-            num_pipelines = (
-                (len(self._first_batch_results) + 1)
-                if self.ensembling
-                else len(self._first_batch_results)
-            )
+            num_pipelines = len(self._first_batch_results)
             idx = (self._batch_number - 1) % num_pipelines
             pipeline = self._first_batch_results[idx][1]
             for i in range(self.pipelines_per_batch):
                 proposed_parameters = self._tuners[pipeline.name].propose()
-                parameters = self._transform_parameters(pipeline, proposed_parameters)
-                next_batch.append(
-                    pipeline.new(parameters=parameters, random_seed=self.random_seed)
-                )
+                if pipeline.model_family == ModelFamily.ENSEMBLE:
+                    next_batch.append(self._create_ensemble(proposed_parameters))
+                else:
+                    parameters = self._transform_parameters(
+                        pipeline, proposed_parameters
+                    )
+                    next_batch.append(
+                        pipeline.new(
+                            parameters=parameters, random_seed=self.random_seed
+                        )
+                    )
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
         return next_batch

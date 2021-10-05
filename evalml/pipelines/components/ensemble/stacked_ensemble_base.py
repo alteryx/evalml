@@ -1,6 +1,15 @@
 """Stacked Ensemble Base."""
+from inspect import isclass
+
+from skopt.space.space import Categorical
+
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
+from evalml.pipelines.components.estimators import (
+    ElasticNetClassifier,
+    XGBoostClassifier,
+)
+from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import classproperty
 
 _nonstackable_model_families = [ModelFamily.BASELINE, ModelFamily.NONE]
@@ -18,27 +27,37 @@ class StackedEnsembleBase(Estimator):
     """
 
     model_family = ModelFamily.ENSEMBLE
+    hyperparameter_ranges = {
+        "final_estimator": Categorical([ElasticNetClassifier, XGBoostClassifier]),
+        ElasticNetClassifier.name: ElasticNetClassifier.hyperparameter_ranges,
+        XGBoostClassifier.name: XGBoostClassifier.hyperparameter_ranges,
+    }
     """ModelFamily.ENSEMBLE"""
     _default_final_estimator = None
 
     def __init__(
         self,
         final_estimator=None,
+        final_estimator_parameters=None,
         n_jobs=-1,
         random_seed=0,
         **kwargs,
     ):
         final_estimator = final_estimator or self._default_final_estimator()
+        final_estimator_obj = handle_component_class(final_estimator)
+        if isclass(final_estimator_obj) and final_estimator_parameters is not None:
+            final_estimator_obj = final_estimator_obj(**final_estimator_parameters)
 
         parameters = {
-            "final_estimator": final_estimator,
+            "final_estimator": final_estimator_obj,
+            # "final_estimator_parameters": final_estimator_parameters,
             "n_jobs": n_jobs,
         }
         parameters.update(kwargs)
 
         super().__init__(
             parameters=parameters,
-            component_obj=final_estimator,
+            component_obj=final_estimator_obj,
             random_seed=random_seed,
         )
 
