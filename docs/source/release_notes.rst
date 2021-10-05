@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added human-readable pipeline explanations to model understanding :pr:`2861`
     * Fixes
         * Fixed bug where `long` mode for the top level search method was not respected :pr:`2875`
     * Changes
