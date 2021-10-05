@@ -95,7 +95,7 @@ def readable_explanation(
 def get_influential_features(
     imp_df, max_features=5, min_importance_threshold=0.05, linear_importance=False
 ):
-    """Finds the most influential and detrimental features from a dataframe of feature importances.
+    """Finds the most influential features as well as any detrimental features from a dataframe of feature importances.
 
     Args:
         imp_df (pd.DataFrame): DataFrame containing feature names and associated importances.
