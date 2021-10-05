@@ -1,6 +1,7 @@
 """Human Readable Pipeline Explanations."""
 import pandas as pd
 
+import evalml
 from evalml.model_family import ModelFamily
 from evalml.model_understanding import calculate_permutation_importance
 from evalml.utils import get_logger, infer_feature_types
@@ -44,14 +45,9 @@ def readable_explanation(
     if importance_method == "permutation":
 
         if objective == "auto":
-            objective = {
-                "binary": "log loss binary",
-                "multiclass": "log loss multiclass",
-                "regression": "R2",
-                "time series regression": "R2",
-                "time series binary": "log loss binary",
-                "time series multiclass": "log loss multiclass",
-            }[pipeline.problem_type.value]
+            objective = evalml.automl.get_default_primary_search_objective(
+                pipeline.problem_type
+            )
 
         if X is None or y is None:
             raise ValueError(
@@ -148,6 +144,14 @@ def get_influential_features(
 def _fill_template(
     estimator, target, objective, most_important, somewhat_important, detrimental_feats
 ):
+    # Get the objective to a printable string
+    if objective is not None:
+        if isinstance(objective, evalml.objectives.ObjectiveBase):
+            objective = objective.name
+        if objective != "R2":  # Remove any title case if necessary
+            objective = objective.lower()
+
+    # Beginning of description
     objective_str = f" as measured by {objective}" if objective is not None else ""
     beginning = (
         f"{estimator}: The output{objective_str}"

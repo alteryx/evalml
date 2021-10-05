@@ -227,31 +227,46 @@ def test_readable_explanation_invalid_min_threshold(elasticnet_component_graph):
         readable_explanation(pipeline, min_importance_threshold=2)
 
 
+@patch(
+    "evalml.model_understanding.feature_explanations.calculate_permutation_importance"
+)
 def test_readable_explanation_permutation(
-    caplog, elasticnet_component_graph, fraud_100
+    mock_permutation_importance, caplog, elasticnet_component_graph, fraud_100
 ):
     pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
-    pipeline.fit(X, y)
+    pipeline._is_fitted = True
 
+    mock_permutation_importance.return_value = pd.DataFrame(
+        {
+            "feature": ["lng", "customer_present", "lat", "card_id"],
+            "importance": [0.55, -0.1, -0.2, -0.3],
+        }
+    )
     readable_explanation(pipeline, X, y, importance_method="permutation")
 
     out = caplog.text
     expected_influence = "Elastic Net Classifier: The prediction of fraud as measured by log loss binary is heavily influenced by lng."
-    expected_negative = "The features customer_present, lat, amount, card_id, and store_id detracted from model performance. We suggest removing these features."
+    expected_negative = "The features customer_present, lat, and card_id detracted from model performance. We suggest removing these features."
 
     assert expected_influence in out
     assert expected_negative in out
     caplog.clear()
 
 
+@patch(
+    "evalml.model_understanding.feature_explanations.calculate_permutation_importance"
+)
 def test_readable_explanation_different_objective(
-    caplog, elasticnet_component_graph, fraud_100
+    mock_permutation_importance, caplog, elasticnet_component_graph, fraud_100
 ):
     pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
-    pipeline.fit(X, y)
+    pipeline._is_fitted = True
 
+    mock_permutation_importance.return_value = pd.DataFrame(
+        {"feature": [], "importance": []}
+    )
     readable_explanation(pipeline, X, y, objective="precision")
 
     out = caplog.text
@@ -278,12 +293,27 @@ def test_readable_explanation_feature(caplog, elasticnet_component_graph, fraud_
     caplog.clear()
 
 
+@patch(
+    "evalml.model_understanding.feature_explanations.calculate_permutation_importance"
+)
+@patch("evalml.pipelines.PipelineBase.feature_importance", new_callable=PropertyMock)
 def test_readable_explanation_sentence_beginning(
-    caplog, elasticnet_component_graph, fraud_100
+    mock_feature_importance,
+    mock_permutation_importance,
+    caplog,
+    elasticnet_component_graph,
+    fraud_100,
 ):
     pipeline = BinaryClassificationPipeline(elasticnet_component_graph)
     X, y = fraud_100
-    pipeline.fit(X, y)
+    pipeline._is_fitted = True
+
+    mock_permutation_importance.return_value = pd.DataFrame(
+        {"feature": [], "importance": []}
+    )
+    mock_feature_importance.return_value = pd.DataFrame(
+        {"feature": [], "importance": []}
+    )
 
     # Objective is not None, target is not None
     readable_explanation(pipeline, X, y, importance_method="permutation")
