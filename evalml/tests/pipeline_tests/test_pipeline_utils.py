@@ -318,7 +318,7 @@ def test_stacked_estimator_in_pipeline(
 
     if problem_type == ProblemTypes.BINARY or problem_type == ProblemTypes.MULTICLASS:
         assert not np.isnan(pipeline.predict_proba(X)).values.any()
-    assert pipeline_score >= comparison_pipeline_score
+    assert pipeline_score <= comparison_pipeline_score
 
 
 def test_make_component_list_from_actions():
