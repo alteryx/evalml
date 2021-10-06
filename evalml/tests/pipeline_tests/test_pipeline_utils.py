@@ -31,7 +31,6 @@ from evalml.pipelines.components import (
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_component_list_from_actions,
-    _make_stacked_ensemble_pipeline,
     generate_pipeline_code,
     get_estimators,
     make_pipeline,
