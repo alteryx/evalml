@@ -45,7 +45,8 @@ def test_all_components(
         n_components = 53
     elif not is_using_windows and is_running_py_39_or_above:
         # No detrender or arima
-        n_components = 54
+        n_components = 54 # currently 53 because no prophet.
+        from evalml.pipelines.components import ProphetRegressor
     else:
         n_components = 55
     print (all_components())
