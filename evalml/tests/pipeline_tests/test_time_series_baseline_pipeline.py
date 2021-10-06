@@ -58,6 +58,7 @@ def test_time_series_baseline(
 
     X = pd.DataFrame(X)
     y = pd.Series(y)
+
     X_train, y_train = X.iloc[:50], y.iloc[:50]
     X_validation = X.iloc[(50 + gap) : (50 + gap + forecast_horizon)]
 

@@ -505,7 +505,7 @@ def test_predict_and_predict_in_sample_with_date_index(
 @pytest.mark.parametrize(
     "pipeline_class,estimator_name",
     [
-        # (TimeSeriesRegressionPipeline, "Random Forest Regressor"),
+        (TimeSeriesRegressionPipeline, "Random Forest Regressor"),
         (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
         (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier"),
     ],
@@ -612,7 +612,6 @@ def test_classification_pipeline_encodes_targets(
     pipeline_class,
     X_y_binary,
 ):
-    # TODO: switch to check label encoder
     X, y = X_y_binary
     y_series = pd.Series(y)
     df = pd.DataFrame({"negative": y_series, "positive": y_series})
@@ -621,16 +620,12 @@ def test_classification_pipeline_encodes_targets(
         y_series.iloc[: len(data)]
     )
     mock_predict_proba.side_effect = lambda data, y: df.ww.iloc[: len(data)]
-
     X = pd.DataFrame({"feature": range(len(y))})
     y_encoded = y_series.map(
         lambda label: "positive" if label == 1 else "negative"
     ).astype("category")
     X_train, y_encoded_train = X.iloc[:29], y_encoded.iloc[:29]
     X_holdout, y_encoded_holdout = X.iloc[29:], y_encoded.iloc[29:]
-
-    # mock_encode.side_effect = lambda series: series
-
     pl = pipeline_class(
         component_graph={
             "Label Encoder": ["Label Encoder", "X", "y"],
@@ -665,42 +660,30 @@ def test_classification_pipeline_encodes_targets(
     pl.fit(X_train, y_encoded_train)
     _, target_passed_to_estimator = mock_fit.call_args[0]
     # Check that target is converted to ints. Use .iloc[1:] because the first feature row has NaNs
-
     expected_target = (
         y_encoded_train.iloc[2:].map({"positive": 1, "negative": 0}).astype(int)
     )
     assert_series_equal(target_passed_to_estimator, expected_target)
 
     # Check predict encodes target
-    # mock_encode.reset_mock()
-    pl.predict(X_holdout.iloc[:1], None, X_train, y_encoded_train)
-    # assert mock_encode.call_count == 2
+    predictions = pl.predict(X_holdout.iloc[:1], None, X_train, y_encoded_train)
+    assert set(predictions.unique()).issubset({"positive", "negative"})
 
-    # mock_encode.reset_mock()
-    pl.predict_in_sample(
+    predictions_in_sample = pl.predict_in_sample(
         X_holdout, y_encoded_holdout, X_train, y_encoded_train, objective=None
     )
-    # assert mock_encode.call_count == 2
+    assert set(predictions_in_sample.unique()).issubset({"positive", "negative"})
 
-    # Check predict proba encodes target
-    # mock_encode.reset_mock()
-    pl.predict_proba(X_holdout.iloc[:1], X_train, y_encoded_train)
-    # assert mock_encode.call_count == 2
+    # Check predict proba column names are correct
+    predict_proba = pl.predict_proba(X_holdout.iloc[:1], X_train, y_encoded_train)
+    assert set(predict_proba.columns.unique()).issubset({"positive", "negative"})
 
-    # mock_encode.reset_mock()
-    pl.predict_proba_in_sample(X_holdout, y_encoded_holdout, X_train, y_encoded_train)
-    # assert mock_encode.call_count == 2
-
-    # Check score encodes target
-    # mock_encode.reset_mock()
-    pl.score(
-        X_holdout,
-        y_encoded_holdout,
-        X_train=X_train,
-        y_train=y_encoded_train,
-        objectives=["MCC Binary"],
+    predict_proba_in_sample = pl.predict_proba_in_sample(
+        X_holdout, y_encoded_holdout, X_train, y_encoded_train
     )
-    # assert mock_encode.call_count == 4
+    assert set(predict_proba_in_sample.columns.unique()).issubset(
+        {"positive", "negative"}
+    )
 
 
 @pytest.mark.parametrize(
@@ -804,14 +787,12 @@ def test_binary_classification_predictions_thresholded_properly(
     proba = pd.DataFrame({0: [1.0, 1.0, 0.0]})
     proba.ww.init()
     mock_predict_proba.return_value = proba
-    mock_objs = [mock_predict]
     X, y = X_y_binary
     X, y = pd.DataFrame(X), pd.Series(y)
     X_train, y_train = X.iloc[:60], y.iloc[:60]
     X_validation = X.iloc[60:63]
     binary_pipeline = dummy_ts_binary_pipeline_class(
         parameters={
-            "Logistic Regression Classifier": {"n_jobs": 1},
             "pipeline": {
                 "gap": 0,
                 "max_delay": 3,
@@ -823,36 +804,30 @@ def test_binary_classification_predictions_thresholded_properly(
     # test no objective passed and no custom threshold uses underlying estimator's predict method
     binary_pipeline.fit(X_train, y_train)
     binary_pipeline.predict(X_validation, None, X_train, y_train)
-    for mock_obj in mock_objs:
-        mock_obj.assert_called()
-        mock_obj.reset_mock()
+    mock_predict.assert_called()
+    mock_predict.reset_mock()
 
     # test objective passed but no custom threshold uses underlying estimator's predict method
     binary_pipeline.predict(X_validation, "precision", X_train, y_train)
-    for mock_obj in mock_objs:
-        mock_obj.assert_called()
-        mock_obj.reset_mock()
+    mock_predict.assert_called()
+    mock_predict.reset_mock()
 
-    mock_objs = [mock_predict_proba]
     # test custom threshold set but no objective passed
     proba = pd.DataFrame([[0.1, 0.2], [0.1, 0.2], [0.1, 0.2]])
     proba.ww.init()
     mock_predict_proba.return_value = proba
     binary_pipeline.threshold = 0.6
-    # binary_pipeline._encoder.classes_ = [0, 1]
     binary_pipeline.predict(X_validation, None, X_train, y_train)
-    for mock_obj in mock_objs:
-        mock_obj.assert_called()
-        mock_obj.reset_mock()
+    mock_predict_proba.assert_called()
+    mock_predict_proba.reset_mock()
     mock_obj_decision.assert_not_called()
     mock_predict.assert_not_called()
 
     # test custom threshold set but no objective passed
     binary_pipeline.threshold = 0.6
     binary_pipeline.predict(X_validation, None, X_train, y_train)
-    for mock_obj in mock_objs:
-        mock_obj.assert_called()
-        mock_obj.reset_mock()
+    mock_predict_proba.assert_called()
+    mock_predict_proba.reset_mock()
     mock_obj_decision.assert_not_called()
     mock_predict.assert_not_called()
 
@@ -860,9 +835,8 @@ def test_binary_classification_predictions_thresholded_properly(
     binary_pipeline.threshold = 0.6
     mock_obj_decision.return_value = pd.Series([1.0, 0.0, 1.0])
     binary_pipeline.predict(X_validation, "precision", X_train, y_train)
-    for mock_obj in mock_objs:
-        mock_obj.assert_called()
-        mock_obj.reset_mock()
+    mock_predict_proba.assert_called()
+    mock_predict_proba.reset_mock()
     mock_predict.assert_not_called()
     mock_obj_decision.assert_called()
 

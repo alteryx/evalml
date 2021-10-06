@@ -71,7 +71,7 @@ class ClassificationPipeline(PipelineBase):
 
     @property
     def classes_(self):
-        """Gets the class names for the pipeline."""
+        """Gets the class names for the pipeline. Will return None before pipeline is fit."""
         return self._classes_
 
     def _predict(self, X, objective=None):

@@ -659,26 +659,32 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
 
 
 @pytest.fixture
-def logistic_regression_multiclass_pipeline_class():
+def logistic_regression_component_graph():
+    component_graph = {
+        "Label Encoder": ["Label Encoder", "X", "y"],
+        "Imputer": ["Imputer", "X", "Label Encoder.y"],
+        "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "Label Encoder.y"],
+        "Standard Scaler": [
+            "Standard Scaler",
+            "One Hot Encoder.x",
+            "Label Encoder.y",
+        ],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            "Standard Scaler.x",
+            "Label Encoder.y",
+        ],
+    }
+    return component_graph
+
+
+@pytest.fixture
+def logistic_regression_multiclass_pipeline_class(logistic_regression_component_graph):
     class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
         """Logistic Regression Pipeline for binary classification."""
 
         custom_name = "Logistic Regression Multiclass Pipeline"
-        component_graph = {
-            "Label Encoder": ["Label Encoder", "X", "y"],
-            "Imputer": ["Imputer", "X", "Label Encoder.y"],
-            "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "Label Encoder.y"],
-            "Standard Scaler": [
-                "Standard Scaler",
-                "One Hot Encoder.x",
-                "Label Encoder.y",
-            ],
-            "Logistic Regression Classifier": [
-                "Logistic Regression Classifier",
-                "Standard Scaler.x",
-                "Label Encoder.y",
-            ],
-        }
+        component_graph = logistic_regression_component_graph
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
@@ -695,23 +701,9 @@ def logistic_regression_multiclass_pipeline_class():
 
 
 @pytest.fixture
-def logistic_regression_binary_pipeline_class():
+def logistic_regression_binary_pipeline_class(logistic_regression_component_graph):
     class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
-        component_graph = {
-            "Label Encoder": ["Label Encoder", "X", "y"],
-            "Imputer": ["Imputer", "X", "Label Encoder.y"],
-            "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "Label Encoder.y"],
-            "Standard Scaler": [
-                "Standard Scaler",
-                "One Hot Encoder.x",
-                "Label Encoder.y",
-            ],
-            "Logistic Regression Classifier": [
-                "Logistic Regression Classifier",
-                "Standard Scaler.x",
-                "Label Encoder.y",
-            ],
-        }
+        component_graph = logistic_regression_component_graph
         custom_name = "Logistic Regression Binary Pipeline"
 
         def __init__(self, parameters, random_seed=0):
