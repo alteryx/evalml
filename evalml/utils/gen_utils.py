@@ -200,8 +200,6 @@ _not_used_in_automl = {
     "SVMRegressor",
     "LinearRegressor",
     "CatBoostClassifier",
-    "XGBoostClassifier",
-    "ElasticNetClassifier"
 }
 
 
