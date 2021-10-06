@@ -412,7 +412,7 @@ class EnsembleDag(BinaryClassificationPipeline):
         "Estimator_1": ["Random Forest Classifier", "DT_1.x", "y"],
         "Estimator_2": ["Extra Trees Classifier", "DT_2.x", "y"],
         "Ensembler": [
-            "Logistic Regression Classifier",
+            "Stacked Ensemble Classifier",
             "Estimator_1.x",
             "Estimator_2.x",
             "y",

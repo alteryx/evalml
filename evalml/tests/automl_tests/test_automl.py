@@ -1506,7 +1506,6 @@ def test_describe_pipeline_with_ensembling(
         ensembling=True,
         optimize_thresholds=False,
         error_callback=raise_error_callback,
-        verbose=True,
     )
 
     score_side_effect = [
@@ -4433,11 +4432,7 @@ def test_score_batch_works(
     expected_scores = {}
     for i, e in enumerate(pipeline_score_side_effect):
         # Ensemble pipeline has different name
-        pipeline_name = (
-            f"Pipeline {i}"
-            if i < len(pipeline_score_side_effect) - 1
-            else "Templated Pipeline"
-        )
+        pipeline_name = f"Pipeline {i}"
         scores = no_exception_scores
         if isinstance(e, PipelineScoreError):
             scores = {"F1": np.nan, "AUC": np.nan, "Log Loss Binary": np.nan}
@@ -4474,7 +4469,7 @@ def test_score_batch_works(
         for classifier in stackable_classifiers[:2]
     ]
     ensemble = _make_stacked_ensemble_pipeline(input_pipelines, ProblemTypes.BINARY)
-    ensemble._custom_name = "Templated Pipeline"
+    ensemble._custom_name = f"Pipeline {len(pipeline_score_side_effect) - 1}"
     pipelines.append(ensemble)
 
     def score_batch_and_check():

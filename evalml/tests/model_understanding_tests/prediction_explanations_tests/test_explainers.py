@@ -1657,13 +1657,17 @@ def test_explain_predictions_stacked_ensemble(
 ):
     if is_binary(problem_type):
         X, y = X_y_binary
-        pipeline = StackedEnsembleClassifier(random_seed=0)
+        pipeline = BinaryClassificationPipeline(
+            [StackedEnsembleClassifier(random_seed=0)]
+        )
     elif is_multiclass(problem_type):
         X, y = X_y_multi
-        pipeline = StackedEnsembleClassifier(random_seed=0)
+        pipeline = MulticlassClassificationPipeline(
+            [StackedEnsembleClassifier(random_seed=0)]
+        )
     else:
         X, y = X_y_regression
-        pipeline = StackedEnsembleRegressor(random_seed=0)
+        pipeline = RegressionPipeline([StackedEnsembleRegressor(random_seed=0)])
 
     with pytest.raises(
         ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"
