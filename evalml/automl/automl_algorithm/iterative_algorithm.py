@@ -38,7 +38,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         X (pd.DataFrame): Training data.
         y (pd.Series): Target data.
         problem_type (ProblemType): Problem type associated with training data.
-        sampler_name (BaseSampler): Sampler to use for preprocessing.
+        sampler_name (BaseSampler): Sampler to use for preprocessing. Defaults to None.
         allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
             model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
             to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
@@ -50,8 +50,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             allowed_model_families to be ignored.
 
             e.g. allowed_component_graphs = { "My_Graph": ["Imputer", "One Hot Encoder", "Random Forest Classifier"] }
-        max_batches (int): The maximum number of batches to be evaluated. Used to determine ensembling.
-        max_iterations (int): The maximum number of iterations to be evaluated. Used to determine ensembling.
+        max_batches (int): The maximum number of batches to be evaluated. Used to determine ensembling. Defaults to None.
+        max_iterations (int): The maximum number of iterations to be evaluated. Used to determine ensembling. Defaults to None.
         tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
         random_seed (int): Seed for the random number generator. Defaults to 0.
         pipelines_per_batch (int): The number of pipelines to be evaluated in each batch, after the first batch. Defaults to 5.
@@ -87,38 +87,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         _estimator_family_order=None,
         verbose=False,
     ):
-        """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
-
-        Args:
-            X (pd.DataFrame): Training data.
-            y (pd.Series): Target data.
-            problem_type (ProblemType): Problem type associated with training data.
-            sampler_name (BaseSampler): Sampler to use for preprocessing.
-            allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
-                model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
-                to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
-                this parameter will be ignored.
-            allowed_component_graphs (dict): A dictionary of lists or ComponentGraphs indicating the component graphs allowed in the search.
-                The format should follow { "Name_0": [list_of_components], "Name_1": [ComponentGraph(...)] }
-
-                The default of None indicates all pipeline component graphs for this problem type are allowed. Setting this field will cause
-                allowed_model_families to be ignored.
-
-                e.g. allowed_component_graphs = { "My_Graph": ["Imputer", "One Hot Encoder", "Random Forest Classifier"] }
-            max_batches (int): The maximum number of batches to be evaluated. Used to determine ensembling.
-            max_iterations (int): The maximum number of iterations to be evaluated. Used to determine ensembling.
-            tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-            pipelines_per_batch (int): The number of pipelines to be evaluated in each batch, after the first batch. Defaults to 5.
-            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to None.
-            number_features (int): The number of columns in the input features. Defaults to None.
-            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
-            text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
-            pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
-            custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
-            _estimator_family_order (list(ModelFamily) or None): specify the sort order for the first batch. Defaults to None, which uses _ESTIMATOR_FAMILY_ORDER.
-            verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
-        """
         self.X = infer_feature_types(X)
         self.y = infer_feature_types(y)
         self.problem_type = problem_type
