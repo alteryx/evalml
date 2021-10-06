@@ -180,7 +180,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             y = pd.Series(
                 self._encoder.transform(None, y)[1], index=y.index, name=y.name
             )
-            # self._encode_targets(y)
         return self._score_all_objectives(
             X,
             y,
@@ -251,7 +250,6 @@ class TimeSeriesBinaryClassificationPipeline(
                 )
             predictions = pd.Series(
                 predictions,
-                # self._decode_targets(predictions),
                 name=self.input_target_name,
                 index=y.index,
             )
