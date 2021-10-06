@@ -29,7 +29,7 @@ class ClassificationPipeline(PipelineBase):
         custom_name=None,
         random_seed=0,
     ):
-        self.classes_ = None
+        self._classes_ = None
         super().__init__(
             component_graph,
             custom_name=custom_name,
@@ -53,11 +53,9 @@ class ClassificationPipeline(PipelineBase):
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-
-        self.classes_ = np.unique(y)
-        self.classes_ = ww.init_series(self.classes_)
-        self.classes_ = list(self.classes_)
         self._fit(X, y)
+        self._classes_ = np.unique(y)
+        self._classes_ = list(ww.init_series(self._classes_))
         return self
 
     def _encode_targets(self, y):
@@ -71,23 +69,10 @@ class ClassificationPipeline(PipelineBase):
                 raise ValueError(str(e))
         return y
 
-    # def _decode_targets(self, y):
-    #     """Converts encoded numerical values to their original target values.
-
-    #     Note: we cast y as ints first to address boolean values that may be returned from
-    #     calculating predictions which we would not be able to otherwise transform if we
-    #     originally had integer targets.
-    #     """
-    #     return self._encoder.inverse_transform(y.astype(int))
-
-    # @property
-    # def classes_(self):
-    #     """Gets the class names for the problem."""
-    #     if not hasattr(self._encoder, "classes_"):
-    #         raise AttributeError(
-    #             "Cannot access class names before fitting the pipeline."
-    #         )
-    #     return self._encoder.classes_
+    @property
+    def classes_(self):
+        """Gets the class names for the pipeline."""
+        return self._classes_
 
     def _predict(self, X, objective=None):
         """Make predictions using selected features.

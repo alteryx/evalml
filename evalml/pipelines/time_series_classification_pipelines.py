@@ -42,9 +42,9 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             self
         """
         X, y = self._convert_to_woodwork(X, y)
-        self.classes_ = np.unique(y)
-        self.classes_ = list(ww.init_series(self.classes_))
         self._fit(X, y)
+        self._classes_ = np.unique(y)
+        self._classes_ = list(ww.init_series(self._classes_))
         return self
 
     def _estimator_predict_proba(self, features, y):
@@ -76,20 +76,11 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             raise ValueError(
                 "Cannot call predict_proba_in_sample() on a component graph because the final component is not an Estimator."
             )
-        # y_holdout = self._encode_targets(y_holdout)
-        # y_train = self._encode_targets(y_train)
         features = self.compute_estimator_features(
             X_holdout, y_holdout, X_train, y_train
         )
-        # inverse transform here?
         proba = self._estimator_predict_proba(features, y_holdout)
         proba.index = y_holdout.index
-        # proba = proba.ww.rename(
-        #     columns={
-        #         col: new_col
-        #         for col, new_col in zip(proba.columns, self._encoder.classes_)
-        #     }
-        # )
         proba = proba.ww.rename(
             columns={col: new_col for col, new_col in zip(proba.columns, self.classes_)}
         )
