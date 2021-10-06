@@ -1,6 +1,8 @@
 """Stacked Ensemble Regressor."""
+from skopt.space.space import Categorical
+
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components import ElasticNetRegressor
+from evalml.pipelines.components import ElasticNetRegressor, XGBoostRegressor
 from evalml.pipelines.components.ensemble import StackedEnsembleBase
 from evalml.problem_types import ProblemTypes
 
@@ -19,6 +21,11 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
     name = "Stacked Ensemble Regressor"
     model_family = ModelFamily.ENSEMBLE
     """ModelFamily.ENSEMBLE"""
+    hyperparameter_ranges = {
+        "final_estimator": Categorical([ElasticNetRegressor, XGBoostRegressor]),
+        ElasticNetRegressor.name: ElasticNetRegressor.hyperparameter_ranges,
+        XGBoostRegressor.name: XGBoostRegressor.hyperparameter_ranges,
+    }
     supported_problem_types = [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,

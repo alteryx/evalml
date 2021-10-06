@@ -1,8 +1,10 @@
 """Stacked Ensemble Classifier."""
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components import ElasticNetClassifier
+from evalml.pipelines.components import ElasticNetClassifier, XGBoostClassifier
 from evalml.pipelines.components.ensemble import StackedEnsembleBase
 from evalml.problem_types import ProblemTypes
+
+from skopt.space.space import Categorical
 
 
 class StackedEnsembleClassifier(StackedEnsembleBase):
@@ -19,6 +21,11 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
     name = "Stacked Ensemble Classifier"
     model_family = ModelFamily.ENSEMBLE
     """ModelFamily.ENSEMBLE"""
+    hyperparameter_ranges = {
+        "final_estimator": Categorical([ElasticNetClassifier, XGBoostClassifier]),
+        ElasticNetClassifier.name: ElasticNetClassifier.hyperparameter_ranges,
+        XGBoostClassifier.name: XGBoostClassifier.hyperparameter_ranges,
+    }
     supported_problem_types = [
         ProblemTypes.BINARY,
         ProblemTypes.MULTICLASS,

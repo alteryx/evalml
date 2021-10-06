@@ -1,14 +1,9 @@
 """Stacked Ensemble Base."""
 from inspect import isclass
 
-from skopt.space.space import Categorical
-
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
-from evalml.pipelines.components.estimators import (
-    ElasticNetClassifier,
-    XGBoostClassifier,
-)
+
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.utils import classproperty
 
@@ -27,11 +22,6 @@ class StackedEnsembleBase(Estimator):
     """
 
     model_family = ModelFamily.ENSEMBLE
-    hyperparameter_ranges = {
-        "final_estimator": Categorical([ElasticNetClassifier, XGBoostClassifier]),
-        ElasticNetClassifier.name: ElasticNetClassifier.hyperparameter_ranges,
-        XGBoostClassifier.name: XGBoostClassifier.hyperparameter_ranges,
-    }
     """ModelFamily.ENSEMBLE"""
     _default_final_estimator = None
 
