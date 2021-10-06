@@ -1519,3 +1519,33 @@ def test_partial_dependence_not_allowed_types(types, cols, expected_cols):
         return
     s = partial_dependence(pl, X, cols, grid_resolution=2)
     assert not s.isnull().any().any()
+
+
+def test_partial_dependence_categorical_nan(fraud_100):
+    X, y = fraud_100
+    X.ww["provider"][:10] = None
+    pl = BinaryClassificationPipeline(
+        component_graph=[
+            "Imputer",
+            "DateTime Featurization Component",
+            "One Hot Encoder",
+            "Random Forest Classifier",
+        ]
+    )
+    pl.fit(X, y)
+
+    GRID_RESOLUTION = 5
+    dep = partial_dependence(
+        pl, X, features="provider", grid_resolution=GRID_RESOLUTION
+    )
+
+    assert dep.shape[0] == X["provider"].dropna().nunique()
+    assert not dep["feature_values"].isna().any()
+    assert not dep["partial_dependence"].isna().any()
+
+    dep2way = partial_dependence(
+        pl, X, features=("amount", "provider"), grid_resolution=GRID_RESOLUTION
+    )
+    assert not dep2way.isna().any().any()
+    # Plus 1 in the columns because there is `class_label`
+    assert dep2way.shape == (GRID_RESOLUTION, X["provider"].dropna().nunique() + 1)

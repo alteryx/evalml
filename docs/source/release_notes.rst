@@ -2,6 +2,19 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added human-readable pipeline explanations to model understanding :pr:`2861`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.34.0 Sep. 30, 2021**
+    * Enhancements
         * Updated to work with Woodwork 0.8.1 :pr:`2783`
         * Added validation that ``training_data`` and ``training_target`` are not ``None`` in prediction explanations :pr:`2787`
         * Added support for training-only components in pipelines and component graphs :pr:`2776`
@@ -10,14 +23,18 @@ Release Notes
         * Added validation to holdout data passed to ``predict`` and ``predict_proba`` for time series :pr:`2804`
         * Added information about which row indices are outliers in ``OutliersDataCheck`` :pr:`2818`
         * Added verbose flag to top level ``search()`` method :pr:`2813`
-        * Added support for linting jupyter notebooks and clearing the executed cells :pr:`2829`
+        * Added support for linting jupyter notebooks and clearing the executed cells and empty cells :pr:`2829` :pr:`2837`
         * Added "DROP_ROWS" action to output of ``OutliersDataCheck.validate()`` :pr:`2820`
+        * Added the ability of ``AutoMLSearch`` to accept a ``SequentialEngine`` instance as engine input :pr:`2838`
+        * Added new label encoder component to EvalML :pr:`2853`
+        * Added our own partial dependence implementation :pr:`2834`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`
         * Fixed bug where ``score_pipelines`` method of ``AutoMLSearch`` would not work for time series problems :pr:`2786`
         * Removed ``TargetTransformer`` class :pr:`2833`
         * Added tests to verify ``ComponentGraph`` support by pipelines :pr:`2830`
+        * Fixed incorrect parameter for baseline regression pipeline in ``AutoMLSearch`` :pr:`2847`
     * Changes
         * Changed woodwork initialization to use partial schemas :pr:`2774`
         * Made ``Transformer.transform()`` an abstract method :pr:`2744`
@@ -27,9 +44,10 @@ Release Notes
         * Pinned ``woodwork`` version to 0.8.0 :pr:`2832`
         * Removed ``model_family`` attribute from ``ComponentBase`` and transformers :pr:`2828`
         * Limited ``scikit-learn`` until new features and errors can be addressed :pr:`2842`
-    * Documentation Changes
+        * Show DeprecationWarning when Sklearn Ensemblers are called :pr:`2859`
     * Testing Changes
         * Updated matched assertion message regarding monotonic indices in polynomial detrender tests :pr:`2811`
+        * Added a test to make sure pip versions match conda versions :pr:`2851`
 
 .. warning::
 
