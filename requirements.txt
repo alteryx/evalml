@@ -13,4 +13,4 @@ statsmodels >= 0.12.2
 imbalanced-learn>=0.8.0
 pmdarima==1.8.0
 sktime>=0.7.0;python_version<"3.9"
-vowpalwabbit>=8.11.0
+vowpalwabbit>=8.8.1
