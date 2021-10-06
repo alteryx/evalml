@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added human-readable pipeline explanations to model understanding :pr:`2861`
+        * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary :pr:`2869`
     * Fixes
     * Changes
     * Documentation Changes
