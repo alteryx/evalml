@@ -95,7 +95,7 @@ def test_binary_classification_pipeline_predict(
 
     # test custom threshold set but no objective passed
     binary_pipeline.threshold = 0.6
-    binary_pipeline.classes_ = [0, 1]
+    binary_pipeline._classes_ = [0, 1]
     binary_pipeline.predict(X)
     mock_predict_proba.assert_called()
     mock_predict_proba.reset_mock()

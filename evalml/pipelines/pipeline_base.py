@@ -358,7 +358,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                     raise ValueError(
                         f"Invalid objective {objective.name} specified for problem type {self.problem_type}"
                     )
-
                 y_pred = self._select_y_pred_for_score(
                     X, y, y_pred, y_pred_proba, objective
                 )

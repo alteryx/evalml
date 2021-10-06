@@ -132,8 +132,6 @@ class ClassificationPipeline(PipelineBase):
             )
         X = self.compute_estimator_features(X, y=None)
         proba = self.estimator.predict_proba(X)
-
-        # to_rename = self.inverse_transform(pd.Series(proba.columns))
         proba = proba.ww.rename(
             columns={col: new_col for col, new_col in zip(proba.columns, self.classes_)}
         )
@@ -154,7 +152,6 @@ class ClassificationPipeline(PipelineBase):
         """
         y = infer_feature_types(y)
         objectives = self.create_objectives(objectives)
-        # y = self._encode_targets(y)
         if self._encoder is not None:
             y = pd.Series(
                 self._encoder.transform(None, y)[1], index=y.index, name=y.name
