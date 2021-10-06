@@ -124,6 +124,7 @@ Release Notes
         * Updated pipeline ``graph()`` to distingush X and y edges :pr:`2654`
         * Added ``DropRowsTransformer`` component :pr:`2692`
         * Added ``DROP_ROWS`` to ``_make_component_list_from_actions`` and clean up metadata :pr:`2694`
+        * Add new ensembler component :pr:`2653`
     * Fixes
         * Updated Oversampler logic to select best SMOTE based on component input instead of pipeline input :pr:`2695`
         * Added ability to explicitly close DaskEngine resources to improve runtime and reduce Dask warnings :pr:`2667`
