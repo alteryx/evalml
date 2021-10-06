@@ -84,19 +84,13 @@ def test_highly_null_data_check_warnings():
                 message="5 out of 5 rows are more than 0.0% null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
-                details={"pct_null_cols": highly_null_rows},
+                details={"pct_null_cols": highly_null_rows, "rows": highly_null_rows.series.index.tolist(), "columns": None},
             ).to_dict(),
             DataCheckWarning(
-                message="Column 'lots_of_null' is 0.0% or more null",
+                message="Columns 'lots_of_null', 'all_null' are 0.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-                details={"column": "lots_of_null", "pct_null_rows": 0.8},
-            ).to_dict(),
-            DataCheckWarning(
-                message="Column 'all_null' is 0.0% or more null",
-                data_check_name=highly_null_data_check_name,
-                message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-                details={"column": "all_null", "pct_null_rows": 1.0},
+                details={"columns": ["lots_of_null", "all_null"], "pct_null_rows": {'all_null': 1.0, 'lots_of_null': 0.8}, "rows": None},
             ).to_dict(),
         ],
         "errors": [],
@@ -105,10 +99,7 @@ def test_highly_null_data_check_warnings():
                 DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 1, 2, 3, 4]}
             ).to_dict(),
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "lots_of_null"}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "all_null"}
+                DataCheckActionCode.DROP_COL, metadata={"columns": ["lots_of_null", "all_null"]}
             ).to_dict(),
         ],
     }
@@ -130,16 +121,10 @@ def test_highly_null_data_check_warnings():
                 details={"pct_null_cols": highly_null_rows},
             ).to_dict(),
             DataCheckWarning(
-                message="Column 'lots_of_null' is 50.0% or more null",
+                message="Columns 'lots_of_null', 'all_null' are 50.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-                details={"column": "lots_of_null", "pct_null_rows": 0.8},
-            ).to_dict(),
-            DataCheckWarning(
-                message="Column 'all_null' is 50.0% or more null",
-                data_check_name=highly_null_data_check_name,
-                message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-                details={"column": "all_null", "pct_null_rows": 1.0},
+                details={"columns": ["lots_of_null", "all_null"], "pct_null_rows": {'all_null': 1.0, 'lots_of_null': 0.8}, "rows": None},
             ).to_dict(),
         ],
         "errors": [],
@@ -148,10 +133,7 @@ def test_highly_null_data_check_warnings():
                 DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 1, 2, 3]}
             ).to_dict(),
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "lots_of_null"}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "all_null"}
+                DataCheckActionCode.DROP_COL, metadata={"columns": ["lots_of_null", "all_null"]}
             ).to_dict(),
         ],
     }

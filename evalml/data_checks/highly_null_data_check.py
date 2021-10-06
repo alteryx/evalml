@@ -90,7 +90,7 @@ class HighlyNullDataCheck(DataCheck):
                     message=warning_msg,
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
-                    details={"pct_null_cols": highly_null_rows},
+                    details={"rows": highly_null_rows.index.tolist(), "pct_null_cols": highly_null_rows},
                 ).to_dict()
             )
             results["actions"].append(
@@ -106,25 +106,25 @@ class HighlyNullDataCheck(DataCheck):
             for key, value in percent_null_cols.items()
             if value >= self.pct_null_col_threshold and value != 0
         }
-        warning_msg = "Columns '{}' are {}% or more null"
+        warning_msg = "Columns {} are {}% or more null"
         if highly_null_cols:
             results["warnings"].append(
                 DataCheckWarning(
                     message=warning_msg.format(
-                        (", ").join([str(col) for col in highly_null_cols]),
+                        (", ").join(["'{}'".format(str(col)) for col in highly_null_cols]),
                         self.pct_null_col_threshold * 100,
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
                     details={
-                        "columns": highly_null_cols,
+                        "columns": list(highly_null_cols),
                         "pct_null_rows": highly_null_cols,
                     },
                 ).to_dict()
             )
             results["actions"].append(
                 DataCheckAction(
-                    DataCheckActionCode.DROP_COL, metadata={"columns": highly_null_cols}
+                    DataCheckActionCode.DROP_COL, metadata={"columns": list(highly_null_cols)}
                 ).to_dict()
             )
         return results
