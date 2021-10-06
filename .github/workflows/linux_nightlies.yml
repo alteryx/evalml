@@ -1,8 +1,8 @@
 name: Nightly unit tests, linux
 
 on:
-  schedule:
-      - cron: '0 7 * * *'
+  pull_request:
+    types: [opened, synchronize]
 
 jobs:
   unit_tests:
@@ -62,7 +62,5 @@ jobs:
           job_name: Nightly ${{ matrix.python_version }} ${{matrix.command}}
           status: ${{ job.status }}
           fields: workflow,job,took
-          mention: channel
-          if_mention: failure,cancelled
           text: ':elmofire:'
         if: failure() 
