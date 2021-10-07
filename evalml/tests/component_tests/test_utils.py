@@ -50,9 +50,10 @@ def test_all_components(
         from evalml.pipelines.components import ProphetRegressor
     else:
         n_components = 55
-    with capsys.disabled():
-        print (all_components())
+    
+    print (all_components())
     assert len(all_components()) == n_components
+    assert False
 
 
 def test_handle_component_class_names():
