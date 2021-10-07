@@ -30,6 +30,7 @@ def test_all_components(
     is_running_py_39_or_above,
     is_using_conda,
     is_using_windows,
+    capsys
 ):
     # Depending on the environment the detrender/Arima and/or Prophet will not be installed
     if has_minimal_dependencies:
@@ -49,7 +50,8 @@ def test_all_components(
         from evalml.pipelines.components import ProphetRegressor
     else:
         n_components = 55
-    print (all_components())
+    with capsys.disabled():
+        print (all_components())
     assert len(all_components()) == n_components
 
 
