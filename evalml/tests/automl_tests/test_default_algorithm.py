@@ -11,8 +11,6 @@ from evalml.pipelines.components import (
     ElasticNetRegressor,
     LogisticRegressionClassifier,
     RandomForestClassifier,
-    SklearnStackedEnsembleClassifier,
-    SklearnStackedEnsembleRegressor,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
@@ -142,10 +140,6 @@ def test_default_algorithm(
         final_ensemble[0].estimator,
         (StackedEnsembleClassifier, StackedEnsembleRegressor),
     )
-    assert isinstance(
-        final_ensemble[1].estimator,
-        (SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier),
-    )
     add_result(algo, final_ensemble)
 
     long_explore = algo.next_batch()
@@ -158,10 +152,6 @@ def test_default_algorithm(
         long_first_ensemble[0].estimator,
         (StackedEnsembleClassifier, StackedEnsembleRegressor),
     )
-    assert isinstance(
-        long_first_ensemble[1].estimator,
-        (SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier),
-    )
 
     long = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long])
@@ -172,10 +162,6 @@ def test_default_algorithm(
     assert isinstance(
         long_second_ensemble[0].estimator,
         (StackedEnsembleClassifier, StackedEnsembleRegressor),
-    )
-    assert isinstance(
-        long_second_ensemble[1].estimator,
-        (SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier),
     )
 
     long_2 = algo.next_batch()
@@ -209,10 +195,7 @@ def test_evalml_algo_pipeline_params(mock_get_names, X_y_binary):
         batch = algo.next_batch()
         add_result(algo, batch)
         for pipeline in batch:
-            if not isinstance(
-                pipeline.estimator,
-                (SklearnStackedEnsembleClassifier, StackedEnsembleClassifier),
-            ):
+            if not isinstance(pipeline.estimator, StackedEnsembleClassifier):
                 assert pipeline.parameters["pipeline"] == {"gap": 2, "max_delay": 10}
             if isinstance(pipeline.estimator, LogisticRegressionClassifier):
                 assert pipeline.parameters["Logistic Regression Classifier"]["C"] == 5

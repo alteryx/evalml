@@ -28,8 +28,6 @@ from .components import (
     DecisionTreeRegressor,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
-    SklearnStackedEnsembleClassifier,
-    SklearnStackedEnsembleRegressor,
     DelayedFeatureTransformer,
     DFSTransformer,
     KNeighborsClassifier,

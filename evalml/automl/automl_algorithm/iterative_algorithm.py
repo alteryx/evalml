@@ -282,7 +282,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     + len(self.allowed_pipelines)
                     + self.pipelines_per_batch
                     * (self.max_batches - 1 - num_ensemble_batches)
-                    + num_ensemble_batches * 2
+                    + num_ensemble_batches
                 )
             else:
                 self.max_iterations = (
