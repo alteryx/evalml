@@ -186,6 +186,8 @@ def assert_allowed_pipelines_equal_helper():
     def assert_allowed_pipelines_equal_helper(
         actual_allowed_pipelines, expected_allowed_pipelines
     ):
+        actual_allowed_pipelines.sort(key=lambda p: p.name)
+        expected_allowed_pipelines.sort(key=lambda p: p.name)
         for actual, expected in zip(
             actual_allowed_pipelines, expected_allowed_pipelines
         ):

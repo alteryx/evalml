@@ -26,7 +26,6 @@ from evalml.automl.utils import (
     _LARGE_DATA_PERCENT_VALIDATION,
     _LARGE_DATA_ROW_THRESHOLD,
     get_default_primary_search_objective,
-    get_pipelines_from_component_graphs,
 )
 from evalml.exceptions import (
     AutoMLSearchException,
@@ -62,10 +61,7 @@ from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators,
 )
-from evalml.pipelines.utils import (
-    _make_stacked_ensemble_pipeline,
-    make_pipeline,
-)
+from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.preprocessing import TrainingValidationSplit
 from evalml.problem_types import (
     ProblemTypes,
@@ -660,33 +656,7 @@ def test_automl_allowed_component_graphs_algorithm(
         )
     assert mock_algo_init.call_count == 1
     _, kwargs = mock_algo_init.call_args
-    assert kwargs["max_iterations"] == 10
-    assert kwargs["allowed_pipelines"] == get_pipelines_from_component_graphs(
-        allowed_component_graphs, "binary"
-    )
-
-    allowed_model_families = [ModelFamily.RANDOM_FOREST]
-    with pytest.raises(Exception, match="mock algo init"):
-        AutoMLSearch(
-            X_train=X,
-            y_train=y,
-            problem_type="binary",
-            allowed_model_families=allowed_model_families,
-            max_iterations=1,
-        )
-    assert mock_algo_init.call_count == 2
-    _, kwargs = mock_algo_init.call_args
-    assert kwargs["max_iterations"] == 1
-    for actual, expected in zip(
-        kwargs["allowed_pipelines"],
-        [
-            make_pipeline(X, y, estimator, ProblemTypes.BINARY)
-            for estimator in get_estimators(
-                ProblemTypes.BINARY, model_families=allowed_model_families
-            )
-        ],
-    ):
-        assert actual.parameters == expected.parameters
+    assert kwargs["allowed_component_graphs"] == allowed_component_graphs
 
 
 @pytest.mark.parametrize("pickle_type", ["cloudpickle", "pickle", "invalid"])
@@ -2103,8 +2073,10 @@ def test_percent_better_than_baseline_in_rankings(
             n_jobs=1,
         )
     automl._automl_algorithm = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type=problem_type_value,
         max_iterations=2,
-        allowed_pipelines=allowed_pipelines,
         tuner_class=SKOptTuner,
         random_seed=0,
         n_jobs=1,
@@ -2115,6 +2087,7 @@ def test_percent_better_than_baseline_in_rankings(
         pipeline_params=pipeline_parameters,
         custom_hyperparameters=None,
     )
+    automl._automl_algorithm.allowed_pipelines = allowed_pipelines
     automl._SLEEP_TIME = 0.000001
     with patch(
         baseline_pipeline_class + ".score",
@@ -2274,8 +2247,9 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         additional_objectives=additional_objectives,
     )
     automl._automl_algorithm = IterativeAlgorithm(
-        max_iterations=2,
-        allowed_pipelines=[DummyPipeline(parameters)],
+        X=X,
+        y=y,
+        problem_type=problem_type,
         tuner_class=SKOptTuner,
         random_seed=0,
         n_jobs=-1,
@@ -2293,6 +2267,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         },
         custom_hyperparameters=None,
     )
+    automl._automl_algorithm.allowed_pipelines = [DummyPipeline(parameters)]
     automl._SLEEP_TIME = 0.00001
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
         automl.search()
@@ -2425,8 +2400,10 @@ def test_percent_better_than_baseline_scores_different_folds(
         additional_objectives=["f1"],
     )
     automl._automl_algorithm = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type="binary",
         max_iterations=2,
-        allowed_pipelines=[DummyPipeline({})],
         tuner_class=SKOptTuner,
         random_seed=0,
         n_jobs=-1,
@@ -2437,6 +2414,8 @@ def test_percent_better_than_baseline_scores_different_folds(
         pipeline_params={},
         custom_hyperparameters=None,
     )
+    automl._automl_algorithm.allowed_pipelines = [DummyPipeline({})]
+
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1, "F1": 1}):
         automl.search()
@@ -3216,7 +3195,7 @@ def test_search_with_text(AutoMLTestEnv):
     ],
 )
 @pytest.mark.parametrize("df_text", [True, False])
-@patch("evalml.automl.automl_algorithm.IterativeAlgorithm.__init__")
+@patch("evalml.automl.automl_search.IterativeAlgorithm")
 def test_search_with_text_and_ensembling(
     mock_iter, df_text, problem_type, pipeline_name, ensemble_name
 ):
@@ -3251,7 +3230,7 @@ def test_search_with_text_and_ensembling(
         y = [0, 1, 2, 0, 1, 2, 0, 1, 2, 0, 1, 2]
     else:
         y = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
-    mock_iter.return_value = None
+
     _ = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -3261,11 +3240,12 @@ def test_search_with_text_and_ensembling(
         max_batches=4,
         ensembling=True,
     )
-    call_args = mock_iter.call_args_list[0][1]
+
+    call_args = mock_iter.call_args[1]["text_in_ensembling"]
     if df_text:
-        assert call_args["text_in_ensembling"]
+        assert call_args is True
     else:
-        assert not call_args["text_in_ensembling"]
+        assert call_args is False
 
 
 def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
@@ -3320,9 +3300,7 @@ def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
     assert total_pipelines(automl, 2, 10) == len(automl.full_rankings)
 
 
-def test_automl_respects_random_seed(
-    AutoMLTestEnv, X_y_binary, dummy_classifier_estimator_class
-):
+def test_automl_respects_random_seed(X_y_binary, dummy_classifier_estimator_class):
 
     X, y = X_y_binary
 
@@ -3357,8 +3335,9 @@ def test_automl_respects_random_seed(
 
     pipelines = [DummyPipeline({}, random_seed=42)]
     automl._automl_algorithm = IterativeAlgorithm(
-        max_iterations=2,
-        allowed_pipelines=pipelines,
+        X=X,
+        y=y,
+        problem_type="binary",
         tuner_class=SKOptTuner,
         random_seed=42,
         n_jobs=1,
@@ -3369,10 +3348,7 @@ def test_automl_respects_random_seed(
         pipeline_params={},
         custom_hyperparameters=None,
     )
-
-    env = AutoMLTestEnv("binary")
-    with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
-        automl.search()
+    automl._automl_algorithm.allowed_pipelines = pipelines
     assert automl.allowed_pipelines[0].random_seed == 42
     assert (
         DummyPipeline.num_pipelines_different_seed == 0
