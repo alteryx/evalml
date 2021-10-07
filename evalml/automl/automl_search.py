@@ -773,7 +773,7 @@ class AutoMLSearch:
                     + len(self.allowed_pipelines)
                     + self._pipelines_per_batch
                     * (self.max_batches - 1 - num_ensemble_batches)
-                    + num_ensemble_batches
+                    + num_ensemble_batches * self._pipelines_per_batch
                 )
             else:
                 self.max_iterations = (
