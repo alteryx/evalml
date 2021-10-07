@@ -90,7 +90,10 @@ class HighlyNullDataCheck(DataCheck):
                     message=warning_msg,
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
-                    details={"rows": highly_null_rows.index.tolist(), "pct_null_cols": highly_null_rows},
+                    details={
+                        "rows": highly_null_rows.index.tolist(),
+                        "pct_null_cols": highly_null_rows,
+                    },
                 ).to_dict()
             )
             results["actions"].append(
@@ -111,7 +114,9 @@ class HighlyNullDataCheck(DataCheck):
             results["warnings"].append(
                 DataCheckWarning(
                     message=warning_msg.format(
-                        (", ").join(["'{}'".format(str(col)) for col in highly_null_cols]),
+                        (", ").join(
+                            ["'{}'".format(str(col)) for col in highly_null_cols]
+                        ),
                         self.pct_null_col_threshold * 100,
                     ),
                     data_check_name=self.name,
@@ -124,7 +129,8 @@ class HighlyNullDataCheck(DataCheck):
             )
             results["actions"].append(
                 DataCheckAction(
-                    DataCheckActionCode.DROP_COL, metadata={"columns": list(highly_null_cols)}
+                    DataCheckActionCode.DROP_COL,
+                    metadata={"columns": list(highly_null_cols)},
                 ).to_dict()
             )
         return results
