@@ -5,12 +5,14 @@ Release Notes
         * Added human-readable pipeline explanations to model understanding :pr:`2861`
     * Fixes
     * Changes
+        * Deleted scikit-learn ensembler :pr:`2819`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Deleted scikit-learn ensembler :pr:`2819`
 
 
 **v0.34.0 Sep. 30, 2021**

@@ -11,9 +11,6 @@ import woodwork as ww
 
 from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
-from evalml.pipelines.components.ensemble.sklearn_stacked_ensemble_base import (
-    SklearnStackedEnsembleBase,
-)
 from evalml.preprocessing import split_data
 from evalml.problem_types import is_binary, is_classification, is_multiclass
 
@@ -182,12 +179,6 @@ def train_and_score_pipeline(
     for i, (train, valid) in enumerate(
         automl_config.data_splitter.split(full_X_train, full_y_train)
     ):
-        if isinstance(pipeline.estimator, SklearnStackedEnsembleBase) and i > 0:
-            # Stacked ensembles do CV internally, so we do not run CV here for performance reasons.
-            logger.debug(
-                f"Skipping fold {i} because CV for scikit-learn based stacked ensembles is not supported."
-            )
-            break
         logger.debug(f"\t\tTraining and scoring on fold {i}")
         X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
         y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
