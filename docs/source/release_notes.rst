@@ -6,6 +6,7 @@ Release Notes
     * Fixes
         * Fixed bug where ``long`` mode for the top level search method was not respected :pr:`2875`
         * Pinned ``cmdstan`` to ``0.28.0`` in ``cmdstan-builder`` to prevent future breaking of support for Prophet :pr:`2880`
+        * Added ``Jarque-Bera`` to the ``TargetDistributionDataCheck`` :pr:``
     * Changes
         * Deleted scikit-learn ensembler :pr:`2819`
         * Refactored pipeline building logic out of ``AutoMLSearch`` and into ``IterativeAlgorithm`` :pr:`2854`

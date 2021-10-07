@@ -1,7 +1,7 @@
 """Data check that checks if the target data contains certain distributions that may need to be transformed prior training to improve model performance."""
 import numpy as np
 import woodwork as ww
-from scipy.stats import shapiro
+from scipy.stats import jarque_bera, shapiro
 
 from evalml.data_checks import (
     DataCheck,
@@ -75,8 +75,10 @@ class TargetDistributionDataCheck(DataCheck):
             )
             return results
 
+        normalization_test = shapiro if len(y) <= 5000 else jarque_bera
+        normalization_test_string = "shapiro" if len(y) <= 5000 else "jarque_bera"
         # Check if a normal distribution is detected with p-value above 0.05
-        if shapiro(y).pvalue >= 0.05:
+        if normalization_test(y).pvalue >= 0.05:
             return results
 
         y_new = round(y, 6)
@@ -86,19 +88,20 @@ class TargetDistributionDataCheck(DataCheck):
         y_new = y_new[
             y_new < (y_new.mean() + 3 * round(y.std(), 3))
         ]  # Drop values greater than 3 standard deviations
-        shapiro_test_og = shapiro(y_new)
-        shapiro_test_log = shapiro(np.log(y_new))
+        norm_test_og = normalization_test(y_new)
+        norm_test_log = normalization_test(np.log(y_new))
+        print(norm_test_log, norm_test_og)
 
         log_detected = False
 
         # If the p-value of the log transformed target is greater than or equal to the p-value of the original target
         # with outliers dropped, then it would imply that the log transformed target has more of a normal distribution
-        if shapiro_test_log.pvalue >= shapiro_test_og.pvalue:
+        if norm_test_log.pvalue >= norm_test_og.pvalue:
             log_detected = True
 
         if log_detected:
             details = {
-                "shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 1)}/{round(shapiro_test_og.pvalue, 3)}"
+                f"{normalization_test_string}-statistic/pvalue": f"{round(norm_test_og.statistic, 1)}/{round(norm_test_og.pvalue, 3)}"
             }
             results["warnings"].append(
                 DataCheckWarning(
