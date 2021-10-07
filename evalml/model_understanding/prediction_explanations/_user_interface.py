@@ -6,6 +6,7 @@ from texttable import Texttable
 from evalml.model_understanding.prediction_explanations._algorithms import (
     _aggregate_explainer_values,
     _compute_shap_values,
+    _compute_lime_values,
     _normalize_explainer_values,
 )
 from evalml.problem_types import ProblemTypes
@@ -124,6 +125,7 @@ def _make_text_table(
     original_features,
     top_k,
     include_explainer_values=False,
+    algorithm="shap",
 ):
     """Make a table displaying the explainer values for a prediction.
 
@@ -148,7 +150,7 @@ def _make_text_table(
 
     header = ["Feature Name", "Feature Value", "Contribution to Prediction"]
     if include_explainer_values:
-        header.append("SHAP Value")
+        header.append(f"{algorithm.upper()} Value")
 
     rows = [header]
     rows += _make_rows(
@@ -166,11 +168,12 @@ def _make_text_table(
 class _TableMaker(abc.ABC):
     """Makes an explanation table for a regression, binary, or multiclass classification problem."""
 
-    def __init__(self, top_k, include_explainer_values, include_expected_value, provenance):
+    def __init__(self, top_k, include_explainer_values, include_expected_value, provenance, algorithm="shap"):
         self.top_k = top_k
         self.include_explainer_values = include_explainer_values
         self.include_expected_value = include_expected_value
         self.provenance = provenance
+        self.algorithm = algorithm
 
     @staticmethod
     def make_drill_down_dict(
@@ -281,6 +284,7 @@ class _RegressionExplanationTable(_TableMaker):
             original_features,
             self.top_k,
             self.include_explainer_values,
+            algorithm=self.algorithm,
         )
 
     def make_dict(
@@ -327,8 +331,9 @@ class _BinaryExplanationTable(_TableMaker):
         include_expected_value,
         class_names,
         provenance,
+        algorithm="shap"
     ):
-        super().__init__(top_k, include_explainer_values, include_expected_value, provenance)
+        super().__init__(top_k, include_explainer_values, include_expected_value, provenance, algorithm)
         self.class_names = class_names
 
     def make_text(
@@ -350,6 +355,7 @@ class _BinaryExplanationTable(_TableMaker):
             original_features,
             self.top_k,
             self.include_explainer_values,
+            algorithm=self.algorithm,
         )
 
     def make_dict(
@@ -397,8 +403,9 @@ class _MultiClassExplanationTable(_TableMaker):
         include_expected_value,
         class_names,
         provenance,
+        algorithm="shap"
     ):
-        super().__init__(top_k, include_explainer_values, include_expected_value, provenance)
+        super().__init__(top_k, include_explainer_values, include_expected_value, provenance, algorithm)
         self.class_names = class_names
 
     def make_text(
@@ -423,6 +430,7 @@ class _MultiClassExplanationTable(_TableMaker):
                 original_features,
                 self.top_k,
                 self.include_explainer_values,
+                algorithm=self.algorithm,
             )
             strings += table.splitlines()
             strings.append("\n")
@@ -474,6 +482,7 @@ def _make_single_prediction_explanation_table(
     include_explainer_values=False,
     include_expected_value=False,
     output_format="text",
+    algorithm="shap",
 ):
     """Creates table summarizing the top_k_features positive and top_k_features negative contributing features to the prediction of a single datapoint.
 
@@ -489,6 +498,7 @@ def _make_single_prediction_explanation_table(
             Default is False.
         include_expected_value (bool): Whether the expected value should be included in the table. Default is False.
         output_format (str): The desired format of the output.  Can be "text", "dict", or "dataframe".
+        algorithm (str): Algorithm to use while generating top contributing features, one of "shap" or "lime". Defaults to "shap".
 
     Returns:
         str: Table
@@ -499,9 +509,12 @@ def _make_single_prediction_explanation_table(
     pipeline_features_row = pipeline_features.iloc[[index_to_explain]]
     input_features_row = input_features.iloc[[index_to_explain]]
 
-    explainer_values, expected_value = _compute_shap_values(
-        pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0)
-    )
+    if algorithm == "shap":
+        explainer_values, expected_value = _compute_shap_values(
+            pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0)
+        )
+    else:
+        explainer_values, expected_value = _compute_lime_values(pipeline, pipeline_features, index_to_explain)
     normalized_values = _normalize_explainer_values(explainer_values)
 
     provenance = pipeline._get_feature_provenance()
@@ -514,22 +527,22 @@ def _make_single_prediction_explanation_table(
 
     table_makers = {
         ProblemTypes.REGRESSION: _RegressionExplanationTable(
-            top_k, include_explainer_values, include_expected_value, provenance
+            top_k, include_explainer_values, include_expected_value, provenance, algorithm,
         ),
         ProblemTypes.BINARY: _BinaryExplanationTable(
-            top_k, include_explainer_values, include_expected_value, class_names, provenance
+            top_k, include_explainer_values, include_expected_value, class_names, provenance, algorithm,
         ),
         ProblemTypes.MULTICLASS: _MultiClassExplanationTable(
-            top_k, include_explainer_values, include_expected_value, class_names, provenance
+            top_k, include_explainer_values, include_expected_value, class_names, provenance, algorithm,
         ),
         ProblemTypes.TIME_SERIES_REGRESSION: _RegressionExplanationTable(
-            top_k, include_explainer_values, include_expected_value, provenance
+            top_k, include_explainer_values, include_expected_value, provenance, algorithm,
         ),
         ProblemTypes.TIME_SERIES_BINARY: _BinaryExplanationTable(
-            top_k, include_explainer_values, include_expected_value, class_names, provenance
+            top_k, include_explainer_values, include_expected_value, class_names, provenance, algorithm,
         ),
         ProblemTypes.TIME_SERIES_MULTICLASS: _MultiClassExplanationTable(
-            top_k, include_explainer_values, include_expected_value, class_names, provenance
+            top_k, include_explainer_values, include_expected_value, class_names, provenance, algorithm,
         ),
     }
 
@@ -724,9 +737,10 @@ class _RegressionPredictedValues(_SectionMaker):
 
 
 class _ExplanationTable(_SectionMaker):
-    def __init__(self, top_k_features, include_explainer_values):
+    def __init__(self, top_k_features, include_explainer_values, algorithm="shap"):
         self.top_k_features = top_k_features
         self.include_explainer_values = include_explainer_values
+        self.algorithm = algorithm
 
     def make_text(self, index, pipeline, pipeline_features, input_features):
         """Makes the explanation table section for reports formatted as text.
@@ -754,6 +768,7 @@ class _ExplanationTable(_SectionMaker):
             top_k=self.top_k_features,
             include_explainer_values=self.include_explainer_values,
             output_format="text",
+            algorithm=self.algorithm
         )
         table = table.splitlines()
         # Indent the rows of the table to match the indentation of the entire report.
@@ -769,6 +784,7 @@ class _ExplanationTable(_SectionMaker):
             top_k=self.top_k_features,
             include_explainer_values=self.include_explainer_values,
             output_format="dict",
+            algorithm=self.algorithm,
         )
         return json_output
 
@@ -782,6 +798,7 @@ class _ExplanationTable(_SectionMaker):
             top_k=self.top_k_features,
             include_explainer_values=self.include_explainer_values,
             output_format="dataframe",
+            algorithm=self.algorithm,
         )
 
 

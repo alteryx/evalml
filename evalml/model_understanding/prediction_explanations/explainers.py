@@ -45,6 +45,7 @@ def explain_predictions(
     output_format="text",
     training_data=None,
     training_target=None,
+    algorithm="shap",
 ):
     """Creates a report summarizing the top contributing features for each data point in the input features.
 
@@ -62,6 +63,7 @@ def explain_predictions(
         output_format (str): Either "text", "dict", or "dataframe". Default is "text".
         training_data (pd.DataFrame, np.ndarray): Data the pipeline was trained on. Required and only used for time series pipelines.
         training_target (pd.Series, np.ndarray): Targets used to train the pipeline. Required and only used for time series pipelines.
+        algorithm (str): Algorithm to use while generating top contributing features, one of "shap" or "lime". Defaults to "shap".
 
     Returns:
         str, dict, or pd.DataFrame: A report explaining the top contributing features to each prediction for each row of input_features.
@@ -117,6 +119,7 @@ def explain_predictions(
         top_k_features=top_k_features,
         include_explainer_values=include_explainer_values,
         include_expected_value=include_expected_value,
+        algorithm=algorithm,
     )
     return report_creator(data)
 
@@ -155,6 +158,7 @@ def explain_predictions_best_worst(
     callback=None,
     training_data=None,
     training_target=None,
+    algorithm="shap",
 ):
     """Creates a report summarizing the top contributing features for the best and worst points in the dataset as measured by error to true labels.
 
@@ -178,6 +182,7 @@ def explain_predictions_best_worst(
             - time_elapsed: total time in seconds that has elapsed since start of call
         training_data (pd.DataFrame, np.ndarray): Data the pipeline was trained on. Required and only used for time series pipelines.
         training_target (pd.Series, np.ndarray): Targets used to train the pipeline. Required and only used for time series pipelines.
+        algorithm (str): Algorithm to use while generating top contributing features, one of "shap" or "lime". Defaults to "shap".
 
     Returns:
         str, dict, or pd.DataFrame: A report explaining the top contributing features for the best/worst predictions in the input_features.
@@ -297,6 +302,7 @@ def explain_predictions_best_worst(
         include_explainer_values=include_explainer_values,
         num_to_explain=num_to_explain,
         include_expected_value=True,
+        algorithm=algorithm,
     )
 
     _update_progress(start_time, timer(), ExplainPredictionsStage.DONE, callback)

@@ -32,15 +32,13 @@ def _create_dictionary(explainer_values, feature_names):
     return mapping
 
 
-def _compute_lime_values(pipeline, features, labels, index_to_explain, top_k):
+def _compute_lime_values(pipeline, features, index_to_explain):
     """ Computes LIME values for each feature.
 
     Args:
         pipeline (PipelineBase): Trained pipeline whose predictions we want to explain with LIME.
         features (pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
-        labels (list): List of possible target labels.
         index_to_explain (int): Index in the pipeline_features/input_features to explain.
-        top_k (int): How many of the highest/lowest features to compute.
 
     Returns:
         list(dict): Returns a list of dictionaries. One for each class.
@@ -60,19 +58,18 @@ def _compute_lime_values(pipeline, features, labels, index_to_explain, top_k):
     explainer = lime.lime_tabular.LimeTabularExplainer(
         features,
         feature_names=list(features.columns),
-        class_names=labels,
         discretize_continuous=False,
     )
     exp = explainer.explain_instance(
         features.iloc[index_to_explain],
         array_predict,
-        num_features=top_k,
-        top_labels=len(labels),
+        num_features=len(features.columns),
+        top_labels=len(pipeline.classes_),  # only works if this is a classification problem (unnecessay for regression)
     )
 
     mappings = []
-    for i in range(len(labels)):
-        l = exp.as_list(i)
+    for label in exp.available_labels():
+        l = exp.as_list(label)
         mappings.append(list_to_dict(l))
     return (mappings, None)
 
