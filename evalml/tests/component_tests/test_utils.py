@@ -48,13 +48,15 @@ def test_all_components(
         # No detrender or arima
         n_components = 54 # currently 53 because no prophet.
         from evalml.pipelines.components import ProphetRegressor
+        assert ProphetRegressor in all_components()
+
     else:
         n_components = 55
-    
+    with capsys.disabled():
+        print (all_components())
     print (all_components())
     assert len(all_components()) == n_components
     assert False
-
 
 def test_handle_component_class_names():
     for cls in all_components():
