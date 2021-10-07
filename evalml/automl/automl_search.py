@@ -1158,7 +1158,7 @@ class AutoMLSearch:
 
         num_pipelines = self._num_pipelines()
 
-        # check max_time, max_iterations and max_batches
+        # check max_time, max_iterations, and max_batches
         elapsed = time.time() - self._start
         if self.max_time and elapsed >= self.max_time:
             return False

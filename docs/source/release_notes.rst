@@ -4,11 +4,8 @@ Release Notes
     * Enhancements
         * Added human-readable pipeline explanations to model understanding :pr:`2861`
     * Fixes
-<<<<<<< HEAD
-        * Fixed bug where `long` mode for the top level search method was not respected :pr:`2875`
-=======
+        * Fixed bug where ``long`` mode for the top level search method was not respected :pr:`2875`
         * Pinned ``cmdstan`` to ``0.28.0`` in ``cmdstan-builder`` to prevent future breaking of support for Prophet :pr:`2880`
->>>>>>> 322dcc0e18ecc0eaa3c7539e638853e195891cfd
     * Changes
         * Deleted scikit-learn ensembler :pr:`2819`
     * Documentation Changes
