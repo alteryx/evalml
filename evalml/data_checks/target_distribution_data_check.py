@@ -112,7 +112,6 @@ class TargetDistributionDataCheck(DataCheck):
                 DataCheckAction(
                     DataCheckActionCode.TRANSFORM_TARGET,
                     metadata={
-                        "column": None,
                         "is_target": True,
                         "transformation_strategy": "lognormal",
                     },

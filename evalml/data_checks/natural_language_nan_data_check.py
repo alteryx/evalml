@@ -34,7 +34,7 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             ...        "errors": [DataCheckError(message='Input natural language column(s) (A) contains NaN values. Please impute NaN values or drop these rows or columns.',
             ...                      data_check_name=NaturalLanguageNaNDataCheck.name,
             ...                      message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-            ...                      details={"columns": 'A'}).to_dict()]
+            ...                      details={"columns": ['A']}).to_dict()]
             ...    }
         """
         results = {"warnings": [], "errors": [], "actions": []}

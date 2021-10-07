@@ -86,14 +86,14 @@ class TargetLeakageDataCheck(DataCheck):
             >>> y = pd.Series([10, 42, 31, 51, 40])
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.95)
             >>> assert target_leakage_check.validate(X, y) == {
-            ...     "warnings": [{"message": "Column 'leak' is 95.0% or more correlated with the target",
+            ...     "warnings": [{"message": "Columns 'leak' are 95.0% or more correlated with the target",
             ...                   "data_check_name": "TargetLeakageDataCheck",
             ...                   "level": "warning",
             ...                   "code": "TARGET_LEAKAGE",
-            ...                   "details": {"column": "leak"}}],
+            ...                   "details": {"columns": ["leak"]}}],
             ...     "errors": [],
             ...     "actions": [{"code": "DROP_COL",
-            ...                  "metadata": {"column": "leak"}}]}
+            ...                  "metadata": {"columns": ["leak"]}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
@@ -105,24 +105,20 @@ class TargetLeakageDataCheck(DataCheck):
         else:
             highly_corr_cols = self._calculate_mutual_information(X, y)
 
-        warning_msg = "Column '{}' is {}% or more correlated with the target"
-        results["warnings"].extend(
-            [
-                DataCheckWarning(
-                    message=warning_msg.format(col_name, self.pct_corr_threshold * 100),
-                    data_check_name=self.name,
-                    message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                    details={"column": col_name},
-                ).to_dict()
-                for col_name in highly_corr_cols
-            ]
+        warning_msg = "Columns '{}' are {}% or more correlated with the target"
+        results["warnings"].append(
+            DataCheckWarning(
+                message=warning_msg.format(
+                    highly_corr_cols, self.pct_corr_threshold * 100
+                ),
+                data_check_name=self.name,
+                message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                details={"columns": highly_corr_cols},
+            ).to_dict()
         )
-        results["actions"].extend(
-            [
-                DataCheckAction(
-                    DataCheckActionCode.DROP_COL, metadata={"column": col_name}
-                ).to_dict()
-                for col_name in highly_corr_cols
-            ]
+        results["actions"].append(
+            DataCheckAction(
+                DataCheckActionCode.DROP_COL, metadata={"columns": highly_corr_cols}
+            ).to_dict()
         )
         return results

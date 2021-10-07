@@ -51,7 +51,7 @@ class DateTimeNaNDataCheck(DataCheck):
                     message=error_contains_nan.format(cols_str),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                    details={"columns": cols_str},
+                    details={"columns": nan_columns},
                 ).to_dict()
             )
         return results
