@@ -14,9 +14,9 @@ from evalml.problem_types import (
 from evalml.utils.woodwork_utils import infer_feature_types
 
 warning_not_unique_enough = (
-    "Input columns ({}) for {} problem type are not unique enough."
+    "Input columns {} for {} problem type are not unique enough."
 )
-warning_too_unique = "Input columns ({}) for {} problem type are too unique."
+warning_too_unique = "Input columns {} for {} problem type are too unique."
 
 
 class UniquenessDataCheck(DataCheck):
@@ -74,7 +74,10 @@ class UniquenessDataCheck(DataCheck):
             results["warnings"].append(
                 DataCheckWarning(
                     message=warning_not_unique_enough.format(
-                        [str(col) for col in not_unique_enough_cols], self.problem_type
+                        (", ").join(
+                            ["'{}'".format(str(col)) for col in not_unique_enough_cols]
+                        ),
+                        self.problem_type,
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NOT_UNIQUE_ENOUGH,
@@ -97,7 +100,10 @@ class UniquenessDataCheck(DataCheck):
             results["warnings"].append(
                 DataCheckWarning(
                     message=warning_too_unique.format(
-                        [str(col) for col in too_unique_cols], self.problem_type
+                        (", ").join(
+                            ["'{}'".format(str(col)) for col in too_unique_cols]
+                        ),
+                        self.problem_type,
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TOO_UNIQUE,

@@ -105,20 +105,24 @@ class TargetLeakageDataCheck(DataCheck):
         else:
             highly_corr_cols = self._calculate_mutual_information(X, y)
 
-        warning_msg = "Columns '{}' are {}% or more correlated with the target"
-        results["warnings"].append(
-            DataCheckWarning(
-                message=warning_msg.format(
-                    highly_corr_cols, self.pct_corr_threshold * 100
-                ),
-                data_check_name=self.name,
-                message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                details={"columns": highly_corr_cols},
-            ).to_dict()
-        )
-        results["actions"].append(
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"columns": highly_corr_cols}
-            ).to_dict()
-        )
+        warning_msg = "Columns {} are {}% or more correlated with the target"
+        if highly_corr_cols:
+            results["warnings"].append(
+                DataCheckWarning(
+                    message=warning_msg.format(
+                        (", ").join(
+                            ["'{}'".format(str(col)) for col in highly_corr_cols]
+                        ),
+                        self.pct_corr_threshold * 100,
+                    ),
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                    details={"columns": highly_corr_cols},
+                ).to_dict()
+            )
+            results["actions"].append(
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL, metadata={"columns": highly_corr_cols}
+                ).to_dict()
+            )
         return results
