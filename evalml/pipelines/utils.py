@@ -346,7 +346,6 @@ def _make_stacked_ensemble_pipeline(
         )
         final_components = []
         used_model_families = []
-        # problem_type = None
 
         for pipeline in input_pipelines:
             model_family = pipeline.component_graph[-1].model_family

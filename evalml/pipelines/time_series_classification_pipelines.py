@@ -89,6 +89,10 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):
         """Predict on future data where the target is known, e.g. cross validation.
 
+        Note: we cast y as ints first to address boolean values that may be returned from
+        calculating predictions which we would not be able to otherwise transform if we
+        originally had integer targets.
+
         Args:
             X (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features].
             y (pd.Series, np.ndarray): Future target of shape [n_samples].
@@ -110,8 +114,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         features = self.compute_estimator_features(X, y, X_train, y_train)
         predictions = self._estimator_predict(features, y)
         predictions.index = y.index
-        predictions = predictions.astype(int)
-        predictions = self.inverse_transform(predictions)
+        predictions = self.inverse_transform(predictions.astype(int))
         predictions = pd.Series(predictions, name=self.input_target_name)
 
         predictions = predictions.rename(index=dict(zip(predictions.index, y.index)))
@@ -177,9 +180,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             objectives,
         )
         if self._encoder is not None:
-            y = pd.Series(
-                self._encoder.transform(None, y)[1], index=y.index, name=y.name
-            )
+            y = self._encode_targets(y)
         return self._score_all_objectives(
             X,
             y,

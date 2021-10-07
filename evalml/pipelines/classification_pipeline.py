@@ -148,9 +148,7 @@ class ClassificationPipeline(PipelineBase):
         y = infer_feature_types(y)
         objectives = self.create_objectives(objectives)
         if self._encoder is not None:
-            y = pd.Series(
-                self._encoder.transform(None, y)[1], index=y.index, name=y.name
-            )
+            y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
         return self._score_all_objectives(
             X, y, y_predicted, y_predicted_proba, objectives
