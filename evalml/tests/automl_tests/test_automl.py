@@ -57,11 +57,11 @@ from evalml.pipelines import (
     RegressionPipeline,
     StackedEnsembleClassifier,
 )
-from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators,
 )
+from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.preprocessing import TrainingValidationSplit
 from evalml.problem_types import (
     ProblemTypes,
