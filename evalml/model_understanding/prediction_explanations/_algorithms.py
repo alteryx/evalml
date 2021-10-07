@@ -2,6 +2,7 @@ import logging
 import warnings
 from operator import add
 
+import lime.lime_tabular
 import numpy as np
 import shap
 from sklearn.utils import check_array
@@ -29,6 +30,51 @@ def _create_dictionary(shap_values, feature_names):
     for feature_name, column_index in zip(feature_names, range(shap_values.shape[1])):
         mapping[feature_name] = shap_values[:, column_index].tolist()
     return mapping
+
+
+def _compute_lime_values(pipeline, features, labels, index_to_explain, top_k):
+    """ Computes LIME values for each feature.
+
+    Args:
+        pipeline (PipelineBase): Trained pipeline whose predictions we want to explain with LIME.
+        features (pd.DataFrame): Dataframe of features - needs to correspond to data the pipeline was fit on.
+        labels (list): List of possible target labels.
+        index_to_explain (int): Index in the pipeline_features/input_features to explain.
+        top_k (int): How many of the highest/lowest features to compute.
+
+    Returns:
+        list(dict): Returns a list of dictionaries. One for each class.
+        float: the expected value if return_expected_value is True.
+    """
+
+    def array_predict(row):
+        pred = pipeline.predict_proba(row)
+        return np.array(pred)
+
+    def list_to_dict(l):
+        d = {}
+        for item in l:
+            d[item[0]] = [item[1]]
+        return d
+
+    explainer = lime.lime_tabular.LimeTabularExplainer(
+        features,
+        feature_names=list(features.columns),
+        class_names=labels,
+        discretize_continuous=False,
+    )
+    exp = explainer.explain_instance(
+        features.iloc[index_to_explain],
+        array_predict,
+        num_features=top_k,
+        top_labels=len(labels),
+    )
+
+    mappings = []
+    for i in range(len(labels)):
+        l = exp.as_list(i)
+        mappings.append(list_to_dict(l))
+    return (mappings, None)
 
 
 def _compute_shap_values(pipeline, features, training_data=None):
