@@ -57,7 +57,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
         custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
-        text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
+        text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to False.
         top_n (int): top n number of pipelines to use for long mode.
         num_long_explore_pipelines (int): number of pipelines to explore for each top n pipeline at the start of long mode.
         num_long_pipelines_per_batch (int): number of pipelines per batch for each top n pipeline through long mode.

@@ -22,8 +22,8 @@ class AutoMLAlgorithm(ABC):
     Args:
         allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
         custom_hyperparameters (dict): Custom hyperparameter ranges specified for pipelines to iterate over.
-        max_iterations (int): The maximum number of iterations to be evaluated.
         tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
+        text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
