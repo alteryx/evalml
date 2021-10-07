@@ -100,7 +100,7 @@ def test_search_data_check_error_timeseries(problem_config):
 @patch("evalml.automl.AutoMLSearch.search")
 def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
     X, y = X_y_binary
-    automl, data_check_results = search(
+    automl, _ = search(
         X_train=X,
         y_train=y,
         problem_type="binary",
@@ -112,10 +112,10 @@ def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
     assert automl.max_time == 42
     assert automl.patience == 3
     assert automl.tolerance == 0.5
-    assert automl.max_batches == 3
+    assert automl.max_batches == 4
     assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
 
-    automl, data_check_results = search(
+    automl, _ = search(
         X_train=X,
         y_train=y,
         problem_type="binary",
@@ -127,7 +127,17 @@ def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
     assert automl.max_time == 42
     assert automl.patience == 3
     assert automl.tolerance == 0.5
-    assert automl.max_batches is None
+    assert automl.max_batches == 999
+    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
+
+    automl, _ = search(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        mode="long",
+    )
+
+    assert automl.max_batches == 6
     assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
 
     with pytest.raises(ValueError):

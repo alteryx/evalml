@@ -2793,7 +2793,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(AutoMLTestEnv, X_y_
         == len(get_estimators(problem_type="binary")) + 1
     )
 
-    # Use max_iterations when both max_iterations and max_batches are set
+    # Use max_iterations when both max_iterations and max_batches
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -2818,6 +2818,23 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(AutoMLTestEnv, X_y_
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
         automl.search()
     assert len(automl.results["pipeline_results"]) == 4
+
+    # Respect max_batches when max_iterations is not set and algorithm is DefaultAlgorithm
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_batches=1,
+        optimize_thresholds=False,
+        _automl_algorithm="default",
+    )
+    assert automl.max_batches == 1
+    assert automl.max_iterations is None
+
+    with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
+        automl.search()
+
+    assert len(automl.results["pipeline_results"]) == 3
 
 
 @pytest.mark.parametrize("max_batches", [-1, -10, -np.inf])

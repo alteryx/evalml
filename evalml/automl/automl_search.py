@@ -173,7 +173,11 @@ def search(
 
     max_batches = None
     if mode == "fast":
-        max_batches = 3
+        max_batches = 4  # corresponds to end of 'fast' mode
+    elif mode == "long" and max_time:
+        max_batches = 999  # defers to stopping criterion
+    elif mode == "long" and max_time is None:
+        max_batches = 6  # corresponds to end of 'long' exploration phase
 
     automl_config = {
         "X_train": X_train,
@@ -892,17 +896,19 @@ class AutoMLSearch:
                 self.logger.info("AutoML Algorithm out of recommendations, ending")
                 break
             try:
-                new_pipeline_ids = []
-                log_title(
-                    self.logger, f"Evaluating Batch Number {self._get_batch_number()}"
-                )
-                for pipeline in current_batch_pipelines:
-                    self._pre_evaluation_callback(pipeline)
-                    computation = self._engine.submit_evaluation_job(
-                        self.automl_config, pipeline, self.X_train, self.y_train
+                if self._should_continue():
+                    new_pipeline_ids = []
+                    log_title(
+                        self.logger,
+                        f"Evaluating Batch Number {self._get_batch_number()}",
                     )
-                    computations.append(computation)
-                current_computation_index = 0
+                    for pipeline in current_batch_pipelines:
+                        self._pre_evaluation_callback(pipeline)
+                        computation = self._engine.submit_evaluation_job(
+                            self.automl_config, pipeline, self.X_train, self.y_train
+                        )
+                        computations.append(computation)
+                    current_computation_index = 0
                 while self._should_continue() and len(computations) > 0:
                     computation = computations[current_computation_index]
                     if computation.done():
@@ -996,11 +1002,13 @@ class AutoMLSearch:
 
         num_pipelines = self._num_pipelines()
 
-        # check max_time and max_iterations
+        # check max_time, max_iterations, and max_batches
         elapsed = time.time() - self._start
         if self.max_time and elapsed >= self.max_time:
             return False
         elif self.max_iterations and num_pipelines >= self.max_iterations:
+            return False
+        elif self.max_batches and self._get_batch_number() > self.max_batches:
             return False
 
         # check for early stopping
