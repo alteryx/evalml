@@ -703,10 +703,8 @@ class AutoMLSearch:
         else:
             raise ValueError("Please specify a valid automl algorithm.")
 
-        self.allowed_model_families = [
-            p.model_family for p in self._automl_algorithm.allowed_pipelines
-        ]
         self.allowed_pipelines = self._automl_algorithm.allowed_pipelines
+        self.allowed_model_families = [p.model_family for p in self.allowed_pipelines]
         if _automl_algorithm == "iterative":
             self.max_iterations = self._automl_algorithm.max_iterations
 

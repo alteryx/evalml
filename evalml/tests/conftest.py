@@ -584,21 +584,14 @@ def logistic_regression_multiclass_pipeline_class():
 
 
 @pytest.fixture
-def logistic_regression_binary_component_graph():
-    return [
-        "Imputer",
-        "One Hot Encoder",
-        "Standard Scaler",
-        "Logistic Regression Classifier",
-    ]
-
-
-@pytest.fixture
-def logistic_regression_binary_pipeline_class(
-    logistic_regression_binary_component_graph,
-):
+def logistic_regression_binary_pipeline_class():
     class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
-        component_graph = logistic_regression_binary_component_graph
+        component_graph = [
+            "Imputer",
+            "One Hot Encoder",
+            "Standard Scaler",
+            "Logistic Regression Classifier",
+        ]
         custom_name = "Logistic Regression Binary Pipeline"
 
         def __init__(self, parameters, random_seed=0):

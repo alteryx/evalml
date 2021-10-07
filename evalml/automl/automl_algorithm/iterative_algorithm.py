@@ -112,28 +112,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._estimator_family_order = (
             _estimator_family_order or _ESTIMATOR_FAMILY_ORDER
         )
-        indices = []
-        pipelines_to_sort = []
-        pipelines_end = []
 
         self.allowed_component_graphs = allowed_component_graphs
         self._create_pipelines()
-
-        for pipeline in self.allowed_pipelines or []:
-            if pipeline.model_family in self._estimator_family_order:
-                indices.append(
-                    self._estimator_family_order.index(pipeline.model_family)
-                )
-                pipelines_to_sort.append(pipeline)
-            else:
-                pipelines_end.append(pipeline)
-        pipelines_start = [
-            pipeline
-            for _, pipeline in (
-                sorted(zip(indices, pipelines_to_sort), key=lambda pair: pair[0]) or []
-            )
-        ]
-        self.allowed_pipelines = pipelines_start + pipelines_end
 
         super().__init__(
             allowed_pipelines=self.allowed_pipelines,
@@ -165,6 +146,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     )
 
     def _create_pipelines(self):
+        indices = []
+        pipelines_to_sort = []
+        pipelines_end = []
         self.allowed_pipelines = []
         if self.allowed_component_graphs is None:
             self.logger.info("Generating pipelines to search over...")
@@ -290,6 +274,22 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     + len(self.allowed_pipelines)
                     + (self.pipelines_per_batch * (self.max_batches - 1))
                 )
+
+        for pipeline in self.allowed_pipelines or []:
+            if pipeline.model_family in self._estimator_family_order:
+                indices.append(
+                    self._estimator_family_order.index(pipeline.model_family)
+                )
+                pipelines_to_sort.append(pipeline)
+            else:
+                pipelines_end.append(pipeline)
+        pipelines_start = [
+            pipeline
+            for _, pipeline in (
+                sorted(zip(indices, pipelines_to_sort), key=lambda pair: pair[0]) or []
+            )
+        ]
+        self.allowed_pipelines = pipelines_start + pipelines_end
 
         self.logger.debug(
             f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}"

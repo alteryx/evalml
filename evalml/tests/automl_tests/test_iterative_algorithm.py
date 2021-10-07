@@ -780,17 +780,17 @@ def test_iterative_algorithm_pipeline_params_kwargs(
 def test_iterative_algorithm_results_best_pipeline_info_id(
     X_y_binary,
     dummy_binary_pipeline_classes,
-    logistic_regression_binary_component_graph,
+    logistic_regression_binary_pipeline_class,
 ):
     X, y = X_y_binary
-
+    LogisticRegressionBinaryPipeline = logistic_regression_binary_pipeline_class
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
     ) = dummy_binary_pipeline_classes()
     allowed_component_graphs = {
         "graph_1": allowed_component_graphs["graph_1"],
-        "graph_2": logistic_regression_binary_component_graph,
+        "graph_2": LogisticRegressionBinaryPipeline.component_graph,
     }
     algo = IterativeAlgorithm(
         X=X,
