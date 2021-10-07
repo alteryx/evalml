@@ -41,12 +41,19 @@ def _compute_lime_values(pipeline, features, index_to_explain):
         index_to_explain (int): Index in the pipeline_features/input_features to explain.
 
     Returns:
-        list(dict): Returns a list of dictionaries. One for each class.
+        dict or list(dict): For regression problems, a dictionary mapping a feature name to a list of SHAP values.
+            For classification problems, returns a list of dictionaries. One for each class.
         float: the expected value if return_expected_value is True.
     """
+    mode = "classification"
+    if is_regression(pipeline.problem_type):
+        mode = "regression"
 
     def array_predict(row):
-        pred = pipeline.predict_proba(row)
+        if mode == "regression":
+            pred = pipeline.predict(row)
+        else:
+            pred = pipeline.predict_proba(row)
         return np.array(pred)
 
     def list_to_dict(l):
@@ -59,18 +66,30 @@ def _compute_lime_values(pipeline, features, index_to_explain):
         features,
         feature_names=list(features.columns),
         discretize_continuous=False,
+        mode=mode,
     )
-    exp = explainer.explain_instance(
-        features.iloc[index_to_explain],
-        array_predict,
-        num_features=len(features.columns),
-        top_labels=len(pipeline.classes_),  # only works if this is a classification problem (unnecessay for regression)
-    )
+    if mode == "regression":
+        exp = explainer.explain_instance(
+            features.iloc[index_to_explain],
+            array_predict,
+            num_features=len(features.columns),
+        )
+    else:
+        exp = explainer.explain_instance(
+            features.iloc[index_to_explain],
+            array_predict,
+            num_features=len(features.columns),
+            top_labels=len(pipeline.classes_), 
+        )
 
-    mappings = []
-    for label in exp.available_labels():
-        l = exp.as_list(label)
-        mappings.append(list_to_dict(l))
+    if mode == "regression":
+        l = exp.as_list()
+        mappings = list_to_dict(l)
+    else:
+        mappings = []
+        for label in exp.available_labels():
+            l = exp.as_list(label)
+            mappings.append(list_to_dict(l))
     return (mappings, None)
 
 
