@@ -12,7 +12,6 @@ prophet = importorskip("prophet", reason="Skipping test because prophet not inst
 
 def test_model_family():
     assert ProphetRegressor.model_family == ModelFamily.PROPHET
-    assert False
 
 
 def test_cmdstanpy_backend():
@@ -45,6 +44,7 @@ def test_init_with_other_params():
         "uncertainty_samples": 0,
         "stan_backend": "CMDSTANPY",
     }
+    assert False
 
 
 def test_feature_importance(ts_data):
