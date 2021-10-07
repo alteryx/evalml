@@ -101,8 +101,6 @@ class AutoMLAlgorithm(ABC):
 
     def _create_ensemble(self):
         next_batch = []
-
-        # Custom Stacked Pipelines
         best_pipelines = list(self._best_pipeline_info.values())
         problem_type = best_pipelines[0]["pipeline"].problem_type
         n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
@@ -128,16 +126,6 @@ class AutoMLAlgorithm(ABC):
             problem_type,
             random_seed=self.random_seed,
             n_jobs=n_jobs_ensemble,
-        )
-        next_batch.append(ensemble)
-
-        # Sklearn Stacked Pipelines
-        ensemble = _make_stacked_ensemble_pipeline(
-            input_pipelines,
-            problem_type,
-            random_seed=self.random_seed,
-            n_jobs=n_jobs_ensemble,
-            use_sklearn=True,
         )
         next_batch.append(ensemble)
         return next_batch

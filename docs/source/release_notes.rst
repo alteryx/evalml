@@ -6,6 +6,7 @@ Release Notes
     * Fixes
         * Pinned ``cmdstan`` to ``0.28.0`` in ``cmdstan-builder`` to prevent future breaking of support for Prophet :pr:`2880`
     * Changes
+        * Deleted scikit-learn ensembler :pr:`2819`
     * Documentation Changes
         * Updated ``install.ipynb`` to reflect flexibility for ``cmdstan`` version installation :pr:`2880`
     * Testing Changes
@@ -14,6 +15,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Deleted scikit-learn ensembler :pr:`2819`
 
 
 **v0.34.0 Sep. 30, 2021**

@@ -528,11 +528,8 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
         assert ind_df.shape == (3, 3)
 
 
-@pytest.mark.parametrize("use_sklearn", [True, False])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
-def test_partial_dependence_ensemble_pipeline(
-    problem_type, use_sklearn, X_y_binary, X_y_regression
-):
+def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regression):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         input_pipelines = [
@@ -546,9 +543,7 @@ def test_partial_dependence_ensemble_pipeline(
             RegressionPipeline(["Elastic Net Regressor"]),
         ]
     pipeline = _make_stacked_ensemble_pipeline(
-        input_pipelines=input_pipelines,
-        problem_type=problem_type,
-        use_sklearn=use_sklearn,
+        input_pipelines=input_pipelines, problem_type=problem_type
     )
     pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, features=0, grid_resolution=5)
