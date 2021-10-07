@@ -13,22 +13,22 @@ from evalml.problem_types import is_binary, is_multiclass, is_regression
 logger = logging.getLogger(__name__)
 
 
-def _create_dictionary(shap_values, feature_names):
-    """Creates a mapping from a feature name to a list of SHAP values for all points that were queried.
+def _create_dictionary(explainer_values, feature_names):
+    """Creates a mapping from a feature name to a list of explainer values for all points that were queried.
 
     Args:
-        shap_values (np.ndarray): SHAP values stored in an array of shape (n_datapoints, n_features).
+        explainer_values (np.ndarray): explainer values stored in an array of shape (n_datapoints, n_features).
         feature_names (Iterable): Iterable storing the feature names as they are ordered in the dataset.
 
     Returns:
         dict
     """
-    if not isinstance(shap_values, np.ndarray):
-        raise ValueError("SHAP values must be stored in a numpy array!")
-    shap_values = np.atleast_2d(shap_values)
+    if not isinstance(explainer_values, np.ndarray):
+        raise ValueError("Explainer values must be stored in a numpy array!")
+    explainer_values = np.atleast_2d(explainer_values)
     mapping = {}
-    for feature_name, column_index in zip(feature_names, range(shap_values.shape[1])):
-        mapping[feature_name] = shap_values[:, column_index].tolist()
+    for feature_name, column_index in zip(feature_names, range(explainer_values.shape[1])):
+        mapping[feature_name] = explainer_values[:, column_index].tolist()
     return mapping
 
 
@@ -177,8 +177,8 @@ def _compute_shap_values(pipeline, features, training_data=None):
         raise ValueError(f"Unknown shap_values datatype {str(type(shap_values))}!")
 
 
-def _aggreggate_shap_values_dict(values, provenance):
-    """Aggregates shap values across features created from a common feature.
+def _aggreggate_explainer_values_dict(values, provenance):
+    """Aggregates explainer values across features created from a common feature.
 
     For example, let's say the pipeline has a text featurizer that creates the columns: LSA_1, LSA_2, PolarityScore,
     MeanCharacter, and DiversityScore from a column called "text_feature".
@@ -194,12 +194,12 @@ def _aggreggate_shap_values_dict(values, provenance):
     be left as they are.
 
     Args:
-        values (dict): A mapping of feature names to a list of SHAP values for each data point.
+        values (dict): A mapping of feature names to a list of explainer values for each data point.
         provenance (dict): A mapping from a feature in the original data to the names of the features that were created
             from that feature.
 
     Returns:
-        dict: Dictionary mapping from feature name to shap values.
+        dict: Dictionary mapping from feature name to explainer values.
     """
     child_to_parent = {}
     for parent_feature, children in provenance.items():
@@ -208,24 +208,24 @@ def _aggreggate_shap_values_dict(values, provenance):
                 child_to_parent[child] = parent_feature
 
     agg_values = {}
-    for feature_name, shap_list in values.items():
+    for feature_name, explainer_list in values.items():
         # Only aggregate features for which we know the parent-feature
         if feature_name in child_to_parent:
             parent = child_to_parent[feature_name]
             if parent not in agg_values:
-                agg_values[parent] = [0] * len(shap_list)
+                agg_values[parent] = [0] * len(explainer_list)
             # Elementwise-sum without numpy
-            agg_values[parent] = list(map(add, agg_values[parent], shap_list))
+            agg_values[parent] = list(map(add, agg_values[parent], explainer_list))
         else:
-            agg_values[feature_name] = shap_list
+            agg_values[feature_name] = explainer_list
     return agg_values
 
 
-def _aggregate_shap_values(values, provenance):
-    """Aggregates shap values across features created from a common feature.
+def _aggregate_explainer_values(values, provenance):
+    """Aggregates explainer values across features created from a common feature.
 
     Args:
-        values (dict):  A mapping of feature names to a list of SHAP values for each data point.
+        values (dict):  A mapping of feature names to a list of explainer values for each data point.
         provenance (dict): A mapping from a feature in the original data to the names of the features that were created
             from that feature
 
@@ -233,19 +233,19 @@ def _aggregate_shap_values(values, provenance):
         dict or list(dict)
     """
     if isinstance(values, dict):
-        return _aggreggate_shap_values_dict(values, provenance)
+        return _aggreggate_explainer_values_dict(values, provenance)
     else:
         return [
-            _aggreggate_shap_values_dict(class_values, provenance)
+            _aggreggate_explainer_values_dict(class_values, provenance)
             for class_values in values
         ]
 
 
 def _normalize_values_dict(values):
-    """Normalizes SHAP values by dividing by the sum of absolute values for each feature.
+    """Normalizes explainer values by dividing by the sum of absolute values for each feature.
 
     Args:
-        values (dict): A mapping of feature names to a list of SHAP values for each data point.
+        values (dict): A mapping of feature names to a list of explainer values for each data point.
 
     Returns:
         dict
@@ -270,8 +270,8 @@ def _normalize_values_dict(values):
     }
 
 
-def _normalize_shap_values(values):
-    """Normalizes the SHAP values by the absolute value of their sum for each data point.
+def _normalize_explainer_values(values):
+    """Normalizes the explainer values by the absolute value of their sum for each data point.
 
     Args:
         values (dict or list(dict)): Dictionary mapping feature name to list of values,
@@ -286,5 +286,5 @@ def _normalize_shap_values(values):
         return [_normalize_values_dict(class_values) for class_values in values]
     else:
         raise ValueError(
-            f"Unsupported data type for _normalize_shap_values: {str(type(values))}."
+            f"Unsupported data type for _normalize_explainer_values: {str(type(values))}."
         )

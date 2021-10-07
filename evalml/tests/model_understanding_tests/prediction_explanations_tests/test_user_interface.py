@@ -7,12 +7,12 @@ import pandas as pd
 import pytest
 
 from evalml.model_understanding.prediction_explanations._user_interface import (
-    _BinarySHAPTable,
+    _BinaryExplanationTable,
     _make_json_serializable,
     _make_rows,
     _make_text_table,
-    _MultiClassSHAPTable,
-    _RegressionSHAPTable,
+    _MultiClassExplanationTable,
+    _RegressionExplanationTable,
 )
 
 make_rows_test_cases = [
@@ -44,11 +44,11 @@ make_rows_test_cases = [
 
 
 @pytest.mark.parametrize(
-    "test_case,include_shap_values,include_string_features",
+    "test_case,include_explainer_values,include_string_features",
     product(make_rows_test_cases, [True, False], [True, False]),
 )
 def test_make_rows_and_make_table(
-    test_case, include_shap_values, include_string_features
+    test_case, include_explainer_values, include_string_features
 ):
     values, top_k, answer = test_case
 
@@ -60,7 +60,7 @@ def test_make_rows_and_make_table(
         pipeline_features["a"] = ["foo-feature"]
         pipeline_features["b"] = [np.datetime64("2020-08-14")]
 
-    if include_shap_values:
+    if include_explainer_values:
         new_answer = copy.deepcopy(answer)
         for row in new_answer:
             row.append("{:.2f}".format(values[row[0]][0]))
@@ -86,15 +86,15 @@ def test_make_rows_and_make_table(
             pipeline_features,
             pipeline_features,
             top_k,
-            include_shap_values,
+            include_explainer_values,
         )
         == new_answer
     )
 
     table = _make_text_table(
-        values, values, pipeline_features, pipeline_features, top_k, include_shap_values
+        values, values, pipeline_features, pipeline_features, top_k, include_explainer_values
     ).splitlines()
-    if include_shap_values:
+    if include_explainer_values:
         assert "SHAP Value" in table[0]
     # Subtracting two because a header and a line under the header are included in the table.
     assert len(table) - 2 == len(new_answer)
@@ -607,25 +607,25 @@ def test_make_single_prediction_table(
 
     if isinstance(values, list):
         if len(values) > 2:
-            table_maker = _MultiClassSHAPTable(
+            table_maker = _MultiClassExplanationTable(
                 top_k=3,
-                include_shap_values=include_shap,
+                include_explainer_values=include_shap,
                 include_expected_value=False,
                 class_names=class_names,
                 provenance={},
             )
         else:
-            table_maker = _BinarySHAPTable(
+            table_maker = _BinaryExplanationTable(
                 class_names=class_names,
                 top_k=3,
-                include_shap_values=include_shap,
+                include_explainer_values=include_shap,
                 include_expected_value=False,
                 provenance={},
             )
     else:
-        table_maker = _RegressionSHAPTable(
+        table_maker = _RegressionExplanationTable(
             top_k=3,
-            include_shap_values=include_shap,
+            include_explainer_values=include_shap,
             include_expected_value=False,
             provenance={},
         )
@@ -635,9 +635,9 @@ def test_make_single_prediction_table(
     )
 
     table = table_maker(
-        aggregated_shap_values=values,
+        aggregated_explainer_values=values,
         aggregated_normalized_values=normalized_values,
-        shap_values=values,
+        explainer_values=values,
         normalized_values=normalized_values,
         pipeline_features=pipeline_features,
         original_features=pipeline_features,

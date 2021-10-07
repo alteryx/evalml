@@ -8,10 +8,10 @@ import pytest
 
 from evalml.model_family.model_family import ModelFamily
 from evalml.model_understanding.prediction_explanations._algorithms import (
-    _aggregate_shap_values,
+    _aggregate_explainer_values,
     _compute_shap_values,
     _create_dictionary,
-    _normalize_shap_values,
+    _normalize_explainer_values,
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -124,7 +124,7 @@ def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
 
 def test_create_dictionary_exception():
     with pytest.raises(
-        ValueError, match="SHAP values must be stored in a numpy array!"
+        ValueError, match="Explainer values must be stored in a numpy array!"
     ):
         _create_dictionary([1, 2, 3], ["a", "b", "c"])
 
@@ -256,9 +256,9 @@ def test_compute_shap_values_catches_shap_tree_warnings(
 def test_normalize_values_exceptions():
 
     with pytest.raises(
-        ValueError, match="^Unsupported data type for _normalize_shap_values"
+        ValueError, match="^Unsupported data type for _normalize_explainer_values"
     ):
-        _normalize_shap_values(1)
+        _normalize_explainer_values(1)
 
 
 def check_equal_dicts(normalized, answer):
@@ -294,7 +294,7 @@ def check_equal_dicts(normalized, answer):
 )
 def test_normalize_values(values, answer):
 
-    normalized = _normalize_shap_values(values)
+    normalized = _normalize_explainer_values(values)
     if isinstance(normalized, dict):
         check_equal_dicts(normalized, answer)
 
@@ -326,7 +326,7 @@ def test_normalize_values(values, answer):
     ],
 )
 def test_aggregate_values(values, provenance, answer):
-    aggregated = _aggregate_shap_values(values, provenance)
+    aggregated = _aggregate_explainer_values(values, provenance)
 
     if isinstance(aggregated, dict):
         check_equal_dicts(aggregated, answer)

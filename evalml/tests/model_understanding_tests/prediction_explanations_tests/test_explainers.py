@@ -859,7 +859,7 @@ multiclass_no_best_worst_answer = """Test Pipeline Name
 )
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch(
-    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table"
+    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table"
 )
 def test_explain_predictions_best_worst_and_explain_predictions(
     mock_make_table,
@@ -873,7 +873,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(
     if output_format == "text":
         mock_make_table.return_value = "table goes here"
     elif output_format == "dataframe":
-        shap_table = pd.DataFrame(
+        explanation_table = pd.DataFrame(
             {
                 "feature_names": [0],
                 "feature_values": [0],
@@ -882,7 +882,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(
             }
         )
         # Use side effect so that we always get a new copy of the dataframe
-        mock_make_table.side_effect = lambda *args, **kwargs: shap_table.copy()
+        mock_make_table.side_effect = lambda *args, **kwargs: explanation_table.copy()
     else:
         mock_make_table.return_value = {
             "explanations": ["explanation_dictionary_goes_here"]
@@ -1076,7 +1076,7 @@ regression_custom_metric_answer_dict = {
     ],
 )
 @patch(
-    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table"
+    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table"
 )
 def test_explain_predictions_best_worst_custom_metric(
     mock_make_table, output_format, answer
@@ -1726,7 +1726,7 @@ def test_explain_predictions_oversampler(estimator, fraud_100):
 
 
 @patch(
-    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_shap_table"
+    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table"
 )
 def test_explain_predictions_best_worst_callback(mock_make_table):
     pipeline = MagicMock()

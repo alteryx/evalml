@@ -40,7 +40,7 @@ def explain_predictions(
     y,
     indices_to_explain,
     top_k_features=3,
-    include_shap_values=False,
+    include_explainer_values=False,
     include_expected_value=False,
     output_format="text",
     training_data=None,
@@ -51,13 +51,13 @@ def explain_predictions(
     XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
 
     Args:
-        pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
+        pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP or LIME.
         input_features (pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
         y (pd.Series): Labels for the input data.
         indices_to_explain (list[int]): List of integer indices to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.  Default is 3.
-        include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
+        include_explainer_values (bool): Whether explainer (SHAP or LIME) values should be included in the table. Default is False.
         include_expected_value (bool): Whether the expected value should be included in the table. Default is False.
         output_format (str): Either "text", "dict", or "dataframe". Default is "text".
         training_data (pd.DataFrame, np.ndarray): Data the pipeline was trained on. Required and only used for time series pipelines.
@@ -65,7 +65,7 @@ def explain_predictions(
 
     Returns:
         str, dict, or pd.DataFrame: A report explaining the top contributing features to each prediction for each row of input_features.
-            The report will include the feature names, prediction contribution, and SHAP Value (optional).
+            The report will include the feature names, prediction contribution, and explainer value (optional).
 
     Raises:
         ValueError: if input_features is empty.
@@ -115,7 +115,7 @@ def explain_predictions(
         report_type="explain_predictions",
         output_format=output_format,
         top_k_features=top_k_features,
-        include_shap_values=include_shap_values,
+        include_explainer_values=include_explainer_values,
         include_expected_value=include_expected_value,
     )
     return report_creator(data)
@@ -139,7 +139,7 @@ class ExplainPredictionsStage(Enum):
     PREPROCESSING_STAGE = "preprocessing_stage"
     PREDICT_STAGE = "predict_stage"
     COMPUTE_FEATURE_STAGE = "compute_feature_stage"
-    COMPUTE_SHAP_VALUES_STAGE = "compute_shap_value_stage"
+    COMPUTE_EXPLAINER_VALUES_STAGE = "compute_explainer_value_stage"
     DONE = "done"
 
 
@@ -149,7 +149,7 @@ def explain_predictions_best_worst(
     y_true,
     num_to_explain=5,
     top_k_features=3,
-    include_shap_values=False,
+    include_explainer_values=False,
     metric=None,
     output_format="text",
     callback=None,
@@ -161,13 +161,13 @@ def explain_predictions_best_worst(
     XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
 
     Args:
-        pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
+        pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP or LIME.
         input_features (pd.DataFrame): Input data to evaluate the pipeline on.
         y_true (pd.Series): True labels for the input data.
         num_to_explain (int): How many of the best, worst, random data points to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.
-        include_shap_values (bool): Whether SHAP values should be included in the table. Default is False.
+        include_explainer_values (bool): Whether explainer (SHAP or LIME) values should be included in the table. Default is False.
         metric (callable): The metric used to identify the best and worst points in the dataset. Function must accept
             the true labels and predicted value or probabilities as the only arguments and lower values
             must be better. By default, this will be the absolute error for regression problems and cross entropy loss
@@ -182,7 +182,7 @@ def explain_predictions_best_worst(
     Returns:
         str, dict, or pd.DataFrame: A report explaining the top contributing features for the best/worst predictions in the input_features.
             For each of the best/worst rows of input_features, the predicted values, true labels, metric value,
-            feature names, prediction contribution, and SHAP Value (optional) will be listed.
+            feature names, prediction contribution, and explainer value (optional) will be listed.
 
     Raises:
         ValueError: If input_features does not have more than twice the requested features to explain.
@@ -274,7 +274,7 @@ def explain_predictions_best_worst(
     )
 
     _update_progress(
-        start_time, timer(), ExplainPredictionsStage.COMPUTE_SHAP_VALUES_STAGE, callback
+        start_time, timer(), ExplainPredictionsStage.COMPUTE_EXPLAINER_VALUES_STAGE, callback
     )
 
     data = _ReportData(
@@ -294,7 +294,7 @@ def explain_predictions_best_worst(
         report_type="explain_predictions_best_worst",
         output_format=output_format,
         top_k_features=top_k_features,
-        include_shap_values=include_shap_values,
+        include_explainer_values=include_explainer_values,
         num_to_explain=num_to_explain,
         include_expected_value=True,
     )

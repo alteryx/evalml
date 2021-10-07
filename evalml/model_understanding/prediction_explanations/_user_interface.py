@@ -4,33 +4,33 @@ import pandas as pd
 from texttable import Texttable
 
 from evalml.model_understanding.prediction_explanations._algorithms import (
-    _aggregate_shap_values,
+    _aggregate_explainer_values,
     _compute_shap_values,
-    _normalize_shap_values,
+    _normalize_explainer_values,
 )
 from evalml.problem_types import ProblemTypes
 
 
 def _make_rows(
-    shap_values,
+    explainer_values,
     normalized_values,
     pipeline_features,
     original_features,
     top_k,
-    include_shap_values=False,
+    include_explainer_values=False,
     convert_numeric_to_string=True,
 ):
-    """Makes the rows (one row for each feature) for the SHAP table.
+    """Makes the rows (one row for each feature) for the explanation table.
 
     Args:
-        shap_values (dict): Dictionary mapping the feature names to their SHAP values. In a multiclass setting,
-            this dictionary for correspond to the SHAP values for a single class.
-        normalized_values (dict): Normalized SHAP values. Same structure as shap_values parameter.
+        explainer_values (dict): Dictionary mapping the feature names to their explainer values. In a multiclass setting,
+            this dictionary for correspond to the explainer values for a single class.
+        normalized_values (dict): Normalized explainer values. Same structure as explainer_values parameter.
         pipeline_features (pd.Series): The features created by the pipeline.
         original_features (pd.Series): The features passed to the pipeline by the user. If possible,
             will display the original feature value.
         top_k (int): How many of the highest/lowest features to include in the table.
-        include_shap_values (bool): Whether to include the SHAP values in their own column.
+        include_explainer_values (bool): Whether to include the explainer values in their own column.
         convert_numeric_to_string (bool): Whether numeric values should be converted to strings from numeric
 
     Returns:
@@ -40,11 +40,11 @@ def _make_rows(
         (value[0], feature_name) for feature_name, value in normalized_values.items()
     ]
 
-    # Sort the features s.t the top_k_features w the largest shap value magnitudes are the first
+    # Sort the features s.t the top_k_features w the largest explainer value magnitudes are the first
     # top_k_features elements
     tuples = sorted(tuples, key=lambda x: abs(x[0]), reverse=True)
 
-    # Then sort such that the SHAP values go from most positive to most negative
+    # Then sort such that the explainer values go from most positive to most negative
     features_to_display = reversed(sorted(tuples[:top_k]))
 
     rows = []
@@ -68,11 +68,11 @@ def _make_rows(
             else:
                 feature_value = str(feature_value)
         row = [feature_name, feature_value, display_text]
-        if include_shap_values:
-            shap_value = shap_values[feature_name][0]
+        if include_explainer_values:
+            explainer_value = explainer_values[feature_name][0]
             if convert_numeric_to_string:
-                shap_value = "{:.2f}".format(shap_value)
-            row.append(shap_value)
+                explainer_value = "{:.2f}".format(explainer_value)
+            row.append(explainer_value)
         rows.append(row)
 
     return rows
@@ -118,26 +118,26 @@ def _make_json_serializable(value):
 
 
 def _make_text_table(
-    shap_values,
+    explainer_values,
     normalized_values,
     pipeline_features,
     original_features,
     top_k,
-    include_shap_values=False,
+    include_explainer_values=False,
 ):
-    """Make a table displaying the SHAP values for a prediction.
+    """Make a table displaying the explainer values for a prediction.
 
     Args:
-        shap_values (dict): Dictionary mapping the feature names to their SHAP values. In a multiclass setting,
-            this dictionary for correspond to the SHAP values for a single class.
-        normalized_values (dict): Normalized SHAP values. Same structure as shap_values parameter.
+        explainer_values (dict): Dictionary mapping the feature names to their explainer values. In a multiclass setting,
+            this dictionary for correspond to the explainer values for a single class.
+        normalized_values (dict): Normalized explainer values. Same structure as explainer_values parameter.
         top_k (int): How many of the highest/lowest features to include in the table.
-        include_shap_values (bool): Whether to include the SHAP values in their own column.
+        include_explainer_values (bool): Whether to include the explainer values in their own column.
 
     Returns:
         str
     """
-    n_cols = 4 if include_shap_values else 3
+    n_cols = 4 if include_explainer_values else 3
     dtypes = ["t"] * n_cols
     alignment = ["c"] * n_cols
 
@@ -147,57 +147,57 @@ def _make_text_table(
     table.set_cols_align(alignment)
 
     header = ["Feature Name", "Feature Value", "Contribution to Prediction"]
-    if include_shap_values:
+    if include_explainer_values:
         header.append("SHAP Value")
 
     rows = [header]
     rows += _make_rows(
-        shap_values,
+        explainer_values,
         normalized_values,
         pipeline_features,
         original_features,
         top_k,
-        include_shap_values,
+        include_explainer_values,
     )
     table.add_rows(rows)
     return table.draw()
 
 
 class _TableMaker(abc.ABC):
-    """Makes a SHAP table for a regression, binary, or multiclass classification problem."""
+    """Makes an explanation table for a regression, binary, or multiclass classification problem."""
 
-    def __init__(self, top_k, include_shap_values, include_expected_value, provenance):
+    def __init__(self, top_k, include_explainer_values, include_expected_value, provenance):
         self.top_k = top_k
-        self.include_shap_values = include_shap_values
+        self.include_explainer_values = include_explainer_values
         self.include_expected_value = include_expected_value
         self.provenance = provenance
 
     @staticmethod
     def make_drill_down_dict(
         provenance,
-        shap_values,
+        explainer_values,
         normalized_values,
         pipeline_features,
         original_features,
-        include_shap_values,
+        include_explainer_values,
     ):
-        """Format the 'drill_down' section of the explanation report when output_format="dict". This section will include the feature values, feature names, qualitative explanation and shap values (if include_shap_values=True) for the features created from one of the original features in the data."""
+        """Format the 'drill_down' section of the explanation report when output_format="dict". This section will include the feature values, feature names, qualitative explanation and explainer values (if include_explainer_values=True) for the features created from one of the original features in the data."""
         drill_down = {}
         for parent_feature, children_features in provenance.items():
-            shap_for_children = {
-                k: v for k, v in shap_values.items() if k in children_features
+            explainer_for_children = {
+                k: v for k, v in explainer_values.items() if k in children_features
             }
             agg_for_children = {
                 k: v for k, v in normalized_values.items() if k in children_features
             }
             top_k = len(agg_for_children)
             rows = _make_rows(
-                shap_for_children,
+                explainer_for_children,
                 agg_for_children,
                 pipeline_features,
                 original_features,
                 top_k=top_k,
-                include_shap_values=include_shap_values,
+                include_explainer_values=include_explainer_values,
                 convert_numeric_to_string=False,
             )
             drill_down[parent_feature] = _rows_to_dict(rows)
@@ -206,43 +206,43 @@ class _TableMaker(abc.ABC):
     @abc.abstractmethod
     def make_text(
         self,
-        aggregated_shap_values,
+        aggregated_explainer_values,
         aggregated_normalized_values,
-        shap_values,
+        explainer_values,
         normalized_values,
         pipeline_features,
         original_features,
         expected_value,
     ):
-        """Creates a table given shap values and formats it as text."""
+        """Creates a table given explainer values and formats it as text."""
 
     @abc.abstractmethod
     def make_dict(
         self,
-        aggregated_shap_values,
+        aggregated_explainer_values,
         aggregated_normalized_values,
-        shap_values,
+        explainer_values,
         normalized_values,
         pipeline_features,
         original_features,
         expected_value,
     ):
-        """Creates a table given shap values and formats it as dictionary."""
+        """Creates a table given explainer values and formats it as dictionary."""
 
     def make_dataframe(
         self,
-        aggregated_shap_values,
+        aggregated_explainer_values,
         aggregated_normalized_values,
-        shap_values,
+        explainer_values,
         normalized_values,
         pipeline_features,
         original_features,
         expected_value,
     ):
         data = self.make_dict(
-            aggregated_shap_values,
+            aggregated_explainer_values,
             aggregated_normalized_values,
-            shap_values=shap_values,
+            explainer_values=explainer_values,
             normalized_values=normalized_values,
             pipeline_features=pipeline_features,
             original_features=original_features,
@@ -261,55 +261,55 @@ class _TableMaker(abc.ABC):
         return df
 
 
-class _RegressionSHAPTable(_TableMaker):
-    """Makes a SHAP table explaining a prediction for a regression problems."""
+class _RegressionExplanationTable(_TableMaker):
+    """Makes an explanation table explaining a prediction for a regression problems."""
 
     def make_text(
         self,
-        aggregated_shap_values,
+        aggregated_explainer_values,
         aggregated_normalized_values,
-        shap_values,
+        explainer_values,
         normalized_values,
         pipeline_features,
         original_features,
         expected_value,
     ):
         return _make_text_table(
-            aggregated_shap_values,
+            aggregated_explainer_values,
             aggregated_normalized_values,
             pipeline_features,
             original_features,
             self.top_k,
-            self.include_shap_values,
+            self.include_explainer_values,
         )
 
     def make_dict(
         self,
-        aggregated_shap_values,
+        aggregated_explainer_values,
         aggregated_normalized_values,
-        shap_values,
+        explainer_values,
         normalized_values,
         pipeline_features,
         original_features,
         expected_value,
     ):
         rows = _make_rows(
-            aggregated_shap_values,
+            aggregated_explainer_values,
             aggregated_normalized_values,
             pipeline_features,
             original_features,
             self.top_k,
-            self.include_shap_values,
+            self.include_explainer_values,
             convert_numeric_to_string=False,
         )
         json_rows = _rows_to_dict(rows)
         drill_down = self.make_drill_down_dict(
             self.provenance,
-            shap_values,
+            explainer_values,
             normalized_values,
             pipeline_features,
             original_features,
-            self.include_shap_values,
+            self.include_explainer_values,
         )
         json_rows["class_name"] = None
         json_rows["drill_down"] = drill_down
@@ -317,25 +317,25 @@ class _RegressionSHAPTable(_TableMaker):
         return {"explanations": [json_rows]}
 
 
-class _BinarySHAPTable(_TableMaker):
-    """Makes a SHAP table explaining a prediction for a binary classification problem."""
+class _BinaryExplanationTable(_TableMaker):
+    """Makes an explanation table explaining a prediction for a binary classification problem."""
 
     def __init__(
         self,
         top_k,
-        include_shap_values,
+        include_explainer_values,
         include_expected_value,
         class_names,
         provenance,
     ):
-        super().__init__(top_k, include_shap_values, include_expected_value, provenance)
+        super().__init__(top_k, include_explainer_values, include_expected_value, provenance)
         self.class_names = class_names
 
     def make_text(
         self,
-        aggregated_shap_values,
+        aggregated_explainer_values,
         aggregated_normalized_values,
-        shap_values,
+        explainer_values,
         normalized_values,
         pipeline_features,
         original_features,
@@ -344,41 +344,41 @@ class _BinarySHAPTable(_TableMaker):
         # The SHAP algorithm will return a two-element list for binary problems.
         # By convention, we display the explanation for the dominant class.
         return _make_text_table(
-            aggregated_shap_values[1],
+            aggregated_explainer_values[1],
             aggregated_normalized_values[1],
             pipeline_features,
             original_features,
             self.top_k,
-            self.include_shap_values,
+            self.include_explainer_values,
         )
 
     def make_dict(
         self,
-        aggregated_shap_values,
+        aggregated_explainer_values,
         aggregated_normalized_values,
-        shap_values,
+        explainer_values,
         normalized_values,
         pipeline_features,
         original_features,
         expected_value,
     ):
         rows = _make_rows(
-            aggregated_shap_values[1],
+            aggregated_explainer_values[1],
             aggregated_normalized_values[1],
             pipeline_features,
             original_features,
             self.top_k,
-            self.include_shap_values,
+            self.include_explainer_values,
             convert_numeric_to_string=False,
         )
         dict_rows = _rows_to_dict(rows)
         drill_down = self.make_drill_down_dict(
             self.provenance,
-            shap_values[1],
+            explainer_values[1],
             normalized_values[1],
             pipeline_features,
             original_features,
-            self.include_shap_values,
+            self.include_explainer_values,
         )
         dict_rows["drill_down"] = drill_down
         dict_rows["class_name"] = _make_json_serializable(self.class_names[1])
@@ -387,25 +387,25 @@ class _BinarySHAPTable(_TableMaker):
         return {"explanations": [dict_rows]}
 
 
-class _MultiClassSHAPTable(_TableMaker):
-    """Makes a SHAP table explaining a prediction for a multiclass classification problem."""
+class _MultiClassExplanationTable(_TableMaker):
+    """Makes an exlpanation table explaining a prediction for a multiclass classification problem."""
 
     def __init__(
         self,
         top_k,
-        include_shap_values,
+        include_explainer_values,
         include_expected_value,
         class_names,
         provenance,
     ):
-        super().__init__(top_k, include_shap_values, include_expected_value, provenance)
+        super().__init__(top_k, include_explainer_values, include_expected_value, provenance)
         self.class_names = class_names
 
     def make_text(
         self,
-        aggregated_shap_values,
+        aggregated_explainer_values,
         aggregated_normalized_values,
-        shap_values,
+        explainer_values,
         normalized_values,
         pipeline_features,
         original_features,
@@ -413,7 +413,7 @@ class _MultiClassSHAPTable(_TableMaker):
     ):
         strings = []
         for class_name, class_values, normalized_class_values in zip(
-            self.class_names, aggregated_shap_values, aggregated_normalized_values
+            self.class_names, aggregated_explainer_values, aggregated_normalized_values
         ):
             strings.append(f"Class: {class_name}\n")
             table = _make_text_table(
@@ -422,7 +422,7 @@ class _MultiClassSHAPTable(_TableMaker):
                 pipeline_features,
                 original_features,
                 self.top_k,
-                self.include_shap_values,
+                self.include_explainer_values,
             )
             strings += table.splitlines()
             strings.append("\n")
@@ -430,9 +430,9 @@ class _MultiClassSHAPTable(_TableMaker):
 
     def make_dict(
         self,
-        aggregated_shap_values,
+        aggregated_explainer_values,
         aggregated_normalized_values,
-        shap_values,
+        explainer_values,
         normalized_values,
         pipeline_features,
         original_features,
@@ -441,22 +441,22 @@ class _MultiClassSHAPTable(_TableMaker):
         json_output = []
         for class_index, class_name in enumerate(self.class_names):
             rows = _make_rows(
-                aggregated_shap_values[class_index],
+                aggregated_explainer_values[class_index],
                 aggregated_normalized_values[class_index],
                 pipeline_features,
                 original_features,
                 self.top_k,
-                self.include_shap_values,
+                self.include_explainer_values,
                 convert_numeric_to_string=False,
             )
             json_output_for_class = _rows_to_dict(rows)
             drill_down = self.make_drill_down_dict(
                 self.provenance,
-                shap_values[class_index],
+                explainer_values[class_index],
                 normalized_values[class_index],
                 pipeline_features,
                 original_features,
-                self.include_shap_values,
+                self.include_explainer_values,
             )
             json_output_for_class["drill_down"] = drill_down
             json_output_for_class["expected_value"] = expected_value[class_index]
@@ -465,28 +465,27 @@ class _MultiClassSHAPTable(_TableMaker):
         return {"explanations": json_output}
 
 
-def _make_single_prediction_shap_table(
+def _make_single_prediction_explanation_table(
     pipeline,
     pipeline_features,
     input_features,
     index_to_explain,
     top_k=3,
-    include_shap_values=False,
+    include_explainer_values=False,
     include_expected_value=False,
     output_format="text",
 ):
     """Creates table summarizing the top_k_features positive and top_k_features negative contributing features to the prediction of a single datapoint.
 
     Args:
-        pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP.
+        pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP or LIME.
         pipeline_features (pd.DataFrame): Dataframe of features computed by the pipeline.
         input_features (pd.DataFrame): Dataframe of features passed to the pipeline. This is where the pipeline_features
             come from.
         index_to_explain (int): Index in the pipeline_features/input_features to explain.
         top_k (int): How many of the highest/lowest features to include in the table.
         training_data (pd.DataFrame): Training data the pipeline was fit on.
-            This is required for non-tree estimators because we need a sample of training data for the KernelSHAP algorithm.
-        include_shap_values (bool): Whether the SHAP values should be included in an extra column in the output.
+        include_explainer_values (bool): Whether the explainer values should be included in an extra column in the output.
             Default is False.
         include_expected_value (bool): Whether the expected value should be included in the table. Default is False.
         output_format (str): The desired format of the output.  Can be "text", "dict", or "dataframe".
@@ -500,37 +499,37 @@ def _make_single_prediction_shap_table(
     pipeline_features_row = pipeline_features.iloc[[index_to_explain]]
     input_features_row = input_features.iloc[[index_to_explain]]
 
-    shap_values, expected_value = _compute_shap_values(
+    explainer_values, expected_value = _compute_shap_values(
         pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0)
     )
-    normalized_values = _normalize_shap_values(shap_values)
+    normalized_values = _normalize_explainer_values(explainer_values)
 
     provenance = pipeline._get_feature_provenance()
-    aggregated_shap_values = _aggregate_shap_values(shap_values, provenance)
-    aggregated_normalized_shap_values = _normalize_shap_values(aggregated_shap_values)
+    aggregated_explainer_values = _aggregate_explainer_values(explainer_values, provenance)
+    aggregated_normalized_explainer_values = _normalize_explainer_values(aggregated_explainer_values)
 
     class_names = None
     if hasattr(pipeline, "classes_"):
         class_names = pipeline.classes_
 
     table_makers = {
-        ProblemTypes.REGRESSION: _RegressionSHAPTable(
-            top_k, include_shap_values, include_expected_value, provenance
+        ProblemTypes.REGRESSION: _RegressionExplanationTable(
+            top_k, include_explainer_values, include_expected_value, provenance
         ),
-        ProblemTypes.BINARY: _BinarySHAPTable(
-            top_k, include_shap_values, include_expected_value, class_names, provenance
+        ProblemTypes.BINARY: _BinaryExplanationTable(
+            top_k, include_explainer_values, include_expected_value, class_names, provenance
         ),
-        ProblemTypes.MULTICLASS: _MultiClassSHAPTable(
-            top_k, include_shap_values, include_expected_value, class_names, provenance
+        ProblemTypes.MULTICLASS: _MultiClassExplanationTable(
+            top_k, include_explainer_values, include_expected_value, class_names, provenance
         ),
-        ProblemTypes.TIME_SERIES_REGRESSION: _RegressionSHAPTable(
-            top_k, include_shap_values, include_expected_value, provenance
+        ProblemTypes.TIME_SERIES_REGRESSION: _RegressionExplanationTable(
+            top_k, include_explainer_values, include_expected_value, provenance
         ),
-        ProblemTypes.TIME_SERIES_BINARY: _BinarySHAPTable(
-            top_k, include_shap_values, include_expected_value, class_names, provenance
+        ProblemTypes.TIME_SERIES_BINARY: _BinaryExplanationTable(
+            top_k, include_explainer_values, include_expected_value, class_names, provenance
         ),
-        ProblemTypes.TIME_SERIES_MULTICLASS: _MultiClassSHAPTable(
-            top_k, include_shap_values, include_expected_value, class_names, provenance
+        ProblemTypes.TIME_SERIES_MULTICLASS: _MultiClassExplanationTable(
+            top_k, include_explainer_values, include_expected_value, class_names, provenance
         ),
     }
 
@@ -542,9 +541,9 @@ def _make_single_prediction_shap_table(
     }[output_format]
 
     return table_maker(
-        aggregated_shap_values,
-        aggregated_normalized_shap_values,
-        shap_values,
+        aggregated_explainer_values,
+        aggregated_normalized_explainer_values,
+        explainer_values,
         normalized_values,
         pipeline_features_row,
         input_features_row,
@@ -724,19 +723,19 @@ class _RegressionPredictedValues(_SectionMaker):
         return dict_output
 
 
-class _SHAPTable(_SectionMaker):
-    def __init__(self, top_k_features, include_shap_values):
+class _ExplanationTable(_SectionMaker):
+    def __init__(self, top_k_features, include_explainer_values):
         self.top_k_features = top_k_features
-        self.include_shap_values = include_shap_values
+        self.include_explainer_values = include_explainer_values
 
     def make_text(self, index, pipeline, pipeline_features, input_features):
-        """Makes the SHAP table section for reports formatted as text.
+        """Makes the explanation table section for reports formatted as text.
 
         The table is the same whether the user requests a best/worst report or they manually specified the
         subset of the input features.
 
         Handling the differences in how the table is formatted between regression and classification problems
-        is delegated to the _make_single_prediction_shap_table
+        is delegated to the _make_single_prediction_explanation_table
 
         Args:
             index (int): The index of the prediction in the dataset.
@@ -745,15 +744,15 @@ class _SHAPTable(_SectionMaker):
             input_features (pd.Dataframe): The dataframe of features passed to the pipeline.
 
         Returns:
-            The SHAP table section for reports formatted as text.
+            The explanation table section for reports formatted as text.
         """
-        table = _make_single_prediction_shap_table(
+        table = _make_single_prediction_explanation_table(
             pipeline,
             pipeline_features,
             input_features,
             index_to_explain=index,
             top_k=self.top_k_features,
-            include_shap_values=self.include_shap_values,
+            include_explainer_values=self.include_explainer_values,
             output_format="text",
         )
         table = table.splitlines()
@@ -761,27 +760,27 @@ class _SHAPTable(_SectionMaker):
         return ["\t\t" + line + "\n" for line in table] + ["\n\n"]
 
     def make_dict(self, index, pipeline, pipeline_features, input_features):
-        """Makes the SHAP table section formatted as a dictionary."""
-        json_output = _make_single_prediction_shap_table(
+        """Makes the explanation table section formatted as a dictionary."""
+        json_output = _make_single_prediction_explanation_table(
             pipeline,
             pipeline_features,
             input_features,
             index_to_explain=index,
             top_k=self.top_k_features,
-            include_shap_values=self.include_shap_values,
+            include_explainer_values=self.include_explainer_values,
             output_format="dict",
         )
         return json_output
 
     def make_dataframe(self, index, pipeline, pipeline_features, input_features):
-        """Makes the SHAP table section formatted as a dataframe."""
-        return _make_single_prediction_shap_table(
+        """Makes the explanation table section formatted as a dataframe."""
+        return _make_single_prediction_explanation_table(
             pipeline,
             pipeline_features,
             input_features,
             index_to_explain=index,
             top_k=self.top_k_features,
-            include_shap_values=self.include_shap_values,
+            include_explainer_values=self.include_explainer_values,
             output_format="dataframe",
         )
 
@@ -872,7 +871,7 @@ class _ReportMaker:
     def make_dataframe(self, data):
         report = []
         for rank, index in enumerate(data.index_list):
-            shap_table = self.table_maker.make_dataframe(
+            explanation_table = self.table_maker.make_dataframe(
                 index, data.pipeline, data.pipeline_features, data.input_features
             )
             if self.make_predicted_values_maker:
@@ -886,16 +885,16 @@ class _ReportMaker:
                 for key, value in heading.items():
                     if key == "probabilities":
                         for class_name, probability in value.items():
-                            shap_table[f"label_{class_name}_probability"] = probability
+                            explanation_table[f"label_{class_name}_probability"] = probability
                     else:
-                        shap_table[key] = value
+                        explanation_table[key] = value
             if self.heading_maker:
                 heading = self.heading_maker.make_dataframe(rank)
-                shap_table["rank"] = heading["index"]
-                shap_table["prefix"] = heading["prefix"]
+                explanation_table["rank"] = heading["index"]
+                explanation_table["prefix"] = heading["prefix"]
             else:
-                shap_table["prediction_number"] = rank
+                explanation_table["prediction_number"] = rank
 
-            report.append(shap_table)
+            report.append(explanation_table)
         df = pd.concat(report).reset_index(drop=True)
         return df
