@@ -90,7 +90,6 @@ class TargetDistributionDataCheck(DataCheck):
         ]  # Drop values greater than 3 standard deviations
         norm_test_og = normalization_test(y_new)
         norm_test_log = normalization_test(np.log(y_new))
-        print(norm_test_log, norm_test_og)
 
         log_detected = False
 

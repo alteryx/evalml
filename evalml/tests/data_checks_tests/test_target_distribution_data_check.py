@@ -84,17 +84,17 @@ def test_target_distribution_data_check_warning_action(
     size, name, statistic, distribution, data_type, X_y_regression
 ):
     X, y = X_y_regression
-
+    random_state = 2
     target_dist_check = TargetDistributionDataCheck()
 
     if distribution == "normal":
-        y = norm.rvs(loc=3, size=size)
+        y = norm.rvs(loc=3, size=size, random_state=random_state)
     elif distribution == "lognormal":
-        y = lognorm.rvs(0.4, size=size)
+        y = lognorm.rvs(0.4, size=size, random_state=random_state)
     else:
         # Will have a p-value of 0 thereby rejecting the null hypothesis even after log transforming
         # This is essentially just checking the = of the statistic's "log.pvalue >= og.pvalue"
-        y = lognorm.rvs(s=1, loc=1, scale=1, size=size)
+        y = lognorm.rvs(s=1, loc=1, scale=1, size=size, random_state=random_state)
 
     y = np.round(y, 6)
 
