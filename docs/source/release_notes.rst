@@ -4,14 +4,22 @@ Release Notes
     * Enhancements
         * Added human-readable pipeline explanations to model understanding :pr:`2861`
     * Fixes
+<<<<<<< HEAD
         * Fixed bug where `long` mode for the top level search method was not respected :pr:`2875`
+=======
+        * Pinned ``cmdstan`` to ``0.28.0`` in ``cmdstan-builder`` to prevent future breaking of support for Prophet :pr:`2880`
+>>>>>>> 322dcc0e18ecc0eaa3c7539e638853e195891cfd
     * Changes
+        * Deleted scikit-learn ensembler :pr:`2819`
     * Documentation Changes
+        * Updated ``install.ipynb`` to reflect flexibility for ``cmdstan`` version installation :pr:`2880`
     * Testing Changes
+        * Updated linux tests to use ``cmdstan-builder==0.0.8`` :pr:`2880`
 
 .. warning::
 
     **Breaking Changes**
+        * Deleted scikit-learn ensembler :pr:`2819`
 
 
 **v0.34.0 Sep. 30, 2021**
