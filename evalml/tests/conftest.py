@@ -65,7 +65,7 @@ def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
             custom_name = (
                 f"Pipeline with {estimator.name}"
                 if add_label_encoder is False
-                else f"Pipeline with {estimator.name} and label encoder"
+                else f"Pipeline with {estimator.name} w/ Label Encoder"
             )
             component_graph = (
                 [estimator]
@@ -96,7 +96,7 @@ def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
             custom_name = (
                 f"Pipeline with {estimator.name}"
                 if add_label_encoder is False
-                else f"Pipeline with {estimator.name} and label encoder"
+                else f"Pipeline with {estimator.name} w/ Label Encoder"
             )
             component_graph = (
                 [estimator]
@@ -145,7 +145,7 @@ def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
             custom_name = (
                 f"Pipeline with {estimator.name}"
                 if add_label_encoder is False
-                else f"Pipeline with {estimator.name} and label encoder"
+                else f"Pipeline with {estimator.name} w/ Label Encoder"
             )
             component_graph = (
                 [estimator]
@@ -798,23 +798,31 @@ def time_series_regression_pipeline_class():
 
 
 @pytest.fixture
-def time_series_binary_classification_pipeline_class():
+def time_series_classification_component_graph():
+    component_graph = {
+        "Label Encoder": ["Label Encoder", "X", "y"],
+        "Delayed Feature Transformer": [
+            "Delayed Feature Transformer",
+            "Label Encoder.x",
+            "Label Encoder.y",
+        ],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            "Delayed Feature Transformer.x",
+            "Label Encoder.y",
+        ],
+    }
+    return component_graph
+
+
+@pytest.fixture
+def time_series_binary_classification_pipeline_class(
+    time_series_classification_component_graph,
+):
     class TSBinaryPipeline(TimeSeriesBinaryClassificationPipeline):
         """Logistic Regression Pipeline for time series binary classification problems."""
 
-        component_graph = {
-            "Label Encoder": ["Label Encoder", "X", "y"],
-            "Delayed Feature Transformer": [
-                "Delayed Feature Transformer",
-                "Label Encoder.x",
-                "Label Encoder.y",
-            ],
-            "Logistic Regression Classifier": [
-                "Logistic Regression Classifier",
-                "Delayed Feature Transformer.x",
-                "Label Encoder.y",
-            ],
-        }
+        component_graph = time_series_classification_component_graph
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
@@ -829,19 +837,7 @@ def time_series_multiclass_classification_pipeline_class():
     class TSMultiPipeline(TimeSeriesMulticlassClassificationPipeline):
         """Logistic Regression Pipeline for time series multiclass classification problems."""
 
-        component_graph = {
-            "Label Encoder": ["Label Encoder", "X", "y"],
-            "Delayed Feature Transformer": [
-                "Delayed Feature Transformer",
-                "Label Encoder.x",
-                "Label Encoder.y",
-            ],
-            "Logistic Regression Classifier": [
-                "Logistic Regression Classifier",
-                "Delayed Feature Transformer.x",
-                "Label Encoder.y",
-            ],
-        }
+        component_graph = time_series_classification_component_graph
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(

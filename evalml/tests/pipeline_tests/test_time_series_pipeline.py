@@ -660,10 +660,9 @@ def test_classification_pipeline_encodes_targets(
     pl.fit(X_train, y_encoded_train)
     _, target_passed_to_estimator = mock_fit.call_args[0]
     # Check that target is converted to ints. Use .iloc[1:] because the first feature row has NaNs
-    expected_target = (
-        y_encoded_train.iloc[2:].map({"positive": 1, "negative": 0}).astype(int)
+    assert_series_equal(
+        target_passed_to_estimator, pl._encode_targets(y_encoded_train.iloc[2:])
     )
-    assert_series_equal(target_passed_to_estimator, expected_target)
 
     # Check predict encodes target
     predictions = pl.predict(X_holdout.iloc[:1], None, X_train, y_encoded_train)
