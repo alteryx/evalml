@@ -833,7 +833,9 @@ def time_series_binary_classification_pipeline_class(
 
 
 @pytest.fixture
-def time_series_multiclass_classification_pipeline_class():
+def time_series_multiclass_classification_pipeline_class(
+    time_series_classification_component_graph,
+):
     class TSMultiPipeline(TimeSeriesMulticlassClassificationPipeline):
         """Logistic Regression Pipeline for time series multiclass classification problems."""
 
