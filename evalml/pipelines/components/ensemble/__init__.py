@@ -1,7 +1,4 @@
 """Ensemble components."""
-from .sklearn_stacked_ensemble_base import SklearnStackedEnsembleBase
-from .sklearn_stacked_ensemble_classifier import SklearnStackedEnsembleClassifier
-from .sklearn_stacked_ensemble_regressor import SklearnStackedEnsembleRegressor
 from .stacked_ensemble_base import StackedEnsembleBase
 from .stacked_ensemble_classifier import StackedEnsembleClassifier
 from .stacked_ensemble_regressor import StackedEnsembleRegressor
