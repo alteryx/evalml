@@ -84,6 +84,8 @@ def test_target_distribution_data_check_warning_action(
     size, name, statistic, distribution, data_type, X_y_regression
 ):
     X, y = X_y_regression
+    # set this to avoid flaky tests. This is primarily because when we have smaller samples,
+    # once we remove values outside 3 st.devs, the distribution can begin to look more normal
     random_state = 2
     target_dist_check = TargetDistributionDataCheck()
 
