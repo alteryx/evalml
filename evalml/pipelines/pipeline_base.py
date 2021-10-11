@@ -427,6 +427,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
 
     def graph_json(self):
         """Generates a JSON with nodes consisting of the component names and parameters, and edges detailing component relationships.
+
             x_edges specifies from which component feature data is being passed.
             y_edges specifies from which component target data is being passed.
             This can be used to build graphs across a variety of visualization tools.
@@ -441,7 +442,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                                     [from_component_name, to_component_name],
                                     ...]
                     }
-
         Returns:
             dag_json (str): A serialized JSON representation of a DAG structure.
         """
