@@ -78,9 +78,9 @@ SITE_PACKAGES_DIR=$$(python -c 'import site; print(site.getsitepackages()[0])')
 .PHONY: installdeps-prophet
 installdeps-prophet:
 	pip install cmdstanpy==0.9.68
-	python ${SITE_PACKAGES_DIR}/cmdstanpy/install_cmdstan.py --dir ${SITE_PACKAGES_DIR}
+	python ${SITE_PACKAGES_DIR}/cmdstanpy/install_cmdstan.py --dir ${SITE_PACKAGES_DIR} -v 2.28.0
 	echo "Installing Prophet with CMDSTANPY backend"
-	CMDSTAN=${SITE_PACKAGES_DIR}/cmdstan-2.27.0 STAN_BACKEND=CMDSTANPY pip install --no-cache-dir prophet==1.0.1
+	CMDSTAN=${SITE_PACKAGES_DIR}/cmdstan-2.28.0 STAN_BACKEND=CMDSTANPY pip install --no-cache-dir prophet==1.0.1
 
 .PHONY: installdeps-core
 installdeps-core:

@@ -1,6 +1,10 @@
 """Components that transform data."""
 from .transformer import Transformer
-from .encoders import OneHotEncoder, TargetEncoder
+from .encoders import (
+    OneHotEncoder,
+    TargetEncoder,
+    LabelEncoder,
+)
 from .feature_selection import (
     FeatureSelector,
     RFClassifierSelectFromModel,

@@ -16,7 +16,7 @@ from evalml.exceptions import (
     MethodPropertyNotFoundError,
 )
 from evalml.model_family import ModelFamily
-from evalml.pipelines import BinaryClassificationPipeline, RegressionPipeline
+from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import (
     LSA,
     PCA,
@@ -66,11 +66,12 @@ from evalml.pipelines.components import (
     XGBoostRegressor,
 )
 from evalml.pipelines.components.ensemble import (
-    SklearnStackedEnsembleClassifier,
-    SklearnStackedEnsembleRegressor,
     StackedEnsembleBase,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
+)
+from evalml.pipelines.components.transformers.encoders.label_encoder import (
+    LabelEncoder,
 )
 from evalml.pipelines.components.transformers.preprocessing.log_transformer import (
     LogTransformer,
@@ -696,19 +697,7 @@ def test_component_parameters_init(
 ):
     for component_class in all_components():
         print("Testing component {}".format(component_class.name))
-        try:
-            component = component_class()
-        except EnsembleMissingPipelinesError:
-            if component_class == SklearnStackedEnsembleClassifier:
-                component = component_class(
-                    input_pipelines=[
-                        logistic_regression_binary_pipeline_class(parameters={})
-                    ]
-                )
-            elif component_class == SklearnStackedEnsembleRegressor:
-                component = component_class(
-                    input_pipelines=[linear_regression_pipeline_class(parameters={})]
-                )
+        component = component_class()
         parameters = component.parameters
 
         component2 = component_class(**parameters)
@@ -759,6 +748,9 @@ def test_components_init_kwargs():
         module = component._component_obj.__module__
         importlib.import_module(module, obj_class)
         patched = module + "." + obj_class + ".__init__"
+        if component_class == LabelEncoder:
+            # scikit-learn's LabelEncoder found in different module than where we import from
+            patched = module[: module.rindex(".")] + "." + obj_class + ".__init__"
 
         def all_init(self, *args, **kwargs):
             for k, v in kwargs.items():
@@ -768,7 +760,7 @@ def test_components_init_kwargs():
             component = component_class(test_arg="test")
             component_with_different_kwargs = component_class(diff_test_arg="test")
             assert component.parameters["test_arg"] == "test"
-            if not isinstance(component, PolynomialDetrender):
+            if not isinstance(component, (PolynomialDetrender, LabelEncoder)):
                 assert component._component_obj.test_arg == "test"
             # Test equality of different components with same or different kwargs
             assert component == component_class(test_arg="test")
@@ -801,7 +793,7 @@ def test_transformer_transform_output_type(X_y_binary):
     ]
 
     for component_class in _all_transformers():
-        if component_class in [PolynomialDetrender, LogTransformer]:
+        if component_class in [PolynomialDetrender, LogTransformer, LabelEncoder]:
             # Skipping because these tests are handled in their respective test files
             continue
         print("Testing transformer {}".format(component_class.name))
@@ -892,8 +884,6 @@ def test_transformer_transform_output_type(X_y_binary):
         for cls in all_components()
         if cls
         not in [
-            SklearnStackedEnsembleRegressor,
-            SklearnStackedEnsembleClassifier,
             StackedEnsembleClassifier,
             StackedEnsembleRegressor,
         ]
@@ -905,15 +895,7 @@ def test_default_parameters(cls):
     ), f"{cls.__name__}'s default parameters don't match __init__."
 
 
-@pytest.mark.parametrize(
-    "cls",
-    [
-        cls
-        for cls in all_components()
-        if cls
-        not in [SklearnStackedEnsembleRegressor, SklearnStackedEnsembleClassifier]
-    ],
-)
+@pytest.mark.parametrize("cls", [cls for cls in all_components()])
 def test_default_parameters_raise_no_warnings(cls):
     with warnings.catch_warnings(record=True) as w:
         warnings.simplefilter("always")
@@ -1092,8 +1074,6 @@ def test_all_estimators_check_fit(
         for estimator in _all_estimators()
         if estimator
         not in [
-            SklearnStackedEnsembleClassifier,
-            SklearnStackedEnsembleRegressor,
             StackedEnsembleClassifier,
             StackedEnsembleRegressor,
             TimeSeriesBaselineEstimator,
@@ -1179,29 +1159,7 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), "component.pkl")
     for component_class in all_components():
         print("Testing serialization of component {}".format(component_class.name))
-        try:
-            component = helper_functions.safe_init_component_with_njobs_1(
-                component_class
-            )
-        except EnsembleMissingPipelinesError:
-            if component_class == SklearnStackedEnsembleClassifier:
-                component = component_class(
-                    input_pipelines=[
-                        BinaryClassificationPipeline(
-                            [RandomForestClassifier],
-                            parameters={"Random Forest Classifier": {"n_jobs": 1}},
-                        )
-                    ]
-                )
-            elif component_class == SklearnStackedEnsembleRegressor:
-                component = component_class(
-                    input_pipelines=[
-                        RegressionPipeline(
-                            [RandomForestRegressor],
-                            parameters={"Random Forest Regressor": {"n_jobs": 1}},
-                        )
-                    ]
-                )
+        component = helper_functions.safe_init_component_with_njobs_1(component_class)
         if (
             isinstance(component, Estimator)
             and ProblemTypes.TIME_SERIES_REGRESSION in component.supported_problem_types
@@ -1220,9 +1178,7 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                 return_dict=True
             )
             if issubclass(component_class, Estimator) and not (
-                isinstance(component, SklearnStackedEnsembleClassifier)
-                or isinstance(component, SklearnStackedEnsembleRegressor)
-                or isinstance(component, StackedEnsembleClassifier)
+                isinstance(component, StackedEnsembleClassifier)
                 or isinstance(component, StackedEnsembleRegressor)
             ):
                 assert (
@@ -1255,19 +1211,7 @@ def test_estimators_accept_all_kwargs(
     logistic_regression_binary_pipeline_class,
     linear_regression_pipeline_class,
 ):
-    try:
-        estimator = estimator_class()
-    except EnsembleMissingPipelinesError:
-        if estimator_class == SklearnStackedEnsembleClassifier:
-            estimator = estimator_class(
-                input_pipelines=[
-                    logistic_regression_binary_pipeline_class(parameters={})
-                ]
-            )
-        elif estimator_class == SklearnStackedEnsembleRegressor:
-            estimator = estimator_class(
-                input_pipelines=[linear_regression_pipeline_class(parameters={})]
-            )
+    estimator = estimator_class()
     if estimator._component_obj is None:
         pytest.skip(
             f"Skipping {estimator_class} because does not have component object."
@@ -1361,16 +1305,7 @@ def test_component_equality_all_components(
     logistic_regression_binary_pipeline_class,
     linear_regression_pipeline_class,
 ):
-    if component_class == SklearnStackedEnsembleClassifier:
-        component = component_class(
-            input_pipelines=[logistic_regression_binary_pipeline_class(parameters={})]
-        )
-    elif component_class == SklearnStackedEnsembleRegressor:
-        component = component_class(
-            input_pipelines=[linear_regression_pipeline_class(parameters={})]
-        )
-    else:
-        component = component_class()
+    component = component_class()
     parameters = component.parameters
     equal_component = component_class(**parameters)
     assert component == equal_component
@@ -1422,19 +1357,7 @@ def test_component_str(
     logistic_regression_binary_pipeline_class,
     linear_regression_pipeline_class,
 ):
-    try:
-        component = component_class()
-    except EnsembleMissingPipelinesError:
-        if component_class == SklearnStackedEnsembleClassifier:
-            component = component_class(
-                input_pipelines=[
-                    logistic_regression_binary_pipeline_class(parameters={})
-                ]
-            )
-        elif component_class == SklearnStackedEnsembleRegressor:
-            component = component_class(
-                input_pipelines=[linear_regression_pipeline_class(parameters={})]
-            )
+    component = component_class()
     assert str(component) == component.name
 
 
@@ -1587,21 +1510,7 @@ def test_estimator_fit_respects_custom_indices(
     helper_functions,
 ):
 
-    if estimator_class == SklearnStackedEnsembleRegressor:
-        input_pipelines = [
-            helper_functions.safe_init_pipeline_with_njobs_1(
-                linear_regression_pipeline_class
-            )
-        ]
-    elif estimator_class == SklearnStackedEnsembleClassifier:
-        input_pipelines = [
-            helper_functions.safe_init_pipeline_with_njobs_1(
-                logistic_regression_binary_pipeline_class
-            )
-        ]
-    else:
-        input_pipelines = []
-
+    input_pipelines = []
     supported_problem_types = estimator_class.supported_problem_types
 
     ts_problem = False
