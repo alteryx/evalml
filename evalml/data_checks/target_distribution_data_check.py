@@ -15,7 +15,7 @@ from evalml.utils import infer_feature_types
 
 
 class TargetDistributionDataCheck(DataCheck):
-    """Check if the target data contains certain distributions that may need to be transformed prior training to improve model performance."""
+    """Check if the target data contains certain distributions that may need to be transformed prior training to improve model performance. Uses the Shapiro-Wilks test when the dataset is <=5000 samples, otherwise uses Jarque-Bera."""
 
     def validate(self, X, y):
         """Check if the target data has a certain distribution.
