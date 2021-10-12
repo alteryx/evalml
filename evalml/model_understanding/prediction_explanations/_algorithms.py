@@ -4,6 +4,7 @@ from operator import add
 
 import lime.lime_tabular
 import numpy as np
+import pandas as pd
 import shap
 from sklearn.utils import check_array
 
@@ -44,7 +45,11 @@ def _compute_lime_values(pipeline, features, index_to_explain):
         dict or list(dict): For regression problems, a dictionary mapping a feature name to a list of SHAP values.
             For classification problems, returns a list of dictionaries. One for each class.
         float: the expected value if return_expected_value is True.
-    """
+    """    
+    if pipeline.estimator.model_family == ModelFamily.BASELINE:
+        raise ValueError(
+            "You passed in a baseline pipeline. These are simple enough that LIME values are not needed."
+        )
     mode = "classification"
     if is_regression(pipeline.problem_type):
         mode = "regression"
@@ -62,23 +67,31 @@ def _compute_lime_values(pipeline, features, index_to_explain):
             d[item[0]] = [item[1]]
         return d
 
+    num_features = features.shape[1]
+    if isinstance(features, pd.DataFrame):
+        feature_names = features.columns
+        instance = features.iloc[index_to_explain]
+    else:
+        feature_names = None
+        instance = features[index_to_explain]
+
     explainer = lime.lime_tabular.LimeTabularExplainer(
         features,
-        feature_names=list(features.columns),
+        feature_names=feature_names,
         discretize_continuous=False,
         mode=mode,
     )
     if mode == "regression":
         exp = explainer.explain_instance(
-            features.iloc[index_to_explain],
+            instance,
             array_predict,
-            num_features=len(features.columns),
+            num_features=num_features,
         )
     else:
         exp = explainer.explain_instance(
-            features.iloc[index_to_explain],
+            instance,
             array_predict,
-            num_features=len(features.columns),
+            num_features=num_features,
             top_labels=len(pipeline.classes_), 
         )
 
