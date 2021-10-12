@@ -95,11 +95,11 @@ If your work includes a [breaking change](https://en.wiktionary.org/wiki/breakin
 We maintain a conda package [package](https://anaconda.org/conda-forge/evalml) to give users more options of how to install EvalML.
 Conda packages are created from recipes, which are yaml config files that list a package's dependencies and tests. Here is 
 EvalML's [recipe](https://github.com/conda-forge/evalml-core-feedstock/blob/master/recipe/meta.yaml). GitHub repositories
-containing conda recipers are called `feedstocks`.
+containing conda recipes are called `feedstocks`.
 
 If you opened a PR to EvalML that modifies `requirements.txt` or `core-requirements.txt`, or if the latest dependency bot
 updates the latest version of one of our packages, you will see a CI job called `build_conda_pkg`. This section describes
-what `build_conda_pkg` does and what to do if you see it is red in your pr. 
+what `build_conda_pkg` does and what to do if you see it fails in your pr. 
 
 #### What is build_conda_pkg?
 `build_conda_pkg` clones the PR branch and builds the conda package from that branch. Since the conda build process runs our
@@ -116,12 +116,12 @@ against your PR branch!
 
 #### Why does `build_conda_pkg` use the `latest_release_changes` branch instead of `master`?
 One important fact to know about conda is that any change to the `master` branch of a feedstock will
-result in a new version of the conda package published to the world!
+result in a new version of the conda package being published to the world!
 
-With this in mind, let's say your PR adds support for a latest dependency version that is not backwards-compatible with
-older versions of that dependency. If we made a change to `master`, an updated version of EvalML's latest conda package would
+With this in mind, let's say your PR requires modifying our dependencies. 
+If we made a change to `master`, an updated version of EvalML's latest conda package would
 be released. This means people who installed the latest version of EvalML prior to this PR would get different dependency versions
-than those who installed after the PR got merged on GitHub. This is not desireable, especially because the PR would not get shipped
+than those who installed after the PR got merged on GitHub. This is not desirable, especially because the PR would not get shipped
 to PyPi until the next release happens. So there would also be a discrepancy between the PyPi and conda versions.
 
 #### What to do if you see `build_conda_pkg` is red on your PR?
@@ -135,7 +135,7 @@ check out `latest_release_changes` and add the dependency to `evalml-core` if it
 extra dependency. Push this change up and rerun `build_conda_pkg` on your branch.
 
 If you see that adding the dependency causes the build to fail, possibly because of conflicting versions, then
-undo your change to `latest_release_changes` while you figure out what happened.
+undo your change to `latest_release_changes` while you figure out how to fix it.
 
 **Case 2: The latest dependency bot created a PR**
 If the latest dependency bot PR fails `build_conda_pkg`, it means our code doesn't support the latest version
