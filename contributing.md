@@ -130,7 +130,7 @@ It depends on the kind of PR:
 **Case 1: You're adding a completely new dependency**
 
 In this case, `build_conda_pkg` is failing simply because a dependency is missing. Adding the dependency to the recipe should
-make the check green. To add the dependency, clone the [feedstock](https://github.com/conda-forge/evalml-core-feedstock),
+make the check green. To add the dependency, clone the [feedstock](https://github.com/conda-forge/evalml-core-feedstock) (do not fork it!),
 check out `latest_release_changes` and add the dependency to `evalml-core` if it is a core dependency or `evalml` if it is an
 extra dependency. Push this change up and rerun `build_conda_pkg` on your branch.
 
