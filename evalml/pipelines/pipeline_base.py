@@ -431,11 +431,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         x_edges specifies from which component feature data is being passed.
         y_edges specifies from which component target data is being passed.
         This can be used to build graphs across a variety of visualization tools.
-        Template:   {"Nodes": {"component_name": {"Name": class_name, "Attributes": parameters_attributes}, ...}},
-                    "x_edges": [[from_component_name, to_component_name],
-                                [from_component_name, to_component_name], ...],
-                    "y_edges": [[from_component_name, to_component_name],
-                                [from_component_name, to_component_name], ...]}
+        Template:
+        {"Nodes": {"component_name": {"Name": class_name, "Attributes": parameters_attributes}, ...}},
+        "x_edges": [[from_component_name, to_component_name],
+                    [from_component_name, to_component_name], ...],
+        "y_edges": [[from_component_name, to_component_name],
+                    [from_component_name, to_component_name], ...]}
 
         Returns:
             dag_json (str): A serialized JSON representation of a DAG structure.
@@ -463,7 +464,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         nodes.update({"X": "X", "y": "y"})
         graph_as_json = {"Nodes": nodes, "x_edges": x_edges, "y_edges": y_edges}
 
-        return json.dumps(graph_as_json)
+        for x_edge in graph_as_json["x_edges"]:
+            if x_edge[0] == "X":
+                graph_as_json["x_edges"].remove(x_edge)
+                graph_as_json["x_edges"].insert(0, x_edge)
+
+        return json.dumps(graph_as_json, indent=4)
 
     def graph(self, filepath=None):
         """Generate an image representing the pipeline graph.
