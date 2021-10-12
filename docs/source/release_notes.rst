@@ -28,6 +28,7 @@ Release Notes
         * Added support for training-only components in pipelines and component graphs :pr:`2776`
         * Added default argument for the parameters value for ``ComponentGraph.instantiate`` :pr:`2796`
         * Added ``TIME_SERIES_REGRESSION`` to ``LightGBMRegressor's`` supported problem types :pr:`2793`
+        * Provided a JSON representation of a pipeline's DAG structure :pr:`2812`
         * Added validation to holdout data passed to ``predict`` and ``predict_proba`` for time series :pr:`2804`
         * Added information about which row indices are outliers in ``OutliersDataCheck`` :pr:`2818`
         * Added verbose flag to top level ``search()`` method :pr:`2813`
