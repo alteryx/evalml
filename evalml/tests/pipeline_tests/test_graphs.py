@@ -6,8 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from evalml.pipelines import BinaryClassificationPipeline, ComponentGraph, OneHotEncoder, LinearRegressor
-from evalml.pipelines.components import Imputer
+from evalml.pipelines import BinaryClassificationPipeline, ComponentGraph
 
 
 @pytest.fixture
