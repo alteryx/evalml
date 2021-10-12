@@ -25,3 +25,4 @@ from .permutation_importance import (
     calculate_permutation_importance,
     calculate_permutation_importance_one_column,
 )
+from .feature_explanations import readable_explanation, get_influential_features

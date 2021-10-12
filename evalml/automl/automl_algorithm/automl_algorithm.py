@@ -22,8 +22,8 @@ class AutoMLAlgorithm(ABC):
     Args:
         allowed_pipelines (list(class)): A list of PipelineBase subclasses indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
         custom_hyperparameters (dict): Custom hyperparameter ranges specified for pipelines to iterate over.
-        max_iterations (int): The maximum number of iterations to be evaluated.
         tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
+        text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -31,18 +31,17 @@ class AutoMLAlgorithm(ABC):
         self,
         allowed_pipelines=None,
         custom_hyperparameters=None,
-        max_iterations=None,
         tuner_class=None,
+        text_in_ensembling=False,
         random_seed=0,
         n_jobs=-1,
     ):
         self.random_seed = random_seed
         self.allowed_pipelines = allowed_pipelines or []
-        self.max_iterations = max_iterations
         self._tuner_class = tuner_class or SKOptTuner
         self._tuners = {}
         self._best_pipeline_info = {}
-        self.text_in_ensembling = False
+        self.text_in_ensembling = text_in_ensembling
         self.n_jobs = n_jobs
         self._selected_cols = None
         for pipeline in self.allowed_pipelines:
@@ -101,8 +100,6 @@ class AutoMLAlgorithm(ABC):
 
     def _create_ensemble(self):
         next_batch = []
-
-        # Custom Stacked Pipelines
         best_pipelines = list(self._best_pipeline_info.values())
         problem_type = best_pipelines[0]["pipeline"].problem_type
         n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
@@ -128,16 +125,6 @@ class AutoMLAlgorithm(ABC):
             problem_type,
             random_seed=self.random_seed,
             n_jobs=n_jobs_ensemble,
-        )
-        next_batch.append(ensemble)
-
-        # Sklearn Stacked Pipelines
-        ensemble = _make_stacked_ensemble_pipeline(
-            input_pipelines,
-            problem_type,
-            random_seed=self.random_seed,
-            n_jobs=n_jobs_ensemble,
-            use_sklearn=True,
         )
         next_batch.append(ensemble)
         return next_batch

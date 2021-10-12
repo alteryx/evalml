@@ -158,7 +158,6 @@ def test_stacked_same_model_family():
     pipeline = _make_stacked_ensemble_pipeline(
         input_pipelines=input_pipelines,
         problem_type=ProblemTypes.REGRESSION,
-        use_sklearn=False,
     )
 
     assert "Linear Pipeline - Imputer" in pipeline.component_graph.compute_order
@@ -205,7 +204,6 @@ def test_ensembler_str_and_classes():
     ensemble_pipeline = _make_stacked_ensemble_pipeline(
         input_pipelines=[reg_pl_1, reg_pl_2],
         problem_type=ProblemTypes.REGRESSION,
-        use_sklearn=False,
     )
     check_for_components(ensemble_pipeline)
 
@@ -227,7 +225,6 @@ def test_ensembler_str_and_classes():
     ensemble_pipeline = _make_stacked_ensemble_pipeline(
         input_pipelines=[reg_pl_1, reg_pl_2],
         problem_type=ProblemTypes.REGRESSION,
-        use_sklearn=False,
     )
     check_for_components(ensemble_pipeline)
 
@@ -261,7 +258,6 @@ def test_ensembler_use_component_preds(
     ensemble_pipeline = _make_stacked_ensemble_pipeline(
         input_pipelines=[reg_pl_1, reg_pl_2],
         problem_type=ProblemTypes.REGRESSION,
-        use_sklearn=False,
     )
     ensemble_pipeline.fit(X, y)
     ensemble_input, _ = mock_ensembler.call_args[0]

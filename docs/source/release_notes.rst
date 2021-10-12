@@ -2,15 +2,24 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added human-readable pipeline explanations to model understanding :pr:`2861`
     * Fixes
+        * Fixed bug where ``long`` mode for the top level search method was not respected :pr:`2875`
+        * Pinned ``cmdstan`` to ``0.28.0`` in ``cmdstan-builder`` to prevent future breaking of support for Prophet :pr:`2880`
     * Changes
+        * Deleted scikit-learn ensembler :pr:`2819`
+        * Refactored pipeline building logic out of ``AutoMLSearch`` and into ``IterativeAlgorithm`` :pr:`2854`
     * Documentation Changes
+        * Updated ``install.ipynb`` to reflect flexibility for ``cmdstan`` version installation :pr:`2880`
     * Testing Changes
+        * Updated ``test_all_estimators`` to account for Prophet being allowed for Python 3.9 :pr:`2892`
+        * Updated linux tests to use ``cmdstan-builder==0.0.8`` :pr:`2880`
 
 .. warning::
 
     **Breaking Changes**
-
+        * Deleted scikit-learn ensembler :pr:`2819`
+        * ``IterativeAlgorithm`` now requires X, y, problem_type as required arguments as well as sampler_name, allowed_model_families, allowed_component_graphs, max_batches, and verbose as optional arguments :pr:`2854`
 
 **v0.34.0 Sep. 30, 2021**
     * Enhancements
