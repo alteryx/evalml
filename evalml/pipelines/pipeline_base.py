@@ -441,6 +441,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                                 [from_component_name, to_component_name],
                                 ...]
                 }
+
         Returns:
             dag_json (str): A serialized JSON representation of a DAG structure.
         """
