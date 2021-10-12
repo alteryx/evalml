@@ -22,6 +22,7 @@ Release Notes
     **Breaking Changes**
         * Deleted scikit-learn ensembler :pr:`2819`
         * ``IterativeAlgorithm`` now requires X, y, problem_type as required arguments as well as sampler_name, allowed_model_families, allowed_component_graphs, max_batches, and verbose as optional arguments :pr:`2854`
+        * Changed method names of ``fit_features`` and ``compute_final_component_features`` to ``fit_and_transform_all_but_final`` and ``fit_and_transform_all_but_final`` in ``ComponentGraph`` :pr:`2902`
 
 **v0.34.0 Sep. 30, 2021**
     * Enhancements
