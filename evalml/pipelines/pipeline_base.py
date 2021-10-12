@@ -266,7 +266,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             pd.DataFrame: New transformed features.
         """
-        return self.component_graph.compute_final_component_features(X, y=y)
+        return self.component_graph.transform_all_but_final(X, y=y)
 
     def _fit(self, X, y):
         self.input_target_name = y.name

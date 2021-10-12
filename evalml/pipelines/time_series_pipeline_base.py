@@ -257,7 +257,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
     def _fit(self, X, y):
         self.input_target_name = y.name
-        X_t, y_t = self.component_graph.fit_features(X, y)
+        X_t, y_t = self.component_graph.fit_and_transform_all_but_final(X, y)
         X_t, y_shifted = drop_rows_with_nans(X_t, y_t)
 
         if self.estimator is not None:
