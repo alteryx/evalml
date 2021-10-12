@@ -10,7 +10,7 @@ Release Notes
     * Changes
         * Deleted scikit-learn ensembler :pr:`2819`
         * Refactored pipeline building logic out of ``AutoMLSearch`` and into ``IterativeAlgorithm`` :pr:`2854`
-        * Refactored names for methods in ``ComponentGraph`` :pr:``
+        * Refactored names for methods in ``ComponentGraph`` :pr:`2902`
     * Documentation Changes
         * Updated ``install.ipynb`` to reflect flexibility for ``cmdstan`` version installation :pr:`2880`
     * Testing Changes
