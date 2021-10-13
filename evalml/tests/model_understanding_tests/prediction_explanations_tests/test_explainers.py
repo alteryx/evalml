@@ -1645,39 +1645,39 @@ def test_categories_aggregated_when_some_are_dropped(
         }
 
 
-@pytest.mark.parametrize(
-    "problem_type",
-    [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
-)
-def test_explain_predictions_stacked_ensemble(
-    problem_type,
-    X_y_binary,
-    X_y_multi,
-    X_y_regression,
-):
-    if is_binary(problem_type):
-        X, y = X_y_binary
-        pipeline = BinaryClassificationPipeline(
-            [StackedEnsembleClassifier(random_seed=0)]
-        )
-    elif is_multiclass(problem_type):
-        X, y = X_y_multi
-        pipeline = MulticlassClassificationPipeline(
-            [StackedEnsembleClassifier(random_seed=0)]
-        )
-    else:
-        X, y = X_y_regression
-        pipeline = RegressionPipeline([StackedEnsembleRegressor(random_seed=0)])
+# @pytest.mark.parametrize(
+#     "problem_type",
+#     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
+# )
+# def test_explain_predictions_stacked_ensemble(
+#     problem_type,
+#     X_y_binary,
+#     X_y_multi,
+#     X_y_regression,
+# ):
+#     if is_binary(problem_type):
+#         X, y = X_y_binary
+#         pipeline = BinaryClassificationPipeline(
+#             [StackedEnsembleClassifier(random_seed=0)]
+#         )
+#     elif is_multiclass(problem_type):
+#         X, y = X_y_multi
+#         pipeline = MulticlassClassificationPipeline(
+#             [StackedEnsembleClassifier(random_seed=0)]
+#         )
+#     else:
+#         X, y = X_y_regression
+#         pipeline = RegressionPipeline([StackedEnsembleRegressor(random_seed=0)])
 
-    with pytest.raises(
-        ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"
-    ):
-        explain_predictions(pipeline, X, y, indices_to_explain=[0])
+#     with pytest.raises(
+#         ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"
+#     ):
+#         explain_predictions(pipeline, X, y, indices_to_explain=[0])
 
-    with pytest.raises(
-        ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"
-    ):
-        explain_predictions_best_worst(pipeline, X, y)
+#     with pytest.raises(
+#         ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"
+#     ):
+#         explain_predictions_best_worst(pipeline, X, y)
 
 
 @pytest.mark.parametrize(

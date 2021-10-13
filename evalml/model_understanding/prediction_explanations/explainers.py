@@ -74,8 +74,8 @@ def explain_predictions(
     """
     input_features = infer_feature_types(input_features)
 
-    if pipeline.model_family == ModelFamily.ENSEMBLE:
-        raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
+    # if pipeline.model_family == ModelFamily.ENSEMBLE:
+    #     raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if input_features.empty:
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
     if output_format not in {"text", "dict", "dataframe"}:
@@ -94,9 +94,12 @@ def explain_predictions(
             "training_data are not None"
         )
 
-    pipeline_features = pipeline.compute_estimator_features(
-        input_features, y, training_data, training_target
-    )
+    if pipeline.component_graph.get_last_component().model_family == ModelFamily.ENSEMBLE:
+        pipeline_features = input_features
+    else:
+        pipeline_features = pipeline.compute_estimator_features(
+            input_features, y, training_data, training_target
+        )
 
     data = _ReportData(
         pipeline,
@@ -213,8 +216,6 @@ def explain_predictions_best_worst(
         raise ValueError(
             f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}"
         )
-    if pipeline.model_family == ModelFamily.ENSEMBLE:
-        raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if not metric:
         metric = DEFAULT_METRICS[pipeline.problem_type]
     _update_progress(
@@ -269,9 +270,12 @@ def explain_predictions_best_worst(
         start_time, timer(), ExplainPredictionsStage.COMPUTE_FEATURE_STAGE, callback
     )
 
-    pipeline_features = pipeline.compute_estimator_features(
-        input_features, y_true, training_data, training_target
-    )
+    if pipeline.component_graph.get_last_component().model_family == ModelFamily.ENSEMBLE:
+        pipeline_features = input_features
+    else:
+        pipeline_features = pipeline.compute_estimator_features(
+            input_features, y_true, training_data, training_target
+        )
 
     _update_progress(
         start_time, timer(), ExplainPredictionsStage.COMPUTE_SHAP_VALUES_STAGE, callback
