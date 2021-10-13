@@ -1,3 +1,4 @@
+import json
 import os
 from unittest.mock import patch
 
@@ -207,3 +208,48 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipel
     with pytest.warns(None) as graph_valid:
         clf.graph_feature_importance()
         import_check.assert_called_with("ipywidgets", warning=True)
+
+
+@pytest.mark.parametrize("graph_type", ["graph", "list"])
+def test_component_as_json(
+    graph_type,
+    linear_regression_pipeline_class,
+    nonlinear_binary_with_target_pipeline_class,
+):
+    pipeline_ = linear_regression_pipeline_class({})
+    if graph_type == "graph":
+        pipeline_ = nonlinear_binary_with_target_pipeline_class({})
+
+    pipeline_parameters = pipeline_.parameters
+    expected_nodes = pipeline_.component_graph.component_dict
+    dag_str = pipeline_.graph_json()
+
+    assert isinstance(dag_str, str)
+    dag_json = json.loads(dag_str)
+    assert isinstance(dag_json, dict)
+    assert dag_json["x_edges"][0][0] == "X"
+    assert len(expected_nodes.keys()) == len(dag_json["Nodes"].keys()) - 2
+    assert dag_json["Nodes"].keys() - expected_nodes.keys() == {"X", "y"}
+    x_edges_set = set()
+    y_edges_set = set()
+    for node_, graph_ in expected_nodes.items():
+        assert node_ in dag_json["Nodes"]
+        comp_name = graph_[0].name if graph_type == "list" else graph_[0]
+        assert comp_name == dag_json["Nodes"][node_]["Name"]
+        for comp_ in graph_[1:]:
+            if comp_ == "X":
+                x_edges_set.add(("X", node_))
+            elif comp_.endswith(".x"):
+                x_edges_set.add((comp_[:-2], node_))
+            elif comp_ == "y":
+                y_edges_set.add(("y", node_))
+            else:
+                y_edges_set.add((comp_[:-2], node_))
+    for node_, params_ in pipeline_parameters.items():
+        for key_, val_ in params_.items():
+            assert (
+                dag_json["Nodes"][node_]["Attributes"][key_]
+                == pipeline_parameters[node_][key_]
+            )
+    assert x_edges_set == set(tuple(edge_) for edge_ in dag_json["x_edges"])
+    assert y_edges_set == set(tuple(edge_) for edge_ in dag_json["y_edges"])

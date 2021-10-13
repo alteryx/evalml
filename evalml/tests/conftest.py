@@ -391,6 +391,25 @@ def example_graph():
 
 
 @pytest.fixture
+def example_pass_target_graph():
+    component_graph = {
+        "Imputer": ["Imputer", "X", "y"],
+        "Target Imputer": ["Target Imputer", "X", "y"],
+        "OneHot_RandomForest": ["One Hot Encoder", "Imputer.x", "Target Imputer.y"],
+        "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
+        "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
+        "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
+        "Logistic Regression": [
+            "Logistic Regression Classifier",
+            "Random Forest.x",
+            "Elastic Net.x",
+            "y",
+        ],
+    }
+    return component_graph
+
+
+@pytest.fixture
 def example_regression_graph():
     component_graph = {
         "Imputer": ["Imputer", "X", "y"],
@@ -732,6 +751,22 @@ def nonlinear_binary_pipeline_class(example_graph):
             return self.__class__(self.parameters, random_seed=self.random_seed)
 
     return NonLinearBinaryPipeline
+
+
+@pytest.fixture
+def nonlinear_binary_with_target_pipeline_class(example_pass_target_graph):
+    class NonLinearBinaryWithTargetPipeline(BinaryClassificationPipeline):
+        custom_name = "Non Linear Binary With Target Pipeline"
+        component_graph = example_pass_target_graph
+
+        def __init__(self, parameters, random_seed=0):
+            super().__init__(
+                self.component_graph,
+                parameters=parameters,
+                custom_name=self.custom_name,
+            )
+
+    return NonLinearBinaryWithTargetPipeline
 
 
 @pytest.fixture
