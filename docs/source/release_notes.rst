@@ -13,6 +13,7 @@ Release Notes
         * Refactored names for methods in ``ComponentGraph`` :pr:`2902`
     * Documentation Changes
         * Updated ``install.ipynb`` to reflect flexibility for ``cmdstan`` version installation :pr:`2880`
+        * Updated the conda section of our contributing guide :pr:`2899`
     * Testing Changes
         * Updated ``test_all_estimators`` to account for Prophet being allowed for Python 3.9 :pr:`2892`
         * Updated linux tests to use ``cmdstan-builder==0.0.8`` :pr:`2880`
