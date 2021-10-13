@@ -1,3 +1,4 @@
+from itertools import product
 import json
 from unittest.mock import MagicMock, patch
 
@@ -478,404 +479,69 @@ multiclass_no_best_worst_answer = """Test Pipeline Name
 )
 
 
+def _add_custom_index(answer, index_best, index_worst, output_format):
+
+    if output_format == "text":
+        answer = answer.format(index_0=index_best, index_1=index_worst)
+    elif output_format == "dataframe":
+        col_name = "prefix" if "prefix" in answer.columns else "rank"
+        n_repeats = answer[col_name].value_counts().tolist()[0]
+        answer["index_id"] = [index_best] * n_repeats + [index_worst] * n_repeats
+    else:
+        answer["explanations"][0]["predicted_values"]["index_id"] = index_best
+        answer["explanations"][1]["predicted_values"]["index_id"] = index_worst
+    return answer
+
+
+def _prep_pipeline_mock(problem_type, input_features):
+    pipeline = MagicMock()
+    pipeline.parameters = "Parameters go here"
+    pipeline.problem_type = problem_type
+    pipeline.name = "Test Pipeline Name"
+    pipeline.compute_estimator_features.return_value = input_features
+
+    return pipeline
+
+def _compare_reports(report, predicted_report, output_format):
+    if output_format == "text":
+        compare_two_tables(report.splitlines(), predicted_report.splitlines())
+    elif output_format == "dataframe":
+        assert sorted(report.columns.tolist()) == sorted(
+            predicted_report.columns.tolist()
+        )
+        pd.testing.assert_frame_equal(
+            report, predicted_report[report.columns]
+        )
+    else:
+        assert report == predicted_report
+
+
+output_formats = ["text", "dict", "dataframe"]
+algorithms = ["shap", "lime"]
+regression_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
+regression_custom_indices = [[0, 1], [4, 10], ["foo", "bar"]]
+
+
 @pytest.mark.parametrize(
-    "problem_type,output_format,answer,explain_predictions_answer,custom_index",
-    [
-        (
-            ProblemTypes.REGRESSION,
-            "text",
-            regression_best_worst_answer,
-            no_best_worst_answer,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.REGRESSION,
-            "dict",
-            regression_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.REGRESSION,
-            "dataframe",
-            regression_best_worst_answer_df,
-            no_best_worst_answer_df,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.REGRESSION,
-            "text",
-            regression_best_worst_answer,
-            no_best_worst_answer,
-            [4, 23],
-        ),
-        (
-            ProblemTypes.REGRESSION,
-            "dict",
-            regression_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            [4, 10],
-        ),
-        (
-            ProblemTypes.REGRESSION,
-            "dataframe",
-            regression_best_worst_answer_df,
-            no_best_worst_answer_df,
-            [4, 10],
-        ),
-        (
-            ProblemTypes.REGRESSION,
-            "text",
-            regression_best_worst_answer,
-            no_best_worst_answer,
-            ["foo", "bar"],
-        ),
-        (
-            ProblemTypes.REGRESSION,
-            "dict",
-            regression_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            ["foo", "bar"],
-        ),
-        (
-            ProblemTypes.REGRESSION,
-            "dataframe",
-            regression_best_worst_answer_df,
-            no_best_worst_answer_df,
-            ["foo", "bar"],
-        ),
-        (
-            ProblemTypes.BINARY,
-            "text",
-            binary_best_worst_answer,
-            no_best_worst_answer,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.BINARY,
-            "dict",
-            binary_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.BINARY,
-            "dataframe",
-            binary_best_worst_answer_df,
-            no_best_worst_answer_df,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.BINARY,
-            "text",
-            binary_best_worst_answer,
-            no_best_worst_answer,
-            [7, 11],
-        ),
-        (
-            ProblemTypes.BINARY,
-            "dict",
-            binary_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            [7, 11],
-        ),
-        (
-            ProblemTypes.BINARY,
-            "dataframe",
-            binary_best_worst_answer_df,
-            no_best_worst_answer_df,
-            [7, 11],
-        ),
-        (
-            ProblemTypes.BINARY,
-            "text",
-            binary_best_worst_answer,
-            no_best_worst_answer,
-            ["first", "second"],
-        ),
-        (
-            ProblemTypes.BINARY,
-            "dict",
-            binary_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            ["first", "second"],
-        ),
-        (
-            ProblemTypes.BINARY,
-            "dataframe",
-            binary_best_worst_answer_df,
-            no_best_worst_answer_df,
-            ["first", "second"],
-        ),
-        (
-            ProblemTypes.MULTICLASS,
-            "text",
-            multiclass_best_worst_answer,
-            multiclass_no_best_worst_answer,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.MULTICLASS,
-            "dict",
-            multiclass_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.MULTICLASS,
-            "dataframe",
-            multiclass_best_worst_answer_df,
-            no_best_worst_answer_df,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.MULTICLASS,
-            "text",
-            multiclass_best_worst_answer,
-            multiclass_no_best_worst_answer,
-            [19, 103],
-        ),
-        (
-            ProblemTypes.MULTICLASS,
-            "dict",
-            multiclass_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            [17, 235],
-        ),
-        (
-            ProblemTypes.MULTICLASS,
-            "dataframe",
-            multiclass_best_worst_answer_df,
-            no_best_worst_answer_df,
-            [17, 235],
-        ),
-        (
-            ProblemTypes.MULTICLASS,
-            "text",
-            multiclass_best_worst_answer,
-            multiclass_no_best_worst_answer,
-            ["2020-10", "2020-11"],
-        ),
-        (
-            ProblemTypes.MULTICLASS,
-            "dict",
-            multiclass_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            ["2020-15", "2020-15"],
-        ),
-        (
-            ProblemTypes.MULTICLASS,
-            "dataframe",
-            multiclass_best_worst_answer_df,
-            no_best_worst_answer_df,
-            ["2020-15", "2020-15"],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_REGRESSION,
-            "text",
-            regression_best_worst_answer,
-            no_best_worst_answer,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_REGRESSION,
-            "dict",
-            regression_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_REGRESSION,
-            "dataframe",
-            regression_best_worst_answer_df,
-            no_best_worst_answer_df,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_REGRESSION,
-            "text",
-            regression_best_worst_answer,
-            no_best_worst_answer,
-            [4, 23],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_REGRESSION,
-            "dict",
-            regression_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            [4, 10],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_REGRESSION,
-            "dataframe",
-            regression_best_worst_answer_df,
-            no_best_worst_answer_df,
-            [4, 10],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_REGRESSION,
-            "text",
-            regression_best_worst_answer,
-            no_best_worst_answer,
-            ["foo", "bar"],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_REGRESSION,
-            "dict",
-            regression_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            ["foo", "bar"],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_REGRESSION,
-            "dataframe",
-            regression_best_worst_answer_df,
-            no_best_worst_answer_df,
-            ["foo", "bar"],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_BINARY,
-            "text",
-            binary_best_worst_answer,
-            no_best_worst_answer,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_BINARY,
-            "dict",
-            binary_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_BINARY,
-            "dataframe",
-            binary_best_worst_answer_df,
-            no_best_worst_answer_df,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_BINARY,
-            "text",
-            binary_best_worst_answer,
-            no_best_worst_answer,
-            [7, 11],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_BINARY,
-            "dict",
-            binary_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            [7, 11],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_BINARY,
-            "dataframe",
-            binary_best_worst_answer_df,
-            no_best_worst_answer_df,
-            [7, 11],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_BINARY,
-            "text",
-            binary_best_worst_answer,
-            no_best_worst_answer,
-            ["first", "second"],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_BINARY,
-            "dict",
-            binary_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            ["first", "second"],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_BINARY,
-            "dataframe",
-            binary_best_worst_answer_df,
-            no_best_worst_answer_df,
-            ["first", "second"],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_MULTICLASS,
-            "text",
-            multiclass_best_worst_answer,
-            multiclass_no_best_worst_answer,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_MULTICLASS,
-            "dict",
-            multiclass_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_MULTICLASS,
-            "dataframe",
-            multiclass_best_worst_answer_df,
-            no_best_worst_answer_df,
-            [0, 1],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_MULTICLASS,
-            "text",
-            multiclass_best_worst_answer,
-            multiclass_no_best_worst_answer,
-            [19, 103],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_MULTICLASS,
-            "dict",
-            multiclass_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            [17, 235],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_MULTICLASS,
-            "dataframe",
-            multiclass_best_worst_answer_df,
-            no_best_worst_answer_df,
-            [17, 235],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_MULTICLASS,
-            "text",
-            multiclass_best_worst_answer,
-            multiclass_no_best_worst_answer,
-            ["2020-10", "2020-11"],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_MULTICLASS,
-            "dict",
-            multiclass_best_worst_answer_dict,
-            no_best_worst_answer_dict,
-            ["2020-15", "2020-15"],
-        ),
-        (
-            ProblemTypes.TIME_SERIES_MULTICLASS,
-            "dataframe",
-            multiclass_best_worst_answer_df,
-            no_best_worst_answer_df,
-            ["2020-15", "2020-15"],
-        ),
-    ],
+    "problem_type,output_format,custom_index,algorithm",
+    product(regression_problem_types, output_formats, regression_custom_indices,algorithms),
 )
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch(
     "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table"
 )
-def test_explain_predictions_best_worst_and_explain_predictions(
+def test_explain_predictions_best_worst_and_explain_predictions_regression(
     mock_make_table,
     mock_default_metrics,
     problem_type,
     output_format,
-    answer,
-    explain_predictions_answer,
     custom_index,
+    algorithm,
 ):
     if output_format == "text":
         mock_make_table.return_value = "table goes here"
+        answer = regression_best_worst_answer
+        explain_predictions_answer = no_best_worst_answer
     elif output_format == "dataframe":
         explanation_table = pd.DataFrame(
             {
@@ -887,91 +553,30 @@ def test_explain_predictions_best_worst_and_explain_predictions(
         )
         # Use side effect so that we always get a new copy of the dataframe
         mock_make_table.side_effect = lambda *args, **kwargs: explanation_table.copy()
+        answer = regression_best_worst_answer_df
+        explain_predictions_answer = no_best_worst_answer_df
     else:
         mock_make_table.return_value = {
             "explanations": ["explanation_dictionary_goes_here"]
         }
+        answer = regression_best_worst_answer_dict
+        explain_predictions_answer = no_best_worst_answer_dict
 
-    pipeline = MagicMock()
-    pipeline.parameters = "Parameters go here"
     input_features = pd.DataFrame({"a": [3, 4]}, index=custom_index)
-    pipeline.problem_type = problem_type
-    pipeline.name = "Test Pipeline Name"
     input_features.ww.init()
-    pipeline.compute_estimator_features.return_value = input_features
+    pipeline = _prep_pipeline_mock(problem_type, input_features)
+    pipeline.predict.return_value = ww.init_series(pd.Series([2, 1]))
+    pipeline.predict_in_sample.return_value = ww.init_series(pd.Series([2, 1]))
 
-    def _add_custom_index(answer, index_best, index_worst, output_format):
-
-        if output_format == "text":
-            answer = answer.format(index_0=index_best, index_1=index_worst)
-        elif output_format == "dataframe":
-            col_name = "prefix" if "prefix" in answer.columns else "rank"
-            n_repeats = answer[col_name].value_counts().tolist()[0]
-            answer["index_id"] = [index_best] * n_repeats + [index_worst] * n_repeats
-        else:
-            answer["explanations"][0]["predicted_values"]["index_id"] = index_best
-            answer["explanations"][1]["predicted_values"]["index_id"] = index_worst
-        return answer
-
-    if is_regression(problem_type):
-        abs_error_mock = MagicMock(__name__="abs_error")
-        abs_error_mock.return_value = pd.Series([4.0, 1.0], dtype="float64")
-        mock_default_metrics.__getitem__.return_value = abs_error_mock
-        pipeline.predict.return_value = ww.init_series(pd.Series([2, 1]))
-        pipeline.predict_in_sample.return_value = ww.init_series(pd.Series([2, 1]))
-        y_true = pd.Series([3, 2], index=custom_index)
-        answer = _add_custom_index(
-            answer,
-            index_best=custom_index[1],
-            index_worst=custom_index[0],
-            output_format=output_format,
-        )
-    elif is_binary(problem_type):
-        pipeline.classes_.return_value = ["benign", "malignant"]
-        cross_entropy_mock = MagicMock(__name__="cross_entropy")
-        mock_default_metrics.__getitem__.return_value = cross_entropy_mock
-        cross_entropy_mock.return_value = pd.Series([0.2, 0.78])
-        proba = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
-        proba.ww.init()
-        pipeline.predict_proba.return_value = proba
-        pipeline.predict_proba_in_sample.return_value = proba
-        pipeline.predict.return_value = ww.init_series(pd.Series(["malignant"] * 2))
-        pipeline.predict_in_sample.return_value = ww.init_series(
-            pd.Series(["malignant"] * 2)
-        )
-        y_true = pd.Series(["malignant", "benign"], index=custom_index)
-        answer = _add_custom_index(
-            answer,
-            index_best=custom_index[0],
-            index_worst=custom_index[1],
-            output_format=output_format,
-        )
-    else:
-        # Multiclass text output is formatted slightly different so need to account for that
-        if output_format == "text":
-            mock_make_table.return_value = multiclass_table
-        pipeline.classes_.return_value = ["setosa", "versicolor", "virginica"]
-        cross_entropy_mock = MagicMock(__name__="cross_entropy")
-        mock_default_metrics.__getitem__.return_value = cross_entropy_mock
-        cross_entropy_mock.return_value = pd.Series([0.15, 0.34])
-        proba = pd.DataFrame(
-            {"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75], "virginica": [0.1, 0.05]}
-        )
-        proba.ww.init()
-        pipeline.predict_proba.return_value = proba
-        pipeline.predict_proba_in_sample.return_value = proba
-        pipeline.predict.return_value = ww.init_series(
-            pd.Series(["setosa", "versicolor"])
-        )
-        pipeline.predict_in_sample.return_value = ww.init_series(
-            pd.Series(["setosa", "versicolor"])
-        )
-        y_true = pd.Series(["setosa", "versicolor"], index=custom_index)
-        answer = _add_custom_index(
-            answer,
-            index_best=custom_index[0],
-            index_worst=custom_index[1],
-            output_format=output_format,
+    abs_error_mock = MagicMock(__name__="abs_error")
+    abs_error_mock.return_value = pd.Series([4.0, 1.0], dtype="float64")
+    mock_default_metrics.__getitem__.return_value = abs_error_mock
+    y_true = pd.Series([3, 2], index=custom_index)
+    answer = _add_custom_index(
+        answer,
+        index_best=custom_index[1],
+        index_worst=custom_index[0],
+        output_format=output_format,
         )
 
     report = explain_predictions(
@@ -982,16 +587,9 @@ def test_explain_predictions_best_worst_and_explain_predictions(
         output_format=output_format,
         training_data=input_features,
         training_target=y_true,
+        algorithm=algorithm,
     )
-    if output_format == "text":
-        compare_two_tables(report.splitlines(), explain_predictions_answer.splitlines())
-    elif output_format == "dataframe":
-        assert report.columns.tolist() == explain_predictions_answer.columns.tolist()
-        pd.testing.assert_frame_equal(
-            report, explain_predictions_answer[report.columns]
-        )
-    else:
-        assert report == explain_predictions_answer
+    _compare_reports(report, explain_predictions_answer, output_format)
 
     best_worst_report = explain_predictions_best_worst(
         pipeline,
@@ -1001,19 +599,202 @@ def test_explain_predictions_best_worst_and_explain_predictions(
         output_format=output_format,
         training_data=input_features,
         training_target=y_true,
+        algorithm=algorithm,
     )
+    _compare_reports(best_worst_report, answer, output_format)
+
+
+binary_problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
+binary_custom_indices = [[0, 1], [7, 11], ["first", "second"]]
+
+
+@pytest.mark.parametrize(
+    "problem_type,output_format,custom_index,algorithm",
+    product(binary_problem_types, output_formats, binary_custom_indices, algorithms),
+)
+@patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
+@patch(
+    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table"
+)
+def test_explain_predictions_best_worst_and_explain_predictions_binary(
+    mock_make_table,
+    mock_default_metrics,
+    problem_type,
+    output_format,
+    custom_index,
+    algorithm
+):
     if output_format == "text":
-        compare_two_tables(best_worst_report.splitlines(), answer.splitlines())
+        mock_make_table.return_value = "table goes here"
+        answer = binary_best_worst_answer
+        explain_predictions_answer = no_best_worst_answer
     elif output_format == "dataframe":
-        # Check dataframes equal without caring about column order
-        assert sorted(best_worst_report.columns.tolist()) == sorted(
-            answer.columns.tolist()
+        explanation_table = pd.DataFrame(
+            {
+                "feature_names": [0],
+                "feature_values": [0],
+                "qualitative_explanation": [0],
+                "quantitative_explanation": [0],
+            }
         )
-        pd.testing.assert_frame_equal(
-            best_worst_report, answer[best_worst_report.columns]
-        )
+        # Use side effect so that we always get a new copy of the dataframe
+        mock_make_table.side_effect = lambda *args, **kwargs: explanation_table.copy()
+        answer = binary_best_worst_answer_df
+        explain_predictions_answer = no_best_worst_answer_df
     else:
-        assert best_worst_report == answer
+        mock_make_table.return_value = {
+            "explanations": ["explanation_dictionary_goes_here"]
+        }
+        answer = binary_best_worst_answer_dict
+        explain_predictions_answer = no_best_worst_answer_dict
+
+    input_features = pd.DataFrame({"a": [3, 4]}, index=custom_index)
+    input_features.ww.init()
+    pipeline = _prep_pipeline_mock(problem_type, input_features)
+
+    pipeline.classes_.return_value = ["benign", "malignant"]
+    cross_entropy_mock = MagicMock(__name__="cross_entropy")
+    mock_default_metrics.__getitem__.return_value = cross_entropy_mock
+    cross_entropy_mock.return_value = pd.Series([0.2, 0.78])
+    proba = pd.DataFrame({"benign": [0.05, 0.1], "malignant": [0.95, 0.9]})
+    proba.ww.init()
+    pipeline.predict_proba.return_value = proba
+    pipeline.predict_proba_in_sample.return_value = proba
+    pipeline.predict.return_value = ww.init_series(pd.Series(["malignant"] * 2))
+    pipeline.predict_in_sample.return_value = ww.init_series(
+        pd.Series(["malignant"] * 2)
+    )
+    y_true = pd.Series(["malignant", "benign"], index=custom_index)
+    answer = _add_custom_index(
+        answer,
+        index_best=custom_index[0],
+        index_worst=custom_index[1],
+        output_format=output_format,
+    )
+
+    report = explain_predictions(
+        pipeline,
+        input_features,
+        y=y_true,
+        indices_to_explain=[0, 1],
+        output_format=output_format,
+        training_data=input_features,
+        training_target=y_true,
+        algorithm=algorithm,
+    )
+    _compare_reports(report, explain_predictions_answer, output_format)
+
+    best_worst_report = explain_predictions_best_worst(
+        pipeline,
+        input_features,
+        y_true=y_true,
+        num_to_explain=1,
+        output_format=output_format,
+        training_data=input_features,
+        training_target=y_true,
+        algorithm=algorithm,
+    )
+    _compare_reports(best_worst_report, answer, output_format)
+
+
+multiclass_problem_types = [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS]
+multiclass_custom_indices = [[0, 1], [17, 235], ["2020-15", "2020-15"]]
+
+
+@pytest.mark.parametrize(
+    "problem_type,output_format,custom_index,algorithm",
+    product(multiclass_problem_types, output_formats, multiclass_custom_indices, algorithms),
+)
+@patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
+@patch(
+    "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table"
+)
+def test_explain_predictions_best_worst_and_explain_predictions_multiclass(
+    mock_make_table,
+    mock_default_metrics,
+    problem_type,
+    output_format,
+    custom_index,
+    algorithm,
+):
+    if output_format == "text":
+        mock_make_table.return_value = "table goes here"
+        answer = multiclass_best_worst_answer
+        explain_predictions_answer = multiclass_no_best_worst_answer
+    elif output_format == "dataframe":
+        explanation_table = pd.DataFrame(
+            {
+                "feature_names": [0],
+                "feature_values": [0],
+                "qualitative_explanation": [0],
+                "quantitative_explanation": [0],
+            }
+        )
+        # Use side effect so that we always get a new copy of the dataframe
+        mock_make_table.side_effect = lambda *args, **kwargs: explanation_table.copy()
+        answer = multiclass_best_worst_answer_df
+        explain_predictions_answer = no_best_worst_answer_df
+    else:
+        mock_make_table.return_value = {
+            "explanations": ["explanation_dictionary_goes_here"]
+        }
+        answer = multiclass_best_worst_answer_dict
+        explain_predictions_answer = no_best_worst_answer_dict
+
+    input_features = pd.DataFrame({"a": [3, 4]}, index=custom_index)
+    input_features.ww.init()
+    pipeline = _prep_pipeline_mock(problem_type, input_features)
+
+    # Multiclass text output is formatted slightly different so need to account for that
+    if output_format == "text":
+        mock_make_table.return_value = multiclass_table
+    pipeline.classes_.return_value = ["setosa", "versicolor", "virginica"]
+    cross_entropy_mock = MagicMock(__name__="cross_entropy")
+    mock_default_metrics.__getitem__.return_value = cross_entropy_mock
+    cross_entropy_mock.return_value = pd.Series([0.15, 0.34])
+    proba = pd.DataFrame(
+        {"setosa": [0.8, 0.2], "versicolor": [0.1, 0.75], "virginica": [0.1, 0.05]}
+    )
+    proba.ww.init()
+    pipeline.predict_proba.return_value = proba
+    pipeline.predict_proba_in_sample.return_value = proba
+    pipeline.predict.return_value = ww.init_series(
+        pd.Series(["setosa", "versicolor"])
+    )
+    pipeline.predict_in_sample.return_value = ww.init_series(
+        pd.Series(["setosa", "versicolor"])
+    )
+    y_true = pd.Series(["setosa", "versicolor"], index=custom_index)
+    answer = _add_custom_index(
+        answer,
+        index_best=custom_index[0],
+        index_worst=custom_index[1],
+        output_format=output_format,
+    )
+
+    report = explain_predictions(
+        pipeline,
+        input_features,
+        y=y_true,
+        indices_to_explain=[0, 1],
+        output_format=output_format,
+        training_data=input_features,
+        training_target=y_true,
+        algorithm=algorithm,
+    )
+    _compare_reports(report, explain_predictions_answer, output_format)
+
+    best_worst_report = explain_predictions_best_worst(
+        pipeline,
+        input_features,
+        y_true=y_true,
+        num_to_explain=1,
+        output_format=output_format,
+        training_data=input_features,
+        training_target=y_true,
+        algorithm=algorithm,
+    )
+    _compare_reports(best_worst_report, answer, output_format)
 
 
 regression_custom_metric_answer = """Test Pipeline Name
