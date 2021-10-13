@@ -28,13 +28,15 @@ def _create_dictionary(explainer_values, feature_names):
         raise ValueError("Explainer values must be stored in a numpy array!")
     explainer_values = np.atleast_2d(explainer_values)
     mapping = {}
-    for feature_name, column_index in zip(feature_names, range(explainer_values.shape[1])):
+    for feature_name, column_index in zip(
+        feature_names, range(explainer_values.shape[1])
+    ):
         mapping[feature_name] = explainer_values[:, column_index].tolist()
     return mapping
 
 
 def _compute_lime_values(pipeline, features, index_to_explain):
-    """ Computes LIME values for each feature.
+    """Computes LIME values for each feature.
 
     Args:
         pipeline (PipelineBase): Trained pipeline whose predictions we want to explain with LIME.
@@ -45,7 +47,7 @@ def _compute_lime_values(pipeline, features, index_to_explain):
         dict or list(dict): For regression problems, a dictionary mapping a feature name to a list of SHAP values.
             For classification problems, returns a list of dictionaries. One for each class.
         float: the expected value if return_expected_value is True.
-    """    
+    """
     if pipeline.estimator.model_family == ModelFamily.BASELINE:
         raise ValueError(
             "You passed in a baseline pipeline. These are simple enough that LIME values are not needed."
@@ -92,17 +94,17 @@ def _compute_lime_values(pipeline, features, index_to_explain):
             instance,
             array_predict,
             num_features=num_features,
-            top_labels=len(pipeline.classes_), 
+            top_labels=len(pipeline.classes_),
         )
 
     if mode == "regression":
-        l = exp.as_list()
-        mappings = list_to_dict(l)
+        mapping_list = exp.as_list()
+        mappings = list_to_dict(mapping_list)
     else:
         mappings = []
         for label in exp.available_labels():
-            l = exp.as_list(label)
-            mappings.append(list_to_dict(l))
+            mapping_list = exp.as_list(label)
+            mappings.append(list_to_dict(mapping_list))
     return (mappings, None)
 
 

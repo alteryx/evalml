@@ -5,8 +5,8 @@ from texttable import Texttable
 
 from evalml.model_understanding.prediction_explanations._algorithms import (
     _aggregate_explainer_values,
-    _compute_shap_values,
     _compute_lime_values,
+    _compute_shap_values,
     _normalize_explainer_values,
 )
 from evalml.problem_types import ProblemTypes
@@ -168,7 +168,14 @@ def _make_text_table(
 class _TableMaker(abc.ABC):
     """Makes an explanation table for a regression, binary, or multiclass classification problem."""
 
-    def __init__(self, top_k, include_explainer_values, include_expected_value, provenance, algorithm="shap"):
+    def __init__(
+        self,
+        top_k,
+        include_explainer_values,
+        include_expected_value,
+        provenance,
+        algorithm="shap",
+    ):
         self.top_k = top_k
         self.include_explainer_values = include_explainer_values
         self.include_expected_value = include_expected_value
@@ -331,9 +338,15 @@ class _BinaryExplanationTable(_TableMaker):
         include_expected_value,
         class_names,
         provenance,
-        algorithm="shap"
+        algorithm="shap",
     ):
-        super().__init__(top_k, include_explainer_values, include_expected_value, provenance, algorithm)
+        super().__init__(
+            top_k,
+            include_explainer_values,
+            include_expected_value,
+            provenance,
+            algorithm,
+        )
         self.class_names = class_names
 
     def make_text(
@@ -403,9 +416,15 @@ class _MultiClassExplanationTable(_TableMaker):
         include_expected_value,
         class_names,
         provenance,
-        algorithm="shap"
+        algorithm="shap",
     ):
-        super().__init__(top_k, include_explainer_values, include_expected_value, provenance, algorithm)
+        super().__init__(
+            top_k,
+            include_explainer_values,
+            include_expected_value,
+            provenance,
+            algorithm,
+        )
         self.class_names = class_names
 
     def make_text(
@@ -511,15 +530,23 @@ def _make_single_prediction_explanation_table(
 
     if algorithm == "shap":
         explainer_values, expected_value = _compute_shap_values(
-            pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0)
+            pipeline,
+            pipeline_features_row,
+            training_data=pipeline_features.dropna(axis=0),
         )
     else:
-        explainer_values, expected_value = _compute_lime_values(pipeline, pipeline_features, index_to_explain)
+        explainer_values, expected_value = _compute_lime_values(
+            pipeline, pipeline_features, index_to_explain
+        )
     normalized_values = _normalize_explainer_values(explainer_values)
 
     provenance = pipeline._get_feature_provenance()
-    aggregated_explainer_values = _aggregate_explainer_values(explainer_values, provenance)
-    aggregated_normalized_explainer_values = _normalize_explainer_values(aggregated_explainer_values)
+    aggregated_explainer_values = _aggregate_explainer_values(
+        explainer_values, provenance
+    )
+    aggregated_normalized_explainer_values = _normalize_explainer_values(
+        aggregated_explainer_values
+    )
 
     class_names = None
     if hasattr(pipeline, "classes_"):
@@ -527,22 +554,50 @@ def _make_single_prediction_explanation_table(
 
     table_makers = {
         ProblemTypes.REGRESSION: _RegressionExplanationTable(
-            top_k, include_explainer_values, include_expected_value, provenance, algorithm,
+            top_k,
+            include_explainer_values,
+            include_expected_value,
+            provenance,
+            algorithm,
         ),
         ProblemTypes.BINARY: _BinaryExplanationTable(
-            top_k, include_explainer_values, include_expected_value, class_names, provenance, algorithm,
+            top_k,
+            include_explainer_values,
+            include_expected_value,
+            class_names,
+            provenance,
+            algorithm,
         ),
         ProblemTypes.MULTICLASS: _MultiClassExplanationTable(
-            top_k, include_explainer_values, include_expected_value, class_names, provenance, algorithm,
+            top_k,
+            include_explainer_values,
+            include_expected_value,
+            class_names,
+            provenance,
+            algorithm,
         ),
         ProblemTypes.TIME_SERIES_REGRESSION: _RegressionExplanationTable(
-            top_k, include_explainer_values, include_expected_value, provenance, algorithm,
+            top_k,
+            include_explainer_values,
+            include_expected_value,
+            provenance,
+            algorithm,
         ),
         ProblemTypes.TIME_SERIES_BINARY: _BinaryExplanationTable(
-            top_k, include_explainer_values, include_expected_value, class_names, provenance, algorithm,
+            top_k,
+            include_explainer_values,
+            include_expected_value,
+            class_names,
+            provenance,
+            algorithm,
         ),
         ProblemTypes.TIME_SERIES_MULTICLASS: _MultiClassExplanationTable(
-            top_k, include_explainer_values, include_expected_value, class_names, provenance, algorithm,
+            top_k,
+            include_explainer_values,
+            include_expected_value,
+            class_names,
+            provenance,
+            algorithm,
         ),
     }
 
@@ -768,7 +823,7 @@ class _ExplanationTable(_SectionMaker):
             top_k=self.top_k_features,
             include_explainer_values=self.include_explainer_values,
             output_format="text",
-            algorithm=self.algorithm
+            algorithm=self.algorithm,
         )
         table = table.splitlines()
         # Indent the rows of the table to match the indentation of the entire report.
@@ -902,7 +957,9 @@ class _ReportMaker:
                 for key, value in heading.items():
                     if key == "probabilities":
                         for class_name, probability in value.items():
-                            explanation_table[f"label_{class_name}_probability"] = probability
+                            explanation_table[
+                                f"label_{class_name}_probability"
+                            ] = probability
                     else:
                         explanation_table[key] = value
             if self.heading_maker:

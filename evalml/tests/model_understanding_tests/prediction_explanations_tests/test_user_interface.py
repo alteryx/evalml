@@ -92,7 +92,12 @@ def test_make_rows_and_make_table(
     )
 
     table = _make_text_table(
-        values, values, pipeline_features, pipeline_features, top_k, include_explainer_values
+        values,
+        values,
+        pipeline_features,
+        pipeline_features,
+        top_k,
+        include_explainer_values,
     ).splitlines()
     if include_explainer_values:
         assert "SHAP Value" in table[0]

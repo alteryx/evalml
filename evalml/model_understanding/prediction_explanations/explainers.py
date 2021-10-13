@@ -279,7 +279,10 @@ def explain_predictions_best_worst(
     )
 
     _update_progress(
-        start_time, timer(), ExplainPredictionsStage.COMPUTE_EXPLAINER_VALUES_STAGE, callback
+        start_time,
+        timer(),
+        ExplainPredictionsStage.COMPUTE_EXPLAINER_VALUES_STAGE,
+        callback,
     )
 
     data = _ReportData(

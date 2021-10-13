@@ -1,5 +1,5 @@
-from itertools import product
 import json
+from itertools import product
 from unittest.mock import MagicMock, patch
 
 import numpy as np
@@ -27,12 +27,7 @@ from evalml.pipelines.components import (
     StackedEnsembleRegressor,
 )
 from evalml.pipelines.components.utils import _all_estimators
-from evalml.problem_types import (
-    ProblemTypes,
-    is_binary,
-    is_multiclass,
-    is_regression,
-)
+from evalml.problem_types import ProblemTypes, is_binary, is_multiclass
 
 
 def compare_two_tables(table_1, table_2):
@@ -502,6 +497,7 @@ def _prep_pipeline_mock(problem_type, input_features):
 
     return pipeline
 
+
 def _compare_reports(report, predicted_report, output_format):
     if output_format == "text":
         compare_two_tables(report.splitlines(), predicted_report.splitlines())
@@ -509,22 +505,25 @@ def _compare_reports(report, predicted_report, output_format):
         assert sorted(report.columns.tolist()) == sorted(
             predicted_report.columns.tolist()
         )
-        pd.testing.assert_frame_equal(
-            report, predicted_report[report.columns]
-        )
+        pd.testing.assert_frame_equal(report, predicted_report[report.columns])
     else:
         assert report == predicted_report
 
 
 output_formats = ["text", "dict", "dataframe"]
 algorithms = ["shap", "lime"]
-regression_problem_types = [ProblemTypes.REGRESSION, ProblemTypes.TIME_SERIES_REGRESSION]
+regression_problem_types = [
+    ProblemTypes.REGRESSION,
+    ProblemTypes.TIME_SERIES_REGRESSION,
+]
 regression_custom_indices = [[0, 1], [4, 10], ["foo", "bar"]]
 
 
 @pytest.mark.parametrize(
     "problem_type,output_format,custom_index,algorithm",
-    product(regression_problem_types, output_formats, regression_custom_indices,algorithms),
+    product(
+        regression_problem_types, output_formats, regression_custom_indices, algorithms
+    ),
 )
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch(
@@ -577,7 +576,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_regression(
         index_best=custom_index[1],
         index_worst=custom_index[0],
         output_format=output_format,
-        )
+    )
 
     report = explain_predictions(
         pipeline,
@@ -622,7 +621,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_binary(
     problem_type,
     output_format,
     custom_index,
-    algorithm
+    algorithm,
 ):
     if output_format == "text":
         mock_make_table.return_value = "table goes here"
@@ -697,13 +696,18 @@ def test_explain_predictions_best_worst_and_explain_predictions_binary(
     _compare_reports(best_worst_report, answer, output_format)
 
 
-multiclass_problem_types = [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS]
+multiclass_problem_types = [
+    ProblemTypes.MULTICLASS,
+    ProblemTypes.TIME_SERIES_MULTICLASS,
+]
 multiclass_custom_indices = [[0, 1], [17, 235], ["2020-15", "2020-15"]]
 
 
 @pytest.mark.parametrize(
     "problem_type,output_format,custom_index,algorithm",
-    product(multiclass_problem_types, output_formats, multiclass_custom_indices, algorithms),
+    product(
+        multiclass_problem_types, output_formats, multiclass_custom_indices, algorithms
+    ),
 )
 @patch("evalml.model_understanding.prediction_explanations.explainers.DEFAULT_METRICS")
 @patch(
@@ -758,9 +762,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_multiclass(
     proba.ww.init()
     pipeline.predict_proba.return_value = proba
     pipeline.predict_proba_in_sample.return_value = proba
-    pipeline.predict.return_value = ww.init_series(
-        pd.Series(["setosa", "versicolor"])
-    )
+    pipeline.predict.return_value = ww.init_series(pd.Series(["setosa", "versicolor"]))
     pipeline.predict_in_sample.return_value = ww.init_series(
         pd.Series(["setosa", "versicolor"])
     )

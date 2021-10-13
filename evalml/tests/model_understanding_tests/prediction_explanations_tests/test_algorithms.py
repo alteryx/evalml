@@ -117,7 +117,9 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
 @patch(
     "evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer"
 )
-def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match, algorithm):
+def test_value_errors_raised(
+    mock_tree_explainer, pipeline, exception, match, algorithm
+):
     if "xgboost" in pipeline.custom_name.lower():
         pytest.importorskip(
             "xgboost", "Skipping test because xgboost is not installed."
@@ -139,7 +141,9 @@ def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match, al
     )
     if algorithm == "lime":
         with pytest.raises(exception, match=match):
-            _ = _compute_lime_values(pipeline, pd.DataFrame(np.random.random((2, 16))), 0)
+            _ = _compute_lime_values(
+                pipeline, pd.DataFrame(np.random.random((2, 16))), 0
+            )
     else:
         with pytest.raises(exception, match=match):
             _ = _compute_shap_values(pipeline, pd.DataFrame(np.random.random((2, 16))))
@@ -258,7 +262,9 @@ def calculate_lime_for_test(training_data, y, pipeline, index_to_explain):
     """Helper function to compute the LIME values for n_points_to_explain for a given pipeline."""
     pipeline.fit(training_data, y)
     lime_values, expected_value = _compute_lime_values(
-        pipeline, training_data, index_to_explain,
+        pipeline,
+        training_data,
+        index_to_explain,
     )
     return lime_values
 
@@ -296,9 +302,7 @@ def test_lime(
     except ValueError:
         pipeline = make_pipeline(training_data, y, estimator, problem_type)
 
-    lime_values = calculate_lime_for_test(
-        training_data, y, pipeline, 0
-    )
+    lime_values = calculate_lime_for_test(training_data, y, pipeline, 0)
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         assert isinstance(
