@@ -1,6 +1,6 @@
 import json
 from itertools import product
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 import numpy as np
 import pandas as pd
@@ -589,6 +589,16 @@ def test_explain_predictions_best_worst_and_explain_predictions_regression(
         algorithm=algorithm,
     )
     _compare_reports(report, explain_predictions_answer, output_format)
+    mock_make_table.assert_called_with(
+        ANY,
+        ANY,
+        ANY,
+        index_to_explain=ANY,
+        top_k=ANY,
+        include_explainer_values=ANY,
+        output_format=output_format,
+        algorithm=algorithm,
+    )
 
     best_worst_report = explain_predictions_best_worst(
         pipeline,
@@ -601,6 +611,16 @@ def test_explain_predictions_best_worst_and_explain_predictions_regression(
         algorithm=algorithm,
     )
     _compare_reports(best_worst_report, answer, output_format)
+    mock_make_table.assert_called_with(
+        ANY,
+        ANY,
+        ANY,
+        index_to_explain=ANY,
+        top_k=ANY,
+        include_explainer_values=ANY,
+        output_format=output_format,
+        algorithm=algorithm,
+    )
 
 
 binary_problem_types = [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
@@ -682,6 +702,16 @@ def test_explain_predictions_best_worst_and_explain_predictions_binary(
         algorithm=algorithm,
     )
     _compare_reports(report, explain_predictions_answer, output_format)
+    mock_make_table.assert_called_with(
+        ANY,
+        ANY,
+        ANY,
+        index_to_explain=ANY,
+        top_k=ANY,
+        include_explainer_values=ANY,
+        output_format=output_format,
+        algorithm=algorithm,
+    )
 
     best_worst_report = explain_predictions_best_worst(
         pipeline,
@@ -694,6 +724,16 @@ def test_explain_predictions_best_worst_and_explain_predictions_binary(
         algorithm=algorithm,
     )
     _compare_reports(best_worst_report, answer, output_format)
+    mock_make_table.assert_called_with(
+        ANY,
+        ANY,
+        ANY,
+        index_to_explain=ANY,
+        top_k=ANY,
+        include_explainer_values=ANY,
+        output_format=output_format,
+        algorithm=algorithm,
+    )
 
 
 multiclass_problem_types = [
@@ -785,6 +825,16 @@ def test_explain_predictions_best_worst_and_explain_predictions_multiclass(
         algorithm=algorithm,
     )
     _compare_reports(report, explain_predictions_answer, output_format)
+    mock_make_table.assert_called_with(
+        ANY,
+        ANY,
+        ANY,
+        index_to_explain=ANY,
+        top_k=ANY,
+        include_explainer_values=ANY,
+        output_format=output_format,
+        algorithm=algorithm,
+    )
 
     best_worst_report = explain_predictions_best_worst(
         pipeline,
@@ -797,6 +847,16 @@ def test_explain_predictions_best_worst_and_explain_predictions_multiclass(
         algorithm=algorithm,
     )
     _compare_reports(best_worst_report, answer, output_format)
+    mock_make_table.assert_called_with(
+        ANY,
+        ANY,
+        ANY,
+        index_to_explain=ANY,
+        top_k=ANY,
+        include_explainer_values=ANY,
+        output_format=output_format,
+        algorithm=algorithm,
+    )
 
 
 regression_custom_metric_answer = """Test Pipeline Name

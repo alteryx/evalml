@@ -290,6 +290,7 @@ def test_lime(
         is_binary = True
     elif problem_type == ProblemTypes.MULTICLASS:
         training_data, y = X_y_multi
+        training_data = pd.DataFrame(training_data)
         is_binary = False
     else:
         training_data, y = X_y_regression

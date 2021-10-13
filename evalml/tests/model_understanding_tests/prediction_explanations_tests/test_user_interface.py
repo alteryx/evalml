@@ -1,6 +1,7 @@
 import copy
 import json
 from itertools import product
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
@@ -10,10 +11,12 @@ from evalml.model_understanding.prediction_explanations._user_interface import (
     _BinaryExplanationTable,
     _make_json_serializable,
     _make_rows,
+    _make_single_prediction_explanation_table,
     _make_text_table,
     _MultiClassExplanationTable,
     _RegressionExplanationTable,
 )
+from evalml.problem_types import ProblemTypes
 
 make_rows_test_cases = [
     ({"a": [0.2], "b": [0.1]}, 3, [["a", "1.20", "++"], ["b", "1.10", "+"]]),
@@ -657,3 +660,44 @@ def test_make_single_prediction_table(
             assert row_table.strip().split() == row_answer.strip().split()
     else:
         assert table == answer
+
+
+@patch(
+    "evalml.model_understanding.prediction_explanations._user_interface._BinaryExplanationTable.make_text"
+)
+@patch(
+    "evalml.model_understanding.prediction_explanations._user_interface._compute_lime_values"
+)
+@patch(
+    "evalml.model_understanding.prediction_explanations._user_interface._compute_shap_values"
+)
+def test_make_single_prediction_table_calls_correct_algorithm(
+    mock_shap, mock_lime, mock_make_text
+):
+
+    pipeline = MagicMock()
+    pipeline.problem_type = ProblemTypes.BINARY
+
+    mock_shap.return_value = binary
+    mock_lime.return_value = binary
+
+    _make_single_prediction_explanation_table(
+        pipeline,
+        binary_pipeline_features,
+        binary_pipeline_features,
+        0,
+        algorithm="shap",
+    )
+    mock_shap.assert_called()
+    mock_lime.assert_not_called()
+    mock_shap.reset_mock()
+
+    _make_single_prediction_explanation_table(
+        pipeline,
+        binary_pipeline_features,
+        binary_pipeline_features,
+        0,
+        algorithm="lime",
+    )
+    mock_shap.assert_not_called()
+    mock_lime.assert_called()
