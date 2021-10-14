@@ -4,17 +4,17 @@ from evalml.data_checks import DataCheckAction, DataCheckActionCode
 def test_data_check_action_attributes():
     data_check_action = DataCheckAction(DataCheckActionCode.DROP_COL)
     assert data_check_action.action_code == DataCheckActionCode.DROP_COL
-    assert data_check_action.metadata == {}
+    assert data_check_action.metadata == {"rows": None, "columns": None}
 
     data_check_action = DataCheckAction(DataCheckActionCode.DROP_COL, {})
     assert data_check_action.action_code == DataCheckActionCode.DROP_COL
-    assert data_check_action.metadata == {}
+    assert data_check_action.metadata == {"rows": None, "columns": None}
 
     data_check_action = DataCheckAction(
         DataCheckActionCode.DROP_COL, metadata={"columns": [1, 2]}
     )
     assert data_check_action.action_code == DataCheckActionCode.DROP_COL
-    assert data_check_action.metadata == {"columns": [1, 2]}
+    assert data_check_action.metadata == {"columns": [1, 2], "rows": None}
 
 
 def test_data_check_action_equality():
