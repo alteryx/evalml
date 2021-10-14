@@ -263,7 +263,7 @@ def test_fit_drop_nans_before_estimator(
         (2, 2, 4),
     ],
 )
-def test_compute_estimator_features_for_time_series(
+def test_transform_all_but_final_for_time_series(
     forecast_horizon, gap, max_delay, ts_data
 ):
     X, y = ts_data
@@ -287,12 +287,12 @@ def test_compute_estimator_features_for_time_series(
     X_train, y_train = X[:15], y[:15]
     X_validation, y_validation = X[15:], y[15:]
     pipeline.fit(X_train, y_train)
-    features = pipeline.compute_estimator_features(X_validation, y_validation)
+    features = pipeline.transform_all_but_final(X_validation, y_validation)
     delayer = DelayedFeatureTransformer(
         max_delay=max_delay, gap=gap, forecast_horizon=forecast_horizon
     )
     assert_frame_equal(features, delayer.fit_transform(X_validation, y_validation))
-    features_with_training = pipeline.compute_estimator_features(
+    features_with_training = pipeline.transform_all_but_final(
         X_validation, y_validation, X_train, y_train
     )
     delayed = delayer.fit_transform(X, y).iloc[15:]
@@ -1114,7 +1114,7 @@ def test_time_series_pipeline_with_detrender(ts_data):
     X_validation, y_validation = X[24:], y[24:]
     pipeline.fit(X_train, y_train)
     predictions = pipeline.predict(X_validation, None, X_train, y_train)
-    features = pipeline.compute_estimator_features(
+    features = pipeline.transform_all_but_final(
         X_validation, y_validation, X_train, y_train
     )
     detrender = pipeline.component_graph.get_component("Polynomial Detrender")

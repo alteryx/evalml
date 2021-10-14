@@ -186,12 +186,12 @@ class ComponentGraph:
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        self._compute_features(self.compute_order, X, y, fit=True)
+        self._transform_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
         return self
 
-    def fit_features(self, X, y):
-        """Fit all components save the final one, usually an estimator.
+    def fit_and_transform_all_but_final(self, X, y):
+        """Fit and transform all components save the final one, usually an estimator.
 
         Args:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features].
@@ -202,7 +202,7 @@ class ComponentGraph:
         """
         return self._fit_transform_features_helper(True, X, y)
 
-    def compute_final_component_features(self, X, y=None):
+    def transform_all_but_final(self, X, y=None):
         """Transform all components save the final one, and gathers the data from any number of parents to get all the information that should be fed to the final component.
 
         Args:
@@ -216,7 +216,7 @@ class ComponentGraph:
         return features
 
     def _fit_transform_features_helper(self, needs_fitting, X, y=None):
-        """Transform all components save the final one, and returns the data that should be fed to the final component, usually an estimator.
+        """Transform (and possibly fit) all components save the final one, and returns the data that should be fed to the final component, usually an estimator.
 
         Args:
             needs_fitting (boolean): Determines if components should be fit.
@@ -230,7 +230,7 @@ class ComponentGraph:
             X = infer_feature_types(X)
             self.input_feature_names.update({self.compute_order[0]: list(X.columns)})
             return X, y
-        component_outputs = self._compute_features(
+        component_outputs = self._transform_features(
             self.compute_order[:-1],
             X,
             y=y,
@@ -288,7 +288,7 @@ class ComponentGraph:
                 "Cannot call transform() on a component graph because the final component is not a Transformer."
             )
 
-        outputs = self._compute_features(
+        outputs = self._transform_features(
             self.compute_order, X, y, fit=False, evaluate_training_only_components=True
         )
         output_x = infer_feature_types(outputs.get(f"{final_component_name}.x"))
@@ -317,12 +317,12 @@ class ComponentGraph:
             raise ValueError(
                 "Cannot call predict() on a component graph because the final component is not an Estimator."
             )
-        outputs = self._compute_features(
+        outputs = self._transform_features(
             self.compute_order, X, evaluate_training_only_components=False
         )
         return infer_feature_types(outputs.get(f"{final_component}.x"))
 
-    def _compute_features(
+    def _transform_features(
         self,
         component_list,
         X,
