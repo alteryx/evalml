@@ -26,8 +26,8 @@ outputs:
       run:
         - numpy >=1.20.0
         - numba ==0.53
-        - pandas >=1.2.5
-        - dask >=2.12.0
+        - pandas >=1.3.0
+        - dask >=2021.2.0
         - scipy >=1.5.0
         - scikit-learn >=0.24.0,<1.0
         - scikit-optimize >=0.8.1
@@ -38,9 +38,9 @@ outputs:
         - requirements-parser >=0.2.0
         - shap >=0.36.0
         - texttable ==1.6.3
-        - woodwork ==0.8.0
-        - featuretools>=0.26.1
-        - nlp-primitives>=1.1.0
+        - woodwork ==0.8.1
+        - featuretools>=1.0.0
+        - nlp-primitives>=2.0.0
         - python >=3.7.*
         - networkx >=2.5,<2.6
         - category_encoders >=2.2.2
