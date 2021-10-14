@@ -52,6 +52,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         drop="if_binary",
         handle_unknown="ignore",
         handle_missing="error",
+        append_all_known_values=False,
         random_seed=0,
         **kwargs,
     ):
@@ -86,6 +87,8 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         )
         self._initial_state = self.random_seed
         self._provenance = {}
+        self.all_features = None
+        self.append_all_known_values = append_all_known_values
 
     @staticmethod
     def _get_cat_cols(X):
@@ -166,6 +169,9 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         )
 
         self._encoder.fit(X_t[self.features_to_encode])
+        self.all_features = self._encoder.get_feature_names(
+            [str(feature) for feature in self.features_to_encode]
+        )
         return self
 
     def transform(self, X, y=None):
@@ -195,6 +201,11 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             self._feature_names = X_cat.columns
 
             X = ww.utils.concat_columns([X, X_cat])
+
+        if self.append_all_known_values:
+            missing_values = set(self.all_features) - set(X.columns)
+            if len(missing_values) > 0:
+                X[list(missing_values)] = 0
 
         return X
 
