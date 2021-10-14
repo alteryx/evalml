@@ -209,10 +209,10 @@ def test_target_leakage_multi():
     expected = {
         "warnings": [
             DataCheckWarning(
-                message="Columns 'a', 'b', 'c', 'd' are 80.0% or more correlated with the target",
+                message="Columns 'a', 'b', 'c' are 80.0% or more correlated with the target",
                 data_check_name=target_leakage_data_check_name,
                 message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                details={"column": "a"},
+                details={"columns": ["a", "b", "c"]},
             ).to_dict(),
         ],
         "errors": [],
@@ -257,16 +257,16 @@ def test_target_leakage_regression():
     expected = {
         "warnings": [
             DataCheckWarning(
-                message="Columns 'a', 'b', 'c', 'd' are 80.0% or more correlated with the target",
+                message="Columns 'a', 'b', 'c', 'e' are 80.0% or more correlated with the target",
                 data_check_name=target_leakage_data_check_name,
                 message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-                details={"columns": ["a", "b", "c", "d"]},
+                details={"columns": ["a", "b", "c", "e"]},
             ).to_dict(),
         ],
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"columns": ["a", "b", "c", "d"]}
+                DataCheckActionCode.DROP_COL, metadata={"columns": ["a", "b", "c", "e"]}
             ).to_dict(),
         ],
     }

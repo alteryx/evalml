@@ -91,21 +91,23 @@ class IDColumnsDataCheck(DataCheck):
         id_cols_above_threshold = {
             key: value for key, value in id_cols.items() if value >= self.id_threshold
         }
-        warning_msg = "Columns '{}' are {}% or more likely to be an ID column"
-        results["warnings"].append(
-            DataCheckWarning(
-                message=warning_msg.format(
-                    id_cols_above_threshold, self.id_threshold * 100
-                ),
-                data_check_name=self.name,
-                message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"columns": list(id_cols_above_threshold)},
-            ).to_dict()
-        )
-        results["actions"].append(
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                metadata={"columns": list(id_cols_above_threshold)},
-            ).to_dict()
-        )
+        if id_cols_above_threshold:
+            warning_msg = "Columns {} are {}% or more likely to be an ID column"
+            results["warnings"].append(
+                DataCheckWarning(
+                    message=warning_msg.format(
+                        (", ").join(
+                                ["'{}'".format(str(col)) for col in id_cols_above_threshold]), self.id_threshold * 100
+                    ),
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.HAS_ID_COLUMN,
+                    details={"columns": list(id_cols_above_threshold)},
+                ).to_dict()
+            )
+            results["actions"].append(
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    metadata={"columns": list(id_cols_above_threshold)},
+                ).to_dict()
+            )
         return results

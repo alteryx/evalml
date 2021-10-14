@@ -50,43 +50,16 @@ def test_id_columns_warning():
     assert id_cols_check.validate(X) == {
         "warnings": [
             DataCheckWarning(
-                message="Column 'Id' is 95.0% or more likely to be an ID column",
+                message="Columns 'Id', 'col_1_id', 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
                 data_check_name=id_data_check_name,
                 message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"column": "Id"},
-            ).to_dict(),
-            DataCheckWarning(
-                message="Column 'col_1_id' is 95.0% or more likely to be an ID column",
-                data_check_name=id_data_check_name,
-                message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"column": "col_1_id"},
-            ).to_dict(),
-            DataCheckWarning(
-                message="Column 'col_2' is 95.0% or more likely to be an ID column",
-                data_check_name=id_data_check_name,
-                message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"column": "col_2"},
-            ).to_dict(),
-            DataCheckWarning(
-                message="Column 'col_3_id' is 95.0% or more likely to be an ID column",
-                data_check_name=id_data_check_name,
-                message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"column": "col_3_id"},
+                details={"columns": ["Id", 'col_1_id', 'col_2', 'col_3_id']},
             ).to_dict(),
         ],
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "Id"}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "col_1_id"}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "col_2"}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "col_3_id"}
+                DataCheckActionCode.DROP_COL, metadata={"columns": ['Id', 'col_1_id', 'col_2', 'col_3_id']}
             ).to_dict(),
         ],
     }
@@ -96,25 +69,16 @@ def test_id_columns_warning():
     assert id_cols_check.validate(X) == {
         "warnings": [
             DataCheckWarning(
-                message="Column 'Id' is 100.0% or more likely to be an ID column",
+                message="Columns 'Id', 'col_1_id' are 100.0% or more likely to be an ID column",
                 data_check_name=id_data_check_name,
                 message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"column": "Id"},
-            ).to_dict(),
-            DataCheckWarning(
-                message="Column 'col_1_id' is 100.0% or more likely to be an ID column",
-                data_check_name=id_data_check_name,
-                message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"column": "col_1_id"},
+                details={"columns": ["Id", "col_1_id"]},
             ).to_dict(),
         ],
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "Id"}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "col_1_id"}
+                DataCheckActionCode.DROP_COL, metadata={"columns": ["Id", "col_1_id"]}
             ).to_dict(),
         ],
     }
@@ -232,25 +196,16 @@ def test_id_cols_data_check_input_formats():
     assert id_cols_check.validate(ww_input) == {
         "warnings": [
             DataCheckWarning(
-                message="Column '0' is 80.0% or more likely to be an ID column",
+                message="Columns '0', '1' are 80.0% or more likely to be an ID column",
                 data_check_name=id_data_check_name,
                 message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"column": 0},
-            ).to_dict(),
-            DataCheckWarning(
-                message="Column '1' is 80.0% or more likely to be an ID column",
-                data_check_name=id_data_check_name,
-                message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"column": 1},
+                details={"columns": [0, 1]},
             ).to_dict(),
         ],
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": 0}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": 1}
+                DataCheckActionCode.DROP_COL, metadata={"columns": [0, 1]}
             ).to_dict(),
         ],
     }
@@ -259,25 +214,16 @@ def test_id_cols_data_check_input_formats():
     assert id_cols_check.validate([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]) == {
         "warnings": [
             DataCheckWarning(
-                message="Column '0' is 80.0% or more likely to be an ID column",
+                message="Columns '0', '1' is 80.0% or more likely to be an ID column",
                 data_check_name=id_data_check_name,
                 message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"column": 0},
-            ).to_dict(),
-            DataCheckWarning(
-                "Column '1' is 80.0% or more likely to be an ID column",
-                data_check_name=id_data_check_name,
-                message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"column": 1},
+                details={"columns": [0, 1]},
             ).to_dict(),
         ],
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": 0}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": 1}
+                DataCheckActionCode.DROP_COL, metadata={"columns": [0, 1]}
             ).to_dict(),
         ],
     }
@@ -288,25 +234,16 @@ def test_id_cols_data_check_input_formats():
     ) == {
         "warnings": [
             DataCheckWarning(
-                message="Column '0' is 80.0% or more likely to be an ID column",
+                message="Columns '0', '1' are 80.0% or more likely to be an ID column",
                 data_check_name=id_data_check_name,
                 message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"column": 0},
-            ).to_dict(),
-            DataCheckWarning(
-                message="Column '1' is 80.0% or more likely to be an ID column",
-                data_check_name=id_data_check_name,
-                message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"column": 1},
+                details={"columns": [0, 1]},
             ).to_dict(),
         ],
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": 0}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": 1}
+                DataCheckActionCode.DROP_COL, metadata={"columns": [0, 1]}
             ).to_dict(),
         ],
     }
