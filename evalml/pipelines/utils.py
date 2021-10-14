@@ -463,6 +463,7 @@ def rows_of_interest(
         num_rows (int): The number of rows to return. If None, returns the full list of indices equal to the size of the input. Defaults to None.
         sort_values (bool): Whether to return the indices sorted by the distance from the threshold, such that the first values are closer to the threshold and the later values are further. Defualts to True.
         types (str): The type of rows to keep and return. Can be one of ['incorrect', 'correct', 'true_positive', 'true_negative', 'all']. Defaults to 'all'.
+
             'incorrect' - return only the rows where the predictions are incorrect. This means that, given the threshold and target y, keep only the rows which are labeled wrong.
             'correct' - return only the rows where the predictions are correct. This means that, given the threshold and target y, keep only the rows which are correctly labeled.
             'true_positive' - return only the rows which are positive, as given by the targets.
