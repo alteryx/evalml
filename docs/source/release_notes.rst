@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added human-readable pipeline explanations to model understanding :pr:`2861`
         * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary :pr:`2869`
+        * Updated to support Featuretools 1.0.0 and nlp-primitives 2.0.0 :pr:`2848`
     * Fixes
         * Fixed bug where ``long`` mode for the top level search method was not respected :pr:`2875`
         * Pinned ``cmdstan`` to ``0.28.0`` in ``cmdstan-builder`` to prevent future breaking of support for Prophet :pr:`2880`
