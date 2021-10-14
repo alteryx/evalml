@@ -5,6 +5,7 @@ Release Notes
         * Added human-readable pipeline explanations to model understanding :pr:`2861`
     * Fixes
     * Changes
+        * Refactor ``OutliersDataCheck`` and ``HighlyNullDataCheck`` :pr:``
     * Documentation Changes
     * Testing Changes
 
