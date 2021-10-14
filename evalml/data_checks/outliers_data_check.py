@@ -56,22 +56,11 @@ class OutliersDataCheck(DataCheck):
         has_outliers = []
         outlier_row_indices = {}
         for col in X.columns:
-            num_records = len(X[col])
-            try:
-                from statsmodels.stats.stattools import medcouple
+            box_plot_dict = OutliersDataCheck._get_boxplot_data(X.ww[col])
+            box_plot_dict_values = box_plot_dict["values"]
 
-                box_plot_dict = OutliersDataCheck._get_boxplot_data(X[col])
-                box_plot_dict_values = box_plot_dict["values"]
-            except ModuleNotFoundError:
-                box_plot_dict_values = X.ww[col].ww.box_plot_dict()
-            pct_outliers = (
-                len(box_plot_dict_values["low_values"])
-                + len(box_plot_dict_values["high_values"])
-            ) / num_records
-            if (
-                pct_outliers > 0
-                and OutliersDataCheck._no_outlier_prob(num_records, pct_outliers) <= 0.9
-            ):
+            pct_outliers = box_plot_dict["pct_outliers"]
+            if pct_outliers > 0 and box_plot_dict["score"] <= 0.9:
                 has_outliers.append(col)
                 outlier_row_indices[col] = (
                     box_plot_dict_values["low_indices"]
@@ -116,57 +105,32 @@ class OutliersDataCheck(DataCheck):
         Returns:
             dict: A payload of box plot statistics.
         """
-        field_q1toq3 = np.percentile(data_, [25, 50, 75])
-        field_iqr = field_q1toq3[2] - field_q1toq3[0]
+        if not data_.ww._schema:
+            data_.ww.init()
+        num_records = data_.count()
+        box_plot_dict = data_.ww.box_plot_dict()
+        quantiles = box_plot_dict["quantiles"]
 
-        # calculate medcouple statistic
-        try:
-            from statsmodels.stats.stattools import medcouple
-        except ModuleNotFoundError:
-            return None
-        field_medcouple = medcouple(list(data_))
-        # use different field bounds based on skewness determined by medcouple statistic
-        if field_medcouple < 0.0:
-            field_bounds = (
-                field_q1toq3[0] - 1.5 * np.exp(-3.87 * field_medcouple) * field_iqr,
-                field_q1toq3[2] + 1.5 * np.exp(3.79 * field_medcouple) * field_iqr,
-            )
-        else:
-            field_bounds = (
-                field_q1toq3[0] - 1.5 * np.exp(-3.79 * field_medcouple) * field_iqr,
-                field_q1toq3[2] + 1.5 * np.exp(3.87 * field_medcouple) * field_iqr,
-            )
+        q1, q2, q3 = quantiles[0.25], quantiles[0.5], quantiles[0.75]
 
-        low_filter = data_ < field_bounds[0]
-        high_filter = data_ > field_bounds[1]
-
-        # grab values below and above low and high bounds (respectively)
-        low_values = data_[low_filter].tolist()
-        high_values = data_[high_filter].tolist()
-
-        # grab indices below and above low and high bounds (respectively)
-        low_indices = data_[low_filter].index.tolist()
-        high_indices = data_[high_filter].index.tolist()
-
-        # calculate outlier probability
-        pct_outliers = (len(low_values) + len(high_values)) / len(data_)
-
-        # read in model and retrieve results
-        num_records = len(data_)
+        pct_outliers = (
+            len(box_plot_dict["low_values"]) + len(box_plot_dict["high_values"])
+        ) / num_records
         score = OutliersDataCheck._no_outlier_prob(num_records, pct_outliers)
 
         payload = {
             "score": score,
+            "pct_outliers": pct_outliers,
             "values": {
-                "q1": field_q1toq3[0],
-                "median": field_q1toq3[1],
-                "q3": field_q1toq3[2],
-                "low_bound": field_bounds[0],
-                "high_bound": field_bounds[1],
-                "low_values": low_values,
-                "high_values": high_values,
-                "low_indices": low_indices,
-                "high_indices": high_indices,
+                "q1": q1,
+                "median": q2,
+                "q3": q3,
+                "low_bound": box_plot_dict["low_bound"],
+                "high_bound": box_plot_dict["high_bound"],
+                "low_values": box_plot_dict["low_values"],
+                "high_values": box_plot_dict["high_values"],
+                "low_indices": box_plot_dict["low_indices"],
+                "high_indices": box_plot_dict["high_indices"],
             },
         }
         return payload

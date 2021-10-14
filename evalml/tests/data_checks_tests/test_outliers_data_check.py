@@ -194,33 +194,29 @@ def test_outliers_data_check_warnings_has_nan():
 @pytest.mark.parametrize("data_type", ["int", "mixed"])
 def test_boxplot_stats(data_type):
     test = pd.Series(
-        [32, 33, 34, 95, 96, 36, 37, 1.5 if data_type == "mixed" else 1, 2]
+        [32, 33, 34, None, 96, 36, 37, 1.5 if data_type == "mixed" else 1, 2]
     )
 
-    q1, median, q3 = np.percentile(test, [25, 50, 75])
+    quantiles = test.quantile([0.25, 0.5, 0.75]).to_dict()
+    iqr = quantiles[0.75] - quantiles[0.25]
+    field_bounds = (quantiles[0.25] - (iqr * 1.5), quantiles[0.75] + (iqr * 1.5))
+    pct_outliers = (
+        len(test[test <= field_bounds[0]].tolist())
+        + len(test[test >= field_bounds[1]].tolist())
+    ) / test.count()
 
-    try:
-        from statsmodels.stats.stattools import medcouple
-
-        medcouple_stat = medcouple(list(test))
-
-        field_bounds = (
-            q1 - 1.5 * np.exp(-3.79 * medcouple_stat) * (q3 - q1),
-            q3 + 1.5 * np.exp(3.87 * medcouple_stat) * (q3 - q1),
-        )
-        assert OutliersDataCheck._get_boxplot_data(test) == {
-            "score": OutliersDataCheck._no_outlier_prob(9, 4 / 9),
-            "values": {
-                "q1": q1,
-                "median": median,
-                "q3": q3,
-                "low_bound": field_bounds[0],
-                "high_bound": field_bounds[1],
-                "low_values": test[test < field_bounds[0]].tolist(),
-                "high_values": test[test > field_bounds[1]].tolist(),
-                "low_indices": test[test < field_bounds[0]].index.tolist(),
-                "high_indices": test[test > field_bounds[1]].index.tolist(),
-            },
-        }
-    except ModuleNotFoundError:
-        assert OutliersDataCheck._get_boxplot_data(test) is None
+    assert OutliersDataCheck._get_boxplot_data(test) == {
+        "score": OutliersDataCheck._no_outlier_prob(test.count(), pct_outliers),
+        "pct_outliers": pct_outliers,
+        "values": {
+            "q1": quantiles[0.25],
+            "median": quantiles[0.5],
+            "q3": quantiles[0.75],
+            "low_bound": field_bounds[0],
+            "high_bound": field_bounds[1],
+            "low_values": test[test < field_bounds[0]].tolist(),
+            "high_values": test[test > field_bounds[1]].tolist(),
+            "low_indices": test[test < field_bounds[0]].index.tolist(),
+            "high_indices": test[test > field_bounds[1]].index.tolist(),
+        },
+    }
