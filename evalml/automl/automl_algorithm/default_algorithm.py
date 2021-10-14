@@ -182,7 +182,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             for estimator in estimators
         ]
 
-        pipelines = self._create_pipelines_with_params(pipelines, parameters={})
+        pipelines = self._create_pipelines_with_params(
+            pipelines, parameters={"One Hot Encoder": {"append_all_known_values": True}}
+        )
         return pipelines
 
     def _create_fast_final(self):
@@ -193,7 +195,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         ]
         parameters = self._pipeline_params if self._pipeline_params else {}
         parameters.update(
-            {"Select Columns Transformer": {"columns": self._selected_cols}}
+            {
+                "Select Columns Transformer": {"columns": self._selected_cols},
+                "One Hot Encoder": {"append_all_known_values": True},
+            }
         )
         pipelines = [
             make_pipeline(
@@ -209,7 +214,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         ]
 
         pipelines = self._create_pipelines_with_params(
-            pipelines, {"Select Columns Transformer": {"columns": self._selected_cols}}
+            pipelines,
+            {
+                "Select Columns Transformer": {"columns": self._selected_cols},
+                "One Hot Encoder": {"append_all_known_values": True},
+            },
         )
 
         for pipeline in pipelines:
@@ -225,7 +234,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 proposed_parameters = self._tuners[pipeline.name].propose()
                 parameters = self._transform_parameters(pipeline, proposed_parameters)
                 parameters.update(
-                    {"Select Columns Transformer": {"columns": self._selected_cols}}
+                    {
+                        "Select Columns Transformer": {"columns": self._selected_cols},
+                        "One Hot Encoder": {"append_all_known_values": True},
+                    }
                 )
                 next_batch.append(
                     pipeline.new(parameters=parameters, random_seed=self.random_seed)

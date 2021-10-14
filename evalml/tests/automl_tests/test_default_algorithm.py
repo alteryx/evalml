@@ -4,6 +4,7 @@ import numpy as np
 import pytest
 from skopt.space import Categorical, Integer
 
+from evalml import pipelines
 from evalml.automl.automl_algorithm import DefaultAlgorithm
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
@@ -95,6 +96,12 @@ def test_default_algorithm(
     X_y_multi,
     X_y_regression,
 ):
+    def assert_ohe_params(pipeline):
+        if "One Hot Encoder" in pipeline.parameters:
+            assert (
+                pipeline.parameters["One Hot Encoder"]["append_all_known_values"]
+                == True
+            )
 
     if automl_type == ProblemTypes.BINARY:
         X, y = X_y_binary
@@ -114,6 +121,8 @@ def test_default_algorithm(
     first_batch = algo.next_batch()
     assert len(first_batch) == 2
     assert {p.model_family for p in first_batch} == naive_model_families
+    for pipeline in first_batch:
+        assert_ohe_params(pipeline)
     add_result(algo, first_batch)
 
     second_batch = algo.next_batch()
@@ -121,9 +130,11 @@ def test_default_algorithm(
     assert {p.model_family for p in second_batch} == naive_model_families
     for pipeline in second_batch:
         assert pipeline.get_component(fs)
+    for pipeline in second_batch:
+        assert_ohe_params(pipeline)
     add_result(algo, second_batch)
-
     assert algo._selected_cols == ["0", "1", "2"]
+
     final_batch = algo.next_batch()
     for pipeline in final_batch:
         if not isinstance(
@@ -133,6 +144,8 @@ def test_default_algorithm(
         select = pipeline.get_component("Select Columns Transformer")
         assert select.parameters["columns"] == algo._selected_cols
         assert algo._tuners[pipeline.name]
+    for pipeline in final_batch:
+        assert_ohe_params(pipeline)
     add_result(algo, final_batch)
 
     final_ensemble = algo.next_batch()
@@ -141,33 +154,45 @@ def test_default_algorithm(
         (StackedEnsembleClassifier, StackedEnsembleRegressor),
     )
     add_result(algo, final_ensemble)
+    for pipeline in final_ensemble:
+        assert_ohe_params(pipeline)
 
     long_explore = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
     assert len(long_explore) == 150
     assert len(long_estimators) == 3
+    for pipeline in long_explore:
+        assert_ohe_params(pipeline)
 
     long_first_ensemble = algo.next_batch()
     assert isinstance(
         long_first_ensemble[0].estimator,
         (StackedEnsembleClassifier, StackedEnsembleRegressor),
     )
+    for pipeline in long_first_ensemble:
+        assert_ohe_params(pipeline)
 
     long = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long])
     assert len(long) == 30
     assert len(long_estimators) == 3
+    for pipeline in long:
+        assert_ohe_params(pipeline)
 
     long_second_ensemble = algo.next_batch()
     assert isinstance(
         long_second_ensemble[0].estimator,
         (StackedEnsembleClassifier, StackedEnsembleRegressor),
     )
+    for pipeline in long_second_ensemble:
+        assert_ohe_params(pipeline)
 
     long_2 = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long_2])
     assert len(long_2) == 30
     assert len(long_estimators) == 3
+    for pipeline in long_2:
+        assert_ohe_params(pipeline)
 
 
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
