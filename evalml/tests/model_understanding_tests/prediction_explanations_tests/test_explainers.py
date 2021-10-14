@@ -898,7 +898,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(
     pipeline.problem_type = problem_type
     pipeline.name = "Test Pipeline Name"
     input_features.ww.init()
-    pipeline.compute_estimator_features.return_value = input_features
+    pipeline.transform_all_but_final.return_value = input_features
 
     def _add_custom_index(answer, index_best, index_worst, output_format):
 
@@ -1097,7 +1097,7 @@ def test_explain_predictions_best_worst_custom_metric(
     pipeline.problem_type = ProblemTypes.REGRESSION
     pipeline.name = "Test Pipeline Name"
     input_features.ww.init()
-    pipeline.compute_estimator_features.return_value = input_features
+    pipeline.transform_all_but_final.return_value = input_features
 
     pipeline.predict.return_value = ww.init_series(pd.Series([2, 1]))
     y_true = pd.Series([3, 2])
@@ -1740,7 +1740,7 @@ def test_explain_predictions_best_worst_callback(mock_make_table):
     pipeline.problem_type = ProblemTypes.REGRESSION
     pipeline.name = "Test Pipeline Name"
     input_features.ww.init()
-    pipeline.compute_estimator_features.return_value = input_features
+    pipeline.transform_all_but_final.return_value = input_features
     pipeline.predict.return_value = ww.init_series(pd.Series([2, 1]))
     y_true = pd.Series([3, 2])
 
