@@ -1,6 +1,6 @@
 Release Notes
 -------------
-**Future Releases**
+**v0.35.0 Oct. 14, 2021**
     * Enhancements
         * Added human-readable pipeline explanations to model understanding :pr:`2861`
         * Updated to support Featuretools 1.0.0 and nlp-primitives 2.0.0 :pr:`2848`
