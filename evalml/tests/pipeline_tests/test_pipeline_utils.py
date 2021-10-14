@@ -213,10 +213,7 @@ def test_make_pipeline(
             imputer = (
                 []
                 if ((column_names in [["ip"]]) and input_type == "ww")
-                or (
-                    (column_names in [["ip"], ["text"]])
-                    and input_type == "pd"
-                )
+                or ((column_names in [["ip"], ["text"]]) and input_type == "pd")
                 else [Imputer]
             )
             drop_col = (

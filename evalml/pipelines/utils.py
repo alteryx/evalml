@@ -105,7 +105,7 @@ def _get_preprocessing_components(
         logical_types.Integer,
         logical_types.URL,
         logical_types.EmailAddress,
-        logical_types.Datetime
+        logical_types.Datetime,
     }
 
     datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
