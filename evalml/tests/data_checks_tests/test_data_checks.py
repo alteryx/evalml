@@ -273,8 +273,8 @@ def test_default_data_checks_classification(input_type):
         "multiclass", get_default_primary_search_objective("multiclass")
     )
     assert data_checks.validate(X, y_multiclass) == {
-        "warnings": messages[:3] + high_class_to_sample_ratio,
-        "errors": [messages[3]] + min_2_class_count + messages[4:] + imbalance,
+        "warnings": messages[:2] + high_class_to_sample_ratio,
+        "errors": [messages[2]] + min_2_class_count + messages[3:] + imbalance,
         "actions": expected_actions,
     }
 
@@ -288,8 +288,8 @@ def test_default_data_checks_classification(input_type):
         },
     )
     assert data_checks.validate(X, y_multiclass) == {
-        "warnings": messages[:3] + high_class_to_sample_ratio,
-        "errors": [messages[3]] + min_2_class_count + messages[4:],
+        "warnings": messages[:2] + high_class_to_sample_ratio,
+        "errors": [messages[2]] + min_2_class_count + messages[3:],
         "actions": expected_actions,
     }
 
