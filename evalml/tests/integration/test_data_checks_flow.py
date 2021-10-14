@@ -16,26 +16,53 @@ from evalml.data_checks import (
     DefaultDataChecks,
     TargetDistributionDataCheck,
 )
+from evalml.data_checks.highly_null_data_check import HighlyNullDataCheck
 from evalml.pipelines.utils import _make_component_list_from_actions
 
 
 def test_data_checks_with_healthy_data(X_y_binary):
     # Checks do not return any error.
     X, y = X_y_binary
-    data_checks = DefaultDataChecks(
+    data_check = DefaultDataChecks(
         "binary", get_default_primary_search_objective("binary")
     )
-    data_checks_output = data_checks.validate(X, y)
-    assert data_checks_output == {
+    data_check_output = data_check.validate(X, y)
+    assert data_check_output == {
         "warnings": [],
         "errors": [],
         "actions": [],
     }
-    assert _make_component_list_from_actions(data_checks_output["actions"]) == []
+    assert _make_component_list_from_actions(data_check_output["actions"]) == []
 
 
 def test_return_row_removal():
-    pass
+    X = pd.DataFrame(
+        {
+            "lots_of_null": [None, 2, None, 3, 5],
+            "all_null": [None, None, None, None, None],
+            "no_null": [1, 2, 3, 4, 5],
+        }
+    )
+    y = pd.Series([1, 0, 0, 1, 1])
+    data_check = HighlyNullDataCheck()
+    data_checks_output = data_check.validate(X, y)
+    assert data_checks_output == {
+        "warnings": [
+            DataCheckWarning(
+                message="Column 'all_null' is 95.0% or more null",
+                data_check_name=HighlyNullDataCheck.name,
+                message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
+                details={"column": "all_null", "pct_null_rows": 1.0},
+            ).to_dict()
+        ],
+        "errors": [],
+        "actions": [
+            DataCheckAction(
+                DataCheckActionCode.DROP_COL, metadata={"column": "all_null"}
+            ).to_dict(),
+        ],
+    }
+    assert _make_component_list_from_actions(data_checks_output["actions"]) == []
 
 
 def test_impute_col():
