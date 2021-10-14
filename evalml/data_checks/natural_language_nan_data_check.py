@@ -46,13 +46,12 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             str(col) for col in X_describe if X_describe[col]["nan_count"] > 0
         ]
         if len(nan_columns) > 0:
-            cols_str = ", ".join(nan_columns)
             results["errors"].append(
                 DataCheckError(
-                    message=error_contains_nan.format(cols_str),
+                    message=error_contains_nan.format(", ".join(nan_columns)),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-                    details={"columns": cols_str},
+                    details={"columns": nan_columns},
                 ).to_dict()
             )
         return results

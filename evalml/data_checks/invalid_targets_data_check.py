@@ -130,7 +130,6 @@ class InvalidTargetDataCheck(DataCheck):
                 DataCheckAction(
                     DataCheckActionCode.IMPUTE_COL,
                     metadata={
-                        "column": None,
                         "is_target": True,
                         "impute_strategy": impute_strategy,
                     },

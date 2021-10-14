@@ -119,7 +119,6 @@ def test_highly_null_data_check_warnings():
     validate_results["warnings"][0]["details"]["pct_null_cols"] = SeriesWrap(
         validate_results["warnings"][0]["details"]["pct_null_cols"]
     )
-    # import pdb; pdb.set_trace()
     assert validate_results == {
         "warnings": [
             DataCheckWarning(
