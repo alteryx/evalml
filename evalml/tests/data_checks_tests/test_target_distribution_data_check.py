@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
-from scipy.stats import lognorm, norm, shapiro
+from scipy.stats import jarque_bera, lognorm, norm, shapiro
 
 from evalml.data_checks import (
     DataCheckAction,
@@ -76,21 +76,27 @@ def test_target_distribution_data_check_unsupported_target_type(target_type):
 
 @pytest.mark.parametrize("data_type", ["positive", "mixed", "negative"])
 @pytest.mark.parametrize("distribution", ["normal", "lognormal", "very_lognormal"])
+@pytest.mark.parametrize(
+    "size,name,statistic",
+    [(10000, "jarque_bera", jarque_bera), (5000, "shapiro", shapiro)],
+)
 def test_target_distribution_data_check_warning_action(
-    distribution, data_type, X_y_regression
+    size, name, statistic, distribution, data_type, X_y_regression
 ):
     X, y = X_y_regression
-
+    # set this to avoid flaky tests. This is primarily because when we have smaller samples,
+    # once we remove values outside 3 st.devs, the distribution can begin to look more normal
+    random_state = 2
     target_dist_check = TargetDistributionDataCheck()
 
     if distribution == "normal":
-        y = norm.rvs(loc=3, size=10000)
+        y = norm.rvs(loc=3, size=size, random_state=random_state)
     elif distribution == "lognormal":
-        y = lognorm.rvs(0.4, size=10000)
+        y = lognorm.rvs(0.4, size=size, random_state=random_state)
     else:
         # Will have a p-value of 0 thereby rejecting the null hypothesis even after log transforming
-        # This is essentially just checking the = of "shapiro_test_log.pvalue >= shapiro_test_og.pvalue"
-        y = lognorm.rvs(s=1, loc=1, scale=1, size=10000)
+        # This is essentially just checking the = of the statistic's "log.pvalue >= og.pvalue"
+        y = lognorm.rvs(s=1, loc=1, scale=1, size=size, random_state=random_state)
 
     y = np.round(y, 6)
 
@@ -111,10 +117,10 @@ def test_target_distribution_data_check_warning_action(
         if any(y <= 0):
             y = y + abs(y.min()) + 1
         y = y[y < (y.mean() + 3 * round(y.std(), 3))]
-        shapiro_test_og = shapiro(y)
+        test_og = statistic(y)
 
         details = {
-            "shapiro-statistic/pvalue": f"{round(shapiro_test_og.statistic, 1)}/{round(shapiro_test_og.pvalue, 3)}"
+            f"{name}-statistic/pvalue": f"{round(test_og.statistic, 1)}/{round(test_og.pvalue, 3)}"
         }
         assert target_dist_ == {
             "warnings": [

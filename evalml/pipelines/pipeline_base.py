@@ -1,6 +1,7 @@
 """Base machine learning pipeline class."""
 import copy
 import inspect
+import json
 import logging
 import os
 import sys
@@ -16,8 +17,6 @@ from .components import (
     DFSTransformer,
     Estimator,
     LinearDiscriminantAnalysis,
-    SklearnStackedEnsembleClassifier,
-    SklearnStackedEnsembleRegressor,
 )
 from .components.utils import all_components, handle_component_class
 
@@ -426,6 +425,50 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         df = pd.DataFrame(importance, columns=["feature", "importance"])
         return df
 
+    def graph_json(self):
+        """Generates a JSON with nodes consisting of the component names and parameters, and edges detailing component relationships.
+
+        x_edges specifies from which component feature data is being passed.
+        y_edges specifies from which component target data is being passed.
+        This can be used to build graphs across a variety of visualization tools.
+        Template:
+        {"Nodes": {"component_name": {"Name": class_name, "Attributes": parameters_attributes}, ...}},
+        "x_edges": [[from_component_name, to_component_name], [from_component_name, to_component_name], ...],
+        "y_edges": [[from_component_name, to_component_name], [from_component_name, to_component_name], ...]}
+
+        Returns:
+            dag_json (str): A serialized JSON representation of a DAG structure.
+        """
+        nodes = {
+            comp_: {"Attributes": att_.parameters, "Name": att_.name}
+            for comp_, att_ in self.component_graph.component_instances.items()
+        }
+
+        x_edges = self.component_graph._get_edges(
+            self.component_graph.component_dict, "features"
+        )
+        y_edges = self.component_graph._get_edges(
+            self.component_graph.component_dict, "target"
+        )
+        for (
+            component_name,
+            component_info,
+        ) in self.component_graph.component_dict.items():
+            for parent in component_info[1:]:
+                if parent == "X":
+                    x_edges.append(("X", component_name))
+                elif parent == "y":
+                    y_edges.append(("y", component_name))
+        nodes.update({"X": "X", "y": "y"})
+        graph_as_json = {"Nodes": nodes, "x_edges": x_edges, "y_edges": y_edges}
+
+        for x_edge in graph_as_json["x_edges"]:
+            if x_edge[0] == "X":
+                graph_as_json["x_edges"].remove(x_edge)
+                graph_as_json["x_edges"].insert(0, x_edge)
+
+        return json.dumps(graph_as_json, indent=4)
+
     def graph(self, filepath=None):
         """Generate an image representing the pipeline graph.
 
@@ -672,19 +715,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             for c in self.component_graph
         )
         has_dfs = any(isinstance(c, DFSTransformer) for c in self.component_graph)
-        has_stacked_ensembler = any(
-            isinstance(
-                c, (SklearnStackedEnsembleClassifier, SklearnStackedEnsembleRegressor)
-            )
-            for c in self.component_graph
-        )
         return not any(
             [
                 has_more_than_one_estimator,
                 has_custom_components,
                 has_dim_reduction,
                 has_dfs,
-                has_stacked_ensembler,
             ]
         )
 

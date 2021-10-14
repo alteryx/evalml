@@ -193,8 +193,6 @@ _not_used_in_automl = {
     "TimeSeriesBaselineEstimator",
     "StackedEnsembleClassifier",
     "StackedEnsembleRegressor",
-    "SklearnStackedEnsembleClassifier",
-    "SklearnStackedEnsembleRegressor",
     "KNeighborsClassifier",
     "SVMClassifier",
     "SVMRegressor",
