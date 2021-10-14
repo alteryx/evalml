@@ -11,6 +11,7 @@ Release Notes
         * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level :pr:`2821`
         * Deleted scikit-learn ensembler :pr:`2819`
         * Refactored pipeline building logic out of ``AutoMLSearch`` and into ``IterativeAlgorithm`` :pr:`2854`
+        * Refactored names for methods in ``ComponentGraph`` and ``PipelineBase`` :pr:`2902`
     * Documentation Changes
         * Updated ``install.ipynb`` to reflect flexibility for ``cmdstan`` version installation :pr:`2880`
         * Updated the conda section of our contributing guide :pr:`2899`
@@ -24,6 +25,7 @@ Release Notes
         * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level. This means that pipelines will no longer automatically encode non-numerical targets. Please use a label encoder if working with classification problems and non-numeric targets. :pr:`2821`
         * Deleted scikit-learn ensembler :pr:`2819`
         * ``IterativeAlgorithm`` now requires X, y, problem_type as required arguments as well as sampler_name, allowed_model_families, allowed_component_graphs, max_batches, and verbose as optional arguments :pr:`2854`
+        * Changed method names of ``fit_features`` and ``compute_final_component_features`` to ``fit_and_transform_all_but_final`` and ``transform_all_but_final`` in ``ComponentGraph``, and ``compute_estimator_features`` to ``transform_all_but_final`` in pipeline classes :pr:`2902`
 
 
 **v0.34.0 Sep. 30, 2021**

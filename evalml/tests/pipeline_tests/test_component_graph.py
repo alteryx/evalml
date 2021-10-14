@@ -477,7 +477,7 @@ def test_fit_correct_inputs(
 @patch("evalml.pipelines.components.Transformer.fit_transform")
 @patch("evalml.pipelines.components.Estimator.fit")
 @patch("evalml.pipelines.components.Estimator.predict_proba")
-def test_component_graph_fit_features(
+def test_component_graph_fit_and_transform_all_but_final(
     mock_predict_proba, mock_fit, mock_fit_transform, example_graph, X_y_binary
 ):
     X, y = X_y_binary
@@ -490,7 +490,7 @@ def test_component_graph_fit_features(
     mock_predict_proba.return_value = pd.DataFrame(y)
     mock_predict_proba.return_value.ww.init()
 
-    component_graph.fit_features(X, y)
+    component_graph.fit_and_transform_all_but_final(X, y)
 
     assert mock_fit_transform.call_count == 3
     assert mock_fit.call_count == 2
@@ -535,7 +535,7 @@ def test_predict_multiclass(
     mock_predict.return_value = pd.Series(y)
     component_graph = ComponentGraph(example_graph).instantiate()
     component_graph.fit(X, y)
-    final_estimator_input = component_graph.compute_final_component_features(X, y)
+    final_estimator_input = component_graph.transform_all_but_final(X, y)
     assert final_estimator_input.columns.to_list() == [
         "Col 0 Random Forest.x",
         "Col 1 Random Forest.x",
@@ -567,7 +567,7 @@ def test_predict_regression(
     mock_predict_proba.side_effect = MethodPropertyNotFoundError
     component_graph = ComponentGraph(example_regression_graph).instantiate()
     component_graph.fit(X, y)
-    final_estimator_input = component_graph.compute_final_component_features(X, y)
+    final_estimator_input = component_graph.transform_all_but_final(X, y)
     assert final_estimator_input.columns.to_list() == [
         "Random Forest.x",
         "Elastic Net.x",
@@ -624,7 +624,7 @@ def test_predict_repeat_estimator(
 @patch("evalml.pipelines.components.OneHotEncoder.transform")
 @patch("evalml.pipelines.components.RandomForestClassifier.predict_proba")
 @patch("evalml.pipelines.components.ElasticNetClassifier.predict_proba")
-def test_compute_final_component_features(
+def test_transform_all_but_final(
     mock_en_predict_proba,
     mock_rf_predict_proba,
     mock_ohe,
@@ -652,14 +652,14 @@ def test_compute_final_component_features(
     component_graph = ComponentGraph(example_graph).instantiate()
     component_graph.fit(X, y)
 
-    X_t = component_graph.compute_final_component_features(X)
+    X_t = component_graph.transform_all_but_final(X)
     assert_frame_equal(X_expected, X_t)
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 4
 
 
 @patch(f"{__name__}.DummyTransformer.transform")
-def test_compute_final_component_features_single_component(mock_transform, X_y_binary):
+def test_transform_all_but_final_single_component(mock_transform, X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X)
     mock_transform.return_value = X
@@ -668,7 +668,7 @@ def test_compute_final_component_features_single_component(mock_transform, X_y_b
     ).instantiate()
     component_graph.fit(X, y)
 
-    X_t = component_graph.compute_final_component_features(X)
+    X_t = component_graph.transform_all_but_final(X)
     assert_frame_equal(X, X_t)
 
 
@@ -1958,7 +1958,7 @@ def test_final_component_features_does_not_have_target():
     cg.instantiate()
     cg.fit(X, y)
 
-    final_features = cg.compute_final_component_features(X, y)
+    final_features = cg.transform_all_but_final(X, y)
     assert "TargetImputer.y" not in final_features.columns
 
 
@@ -2203,7 +2203,7 @@ def test_component_graph_repr():
 
 @patch("evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit")
 @pytest.mark.parametrize("sampler", ["Undersampler", "Oversampler"])
-def test_component_graph_compute_final_component_features_with_sampler(
+def test_component_graph_transform_all_but_final_with_sampler(
     mock_estimator_fit, sampler, has_minimal_dependencies
 ):
     if sampler == "Oversampler" and has_minimal_dependencies:
@@ -2229,7 +2229,7 @@ def test_component_graph_compute_final_component_features_with_sampler(
         mock_estimator_fit.call_args[0][1]
     )
     assert len(mock_estimator_fit.call_args[0][0]) == expected_length
-    features_for_estimator = component_graph.compute_final_component_features(X, y)
+    features_for_estimator = component_graph.transform_all_but_final(X, y)
     assert len(features_for_estimator) == len(y)
 
 
@@ -2354,8 +2354,10 @@ def test_component_graph_with_invalid_y_edge(X_y_binary):
         ComponentGraph(component_dict)
 
 
-def test_training_only_component_in_component_graph_fit_features(X_y_binary):
-    # Test that calling fit_features() will evaluate all training-only transformations
+def test_training_only_component_in_component_graph_fit_and_transform_all_but_final(
+    X_y_binary,
+):
+    # Test that calling fit_and_transform_all_but_final() will evaluate all training-only transformations
     X, y = X_y_binary
     component_dict = {
         "Imputer": ["Imputer", "X", "y"],
@@ -2368,14 +2370,14 @@ def test_training_only_component_in_component_graph_fit_features(X_y_binary):
     }
     component_graph = ComponentGraph(component_dict)
     component_graph.instantiate({"Drop Rows Transformer": {"indices_to_drop": [0, 9]}})
-    transformed_X, transformed_y = component_graph.fit_features(X, y)
+    transformed_X, transformed_y = component_graph.fit_and_transform_all_but_final(X, y)
     assert len(transformed_X) == len(X) - 2
 
 
-def test_training_only_component_in_component_graph_compute_final_component_features(
+def test_training_only_component_in_component_graph_transform_all_but_final(
     X_y_binary,
 ):
-    # Test that calling compute_final_component_features() will not evaluate all training-only transformations
+    # Test that calling transform_all_but_final() will not evaluate all training-only transformations
     X, y = X_y_binary
     component_dict = {
         "Imputer": ["Imputer", "X", "y"],
@@ -2389,5 +2391,5 @@ def test_training_only_component_in_component_graph_compute_final_component_feat
     component_graph = ComponentGraph(component_dict)
     component_graph.instantiate({"Drop Rows Transformer": {"indices_to_drop": [0, 9]}})
     component_graph.fit(X, y)
-    transformed_X = component_graph.compute_final_component_features(X, y)
+    transformed_X = component_graph.transform_all_but_final(X, y)
     assert len(transformed_X) == len(X)
