@@ -1423,7 +1423,7 @@ def test_describe_pipeline(return_dict, verbose, caplog, X_y_binary, AutoMLTestE
             automl_dict["pipeline_name"]
             == "Mode Baseline Binary Classification Pipeline"
         )
-        assert automl_dict["pipeline_summary"] == "Baseline Classifier"
+        assert automl_dict["pipeline_summary"] == "Baseline Classifier w/ Label Encoder"
         assert automl_dict["parameters"] == {
             "Baseline Classifier": {"strategy": "mode"}
         }
@@ -4544,7 +4544,6 @@ def test_score_batch_before_fitting_yields_error_nan_scores(
     }
 
     assert "Score error for Mock Binary Classification Pipeline" in caplog.text
-    assert "This LabelEncoder instance is not fitted yet." in caplog.text
 
 
 def test_high_cv_check_no_warning_for_divide_by_zero(
@@ -4790,6 +4789,8 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
     expected_predictions = y.shift(1)[4:]
     if problem_type != ProblemTypes.TIME_SERIES_REGRESSION:
         expected_predictions = expected_predictions.astype("int64")
+        expected_predictions = pd.Series(expected_predictions, name="target_delay_1")
+
     preds = baseline.predict(X_validation, None, X_train, y_train)
     pd.testing.assert_series_equal(expected_predictions, preds)
     if is_classification(problem_type):
@@ -5292,7 +5293,14 @@ def test_baseline_pipeline_properly_initalized(
         X, y = X_y_binary
         score_value = {"Log Loss Binary": 1.0}
         expected_pipeline = BinaryClassificationPipeline(
-            component_graph=["Baseline Classifier"],
+            component_graph={
+                "Label Encoder": ["Label Encoder", "X", "y"],
+                "Baseline Classifier": [
+                    "Baseline Classifier",
+                    "Label Encoder.x",
+                    "Label Encoder.y",
+                ],
+            },
             custom_name="Mode Baseline Binary Classification Pipeline",
             parameters={"Baseline Classifier": {"strategy": "mode"}},
         )
@@ -5300,7 +5308,14 @@ def test_baseline_pipeline_properly_initalized(
         X, y = X_y_multi
         score_value = {"Log Loss Multiclass": 1.0}
         expected_pipeline = MulticlassClassificationPipeline(
-            component_graph=["Baseline Classifier"],
+            component_graph={
+                "Label Encoder": ["Label Encoder", "X", "y"],
+                "Baseline Classifier": [
+                    "Baseline Classifier",
+                    "Label Encoder.x",
+                    "Label Encoder.y",
+                ],
+            },
             custom_name="Mode Baseline Multiclass Classification Pipeline",
             parameters={"Baseline Classifier": {"strategy": "mode"}},
         )

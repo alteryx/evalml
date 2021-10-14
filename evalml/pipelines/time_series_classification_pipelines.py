@@ -1,5 +1,7 @@
 """Pipeline base class for time-series classification problems."""
+import numpy as np
 import pandas as pd
+import woodwork as ww
 
 from .binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,
@@ -40,9 +42,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             self
         """
         X, y = self._convert_to_woodwork(X, y)
-        self._encoder.fit(y)
-        y = self._encode_targets(y)
         self._fit(X, y)
+        self._classes_ = list(ww.init_series(np.unique(y)))
         return self
 
     def _estimator_predict_proba(self, features, y):
@@ -74,23 +75,22 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             raise ValueError(
                 "Cannot call predict_proba_in_sample() on a component graph because the final component is not an Estimator."
             )
-        y_holdout = self._encode_targets(y_holdout)
-        y_train = self._encode_targets(y_train)
         features = self.compute_estimator_features(
             X_holdout, y_holdout, X_train, y_train
         )
         proba = self._estimator_predict_proba(features, y_holdout)
         proba.index = y_holdout.index
         proba = proba.ww.rename(
-            columns={
-                col: new_col
-                for col, new_col in zip(proba.columns, self._encoder.classes_)
-            }
+            columns={col: new_col for col, new_col in zip(proba.columns, self.classes_)}
         )
         return infer_feature_types(proba)
 
     def predict_in_sample(self, X, y, X_train, y_train, objective=None):
         """Predict on future data where the target is known, e.g. cross validation.
+
+        Note: we cast y as ints first to address boolean values that may be returned from
+        calculating predictions which we would not be able to otherwise transform if we
+        originally had integer targets.
 
         Args:
             X (pd.DataFrame or np.ndarray): Future data of shape [n_samples, n_features].
@@ -110,17 +110,13 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
             )
 
-        y = self._encode_targets(y)
-        y_train = self._encode_targets(y_train)
         features = self.compute_estimator_features(X, y, X_train, y_train)
         predictions = self._estimator_predict(features, y)
         predictions.index = y.index
-        predictions = self.inverse_transform(predictions)
-        predictions = pd.Series(
-            self._decode_targets(predictions),
-            name=self.input_target_name,
-            index=y.index,
-        )
+        predictions = self.inverse_transform(predictions.astype(int))
+        predictions = pd.Series(predictions, name=self.input_target_name)
+
+        predictions = predictions.rename(index=dict(zip(predictions.index, y.index)))
         return infer_feature_types(predictions)
 
     def predict_proba(self, X, X_train=None, y_train=None):
@@ -182,9 +178,11 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             y_train,
             objectives,
         )
+        if self._encoder is not None:
+            y = self._encode_targets(y)
         return self._score_all_objectives(
             X,
-            self._encode_targets(y),
+            y,
             y_predicted,
             y_pred_proba=y_predicted_proba,
             objectives=objectives,
@@ -251,7 +249,7 @@ class TimeSeriesBinaryClassificationPipeline(
                     proba, threshold=self.threshold, X=X
                 )
             predictions = pd.Series(
-                self._decode_targets(predictions),
+                predictions,
                 name=self.input_target_name,
                 index=y.index,
             )

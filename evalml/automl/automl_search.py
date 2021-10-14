@@ -1053,15 +1053,23 @@ class AutoMLSearch:
 
     def _get_baseline_pipeline(self):
         """Creates a baseline pipeline instance."""
+        classification_component_graph = {
+            "Label Encoder": ["Label Encoder", "X", "y"],
+            "Baseline Classifier": [
+                "Baseline Classifier",
+                "Label Encoder.x",
+                "Label Encoder.y",
+            ],
+        }
         if self.problem_type == ProblemTypes.BINARY:
             baseline = BinaryClassificationPipeline(
-                component_graph=["Baseline Classifier"],
+                component_graph=classification_component_graph,
                 custom_name="Mode Baseline Binary Classification Pipeline",
                 parameters={"Baseline Classifier": {"strategy": "mode"}},
             )
         elif self.problem_type == ProblemTypes.MULTICLASS:
             baseline = MulticlassClassificationPipeline(
-                component_graph=["Baseline Classifier"],
+                component_graph=classification_component_graph,
                 custom_name="Mode Baseline Multiclass Classification Pipeline",
                 parameters={"Baseline Classifier": {"strategy": "mode"}},
             )
