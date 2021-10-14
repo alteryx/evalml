@@ -31,6 +31,8 @@ class DFSTransformer(Transformer):
     def _make_entity_set(self, X):
         """Helper method that creates and returns the entity set given the input data."""
         ft_es = EntitySet()
+        # TODO: This delete was introduced for compatibility with Featuretools 1.0.0.  This should
+        # be removed after Featuretools handles unnamed dataframes being passed to this function.
         del X.ww
         if self.index not in X.columns:
             es = ft_es.add_dataframe(

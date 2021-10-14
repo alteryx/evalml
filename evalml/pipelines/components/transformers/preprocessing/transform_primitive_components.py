@@ -39,14 +39,14 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
     def _make_entity_set(self, X):
         X_to_transform = X[self._columns]
         X_to_transform.rename(columns=str, inplace=True)
-        ft_variable_types = self._get_feature_types_for_featuretools(X)
+        ww_logical_types = self._get_feature_types_for_featuretools(X)
         es = ft.EntitySet()
         es.add_dataframe(
             dataframe_name="X",
             dataframe=X_to_transform,
             index="index",
             make_index=True,
-            logical_types=ft_variable_types,
+            logical_types=ww_logical_types,
         )
         return es
 

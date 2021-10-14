@@ -59,7 +59,7 @@ class TextFeaturizer(TextTransformer):
 
         # featuretools expects str-type column names
         X_text.rename(columns=str, inplace=True)
-        all_text_variable_types = {
+        all_text_logical_types = {
             col_name: "natural_language" for col_name in X_text.columns
         }
 
@@ -69,7 +69,7 @@ class TextFeaturizer(TextTransformer):
             dataframe=X_text,
             index="index",
             make_index=True,
-            logical_types=all_text_variable_types,
+            logical_types=all_text_logical_types,
         )
         return es
 
