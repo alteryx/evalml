@@ -41,6 +41,9 @@ from evalml.pipelines.components import (  # noqa: F401
     Undersampler,
     URLFeaturizer,
 )
+from evalml.pipelines.components.transformers.encoders.label_encoder import (
+    LabelEncoder,
+)
 from evalml.pipelines.components.utils import (
     get_estimators,
     handle_component_class,
@@ -72,6 +75,9 @@ def _get_preprocessing_components(
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
     pp_components = []
+
+    if is_classification(problem_type):
+        pp_components.append(LabelEncoder)
 
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
@@ -278,7 +284,11 @@ def _make_stacked_ensemble_pipeline(
         idx = " " + str(idx) if idx is not None else ""
         return f"{str(model_type)} Pipeline{idx} - {component_name}"
 
-    component_graph = {}
+    component_graph = (
+        {"Label Encoder": ["Label Encoder", "X", "y"]}
+        if is_classification(problem_type)
+        else {}
+    )
     final_components = []
     used_model_families = []
     parameters = {}
@@ -330,6 +340,11 @@ def _make_stacked_ensemble_pipeline(
                     new_component_list.append(
                         _make_new_component_name(model_family, item, model_family_idx)
                     )
+                elif isinstance(item, str) and item == "y":
+                    if is_classification(problem_type):
+                        new_component_list.append("Label Encoder.y")
+                    else:
+                        new_component_list.append("y")
                 else:
                     new_component_list.append(item)
                 if i != 0 and item.endswith(".y"):
