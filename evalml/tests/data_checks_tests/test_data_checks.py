@@ -143,16 +143,16 @@ messages = [
         details={"column": "lots_of_null"},
     ).to_dict(),
     DataCheckError(
-        message="all_null has 0 unique value.",
+        message=" has 0 unique value.",
         data_check_name="NoVarianceDataCheck",
         message_code=DataCheckMessageCode.NO_VARIANCE,
-        details={"column": "all_null"},
+        details={"columns": "all_null"},
     ).to_dict(),
     DataCheckError(
-        message="also_all_null has 0 unique value.",
+        message="also_all_null, all_null have 0 unique value.",
         data_check_name="NoVarianceDataCheck",
         message_code=DataCheckMessageCode.NO_VARIANCE,
-        details={"column": "also_all_null"},
+        details={"columns": ["also_all_null"]},
     ).to_dict(),
     DataCheckError(
         message="Input natural language column(s) (natural_language_nan) contains NaN values. Please impute NaN values or drop these rows or columns.",

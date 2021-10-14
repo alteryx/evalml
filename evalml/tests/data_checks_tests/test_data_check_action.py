@@ -58,13 +58,17 @@ def test_data_check_action_to_dict():
 
     assert data_check_action.to_dict() == {
         "code": DataCheckActionCode.DROP_COL.name,
-        "metadata": {},
+        "metadata": {"columns": None, "rows": None},
     }
     assert data_check_action_empty_metadata.to_dict() == {
         "code": DataCheckActionCode.DROP_COL.name,
-        "metadata": {},
+        "metadata": {"columns": None, "rows": None},
     }
     assert data_check_action_with_metadata.to_dict() == {
         "code": DataCheckActionCode.DROP_COL.name,
-        "metadata": {"some detail": ["this is different"]},
+        "metadata": {
+            "some detail": ["this is different"],
+            "columns": None,
+            "rows": None,
+        },
     }

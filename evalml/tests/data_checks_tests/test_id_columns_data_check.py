@@ -53,13 +53,14 @@ def test_id_columns_warning():
                 message="Columns 'Id', 'col_1_id', 'col_2', 'col_3_id' are 95.0% or more likely to be an ID column",
                 data_check_name=id_data_check_name,
                 message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-                details={"columns": ["Id", 'col_1_id', 'col_2', 'col_3_id']},
+                details={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
             ).to_dict(),
         ],
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"columns": ['Id', 'col_1_id', 'col_2', 'col_3_id']}
+                DataCheckActionCode.DROP_COL,
+                metadata={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
             ).to_dict(),
         ],
     }

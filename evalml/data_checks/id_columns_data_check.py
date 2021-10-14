@@ -97,7 +97,9 @@ class IDColumnsDataCheck(DataCheck):
                 DataCheckWarning(
                     message=warning_msg.format(
                         (", ").join(
-                                ["'{}'".format(str(col)) for col in id_cols_above_threshold]), self.id_threshold * 100
+                            ["'{}'".format(str(col)) for col in id_cols_above_threshold]
+                        ),
+                        self.id_threshold * 100,
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.HAS_ID_COLUMN,
