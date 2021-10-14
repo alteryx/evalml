@@ -1,3 +1,5 @@
+from unittest.mock import patch
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -34,6 +36,7 @@ from evalml.pipelines.utils import (
     generate_pipeline_code,
     get_estimators,
     make_pipeline,
+    rows_of_interest,
 )
 from evalml.problem_types import ProblemTypes, is_regression, is_time_series
 
@@ -588,3 +591,195 @@ def test_generate_code_pipeline_with_custom_components():
     )
     pipeline = generate_pipeline_code(mock_pipeline_with_custom_components)
     assert pipeline == expected_code
+
+
+def test_rows_of_interest_errors(X_y_binary):
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Logistic Regression Classifier"]
+    )
+    pipeline_mc = MulticlassClassificationPipeline(
+        component_graph=["Logistic Regression Classifier"]
+    )
+    X, y = X_y_binary
+
+    with pytest.raises(ValueError, match="Invalid arg for"):
+        rows_of_interest(pipeline, X, y, types="ball")
+
+    with pytest.raises(ValueError, match="Need an input y in order to"):
+        rows_of_interest(pipeline, X, types="correct")
+
+    with pytest.raises(ValueError, match="Pipeline provided must be a fitted"):
+        rows_of_interest(pipeline, X, y, types="all")
+
+    with pytest.raises(ValueError, match="Pipeline provided must be a fitted"):
+        rows_of_interest(pipeline_mc, X, y, types="all")
+
+    with pytest.raises(ValueError, match="Pipeline provided must be a fitted"):
+        rows_of_interest(pipeline_mc, X, y, types="all")
+
+    pipeline._is_fitted = True
+    with pytest.raises(ValueError, match="Provided threshold 1.1 must be between"):
+        rows_of_interest(pipeline, X, y, threshold=1.1)
+
+    with pytest.raises(ValueError, match="Provided threshold -0.1 must be between"):
+        rows_of_interest(pipeline, X, y, threshold=-0.1)
+
+
+@patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
+@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
+@pytest.mark.parametrize("threshold", [0.3, None, 0.7])
+@pytest.mark.parametrize("y", [pd.Series([i % 2 for i in range(100)]), None])
+def test_rows_of_interest_threshold(mock_fit, mock_pred_proba, threshold, y):
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Imputer", "Standard Scaler", "Logistic Regression Classifier"]
+    )
+    X = pd.DataFrame([i for i in range(100)])
+    y = y
+    pipeline._is_fitted = True
+
+    vals = [0.2] * 25 + [0.5] * 50 + [0.8] * 25
+    predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
+    mock_pred_proba.return_value = predicted_proba_values
+    vals = rows_of_interest(pipeline, X, y, threshold=threshold, sort_values=True)
+    if threshold == 0.3:
+        assert all(vals.values == list(range(100)))
+        return
+    elif threshold == 0.7:
+        assert all(
+            vals.values == list(range(75, 100)) + list(range(25, 75)) + list(range(25))
+        )
+        return
+
+    assert all(
+        vals.values == list(range(25, 75)) + list(range(25)) + list(range(75, 100))
+    )
+
+    pipeline._threshold = 0.9
+    vals = rows_of_interest(pipeline, X, y, threshold=None, sort_values=True)
+    assert all(
+        vals.values == list(range(75, 100)) + list(range(25, 75)) + list(range(25))
+    )
+
+
+@patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
+@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
+@pytest.mark.parametrize(
+    "types,expected_val",
+    [
+        ("incorrect", list(range(75, 100))),
+        ("correct", list(range(75))),
+        ("true_positive", list(range(25, 75))),
+        ("true_negative", list(range(25)) + list(range(75, 100))),
+        ("all", list(range(100))),
+    ],
+)
+def test_rows_of_interest_types(mock_fit, mock_pred_proba, types, expected_val):
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Logistic Regression Classifier"]
+    )
+    X = pd.DataFrame([i for i in range(100)])
+    y = pd.Series([0] * 25 + [1] * 50 + [0] * 25)
+    pipeline._is_fitted = True
+
+    vals = [0.2] * 25 + [0.5] * 50 + [0.8] * 25
+    predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
+    mock_pred_proba.return_value = predicted_proba_values
+    vals = rows_of_interest(pipeline, X, y, types=types, sort_values=False)
+    assert all(vals.values == expected_val)
+
+
+@patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
+@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
+@pytest.mark.parametrize("num_rows,expected_len", [(10, 10), (200, 100), (None, 100)])
+def test_rows_of_interest_num_rows(mock_fit, mock_pred_proba, num_rows, expected_len):
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Logistic Regression Classifier"]
+    )
+    X = pd.DataFrame([i for i in range(100)])
+    y = pd.Series([0] * 25 + [1] * 50 + [0] * 25)
+    pipeline._is_fitted = True
+
+    vals = [0.2] * 25 + [0.5] * 50 + [0.8] * 25
+    predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
+    mock_pred_proba.return_value = predicted_proba_values
+    vals = rows_of_interest(pipeline, X, y, num_rows=num_rows)
+    assert len(vals) == expected_len
+
+
+@patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
+@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
+@pytest.mark.parametrize(
+    "sorts,expected_val",
+    [
+        (True, list(range(75, 100)) + list(range(25, 75)) + list(range(25))),
+        (False, list(range(100))),
+    ],
+)
+def test_rows_of_interest_sorted(mock_fit, mock_pred_proba, sorts, expected_val):
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Logistic Regression Classifier"]
+    )
+    X = pd.DataFrame([i for i in range(100)])
+    y = pd.Series([0] * 25 + [1] * 50 + [0] * 25)
+    pipeline._is_fitted = True
+
+    vals = [0.2] * 25 + [0.5] * 50 + [0.8] * 25
+    predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
+    mock_pred_proba.return_value = predicted_proba_values
+    vals = rows_of_interest(pipeline, X, y, threshold=0.9, sort_values=sorts)
+    assert all(vals.values == expected_val)
+
+
+@patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
+@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
+def test_rows_of_interest_index(mock_fit, mock_pred_proba):
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Logistic Regression Classifier"]
+    )
+    X = pd.DataFrame(
+        [i for i in range(100)], index=["index_{}".format(i) for i in range(100)]
+    )
+    pipeline._is_fitted = True
+
+    vals = [0.2] * 25 + [0.5] * 50 + [0.8] * 25
+    predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
+    mock_pred_proba.return_value = predicted_proba_values
+    vals = rows_of_interest(pipeline, X)
+    assert all(
+        vals.values == list(range(25, 75)) + list(range(25)) + list(range(75, 100))
+    )
+
+
+@patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
+@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
+@pytest.mark.parametrize(
+    "types,sorts,num_rows,expected_vals",
+    [
+        ("correct", True, 20, list(range(25, 45))),
+        ("true_negative", True, 5, list(range(5))),
+        ("all", False, 100, list(range(100))),
+    ],
+)
+def test_rows_of_interest(
+    mock_fit, mock_pred_proba, types, sorts, num_rows, expected_vals
+):
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Logistic Regression Classifier"]
+    )
+    X = pd.DataFrame([i for i in range(100)])
+    y = pd.Series([0] * 25 + [1] * 50 + [0] * 25)
+    pipeline._is_fitted = True
+
+    vals = [0.2] * 25 + [0.5] * 50 + [0.8] * 25
+    predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
+    mock_pred_proba.return_value = predicted_proba_values
+    vals = rows_of_interest(
+        pipeline, X, y, types=types, sort_values=sorts, num_rows=num_rows
+    )
+    assert all(vals.values == expected_vals)
+
+    if types == "all":
+        vals = rows_of_interest(
+            pipeline, X, types=types, sort_values=sorts, num_rows=num_rows
+        )
+        assert all(vals.values == expected_vals)

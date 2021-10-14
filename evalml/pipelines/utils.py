@@ -433,3 +433,80 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon):
         },
     )
     return baseline
+
+
+def rows_of_interest(
+    pipeline, X, y=None, threshold=None, num_rows=None, sort_values=True, types="all"
+):
+    """Get the row indices of the data that are closest to the threshold. Works only for binary classification problems and pipelines.
+
+    Args:
+        pipeline (PipelineBase): The fitted binary pipeline.
+        X (ww.DataTable, pd.DataFrame): The input features to predict on.
+        y (ww.DataColumn, pd.Series, None): The input target data,  if available. Defaults to None.
+        threshold (float): The threshold value of interest to separate positive and negative predictions. If None, uses the pipeline threshold if set, else 0.5. Defaults to None.
+        num_rows (int): The number of rows to return. If None, returns the full list of indices equal to the size of the input. Defaults to None.
+        sort_values (bool): Whether to return the indices sorted by the distance from the threshold, such that the first values are closer to the threshold and the later values are further. Defualts to True.
+        types (str): The type of rows to keep and return. Can be one of ['incorrect', 'correct', 'true_positive', 'true_negative', 'all']. Defaults to 'all'.
+            'incorrect' - return only the rows where the predictions are incorrect. This means that, given the threshold and target y, keep only the rows which are labeled wrong.
+            'correct' - return only the rows where the predictions are correct. This means that, given the threshold and target y, keep only the rows which are correctly labeled.
+            'true_positive' - return only the rows which are positive, as given by the targets.
+            'true_negative' - return only the rows which are negative, as given by the targets.
+            'all' - return all rows. This is the only option available when there is no target data provided.
+
+    Returns:
+        The indices corresponding to the rows of interest.
+    """
+    valid_types = ["incorrect", "correct", "true_positive", "true_negative", "all"]
+    if types not in valid_types:
+        raise ValueError(
+            "Invalid arg for 'types'! Must be one of {}".format(valid_types)
+        )
+
+    if types != "all" and y is None:
+        raise ValueError("Need an input y in order to use types {}".format(types))
+
+    if (
+        not isinstance(pipeline, BinaryClassificationPipeline)
+        or not pipeline._is_fitted
+    ):
+        raise ValueError(
+            "Pipeline provided must be a fitted Binary Classification pipeline!"
+        )
+
+    if threshold is not None and (threshold < 0 or threshold > 1):
+        raise ValueError(
+            "Provided threshold {} must be between [0, 1]".format(threshold)
+        )
+
+    if threshold is None:
+        threshold = pipeline.threshold or 0.5
+
+    # get predicted proba
+    pred_proba = pipeline.predict_proba(X)
+    pos_value_proba = pred_proba.iloc[:, -1]
+    preds = pos_value_proba >= threshold
+    preds_value_proba = abs(pos_value_proba - threshold)
+
+    # placeholder for y if it isn't supplied
+    y_current = y if y is not None else preds
+
+    # logic for breaking apart the different categories
+    mask = y_current
+    if "correct" in types:
+        mask = preds == y
+    mask = mask.astype(bool)
+
+    if types in ["correct", "true_positive"]:
+        preds_value_proba = preds_value_proba[mask.values]
+    elif types in ["incorrect", "true_negative"]:
+        preds_value_proba = preds_value_proba[~mask.values]
+
+    if sort_values:
+        preds_value_proba = preds_value_proba.sort_values(kind="stable")
+
+    if num_rows is not None:
+        num_rows = min(num_rows, len(preds_value_proba))
+        preds_value_proba = preds_value_proba[:num_rows]
+
+    return preds_value_proba.index
