@@ -2,6 +2,7 @@ import string
 
 import numpy as np
 import pandas as pd
+from _robustats import medcouple
 
 from evalml.data_checks import (
     DataCheckMessageCode,
@@ -187,4 +188,33 @@ def test_outliers_data_check_warnings_has_nan():
         ],
         "errors": [],
         "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [3, 5, 10]}}],
+    }
+
+
+def test_boxplot_stats():
+    test = pd.Series([32, 33, 34.4, 95, 96.8, 36, 37, 1.5, 2])
+
+    q1, median, q3 = np.percentile(test, [25, 50, 75])
+    epsilon1 = np.finfo(np.array(test).dtype).eps
+    epsilon2 = np.finfo(np.array(test).dtype).min
+    medcouple_stat = medcouple(np.array(test), epsilon1, epsilon2)
+
+    field_bounds = (
+        q1 - 1.5 * np.exp(-3.79 * medcouple_stat) * (q3 - q1),
+        q3 + 1.5 * np.exp(3.87 * medcouple_stat) * (q3 - q1),
+    )
+
+    assert OutliersDataCheck()._get_boxplot_data(test) == {
+        "score": OutliersDataCheck._no_outlier_prob(9, 4/9),
+        "values": {
+            "q1": q1,
+            "median": median,
+            "q3": q3,
+            "low_bound": field_bounds[0],
+            "high_bound": field_bounds[1],
+            "low_values": test[test < field_bounds[0]].tolist(),
+            "high_values": test[test > field_bounds[1]].tolist(),
+            "low_indices": test[test < field_bounds[0]].index.tolist(),
+            "high_indices": test[test > field_bounds[1]].index.tolist(),
+        },
     }

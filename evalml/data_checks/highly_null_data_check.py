@@ -92,7 +92,7 @@ class HighlyNullDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
                     details={"pct_null_cols": highly_null_rows,
-                             "pct_of_rows_above_thresh": len(highly_null_rows)/len(X)},
+                             "pct_of_rows_above_thresh": round(len(highly_null_rows) / len(X), 3)},
                 ).to_dict()
             )
             results["actions"].append(
@@ -119,7 +119,7 @@ class HighlyNullDataCheck(DataCheck):
                     message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
                     details={
                         "column": col_name,
-                        "pct_null_rows": highly_null_cols[col_name],
+                        "pct_null_rows": round((highly_null_cols[col_name]), 3),
                     },
                 ).to_dict()
                 for col_name in highly_null_cols

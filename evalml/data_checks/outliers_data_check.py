@@ -1,5 +1,7 @@
 """Data check that checks if there are any outliers in input data by using IQR to determine score anomalies."""
 import numpy as np
+import pandas as pd
+from _robustats import medcouple
 from scipy.stats import gamma
 
 from evalml.data_checks import (
@@ -56,10 +58,10 @@ class OutliersDataCheck(DataCheck):
         has_outliers = []
         outlier_row_indices = {}
         for col in X.columns:
-            box_plot_dict = X.ww[col].ww.box_plot_dict()
+            box_plot_dict = OutliersDataCheck()._get_boxplot_data(X[col])
             num_records = len(X[col])
             pct_outliers = (
-                len(box_plot_dict["low_values"]) + len(box_plot_dict["high_values"])
+                len(box_plot_dict["values"]["low_values"]) + len(box_plot_dict["values"]["high_values"])
             ) / num_records
             if (
                 pct_outliers > 0
@@ -67,7 +69,7 @@ class OutliersDataCheck(DataCheck):
             ):
                 has_outliers.append(col)
                 outlier_row_indices[col] = (
-                    box_plot_dict["low_indices"] + box_plot_dict["high_indices"]
+                    box_plot_dict["values"]["low_indices"] + box_plot_dict["values"]["high_indices"]
                 )
 
         if not len(has_outliers):
@@ -97,6 +99,69 @@ class OutliersDataCheck(DataCheck):
             ).to_dict()
         )
         return results
+
+    def _get_boxplot_data(self, data_):
+        """Returns box plot information for the given data.
+
+        Args:
+            data_ (pd.Series, np.ndarray): Input data.
+
+        Returns:
+            dict: A payload of box plot statistics.
+        """
+        field_q1toq3 = np.percentile(data_, [25, 50, 75])
+        field_iqr = field_q1toq3[2] - field_q1toq3[0]
+
+        epsilon1 = np.finfo(np.array(data_).dtype).eps
+        epsilon2 = np.finfo(np.array(data_).dtype).min
+        # calculate medcouple statistic
+
+        field_medcouple = medcouple(np.array(data_), epsilon1, epsilon2)
+        # use different field bounds based on skewness determined by medcouple statistic
+        if field_medcouple < 0.0:
+            field_bounds = (
+                field_q1toq3[0] - 1.5 * np.exp(-3.87 * field_medcouple) * field_iqr,
+                field_q1toq3[2] + 1.5 * np.exp(3.79 * field_medcouple) * field_iqr,
+            )
+        else:
+            field_bounds = (
+                field_q1toq3[0] - 1.5 * np.exp(-3.79 * field_medcouple) * field_iqr,
+                field_q1toq3[2] + 1.5 * np.exp(3.87 * field_medcouple) * field_iqr,
+            )
+
+        low_filter = data_ < field_bounds[0]
+        high_filter = data_ > field_bounds[1]
+
+        # grab values below and above low and high bounds (respectively)
+        low_values = data_[low_filter].tolist()
+        high_values = data_[high_filter].tolist()
+
+        # grab indices below and above low and high bounds (respectively)
+        low_indices = data_[low_filter].index.tolist()
+        high_indices = data_[high_filter].index.tolist()
+
+        # calculate outlier probability
+        pct_outliers = (len(low_values) + len(high_values)) / len(data_)
+
+        # read in model and retrieve results
+        num_records = len(data_)
+        score = OutliersDataCheck._no_outlier_prob(num_records, pct_outliers)
+
+        payload = {
+            "score": score,
+            "values": {
+                "q1": field_q1toq3[0],
+                "median": field_q1toq3[1],
+                "q3": field_q1toq3[2],
+                "low_bound": field_bounds[0],
+                "high_bound": field_bounds[1],
+                "low_values": low_values,
+                "high_values": high_values,
+                "low_indices": low_indices,
+                "high_indices": high_indices,
+            },
+        }
+        return payload
 
     @staticmethod
     def _no_outlier_prob(num_records: int, pct_outliers: float) -> float:
