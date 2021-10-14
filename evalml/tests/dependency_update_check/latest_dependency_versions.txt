@@ -28,6 +28,6 @@ seaborn==0.11.2
 shap==0.39.0
 sktime==0.8.0
 statsmodels==0.13.0
-texttable==1.6.4
+texttable==1.6.3
 woodwork==0.8.1
 xgboost==1.5.0
