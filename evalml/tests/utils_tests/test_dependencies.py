@@ -15,7 +15,8 @@ def _get_req_name(name):
 
 def test_texttable_version():
     import texttable
-    assert texttable.__version__ == '1.6.3'
+
+    assert texttable.__version__ == "1.6.3"
 
 
 def test_has_minimal_deps(
