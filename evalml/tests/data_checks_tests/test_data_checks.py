@@ -170,10 +170,12 @@ messages = [
 
 expected_actions = [
     DataCheckAction(
-        DataCheckActionCode.DROP_COL, metadata={"column": "all_null"}
+        DataCheckActionCode.DROP_COL,
+        metadata={"column": "all_null", "row_indices": [0, 1, 2, 3, 4]},
     ).to_dict(),
     DataCheckAction(
-        DataCheckActionCode.DROP_COL, metadata={"column": "also_all_null"}
+        DataCheckActionCode.DROP_COL,
+        metadata={"column": "also_all_null", "row_indices": [0, 1, 2, 3, 4]},
     ).to_dict(),
     DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "id"}).to_dict(),
     DataCheckAction(
@@ -186,6 +188,12 @@ expected_actions = [
     ).to_dict(),
     DataCheckAction(
         DataCheckActionCode.DROP_COL, metadata={"column": "lots_of_null"}
+    ).to_dict(),
+    DataCheckAction(
+        DataCheckActionCode.DROP_COL, metadata={"column": "all_null"}
+    ).to_dict(),
+    DataCheckAction(
+        DataCheckActionCode.DROP_COL, metadata={"column": "also_all_null"}
     ).to_dict(),
 ]
 
@@ -436,7 +444,12 @@ def test_default_data_checks_null_rows():
                 message="5 out of 5 rows are more than 95.0% null",
                 data_check_name="HighlyNullDataCheck",
                 message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
-                details={"pct_null_cols": highly_null_rows},
+                details={
+                    "pct_null_cols": highly_null_rows,
+                    "pct_of_rows_above_thresh": round(
+                        len(highly_null_rows.series) / len(X), 3
+                    ),
+                },
             ).to_dict(),
             DataCheckWarning(
                 message="Column 'all_null' is 95.0% or more null",
@@ -476,14 +489,22 @@ def test_default_data_checks_null_rows():
                 DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 1, 2, 3, 4]}
             ).to_dict(),
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "all_null"}
+                DataCheckActionCode.DROP_COL,
+                metadata={"column": "all_null", "row_indices": [0, 1, 2, 3, 4]},
             ).to_dict(),
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "also_all_null"}
+                DataCheckActionCode.DROP_COL,
+                metadata={"column": "also_all_null", "row_indices": [0, 1, 2, 3, 4]},
             ).to_dict(),
             DataCheckAction(
                 DataCheckActionCode.IMPUTE_COL,
                 metadata={"column": None, "is_target": True, "impute_strategy": "mean"},
+            ).to_dict(),
+            DataCheckAction(
+                DataCheckActionCode.DROP_COL, metadata={"column": "all_null"}
+            ).to_dict(),
+            DataCheckAction(
+                DataCheckActionCode.DROP_COL, metadata={"column": "also_all_null"}
             ).to_dict(),
         ],
     }
