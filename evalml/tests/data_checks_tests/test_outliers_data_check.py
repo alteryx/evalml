@@ -2,7 +2,8 @@ import string
 
 import numpy as np
 import pandas as pd
-from robustats import medcouple
+import pytest
+from statsmodels.stats.stattools import medcouple
 
 from evalml.data_checks import (
     DataCheckMessageCode,
@@ -191,11 +192,12 @@ def test_outliers_data_check_warnings_has_nan():
     }
 
 
-def test_boxplot_stats():
-    test = pd.Series([32, 33, 34.4, 95, 96.8, 36, 37, 1.5, 2])
+@pytest.mark.parametrize("data_type", ["int", "mixed"])
+def test_boxplot_stats(data_type):
+    test = pd.Series([32, 33, 34, 95, 96, 36, 37, 1.5 if data_type == "mixed" else 1, 2])
 
     q1, median, q3 = np.percentile(test, [25, 50, 75])
-    medcouple_stat = medcouple(np.array(test))
+    medcouple_stat = medcouple(list(test))
 
     field_bounds = (
         q1 - 1.5 * np.exp(-3.79 * medcouple_stat) * (q3 - q1),

@@ -1,7 +1,7 @@
 """Data check that checks if there are any outliers in input data by using IQR to determine score anomalies."""
 import numpy as np
-from robustats import medcouple
 from scipy.stats import gamma
+from statsmodels.stats.stattools import medcouple
 
 from evalml.data_checks import (
     DataCheck,
@@ -57,7 +57,7 @@ class OutliersDataCheck(DataCheck):
         has_outliers = []
         outlier_row_indices = {}
         for col in X.columns:
-            box_plot_dict = OutliersDataCheck()._get_boxplot_data(X[col])
+            box_plot_dict = OutliersDataCheck._get_boxplot_data(X[col])
             num_records = len(X[col])
             pct_outliers = (
                 len(box_plot_dict["values"]["low_values"])
@@ -101,7 +101,8 @@ class OutliersDataCheck(DataCheck):
         )
         return results
 
-    def _get_boxplot_data(self, data_):
+    @staticmethod
+    def _get_boxplot_data(data_):
         """Returns box plot information for the given data.
 
         Args:
@@ -114,7 +115,7 @@ class OutliersDataCheck(DataCheck):
         field_iqr = field_q1toq3[2] - field_q1toq3[0]
 
         # calculate medcouple statistic
-        field_medcouple = medcouple(np.array(data_))
+        field_medcouple = medcouple(list(data_))
         # use different field bounds based on skewness determined by medcouple statistic
         if field_medcouple < 0.0:
             field_bounds = (
