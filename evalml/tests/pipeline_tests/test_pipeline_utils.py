@@ -212,9 +212,9 @@ def test_make_pipeline(
             url_featurizer = [URLFeaturizer] if "url" in column_names else []
             imputer = (
                 []
-                if ((column_names in [["ip"], ["dates"]]) and input_type == "ww")
+                if ((column_names in [["ip"]]) and input_type == "ww")
                 or (
-                    (column_names in [["ip"], ["text"], ["dates"]])
+                    (column_names in [["ip"], ["text"]])
                     and input_type == "pd"
                 )
                 else [Imputer]
@@ -232,8 +232,8 @@ def test_make_pipeline(
                 + drop_null
                 + text_featurizer
                 + drop_col
-                + imputer
                 + datetime
+                + imputer
                 + delayed_features
                 + ohe
                 + standard_scaler
