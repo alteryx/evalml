@@ -74,8 +74,6 @@ def explain_predictions(
     """
     input_features = infer_feature_types(input_features)
 
-    # if pipeline.model_family == ModelFamily.ENSEMBLE:
-    #     raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if input_features.empty:
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
     if output_format not in {"text", "dict", "dataframe"}:
@@ -94,6 +92,8 @@ def explain_predictions(
             "training_data are not None"
         )
 
+    # For non-tree models, the features are computed in the pipelines in KernelExplainer
+    # if not pipeline.component_graph.get_last_component().model_family.is_tree_estimator():
     if pipeline.component_graph.get_last_component().model_family == ModelFamily.ENSEMBLE:
         pipeline_features = input_features
     else:
@@ -270,6 +270,8 @@ def explain_predictions_best_worst(
         start_time, timer(), ExplainPredictionsStage.COMPUTE_FEATURE_STAGE, callback
     )
 
+    # For non-tree models, the features are computed in the pipelines in KernelExplainer
+    # if not pipeline.component_graph.get_last_component().model_family.is_tree_estimator:
     if pipeline.component_graph.get_last_component().model_family == ModelFamily.ENSEMBLE:
         pipeline_features = input_features
     else:

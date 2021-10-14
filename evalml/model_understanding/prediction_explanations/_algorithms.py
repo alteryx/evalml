@@ -4,6 +4,7 @@ from operator import add
 
 import numpy as np
 import pandas as pd
+import woodwork as ww
 import shap
 from sklearn.utils import check_array
 
@@ -57,43 +58,10 @@ def _compute_shap_values(pipeline, features, training_data=None):
     # This is to make sure all dtypes are numeric - SHAP algorithms will complain otherwise.
     # Sklearn components do this under-the-hood so we're not changing the data the model was trained on.
     # Catboost can naturally handle string-encoded categorical features so we don't need to convert to numeric.
-    if estimator.model_family != ModelFamily.CATBOOST:
+    if estimator.model_family != ModelFamily.CATBOOST and estimator.model_family.is_tree_estimator():
         features = check_array(features.values)
 
-    if estimator.model_family == ModelFamily.ENSEMBLE:
-        if training_data is None:
-            raise ValueError(
-                "You must pass in a value for parameter 'training_data' when the pipeline "
-                "does not have a tree-based estimator. "
-                f"Current estimator model family is {estimator.model_family}."
-            )
-
-        def model_predict_with_columns(data_asarray):
-            data_asframe = pd.DataFrame(data_asarray, columns=training_data.columns)
-            return pipeline.predict(data_asframe)
-
-        def model_predict_proba_with_columns(data_asarray):
-            data_asframe = pd.DataFrame(data_asarray, columns=training_data.columns)
-            return pipeline.predict_proba(data_asframe)
-
-        # More than 100 datapoints can negatively impact runtime according to SHAP
-        # https://github.com/slundberg/shap/blob/master/shap/explainers/kernel.py#L114
-        sampled_training_data_features = shap.sample(training_data, 100)
-        sampled_training_data_features = check_array(sampled_training_data_features)
-        if is_regression(pipeline.problem_type):
-            link_function = "identity"
-            decision_function = model_predict_with_columns
-        else:
-            link_function = "logit"
-            decision_function = model_predict_proba_with_columns
-        with warnings.catch_warnings(record=True) as ws:
-            explainer = shap.KernelExplainer(
-                decision_function, sampled_training_data_features, link_function
-            )
-            shap_values = explainer.shap_values(features)
-        if ws:
-            logger.debug(f"_compute_shap_values KernelExplainer: {ws[0].message}")
-    elif estimator.model_family.is_tree_estimator():
+    if estimator.model_family.is_tree_estimator():
         # Use tree_path_dependent to avoid linear runtime with dataset size
         with warnings.catch_warnings(record=True) as ws:
             explainer = shap.TreeExplainer(
@@ -116,23 +84,32 @@ def _compute_shap_values(pipeline, features, training_data=None):
         ):
             shap_values = [np.zeros(shap_values.shape), shap_values]
     else:
+        def model_predict_with_columns(data_asarray):
+            data_asframe = pd.DataFrame(data_asarray, columns=training_data.columns)
+            data_asframe.ww.init(schema=training_data.ww.schema)
+            return pipeline.predict(data_asframe)
+
+        def model_predict_proba_with_columns(data_asarray):
+            data_asframe = pd.DataFrame(data_asarray, columns=training_data.columns)
+            data_asframe.ww.init(schema=training_data.ww.schema)
+            return pipeline.predict_proba(data_asframe)
+
         if training_data is None:
             raise ValueError(
                 "You must pass in a value for parameter 'training_data' when the pipeline "
                 "does not have a tree-based estimator. "
                 f"Current estimator model family is {estimator.model_family}."
             )
-
         # More than 100 datapoints can negatively impact runtime according to SHAP
         # https://github.com/slundberg/shap/blob/master/shap/explainers/kernel.py#L114
         sampled_training_data_features = shap.sample(training_data, 100)
-        sampled_training_data_features = check_array(sampled_training_data_features)
+        # sampled_training_data_features = check_array(sampled_training_data_features)
         if is_regression(pipeline.problem_type):
             link_function = "identity"
-            decision_function = estimator._component_obj.predict
+            decision_function = model_predict_with_columns
         else:
             link_function = "logit"
-            decision_function = estimator._component_obj.predict_proba
+            decision_function = model_predict_proba_with_columns
         with warnings.catch_warnings(record=True) as ws:
             explainer = shap.KernelExplainer(
                 decision_function, sampled_training_data_features, link_function

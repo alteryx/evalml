@@ -500,8 +500,11 @@ def _make_single_prediction_shap_table(
     pipeline_features_row = pipeline_features.iloc[[index_to_explain]]
     input_features_row = input_features.iloc[[index_to_explain]]
 
+    training_data = pipeline_features.dropna(axis=0)
+    training_data.ww.init(schema=pipeline_features.ww.schema)
+
     shap_values, expected_value = _compute_shap_values(
-        pipeline, pipeline_features_row, training_data=pipeline_features.dropna(axis=0)
+        pipeline, pipeline_features_row, training_data=training_data
     )
     normalized_values = _normalize_shap_values(shap_values)
 
