@@ -12,6 +12,9 @@ from woodwork.logical_types import (
 )
 
 from evalml.pipelines.components import DateTimeFeaturizer
+from evalml.pipelines.components.transformers.preprocessing.datetime_featurizer import (
+    _day_to_int_mapping,
+)
 
 
 def test_datetime_featurizer_init():
@@ -268,6 +271,30 @@ def test_datetime_featurizer_does_not_modify_input_data():
     pd.testing.assert_frame_equal(X, expected)
 
 
+def test_datetime_featurizer_with_inconsistent_date_format():
+    datetime_transformer = DateTimeFeaturizer(encode_as_categories=False)
+    dates = pd.Series(pd.date_range("2021-10-01", periods=20, freq="D"))
+    dates[-2:] = ["October 29th", "October 25th"]
+    X = pd.DataFrame({"date col": dates, "numerical": [0] * len(dates)})
+    X.ww.init(logical_types={"date col": "Datetime"})
+
+    expected = datetime_transformer.fit_transform(X)
+    expected_dow = (
+        X.ww["date col"].dt.day_name().map(lambda d: _day_to_int_mapping.get(d, np.nan))
+    )
+
+    answer = pd.DataFrame(
+        {
+            "numerical": [0] * len(dates),
+            "date col_year": [2021.0] * 18 + [np.nan] * 2,
+            "date col_month": [9.0] * 18 + [np.nan] * 2,
+            "date col_day_of_week": expected_dow,
+            "date col_hour": [0.0] * 18 + [np.nan] * 2,
+        }
+    )
+    pd.testing.assert_frame_equal(answer, expected)
+
+
 @pytest.mark.parametrize(
     "X_df",
     [
@@ -301,13 +328,15 @@ def test_datetime_featurizer_woodwork_custom_overrides_returned_by_components(
             X.ww.init(logical_types={0: logical_type})
         except (ww.exceptions.TypeConversionError, TypeError, ValueError):
             continue
+        if X.loc[:, 0].isna().all():
+            # Casting the fourth and fifth dataframes to datetime will produce all NaNs
+            continue
         datetime_transformer = DateTimeFeaturizer(
             encode_as_categories=encode_as_categories
         )
         datetime_transformer.fit(X)
         transformed = datetime_transformer.transform(X)
         assert isinstance(transformed, pd.DataFrame)
-
         if with_datetime_col:
             if encode_as_categories:
                 datetime_col_transformed = {

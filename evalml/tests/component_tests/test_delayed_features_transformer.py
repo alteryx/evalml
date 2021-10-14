@@ -459,6 +459,9 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
             X.ww.init(logical_types={0: logical_type})
         except (ww.exceptions.TypeConversionError, ValueError):
             continue
+        if X.loc[:, 0].isna().all():
+            # Casting the fourth and fifth dataframes to datetime will produce all NaNs
+            continue
         dft = DelayedFeatureTransformer(max_delay=1, forecast_horizon=1)
         if fit_transform:
             transformed = dft.fit_transform(X, y)
