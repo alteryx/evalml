@@ -471,7 +471,7 @@ def rows_of_interest(
 
     Returns:
         The indices corresponding to the rows of interest.
-    
+
     Raises:
         ValueError: If pipeline is not a fitted Binary Classification pipeline.
         ValueError: If types is invalid or y is not provided when types is not 'all'.
