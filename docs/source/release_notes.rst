@@ -6,12 +6,14 @@ Release Notes
     * Fixes
         * Fixed bug where ``long`` mode for the top level search method was not respected :pr:`2875`
         * Pinned ``cmdstan`` to ``0.28.0`` in ``cmdstan-builder`` to prevent future breaking of support for Prophet :pr:`2880`
+        * Added ``Jarque-Bera`` to the ``TargetDistributionDataCheck`` :pr:`2891`
     * Changes
         * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level :pr:`2821`
         * Deleted scikit-learn ensembler :pr:`2819`
         * Refactored pipeline building logic out of ``AutoMLSearch`` and into ``IterativeAlgorithm`` :pr:`2854`
     * Documentation Changes
         * Updated ``install.ipynb`` to reflect flexibility for ``cmdstan`` version installation :pr:`2880`
+        * Updated the conda section of our contributing guide :pr:`2899`
     * Testing Changes
         * Updated ``test_all_estimators`` to account for Prophet being allowed for Python 3.9 :pr:`2892`
         * Updated linux tests to use ``cmdstan-builder==0.0.8`` :pr:`2880`
