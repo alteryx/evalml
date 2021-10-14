@@ -1,7 +1,6 @@
 """Data check that checks if there are any outliers in input data by using IQR to determine score anomalies."""
 import numpy as np
-import pandas as pd
-from _robustats import medcouple
+from robustats import medcouple
 from scipy.stats import gamma
 
 from evalml.data_checks import (
@@ -61,7 +60,8 @@ class OutliersDataCheck(DataCheck):
             box_plot_dict = OutliersDataCheck()._get_boxplot_data(X[col])
             num_records = len(X[col])
             pct_outliers = (
-                len(box_plot_dict["values"]["low_values"]) + len(box_plot_dict["values"]["high_values"])
+                len(box_plot_dict["values"]["low_values"])
+                + len(box_plot_dict["values"]["high_values"])
             ) / num_records
             if (
                 pct_outliers > 0
@@ -69,7 +69,8 @@ class OutliersDataCheck(DataCheck):
             ):
                 has_outliers.append(col)
                 outlier_row_indices[col] = (
-                    box_plot_dict["values"]["low_indices"] + box_plot_dict["values"]["high_indices"]
+                    box_plot_dict["values"]["low_indices"]
+                    + box_plot_dict["values"]["high_indices"]
                 )
 
         if not len(has_outliers):
@@ -112,11 +113,8 @@ class OutliersDataCheck(DataCheck):
         field_q1toq3 = np.percentile(data_, [25, 50, 75])
         field_iqr = field_q1toq3[2] - field_q1toq3[0]
 
-        epsilon1 = np.finfo(np.array(data_).dtype).eps
-        epsilon2 = np.finfo(np.array(data_).dtype).min
         # calculate medcouple statistic
-
-        field_medcouple = medcouple(np.array(data_), epsilon1, epsilon2)
+        field_medcouple = medcouple(np.array(data_))
         # use different field bounds based on skewness determined by medcouple statistic
         if field_medcouple < 0.0:
             field_bounds = (
@@ -196,25 +194,25 @@ class OutliersDataCheck(DataCheck):
         # model
         log_n = np.log(num_records)
         log_shape = (
-                25.8218734380722
-                + -29.2320460088643 * log_n
-                + 14.8228030299864 * log_n ** 2
-                + -4.08052512660036 * log_n ** 3
-                + 0.641429075842177 * log_n ** 4
-                + -0.0571252717322226 * log_n ** 5
-                + 0.00268694343911156 * log_n ** 6
-                + -5.19415149920567e-05 * log_n ** 7
+            25.8218734380722
+            + -29.2320460088643 * log_n
+            + 14.8228030299864 * log_n ** 2
+            + -4.08052512660036 * log_n ** 3
+            + 0.641429075842177 * log_n ** 4
+            + -0.0571252717322226 * log_n ** 5
+            + 0.00268694343911156 * log_n ** 6
+            + -5.19415149920567e-05 * log_n ** 7
         )
         shape_param = np.exp(log_shape)
         log_scale = (
-                -19.8196822259052
-                + 18.5359212447622 * log_n
-                + -8.80487628113388 * log_n ** 2
-                + 2.27711870991327 * log_n ** 3
-                + -0.344443407676357 * log_n ** 4
-                + 0.029820831994345 * log_n ** 5
-                + -0.00136611527293756 * log_n ** 6
-                + 2.56727158170901e-05 * log_n ** 7
+            -19.8196822259052
+            + 18.5359212447622 * log_n
+            + -8.80487628113388 * log_n ** 2
+            + 2.27711870991327 * log_n ** 3
+            + -0.344443407676357 * log_n ** 4
+            + 0.029820831994345 * log_n ** 5
+            + -0.00136611527293756 * log_n ** 6
+            + 2.56727158170901e-05 * log_n ** 7
         )
         scale_param = np.exp(log_scale)
 
