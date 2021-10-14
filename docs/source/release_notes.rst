@@ -11,7 +11,7 @@ Release Notes
         * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level :pr:`2821`
         * Deleted scikit-learn ensembler :pr:`2819`
         * Refactored pipeline building logic out of ``AutoMLSearch`` and into ``IterativeAlgorithm`` :pr:`2854`
-        * Refactor ``OutliersDataCheck`` and ``HighlyNullDataCheck`` :pr:``
+        * Refactor ``OutliersDataCheck`` and ``HighlyNullDataCheck`` :pr:`2907`
     * Documentation Changes
         * Updated ``install.ipynb`` to reflect flexibility for ``cmdstan`` version installation :pr:`2880`
         * Updated the conda section of our contributing guide :pr:`2899`
