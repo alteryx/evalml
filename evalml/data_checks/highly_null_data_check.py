@@ -66,15 +66,15 @@ class HighlyNullDataCheck(DataCheck):
             ...                   "data_check_name": "HighlyNullDataCheck",
             ...                   "level": "warning",
             ...                   "code": "HIGHLY_NULL_ROWS",
-            ...                   "details": {"pct_of_null_cols": highly_null_rows,
-            ...                               "pct_of_null_rows": len(highly_null_rows)/len(df)}},
+            ...                   "details": {"pct_null_cols": highly_null_rows,
+            ...                               "pct_of_rows_above_thresh": round(len(highly_null_rows)/len(df), 3}},
             ...                  {"message": "Column 'lots_of_null' is 50.0% or more null",
             ...                   "data_check_name": "HighlyNullDataCheck",
             ...                   "level": "warning",
             ...                   "code": "HIGHLY_NULL_COLS",
             ...                   "details": {"column": "lots_of_null", "pct_null_rows": 0.8}}],
             ...    "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [0, 1, 2, 3]}},
-            ...                {"code": "DROP_COL", "metadata": {"column": "lots_of_null"}}]}
+            ...                {"code": "DROP_COL", "metadata": {"column": "lots_of_null", "row_indices": [0, 1, 2, 3]}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

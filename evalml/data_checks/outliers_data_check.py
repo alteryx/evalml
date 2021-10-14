@@ -1,7 +1,6 @@
 """Data check that checks if there are any outliers in input data by using IQR to determine score anomalies."""
 import numpy as np
 from scipy.stats import gamma
-from statsmodels.stats.stattools import medcouple
 
 from evalml.data_checks import (
     DataCheck,
@@ -57,11 +56,16 @@ class OutliersDataCheck(DataCheck):
         has_outliers = []
         outlier_row_indices = {}
         for col in X.columns:
-            box_plot_dict = OutliersDataCheck._get_boxplot_data(X[col])
             num_records = len(X[col])
+            try:
+                from statsmodels.stats.stattools import medcouple
+                box_plot_dict = OutliersDataCheck._get_boxplot_data(X[col])
+                box_plot_dict_values = box_plot_dict["values"]
+            except ModuleNotFoundError:
+                box_plot_dict_values = X.ww[col].ww.box_plot_dict()
             pct_outliers = (
-                len(box_plot_dict["values"]["low_values"])
-                + len(box_plot_dict["values"]["high_values"])
+                len(box_plot_dict_values["low_values"])
+                + len(box_plot_dict_values["high_values"])
             ) / num_records
             if (
                 pct_outliers > 0
@@ -69,8 +73,8 @@ class OutliersDataCheck(DataCheck):
             ):
                 has_outliers.append(col)
                 outlier_row_indices[col] = (
-                    box_plot_dict["values"]["low_indices"]
-                    + box_plot_dict["values"]["high_indices"]
+                    box_plot_dict_values["low_indices"]
+                    + box_plot_dict_values["high_indices"]
                 )
 
         if not len(has_outliers):
@@ -115,6 +119,10 @@ class OutliersDataCheck(DataCheck):
         field_iqr = field_q1toq3[2] - field_q1toq3[0]
 
         # calculate medcouple statistic
+        try:
+            from statsmodels.stats.stattools import medcouple
+        except ModuleNotFoundError:
+            return None
         field_medcouple = medcouple(list(data_))
         # use different field bounds based on skewness determined by medcouple statistic
         if field_medcouple < 0.0:

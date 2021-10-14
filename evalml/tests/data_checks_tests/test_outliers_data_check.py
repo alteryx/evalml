@@ -3,7 +3,6 @@ import string
 import numpy as np
 import pandas as pd
 import pytest
-from statsmodels.stats.stattools import medcouple
 
 from evalml.data_checks import (
     DataCheckMessageCode,
@@ -197,24 +196,28 @@ def test_boxplot_stats(data_type):
     test = pd.Series([32, 33, 34, 95, 96, 36, 37, 1.5 if data_type == "mixed" else 1, 2])
 
     q1, median, q3 = np.percentile(test, [25, 50, 75])
-    medcouple_stat = medcouple(list(test))
 
-    field_bounds = (
-        q1 - 1.5 * np.exp(-3.79 * medcouple_stat) * (q3 - q1),
-        q3 + 1.5 * np.exp(3.87 * medcouple_stat) * (q3 - q1),
-    )
+    try:
+        from statsmodels.stats.stattools import medcouple
+        medcouple_stat = medcouple(list(test))
 
-    assert OutliersDataCheck()._get_boxplot_data(test) == {
-        "score": OutliersDataCheck._no_outlier_prob(9, 4 / 9),
-        "values": {
-            "q1": q1,
-            "median": median,
-            "q3": q3,
-            "low_bound": field_bounds[0],
-            "high_bound": field_bounds[1],
-            "low_values": test[test < field_bounds[0]].tolist(),
-            "high_values": test[test > field_bounds[1]].tolist(),
-            "low_indices": test[test < field_bounds[0]].index.tolist(),
-            "high_indices": test[test > field_bounds[1]].index.tolist(),
-        },
-    }
+        field_bounds = (
+            q1 - 1.5 * np.exp(-3.79 * medcouple_stat) * (q3 - q1),
+            q3 + 1.5 * np.exp(3.87 * medcouple_stat) * (q3 - q1),
+        )
+        assert OutliersDataCheck._get_boxplot_data(test) == {
+            "score": OutliersDataCheck._no_outlier_prob(9, 4 / 9),
+            "values": {
+                "q1": q1,
+                "median": median,
+                "q3": q3,
+                "low_bound": field_bounds[0],
+                "high_bound": field_bounds[1],
+                "low_values": test[test < field_bounds[0]].tolist(),
+                "high_values": test[test > field_bounds[1]].tolist(),
+                "low_indices": test[test < field_bounds[0]].index.tolist(),
+                "high_indices": test[test > field_bounds[1]].index.tolist(),
+            },
+        }
+    except ModuleNotFoundError:
+        assert OutliersDataCheck._get_boxplot_data(test) is None
