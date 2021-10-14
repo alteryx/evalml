@@ -34,7 +34,6 @@ class NoVarianceDataCheck(DataCheck):
         Returns:
             DataCheckError if the column has no variance or DataCheckWarning if the column has two unique values including NaN.
         """
-
         if count_unique <= 1:
             message = f"{column_name} has {int(count_unique)} unique value."
             if count_unique == 0:
