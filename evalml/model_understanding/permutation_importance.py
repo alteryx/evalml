@@ -39,7 +39,7 @@ def calculate_permutation_importance(
         )
 
     if pipeline._supports_fast_permutation_importance:
-        precomputed_features = pipeline.compute_estimator_features(X, y)
+        precomputed_features = pipeline.transform_all_but_final(X, y)
         perm_importance = _fast_permutation_importance(
             pipeline,
             X,

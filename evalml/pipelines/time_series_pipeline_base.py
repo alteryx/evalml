@@ -162,7 +162,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         )
         return padded_features, padded_target
 
-    def compute_estimator_features(self, X, y=None, X_train=None, y_train=None):
+    def transform_all_but_final(self, X, y=None, X_train=None, y_train=None):
         """Transforms the data by applying all pre-processing components.
 
         Args:
@@ -181,12 +181,12 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
         empty_training_data = X_train.empty or y_train.empty
         if empty_training_data:
-            features_holdout = super().compute_estimator_features(X, y)
+            features_holdout = super().transform_all_but_final(X, y)
         else:
             padded_features, padded_target = self._add_training_data_to_X_Y(
                 X, y, X_train, y_train
             )
-            features = super().compute_estimator_features(
+            features = super().transform_all_but_final(
                 padded_features, padded_target
             )
             features_holdout = features.iloc[-len(y) :]
@@ -213,7 +213,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
             )
         target = infer_feature_types(y)
-        features = self.compute_estimator_features(X, target, X_train, y_train)
+        features = self.transform_all_but_final(X, target, X_train, y_train)
         predictions = self._estimator_predict(features, target)
         predictions.index = y.index
         predictions = self.inverse_transform(predictions)

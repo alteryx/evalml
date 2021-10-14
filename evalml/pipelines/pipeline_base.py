@@ -254,7 +254,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             pipeline_dict.update({"components": component_dict})
             return pipeline_dict
 
-    def compute_estimator_features(self, X, y=None, X_train=None, y_train=None):
+    def transform_all_but_final(self, X, y=None, X_train=None, y_train=None):
         """Transforms the data by applying all pre-processing components.
 
         Args:
