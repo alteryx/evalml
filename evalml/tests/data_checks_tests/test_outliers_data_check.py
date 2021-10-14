@@ -193,12 +193,15 @@ def test_outliers_data_check_warnings_has_nan():
 
 @pytest.mark.parametrize("data_type", ["int", "mixed"])
 def test_boxplot_stats(data_type):
-    test = pd.Series([32, 33, 34, 95, 96, 36, 37, 1.5 if data_type == "mixed" else 1, 2])
+    test = pd.Series(
+        [32, 33, 34, 95, 96, 36, 37, 1.5 if data_type == "mixed" else 1, 2]
+    )
 
     q1, median, q3 = np.percentile(test, [25, 50, 75])
 
     try:
         from statsmodels.stats.stattools import medcouple
+
         medcouple_stat = medcouple(list(test))
 
         field_bounds = (

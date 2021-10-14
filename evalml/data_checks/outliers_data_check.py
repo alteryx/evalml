@@ -59,6 +59,7 @@ class OutliersDataCheck(DataCheck):
             num_records = len(X[col])
             try:
                 from statsmodels.stats.stattools import medcouple
+
                 box_plot_dict = OutliersDataCheck._get_boxplot_data(X[col])
                 box_plot_dict_values = box_plot_dict["values"]
             except ModuleNotFoundError:
