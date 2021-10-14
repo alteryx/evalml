@@ -186,9 +186,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             padded_features, padded_target = self._add_training_data_to_X_Y(
                 X, y, X_train, y_train
             )
-            features = super().transform_all_but_final(
-                padded_features, padded_target
-            )
+            features = super().transform_all_but_final(padded_features, padded_target)
             features_holdout = features.iloc[-len(y) :]
         return features_holdout
 
