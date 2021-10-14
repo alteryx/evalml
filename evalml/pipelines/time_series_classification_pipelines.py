@@ -43,8 +43,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         """
         X, y = self._convert_to_woodwork(X, y)
         self._fit(X, y)
-        self._classes_ = np.unique(y)
-        self._classes_ = list(ww.init_series(self._classes_))
+        self._classes_ = list(ww.init_series(np.unique(y)))
         return self
 
     def _estimator_predict_proba(self, features, y):

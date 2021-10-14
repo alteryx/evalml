@@ -54,8 +54,7 @@ class ClassificationPipeline(PipelineBase):
         X = infer_feature_types(X)
         y = infer_feature_types(y)
         self._fit(X, y)
-        self._classes_ = np.unique(y)
-        self._classes_ = list(ww.init_series(self._classes_))
+        self._classes_ = list(ww.init_series(np.unique(y)))
         return self
 
     def _encode_targets(self, y):
