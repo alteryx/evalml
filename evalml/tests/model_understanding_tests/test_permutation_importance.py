@@ -354,7 +354,7 @@ def test_fast_permutation_importance_matches_slow_output(
     slow_scores = dict(zip(slow_scores.feature, slow_scores.importance.round(5)))
     assert slow_scores == fast_scores
 
-    precomputed_features = pipeline.compute_estimator_features(X, y)
+    precomputed_features = pipeline.transform_all_but_final(X, y)
     # Run one column of each logical type
     for col in [
         "card_id",
