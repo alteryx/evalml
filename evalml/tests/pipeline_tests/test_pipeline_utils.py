@@ -28,11 +28,15 @@ from evalml.pipelines.components import (
     Transformer,
     URLFeaturizer,
 )
+from evalml.pipelines.components.transformers.encoders.label_encoder import (
+    LabelEncoder,
+)
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_component_list_from_actions,
     generate_pipeline_code,
     get_estimators,
+    is_classification,
     make_pipeline,
 )
 from evalml.problem_types import ProblemTypes, is_regression, is_time_series
@@ -168,6 +172,7 @@ def test_make_pipeline(
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
+            label_encoder = [LabelEncoder] if is_classification(problem_type) else []
             delayed_features = (
                 [DelayedFeatureTransformer]
                 if is_time_series(problem_type)
@@ -221,7 +226,8 @@ def test_make_pipeline(
                 else []
             )
             expected_components = (
-                email_featurizer
+                label_encoder
+                + email_featurizer
                 + url_featurizer
                 + drop_null
                 + text_featurizer

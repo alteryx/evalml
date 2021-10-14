@@ -21,10 +21,17 @@ def test_label_encoder_fit_transform_y_is_None():
 
     encoder.fit(X, y)
     with pytest.raises(ValueError, match="y cannot be None"):
-        encoder.transform(X)
-
-    with pytest.raises(ValueError, match="y cannot be None"):
         encoder.inverse_transform(None)
+
+
+def test_label_encoder_transform_y_is_None():
+    X = pd.DataFrame({})
+    y = pd.Series(["a", "b"])
+    encoder = LabelEncoder()
+    encoder.fit(X, y)
+    X_t, y_t = encoder.transform(X)
+    assert_frame_equal(X, X_t)
+    assert y_t is None
 
 
 def test_label_encoder_fit_transform_with_numeric_values_does_not_encode():
