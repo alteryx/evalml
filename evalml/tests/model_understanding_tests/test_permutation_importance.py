@@ -335,7 +335,8 @@ def test_fast_permutation_importance_matches_slow_output(
         objective = "R2"
 
     mock_supports_fast_importance.return_value = True
-    parameters["Random Forest Classifier"] = {"n_jobs": 1}
+    parameters["Estimator"] = {"n_jobs": 1}
+
     pipeline = pipeline_class(pipeline_class.component_graph, parameters=parameters)
     pipeline.fit(X, y)
     fast_scores = calculate_permutation_importance(
