@@ -801,7 +801,7 @@ def test_score_multiclass_objective_error(
 @patch("evalml.pipelines.components.Imputer.transform")
 @patch("evalml.pipelines.components.OneHotEncoder.transform")
 @patch("evalml.pipelines.components.StandardScaler.transform")
-def test_compute_estimator_features(
+def test_transform_all_but_final(
     mock_scaler,
     mock_ohe,
     mock_imputer,
@@ -819,7 +819,7 @@ def test_compute_estimator_features(
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
 
-    X_t = pipeline.compute_estimator_features(X)
+    X_t = pipeline.transform_all_but_final(X)
     assert_frame_equal(X_expected, X_t)
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 2
@@ -832,7 +832,7 @@ def test_compute_estimator_features(
 @patch("evalml.pipelines.components.ElasticNetClassifier.predict_proba")
 @patch("evalml.pipelines.components.RandomForestClassifier.predict")
 @patch("evalml.pipelines.components.ElasticNetClassifier.predict")
-def test_compute_estimator_features_nonlinear(
+def test_transform_all_but_final_nonlinear(
     mock_en_predict,
     mock_rf_predict,
     mock_en_predict_proba,
@@ -868,7 +868,7 @@ def test_compute_estimator_features_nonlinear(
 
     pipeline = nonlinear_binary_pipeline_class({})
     pipeline.fit(X, y)
-    X_t = pipeline.compute_estimator_features(X)
+    X_t = pipeline.transform_all_but_final(X)
 
     assert_frame_equal(X_expected_df, X_t)
     assert mock_imputer.call_count == 2
@@ -2760,10 +2760,10 @@ def test_training_only_component_in_pipeline_fit(mock_fit, X_y_binary):
     assert len(mock_fit.call_args[0][0]) == len(X) - 2
 
 
-def test_training_only_component_in_pipeline_predict_and_compute_estimator_features(
+def test_training_only_component_in_pipeline_predict_and_transform_all_but_final(
     X_y_binary,
 ):
-    # Test that calling predict() and `compute_estimator_features` will not evaluate any training-only transformations
+    # Test that calling predict() and `transform_all_but_final` will not evaluate any training-only transformations
     X, y = X_y_binary
     pipeline = BinaryClassificationPipeline(
         {
@@ -2782,7 +2782,7 @@ def test_training_only_component_in_pipeline_predict_and_compute_estimator_featu
     assert len(preds) == len(X)
     preds = pipeline.predict_proba(X)
     assert len(preds) == len(X)
-    estimator_features = pipeline.compute_estimator_features(X, y)
+    estimator_features = pipeline.transform_all_but_final(X, y)
     assert len(estimator_features) == len(X)
 
 

@@ -31,14 +31,15 @@ class DFSTransformer(Transformer):
     def _make_entity_set(self, X):
         """Helper method that creates and returns the entity set given the input data."""
         ft_es = EntitySet()
+        # TODO: This delete was introduced for compatibility with Featuretools 1.0.0.  This should
+        # be removed after Featuretools handles unnamed dataframes being passed to this function.
+        del X.ww
         if self.index not in X.columns:
-            es = ft_es.entity_from_dataframe(
-                entity_id="X", dataframe=X, index=self.index, make_index=True
+            es = ft_es.add_dataframe(
+                dataframe=X, dataframe_name="X", index=self.index, make_index=True
             )
         else:
-            es = ft_es.entity_from_dataframe(
-                entity_id="X", dataframe=X, index=self.index
-            )
+            es = ft_es.add_dataframe(dataframe=X, dataframe_name="X", index=self.index)
         return es
 
     def fit(self, X, y=None):
@@ -55,7 +56,7 @@ class DFSTransformer(Transformer):
         X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
         es = self._make_entity_set(X_ww)
         self.features = dfs(
-            entityset=es, target_entity="X", features_only=True, max_depth=1
+            entityset=es, target_dataframe_name="X", features_only=True, max_depth=1
         )
         return self
 
