@@ -7,6 +7,7 @@ Release Notes
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
     * Testing Changes
+        * Fixed dependency checker to catch full names of packages :pr:`2930`
 
 .. warning::
 
