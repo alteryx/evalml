@@ -146,7 +146,9 @@ def _partial_dependence_calculation(pipeline, grid, features, X):
     X_eval = X.ww.copy()
     for _, new_values in grid.iterrows():
         for i, variable in enumerate(features):
-            part_dep_column = pd.Series([new_values[i]] * X_eval.shape[0])
+            part_dep_column = pd.Series(
+                [new_values[i]] * X_eval.shape[0], index=X_eval.index
+            )
             X_eval.ww[variable] = ww.init_series(
                 part_dep_column, logical_type=X_eval.ww.logical_types[variable]
             )
