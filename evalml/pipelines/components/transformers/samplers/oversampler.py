@@ -76,7 +76,7 @@ class Oversampler(BaseSampler):
         return self
 
     def _get_best_oversampler(self, X):
-        cat_cols = X.ww.select("Categorical").columns
+        cat_cols = X.ww.select("category").columns
         if len(cat_cols) == X.shape[1]:
             return "SMOTEN"
         elif not len(cat_cols):
@@ -88,8 +88,8 @@ class Oversampler(BaseSampler):
         X = infer_feature_types(X)
         self.categorical_features = [
             i
-            for i, val in enumerate(X.ww.types["Logical Type"].items())
-            if str(val[1]) in {"Boolean", "Categorical"}
+            for i, val in enumerate(X.ww.types["Semantic Tag(s)"].items())
+            if 'category' in val[1].split("'")[1:-1]
         ]
         self._parameters["categorical_features"] = self.categorical_features
 
