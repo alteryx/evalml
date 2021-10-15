@@ -60,37 +60,22 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
 
 
 @pytest.mark.parametrize(
-    "pipeline,exception,match,algorithm",
+    "pipeline,exception,match",
     [
         (
             make_test_pipeline(BaselineRegressor, RegressionPipeline),
             ValueError,
             baseline_message,
-            "shap",
         ),
         (
             make_test_pipeline(BaselineClassifier, BinaryClassificationPipeline),
             ValueError,
             baseline_message,
-            "shap",
-        ),
-        (
-            make_test_pipeline(BaselineRegressor, RegressionPipeline),
-            ValueError,
-            baseline_lime_message,
-            "lime",
-        ),
-        (
-            make_test_pipeline(BaselineClassifier, BinaryClassificationPipeline),
-            ValueError,
-            baseline_lime_message,
-            "lime",
         ),
         (
             make_test_pipeline(BaselineClassifier, MulticlassClassificationPipeline),
             ValueError,
             baseline_message,
-            "shap",
         ),
         (
             make_test_pipeline(
@@ -98,41 +83,23 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
             ),
             ValueError,
             baseline_message,
-            "shap",
         ),
         (
             make_test_pipeline(RandomForestClassifier, BinaryClassificationPipeline),
             ValueError,
             datatype_message,
-            "shap",
         ),
         (
             make_test_pipeline(LinearRegressor, RegressionPipeline),
             ValueError,
             data_message,
-            "shap",
         ),
     ],
 )
 @patch(
     "evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer"
 )
-def test_value_errors_raised(
-    mock_tree_explainer, pipeline, exception, match, algorithm
-):
-    if "xgboost" in pipeline.custom_name.lower():
-        pytest.importorskip(
-            "xgboost", "Skipping test because xgboost is not installed."
-        )
-    if "catboost" in pipeline.custom_name.lower():
-        pytest.importorskip(
-            "catboost", "Skipping test because catboost is not installed."
-        )
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            "Skipping plotting test because lime not installed",
-        )
+def test_shap_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
 
     pipeline = pipeline(
         {
@@ -144,14 +111,58 @@ def test_value_errors_raised(
             }
         }
     )
-    if algorithm == "lime":
-        with pytest.raises(exception, match=match):
-            _ = _compute_lime_values(
-                pipeline, pd.DataFrame(np.random.random((2, 16))), 0
-            )
-    else:
-        with pytest.raises(exception, match=match):
-            _ = _compute_shap_values(pipeline, pd.DataFrame(np.random.random((2, 16))))
+    with pytest.raises(exception, match=match):
+        _ = _compute_shap_values(pipeline, pd.DataFrame(np.random.random((2, 16))))
+
+
+@pytest.mark.parametrize(
+    "pipeline,exception,match",
+    [
+        (
+            make_test_pipeline(BaselineRegressor, RegressionPipeline),
+            ValueError,
+            baseline_lime_message,
+        ),
+        (
+            make_test_pipeline(BaselineClassifier, BinaryClassificationPipeline),
+            ValueError,
+            baseline_lime_message,
+        ),
+        (
+            make_test_pipeline(BaselineClassifier, MulticlassClassificationPipeline),
+            ValueError,
+            baseline_lime_message,
+        ),
+        (
+            make_test_pipeline(
+                TimeSeriesBaselineEstimator, TimeSeriesRegressionPipeline
+            ),
+            ValueError,
+            baseline_lime_message,
+        ),
+    ],
+)
+@patch(
+    "evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer"
+)
+def test_lime_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
+    pytest.importorskip(
+        "lime.lime_tabular",
+        reason="Skipping plotting test because lime not installed",
+    )
+
+    pipeline = pipeline(
+        {
+            "pipeline": {
+                "date_index": None,
+                "gap": 1,
+                "max_delay": 1,
+                "forecast_horizon": 1,
+            }
+        }
+    )
+    with pytest.raises(exception, match=match):
+        _ = _compute_lime_values(pipeline, pd.DataFrame(np.random.random((2, 16))), 0)
 
 
 def test_create_dictionary_exception():
