@@ -128,6 +128,11 @@ def test_value_errors_raised(
         pytest.importorskip(
             "catboost", "Skipping test because catboost is not installed."
         )
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            "Skipping plotting test because lime not installed",
+        )
 
     pipeline = pipeline(
         {
