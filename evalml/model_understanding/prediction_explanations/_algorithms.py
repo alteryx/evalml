@@ -2,7 +2,6 @@ import logging
 import warnings
 from operator import add
 
-import lime.lime_tabular
 import numpy as np
 import pandas as pd
 import shap
@@ -10,6 +9,7 @@ from sklearn.utils import check_array
 
 from evalml.model_family.model_family import ModelFamily
 from evalml.problem_types import is_binary, is_multiclass, is_regression
+from evalml.utils import import_or_raise
 
 logger = logging.getLogger(__name__)
 
@@ -48,6 +48,8 @@ def _compute_lime_values(pipeline, features, index_to_explain):
             For classification problems, returns a list of dictionaries. One for each class.
         float: the expected value if return_expected_value is True.
     """
+    error_msg = "lime is not installed. Please install using 'pip install lime'"
+    lime = import_or_raise("lime.lime_tabular", error_msg=error_msg)
     if pipeline.estimator.model_family == ModelFamily.BASELINE:
         raise ValueError(
             "You passed in a baseline pipeline. These are simple enough that LIME values are not needed."
@@ -77,7 +79,7 @@ def _compute_lime_values(pipeline, features, index_to_explain):
         feature_names = None
         instance = features[index_to_explain]
 
-    explainer = lime.lime_tabular.LimeTabularExplainer(
+    explainer = lime.LimeTabularExplainer(
         features,
         feature_names=feature_names,
         discretize_continuous=False,
