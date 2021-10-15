@@ -9,6 +9,7 @@ Release Notes
         * Added back Future Release section to release notes :pr:`2927`
     * Testing Changes
         * Fixed dependency checker to catch full names of packages :pr:`2930`
+        * Refactored ``build_conda_pkg`` to work from a local recipe :pr:`2925`
 
 .. warning::
 
@@ -34,7 +35,6 @@ Release Notes
     * Testing Changes
         * Updated ``test_all_estimators`` to account for Prophet being allowed for Python 3.9 :pr:`2892`
         * Updated linux tests to use ``cmdstan-builder==0.0.8`` :pr:`2880`
-        * Refactored ``build_conda_pkg`` to work from a local recipe :pr:`2925`
 
 .. warning::
 
