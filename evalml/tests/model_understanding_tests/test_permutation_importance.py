@@ -335,7 +335,8 @@ def test_fast_permutation_importance_matches_slow_output(
         objective = "R2"
 
     mock_supports_fast_importance.return_value = True
-    parameters["Random Forest Classifier"] = {"n_jobs": 1}
+    parameters["Estimator"] = {"n_jobs": 1}
+
     pipeline = pipeline_class(pipeline_class.component_graph, parameters=parameters)
     pipeline.fit(X, y)
     fast_scores = calculate_permutation_importance(
@@ -353,7 +354,7 @@ def test_fast_permutation_importance_matches_slow_output(
     slow_scores = dict(zip(slow_scores.feature, slow_scores.importance.round(5)))
     assert slow_scores == fast_scores
 
-    precomputed_features = pipeline.compute_estimator_features(X, y)
+    precomputed_features = pipeline.transform_all_but_final(X, y)
     # Run one column of each logical type
     for col in [
         "card_id",

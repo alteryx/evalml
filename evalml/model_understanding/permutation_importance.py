@@ -39,7 +39,7 @@ def calculate_permutation_importance(
         )
 
     if pipeline._supports_fast_permutation_importance:
-        precomputed_features = pipeline.compute_estimator_features(X, y)
+        precomputed_features = pipeline.transform_all_but_final(X, y)
         perm_importance = _fast_permutation_importance(
             pipeline,
             X,
@@ -152,7 +152,6 @@ def _fast_permutation_importance(
     """
     if is_classification(pipeline.problem_type):
         y = pipeline._encode_targets(y)
-
     baseline_score = _fast_scorer(pipeline, precomputed_features, X, y, objective)
     if col_name is None:
         scores = Parallel(n_jobs=n_jobs)(
@@ -325,6 +324,6 @@ def _fast_scorer(pipeline, features, X, y, objective):
         preds = pipeline.estimator.predict_proba(features)
     else:
         preds = pipeline.estimator.predict(features)
-    preds = pipeline.inverse_transform(preds)
+        preds = pipeline.inverse_transform(preds)
     score = pipeline._score(X, y, preds, objective)
     return score if objective.greater_is_better else -score

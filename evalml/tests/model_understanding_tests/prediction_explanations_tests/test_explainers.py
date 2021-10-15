@@ -566,6 +566,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_regression(
     pipeline = _prep_pipeline_mock(problem_type, input_features)
     pipeline.predict.return_value = ww.init_series(pd.Series([2, 1]))
     pipeline.predict_in_sample.return_value = ww.init_series(pd.Series([2, 1]))
+    pipeline.transform_all_but_final.return_value = input_features
 
     abs_error_mock = MagicMock(__name__="abs_error")
     abs_error_mock.return_value = pd.Series([4.0, 1.0], dtype="float64")
@@ -577,6 +578,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_regression(
         index_worst=custom_index[0],
         output_format=output_format,
     )
+
 
     report = explain_predictions(
         pipeline,
@@ -683,6 +685,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_binary(
     pipeline.predict_in_sample.return_value = ww.init_series(
         pd.Series(["malignant"] * 2)
     )
+    pipeline.transform_all_but_final.return_value = input_features
     y_true = pd.Series(["malignant", "benign"], index=custom_index)
     answer = _add_custom_index(
         answer,
@@ -806,6 +809,7 @@ def test_explain_predictions_best_worst_and_explain_predictions_multiclass(
     pipeline.predict_in_sample.return_value = ww.init_series(
         pd.Series(["setosa", "versicolor"])
     )
+    pipeline.transform_all_but_final.return_value = input_features
     y_true = pd.Series(["setosa", "versicolor"], index=custom_index)
     answer = _add_custom_index(
         answer,
@@ -940,7 +944,7 @@ def test_explain_predictions_best_worst_custom_metric(
     pipeline.problem_type = ProblemTypes.REGRESSION
     pipeline.name = "Test Pipeline Name"
     input_features.ww.init()
-    pipeline.compute_estimator_features.return_value = input_features
+    pipeline.transform_all_but_final.return_value = input_features
 
     pipeline.predict.return_value = ww.init_series(pd.Series([2, 1]))
     y_true = pd.Series([3, 2])
@@ -1583,7 +1587,7 @@ def test_explain_predictions_best_worst_callback(mock_make_table):
     pipeline.problem_type = ProblemTypes.REGRESSION
     pipeline.name = "Test Pipeline Name"
     input_features.ww.init()
-    pipeline.compute_estimator_features.return_value = input_features
+    pipeline.transform_all_but_final.return_value = input_features
     pipeline.predict.return_value = ww.init_series(pd.Series([2, 1]))
     y_true = pd.Series([3, 2])
 
