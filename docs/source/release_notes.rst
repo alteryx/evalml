@@ -1,5 +1,17 @@
 Release Notes
 -------------
+**Future Releases**
+    * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
 **v0.35.0 Oct. 14, 2021**
     * Enhancements
         * Added human-readable pipeline explanations to model understanding :pr:`2861`
