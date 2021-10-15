@@ -281,6 +281,10 @@ def test_lime(
     X_y_regression,
     helper_functions,
 ):
+    pytest.importorskip(
+        "lime.lime_tabular",
+        reason="Skipping plotting test because lime not installed",
+    )
 
     if problem_type not in estimator.supported_problem_types:
         pytest.skip("Skipping because estimator and pipeline are not compatible.")
@@ -340,6 +344,10 @@ def test_lime(
 
 
 def test_lime_maintains_column_names():
+    pytest.importorskip(
+        "lime.lime_tabular",
+        reason="Skipping plotting test because lime not installed",
+    )
     X = pd.DataFrame(
         {"a": [1, 2, 3, None, 4, 1, 2], "b": [112, 42, 521, 23, 12, 5, 12]}
     )
