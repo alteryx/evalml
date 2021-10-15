@@ -1,9 +1,22 @@
 Release Notes
 -------------
+**Future Releases**
+    * Enhancements
+        * Added LIME as an algorithm option for ``explain_predictions`` and ``explain_predictions_best_worst`` :pr:`2905`
+    * Fixes
+    * Changes
+    * Documentation Changes
+        * Added back Future Release section to release notes :pr:`2927`
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
 **v0.35.0 Oct. 14, 2021**
     * Enhancements
         * Added human-readable pipeline explanations to model understanding :pr:`2861`
-        * Added LIME as an algorithm option for ``explain_predictions`` and ``explain_predictions_best_worst`` :pr:`2905`
         * Updated to support Featuretools 1.0.0 and nlp-primitives 2.0.0 :pr:`2848`
     * Fixes
         * Fixed bug where ``long`` mode for the top level search method was not respected :pr:`2875`
