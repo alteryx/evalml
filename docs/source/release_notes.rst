@@ -5,6 +5,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
+        * Added back Future Release section to release notes :pr:`2927`
     * Testing Changes
 
 .. warning::
