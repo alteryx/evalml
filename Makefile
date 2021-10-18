@@ -33,6 +33,10 @@ test-no-parallel:
 test-parallel:
 	pytest evalml/tests/automl_tests/parallel_tests/ --timeout 300 --durations 0
 
+.PHONY: doctests
+doctests:
+	pytest evalml --ignore evalml/tests -n 2 --durations 0 --doctest-modules --doctest-continue-on-failure
+
 .PHONY: git-test-parallel
 git-test-parallel:
 	pytest evalml/tests/automl_tests/parallel_tests/ -n 1 --cov=evalml --junitxml=test-reports/git-test-parallel-junit.xml --timeout 300 --durations 0
@@ -59,13 +63,13 @@ git-test-modelunderstanding:
 
 .PHONY: git-test-other-core
 git-test-other-core:
-	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ -n 2 --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-other-core-junit.xml --has-minimal-dependencies
-	pytest evalml --ignore evalml/tests -n 2 --durations 0 --doctest-modules --doctest-continue-on-failure
+	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ -n 2 --durations 0 --cov=evalml --junitxml=test-reports/git-test-other-core-junit.xml --has-minimal-dependencies
+	make doctests
 
 .PHONY: git-test-other
 git-test-other:
 	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ --ignore evalml/tests/pipeline_tests/ --ignore evalml/tests/utils_tests/ --ignore evalml/tests/component_tests/test_prophet_regressor.py --ignore evalml/tests/component_tests/test_components.py --ignore evalml/tests/component_tests/test_utils.py -n 2 --durations 0 --timeout 300 --doctest-modules --cov=evalml --junitxml=test-reports/git-test-other-junit.xml
-	pytest evalml --ignore evalml/tests -n 2 --durations 0 --doctest-modules --doctest-continue-on-failure
+	make doctests
 
 .PHONY: git-test-prophet
 git-test-prophet:
