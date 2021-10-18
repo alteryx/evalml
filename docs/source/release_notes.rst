@@ -2,6 +2,20 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+        * Added back Future Release section to release notes :pr:`2927`
+    * Testing Changes
+        * Fixed dependency checker to catch full names of packages :pr:`2930`
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.35.0 Oct. 14, 2021**
+    * Enhancements
         * Added human-readable pipeline explanations to model understanding :pr:`2861`
         * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary :pr:`2869`
         * Updated to support Featuretools 1.0.0 and nlp-primitives 2.0.0 :pr:`2848`
