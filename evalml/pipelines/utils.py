@@ -451,7 +451,7 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon):
 
 
 def rows_of_interest(
-    pipeline, X, y=None, threshold=None, num_rows=None, sort_values=True, types="all"
+    pipeline, X, y=None, threshold=None, epsilon=0.1, sort_values=True, types="all"
 ):
     """Get the row indices of the data that are closest to the threshold. Works only for binary classification problems and pipelines.
 
@@ -460,8 +460,8 @@ def rows_of_interest(
         X (ww.DataTable, pd.DataFrame): The input features to predict on.
         y (ww.DataColumn, pd.Series, None): The input target data,  if available. Defaults to None.
         threshold (float): The threshold value of interest to separate positive and negative predictions. If None, uses the pipeline threshold if set, else 0.5. Defaults to None.
-        num_rows (int): The number of rows to return. If None, returns the full list of indices equal to the size of the input. Defaults to None.
-        sort_values (bool): Whether to return the indices sorted by the distance from the threshold, such that the first values are closer to the threshold and the later values are further. Defualts to True.
+        epsilon (epsilon): The difference between the probability and the threshold that would make the row interesting for us. For instance, epsilon=0.1 and threhsold=0.5 would mean we consider all rows in [0.4, 0.6] to be of interest. Defaults to 0.1.
+        sort_values (bool): Whether to return the indices sorted by the distance from the threshold, such that the first values are closer to the threshold and the later values are further. Defaults to True.
         types (str): The type of rows to keep and return. Can be one of ['incorrect', 'correct', 'true_positive', 'true_negative', 'all']. Defaults to 'all'.
 
             'incorrect' - return only the rows where the predictions are incorrect. This means that, given the threshold and target y, keep only the rows which are labeled wrong.
@@ -507,14 +507,14 @@ def rows_of_interest(
     pred_proba = pipeline.predict_proba(X)
     pos_value_proba = pred_proba.iloc[:, -1]
     preds = pos_value_proba >= threshold
-    preds_value_proba = abs(pos_value_proba - threshold)
+    preds_value_proba = pos_value_proba - threshold
 
     # placeholder for y if it isn't supplied
     y_current = y if y is not None else preds
 
     # logic for breaking apart the different categories
     mask = y_current
-    if "correct" in types:
+    if types in ["correct", "incorrect"]:
         mask = preds == y
     mask = mask.astype(bool)
 
@@ -524,10 +524,9 @@ def rows_of_interest(
         preds_value_proba = preds_value_proba[~mask.values]
 
     if sort_values:
-        preds_value_proba = preds_value_proba.sort_values(kind="stable")
+        preds_value_proba = preds_value_proba.sort_values(
+            key=lambda x: abs(x), kind="stable"
+        )
 
-    if num_rows is not None:
-        num_rows = min(num_rows, len(preds_value_proba))
-        preds_value_proba = preds_value_proba[:num_rows]
-
-    return preds_value_proba.index
+    preds_value_proba = preds_value_proba[abs(preds_value_proba) <= epsilon]
+    return preds_value_proba.index.tolist()

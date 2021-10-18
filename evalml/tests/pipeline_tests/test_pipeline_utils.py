@@ -646,25 +646,21 @@ def test_rows_of_interest_threshold(mock_fit, mock_pred_proba, threshold, y):
     vals = [0.2] * 25 + [0.5] * 50 + [0.8] * 25
     predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
     mock_pred_proba.return_value = predicted_proba_values
-    vals = rows_of_interest(pipeline, X, y, threshold=threshold, sort_values=True)
-    if threshold == 0.3:
-        assert all(vals.values == list(range(100)))
-        return
-    elif threshold == 0.7:
-        assert all(
-            vals.values == list(range(75, 100)) + list(range(25, 75)) + list(range(25))
-        )
-        return
-
-    assert all(
-        vals.values == list(range(25, 75)) + list(range(25)) + list(range(75, 100))
+    vals = rows_of_interest(
+        pipeline, X, y, threshold=threshold, epsilon=0.5, sort_values=True
     )
+    if threshold == 0.3:
+        assert vals == list(range(100))
+    elif threshold == 0.7:
+        assert vals == list(range(75, 100)) + list(range(25, 75)) + list(range(25))
+    else:
+        assert vals == list(range(25, 75)) + list(range(25)) + list(range(75, 100))
 
     pipeline._threshold = 0.9
-    vals = rows_of_interest(pipeline, X, y, threshold=None, sort_values=True)
-    assert all(
-        vals.values == list(range(75, 100)) + list(range(25, 75)) + list(range(25))
+    vals = rows_of_interest(
+        pipeline, X, y, threshold=None, epsilon=0.5, sort_values=True
     )
+    assert vals == list(range(75, 100)) + list(range(25, 75))
 
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
@@ -690,14 +686,14 @@ def test_rows_of_interest_types(mock_fit, mock_pred_proba, types, expected_val):
     vals = [0.2] * 25 + [0.5] * 50 + [0.8] * 25
     predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
     mock_pred_proba.return_value = predicted_proba_values
-    vals = rows_of_interest(pipeline, X, y, types=types, sort_values=False)
-    assert all(vals.values == expected_val)
+    vals = rows_of_interest(pipeline, X, y, types=types, epsilon=0.5, sort_values=False)
+    assert vals == expected_val
 
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
-@pytest.mark.parametrize("num_rows,expected_len", [(10, 10), (200, 100), (None, 100)])
-def test_rows_of_interest_num_rows(mock_fit, mock_pred_proba, num_rows, expected_len):
+@pytest.mark.parametrize("epsilon,expected_len", [(0.01, 50), (0.3, 75), (0.5, 100)])
+def test_rows_of_interest_epsilon(mock_fit, mock_pred_proba, epsilon, expected_len):
     pipeline = BinaryClassificationPipeline(
         component_graph=["Logistic Regression Classifier"]
     )
@@ -705,11 +701,18 @@ def test_rows_of_interest_num_rows(mock_fit, mock_pred_proba, num_rows, expected
     y = pd.Series([0] * 25 + [1] * 50 + [0] * 25)
     pipeline._is_fitted = True
 
-    vals = [0.2] * 25 + [0.5] * 50 + [0.8] * 25
+    vals = [0.2] * 25 + [0.5] * 50 + [0.85] * 25
     predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
     mock_pred_proba.return_value = predicted_proba_values
-    vals = rows_of_interest(pipeline, X, y, num_rows=num_rows)
+    vals = rows_of_interest(pipeline, X, y, epsilon=epsilon)
     assert len(vals) == expected_len
+
+    if epsilon == 0.01:
+        vals = [0.2] * 25 + [0.65] * 50 + [0.85] * 25
+        predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
+        mock_pred_proba.return_value = predicted_proba_values
+        vals = rows_of_interest(pipeline, X, y, epsilon=epsilon)
+        assert len(vals) == 0
 
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
@@ -732,8 +735,10 @@ def test_rows_of_interest_sorted(mock_fit, mock_pred_proba, sorts, expected_val)
     vals = [0.2] * 25 + [0.5] * 50 + [0.8] * 25
     predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
     mock_pred_proba.return_value = predicted_proba_values
-    vals = rows_of_interest(pipeline, X, y, threshold=0.9, sort_values=sorts)
-    assert all(vals.values == expected_val)
+    vals = rows_of_interest(
+        pipeline, X, y, threshold=0.9, epsilon=0.9, sort_values=sorts
+    )
+    assert vals == expected_val
 
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
@@ -750,24 +755,22 @@ def test_rows_of_interest_index(mock_fit, mock_pred_proba):
     vals = [0.2] * 25 + [0.5] * 50 + [0.8] * 25
     predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
     mock_pred_proba.return_value = predicted_proba_values
-    vals = rows_of_interest(pipeline, X)
-    assert all(
-        vals.values == list(range(25, 75)) + list(range(25)) + list(range(75, 100))
-    )
+    vals = rows_of_interest(pipeline, X, epsilon=0.5)
+    assert vals == list(range(25, 75)) + list(range(25)) + list(range(75, 100))
 
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @pytest.mark.parametrize(
-    "types,sorts,num_rows,expected_vals",
+    "types,sorts,epsilon,expected_index",
     [
-        ("correct", True, 20, list(range(25, 45))),
-        ("true_negative", True, 5, list(range(5))),
-        ("all", False, 100, list(range(100))),
+        ("correct", True, 0.01, list(range(25, 75))),
+        ("true_negative", True, 0.3, list(range(25))),
+        ("all", False, 0.3, list(range(75))),
     ],
 )
 def test_rows_of_interest(
-    mock_fit, mock_pred_proba, types, sorts, num_rows, expected_vals
+    mock_fit, mock_pred_proba, types, sorts, epsilon, expected_vals
 ):
     pipeline = BinaryClassificationPipeline(
         component_graph=["Logistic Regression Classifier"]
@@ -776,16 +779,33 @@ def test_rows_of_interest(
     y = pd.Series([0] * 25 + [1] * 50 + [0] * 25)
     pipeline._is_fitted = True
 
-    vals = [0.2] * 25 + [0.5] * 50 + [0.8] * 25
+    vals = [0.2] * 25 + [0.5] * 50 + [0.85] * 25
     predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
     mock_pred_proba.return_value = predicted_proba_values
     vals = rows_of_interest(
-        pipeline, X, y, types=types, sort_values=sorts, num_rows=num_rows
+        pipeline, X, y, types=types, sort_values=sorts, epsilon=epsilon
     )
-    assert all(vals.values == expected_vals)
+    assert vals == expected_vals
 
     if types == "all":
         vals = rows_of_interest(
-            pipeline, X, types=types, sort_values=sorts, num_rows=num_rows
+            pipeline, X, types=types, sort_values=sorts, epsilon=epsilon
         )
-        assert all(vals.values == expected_vals)
+        assert vals == expected_vals
+
+
+@patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
+@patch("evalml.pipelines.BinaryClassificationPipeline.fit")
+def test_rows_of_interest_empty(mock_fit, mock_pred_proba):
+    pipeline = BinaryClassificationPipeline(
+        component_graph=["Logistic Regression Classifier"]
+    )
+    X = pd.DataFrame([i for i in range(100)])
+    y = pd.Series([0] * 25 + [1] * 50 + [0] * 25)
+    pipeline._is_fitted = True
+
+    vals = [1] * 25 + [0] * 50 + [1] * 25
+    predicted_proba_values = pd.DataFrame({0: [1 - v for v in vals], 1: vals})
+    mock_pred_proba.return_value = predicted_proba_values
+    vals = rows_of_interest(pipeline, X, y, epsilon=0.5, types="correct")
+    assert len(vals) == 0
