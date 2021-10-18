@@ -6,6 +6,7 @@ as well as EvalML pipelines.
 """
 import numpy as np
 import pandas as pd
+import woodwork as ww
 from scipy.stats.mstats import mquantiles
 
 from evalml.problem_types import is_regression
@@ -142,10 +143,15 @@ def _partial_dependence_calculation(pipeline, grid, features, X):
     else:
         prediction_method = pipeline.predict_proba
 
-    X_eval = X.copy()
+    X_eval = X.ww.copy()
     for _, new_values in grid.iterrows():
         for i, variable in enumerate(features):
-            X_eval.loc[:, variable] = new_values[i]
+            part_dep_column = pd.Series(
+                [new_values[i]] * X_eval.shape[0], index=X_eval.index
+            )
+            X_eval.ww[variable] = ww.init_series(
+                part_dep_column, logical_type=X_eval.ww.logical_types[variable]
+            )
 
         pred = prediction_method(X_eval)
 
