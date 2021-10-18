@@ -7,6 +7,7 @@ Release Notes
         * Fixed bug where ``long`` mode for the top level search method was not respected :pr:`2875`
         * Pinned ``cmdstan`` to ``0.28.0`` in ``cmdstan-builder`` to prevent future breaking of support for Prophet :pr:`2880`
         * Added ``Jarque-Bera`` to the ``TargetDistributionDataCheck`` :pr:`2891`
+        * Added ``create_if_missing`` flag ``to SelectColumns`` to standardize feature selection in ``DefaultAlgorithm`` :pr:`2912`
     * Changes
         * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level :pr:`2821`
         * Deleted scikit-learn ensembler :pr:`2819`
