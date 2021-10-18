@@ -328,7 +328,7 @@ def test_default_data_checks_regression(input_type):
         y_no_variance = ww.init_series(y_no_variance)
     null_leakage = [
         DataCheckWarning(
-            message="Columns 'lots_of_null' are 95.0% or more correlated with the target",
+            message="Column 'lots_of_null' is 95.0% or more correlated with the target",
             data_check_name="TargetLeakageDataCheck",
             message_code=DataCheckMessageCode.TARGET_LEAKAGE,
             details={"columns": ["lots_of_null"]},
