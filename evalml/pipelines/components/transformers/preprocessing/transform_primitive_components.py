@@ -2,6 +2,7 @@
 from abc import abstractmethod
 
 import featuretools as ft
+import woodwork as ww
 
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
@@ -37,17 +38,15 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
 
     def _make_entity_set(self, X):
         X_to_transform = X[self._columns]
-
-        # featuretools expects str-type column names
         X_to_transform.rename(columns=str, inplace=True)
-        ft_variable_types = self._get_feature_types_for_featuretools(X)
+        ww_logical_types = self._get_feature_types_for_featuretools(X)
         es = ft.EntitySet()
-        es.entity_from_dataframe(
-            entity_id="X",
+        es.add_dataframe(
+            dataframe_name="X",
             dataframe=X_to_transform,
             index="index",
             make_index=True,
-            variable_types=ft_variable_types,
+            logical_types=ww_logical_types,
         )
         return es
 
@@ -60,7 +59,7 @@ class _ExtractFeaturesWithTransformPrimitives(Transformer):
         es = self._make_entity_set(X)
         self._features = ft.dfs(
             entityset=es,
-            target_entity="X",
+            target_dataframe_name="X",
             trans_primitives=self._transform_primitives,
             max_depth=1,
             features_only=True,
@@ -121,7 +120,7 @@ class EmailFeaturizer(_ExtractFeaturesWithTransformPrimitives):
 
     def _get_feature_types_for_featuretools(self, X):
         return {
-            col_name: ft.variable_types.EmailAddress.type_string
+            col_name: ww.logical_types.EmailAddress.type_string
             for col_name in self._columns
         }
 
@@ -145,5 +144,5 @@ class URLFeaturizer(_ExtractFeaturesWithTransformPrimitives):
 
     def _get_feature_types_for_featuretools(self, X):
         return {
-            col_name: ft.variable_types.URL.type_string for col_name in self._columns
+            col_name: ww.logical_types.URL.type_string for col_name in self._columns
         }
