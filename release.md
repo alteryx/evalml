@@ -97,14 +97,9 @@ package:
 ```
 For help on how to push changes to the bot's PR please read this [document.](https://conda-forge.org/docs/maintainer/updating_pkgs.html#pushing-to-regro-cf-autotick-bot-branch)
 
-You may need to make other changes to the bot's PR. For example, we sometimes add new dependencies or change the allowed
-versions of our existing dependencies. These changes will break our conda-forge CI, so it's important to add them to the
-bot's PR before merging. To see the changes you need to make, compare the bot's branch to the `latest_release_changes` branch.
-
-```shell script
-git diff <bot-pr-branch-name> latest_release_changes -- recipe/meta.yaml
-```
-
+You may need to make other changes to the bot's PR. For example, there is a CI check called "Check conda versions/check_versions" that
+verifies whether the dependency versions of the conda update PR match the versions of the recipe used in
+`build_conda_pkg` (located in `.github/meta.yaml`). If the check is red, modify the dependencies so they match those in `.github/meta.yaml`.
 
 After you make the necessary changes and merge the PR, our latest package will be deployed to conda-forge! To verify, run this in a fresh conda environment:
 

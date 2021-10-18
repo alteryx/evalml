@@ -105,16 +105,8 @@ def _get_preprocessing_components(
         logical_types.Integer,
         logical_types.URL,
         logical_types.EmailAddress,
+        logical_types.Datetime,
     }
-
-    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
-    if len(text_columns) > 0:
-        pp_components.append(TextFeaturizer)
-
-    if len(input_logical_types.intersection(types_imputer_handles)) or len(
-        text_columns
-    ):
-        pp_components.append(Imputer)
 
     datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
 
@@ -124,6 +116,15 @@ def _get_preprocessing_components(
         ModelFamily.PROPHET,
     ]:
         pp_components.append(DateTimeFeaturizer)
+
+    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
+    if len(text_columns) > 0:
+        pp_components.append(TextFeaturizer)
+
+    if len(input_logical_types.intersection(types_imputer_handles)) or len(
+        text_columns
+    ):
+        pp_components.append(Imputer)
 
     if (
         is_time_series(problem_type)
