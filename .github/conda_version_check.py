@@ -50,7 +50,7 @@ def get_evalml_conda_requirements(conda_recipe):
 
 
 def check_versions():
-    conda_recipe_file_path = pathlib.Path(os.getcwd(), 'evalml-core-feedstock', 'recipe', 'meta.yaml')
+    conda_recipe_file_path = pathlib.Path(os.getcwd(), '.github', 'meta.yaml')
     pip_requirements_path = pathlib.Path(os.getcwd())
     conda_versions = sorted(get_evalml_conda_requirements(conda_recipe_file_path))
     pip_versions = sorted(get_evalml_pip_requirements(pip_requirements_path))

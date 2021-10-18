@@ -94,8 +94,8 @@ If your work includes a [breaking change](https://en.wiktionary.org/wiki/breakin
 
 We maintain a conda package [package](https://anaconda.org/conda-forge/evalml) to give users more options of how to install EvalML.
 Conda packages are created from recipes, which are yaml config files that list a package's dependencies and tests. Here is 
-EvalML's [recipe](https://github.com/conda-forge/evalml-core-feedstock/blob/master/recipe/meta.yaml). GitHub repositories
-containing conda recipes are called `feedstocks`.
+EvalML's latest published [recipe](https://github.com/conda-forge/evalml-core-feedstock/blob/master/recipe/meta.yaml).
+GitHub repositories containing conda recipes are called `feedstocks`.
 
 If you opened a PR to EvalML that modifies `requirements.txt` or `core-requirements.txt`, or if the latest dependency bot
 updates the latest version of one of our packages, you will see a CI job called `build_conda_pkg`. This section describes
@@ -109,20 +109,27 @@ we released a dependency version that is not compatible with our conda recipe. I
 release-time since the PyPi release includes many possible PRs that could have introduced that change.
 
 #### How does `build_conda_pkg` work?
-`build_conda_pkg` will clone the `latest_release_changes` branch of the feedstock as well as clone the PR branch. It will
-then modify the [source](https://github.com/conda-forge/evalml-core-feedstock/blob/master/recipe/meta.yaml#L7) field of the
-local copy of the recipe and point it at the local clone of the PR branch. This has the effect of building our conda package
-against your PR branch!
+`build_conda_pkg` will clone the `master` branch of the feedstock as well as you EvalML PR branch. It will
+then replace the recipe in the `master` branch of the feedstock with the current
+latest [recipe](https://github.com/alteryx/evalml/blob/make-it-easier-to-fix-build-conda-pkg/.github/meta.yaml) in EvalML.
+It will also modify the [source](https://github.com/alteryx/evalml/blob/make-it-easier-to-fix-build-conda-pkg/.github/meta.yaml#L7)
+field of the local copy of the recipe and point it at the local EvalML clone of your PR branch.
+This has the effect of building our conda package against your PR branch!
 
-#### Why does `build_conda_pkg` use the `latest_release_changes` branch instead of `master`?
+#### Why does `build_conda_pkg` use a recipe in EvalML as opposed to the recipe in the feedstock `master` branch?
 One important fact to know about conda is that any change to the `master` branch of a feedstock will
 result in a new version of the conda package being published to the world!
 
 With this in mind, let's say your PR requires modifying our dependencies. 
 If we made a change to `master`, an updated version of EvalML's latest conda package would
 be released. This means people who installed the latest version of EvalML prior to this PR would get different dependency versions
-than those who installed after the PR got merged on GitHub. This is not desirable, especially because the PR would not get shipped
+than those who installed EvalML after the PR got merged on GitHub. This is not desirable, especially because the PR would not get shipped
 to PyPi until the next release happens. So there would also be a discrepancy between the PyPi and conda versions.
+
+By using a recipe stored in the EvalML repo, we can keep track of the changes that need to be made for the next release without
+having to publish a new conda package. Since the recipe is also "unique" to your PR, you are free to make whatever changes you
+need to make without disturbing other PRs. This would not be the case if `build_conda_pkg` ran from the `master` branch of the
+feedstock.
 
 #### What to do if you see `build_conda_pkg` is red on your PR?
 It depends on the kind of PR:
@@ -130,22 +137,16 @@ It depends on the kind of PR:
 **Case 1: You're adding a completely new dependency**
 
 In this case, `build_conda_pkg` is failing simply because a dependency is missing. Adding the dependency to the recipe should
-make the check green. To add the dependency, clone the [feedstock](https://github.com/conda-forge/evalml-core-feedstock) (do not fork it!),
-check out `latest_release_changes` and add the dependency to `evalml-core` if it is a core dependency or `evalml` if it is an
-extra dependency. Push this change up and rerun `build_conda_pkg` on your branch.
+make the check green. To add the dependency, modify the recipe located at `.github/meta.yaml`.  
 
-If you see that adding the dependency causes the build to fail, possibly because of conflicting versions, then
-undo your change to `latest_release_changes` while you figure out how to fix it.
+If you see that adding the dependency causes the build to fail, possibly because of conflicting versions, then iterate until
+the build passes. The team will verify if your changes make sense during PR review.
 
 **Case 2: The latest dependency bot created a PR**
 If the latest dependency bot PR fails `build_conda_pkg`, it means our code doesn't support the latest version
 of one of our dependencies. This means that we either have to cap the max allowed version in our requirements file
 or update our code to support that version. If we opt for the former, then just like in Case 1, make the corresponding change
-to `latest_release_changes`
-
-In any case, it's important to remember to push changes directly to `latest_release_changes` rather than opening up a PR. The
-conda CI on that PR will likely fail because conda recipes build from the previously released PyPi version and not the latest
-version of the EvalML main branch.
+to the recipe located at `.github/meta.yaml`
 
 #### What about the `check_versions` CI check?
 This check verifies that the allowed versions listed in `core-requirements.txt` and `requirements.txt` match those listed in

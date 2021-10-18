@@ -3,11 +3,13 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
     * Changes
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
     * Testing Changes
         * Fixed dependency checker to catch full names of packages :pr:`2930`
+        * Refactored ``build_conda_pkg`` to work from a local recipe :pr:`2925`
 
 .. warning::
 
