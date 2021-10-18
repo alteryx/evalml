@@ -762,7 +762,7 @@ def test_rows_of_interest_index(mock_fit, mock_pred_proba):
 @patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @pytest.mark.parametrize(
-    "types,sorts,epsilon,expected_index",
+    "types,sorts,epsilon,expected_vals",
     [
         ("correct", True, 0.01, list(range(25, 75))),
         ("true_negative", True, 0.3, list(range(25))),
