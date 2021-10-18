@@ -7,6 +7,7 @@ Release Notes
     * Changes
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
+        * Updated CI to run doctest (docstring tests) and apply necessary fixes to docstrings :pr:`2933`
     * Testing Changes
         * Fixed dependency checker to catch full names of packages :pr:`2930`
 
