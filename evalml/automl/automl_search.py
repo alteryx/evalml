@@ -200,7 +200,7 @@ def search(
 
     automl = AutoMLSearch(_automl_algorithm="default", **automl_config)
     automl.search()
-    return automl, data_check_results
+    return automl, None
 
 
 def search_iterative(
