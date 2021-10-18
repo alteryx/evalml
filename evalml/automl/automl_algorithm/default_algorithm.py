@@ -168,7 +168,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             feature_selector = []
 
         estimators = self._naive_estimators()
-        parameters = self._pipeline_params if self._pipeline_params else {}
+        parameters = self._pipeline_params if self._pipeline_params else None
         pipelines = [
             make_pipeline(
                 self.X,
