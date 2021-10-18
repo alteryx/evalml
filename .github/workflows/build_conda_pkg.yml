@@ -35,7 +35,8 @@ jobs:
           DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
           DOCKERHUB_PASSWORD: ${{ secrets.DOCKERHUB_PASSWORD }}
         run: |
-          git clone -b latest_release_changes --single-branch https://github.com/conda-forge/evalml-core-feedstock
+          git clone -b master --single-branch https://github.com/conda-forge/evalml-core-feedstock
+          cp .github/meta.yaml ./evalml-core-feedstock/recipe/
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
