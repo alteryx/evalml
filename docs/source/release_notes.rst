@@ -3,9 +3,12 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added LIME as an algorithm option for ``explain_predictions`` and ``explain_predictions_best_worst`` :pr:`2905`
+        * Added support for woodwork version ``0.8.2`` :pr:`2909`
+        * Enhanced the ``DateTimeFeaturizer`` to handle ``NaNs`` in date features :pr:`2909`
     * Fixes
         * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
     * Changes
+        * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
     * Testing Changes
@@ -44,7 +47,6 @@ Release Notes
         * Deleted scikit-learn ensembler :pr:`2819`
         * ``IterativeAlgorithm`` now requires X, y, problem_type as required arguments as well as sampler_name, allowed_model_families, allowed_component_graphs, max_batches, and verbose as optional arguments :pr:`2854`
         * Changed method names of ``fit_features`` and ``compute_final_component_features`` to ``fit_and_transform_all_but_final`` and ``transform_all_but_final`` in ``ComponentGraph``, and ``compute_estimator_features`` to ``transform_all_but_final`` in pipeline classes :pr:`2902`
-
 
 **v0.34.0 Sep. 30, 2021**
     * Enhancements

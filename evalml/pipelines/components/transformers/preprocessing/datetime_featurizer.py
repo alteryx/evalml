@@ -1,4 +1,7 @@
 """Transformer that can automatically extract features from datetime columns."""
+import numpy as np
+import woodwork as ww
+
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
 
@@ -26,10 +29,12 @@ _month_to_int_mapping = {
 def _extract_month(col, encode_as_categories=False):
     months = col.dt.month_name()
     months_unique = months.unique()
-    months_encoded = months.map(lambda m: _month_to_int_mapping[m])
+    months_encoded = months.map(lambda m: _month_to_int_mapping.get(m, np.nan))
     if encode_as_categories:
-        months_encoded = months_encoded.astype("category")
-    return months_encoded, {m: _month_to_int_mapping[m] for m in months_unique}
+        months_encoded = ww.init_series(months_encoded, logical_type="Categorical")
+    return months_encoded, {
+        m: _month_to_int_mapping.get(m, np.nan) for m in months_unique
+    }
 
 
 _day_to_int_mapping = {
@@ -46,10 +51,10 @@ _day_to_int_mapping = {
 def _extract_day_of_week(col, encode_as_categories=False):
     days = col.dt.day_name()
     days_unique = days.unique()
-    days_encoded = days.map(lambda d: _day_to_int_mapping[d])
+    days_encoded = days.map(lambda d: _day_to_int_mapping.get(d, np.nan))
     if encode_as_categories:
-        days_encoded = days_encoded.astype("category")
-    return days_encoded, {d: _day_to_int_mapping[d] for d in days_unique}
+        days_encoded = ww.init_series(days_encoded, logical_type="Categorical")
+    return days_encoded, {d: _day_to_int_mapping.get(d, np.nan) for d in days_unique}
 
 
 def _extract_hour(col, encode_as_categories=False):
