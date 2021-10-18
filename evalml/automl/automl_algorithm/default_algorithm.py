@@ -168,7 +168,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             feature_selector = []
 
         estimators = self._naive_estimators()
-        parameters = self._pipeline_params if self._pipeline_params else None
+        parameters = self._pipeline_params if self._pipeline_params else {}
         pipelines = [
             make_pipeline(
                 self.X,
@@ -182,9 +182,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             for estimator in estimators
         ]
 
-        pipelines = self._create_pipelines_with_params(
-            pipelines, parameters={"One Hot Encoder": {"append_all_known_values": True}}
-        )
+        pipelines = self._create_pipelines_with_params(pipelines, parameters={})
         return pipelines
 
     def _create_fast_final(self):
@@ -196,8 +194,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         parameters = self._pipeline_params if self._pipeline_params else {}
         parameters.update(
             {
-                "Select Columns Transformer": {"columns": self._selected_cols},
-                "One Hot Encoder": {"append_all_known_values": True},
+                "Select Columns Transformer": {
+                    "columns": self._selected_cols,
+                    "create_if_missing": True,
+                }
             }
         )
         pipelines = [
@@ -216,8 +216,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         pipelines = self._create_pipelines_with_params(
             pipelines,
             {
-                "Select Columns Transformer": {"columns": self._selected_cols},
-                "One Hot Encoder": {"append_all_known_values": True},
+                "Select Columns Transformer": {
+                    "columns": self._selected_cols,
+                    "create_if_missing": True,
+                }
             },
         )
 
@@ -235,8 +237,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 parameters = self._transform_parameters(pipeline, proposed_parameters)
                 parameters.update(
                     {
-                        "Select Columns Transformer": {"columns": self._selected_cols},
-                        "One Hot Encoder": {"append_all_known_values": True},
+                        "Select Columns Transformer": {
+                            "columns": self._selected_cols,
+                            "create_if_missing": True,
+                        }
                     }
                 )
                 next_batch.append(

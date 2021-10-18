@@ -1,6 +1,9 @@
 """Initalizes an transformer that selects specified columns in input data."""
 from abc import abstractmethod
 
+import numpy as np
+import pandas as pd
+
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
 
@@ -110,6 +113,33 @@ class SelectColumns(ColumnSelector):
     """{}"""
     needs_fitting = False
 
+    def __init__(self, columns=None, create_if_missing=False, random_seed=0, **kwargs):
+        if columns and not isinstance(columns, list):
+            raise ValueError(
+                f"Parameter columns must be a list. Received {type(columns)}."
+            )
+        self.create_if_missing = create_if_missing
+        parameters = {"columns": columns, "create_if_missing": create_if_missing}
+        parameters.update(kwargs)
+        Transformer.__init__(
+            Transformer,
+            parameters=parameters,
+            component_obj=None,
+            random_seed=random_seed,
+        )
+
+    def fit(self, X, y=None):
+        """Fits the transformer by checking if column names are present in the dataset.
+
+        Args:
+            X (pd.DataFrame): Data to check.
+            y (pd.Series, optional): Targets.
+
+        Returns:
+            self
+        """
+        return self
+
     def _modify_columns(self, cols, X, y=None):
         return X.ww[cols]
 
@@ -123,6 +153,15 @@ class SelectColumns(ColumnSelector):
         Returns:
             pd.DataFrame: Transformed X.
         """
+        if self.create_if_missing:
+            cols = self.parameters.get("columns") or []
+            column_names = X.columns
+            missing_cols = set(cols) - set(column_names)
+            X_missing_cols = pd.DataFrame(
+                {col: np.zeros(len(X)) for col in missing_cols}, index=X.index
+            )
+            X = pd.concat([X, X_missing_cols], axis=1)
+            X.ww.init()
         return super().transform(X, y)
 
 

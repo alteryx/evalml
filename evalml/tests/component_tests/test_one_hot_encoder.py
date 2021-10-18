@@ -798,30 +798,3 @@ def test_ohe_output_bools():
         else:
             assert str(types) == "Boolean"
     assert len(output.columns) == 5
-
-
-def test_append_all_known_values():
-    expected_col_names = set(["col_1_a", "col_1_b", "col_1_c"])
-    X = pd.DataFrame(
-        {
-            "col_1": ["a", "b", "c", "a", "b"],
-        }
-    )
-    X.ww.init(logical_types={"col_1": "categorical"})
-    encoder = OneHotEncoder(append_all_known_values=True)
-    encoder.fit(X)
-    X_t = encoder.transform(X)
-    assert len(X_t.columns) == 3
-    assert set(X_t.columns) == expected_col_names
-
-    X_test = pd.DataFrame(
-        {
-            "col_1": ["a", "b", "b", "a", "b"],
-        }
-    )
-    X_test.ww.init(logical_types={"col_1": "categorical"})
-    X_test_t = encoder.transform(X_test)
-    test_col_names = set(X_test_t.columns)
-
-    assert len(test_col_names) == 3
-    assert test_col_names == expected_col_names

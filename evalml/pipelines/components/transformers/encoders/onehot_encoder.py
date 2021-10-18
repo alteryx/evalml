@@ -52,7 +52,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         drop="if_binary",
         handle_unknown="ignore",
         handle_missing="error",
-        append_all_known_values=False,
         random_seed=0,
         **kwargs,
     ):
@@ -88,7 +87,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         self._initial_state = self.random_seed
         self._provenance = {}
         self.all_features = None
-        self.append_all_known_values = append_all_known_values
 
     @staticmethod
     def _get_cat_cols(X):
@@ -188,7 +186,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         X_copy = self._handle_parameter_handle_missing(X)
 
         X = X.ww.drop(columns=self.features_to_encode)
-
         # Call sklearn's transform on the categorical columns
         if len(self.features_to_encode) > 0:
             X_cat = pd.DataFrame(
@@ -201,12 +198,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             self._feature_names = X_cat.columns
 
             X = ww.utils.concat_columns([X, X_cat])
-
-        if self.append_all_known_values:
-            missing_values = set(self.all_features) - set(X.columns)
-            if len(missing_values) > 0:
-                X[list(missing_values)] = 0
-
         return X
 
     def _handle_parameter_handle_missing(self, X):

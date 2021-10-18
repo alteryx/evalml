@@ -9,6 +9,7 @@ from evalml.pipelines.components import (
     SelectByType,
     SelectColumns,
 )
+from evalml.pipelines.components.transformers import column_selectors
 
 
 @pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns])
@@ -282,3 +283,31 @@ def test_typeortag_column_transformer_ww_logical_and_semantic_types():
 
     X_t = SelectByType(column_types=["numeric"]).fit_transform(X)
     assert X_t.astype(str).equals(X[["three", "four"]].astype(str))
+
+
+def test_select_columns_missing_columns():
+    cols = ["A", "B", "C", "D", "E"]
+    X = pd.DataFrame({col: np.zeros(3) for col in cols})
+    X.ww.init()
+    column_selector = SelectColumns(columns=cols, create_if_missing=True)
+    column_selector.fit(X)
+
+    cols_test = ["A", "C", "E"]
+    X_test = pd.DataFrame({col: np.zeros(3) for col in cols_test})
+    X_test.ww.init()
+    X_test_t = column_selector.transform(X_test)
+
+    assert len(X_test_t.columns) == len(cols)
+    assert set(X_test_t.columns) == set(X.columns)
+    for col in X_test_t.columns:
+        assert (X_test_t[col] == np.zeros(3)).all()
+
+    cols_test = ["A", "C", "E", "F", "G", "Test"]
+    X_test = pd.DataFrame({col: np.zeros(3) for col in cols_test})
+    X_test.ww.init()
+    X_test_t = column_selector.transform(X_test)
+
+    assert len(X_test_t.columns) == 5
+    assert set(X_test_t.columns) == set(X.columns)
+    for col in X_test_t.columns:
+        assert (X_test_t[col] == np.zeros(3)).all()
