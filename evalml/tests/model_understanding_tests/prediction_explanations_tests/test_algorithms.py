@@ -293,21 +293,6 @@ def test_explainers(
             ), f"A SHAP value must be computed for every data point to explain!"
 
 
-def test_lime_maintains_column_names():
-    pytest.importorskip(
-        "lime.lime_tabular",
-        reason="Skipping plotting test because lime not installed",
-    )
-    X = pd.DataFrame(
-        {"a": [1, 2, 3, None, 4, 1, 2], "b": [112, 42, 521, 23, 12, 5, 12]}
-    )
-    y = pd.Series([1, 0, 0, 1, 0, 1, 1])
-    pipeline = BinaryClassificationPipeline(
-        component_graph=["Imputer", "Random Forest Classifier"]
-    )
-    calculate_lime_for_test(X, y, pipeline, 0)
-
-
 @patch("evalml.model_understanding.prediction_explanations._algorithms.logger")
 @patch("shap.TreeExplainer")
 def test_compute_shap_values_catches_shap_tree_warnings(
