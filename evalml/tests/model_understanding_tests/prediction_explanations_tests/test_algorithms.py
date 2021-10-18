@@ -134,10 +134,11 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
 def test_explainer_value_errors_raised(
     mock_tree_explainer, pipeline, exception, match, algorithm
 ):
-    pytest.importorskip(
-        "lime.lime_tabular",
-        reason="Skipping lime value errors test because lime not installed",
-    )
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
 
     pipeline = pipeline(
         {

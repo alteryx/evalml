@@ -1180,11 +1180,16 @@ pipeline_test_cases = [
 
 @pytest.mark.parametrize(
     "pipeline_class_and_estimator,algorithm",
-    product(pipeline_test_cases, ["shap", "lime"]),
+    product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_linear_pipeline(
     pipeline_class_and_estimator, algorithm, fraud_100
 ):
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
 
@@ -1231,9 +1236,15 @@ def test_categories_aggregated_linear_pipeline(
 
 @pytest.mark.parametrize(
     "pipeline_class_and_estimator,algorithm",
-    product(pipeline_test_cases, ["shap", "lime"]),
+    product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fraud_100):
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
+
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
 
@@ -1303,11 +1314,16 @@ def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fra
 
 @pytest.mark.parametrize(
     "pipeline_class_and_estimator,algorithm",
-    product(pipeline_test_cases, ["shap", "lime"]),
+    product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_date_ohe(
     pipeline_class_and_estimator, algorithm, fraud_100
 ):
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
 
@@ -1369,11 +1385,16 @@ def test_categories_aggregated_date_ohe(
 
 @pytest.mark.parametrize(
     "pipeline_class_and_estimator,algorithm",
-    product(pipeline_test_cases, ["shap", "lime"]),
+    product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_pca_dag(
     pipeline_class_and_estimator, algorithm, fraud_100
 ):
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
 
@@ -1438,11 +1459,16 @@ def test_categories_aggregated_pca_dag(
 
 @pytest.mark.parametrize(
     "pipeline_class_and_estimator,algorithm",
-    product(pipeline_test_cases, ["shap", "lime"]),
+    product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_but_not_those_that_are_dropped(
     pipeline_class_and_estimator, algorithm, fraud_100
 ):
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
 
@@ -1490,11 +1516,16 @@ def test_categories_aggregated_but_not_those_that_are_dropped(
 
 @pytest.mark.parametrize(
     "pipeline_class_and_estimator,algorithm",
-    product(pipeline_test_cases, ["shap", "lime"]),
+    product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_when_some_are_dropped(
     pipeline_class_and_estimator, algorithm, fraud_100
 ):
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
 
@@ -1604,7 +1635,7 @@ def test_explain_predictions_stacked_ensemble(
                 )
             )
         ],
-        ["shap", "lime"],
+        algorithms,
     ),
 )
 def test_explain_predictions_oversampler(estimator, algorithm, fraud_100):
@@ -1612,6 +1643,11 @@ def test_explain_predictions_oversampler(estimator, algorithm, fraud_100):
         "imblearn.over_sampling",
         reason="Skipping test because imbalanced-learn not installed",
     )
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(
         component_graph={
@@ -1703,8 +1739,13 @@ def test_explain_predictions_unknown(indices, X_y_binary):
         assert exp["feature_values"].isnull().sum() == 0
 
 
-@pytest.mark.parametrize("algorithm", ["shap", "lime"])
+@pytest.mark.parametrize("algorithm", algorithms)
 def test_explain_predictions_url_email(df_with_url_and_email, algorithm):
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
     X = df_with_url_and_email.ww.select(["url", "EmailAddress"])
     y = pd.Series([0, 1, 1, 0, 1])
 
@@ -1756,11 +1797,16 @@ def test_explain_predictions_url_email(df_with_url_and_email, algorithm):
 
 @pytest.mark.parametrize(
     "pipeline_class_and_estimator, algorithm",
-    product(pipeline_test_cases, ["shap", "lime"]),
+    product(pipeline_test_cases, algorithms),
 )
 def test_explain_predictions_report_shows_original_value_if_possible(
     pipeline_class_and_estimator, algorithm, fraud_100
 ):
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
     pipeline_class, estimator = pipeline_class_and_estimator
     X, y = fraud_100
     X.ww.set_types({"country": "NaturalLanguage"})
@@ -1817,11 +1863,16 @@ def test_explain_predictions_report_shows_original_value_if_possible(
                 assert np.isnan(feature_value)
 
 
-@pytest.mark.parametrize("algorithm", ["shap", "lime"])
+@pytest.mark.parametrize("algorithm", algorithms)
 def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
     algorithm,
     fraud_100,
 ):
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
     X, y = fraud_100
     X.ww.set_types({"country": "NaturalLanguage"})
     component_graph = [
