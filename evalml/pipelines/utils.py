@@ -460,7 +460,8 @@ def rows_of_interest(
         X (ww.DataTable, pd.DataFrame): The input features to predict on.
         y (ww.DataColumn, pd.Series, None): The input target data,  if available. Defaults to None.
         threshold (float): The threshold value of interest to separate positive and negative predictions. If None, uses the pipeline threshold if set, else 0.5. Defaults to None.
-        epsilon (epsilon): The difference between the probability and the threshold that would make the row interesting for us. For instance, epsilon=0.1 and threhsold=0.5 would mean we consider all rows in [0.4, 0.6] to be of interest. Defaults to 0.1.
+        epsilon (epsilon): The difference between the probability and the threshold that would make the row interesting for us. For instance, epsilon=0.1 and threhsold=0.5 would mean
+            we consider all rows in [0.4, 0.6] to be of interest. Defaults to 0.1.
         sort_values (bool): Whether to return the indices sorted by the distance from the threshold, such that the first values are closer to the threshold and the later values are further. Defaults to True.
         types (str): The type of rows to keep and return. Can be one of ['incorrect', 'correct', 'true_positive', 'true_negative', 'all']. Defaults to 'all'.
 
