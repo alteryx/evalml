@@ -59,18 +59,14 @@ def _compute_lime_values(pipeline, features, index_to_explain):
         mode = "regression"
 
     def array_predict(row):
-        row = pd.DataFrame(row, columns=feature_names)
         if mode == "regression":
-            pred = pipeline.predict(row)
+            pred = pipeline.estimator.predict(row)
         else:
-            pred = pipeline.predict_proba(row)
+            pred = pipeline.estimator.predict_proba(row)
         return np.array(pred)
 
     def list_to_dict(l):
-        d = {}
-        for item in l:
-            d[item[0]] = [item[1]]
-        return d
+        return {item[0]: [item[1]] for item in l}
 
     num_features = features.shape[1]
     if isinstance(features, pd.DataFrame):

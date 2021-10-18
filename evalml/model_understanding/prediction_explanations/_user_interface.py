@@ -486,7 +486,8 @@ class _MultiClassExplanationTable(_TableMaker):
                 self.include_explainer_values,
             )
             json_output_for_class["drill_down"] = drill_down
-            json_output_for_class["expected_value"] = expected_value[class_index]
+            if expected_value is not None:
+                json_output_for_class["expected_value"] = expected_value[class_index]
             json_output_for_class["class_name"] = _make_json_serializable(class_name)
             json_output.append(json_output_for_class)
         return {"explanations": json_output}

@@ -1178,9 +1178,15 @@ pipeline_test_cases = [
 ]
 
 
-@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
-def test_categories_aggregated_linear_pipeline(pipeline_class, estimator, fraud_100):
+@pytest.mark.parametrize(
+    "pipeline_class_and_estimator,algorithm",
+    product(pipeline_test_cases, ["shap", "lime"]),
+)
+def test_categories_aggregated_linear_pipeline(
+    pipeline_class_and_estimator, algorithm, fraud_100
+):
     X, y = fraud_100
+    pipeline_class, estimator = pipeline_class_and_estimator
 
     pipeline = pipeline_class(
         component_graph=[
@@ -1202,7 +1208,12 @@ def test_categories_aggregated_linear_pipeline(pipeline_class, estimator, fraud_
     pipeline.fit(X, y)
 
     report = explain_predictions(
-        pipeline, X, y, indices_to_explain=[0], output_format="dict"
+        pipeline,
+        X,
+        y,
+        indices_to_explain=[0],
+        output_format="dict",
+        algorithm=algorithm,
     )
     for explanation in report["explanations"][0]["explanations"]:
         assert set(explanation["feature_names"]) == {"amount", "provider", "currency"}
@@ -1218,9 +1229,13 @@ def test_categories_aggregated_linear_pipeline(pipeline_class, estimator, fraud_
         )
 
 
-@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
-def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
+@pytest.mark.parametrize(
+    "pipeline_class_and_estimator,algorithm",
+    product(pipeline_test_cases, ["shap", "lime"]),
+)
+def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fraud_100):
     X, y = fraud_100
+    pipeline_class, estimator = pipeline_class_and_estimator
 
     X.ww.set_types(
         logical_types={
@@ -1250,7 +1265,13 @@ def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
     pipeline.fit(X, y)
 
     report = explain_predictions(
-        pipeline, X, y, indices_to_explain=[0], top_k_features=4, output_format="dict"
+        pipeline,
+        X,
+        y,
+        indices_to_explain=[0],
+        top_k_features=4,
+        output_format="dict",
+        algorithm=algorithm,
     )
     for explanation in report["explanations"][0]["explanations"]:
         assert set(explanation["feature_names"]) == {
@@ -1280,9 +1301,15 @@ def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
         )
 
 
-@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
-def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
+@pytest.mark.parametrize(
+    "pipeline_class_and_estimator,algorithm",
+    product(pipeline_test_cases, ["shap", "lime"]),
+)
+def test_categories_aggregated_date_ohe(
+    pipeline_class_and_estimator, algorithm, fraud_100
+):
     X, y = fraud_100
+    pipeline_class, estimator = pipeline_class_and_estimator
 
     pipeline = pipeline_class(
         component_graph=[
@@ -1303,7 +1330,13 @@ def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
 
     pipeline.fit(X, y)
     report = explain_predictions(
-        pipeline, X, y, indices_to_explain=[0], output_format="dict", top_k_features=7
+        pipeline,
+        X,
+        y,
+        indices_to_explain=[0],
+        output_format="dict",
+        top_k_features=7,
+        algorithm=algorithm,
     )
 
     for explanation in report["explanations"][0]["explanations"]:
@@ -1334,9 +1367,15 @@ def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
         )
 
 
-@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
-def test_categories_aggregated_pca_dag(pipeline_class, estimator, fraud_100):
+@pytest.mark.parametrize(
+    "pipeline_class_and_estimator,algorithm",
+    product(pipeline_test_cases, ["shap", "lime"]),
+)
+def test_categories_aggregated_pca_dag(
+    pipeline_class_and_estimator, algorithm, fraud_100
+):
     X, y = fraud_100
+    pipeline_class, estimator = pipeline_class_and_estimator
 
     component_graph = {
         "SelectNumeric": ["Select Columns Transformer", "X", "y"],
@@ -1359,7 +1398,13 @@ def test_categories_aggregated_pca_dag(pipeline_class, estimator, fraud_100):
 
     pipeline.fit(X, y)
     report = explain_predictions(
-        pipeline, X, y, indices_to_explain=[0], output_format="dict", top_k_features=7
+        pipeline,
+        X,
+        y,
+        indices_to_explain=[0],
+        output_format="dict",
+        top_k_features=7,
+        algorithm=algorithm,
     )
 
     for explanation in report["explanations"][0]["explanations"]:
@@ -1391,11 +1436,15 @@ def test_categories_aggregated_pca_dag(pipeline_class, estimator, fraud_100):
         )
 
 
-@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
+@pytest.mark.parametrize(
+    "pipeline_class_and_estimator,algorithm",
+    product(pipeline_test_cases, ["shap", "lime"]),
+)
 def test_categories_aggregated_but_not_those_that_are_dropped(
-    pipeline_class, estimator, fraud_100
+    pipeline_class_and_estimator, algorithm, fraud_100
 ):
     X, y = fraud_100
+    pipeline_class, estimator = pipeline_class_and_estimator
 
     component_graph = [
         "Select Columns Transformer",
@@ -1418,7 +1467,12 @@ def test_categories_aggregated_but_not_those_that_are_dropped(
     pipeline.fit(X, y)
 
     report = explain_predictions(
-        pipeline, X, y, indices_to_explain=[0], output_format="dict"
+        pipeline,
+        X,
+        y,
+        indices_to_explain=[0],
+        output_format="dict",
+        algorithm=algorithm,
     )
     for explanation in report["explanations"][0]["explanations"]:
         assert set(explanation["feature_names"]) == {"amount", "provider", "currency"}
@@ -1434,11 +1488,15 @@ def test_categories_aggregated_but_not_those_that_are_dropped(
         )
 
 
-@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
+@pytest.mark.parametrize(
+    "pipeline_class_and_estimator,algorithm",
+    product(pipeline_test_cases, ["shap", "lime"]),
+)
 def test_categories_aggregated_when_some_are_dropped(
-    pipeline_class, estimator, fraud_100
+    pipeline_class_and_estimator, algorithm, fraud_100
 ):
     X, y = fraud_100
+    pipeline_class, estimator = pipeline_class_and_estimator
 
     component_graph = [
         "Select Columns Transformer",
@@ -1461,7 +1519,13 @@ def test_categories_aggregated_when_some_are_dropped(
     pipeline.fit(X, y)
 
     report = explain_predictions(
-        pipeline, X, y, indices_to_explain=[0], output_format="dict", top_k_features=4
+        pipeline,
+        X,
+        y,
+        indices_to_explain=[0],
+        output_format="dict",
+        top_k_features=4,
+        algorithm=algorithm,
     )
     for explanation in report["explanations"][0]["explanations"]:
         assert set(explanation["feature_names"]) == {
@@ -1527,19 +1591,23 @@ def test_explain_predictions_stacked_ensemble(
 
 
 @pytest.mark.parametrize(
-    "estimator",
-    [
-        e
-        for e in _all_estimators()
-        if (
-            "Classifier" in e.name
-            and not any(
-                s in e.name for s in ["Baseline", "Cat", "Elastic", "KN", "Ensemble"]
+    "estimator,algorithm",
+    product(
+        [
+            e
+            for e in _all_estimators()
+            if (
+                "Classifier" in e.name
+                and not any(
+                    s in e.name
+                    for s in ["Baseline", "Cat", "Elastic", "KN", "Ensemble"]
+                )
             )
-        )
-    ],
+        ],
+        ["shap", "lime"],
+    ),
 )
-def test_explain_predictions_oversampler(estimator, fraud_100):
+def test_explain_predictions_oversampler(estimator, algorithm, fraud_100):
     pytest.importorskip(
         "imblearn.over_sampling",
         reason="Skipping test because imbalanced-learn not installed",
@@ -1571,6 +1639,7 @@ def test_explain_predictions_oversampler(estimator, fraud_100):
         indices_to_explain=[0],
         output_format="dataframe",
         top_k_features=4,
+        algorithm=algorithm,
     )
     assert report["feature_names"].isnull().sum() == 0
     assert report["feature_values"].isnull().sum() == 0
@@ -1634,7 +1703,8 @@ def test_explain_predictions_unknown(indices, X_y_binary):
         assert exp["feature_values"].isnull().sum() == 0
 
 
-def test_explain_predictions_url_email(df_with_url_and_email):
+@pytest.mark.parametrize("algorithm", ["shap", "lime"])
+def test_explain_predictions_url_email(df_with_url_and_email, algorithm):
     X = df_with_url_and_email.ww.select(["url", "EmailAddress"])
     y = pd.Series([0, 1, 1, 0, 1])
 
@@ -1648,7 +1718,13 @@ def test_explain_predictions_url_email(df_with_url_and_email):
     )
     pl.fit(X, y)
     explanations = explain_predictions_best_worst(
-        pl, X, y, output_format="dict", num_to_explain=1, top_k_features=2
+        pl,
+        X,
+        y,
+        output_format="dict",
+        num_to_explain=1,
+        top_k_features=2,
+        algorithm=algorithm,
     )
     assert (
         "email" in explanations["explanations"][0]["explanations"][0]["feature_names"]
@@ -1678,10 +1754,14 @@ def test_explain_predictions_url_email(df_with_url_and_email):
     )
 
 
-@pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
+@pytest.mark.parametrize(
+    "pipeline_class_and_estimator, algorithm",
+    product(pipeline_test_cases, ["shap", "lime"]),
+)
 def test_explain_predictions_report_shows_original_value_if_possible(
-    pipeline_class, estimator, fraud_100
+    pipeline_class_and_estimator, algorithm, fraud_100
 ):
+    pipeline_class, estimator = pipeline_class_and_estimator
     X, y = fraud_100
     X.ww.set_types({"country": "NaturalLanguage"})
     component_graph = [
@@ -1702,7 +1782,13 @@ def test_explain_predictions_report_shows_original_value_if_possible(
     pipeline.fit(X, y)
 
     report = explain_predictions(
-        pipeline, X, y, indices_to_explain=[0], output_format="dict", top_k_features=20
+        pipeline,
+        X,
+        y,
+        indices_to_explain=[0],
+        output_format="dict",
+        top_k_features=20,
+        algorithm=algorithm,
     )
     expected_feature_values = set(X.ww.iloc[0, :].tolist())
     for explanation in report["explanations"][0]["explanations"]:
@@ -1720,6 +1806,7 @@ def test_explain_predictions_report_shows_original_value_if_possible(
         indices_to_explain=[0],
         output_format="dict",
         top_k_features=20,
+        algorithm=algorithm,
     )
     for explanation in report["explanations"][0]["explanations"]:
         assert set(explanation["feature_names"]) == set(X.columns)
@@ -1730,7 +1817,9 @@ def test_explain_predictions_report_shows_original_value_if_possible(
                 assert np.isnan(feature_value)
 
 
+@pytest.mark.parametrize("algorithm", ["shap", "lime"])
 def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
+    algorithm,
     fraud_100,
 ):
     X, y = fraud_100
@@ -1754,7 +1843,13 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
 
     pipeline.fit(X, y)
     report = explain_predictions_best_worst(
-        pipeline, X, y, num_to_explain=1, output_format="dict", top_k_features=20
+        pipeline,
+        X,
+        y,
+        num_to_explain=1,
+        output_format="dict",
+        top_k_features=20,
+        algorithm=algorithm,
     )
 
     for index, explanation in enumerate(report["explanations"]):
@@ -1775,6 +1870,7 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
         num_to_explain=1,
         output_format="dict",
         top_k_features=20,
+        algorithm=algorithm,
     )
     for explanation in report["explanations"]:
         for exp in explanation["explanations"]:

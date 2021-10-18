@@ -148,7 +148,7 @@ def test_shap_value_errors_raised(mock_tree_explainer, pipeline, exception, matc
 def test_lime_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
     pytest.importorskip(
         "lime.lime_tabular",
-        reason="Skipping plotting test because lime not installed",
+        reason="Skipping lime value errors test because lime not installed",
     )
 
     pipeline = pipeline(
