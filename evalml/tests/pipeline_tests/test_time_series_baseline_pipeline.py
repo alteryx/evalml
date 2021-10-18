@@ -49,9 +49,9 @@ def test_time_series_baseline(
     forecast_horizon, gap, problem_type, X_y_regression, X_y_binary, X_y_multi
 ):
 
-    if problem_type.TIME_SERIES_REGRESSION:
+    if problem_type == problem_type.TIME_SERIES_REGRESSION:
         X, y = X_y_regression
-    elif problem_type.TIME_SERIES_BINARY:
+    elif problem_type == problem_type.TIME_SERIES_BINARY:
         X, y = X_y_binary
     else:
         X, y = X_y_multi

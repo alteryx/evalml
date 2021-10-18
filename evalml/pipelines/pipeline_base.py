@@ -1,6 +1,7 @@
 """Base machine learning pipeline class."""
 import copy
 import inspect
+import json
 import logging
 import os
 import sys
@@ -253,7 +254,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             pipeline_dict.update({"components": component_dict})
             return pipeline_dict
 
-    def compute_estimator_features(self, X, y=None, X_train=None, y_train=None):
+    def transform_all_but_final(self, X, y=None, X_train=None, y_train=None):
         """Transforms the data by applying all pre-processing components.
 
         Args:
@@ -265,7 +266,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             pd.DataFrame: New transformed features.
         """
-        return self.component_graph.compute_final_component_features(X, y=y)
+        return self.component_graph.transform_all_but_final(X, y=y)
 
     def _fit(self, X, y):
         self.input_target_name = y.name
@@ -423,6 +424,50 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         importance.sort(key=lambda x: -abs(x[1]))
         df = pd.DataFrame(importance, columns=["feature", "importance"])
         return df
+
+    def graph_json(self):
+        """Generates a JSON with nodes consisting of the component names and parameters, and edges detailing component relationships.
+
+        x_edges specifies from which component feature data is being passed.
+        y_edges specifies from which component target data is being passed.
+        This can be used to build graphs across a variety of visualization tools.
+        Template:
+        {"Nodes": {"component_name": {"Name": class_name, "Attributes": parameters_attributes}, ...}},
+        "x_edges": [[from_component_name, to_component_name], [from_component_name, to_component_name], ...],
+        "y_edges": [[from_component_name, to_component_name], [from_component_name, to_component_name], ...]}
+
+        Returns:
+            dag_json (str): A serialized JSON representation of a DAG structure.
+        """
+        nodes = {
+            comp_: {"Attributes": att_.parameters, "Name": att_.name}
+            for comp_, att_ in self.component_graph.component_instances.items()
+        }
+
+        x_edges = self.component_graph._get_edges(
+            self.component_graph.component_dict, "features"
+        )
+        y_edges = self.component_graph._get_edges(
+            self.component_graph.component_dict, "target"
+        )
+        for (
+            component_name,
+            component_info,
+        ) in self.component_graph.component_dict.items():
+            for parent in component_info[1:]:
+                if parent == "X":
+                    x_edges.append(("X", component_name))
+                elif parent == "y":
+                    y_edges.append(("y", component_name))
+        nodes.update({"X": "X", "y": "y"})
+        graph_as_json = {"Nodes": nodes, "x_edges": x_edges, "y_edges": y_edges}
+
+        for x_edge in graph_as_json["x_edges"]:
+            if x_edge[0] == "X":
+                graph_as_json["x_edges"].remove(x_edge)
+                graph_as_json["x_edges"].insert(0, x_edge)
+
+        return json.dumps(graph_as_json, indent=4)
 
     def graph(self, filepath=None):
         """Generate an image representing the pipeline graph.

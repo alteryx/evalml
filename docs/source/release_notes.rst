@@ -2,21 +2,50 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Added human-readable pipeline explanations to model understanding :pr:`2861`
+        * Added support for woodwork version ``0.8.2`` :pr:`2909`
+        * Enhanced the ``DateTimeFeaturizer`` to handle ``NaNs`` in date features :pr:`2909`
     * Fixes
-        * Pinned ``cmdstan`` to ``0.28.0`` in ``cmdstan-builder`` to prevent future breaking of support for Prophet :pr:`2880`
+        * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
     * Changes
+        * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
+    * Documentation Changes
+        * Added back Future Release section to release notes :pr:`2927`
+    * Testing Changes
+        * Fixed dependency checker to catch full names of packages :pr:`2930`
+        * Refactored ``build_conda_pkg`` to work from a local recipe :pr:`2925`
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.35.0 Oct. 14, 2021**
+    * Enhancements
+        * Added human-readable pipeline explanations to model understanding :pr:`2861`
+        * Updated to support Featuretools 1.0.0 and nlp-primitives 2.0.0 :pr:`2848`
+    * Fixes
+        * Fixed bug where ``long`` mode for the top level search method was not respected :pr:`2875`
+        * Pinned ``cmdstan`` to ``0.28.0`` in ``cmdstan-builder`` to prevent future breaking of support for Prophet :pr:`2880`
+        * Added ``Jarque-Bera`` to the ``TargetDistributionDataCheck`` :pr:`2891`
+    * Changes
+        * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level :pr:`2821`
         * Deleted scikit-learn ensembler :pr:`2819`
+        * Refactored pipeline building logic out of ``AutoMLSearch`` and into ``IterativeAlgorithm`` :pr:`2854`
+        * Refactored names for methods in ``ComponentGraph`` and ``PipelineBase`` :pr:`2902`
     * Documentation Changes
         * Updated ``install.ipynb`` to reflect flexibility for ``cmdstan`` version installation :pr:`2880`
+        * Updated the conda section of our contributing guide :pr:`2899`
     * Testing Changes
+        * Updated ``test_all_estimators`` to account for Prophet being allowed for Python 3.9 :pr:`2892`
         * Updated linux tests to use ``cmdstan-builder==0.0.8`` :pr:`2880`
 
 .. warning::
 
     **Breaking Changes**
+        * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level. This means that pipelines will no longer automatically encode non-numerical targets. Please use a label encoder if working with classification problems and non-numeric targets. :pr:`2821`
         * Deleted scikit-learn ensembler :pr:`2819`
-
+        * ``IterativeAlgorithm`` now requires X, y, problem_type as required arguments as well as sampler_name, allowed_model_families, allowed_component_graphs, max_batches, and verbose as optional arguments :pr:`2854`
+        * Changed method names of ``fit_features`` and ``compute_final_component_features`` to ``fit_and_transform_all_but_final`` and ``transform_all_but_final`` in ``ComponentGraph``, and ``compute_estimator_features`` to ``transform_all_but_final`` in pipeline classes :pr:`2902`
 
 **v0.34.0 Sep. 30, 2021**
     * Enhancements
@@ -25,6 +54,7 @@ Release Notes
         * Added support for training-only components in pipelines and component graphs :pr:`2776`
         * Added default argument for the parameters value for ``ComponentGraph.instantiate`` :pr:`2796`
         * Added ``TIME_SERIES_REGRESSION`` to ``LightGBMRegressor's`` supported problem types :pr:`2793`
+        * Provided a JSON representation of a pipeline's DAG structure :pr:`2812`
         * Added validation to holdout data passed to ``predict`` and ``predict_proba`` for time series :pr:`2804`
         * Added information about which row indices are outliers in ``OutliersDataCheck`` :pr:`2818`
         * Added verbose flag to top level ``search()`` method :pr:`2813`

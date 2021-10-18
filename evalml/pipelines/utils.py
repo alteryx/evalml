@@ -41,6 +41,9 @@ from evalml.pipelines.components import (  # noqa: F401
     Undersampler,
     URLFeaturizer,
 )
+from evalml.pipelines.components.transformers.encoders.label_encoder import (
+    LabelEncoder,
+)
 from evalml.pipelines.components.utils import (
     get_estimators,
     handle_component_class,
@@ -73,6 +76,9 @@ def _get_preprocessing_components(
     """
     pp_components = []
 
+    if is_classification(problem_type):
+        pp_components.append(LabelEncoder)
+
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
@@ -99,16 +105,8 @@ def _get_preprocessing_components(
         logical_types.Integer,
         logical_types.URL,
         logical_types.EmailAddress,
+        logical_types.Datetime,
     }
-
-    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
-    if len(text_columns) > 0:
-        pp_components.append(TextFeaturizer)
-
-    if len(input_logical_types.intersection(types_imputer_handles)) or len(
-        text_columns
-    ):
-        pp_components.append(Imputer)
 
     datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
 
@@ -118,6 +116,15 @@ def _get_preprocessing_components(
         ModelFamily.PROPHET,
     ]:
         pp_components.append(DateTimeFeaturizer)
+
+    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
+    if len(text_columns) > 0:
+        pp_components.append(TextFeaturizer)
+
+    if len(input_logical_types.intersection(types_imputer_handles)) or len(
+        text_columns
+    ):
+        pp_components.append(Imputer)
 
     if (
         is_time_series(problem_type)
@@ -278,7 +285,11 @@ def _make_stacked_ensemble_pipeline(
         idx = " " + str(idx) if idx is not None else ""
         return f"{str(model_type)} Pipeline{idx} - {component_name}"
 
-    component_graph = {}
+    component_graph = (
+        {"Label Encoder": ["Label Encoder", "X", "y"]}
+        if is_classification(problem_type)
+        else {}
+    )
     final_components = []
     used_model_families = []
     parameters = {}
@@ -330,6 +341,11 @@ def _make_stacked_ensemble_pipeline(
                     new_component_list.append(
                         _make_new_component_name(model_family, item, model_family_idx)
                     )
+                elif isinstance(item, str) and item == "y":
+                    if is_classification(problem_type):
+                        new_component_list.append("Label Encoder.y")
+                    else:
+                        new_component_list.append("y")
                 else:
                     new_component_list.append(item)
                 if i != 0 and item.endswith(".y"):

@@ -1,13 +1,23 @@
 """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance."""
 import inspect
+import logging
+import warnings
 from operator import itemgetter
 
 import numpy as np
+import pandas as pd
 from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
 
+from evalml.automl.utils import get_pipelines_from_component_graphs
+from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
+from evalml.pipelines.components.utils import get_estimators
+from evalml.pipelines.utils import make_pipeline
+from evalml.problem_types import is_time_series
+from evalml.utils import infer_feature_types
+from evalml.utils.logger import get_logger
 
 _ESTIMATOR_FAMILY_ORDER = [
     ModelFamily.LINEAR_MODEL,
@@ -25,23 +35,45 @@ class IterativeAlgorithm(AutoMLAlgorithm):
     """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
 
     Args:
-        allowed_pipelines (list(class)): A list of PipelineBase instances indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
-        max_iterations (int): The maximum number of iterations to be evaluated.
+        X (pd.DataFrame): Training data.
+        y (pd.Series): Target data.
+        problem_type (ProblemType): Problem type associated with training data.
+        sampler_name (BaseSampler): Sampler to use for preprocessing. Defaults to None.
+        allowed_model_families (list(str, ModelFamily)): The model families to search. The default of None searches over all
+            model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
+            to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
+            this parameter will be ignored.
+        allowed_component_graphs (dict): A dictionary of lists or ComponentGraphs indicating the component graphs allowed in the search.
+            The format should follow { "Name_0": [list_of_components], "Name_1": [ComponentGraph(...)] }
+
+            The default of None indicates all pipeline component graphs for this problem type are allowed. Setting this field will cause
+            allowed_model_families to be ignored.
+
+            e.g. allowed_component_graphs = { "My_Graph": ["Imputer", "One Hot Encoder", "Random Forest Classifier"] }
+        max_batches (int): The maximum number of batches to be evaluated. Used to determine ensembling. Defaults to None.
+        max_iterations (int): The maximum number of iterations to be evaluated. Used to determine ensembling. Defaults to None.
         tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
         random_seed (int): Seed for the random number generator. Defaults to 0.
         pipelines_per_batch (int): The number of pipelines to be evaluated in each batch, after the first batch. Defaults to 5.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to None.
         number_features (int): The number of columns in the input features. Defaults to None.
         ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
-        text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
+        text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to False.
         pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
         custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
         _estimator_family_order (list(ModelFamily) or None): specify the sort order for the first batch. Defaults to None, which uses _ESTIMATOR_FAMILY_ORDER.
+        verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
     """
 
     def __init__(
         self,
-        allowed_pipelines=None,
+        X,
+        y,
+        problem_type,
+        sampler_name=None,
+        allowed_model_families=None,
+        allowed_component_graphs=None,
+        max_batches=None,
         max_iterations=None,
         tuner_class=None,
         random_seed=0,
@@ -53,61 +85,45 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         pipeline_params=None,
         custom_hyperparameters=None,
         _estimator_family_order=None,
+        verbose=False,
     ):
-        """An automl algorithm which first fits a base round of pipelines with default parameters, then does a round of parameter tuning on each pipeline in order of performance.
-
-        Args:
-            allowed_pipelines (list(class)): A list of PipelineBase instances indicating the pipelines allowed in the search. The default of None indicates all pipelines for this problem type are allowed.
-            max_iterations (int): The maximum number of iterations to be evaluated.
-            tuner_class (class): A subclass of Tuner, to be used to find parameters for each pipeline. The default of None indicates the SKOptTuner will be used.
-            random_seed (int): Seed for the random number generator. Defaults to 0.
-            pipelines_per_batch (int): The number of pipelines to be evaluated in each batch, after the first batch. Defaults to 5.
-            n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
-            number_features (int): The number of columns in the input features. Defaults to None.
-            ensembling (boolean): If True, runs ensembling in a separate batch after every allowed pipeline class has been iterated over. Defaults to False.
-            text_in_ensembling (boolean): If True and ensembling is True, then n_jobs will be set to 1 to avoid downstream sklearn stacking issues related to nltk. Defaults to None.
-            pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
-            custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
-            _estimator_family_order (list[ModelFamily]): specify the sort order for the first batch. Defaults to None, which uses _ESTIMATOR_FAMILY_ORDER.
-        """
-        self._estimator_family_order = (
-            _estimator_family_order or _ESTIMATOR_FAMILY_ORDER
-        )
-        indices = []
-        pipelines_to_sort = []
-        pipelines_end = []
-        for pipeline in allowed_pipelines or []:
-            if pipeline.model_family in self._estimator_family_order:
-                indices.append(
-                    self._estimator_family_order.index(pipeline.model_family)
-                )
-                pipelines_to_sort.append(pipeline)
-            else:
-                pipelines_end.append(pipeline)
-        pipelines_start = [
-            pipeline
-            for _, pipeline in (
-                sorted(zip(indices, pipelines_to_sort), key=lambda pair: pair[0]) or []
-            )
-        ]
-        allowed_pipelines = pipelines_start + pipelines_end
-
-        super().__init__(
-            allowed_pipelines=allowed_pipelines,
-            custom_hyperparameters=custom_hyperparameters,
-            max_iterations=max_iterations,
-            tuner_class=tuner_class,
-            random_seed=random_seed,
-        )
+        self.X = infer_feature_types(X)
+        self.y = infer_feature_types(y)
+        self.problem_type = problem_type
+        self.random_seed = random_seed
+        self.sampler_name = sampler_name
+        self.allowed_model_families = allowed_model_families
         self.pipelines_per_batch = pipelines_per_batch
         self.n_jobs = n_jobs
         self.number_features = number_features
         self._first_batch_results = []
         self._best_pipeline_info = {}
-        self.ensembling = ensembling and len(self.allowed_pipelines) > 1
-        self.text_in_ensembling = text_in_ensembling
+        self.ensembling = ensembling
         self._pipeline_params = pipeline_params or {}
         self._custom_hyperparameters = custom_hyperparameters or {}
+        self.text_in_ensembling = text_in_ensembling
+        self.max_batches = max_batches
+        self.max_iterations = max_iterations
+        if verbose:
+            self.logger = get_logger(f"{__name__}.verbose")
+        else:
+            self.logger = logging.getLogger(__name__)
+
+        self._estimator_family_order = (
+            _estimator_family_order or _ESTIMATOR_FAMILY_ORDER
+        )
+
+        self.allowed_component_graphs = allowed_component_graphs
+        self._create_pipelines()
+
+        super().__init__(
+            allowed_pipelines=self.allowed_pipelines,
+            custom_hyperparameters=custom_hyperparameters,
+            tuner_class=tuner_class,
+            text_in_ensembling=self.text_in_ensembling,
+            random_seed=random_seed,
+            n_jobs=self.n_jobs,
+        )
 
         if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
             raise ValueError(
@@ -128,6 +144,160 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         "Custom hyperparameters should only contain skopt.Space variables such as Categorical, Integer,"
                         " and Real!"
                     )
+
+    def _create_pipelines(self):
+        indices = []
+        pipelines_to_sort = []
+        pipelines_end = []
+        self.allowed_pipelines = []
+        if self.allowed_component_graphs is None:
+            self.logger.info("Generating pipelines to search over...")
+            allowed_estimators = get_estimators(
+                self.problem_type, self.allowed_model_families
+            )
+            if (
+                is_time_series(self.problem_type)
+                and self._pipeline_params["pipeline"]["date_index"]
+            ):
+                if (
+                    pd.infer_freq(
+                        self.X[self._pipeline_params["pipeline"]["date_index"]]
+                    )
+                    == "MS"
+                ):
+                    allowed_estimators = [
+                        estimator
+                        for estimator in allowed_estimators
+                        if estimator.name != "ARIMA Regressor"
+                    ]
+            self.logger.debug(
+                f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}"
+            )
+            drop_columns = (
+                self._pipeline_params["Drop Columns Transformer"]["columns"]
+                if "Drop Columns Transformer" in self._pipeline_params
+                else None
+            )
+            index_and_unknown_columns = list(
+                self.X.ww.select(["index", "unknown"], return_schema=True).columns
+            )
+            unknown_columns = list(
+                self.X.ww.select("unknown", return_schema=True).columns
+            )
+            index_and_unknown_columns = index_and_unknown_columns
+            if len(index_and_unknown_columns) > 0 and drop_columns is None:
+                self._pipeline_params["Drop Columns Transformer"] = {
+                    "columns": index_and_unknown_columns
+                }
+                if len(unknown_columns):
+                    self.logger.info(
+                        f"Removing columns {unknown_columns} because they are of 'Unknown' type"
+                    )
+
+            with warnings.catch_warnings(record=True) as w:
+                warnings.filterwarnings("always", category=ParameterNotUsedWarning)
+                self.allowed_pipelines = [
+                    make_pipeline(
+                        self.X,
+                        self.y,
+                        estimator,
+                        self.problem_type,
+                        parameters=self._pipeline_params,
+                        sampler_name=self.sampler_name,
+                    )
+                    for estimator in allowed_estimators
+                ]
+            self._catch_warnings(w)
+        else:
+            with warnings.catch_warnings(record=True) as w:
+                warnings.filterwarnings("always", category=ParameterNotUsedWarning)
+                self.allowed_pipelines = get_pipelines_from_component_graphs(
+                    self.allowed_component_graphs,
+                    self.problem_type,
+                    self._pipeline_params,
+                    self.random_seed,
+                )
+            self._catch_warnings(w)
+
+        if self.allowed_pipelines == []:
+            raise ValueError("No allowed pipelines to search")
+
+        if self.ensembling and len(self.allowed_pipelines) == 1:
+            self.logger.warning(
+                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
+            )
+            self.ensembling = False
+
+        if self.ensembling and self.max_iterations is not None:
+            # Baseline + first batch + each pipeline iteration + 1
+            first_ensembling_iteration = (
+                1
+                + len(self.allowed_pipelines)
+                + len(self.allowed_pipelines) * self.pipelines_per_batch
+                + 1
+            )
+            if self.max_iterations < first_ensembling_iteration:
+                self.ensembling = False
+                self.logger.warning(
+                    f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling."
+                )
+            else:
+                self.logger.info(
+                    f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self.pipelines_per_batch} iterations after that."
+                )
+
+        if self.max_batches and self.max_iterations is None:
+            self.show_batch_output = True
+            if self.ensembling:
+                ensemble_nth_batch = len(self.allowed_pipelines) + 1
+                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
+                if num_ensemble_batches == 0:
+                    self.ensembling = False
+                    self.logger.warning(
+                        f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling."
+                    )
+                else:
+                    self.logger.info(
+                        f"Ensembling will run every {ensemble_nth_batch} batches."
+                    )
+
+                self.max_iterations = (
+                    1
+                    + len(self.allowed_pipelines)
+                    + self.pipelines_per_batch
+                    * (self.max_batches - 1 - num_ensemble_batches)
+                    + num_ensemble_batches
+                )
+            else:
+                self.max_iterations = (
+                    1
+                    + len(self.allowed_pipelines)
+                    + (self.pipelines_per_batch * (self.max_batches - 1))
+                )
+
+        for pipeline in self.allowed_pipelines or []:
+            if pipeline.model_family in self._estimator_family_order:
+                indices.append(
+                    self._estimator_family_order.index(pipeline.model_family)
+                )
+                pipelines_to_sort.append(pipeline)
+            else:
+                pipelines_end.append(pipeline)
+        pipelines_start = [
+            pipeline
+            for _, pipeline in (
+                sorted(zip(indices, pipelines_to_sort), key=lambda pair: pair[0]) or []
+            )
+        ]
+        self.allowed_pipelines = pipelines_start + pipelines_end
+
+        self.logger.debug(
+            f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}"
+        )
+        self.logger.debug(
+            f"allowed_model_families set to {self.allowed_model_families}"
+        )
+        self.logger.info(f"{len(self.allowed_pipelines)} pipelines ready for search.")
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate.
@@ -279,3 +449,27 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         component_parameters[param_name] = value
             parameters[name] = component_parameters
         return parameters
+
+    def _catch_warnings(self, warning_list):
+        parameter_not_used_warnings = []
+        raised_messages = []
+        for msg in warning_list:
+            if isinstance(msg.message, ParameterNotUsedWarning):
+                parameter_not_used_warnings.append(msg.message)
+            # Raise non-PNU warnings immediately, but only once per warning
+            elif str(msg.message) not in raised_messages:
+                warnings.warn(msg.message)
+                raised_messages.append(str(msg.message))
+
+        # Raise PNU warnings, iff the warning was raised in every pipeline
+        if len(parameter_not_used_warnings) == len(self.allowed_pipelines) and len(
+            parameter_not_used_warnings
+        ):
+            final_message = set([])
+            for msg in parameter_not_used_warnings:
+                if len(final_message) == 0:
+                    final_message = final_message.union(msg.components)
+                else:
+                    final_message = final_message.intersection(msg.components)
+
+            warnings.warn(ParameterNotUsedWarning(final_message))
