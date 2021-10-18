@@ -21,6 +21,10 @@ from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesRegressionPipeline,
 )
+from evalml.pipelines.components import (
+    StackedEnsembleClassifier,
+    StackedEnsembleRegressor,
+)
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.problem_types import (
     ProblemTypes,
@@ -894,7 +898,7 @@ def test_explain_predictions_best_worst_and_explain_predictions(
     pipeline.problem_type = problem_type
     pipeline.name = "Test Pipeline Name"
     input_features.ww.init()
-    pipeline.compute_estimator_features.return_value = input_features
+    pipeline.transform_all_but_final.return_value = input_features
 
     def _add_custom_index(answer, index_best, index_worst, output_format):
 
@@ -1093,7 +1097,7 @@ def test_explain_predictions_best_worst_custom_metric(
     pipeline.problem_type = ProblemTypes.REGRESSION
     pipeline.name = "Test Pipeline Name"
     input_features.ww.init()
-    pipeline.compute_estimator_features.return_value = input_features
+    pipeline.transform_all_but_final.return_value = input_features
 
     pipeline.predict.return_value = ww.init_series(pd.Series([2, 1]))
     y_true = pd.Series([3, 2])
@@ -1647,22 +1651,23 @@ def test_categories_aggregated_when_some_are_dropped(
 )
 def test_explain_predictions_stacked_ensemble(
     problem_type,
-    dummy_stacked_ensemble_binary_estimator,
-    dummy_stacked_ensemble_multiclass_estimator,
-    dummy_stacked_ensemble_regressor_estimator,
     X_y_binary,
     X_y_multi,
     X_y_regression,
 ):
     if is_binary(problem_type):
         X, y = X_y_binary
-        pipeline = dummy_stacked_ensemble_binary_estimator
+        pipeline = BinaryClassificationPipeline(
+            [StackedEnsembleClassifier(random_seed=0)]
+        )
     elif is_multiclass(problem_type):
         X, y = X_y_multi
-        pipeline = dummy_stacked_ensemble_multiclass_estimator
+        pipeline = MulticlassClassificationPipeline(
+            [StackedEnsembleClassifier(random_seed=0)]
+        )
     else:
         X, y = X_y_regression
-        pipeline = dummy_stacked_ensemble_regressor_estimator
+        pipeline = RegressionPipeline([StackedEnsembleRegressor(random_seed=0)])
 
     with pytest.raises(
         ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"
@@ -1736,7 +1741,7 @@ def test_explain_predictions_best_worst_callback(mock_make_table):
     pipeline.problem_type = ProblemTypes.REGRESSION
     pipeline.name = "Test Pipeline Name"
     input_features.ww.init()
-    pipeline.compute_estimator_features.return_value = input_features
+    pipeline.transform_all_but_final.return_value = input_features
     pipeline.predict.return_value = ww.init_series(pd.Series([2, 1]))
     y_true = pd.Series([3, 2])
 

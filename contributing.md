@@ -92,25 +92,65 @@ If your work includes a [breaking change](https://en.wiktionary.org/wiki/breakin
 
 ### 4. Updating our conda package
 
-Some pull requests, in particular those that update or add new dependencies, may require editing our conda [package](https://anaconda.org/conda-forge/evalml).
-For those new to conda, packages are updated by editing something called a recipe file.
-Here is evalml's [recipe](https://github.com/conda-forge/evalml-core-feedstock/blob/master/recipe/meta.yaml).
-Note that the recipe specifies two outputs: `evalml-core` and `evalml`, where `evalml-core` only includes the core dependencies.
+We maintain a conda package [package](https://anaconda.org/conda-forge/evalml) to give users more options of how to install EvalML.
+Conda packages are created from recipes, which are yaml config files that list a package's dependencies and tests. Here is 
+EvalML's latest published [recipe](https://github.com/conda-forge/evalml-core-feedstock/blob/master/recipe/meta.yaml).
+GitHub repositories containing conda recipes are called `feedstocks`.
 
-To update our package perform the following steps:
+If you opened a PR to EvalML that modifies `requirements.txt` or `core-requirements.txt`, or if the latest dependency bot
+updates the latest version of one of our packages, you will see a CI job called `build_conda_pkg`. This section describes
+what `build_conda_pkg` does and what to do if you see it fails in your pr. 
 
-* Fork our [feedstock repo](https://github.com/conda-forge/evalml-core-feedstock). This is where the recipe lives.
-* Create a branch in your personal fork and make the changes to the recipe. To add a new dependency, simply add a line to
-the `run` section of the requirements for `evalml-core` or `evaml`. 
-* Push your changes and open a PR where the source branch is your fork's branch. 
-Make sure the [allow edits from maintainers](https://docs.github.com/en/github/collaborating-with-issues-and-pull-requests/allowing-changes-to-a-pull-request-branch-created-from-a-fork) checkbox is checked.
-It should be by default. This is needed for rerendering in the next step. 
-* The PR description is populated with a pre-merge todo list. Pay particular attention to the following steps:
-    * Setting the right build number. It should be `0` for a new version number or the current value + 1 for all other changes.
-    * Rerendering by commenting `@conda-forge-admin, please rerender` in the PR.
+#### What is build_conda_pkg?
+`build_conda_pkg` clones the PR branch and builds the conda package from that branch. Since the conda build process runs our
+entire suite of unit tests, `build_conda_pkg` checks that our conda package actually supports the proposed change of the PR.
+We added this check to eliminate surprises. Since the conda package is released after we release to PyPi, it's possible that
+we released a dependency version that is not compatible with our conda recipe. It would be a pain to try to debug this at
+release-time since the PyPi release includes many possible PRs that could have introduced that change.
 
+#### How does `build_conda_pkg` work?
+`build_conda_pkg` will clone the `master` branch of the feedstock as well as you EvalML PR branch. It will
+then replace the recipe in the `master` branch of the feedstock with the current
+latest [recipe](https://github.com/alteryx/evalml/blob/make-it-easier-to-fix-build-conda-pkg/.github/meta.yaml) in EvalML.
+It will also modify the [source](https://github.com/alteryx/evalml/blob/make-it-easier-to-fix-build-conda-pkg/.github/meta.yaml#L7)
+field of the local copy of the recipe and point it at the local EvalML clone of your PR branch.
+This has the effect of building our conda package against your PR branch!
 
-One of the package maintainers will then review your PR!
+#### Why does `build_conda_pkg` use a recipe in EvalML as opposed to the recipe in the feedstock `master` branch?
+One important fact to know about conda is that any change to the `master` branch of a feedstock will
+result in a new version of the conda package being published to the world!
+
+With this in mind, let's say your PR requires modifying our dependencies. 
+If we made a change to `master`, an updated version of EvalML's latest conda package would
+be released. This means people who installed the latest version of EvalML prior to this PR would get different dependency versions
+than those who installed EvalML after the PR got merged on GitHub. This is not desirable, especially because the PR would not get shipped
+to PyPi until the next release happens. So there would also be a discrepancy between the PyPi and conda versions.
+
+By using a recipe stored in the EvalML repo, we can keep track of the changes that need to be made for the next release without
+having to publish a new conda package. Since the recipe is also "unique" to your PR, you are free to make whatever changes you
+need to make without disturbing other PRs. This would not be the case if `build_conda_pkg` ran from the `master` branch of the
+feedstock.
+
+#### What to do if you see `build_conda_pkg` is red on your PR?
+It depends on the kind of PR:
+
+**Case 1: You're adding a completely new dependency**
+
+In this case, `build_conda_pkg` is failing simply because a dependency is missing. Adding the dependency to the recipe should
+make the check green. To add the dependency, modify the recipe located at `.github/meta.yaml`.  
+
+If you see that adding the dependency causes the build to fail, possibly because of conflicting versions, then iterate until
+the build passes. The team will verify if your changes make sense during PR review.
+
+**Case 2: The latest dependency bot created a PR**
+If the latest dependency bot PR fails `build_conda_pkg`, it means our code doesn't support the latest version
+of one of our dependencies. This means that we either have to cap the max allowed version in our requirements file
+or update our code to support that version. If we opt for the former, then just like in Case 1, make the corresponding change
+to the recipe located at `.github/meta.yaml`
+
+#### What about the `check_versions` CI check?
+This check verifies that the allowed versions listed in `core-requirements.txt` and `requirements.txt` match those listed in
+the conda recipe so that the PyPi requirements and conda requirements don't get out of synch.
 
 ## Code Style Guide
 

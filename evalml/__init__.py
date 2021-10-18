@@ -6,6 +6,7 @@ import warnings
 import sklearn
 import evalml.demos
 import evalml.model_family
+import evalml.model_understanding
 import evalml.objectives
 import evalml.pipelines
 import evalml.preprocessing
@@ -22,4 +23,4 @@ with warnings.catch_warnings():
 warnings.filterwarnings("ignore", category=FutureWarning)
 warnings.filterwarnings("ignore", category=DeprecationWarning)
 
-__version__ = "0.33.0"
+__version__ = "0.35.0"

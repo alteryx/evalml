@@ -27,13 +27,11 @@ from evalml.automl.utils import (
     check_all_pipeline_names_unique,
     get_best_sampler_for_data,
     get_default_primary_search_objective,
-    get_pipelines_from_component_graphs,
     make_data_splitter,
 )
 from evalml.data_checks import DefaultDataChecks
 from evalml.exceptions import (
     AutoMLSearchException,
-    ParameterNotUsedWarning,
     PipelineNotFoundError,
     PipelineScoreError,
 )
@@ -49,11 +47,7 @@ from evalml.pipelines import (
     MulticlassClassificationPipeline,
     RegressionPipeline,
 )
-from evalml.pipelines.components.utils import get_estimators
-from evalml.pipelines.utils import (
-    make_pipeline,
-    make_timeseries_baseline_pipeline,
-)
+from evalml.pipelines.utils import make_timeseries_baseline_pipeline
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -179,7 +173,11 @@ def search(
 
     max_batches = None
     if mode == "fast":
-        max_batches = 3
+        max_batches = 4  # corresponds to end of 'fast' mode
+    elif mode == "long" and max_time:
+        max_batches = 999  # defers to stopping criterion
+    elif mode == "long" and max_time is None:
+        max_batches = 6  # corresponds to end of 'long' exploration phase
 
     automl_config = {
         "X_train": X_train,
@@ -314,7 +312,7 @@ class AutoMLSearch:
             Only applicable if patience is not None. Defaults to None.
 
         allowed_component_graphs (dict): A dictionary of lists or ComponentGraphs indicating the component graphs allowed in the search.
-            The format should follow { "Name_0": [list_of_components], "Name_1": [ComponentGraph(...)] }
+            The format should follow { "Name_0": [list_of_components], "Name_1": ComponentGraph(...) }
 
             The default of None indicates all pipeline component graphs for this problem type are allowed. Setting this field will cause
             allowed_model_families to be ignored.
@@ -646,135 +644,6 @@ class AutoMLSearch:
                     {"sampling_ratio": self.sampler_balanced_ratio}
                 )
 
-        if self.allowed_component_graphs is None:
-            self.logger.info("Generating pipelines to search over...")
-            allowed_estimators = get_estimators(
-                self.problem_type, self.allowed_model_families
-            )
-            if (
-                is_time_series(self.problem_type)
-                and parameters["pipeline"]["date_index"]
-            ):
-                if pd.infer_freq(X_train[parameters["pipeline"]["date_index"]]) == "MS":
-                    allowed_estimators = [
-                        estimator
-                        for estimator in allowed_estimators
-                        if estimator.name != "ARIMA Regressor"
-                    ]
-            self.logger.debug(
-                f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}"
-            )
-            drop_columns = (
-                self.pipeline_parameters["Drop Columns Transformer"]["columns"]
-                if "Drop Columns Transformer" in self.pipeline_parameters
-                else None
-            )
-            index_and_unknown_columns = list(
-                self.X_train.ww.select(["index", "unknown"], return_schema=True).columns
-            )
-            unknown_columns = list(
-                self.X_train.ww.select("unknown", return_schema=True).columns
-            )
-            index_and_unknown_columns = index_and_unknown_columns
-            if len(index_and_unknown_columns) > 0 and drop_columns is None:
-                parameters["Drop Columns Transformer"] = {
-                    "columns": index_and_unknown_columns
-                }
-                if len(unknown_columns):
-                    self.logger.info(
-                        f"Removing columns {unknown_columns} because they are of 'Unknown' type"
-                    )
-
-            with warnings.catch_warnings(record=True) as w:
-                warnings.filterwarnings("always", category=ParameterNotUsedWarning)
-                self.allowed_pipelines = [
-                    make_pipeline(
-                        self.X_train,
-                        self.y_train,
-                        estimator,
-                        self.problem_type,
-                        parameters=parameters,
-                        sampler_name=self._sampler_name,
-                    )
-                    for estimator in allowed_estimators
-                ]
-            self._catch_warnings(w)
-        else:
-
-            with warnings.catch_warnings(record=True) as w:
-                warnings.filterwarnings("always", category=ParameterNotUsedWarning)
-                self.allowed_pipelines = get_pipelines_from_component_graphs(
-                    self.allowed_component_graphs,
-                    self.problem_type,
-                    parameters,
-                    self.random_seed,
-                )
-            self._catch_warnings(w)
-
-        if self.allowed_pipelines == []:
-            raise ValueError("No allowed pipelines to search")
-
-        self.logger.info(f"{len(self.allowed_pipelines)} pipelines ready for search.")
-
-        run_ensembling = self.ensembling
-        text_in_ensembling = (
-            len(self.X_train.ww.select("natural_language", return_schema=True).columns)
-            > 0
-        )
-
-        if run_ensembling and len(self.allowed_pipelines) == 1:
-            self.logger.warning(
-                "Ensembling is set to True, but the number of unique pipelines is one, so ensembling will not run."
-            )
-            run_ensembling = False
-
-        if run_ensembling and self.max_iterations is not None:
-            # Baseline + first batch + each pipeline iteration + 1
-            first_ensembling_iteration = (
-                1
-                + len(self.allowed_pipelines)
-                + len(self.allowed_pipelines) * self._pipelines_per_batch
-                + 1
-            )
-            if self.max_iterations < first_ensembling_iteration:
-                run_ensembling = False
-                self.logger.warning(
-                    f"Ensembling is set to True, but max_iterations is too small, so ensembling will not run. Set max_iterations >= {first_ensembling_iteration} to run ensembling."
-                )
-            else:
-                self.logger.info(
-                    f"Ensembling will run at the {first_ensembling_iteration} iteration and every {len(self.allowed_pipelines) * self._pipelines_per_batch} iterations after that."
-                )
-
-        if self.max_batches and self.max_iterations is None:
-            self.show_batch_output = True
-            if run_ensembling:
-                ensemble_nth_batch = len(self.allowed_pipelines) + 1
-                num_ensemble_batches = (self.max_batches - 1) // ensemble_nth_batch
-                if num_ensemble_batches == 0:
-                    run_ensembling = False
-                    self.logger.warning(
-                        f"Ensembling is set to True, but max_batches is too small, so ensembling will not run. Set max_batches >= {ensemble_nth_batch + 1} to run ensembling."
-                    )
-                else:
-                    self.logger.info(
-                        f"Ensembling will run every {ensemble_nth_batch} batches."
-                    )
-
-                self.max_iterations = (
-                    1
-                    + len(self.allowed_pipelines)
-                    + self._pipelines_per_batch
-                    * (self.max_batches - 1 - num_ensemble_batches)
-                    + num_ensemble_batches * 2
-                )
-            else:
-                self.max_iterations = (
-                    1
-                    + len(self.allowed_pipelines)
-                    + (self._pipelines_per_batch * (self.max_batches - 1))
-                )
-
         if isinstance(engine, str):
             self._engine = build_engine_from_str(engine)
         elif isinstance(engine, (DaskEngine, CFEngine, SequentialEngine)):
@@ -796,30 +665,32 @@ class AutoMLSearch:
             self.X_train.ww.schema,
             self.y_train.ww.schema,
         )
-        self.allowed_model_families = list(
-            set([p.model_family for p in (self.allowed_pipelines)])
-        )
 
-        self.logger.debug(
-            f"allowed_pipelines set to {[pipeline.name for pipeline in self.allowed_pipelines]}"
-        )
-        self.logger.debug(
-            f"allowed_model_families set to {self.allowed_model_families}"
+        text_in_ensembling = (
+            len(self.X_train.ww.select("natural_language", return_schema=True).columns)
+            > 0
         )
 
         if _automl_algorithm == "iterative":
             self._automl_algorithm = IterativeAlgorithm(
+                X=self.X_train,
+                y=self.y_train,
+                problem_type=self.problem_type,
+                sampler_name=self._sampler_name,
+                allowed_component_graphs=self.allowed_component_graphs,
+                allowed_model_families=self.allowed_model_families,
                 max_iterations=self.max_iterations,
-                allowed_pipelines=self.allowed_pipelines,
+                max_batches=self.max_batches,
                 tuner_class=self.tuner_class,
                 random_seed=self.random_seed,
                 n_jobs=self.n_jobs,
                 number_features=self.X_train.shape[1],
                 pipelines_per_batch=self._pipelines_per_batch,
-                ensembling=run_ensembling,
+                ensembling=self.ensembling,
                 text_in_ensembling=text_in_ensembling,
                 pipeline_params=parameters,
                 custom_hyperparameters=custom_hyperparameters,
+                verbose=self.verbose,
             )
         elif _automl_algorithm == "default":
             self._automl_algorithm = DefaultAlgorithm(
@@ -836,33 +707,14 @@ class AutoMLSearch:
         else:
             raise ValueError("Please specify a valid automl algorithm.")
 
+        self.allowed_pipelines = self._automl_algorithm.allowed_pipelines
+        self.allowed_model_families = [p.model_family for p in self.allowed_pipelines]
+        if _automl_algorithm == "iterative":
+            self.max_iterations = self._automl_algorithm.max_iterations
+
     def close_engine(self):
         """Function to explicitly close the engine, client, parallel resources."""
         self._engine.close()
-
-    def _catch_warnings(self, warning_list):
-        parameter_not_used_warnings = []
-        raised_messages = []
-        for msg in warning_list:
-            if isinstance(msg.message, ParameterNotUsedWarning):
-                parameter_not_used_warnings.append(msg.message)
-            # Raise non-PNU warnings immediately, but only once per warning
-            elif str(msg.message) not in raised_messages:
-                warnings.warn(msg.message)
-                raised_messages.append(str(msg.message))
-
-        # Raise PNU warnings, iff the warning was raised in every pipeline
-        if len(parameter_not_used_warnings) == len(self.allowed_pipelines) and len(
-            parameter_not_used_warnings
-        ):
-            final_message = set([])
-            for msg in parameter_not_used_warnings:
-                if len(final_message) == 0:
-                    final_message = final_message.union(msg.components)
-                else:
-                    final_message = final_message.intersection(msg.components)
-
-            warnings.warn(ParameterNotUsedWarning(final_message))
 
     def _get_batch_number(self):
         batch_number = 1
@@ -1044,17 +896,19 @@ class AutoMLSearch:
                 self.logger.info("AutoML Algorithm out of recommendations, ending")
                 break
             try:
-                new_pipeline_ids = []
-                log_title(
-                    self.logger, f"Evaluating Batch Number {self._get_batch_number()}"
-                )
-                for pipeline in current_batch_pipelines:
-                    self._pre_evaluation_callback(pipeline)
-                    computation = self._engine.submit_evaluation_job(
-                        self.automl_config, pipeline, self.X_train, self.y_train
+                if self._should_continue():
+                    new_pipeline_ids = []
+                    log_title(
+                        self.logger,
+                        f"Evaluating Batch Number {self._get_batch_number()}",
                     )
-                    computations.append(computation)
-                current_computation_index = 0
+                    for pipeline in current_batch_pipelines:
+                        self._pre_evaluation_callback(pipeline)
+                        computation = self._engine.submit_evaluation_job(
+                            self.automl_config, pipeline, self.X_train, self.y_train
+                        )
+                        computations.append(computation)
+                    current_computation_index = 0
                 while self._should_continue() and len(computations) > 0:
                     computation = computations[current_computation_index]
                     if computation.done():
@@ -1148,11 +1002,13 @@ class AutoMLSearch:
 
         num_pipelines = self._num_pipelines()
 
-        # check max_time and max_iterations
+        # check max_time, max_iterations, and max_batches
         elapsed = time.time() - self._start
         if self.max_time and elapsed >= self.max_time:
             return False
         elif self.max_iterations and num_pipelines >= self.max_iterations:
+            return False
+        elif self.max_batches and self._get_batch_number() > self.max_batches:
             return False
 
         # check for early stopping
@@ -1197,15 +1053,23 @@ class AutoMLSearch:
 
     def _get_baseline_pipeline(self):
         """Creates a baseline pipeline instance."""
+        classification_component_graph = {
+            "Label Encoder": ["Label Encoder", "X", "y"],
+            "Baseline Classifier": [
+                "Baseline Classifier",
+                "Label Encoder.x",
+                "Label Encoder.y",
+            ],
+        }
         if self.problem_type == ProblemTypes.BINARY:
             baseline = BinaryClassificationPipeline(
-                component_graph=["Baseline Classifier"],
+                component_graph=classification_component_graph,
                 custom_name="Mode Baseline Binary Classification Pipeline",
                 parameters={"Baseline Classifier": {"strategy": "mode"}},
             )
         elif self.problem_type == ProblemTypes.MULTICLASS:
             baseline = MulticlassClassificationPipeline(
-                component_graph=["Baseline Classifier"],
+                component_graph=classification_component_graph,
                 custom_name="Mode Baseline Multiclass Classification Pipeline",
                 parameters={"Baseline Classifier": {"strategy": "mode"}},
             )

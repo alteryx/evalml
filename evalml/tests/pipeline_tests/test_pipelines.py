@@ -36,6 +36,7 @@ from evalml.pipelines.components import (
     DropRowsTransformer,
     ElasticNetClassifier,
     Imputer,
+    LabelEncoder,
     LogisticRegressionClassifier,
     OneHotEncoder,
     RandomForestClassifier,
@@ -240,7 +241,7 @@ def test_indexing(X_y_binary, logistic_regression_binary_pipeline_class):
     )
     clf.fit(X, y)
 
-    assert isinstance(clf[1], OneHotEncoder)
+    assert isinstance(clf[2], OneHotEncoder)
     assert isinstance(clf["Imputer"], Imputer)
 
     setting_err_msg = "Setting pipeline components is not supported."
@@ -283,6 +284,7 @@ def test_describe_pipeline(
                         "numeric_fill_value": None,
                     },
                 },
+                "Label Encoder": {"name": "Label Encoder", "parameters": {}},
                 "One Hot Encoder": {
                     "name": "One Hot Encoder",
                     "parameters": {
@@ -610,49 +612,41 @@ def test_score_nonlinear_regression(
     assert scores == {"R2": 1.0}
 
 
-@patch("evalml.pipelines.BinaryClassificationPipeline._encode_targets")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_binary_single(mock_predict, mock_fit, mock_encode, X_y_binary):
+def test_score_binary_single(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
-    mock_encode.return_value = y
     clf = make_mock_binary_pipeline()
     clf.fit(X, y)
     objective_names = ["f1"]
     scores = clf.score(X, y, objective_names)
-    mock_encode.assert_called()
     mock_fit.assert_called()
     mock_predict.assert_called()
     assert scores == {"F1": 1.0}
 
 
-@patch("evalml.pipelines.MulticlassClassificationPipeline._encode_targets")
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_multiclass_single(mock_predict, mock_fit, mock_encode, X_y_binary):
+def test_score_multiclass_single(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
-    mock_encode.return_value = y
     clf = make_mock_multiclass_pipeline()
     clf.fit(X, y)
     objective_names = ["f1 micro"]
     scores = clf.score(X, y, objective_names)
-    mock_encode.assert_called()
     mock_fit.assert_called()
     mock_predict.assert_called()
     assert scores == {"F1 Micro": 1.0}
 
 
-@patch("evalml.pipelines.MulticlassClassificationPipeline._encode_targets")
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.ComponentGraph.predict")
 def test_score_nonlinear_multiclass(
-    mock_predict, mock_fit, mock_encode, nonlinear_multiclass_pipeline_class, X_y_multi
+    mock_predict, mock_fit, nonlinear_multiclass_pipeline_class, X_y_multi
 ):
     X, y = X_y_multi
     mock_predict.return_value = pd.Series(y)
-    mock_encode.return_value = pd.Series(y)
     clf = nonlinear_multiclass_pipeline_class({})
     clf.fit(X, y)
     objective_names = ["f1 micro", "precision micro"]
@@ -674,19 +668,16 @@ def test_score_regression_list(mock_predict, mock_fit, X_y_binary):
     assert scores == {"R2": 1.0, "MSE": 0.0}
 
 
-@patch("evalml.pipelines.BinaryClassificationPipeline._encode_targets")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_binary_list(mock_predict, mock_fit, mock_encode, X_y_binary):
+def test_score_binary_list(mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
-    mock_encode.return_value = y
     clf = make_mock_binary_pipeline()
     clf.fit(X, y)
     objective_names = ["f1", "precision"]
     scores = clf.score(X, y, objective_names)
     mock_fit.assert_called()
-    mock_encode.assert_called()
     mock_predict.assert_called()
     assert scores == {"F1": 1.0, "Precision": 1.0}
 
@@ -810,7 +801,7 @@ def test_score_multiclass_objective_error(
 @patch("evalml.pipelines.components.Imputer.transform")
 @patch("evalml.pipelines.components.OneHotEncoder.transform")
 @patch("evalml.pipelines.components.StandardScaler.transform")
-def test_compute_estimator_features(
+def test_transform_all_but_final(
     mock_scaler,
     mock_ohe,
     mock_imputer,
@@ -828,7 +819,7 @@ def test_compute_estimator_features(
     pipeline = logistic_regression_binary_pipeline_class({})
     pipeline.fit(X, y)
 
-    X_t = pipeline.compute_estimator_features(X)
+    X_t = pipeline.transform_all_but_final(X)
     assert_frame_equal(X_expected, X_t)
     assert mock_imputer.call_count == 2
     assert mock_ohe.call_count == 2
@@ -841,7 +832,7 @@ def test_compute_estimator_features(
 @patch("evalml.pipelines.components.ElasticNetClassifier.predict_proba")
 @patch("evalml.pipelines.components.RandomForestClassifier.predict")
 @patch("evalml.pipelines.components.ElasticNetClassifier.predict")
-def test_compute_estimator_features_nonlinear(
+def test_transform_all_but_final_nonlinear(
     mock_en_predict,
     mock_rf_predict,
     mock_en_predict_proba,
@@ -877,7 +868,7 @@ def test_compute_estimator_features_nonlinear(
 
     pipeline = nonlinear_binary_pipeline_class({})
     pipeline.fit(X, y)
-    X_t = pipeline.compute_estimator_features(X)
+    X_t = pipeline.transform_all_but_final(X)
 
     assert_frame_equal(X_expected_df, X_t)
     assert mock_imputer.call_count == 2
@@ -1277,8 +1268,10 @@ def test_targets_data_types_classification_pipelines(
     problem_type,
     target_type,
     all_binary_pipeline_classes,
+    all_binary_pipeline_classes_with_encoder,
     make_data_type,
     all_multiclass_pipeline_classes,
+    all_multiclass_pipeline_classes_with_encoder,
     helper_functions,
 ):
     if data_type == "np" and target_type in ["Int64", "boolean"]:
@@ -1289,6 +1282,9 @@ def test_targets_data_types_classification_pipelines(
     if problem_type == ProblemTypes.BINARY:
         objective = "Log Loss Binary"
         pipeline_classes = all_binary_pipeline_classes
+        if target_type in ["category", "object"]:
+            pipeline_classes = all_binary_pipeline_classes_with_encoder
+
         X, y = breast_cancer_local
         if "bool" in target_type:
             y = y.map({"malignant": False, "benign": True})
@@ -1299,6 +1295,9 @@ def test_targets_data_types_classification_pipelines(
             )
         objective = "Log Loss Multiclass"
         pipeline_classes = all_multiclass_pipeline_classes
+
+        if target_type in ["category", "object"]:
+            pipeline_classes = all_multiclass_pipeline_classes_with_encoder
         X, y = wine_local
 
     # Update target types as necessary
@@ -1320,7 +1319,7 @@ def test_targets_data_types_classification_pipelines(
     y = make_data_type(data_type, y)
 
     for pipeline_class in pipeline_classes:
-        pipeline = helper_functions.safe_init_pipeline_with_njobs_1(pipeline_class)
+        pipeline = pipeline_class(pipeline_class.parameters)
         pipeline.fit(X, y)
         predictions = pipeline.predict(X, objective)
         assert set(predictions.unique()).issubset(unique_vals)
@@ -2054,6 +2053,7 @@ def test_predict_has_input_target_name(
 
 def test_linear_pipeline_iteration(logistic_regression_binary_pipeline_class):
     expected_order = [
+        LabelEncoder(),
         Imputer(),
         OneHotEncoder(),
         StandardScaler(),
@@ -2068,6 +2068,7 @@ def test_linear_pipeline_iteration(logistic_regression_binary_pipeline_class):
     assert order_again == expected_order
 
     expected_order_params = [
+        LabelEncoder(),
         Imputer(numeric_impute_strategy="median"),
         OneHotEncoder(top_n=2),
         StandardScaler(),
@@ -2128,11 +2129,13 @@ def test_linear_getitem(logistic_regression_binary_pipeline_class):
         {"One Hot Encoder": {"top_n": 4}}
     )
 
-    assert pipeline[0] == Imputer()
-    assert pipeline[1] == OneHotEncoder(top_n=4)
-    assert pipeline[2] == StandardScaler()
-    assert pipeline[3] == LogisticRegressionClassifier()
+    assert pipeline[0] == LabelEncoder()
+    assert pipeline[1] == Imputer()
+    assert pipeline[2] == OneHotEncoder(top_n=4)
+    assert pipeline[3] == StandardScaler()
+    assert pipeline[4] == LogisticRegressionClassifier()
 
+    assert pipeline["Label Encoder"] == LabelEncoder()
     assert pipeline["Imputer"] == Imputer()
     assert pipeline["One Hot Encoder"] == OneHotEncoder(top_n=4)
     assert pipeline["Standard Scaler"] == StandardScaler()
@@ -2757,10 +2760,10 @@ def test_training_only_component_in_pipeline_fit(mock_fit, X_y_binary):
     assert len(mock_fit.call_args[0][0]) == len(X) - 2
 
 
-def test_training_only_component_in_pipeline_predict_and_compute_estimator_features(
+def test_training_only_component_in_pipeline_predict_and_transform_all_but_final(
     X_y_binary,
 ):
-    # Test that calling predict() and `compute_estimator_features` will not evaluate any training-only transformations
+    # Test that calling predict() and `transform_all_but_final` will not evaluate any training-only transformations
     X, y = X_y_binary
     pipeline = BinaryClassificationPipeline(
         {
@@ -2779,7 +2782,7 @@ def test_training_only_component_in_pipeline_predict_and_compute_estimator_featu
     assert len(preds) == len(X)
     preds = pipeline.predict_proba(X)
     assert len(preds) == len(X)
-    estimator_features = pipeline.compute_estimator_features(X, y)
+    estimator_features = pipeline.transform_all_but_final(X, y)
     assert len(estimator_features) == len(X)
 
 

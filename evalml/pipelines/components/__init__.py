@@ -63,8 +63,6 @@ from .transformers import (
     LabelEncoder,
 )
 from .ensemble import (
-    SklearnStackedEnsembleClassifier,
-    SklearnStackedEnsembleRegressor,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )

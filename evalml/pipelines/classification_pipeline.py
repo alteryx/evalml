@@ -1,6 +1,7 @@
 """Pipeline subclass for all classification pipelines."""
+import numpy as np
 import pandas as pd
-from sklearn.preprocessing import LabelEncoder
+import woodwork as ww
 
 from evalml.pipelines import PipelineBase
 from evalml.utils import infer_feature_types
@@ -28,13 +29,17 @@ class ClassificationPipeline(PipelineBase):
         custom_name=None,
         random_seed=0,
     ):
-        self._encoder = LabelEncoder()
+        self._classes_ = None
         super().__init__(
             component_graph,
             custom_name=custom_name,
             parameters=parameters,
             random_seed=random_seed,
         )
+        try:
+            self._encoder = self.component_graph.get_component("Label Encoder")
+        except ValueError:
+            self._encoder = None
 
     def fit(self, X, y):
         """Build a classification model. For string and categorical targets, classes are sorted by sorted(set(y)) and then are mapped to values between 0 and n_classes-1.
@@ -48,35 +53,25 @@ class ClassificationPipeline(PipelineBase):
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
-        self._encoder.fit(y)
-        y = self._encode_targets(y)
         self._fit(X, y)
+        self._classes_ = list(ww.init_series(np.unique(y)))
         return self
 
     def _encode_targets(self, y):
         """Converts target values from their original values to integer values that can be processed."""
-        try:
-            return pd.Series(self._encoder.transform(y), index=y.index, name=y.name)
-        except ValueError as e:
-            raise ValueError(str(e))
-
-    def _decode_targets(self, y):
-        """Converts encoded numerical values to their original target values.
-
-        Note: we cast y as ints first to address boolean values that may be returned from
-        calculating predictions which we would not be able to otherwise transform if we
-        originally had integer targets.
-        """
-        return self._encoder.inverse_transform(y.astype(int))
+        if self._encoder is not None:
+            try:
+                return pd.Series(
+                    self._encoder.transform(None, y)[1], index=y.index, name=y.name
+                ).astype(int)
+            except ValueError as e:
+                raise ValueError(str(e))
+        return y
 
     @property
     def classes_(self):
-        """Gets the class names for the problem."""
-        if not hasattr(self._encoder, "classes_"):
-            raise AttributeError(
-                "Cannot access class names before fitting the pipeline."
-            )
-        return self._encoder.classes_
+        """Gets the class names for the pipeline. Will return None before pipeline is fit."""
+        return self._classes_
 
     def _predict(self, X, objective=None):
         """Make predictions using selected features.
@@ -93,6 +88,10 @@ class ClassificationPipeline(PipelineBase):
     def predict(self, X, objective=None, X_train=None, y_train=None):
         """Make predictions using selected features.
 
+        Note: we cast y as ints first to address boolean values that may be returned from
+        calculating predictions which we would not be able to otherwise transform if we
+        originally had integer targets.
+
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
             objective (Object or string): The objective to use to make predictions.
@@ -103,9 +102,8 @@ class ClassificationPipeline(PipelineBase):
             pd.Series: Estimated labels.
         """
         predictions = self._predict(X, objective=objective)
-        predictions = pd.Series(
-            self._decode_targets(predictions), name=self.input_target_name
-        )
+        predictions = self.inverse_transform(predictions.astype(int))
+        predictions = pd.Series(predictions, name=self.input_target_name)
         return infer_feature_types(predictions)
 
     def predict_proba(self, X, X_train=None, y_train=None):
@@ -126,13 +124,10 @@ class ClassificationPipeline(PipelineBase):
             raise ValueError(
                 "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
             )
-        X = self.compute_estimator_features(X, y=None)
+        X = self.transform_all_but_final(X, y=None)
         proba = self.estimator.predict_proba(X)
         proba = proba.ww.rename(
-            columns={
-                col: new_col
-                for col, new_col in zip(proba.columns, self._encoder.classes_)
-            }
+            columns={col: new_col for col, new_col in zip(proba.columns, self.classes_)}
         )
         return infer_feature_types(proba)
 
@@ -151,7 +146,8 @@ class ClassificationPipeline(PipelineBase):
         """
         y = infer_feature_types(y)
         objectives = self.create_objectives(objectives)
-        y = self._encode_targets(y)
+        if self._encoder is not None:
+            y = self._encode_targets(y)
         y_predicted, y_predicted_proba = self._compute_predictions(X, y, objectives)
         return self._score_all_objectives(
             X, y, y_predicted, y_predicted_proba, objectives

@@ -50,20 +50,16 @@ def test_featuretools_index(mock_calculate_feature_matrix, mock_dfs, X_y_multi):
     feature = DFSTransformer()
     feature.fit(X_new_index)
     feature.transform(X_new_index)
-    arg_es = mock_dfs.call_args[1]["entityset"].entities[0].df["index"]
-    arg_tr = (
-        mock_calculate_feature_matrix.call_args[1]["entityset"].entities[0].df["index"]
-    )
+    arg_es = mock_dfs.call_args[1]["entityset"].dataframes[0].index
+    arg_tr = mock_calculate_feature_matrix.call_args[1]["entityset"].dataframes[0].index
     assert arg_es.to_list() == new_index
     assert arg_tr.to_list() == new_index
 
     # check if _make_entity_set fills in the proper index values
     feature.fit(X_pd)
     feature.transform(X_pd)
-    arg_es = mock_dfs.call_args[1]["entityset"].entities[0].df["index"]
-    arg_tr = (
-        mock_calculate_feature_matrix.call_args[1]["entityset"].entities[0].df["index"]
-    )
+    arg_es = mock_dfs.call_args[1]["entityset"].dataframes[0].index
+    arg_tr = mock_calculate_feature_matrix.call_args[1]["entityset"].dataframes[0].index
     assert arg_es.to_list() == index
     assert arg_tr.to_list() == index
 
@@ -75,10 +71,10 @@ def test_transform(X_y_binary, X_y_multi, X_y_regression):
         X_pd = pd.DataFrame(X)
         X_pd.columns = X_pd.columns.astype(str)
         es = ft.EntitySet()
-        es = es.entity_from_dataframe(
-            entity_id="X", dataframe=X_pd, index="index", make_index=True
+        es = es.add_dataframe(
+            dataframe_name="X", dataframe=X_pd, index="index", make_index=True
         )
-        feature_matrix, features = ft.dfs(entityset=es, target_entity="X")
+        feature_matrix, features = ft.dfs(entityset=es, target_dataframe_name="X")
 
         feature = DFSTransformer()
         feature.fit(X)
@@ -105,10 +101,10 @@ def test_transform_subset(X_y_binary, X_y_multi, X_y_regression):
         X_transform = X_pd.iloc[len(X) // 3 :]
 
         es = ft.EntitySet()
-        es = es.entity_from_dataframe(
-            entity_id="X", dataframe=X_transform, index="index", make_index=True
+        es = es.add_dataframe(
+            dataframe_name="X", dataframe=X_transform, index="index", make_index=True
         )
-        feature_matrix, features = ft.dfs(entityset=es, target_entity="X")
+        feature_matrix, features = ft.dfs(entityset=es, target_dataframe_name="X")
 
         feature = DFSTransformer()
         feature.fit(X_fit)
@@ -137,6 +133,9 @@ def test_ft_woodwork_custom_overrides_returned_by_components(X_df):
             X.ww.init(logical_types={0: logical_type})
         except (ww.exceptions.TypeConversionError, ValueError):
             continue
+        if X.loc[:, 0].isna().all():
+            # Casting the fourth dataframe to datetime will produce all NaNs
+            continue
 
         dft = DFSTransformer()
         dft.fit(X, y)
@@ -144,10 +143,10 @@ def test_ft_woodwork_custom_overrides_returned_by_components(X_df):
         assert isinstance(transformed, pd.DataFrame)
         if logical_type == Datetime:
             assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-                "DAY(0)": Integer,
-                "MONTH(0)": Integer,
-                "WEEKDAY(0)": Integer,
-                "YEAR(0)": Integer,
+                "DAY(0)": Categorical,
+                "MONTH(0)": Categorical,
+                "WEEKDAY(0)": Categorical,
+                "YEAR(0)": Categorical,
             }
         else:
             assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {

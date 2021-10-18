@@ -22,19 +22,21 @@ from evalml.pipelines.components import (
     LinearRegressor,
     LogisticRegressionClassifier,
     OneHotEncoder,
-    SklearnStackedEnsembleClassifier,
-    SklearnStackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
     TextFeaturizer,
     Transformer,
     URLFeaturizer,
 )
+from evalml.pipelines.components.transformers.encoders.label_encoder import (
+    LabelEncoder,
+)
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_component_list_from_actions,
     generate_pipeline_code,
     get_estimators,
+    is_classification,
     make_pipeline,
 )
 from evalml.problem_types import ProblemTypes, is_regression, is_time_series
@@ -170,6 +172,7 @@ def test_make_pipeline(
 
             pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters)
             assert isinstance(pipeline, pipeline_class)
+            label_encoder = [LabelEncoder] if is_classification(problem_type) else []
             delayed_features = (
                 [DelayedFeatureTransformer]
                 if is_time_series(problem_type)
@@ -209,11 +212,8 @@ def test_make_pipeline(
             url_featurizer = [URLFeaturizer] if "url" in column_names else []
             imputer = (
                 []
-                if ((column_names in [["ip"], ["dates"]]) and input_type == "ww")
-                or (
-                    (column_names in [["ip"], ["text"], ["dates"]])
-                    and input_type == "pd"
-                )
+                if ((column_names in [["ip"]]) and input_type == "ww")
+                or ((column_names in [["ip"], ["text"]]) and input_type == "pd")
                 else [Imputer]
             )
             drop_col = (
@@ -223,13 +223,14 @@ def test_make_pipeline(
                 else []
             )
             expected_components = (
-                email_featurizer
+                label_encoder
+                + email_featurizer
                 + url_featurizer
                 + drop_null
                 + text_featurizer
                 + drop_col
-                + imputer
                 + datetime
+                + imputer
                 + delayed_features
                 + ohe
                 + standard_scaler
@@ -263,76 +264,6 @@ def test_make_pipeline_problem_type_mismatch():
         match=f"{Transformer.name} is not a valid estimator for problem type",
     ):
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
-
-
-@pytest.mark.parametrize(
-    "problem_type",
-    [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
-)
-def test_stacked_estimator_in_pipeline(
-    problem_type,
-    X_y_binary,
-    X_y_multi,
-    X_y_regression,
-    stackable_classifiers,
-    stackable_regressors,
-    logistic_regression_binary_pipeline_class,
-    logistic_regression_multiclass_pipeline_class,
-    linear_regression_pipeline_class,
-):
-    if problem_type == ProblemTypes.BINARY:
-        X, y = X_y_binary
-        base_pipeline_class = BinaryClassificationPipeline
-        stacking_component_name = SklearnStackedEnsembleClassifier.name
-        input_pipelines = [
-            BinaryClassificationPipeline([classifier])
-            for classifier in stackable_classifiers
-        ]
-        comparison_pipeline = logistic_regression_binary_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
-        objective = "Log Loss Binary"
-    elif problem_type == ProblemTypes.MULTICLASS:
-        X, y = X_y_multi
-        base_pipeline_class = MulticlassClassificationPipeline
-        stacking_component_name = SklearnStackedEnsembleClassifier.name
-        input_pipelines = [
-            MulticlassClassificationPipeline([classifier])
-            for classifier in stackable_classifiers
-        ]
-        comparison_pipeline = logistic_regression_multiclass_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
-        objective = "Log Loss Multiclass"
-    elif problem_type == ProblemTypes.REGRESSION:
-        X, y = X_y_regression
-        base_pipeline_class = RegressionPipeline
-        stacking_component_name = SklearnStackedEnsembleRegressor.name
-        input_pipelines = [
-            RegressionPipeline([regressor]) for regressor in stackable_regressors
-        ]
-        comparison_pipeline = linear_regression_pipeline_class(
-            parameters={"Linear Regressor": {"n_jobs": 1}}
-        )
-        objective = "R2"
-    parameters = {
-        stacking_component_name: {"input_pipelines": input_pipelines, "n_jobs": 1}
-    }
-    graph = ["Simple Imputer", stacking_component_name]
-
-    pipeline = base_pipeline_class(component_graph=graph, parameters=parameters)
-    pipeline.fit(X, y)
-    comparison_pipeline.fit(X, y)
-    assert not np.isnan(pipeline.predict(X)).values.any()
-
-    pipeline_score = pipeline.score(X, y, [objective])[objective]
-    comparison_pipeline_score = comparison_pipeline.score(X, y, [objective])[objective]
-
-    if problem_type == ProblemTypes.BINARY or problem_type == ProblemTypes.MULTICLASS:
-        assert not np.isnan(pipeline.predict_proba(X)).values.any()
-        assert pipeline_score <= comparison_pipeline_score
-    else:
-        assert pipeline_score >= comparison_pipeline_score
 
 
 def test_make_component_list_from_actions():

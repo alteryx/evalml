@@ -33,8 +33,6 @@ from evalml.pipelines.components import (  # noqa: F401
     OneHotEncoder,
     Oversampler,
     RandomForestClassifier,
-    SklearnStackedEnsembleClassifier,
-    SklearnStackedEnsembleRegressor,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
@@ -42,6 +40,9 @@ from evalml.pipelines.components import (  # noqa: F401
     TextFeaturizer,
     Undersampler,
     URLFeaturizer,
+)
+from evalml.pipelines.components.transformers.encoders.label_encoder import (
+    LabelEncoder,
 )
 from evalml.pipelines.components.utils import (
     get_estimators,
@@ -75,6 +76,9 @@ def _get_preprocessing_components(
     """
     pp_components = []
 
+    if is_classification(problem_type):
+        pp_components.append(LabelEncoder)
+
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         pp_components.append(DropNullColumns)
@@ -101,16 +105,8 @@ def _get_preprocessing_components(
         logical_types.Integer,
         logical_types.URL,
         logical_types.EmailAddress,
+        logical_types.Datetime,
     }
-
-    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
-    if len(text_columns) > 0:
-        pp_components.append(TextFeaturizer)
-
-    if len(input_logical_types.intersection(types_imputer_handles)) or len(
-        text_columns
-    ):
-        pp_components.append(Imputer)
 
     datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
 
@@ -120,6 +116,15 @@ def _get_preprocessing_components(
         ModelFamily.PROPHET,
     ]:
         pp_components.append(DateTimeFeaturizer)
+
+    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
+    if len(text_columns) > 0:
+        pp_components.append(TextFeaturizer)
+
+    if len(input_logical_types.intersection(types_imputer_handles)) or len(
+        text_columns
+    ):
+        pp_components.append(Imputer)
 
     if (
         is_time_series(problem_type)
@@ -259,12 +264,7 @@ def generate_pipeline_code(element):
 
 
 def _make_stacked_ensemble_pipeline(
-    input_pipelines,
-    problem_type,
-    final_estimator=None,
-    n_jobs=-1,
-    random_seed=0,
-    use_sklearn=False,
+    input_pipelines, problem_type, final_estimator=None, n_jobs=-1, random_seed=0
 ):
     """Creates a pipeline with a stacked ensemble estimator.
 
@@ -276,50 +276,40 @@ def _make_stacked_ensemble_pipeline(
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             Defaults to -1.
-        use_sklearn (bool): If True, instantiates a pipeline with the scikit-learn ensembler. Defaults to False.
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
+
+    def _make_new_component_name(model_type, component_name, idx=None):
+        idx = " " + str(idx) if idx is not None else ""
+        return f"{str(model_type)} Pipeline{idx} - {component_name}"
+
+    component_graph = (
+        {"Label Encoder": ["Label Encoder", "X", "y"]}
+        if is_classification(problem_type)
+        else {}
+    )
+    final_components = []
+    used_model_families = []
     parameters = {}
+
     if is_classification(problem_type):
-        if use_sklearn:
-            parameters = {
-                "Sklearn Stacked Ensemble Classifier": {
-                    "input_pipelines": input_pipelines,
-                    "final_estimator": final_estimator,
-                    "n_jobs": n_jobs,
-                }
+        parameters = {
+            "Stacked Ensemble Classifier": {
+                "n_jobs": n_jobs,
             }
-            estimator = SklearnStackedEnsembleClassifier
-            pipeline_name = "Sklearn Stacked Ensemble Classification Pipeline"
-        else:
-            parameters = {
-                "Stacked Ensemble Classifier": {
-                    "n_jobs": n_jobs,
-                }
-            }
-            estimator = StackedEnsembleClassifier
-            pipeline_name = "Stacked Ensemble Classification Pipeline"
+        }
+        estimator = StackedEnsembleClassifier
+        pipeline_name = "Stacked Ensemble Classification Pipeline"
     else:
-        if use_sklearn:
-            parameters = {
-                "Sklearn Stacked Ensemble Regressor": {
-                    "input_pipelines": input_pipelines,
-                    "final_estimator": final_estimator,
-                    "n_jobs": n_jobs,
-                }
+        parameters = {
+            "Stacked Ensemble Regressor": {
+                "n_jobs": n_jobs,
             }
-            estimator = SklearnStackedEnsembleRegressor
-            pipeline_name = "Sklearn Stacked Ensemble Regression Pipeline"
-        else:
-            parameters = {
-                "Stacked Ensemble Regressor": {
-                    "n_jobs": n_jobs,
-                }
-            }
-            estimator = StackedEnsembleRegressor
-            pipeline_name = "Stacked Ensemble Regression Pipeline"
+        }
+        estimator = StackedEnsembleRegressor
+        pipeline_name = "Stacked Ensemble Regression Pipeline"
 
     pipeline_class = {
         ProblemTypes.BINARY: BinaryClassificationPipeline,
@@ -327,60 +317,51 @@ def _make_stacked_ensemble_pipeline(
         ProblemTypes.REGRESSION: RegressionPipeline,
     }[problem_type]
 
-    if not use_sklearn:
-
-        def _make_new_component_name(model_type, component_name, idx=None):
-            idx = " " + str(idx) if idx is not None else ""
-            return f"{str(model_type)} Pipeline{idx} - {component_name}"
-
-        component_graph = {}
-        final_components = []
-        used_model_families = []
-        problem_type = None
-
-        for pipeline in input_pipelines:
-            model_family = pipeline.component_graph[-1].model_family
-            model_family_idx = (
-                used_model_families.count(model_family) + 1
-                if used_model_families.count(model_family) > 0
-                else None
-            )
-            used_model_families.append(model_family)
-            final_component = None
-            ensemble_y = "y"
-            for name, component_list in pipeline.component_graph.component_dict.items():
-                new_component_list = []
-                new_component_name = _make_new_component_name(
-                    model_family, name, model_family_idx
-                )
-                for i, item in enumerate(component_list):
-                    if i == 0:
-                        fitted_comp = handle_component_class(item)
-                        new_component_list.append(fitted_comp)
-                        parameters[new_component_name] = pipeline.parameters.get(
-                            name, {}
-                        )
-                    elif isinstance(item, str) and item not in ["X", "y"]:
-                        new_component_list.append(
-                            _make_new_component_name(
-                                model_family, item, model_family_idx
-                            )
-                        )
-                    else:
-                        new_component_list.append(item)
-                    if i != 0 and item.endswith(".y"):
-                        ensemble_y = _make_new_component_name(
-                            model_family, item, model_family_idx
-                        )
-                component_graph[new_component_name] = new_component_list
-                final_component = new_component_name
-            final_components.append(final_component)
-
-        component_graph[estimator.name] = (
-            [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
+    for pipeline in input_pipelines:
+        model_family = pipeline.component_graph[-1].model_family
+        model_family_idx = (
+            used_model_families.count(model_family) + 1
+            if used_model_families.count(model_family) > 0
+            else None
         )
+        used_model_families.append(model_family)
+        final_component = None
+        ensemble_y = "y"
+        for name, component_list in pipeline.component_graph.component_dict.items():
+            new_component_list = []
+            new_component_name = _make_new_component_name(
+                model_family, name, model_family_idx
+            )
+            for i, item in enumerate(component_list):
+                if i == 0:
+                    fitted_comp = handle_component_class(item)
+                    new_component_list.append(fitted_comp)
+                    parameters[new_component_name] = pipeline.parameters.get(name, {})
+                elif isinstance(item, str) and item not in ["X", "y"]:
+                    new_component_list.append(
+                        _make_new_component_name(model_family, item, model_family_idx)
+                    )
+                elif isinstance(item, str) and item == "y":
+                    if is_classification(problem_type):
+                        new_component_list.append("Label Encoder.y")
+                    else:
+                        new_component_list.append("y")
+                else:
+                    new_component_list.append(item)
+                if i != 0 and item.endswith(".y"):
+                    ensemble_y = _make_new_component_name(
+                        model_family, item, model_family_idx
+                    )
+            component_graph[new_component_name] = new_component_list
+            final_component = new_component_name
+        final_components.append(final_component)
+
+    component_graph[estimator.name] = (
+        [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
+    )
+
     return pipeline_class(
-        [estimator] if use_sklearn else component_graph,
+        component_graph,
         parameters=parameters,
         custom_name=pipeline_name,
         random_seed=random_seed,
