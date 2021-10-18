@@ -768,6 +768,9 @@ def test_ohe_woodwork_custom_overrides_returned_by_components(X_df):
             X.ww.init(logical_types={0: logical_type})
         except (TypeConversionError, ValueError, TypeError):
             continue
+        if X.loc[:, 0].isna().all():
+            # Casting the fourth and fifth dataframes to datetime will produce all NaNs
+            continue
 
         ohe = OneHotEncoder()
         ohe.fit(X, y)

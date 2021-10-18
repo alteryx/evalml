@@ -59,17 +59,17 @@ class TextFeaturizer(TextTransformer):
 
         # featuretools expects str-type column names
         X_text.rename(columns=str, inplace=True)
-        all_text_variable_types = {
+        all_text_logical_types = {
             col_name: "natural_language" for col_name in X_text.columns
         }
 
         es = ft.EntitySet()
-        es.entity_from_dataframe(
-            entity_id="X",
+        es.add_dataframe(
+            dataframe_name="X",
             dataframe=X_text,
             index="index",
             make_index=True,
-            variable_types=all_text_variable_types,
+            logical_types=all_text_logical_types,
         )
         return es
 
@@ -93,7 +93,7 @@ class TextFeaturizer(TextTransformer):
         es = self._make_entity_set(X, self._text_columns)
         self._features = ft.dfs(
             entityset=es,
-            target_entity="X",
+            target_dataframe_name="X",
             trans_primitives=self._trans,
             max_depth=1,
             features_only=True,
