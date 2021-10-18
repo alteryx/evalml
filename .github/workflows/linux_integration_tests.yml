@@ -17,31 +17,8 @@ jobs:
         include:
           - python_version: "3.8"
             core_dependencies: false
-            command: 'git-test-automl'
-          - python_version: "3.8"
-            core_dependencies: false
-            command: 'git-test-prophet'
-          - python_version: "3.8"
-            core_dependencies: false
-            command: 'git-test-modelunderstanding'
-          - python_version: "3.8"
-            core_dependencies: false
-            command: 'git-test-other'
-          - python_version: "3.8"
-            core_dependencies: false
-            command: 'git-test-parallel'
-          - python_version: "3.8"
-            core_dependencies: true
-            command: 'git-test-automl-core'
-          - python_version: "3.8"
-            core_dependencies: true
-            command: 'git-test-modelunderstanding-core'
-          - python_version: "3.8"
-            core_dependencies: true
-            command: 'git-test-other-core'
-          - python_version: "3.8"
-            core_dependencies: true
-            command: 'git-test-minimal-deps-parallel'
+            command: 'git-test-integration'
+
     steps:
       - name: Set up Python ${{ matrix.python_version }}
         uses: actions/setup-python@v2
