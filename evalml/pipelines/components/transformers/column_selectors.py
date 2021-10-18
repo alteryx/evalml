@@ -119,13 +119,14 @@ class SelectColumns(ColumnSelector):
                 f"Parameter columns must be a list. Received {type(columns)}."
             )
         self.create_if_missing = create_if_missing
-        parameters = {"columns": columns, "create_if_missing": create_if_missing}
+        parameters = {"columns": columns}
         parameters.update(kwargs)
-        Transformer.__init__(
-            Transformer,
+        super().__init__(
+            columns=columns,
             parameters=parameters,
             component_obj=None,
             random_seed=random_seed,
+            create_if_missing=create_if_missing
         )
 
     def fit(self, X, y=None):
