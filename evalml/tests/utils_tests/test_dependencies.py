@@ -13,12 +13,6 @@ def _get_req_name(name):
     return name
 
 
-def test_texttable_version():
-    import texttable
-
-    assert texttable.__version__ == "1.6.3"
-
-
 def test_has_minimal_deps(
     has_minimal_dependencies,
     is_running_py_39_or_above,
