@@ -45,6 +45,7 @@ outputs:
         - networkx >=2.5,<2.6
         - category_encoders >=2.2.2
         - python-graphviz >=0.13
+        - vowpalwabbit >=8.8.1
     test:
       imports:
         - evalml
