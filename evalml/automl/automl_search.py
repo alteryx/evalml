@@ -191,12 +191,12 @@ def search(
         "verbose": verbose,
     }
 
-    data_checks = DefaultDataChecks(
-        problem_type=problem_type, objective=objective, datetime_column=datetime_column
-    )
-    data_check_results = data_checks.validate(X_train, y=y_train)
-    if len(data_check_results.get("errors", [])):
-        return None, data_check_results
+    # data_checks = DefaultDataChecks(
+    #     problem_type=problem_type, objective=objective, datetime_column=datetime_column
+    # )
+    # data_check_results = data_checks.validate(X_train, y=y_train)
+    # if len(data_check_results.get("errors", [])):
+    #     return None, data_check_results
 
     automl = AutoMLSearch(_automl_algorithm="default", **automl_config)
     automl.search()
