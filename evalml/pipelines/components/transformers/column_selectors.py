@@ -126,7 +126,7 @@ class SelectColumns(ColumnSelector):
             parameters=parameters,
             component_obj=None,
             random_seed=random_seed,
-            create_if_missing=create_if_missing
+            create_if_missing=create_if_missing,
         )
 
     def fit(self, X, y=None):
