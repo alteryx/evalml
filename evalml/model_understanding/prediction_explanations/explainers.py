@@ -99,7 +99,7 @@ def explain_predictions(
             "training_data are not None"
         )
 
-    pipeline_features = pipeline.compute_estimator_features(
+    pipeline_features = pipeline.transform_all_but_final(
         input_features, y, training_data, training_target
     )
 
@@ -276,7 +276,7 @@ def explain_predictions_best_worst(
         start_time, timer(), ExplainPredictionsStage.COMPUTE_FEATURE_STAGE, callback
     )
 
-    pipeline_features = pipeline.compute_estimator_features(
+    pipeline_features = pipeline.transform_all_but_final(
         input_features, y_true, training_data, training_target
     )
 

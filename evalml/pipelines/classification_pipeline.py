@@ -124,7 +124,7 @@ class ClassificationPipeline(PipelineBase):
             raise ValueError(
                 "Cannot call predict_proba() on a component graph because the final component is not an Estimator."
             )
-        X = self.compute_estimator_features(X, y=None)
+        X = self.transform_all_but_final(X, y=None)
         proba = self.estimator.predict_proba(X)
         proba = proba.ww.rename(
             columns={col: new_col for col, new_col in zip(proba.columns, self.classes_)}
