@@ -86,7 +86,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         )
         self._initial_state = self.random_seed
         self._provenance = {}
-        self.all_features = None
 
     @staticmethod
     def _get_cat_cols(X):
@@ -167,9 +166,6 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         )
 
         self._encoder.fit(X_t[self.features_to_encode])
-        self.all_features = self._encoder.get_feature_names(
-            [str(feature) for feature in self.features_to_encode]
-        )
         return self
 
     def transform(self, X, y=None):
@@ -186,6 +182,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         X_copy = self._handle_parameter_handle_missing(X)
 
         X = X.ww.drop(columns=self.features_to_encode)
+
         # Call sklearn's transform on the categorical columns
         if len(self.features_to_encode) > 0:
             X_cat = pd.DataFrame(
@@ -198,6 +195,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             self._feature_names = X_cat.columns
 
             X = ww.utils.concat_columns([X, X_cat])
+
         return X
 
     def _handle_parameter_handle_missing(self, X):
