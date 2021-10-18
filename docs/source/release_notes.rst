@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary :pr:`2869`
     * Fixes
+        * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
     * Changes
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
