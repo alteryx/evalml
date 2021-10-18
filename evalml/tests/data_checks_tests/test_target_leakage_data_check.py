@@ -74,6 +74,32 @@ def test_target_leakage_data_check_warnings():
     }
 
 
+def test_target_leakage_data_check_singular_warning():
+    y = pd.Series([1, 0, 1, 1])
+    X = pd.DataFrame()
+    X["a"] = y * 3
+    X["b"] = [0, 0, 0, 0]
+    y = y.astype(bool)
+
+    leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5)
+    assert leakage_check.validate(X, y) == {
+        "warnings": [
+            DataCheckWarning(
+                message="Column 'a' is 50.0% or more correlated with the target",
+                data_check_name=target_leakage_data_check_name,
+                message_code=DataCheckMessageCode.TARGET_LEAKAGE,
+                details={"columns": ["a"]},
+            ).to_dict(),
+        ],
+        "errors": [],
+        "actions": [
+            DataCheckAction(
+                DataCheckActionCode.DROP_COL, metadata={"columns": ["a"]}
+            ).to_dict(),
+        ],
+    }
+
+
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_target_leakage_data_check_empty(data_type, make_data_type):
     X = make_data_type(data_type, pd.DataFrame())
