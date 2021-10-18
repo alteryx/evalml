@@ -1,0 +1,109 @@
+name: Integration tests, linux, latest dependencies
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
+
+jobs:
+  unit_tests:
+    name: ${{ matrix.python_version }} unit ${{matrix.command}} tests, Core Dependencies (${{ matrix.core_dependencies }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - python_version: "3.8"
+            core_dependencies: false
+            command: 'git-test-automl'
+          - python_version: "3.8"
+            core_dependencies: false
+            command: 'git-test-prophet'
+          - python_version: "3.8"
+            core_dependencies: false
+            command: 'git-test-modelunderstanding'
+          - python_version: "3.8"
+            core_dependencies: false
+            command: 'git-test-other'
+          - python_version: "3.8"
+            core_dependencies: false
+            command: 'git-test-parallel'
+          - python_version: "3.8"
+            core_dependencies: true
+            command: 'git-test-automl-core'
+          - python_version: "3.8"
+            core_dependencies: true
+            command: 'git-test-modelunderstanding-core'
+          - python_version: "3.8"
+            core_dependencies: true
+            command: 'git-test-other-core'
+          - python_version: "3.8"
+            core_dependencies: true
+            command: 'git-test-minimal-deps-parallel'
+    steps:
+      - name: Set up Python ${{ matrix.python_version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.ref }}
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          fetch-depth: 2
+      - name: Update apt and install Graphviz
+        run: sudo apt update && sudo apt install -y graphviz
+      - if: ${{ matrix.core_dependencies }}
+        name: Installing Core Dependencies
+        run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          pip install --upgrade pip -q
+          pip install -e . --no-dependencies
+          pip install -r core-requirements.txt
+          pip install -r test-requirements.txt
+          # "!" negates return code. exit nonzero if any of these deps are found
+          ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
+          exit $?
+      - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel') }}
+        name: Installing Dependencies
+        run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          make installdeps
+          make installdeps-test
+          pip freeze
+      - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-automl' || matrix.command == 'git-test-prophet') }}
+        name: Installing Dependencies and Prophet
+        run: |
+          pip install virtualenv
+          virtualenv test_python -q
+          source test_python/bin/activate
+          pip install cmdstan-builder==0.0.8
+          make installdeps
+          make installdeps-test
+          pip freeze
+      - name: Erase Coverage
+        run: |
+          source test_python/bin/activate
+          coverage erase
+      - name: Run unit tests
+        run: |
+          source test_python/bin/activate
+          make ${{matrix.command}}
+      - name: Upload pytest duration artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: pytest-duration-report
+          path: test-reports/${{matrix.command}}-junit.xml
+      - name: install coverage
+        run: pip install coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
