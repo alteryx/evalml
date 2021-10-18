@@ -60,22 +60,25 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
 
 
 @pytest.mark.parametrize(
-    "pipeline,exception,match",
+    "pipeline,exception,match,algorithm",
     [
         (
             make_test_pipeline(BaselineRegressor, RegressionPipeline),
             ValueError,
             baseline_message,
+            "shap",
         ),
         (
             make_test_pipeline(BaselineClassifier, BinaryClassificationPipeline),
             ValueError,
             baseline_message,
+            "shap",
         ),
         (
             make_test_pipeline(BaselineClassifier, MulticlassClassificationPipeline),
             ValueError,
             baseline_message,
+            "shap",
         ),
         (
             make_test_pipeline(
@@ -83,55 +86,37 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
             ),
             ValueError,
             baseline_message,
+            "shap",
         ),
         (
             make_test_pipeline(RandomForestClassifier, BinaryClassificationPipeline),
             ValueError,
             datatype_message,
+            "shap",
         ),
         (
             make_test_pipeline(LinearRegressor, RegressionPipeline),
             ValueError,
             data_message,
+            "shap",
         ),
-    ],
-)
-@patch(
-    "evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer"
-)
-def test_shap_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
-
-    pipeline = pipeline(
-        {
-            "pipeline": {
-                "date_index": None,
-                "gap": 1,
-                "max_delay": 1,
-                "forecast_horizon": 1,
-            }
-        }
-    )
-    with pytest.raises(exception, match=match):
-        _ = _compute_shap_values(pipeline, pd.DataFrame(np.random.random((2, 16))))
-
-
-@pytest.mark.parametrize(
-    "pipeline,exception,match",
-    [
         (
             make_test_pipeline(BaselineRegressor, RegressionPipeline),
             ValueError,
             baseline_lime_message,
+            "lime",
         ),
         (
             make_test_pipeline(BaselineClassifier, BinaryClassificationPipeline),
             ValueError,
             baseline_lime_message,
+            "lime",
         ),
         (
             make_test_pipeline(BaselineClassifier, MulticlassClassificationPipeline),
             ValueError,
             baseline_lime_message,
+            "lime",
         ),
         (
             make_test_pipeline(
@@ -139,13 +124,16 @@ def test_shap_value_errors_raised(mock_tree_explainer, pipeline, exception, matc
             ),
             ValueError,
             baseline_lime_message,
+            "lime",
         ),
     ],
 )
 @patch(
     "evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer"
 )
-def test_lime_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
+def test_explainer_value_errors_raised(
+    mock_tree_explainer, pipeline, exception, match, algorithm
+):
     pytest.importorskip(
         "lime.lime_tabular",
         reason="Skipping lime value errors test because lime not installed",
@@ -162,7 +150,12 @@ def test_lime_value_errors_raised(mock_tree_explainer, pipeline, exception, matc
         }
     )
     with pytest.raises(exception, match=match):
-        _ = _compute_lime_values(pipeline, pd.DataFrame(np.random.random((2, 16))), 0)
+        if algorithm == "shap":
+            _ = _compute_shap_values(pipeline, pd.DataFrame(np.random.random((2, 16))))
+        else:
+            _ = _compute_lime_values(
+                pipeline, pd.DataFrame(np.random.random((2, 16))), 0
+            )
 
 
 def test_create_dictionary_exception():
@@ -187,93 +180,6 @@ def calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain):
     return shap_values
 
 
-interpretable_estimators = [
-    e
-    for e in _all_estimators_used_in_search()
-    if e.model_family != ModelFamily.BASELINE
-]
-all_problems = [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
-all_n_points_to_explain = [1, 5]
-
-
-@pytest.mark.parametrize(
-    "estimator,problem_type,n_points_to_explain",
-    product(interpretable_estimators, all_problems, all_n_points_to_explain),
-)
-def test_shap(
-    estimator,
-    problem_type,
-    n_points_to_explain,
-    X_y_binary,
-    X_y_multi,
-    X_y_regression,
-    helper_functions,
-):
-
-    if problem_type not in estimator.supported_problem_types:
-        pytest.skip("Skipping because estimator and pipeline are not compatible.")
-
-    if problem_type == ProblemTypes.BINARY:
-        training_data, y = X_y_binary
-        is_binary = True
-    elif problem_type == ProblemTypes.MULTICLASS:
-        training_data, y = X_y_multi
-        is_binary = False
-    else:
-        training_data, y = X_y_regression
-
-    parameters = {estimator.name: {"n_jobs": 1}}
-    try:
-        pipeline = make_pipeline(
-            training_data, y, estimator, problem_type, parameters=parameters
-        )
-    except ValueError:
-        pipeline = make_pipeline(training_data, y, estimator, problem_type)
-
-    shap_values = calculate_shap_for_test(
-        training_data, y, pipeline, n_points_to_explain
-    )
-
-    if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        assert isinstance(
-            shap_values, list
-        ), "For binary classification, returned values must be a list"
-        assert all(
-            isinstance(class_values, dict) for class_values in shap_values
-        ), "Not all list elements are lists!"
-        if is_binary:
-            assert (
-                len(shap_values) == N_CLASSES_BINARY
-            ), "A dictionary should be returned for each class!"
-        else:
-            assert (
-                len(shap_values) == N_CLASSES_MULTICLASS
-            ), "A dictionary should be returned for each class!"
-        assert all(
-            len(values) == N_FEATURES for values in shap_values
-        ), "A SHAP value must be computed for every feature!"
-        for class_values in shap_values:
-            assert all(
-                isinstance(feature, list) for feature in class_values.values()
-            ), "Every value in the dict must be a list!"
-            assert all(
-                len(v) == n_points_to_explain for v in class_values.values()
-            ), "A SHAP value must be computed for every data point to explain!"
-    elif problem_type == ProblemTypes.REGRESSION:
-        assert isinstance(
-            shap_values, dict
-        ), "For regression, returned values must be a dictionary!"
-        assert (
-            len(shap_values) == N_FEATURES
-        ), "A SHAP value should be computed for every feature!"
-        assert all(
-            isinstance(feature, list) for feature in shap_values.values()
-        ), "Every value in the dict must be a list!"
-        assert all(
-            len(v) == n_points_to_explain for v in shap_values.values()
-        ), "A SHAP value must be computed for every data point to explain!"
-
-
 def calculate_lime_for_test(training_data, y, pipeline, index_to_explain):
     """Helper function to compute the LIME values for n_points_to_explain for a given pipeline."""
     pipeline.fit(training_data, y)
@@ -285,22 +191,37 @@ def calculate_lime_for_test(training_data, y, pipeline, index_to_explain):
     return lime_values
 
 
+interpretable_estimators = [
+    e
+    for e in _all_estimators_used_in_search()
+    if e.model_family != ModelFamily.BASELINE
+]
+all_problems = [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
+all_n_points_to_explain = [1, 5]
+algorithms = ["shap", "lime"]
+
+
 @pytest.mark.parametrize(
-    "estimator,problem_type",
-    product(interpretable_estimators, all_problems),
+    "estimator,problem_type,n_points_to_explain,algorithm",
+    product(
+        interpretable_estimators, all_problems, all_n_points_to_explain, algorithms
+    ),
 )
-def test_lime(
+def test_explainers(
     estimator,
     problem_type,
+    n_points_to_explain,
+    algorithm,
     X_y_binary,
     X_y_multi,
     X_y_regression,
     helper_functions,
 ):
-    pytest.importorskip(
-        "lime.lime_tabular",
-        reason="Skipping plotting test because lime not installed",
-    )
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping LIME test because lime not installed",
+        )
 
     if problem_type not in estimator.supported_problem_types:
         pytest.skip("Skipping because estimator and pipeline are not compatible.")
@@ -310,7 +231,6 @@ def test_lime(
         is_binary = True
     elif problem_type == ProblemTypes.MULTICLASS:
         training_data, y = X_y_multi
-        training_data = pd.DataFrame(training_data)
         is_binary = False
     else:
         training_data, y = X_y_regression
@@ -323,40 +243,53 @@ def test_lime(
     except ValueError:
         pipeline = make_pipeline(training_data, y, estimator, problem_type)
 
-    lime_values = calculate_lime_for_test(training_data, y, pipeline, 0)
+    if algorithm == "shap":
+        explainer_values = calculate_shap_for_test(
+            training_data, y, pipeline, n_points_to_explain
+        )
+    else:
+        explainer_values = calculate_lime_for_test(training_data, y, pipeline, 0)
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         assert isinstance(
-            lime_values, list
+            explainer_values, list
         ), "For binary classification, returned values must be a list"
         assert all(
-            isinstance(class_values, dict) for class_values in lime_values
+            isinstance(class_values, dict) for class_values in explainer_values
         ), "Not all list elements are lists!"
         if is_binary:
             assert (
-                len(lime_values) == N_CLASSES_BINARY
+                len(explainer_values) == N_CLASSES_BINARY
             ), "A dictionary should be returned for each class!"
         else:
             assert (
-                len(lime_values) == N_CLASSES_MULTICLASS
+                len(explainer_values) == N_CLASSES_MULTICLASS
             ), "A dictionary should be returned for each class!"
         assert all(
-            len(values) == N_FEATURES for values in lime_values
-        ), "A LIME value must be computed for every feature!"
-        for class_values in lime_values:
+            len(values) == N_FEATURES for values in explainer_values
+        ), f"A {algorithm.upper()} value must be computed for every feature!"
+        for class_values in explainer_values:
             assert all(
                 isinstance(feature, list) for feature in class_values.values()
             ), "Every value in the dict must be a list!"
+            if algorithm == "shap":
+                assert all(
+                    len(v) == n_points_to_explain for v in class_values.values()
+                ), f"A SHAP value must be computed for every data point to explain!"
     elif problem_type == ProblemTypes.REGRESSION:
         assert isinstance(
-            lime_values, dict
+            explainer_values, dict
         ), "For regression, returned values must be a dictionary!"
         assert (
-            len(lime_values) == N_FEATURES
-        ), "A LIME value should be computed for every feature!"
+            len(explainer_values) == N_FEATURES
+        ), f"A {algorithm.upper()} value should be computed for every feature!"
         assert all(
-            isinstance(feature, list) for feature in lime_values.values()
+            isinstance(feature, list) for feature in explainer_values.values()
         ), "Every value in the dict must be a list!"
+        if algorithm == "shap":
+            assert all(
+                len(v) == n_points_to_explain for v in explainer_values.values()
+            ), f"A SHAP value must be computed for every data point to explain!"
 
 
 def test_lime_maintains_column_names():
