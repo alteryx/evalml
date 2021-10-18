@@ -16,7 +16,7 @@ networkx==2.5.1
 nlp-primitives==2.0.0
 numba==0.53.0
 numpy==1.21.2
-pandas==1.3.3
+pandas==1.3.4
 plotly==5.3.1
 pmdarima==1.8.0
 psutil==5.8.0
@@ -31,4 +31,4 @@ sktime==0.8.0
 statsmodels==0.13.0
 texttable==1.6.4
 woodwork==0.8.1
-xgboost==1.4.2
+xgboost==1.5.0
