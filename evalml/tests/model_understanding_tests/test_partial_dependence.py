@@ -1,4 +1,5 @@
 import re
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -1544,3 +1545,44 @@ def test_partial_dependence_categorical_nan(fraud_100):
     assert not dep2way.isna().any().any()
     # Plus 1 in the columns because there is `class_label`
     assert dep2way.shape == (GRID_RESOLUTION, X["provider"].dropna().nunique() + 1)
+
+
+@patch(
+    "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
+    side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
+)
+def test_partial_dependence_preserves_woodwork_schema(mock_predict_proba, fraud_100):
+
+    X, y = fraud_100
+    X_test = X.ww.copy()
+
+    X = X.ww[["card_id", "store_id", "amount", "provider"]]
+    X.ww.set_types({"provider": "NaturalLanguage"})
+
+    pl = BinaryClassificationPipeline(
+        component_graph={
+            "Label Encoder": ["Label Encoder", "X", "y"],
+            "Text Featurization Component": [
+                "Text Featurization Component",
+                "X",
+                "Label Encoder.y",
+            ],
+            "Imputer": ["Imputer", "Text Featurization Component.x", "Label Encoder.y"],
+            "Random Forest Classifier": [
+                "Random Forest Classifier",
+                "Imputer.x",
+                "Label Encoder.y",
+            ],
+        }
+    )
+    pl.fit(X, y)
+
+    X_test = X_test.ww[["card_id", "store_id", "amount", "provider"]]
+    X_test["provider"][-1] = None
+    X_test.ww.set_types({"provider": "NaturalLanguage"})
+
+    _ = partial_dependence(pl, X_test, "card_id", grid_resolution=5)
+    assert all(
+        call_args[0][0].ww.schema == X_test.ww.schema
+        for call_args in mock_predict_proba.call_args_list
+    )
