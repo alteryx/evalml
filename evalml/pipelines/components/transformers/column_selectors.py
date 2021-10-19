@@ -113,20 +113,18 @@ class SelectColumns(ColumnSelector):
     """{}"""
     needs_fitting = False
 
-    def __init__(self, columns=None, create_if_missing=False, random_seed=0, **kwargs):
+    def __init__(self, columns=None, create_if_missing=False, random_seed=0):
         if columns and not isinstance(columns, list):
             raise ValueError(
                 f"Parameter columns must be a list. Received {type(columns)}."
             )
         self.create_if_missing = create_if_missing
-        parameters = {"columns": columns}
-        parameters.update(kwargs)
+        parameters = {"columns": columns, "create_if_missing": create_if_missing}
         super().__init__(
             columns=columns,
             parameters=parameters,
             component_obj=None,
             random_seed=random_seed,
-            create_if_missing=create_if_missing,
         )
 
     def fit(self, X, y=None):
