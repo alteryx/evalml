@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``rows_of_interest`` to pipeline utils :pr:`2908`
         * Added support for woodwork version ``0.8.2`` :pr:`2909`
         * Enhanced the ``DateTimeFeaturizer`` to handle ``NaNs`` in date features :pr:`2909`
     * Fixes
@@ -10,6 +11,7 @@ Release Notes
         * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
+        * Updated CI to run doctest (docstring tests) and apply necessary fixes to docstrings :pr:`2933`
     * Testing Changes
         * Fixed dependency checker to catch full names of packages :pr:`2930`
         * Refactored ``build_conda_pkg`` to work from a local recipe :pr:`2925`
