@@ -119,6 +119,7 @@ Pipeline Utils
 
     evalml.pipelines.utils.make_pipeline
     evalml.pipelines.utils.generate_pipeline_code
+    evalml.pipelines.utils.rows_of_interest
 
 
 

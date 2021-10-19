@@ -699,3 +699,16 @@ def test_permutation_importance_url_email(df_with_url_and_email):
     assert not data.isnull().any().any()
     assert "url" in data["feature"].tolist()
     assert "email" in data["feature"].tolist()
+
+
+def test_permutation_importance_standard_scaler(fraud_100):
+    X, y = fraud_100
+    component_graph = [
+        "Imputer",
+        "One Hot Encoder",
+        "Standard Scaler",
+        "Logistic Regression Classifier",
+    ]
+    pipeline = BinaryClassificationPipeline(component_graph)
+    pipeline.fit(X, y)
+    calculate_permutation_importance(pipeline, X, y, objective="log loss binary")
