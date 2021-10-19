@@ -100,6 +100,10 @@ def explain_predictions(
             "Prediction explanations for time series pipelines requires that training_target and "
             "training_data are not None"
         )
+    if algorithm not in ["shap", "lime"]:
+        raise ValueError(
+            f"Unknown algorithm {algorithm}, should be one of ['shap', 'lime']"
+        )
 
     pipeline_features = pipeline.transform_all_but_final(
         input_features, y, training_data, training_target
@@ -236,6 +240,10 @@ def explain_predictions_best_worst(
         raise ValueError(
             "Prediction explanations for time series pipelines requires that training_target and "
             "training_data are not None"
+        )
+    if algorithm not in ["shap", "lime"]:
+        raise ValueError(
+            f"Unknown algorithm {algorithm}, should be one of ['shap', 'lime']"
         )
 
     try:

@@ -535,9 +535,14 @@ def _make_single_prediction_explanation_table(
             pipeline_features_row,
             training_data=pipeline_features.dropna(axis=0),
         )
-    else:
-        explainer_values, expected_value = _compute_lime_values(
+    elif algorithm == "lime":
+        explainer_values = _compute_lime_values(
             pipeline, pipeline_features, index_to_explain
+        )
+        expected_value = None
+    else:
+        raise ValueError(
+            f"Unknown algorithm {algorithm}, should be one of ['shap', 'lime']"
         )
     normalized_values = _normalize_explainer_values(explainer_values)
 

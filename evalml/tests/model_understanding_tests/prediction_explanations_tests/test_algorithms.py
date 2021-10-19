@@ -184,7 +184,7 @@ def calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain):
 def calculate_lime_for_test(training_data, y, pipeline, index_to_explain):
     """Helper function to compute the LIME values for n_points_to_explain for a given pipeline."""
     pipeline.fit(training_data, y)
-    lime_values, expected_value = _compute_lime_values(
+    lime_values = _compute_lime_values(
         pipeline,
         training_data,
         index_to_explain,

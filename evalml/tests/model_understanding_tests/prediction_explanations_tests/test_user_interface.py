@@ -674,12 +674,20 @@ def test_make_single_prediction_table(
 def test_make_single_prediction_table_calls_correct_algorithm(
     mock_shap, mock_lime, mock_make_text
 ):
-
     pipeline = MagicMock()
     pipeline.problem_type = ProblemTypes.BINARY
 
     mock_shap.return_value = binary
     mock_lime.return_value = binary
+
+    with pytest.raises(ValueError, match="Unknown algorithm"):
+        _make_single_prediction_explanation_table(
+            pipeline,
+            binary_pipeline_features,
+            binary_pipeline_features,
+            0,
+            algorithm="fake",
+        )
 
     _make_single_prediction_explanation_table(
         pipeline,

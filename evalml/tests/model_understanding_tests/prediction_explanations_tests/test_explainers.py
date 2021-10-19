@@ -1931,3 +1931,18 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
             ):
                 if feature_name == "lat":
                     assert np.isnan(feature_value)
+
+
+def test_explain_predictions_invalid_algorithm():
+    pipeline = MagicMock()
+    input_features = pd.DataFrame({"a": [5, 6, 1, 2, 3, 4, 5, 6, 7, 4]})
+    pipeline.problem_type = ProblemTypes.REGRESSION
+    y = ww.init_series(pd.Series([2, 1, 1, 2, 3, 2, 1, 2, 1, 3]))
+
+    with pytest.raises(ValueError, match="Unknown algorithm"):
+        explain_predictions(pipeline, input_features, y, [0], algorithm="fAkE")
+
+    with pytest.raises(ValueError, match="Unknown algorithm"):
+        explain_predictions_best_worst(
+            pipeline, input_features, y, top_k_features=1, algorithm="lIMe"
+        )

@@ -44,9 +44,8 @@ def _compute_lime_values(pipeline, features, index_to_explain):
         index_to_explain (int): Index in the pipeline_features/input_features to explain.
 
     Returns:
-        dict or list(dict): For regression problems, a dictionary mapping a feature name to a list of SHAP values.
+        dict or list(dict): For regression problems, a dictionary mapping a feature name to a list of LIME values.
             For classification problems, returns a list of dictionaries. One for each class.
-        float: the expected value if return_expected_value is True.
     """
     error_msg = "lime is not installed. Please install using 'pip install lime'"
     lime = import_or_raise("lime.lime_tabular", error_msg=error_msg)
@@ -88,6 +87,8 @@ def _compute_lime_values(pipeline, features, index_to_explain):
             array_predict,
             num_features=num_features,
         )
+        mapping_list = exp.as_list()
+        mappings = list_to_dict(mapping_list)
     else:
         exp = explainer.explain_instance(
             instance,
@@ -95,16 +96,12 @@ def _compute_lime_values(pipeline, features, index_to_explain):
             num_features=num_features,
             top_labels=len(pipeline.classes_),
         )
-
-    if mode == "regression":
-        mapping_list = exp.as_list()
-        mappings = list_to_dict(mapping_list)
-    else:
         mappings = []
         for label in exp.available_labels():
             mapping_list = exp.as_list(label)
             mappings.append(list_to_dict(mapping_list))
-    return (mappings, None)
+
+    return mappings
 
 
 def _compute_shap_values(pipeline, features, training_data=None):
