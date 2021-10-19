@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``rows_of_interest`` to pipeline utils :pr:`2908`
         * Added support for woodwork version ``0.8.2`` :pr:`2909`
         * Enhanced the ``DateTimeFeaturizer`` to handle ``NaNs`` in date features :pr:`2909`
     * Fixes
