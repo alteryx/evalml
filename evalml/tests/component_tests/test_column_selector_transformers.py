@@ -9,7 +9,6 @@ from evalml.pipelines.components import (
     SelectByType,
     SelectColumns,
 )
-from evalml.pipelines.components.transformers import column_selectors
 
 
 @pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns])
@@ -193,7 +192,7 @@ def test_column_transformer_fit_transform(class_to_test, checking_functions):
 def test_drop_column_transformer_input_invalid_col_name(class_to_test):
     X = pd.DataFrame({"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]})
     transformer = class_to_test(columns=["not in data"])
-    if "class_to_test" == DropColumns:
+    if class_to_test == DropColumns:
         with pytest.raises(ValueError, match="not found in input data"):
             transformer.fit(X)
     with pytest.raises(ValueError, match="not found in input data"):
@@ -203,7 +202,7 @@ def test_drop_column_transformer_input_invalid_col_name(class_to_test):
 
     X = np.arange(12).reshape(3, 4)
     transformer = class_to_test(columns=[5])
-    if "class_to_test" == DropColumns:
+    if class_to_test == DropColumns:
         with pytest.raises(ValueError, match="not found in input data"):
             transformer.fit(X)
     with pytest.raises(ValueError, match="not found in input data"):
