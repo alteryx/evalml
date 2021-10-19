@@ -508,7 +508,7 @@ def rows_of_interest(
     pred_proba = pipeline.predict_proba(X)
     pos_value_proba = pred_proba.iloc[:, -1]
     preds = pos_value_proba >= threshold
-    preds_value_proba = pos_value_proba - threshold
+    preds_value_proba = abs(pos_value_proba - threshold)
 
     # placeholder for y if it isn't supplied
     y_current = y if y is not None else preds
@@ -525,9 +525,7 @@ def rows_of_interest(
         preds_value_proba = preds_value_proba[~mask.values]
 
     if sort_values:
-        preds_value_proba = preds_value_proba.sort_values(
-            key=lambda x: abs(x), kind="stable"
-        )
+        preds_value_proba = preds_value_proba.sort_values(kind="stable")
 
-    preds_value_proba = preds_value_proba[abs(preds_value_proba) <= epsilon]
+    preds_value_proba = preds_value_proba[preds_value_proba <= epsilon]
     return preds_value_proba.index.tolist()
