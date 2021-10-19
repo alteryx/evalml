@@ -26,17 +26,16 @@ class DateTimeFormatDataCheck(DataCheck):
             dict (DataCheckError): List with DataCheckErrors if unequal intervals are found in the datetime column.
 
         Example:
-            >>> from pandas as pd
-            >>> X = pd.DataFrame(pd.date_range("January 1, 2021", periods=8), columns=["dates"])
-            >>> y = pd.Series([1, 2, 4, 2, 1, 2, 3, 1])
-            >>> X.iloc[7] = "January 9, 2021"
-            >>> datetime_format_check = DateTimeFormatDataCheck()
+            >>> import pandas as pd
+            >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=9).append(pd.date_range("2021-01-31", periods=1)), columns=["dates"])
+            >>> y = pd.Series([0, 1, 0, 1, 1, 0, 0, 0, 1, 0])
+            >>> datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_check.validate(X, y) == {
             ...     "errors": [{"message": "No frequency could be detected in dates, possibly due to uneven intervals.",
-            ...                 "data_check_name": "EqualIntervalDataCheck",
+            ...                 "data_check_name": "DateTimeFormatDataCheck",
             ...                 "level": "error",
             ...                 "code": "DATETIME_HAS_UNEVEN_INTERVALS",
-            ...                 "details": {}}],
+            ...                 }],
             ...     "warnings": [],
             ...     "actions": []}
         """
