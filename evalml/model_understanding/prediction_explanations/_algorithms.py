@@ -58,6 +58,7 @@ def _compute_lime_values(pipeline, features, index_to_explain):
         mode = "regression"
 
     def array_predict(row):
+        row = pd.DataFrame(row, columns=feature_names)
         if mode == "regression":
             pred = pipeline.estimator.predict(row)
         else:
