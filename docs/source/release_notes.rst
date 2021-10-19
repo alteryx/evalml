@@ -11,6 +11,7 @@ Release Notes
         * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
+        * Updated CI to run doctest (docstring tests) and apply necessary fixes to docstrings :pr:`2933`
     * Testing Changes
         * Fixed dependency checker to catch full names of packages :pr:`2930`
         * Refactored ``build_conda_pkg`` to work from a local recipe :pr:`2925`
