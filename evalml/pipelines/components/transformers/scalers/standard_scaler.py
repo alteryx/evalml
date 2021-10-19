@@ -59,5 +59,5 @@ class StandardScaler(Transformer):
             pd.DataFrame: Transformed data.
         """
         X = infer_feature_types(X)
-        X = X.ww.select(exclude=["datetime"])
+        X = X.select_dtypes(exclude=["datetime"])
         return self.fit(X, y).transform(X, y)

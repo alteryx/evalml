@@ -1,4 +1,3 @@
-import warnings
 from unittest.mock import PropertyMock, patch
 
 import numpy as np
@@ -712,7 +711,4 @@ def test_permutation_importance_standard_scaler(fraud_100):
     ]
     pipeline = BinaryClassificationPipeline(component_graph)
     pipeline.fit(X, y)
-    with warnings.catch_warnings(record=True) as w:
-        warnings.simplefilter("always")
-        calculate_permutation_importance(pipeline, X, y, objective="log loss binary")
-    assert not len(w)
+    calculate_permutation_importance(pipeline, X, y, objective="log loss binary")
