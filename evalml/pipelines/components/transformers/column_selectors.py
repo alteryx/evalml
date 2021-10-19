@@ -105,6 +105,7 @@ class SelectColumns(ColumnSelector):
 
     Args:
         columns (list(string)): List of column names, used to determine which columns to select.
+        create_if_missing (bool): Whether or not to append empty columns if selected columns do not exist. Defaults to False.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
