@@ -105,16 +105,8 @@ def _get_preprocessing_components(
         logical_types.Integer,
         logical_types.URL,
         logical_types.EmailAddress,
+        logical_types.Datetime,
     }
-
-    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
-    if len(text_columns) > 0:
-        pp_components.append(TextFeaturizer)
-
-    if len(input_logical_types.intersection(types_imputer_handles)) or len(
-        text_columns
-    ):
-        pp_components.append(Imputer)
 
     datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
 
@@ -124,6 +116,15 @@ def _get_preprocessing_components(
         ModelFamily.PROPHET,
     ]:
         pp_components.append(DateTimeFeaturizer)
+
+    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
+    if len(text_columns) > 0:
+        pp_components.append(TextFeaturizer)
+
+    if len(input_logical_types.intersection(types_imputer_handles)) or len(
+        text_columns
+    ):
+        pp_components.append(Imputer)
 
     if (
         is_time_series(problem_type)
@@ -448,3 +449,84 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon):
         },
     )
     return baseline
+
+
+def rows_of_interest(
+    pipeline, X, y=None, threshold=None, epsilon=0.1, sort_values=True, types="all"
+):
+    """Get the row indices of the data that are closest to the threshold. Works only for binary classification problems and pipelines.
+
+    Args:
+        pipeline (PipelineBase): The fitted binary pipeline.
+        X (ww.DataTable, pd.DataFrame): The input features to predict on.
+        y (ww.DataColumn, pd.Series, None): The input target data,  if available. Defaults to None.
+        threshold (float): The threshold value of interest to separate positive and negative predictions. If None, uses the pipeline threshold if set, else 0.5. Defaults to None.
+        epsilon (epsilon): The difference between the probability and the threshold that would make the row interesting for us. For instance, epsilon=0.1 and threhsold=0.5 would mean
+            we consider all rows in [0.4, 0.6] to be of interest. Defaults to 0.1.
+        sort_values (bool): Whether to return the indices sorted by the distance from the threshold, such that the first values are closer to the threshold and the later values are further. Defaults to True.
+        types (str): The type of rows to keep and return. Can be one of ['incorrect', 'correct', 'true_positive', 'true_negative', 'all']. Defaults to 'all'.
+
+            'incorrect' - return only the rows where the predictions are incorrect. This means that, given the threshold and target y, keep only the rows which are labeled wrong.
+            'correct' - return only the rows where the predictions are correct. This means that, given the threshold and target y, keep only the rows which are correctly labeled.
+            'true_positive' - return only the rows which are positive, as given by the targets.
+            'true_negative' - return only the rows which are negative, as given by the targets.
+            'all' - return all rows. This is the only option available when there is no target data provided.
+
+    Returns:
+        The indices corresponding to the rows of interest.
+
+    Raises:
+        ValueError: If pipeline is not a fitted Binary Classification pipeline.
+        ValueError: If types is invalid or y is not provided when types is not 'all'.
+        ValueError: If the threshold is provided and is exclusive of [0, 1].
+    """
+    valid_types = ["incorrect", "correct", "true_positive", "true_negative", "all"]
+    if types not in valid_types:
+        raise ValueError(
+            "Invalid arg for 'types'! Must be one of {}".format(valid_types)
+        )
+
+    if types != "all" and y is None:
+        raise ValueError("Need an input y in order to use types {}".format(types))
+
+    if (
+        not isinstance(pipeline, BinaryClassificationPipeline)
+        or not pipeline._is_fitted
+    ):
+        raise ValueError(
+            "Pipeline provided must be a fitted Binary Classification pipeline!"
+        )
+
+    if threshold is not None and (threshold < 0 or threshold > 1):
+        raise ValueError(
+            "Provided threshold {} must be between [0, 1]".format(threshold)
+        )
+
+    if threshold is None:
+        threshold = pipeline.threshold or 0.5
+
+    # get predicted proba
+    pred_proba = pipeline.predict_proba(X)
+    pos_value_proba = pred_proba.iloc[:, -1]
+    preds = pos_value_proba >= threshold
+    preds_value_proba = abs(pos_value_proba - threshold)
+
+    # placeholder for y if it isn't supplied
+    y_current = y if y is not None else preds
+
+    # logic for breaking apart the different categories
+    mask = y_current
+    if types in ["correct", "incorrect"]:
+        mask = preds == y
+    mask = mask.astype(bool)
+
+    if types in ["correct", "true_positive"]:
+        preds_value_proba = preds_value_proba[mask.values]
+    elif types in ["incorrect", "true_negative"]:
+        preds_value_proba = preds_value_proba[~mask.values]
+
+    if sort_values:
+        preds_value_proba = preds_value_proba.sort_values(kind="stable")
+
+    preds_value_proba = preds_value_proba[preds_value_proba <= epsilon]
+    return preds_value_proba.index.tolist()

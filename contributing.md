@@ -59,7 +59,7 @@ Note that if you're building docs locally, the warning suppression code at `docs
 
 * Once your changes are ready to be submitted, make sure to push your changes to GitHub before creating a pull request. Create a pull request, and our continuous integration will run automatically.
 
-* Be sure to include unit tests for your changes; the unit tests you write will also be run as part of the continuous integration.
+* Be sure to include unit tests (and docstring tests, if applicable) for your changes; these tests you write will also be run as part of the continuous integration.
 
 * If your changes alter the following please fix them as well:
     * Docstrings - if your changes render docstrings invalid
