@@ -133,6 +133,9 @@ def test_ft_woodwork_custom_overrides_returned_by_components(X_df):
             X.ww.init(logical_types={0: logical_type})
         except (ww.exceptions.TypeConversionError, ValueError):
             continue
+        if X.loc[:, 0].isna().all():
+            # Casting the fourth dataframe to datetime will produce all NaNs
+            continue
 
         dft = DFSTransformer()
         dft.fit(X, y)

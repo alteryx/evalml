@@ -28,7 +28,9 @@ class ComponentGraph:
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Example:
-        >>> component_dict = {'imputer': ['Imputer'], 'ohe': ['One Hot Encoder', 'imputer.x'], 'estimator_1': ['Random Forest Classifier', 'ohe.x'], 'estimator_2': ['Decision Tree Classifier', 'ohe.x'], 'final': ['Logistic Regression Classifier', 'estimator_1', 'estimator_2']}
+        >>> component_dict = {'Imputer': ['Imputer', 'X', 'y'], 'OHE': ['One Hot Encoder', 'Imputer.x', 'y'],
+        ...                   'estimator_1': ['Random Forest Classifier', 'OHE.x', 'y'], 'estimator_2': ['Decision Tree Classifier', 'OHE.x', 'y'],
+        ...                   'final': ['Logistic Regression Classifier', 'estimator_1.x', 'estimator_2.x', 'y']}
         >>> component_graph = ComponentGraph(component_dict)
     """
 
