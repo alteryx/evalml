@@ -293,6 +293,25 @@ def test_explainers(
             ), f"A SHAP value must be computed for every data point to explain!"
 
 
+def test_lime_catboost_xgboost(X_y_multi):
+    pytest.importorskip("catboost", reason="Skipping test because catboost not installed")
+    pytest.importorskip("xgboost", reason="Skipping test because xgboost not installed")
+    pytest.importorskip("lime.lime_tabular", reason="Skipping test because lime not installed")
+
+    from evalml.pipelines.components import CatBoostClassifier, XGBoostClassifier
+
+    X, y = X_y_multi
+
+    catboost_pipeline = make_pipeline(X, y, CatBoostClassifier, "multiclass")
+    xgboost_pipeline = make_pipeline(X, y, XGBoostClassifier, "multiclass")
+
+    catboost_values = calculate_lime_for_test(X, y, catboost_pipeline, 1)
+    xgboost_values = calculate_lime_for_test(X, y, xgboost_pipeline, 1)
+
+    assert len(catboost_values) == len(set(y))
+    assert len(xgboost_values) == len(set(y))
+
+
 @patch("evalml.model_understanding.prediction_explanations._algorithms.logger")
 @patch("shap.TreeExplainer")
 def test_compute_shap_values_catches_shap_tree_warnings(
