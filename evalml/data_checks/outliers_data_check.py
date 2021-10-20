@@ -56,7 +56,7 @@ class OutliersDataCheck(DataCheck):
         has_outliers = []
         outlier_row_indices = {}
         for col in X.columns:
-            box_plot_dict = OutliersDataCheck._get_boxplot_data(X.ww[col])
+            box_plot_dict = OutliersDataCheck.get_boxplot_data(X.ww[col])
             box_plot_dict_values = box_plot_dict["values"]
 
             pct_outliers = box_plot_dict["pct_outliers"]
@@ -96,7 +96,7 @@ class OutliersDataCheck(DataCheck):
         return results
 
     @staticmethod
-    def _get_boxplot_data(data_):
+    def get_boxplot_data(data_):
         """Returns box plot information for the given data.
 
         Args:

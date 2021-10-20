@@ -124,6 +124,7 @@ class HighlyNullDataCheck(DataCheck):
                     details={
                         "column": col_name,
                         "pct_null_rows": round((highly_null_cols[col_name]), 3),
+                        "row_indices": X[col_name][X[col_name].isnull()].index.tolist(),
                     },
                 ).to_dict()
                 for col_name in highly_null_cols
@@ -135,7 +136,6 @@ class HighlyNullDataCheck(DataCheck):
                     DataCheckActionCode.DROP_COL,
                     metadata={
                         "column": col_name,
-                        "row_indices": X[col_name][X[col_name].isnull()].index.tolist(),
                     },
                 ).to_dict()
                 for col_name in highly_null_cols

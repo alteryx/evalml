@@ -10,6 +10,7 @@ Release Notes
         * Fixed ``calculate_permutation_importance`` for datetimes on ``StandardScaler`` :pr:`2938`
     * Changes
         * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
+        * Refactored ``OutliersDataCheck`` and ``HighlyNullDataCheck`` to add more descriptive metadata :pr:`2907`
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
         * Updated CI to run doctest (docstring tests) and apply necessary fixes to docstrings :pr:`2933`
@@ -34,7 +35,6 @@ Release Notes
         * Updated pipelines to use a label encoder component instead of doing encoding on the pipeline level :pr:`2821`
         * Deleted scikit-learn ensembler :pr:`2819`
         * Refactored pipeline building logic out of ``AutoMLSearch`` and into ``IterativeAlgorithm`` :pr:`2854`
-        * Refactor ``OutliersDataCheck`` and ``HighlyNullDataCheck`` :pr:`2907`
         * Refactored names for methods in ``ComponentGraph`` and ``PipelineBase`` :pr:`2902`
     * Documentation Changes
         * Updated ``install.ipynb`` to reflect flexibility for ``cmdstan`` version installation :pr:`2880`
