@@ -88,8 +88,8 @@ class Oversampler(BaseSampler):
         X = infer_feature_types(X)
         self.categorical_features = [
             i
-            for i, val in enumerate(X.ww.types["Semantic Tag(s)"].items())
-            if 'category' in val[1].split("'")[1:-1]
+            for i, val in enumerate(X.ww.semantic_tags.items())
+            if 'category' in val[1]
         ]
         self._parameters["categorical_features"] = self.categorical_features
 
