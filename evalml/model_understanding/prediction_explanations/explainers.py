@@ -54,7 +54,7 @@ def explain_predictions(
 ):
     """Creates a report summarizing the top contributing features for each data point in the input features.
 
-    XGBoost models and CatBoost multiclass classifiers, are not currently supported with the SHAP algorithm. 
+    XGBoost models and CatBoost multiclass classifiers, are not currently supported with the SHAP algorithm.
     To explain these predictions, use the LIME algorithm. Stacked Ensemble models are not supported by either
     algorithm at this time.
 

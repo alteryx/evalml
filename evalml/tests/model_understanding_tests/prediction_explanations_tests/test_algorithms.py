@@ -294,11 +294,18 @@ def test_explainers(
 
 
 def test_lime_catboost_xgboost(X_y_multi):
-    pytest.importorskip("catboost", reason="Skipping test because catboost not installed")
+    pytest.importorskip(
+        "catboost", reason="Skipping test because catboost not installed"
+    )
     pytest.importorskip("xgboost", reason="Skipping test because xgboost not installed")
-    pytest.importorskip("lime.lime_tabular", reason="Skipping test because lime not installed")
+    pytest.importorskip(
+        "lime.lime_tabular", reason="Skipping test because lime not installed"
+    )
 
-    from evalml.pipelines.components import CatBoostClassifier, XGBoostClassifier
+    from evalml.pipelines.components import (
+        CatBoostClassifier,
+        XGBoostClassifier,
+    )
 
     X, y = X_y_multi
 
