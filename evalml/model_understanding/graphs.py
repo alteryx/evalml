@@ -648,16 +648,13 @@ def partial_dependence(
 
         if isinstance(features, (list, tuple)):
             is_categorical = [
-                _is_feature_of_semantic_type(f, X, "category")
-                for f in features
+                _is_feature_of_semantic_type(f, X, "category") for f in features
             ]
             is_datetime = [
                 _is_feature_of_type(f, X, ww.logical_types.Datetime) for f in features
             ]
         else:
-            is_categorical = [
-                _is_feature_of_semantic_type(features, X, "category")
-            ]
+            is_categorical = [_is_feature_of_semantic_type(features, X, "category")]
             is_datetime = [_is_feature_of_type(features, X, ww.logical_types.Datetime)]
 
         if isinstance(features, (list, tuple)):
@@ -948,7 +945,7 @@ def graph_partial_dependence(
     if isinstance(features, (list, tuple)):
         mode = "two-way"
         is_categorical = [
-            _is_feature_of_semantic_type(f, X, 'category') for f in features
+            _is_feature_of_semantic_type(f, X, "category") for f in features
         ]
         if any(is_categorical):
             features = _put_categorical_feature_first(features, is_categorical[0])

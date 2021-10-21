@@ -89,7 +89,7 @@ class Oversampler(BaseSampler):
         self.categorical_features = [
             i
             for i, val in enumerate(X.ww.semantic_tags.items())
-            if 'category' in val[1]
+            if "category" in val[1]
         ]
         self._parameters["categorical_features"] = self.categorical_features
 

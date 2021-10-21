@@ -1794,19 +1794,24 @@ def test_explain_predictions_url_email(df_with_url_and_email, algorithm):
         .any()
     )
 
+
 @pytest.mark.parametrize("algorithm", algorithms)
-def test_explain_predictions_postalcodes(algorithm, fraud_100, logistic_regression_binary_pipeline_class):
+def test_explain_predictions_postalcodes(
+    algorithm, fraud_100, logistic_regression_binary_pipeline_class
+):
     if algorithm == "lime":
         pytest.importorskip(
             "lime.lime_tabular",
             reason="Skipping lime value errors test because lime not installed",
         )
     X, y = fraud_100
-    X.ww.set_types(logical_types={
-        'store_id': 'PostalCode',
-        'country': 'CountryCode',
-        'region': 'SubRegionCode'
-    })
+    X.ww.set_types(
+        logical_types={
+            "store_id": "PostalCode",
+            "country": "CountryCode",
+            "region": "SubRegionCode",
+        }
+    )
 
     pipeline = logistic_regression_binary_pipeline_class(parameters={})
     pipeline.fit(X, y)
@@ -1820,15 +1825,25 @@ def test_explain_predictions_postalcodes(algorithm, fraud_100, logistic_regressi
         algorithm=algorithm,
     )
     assert (
-        "store_id" in explanations["explanations"][0]["explanations"][0]["feature_names"]
+        "store_id"
+        in explanations["explanations"][0]["explanations"][0]["feature_names"]
     )
-    assert "country" in explanations["explanations"][0]["explanations"][0]["feature_names"]
-    assert "region" in explanations["explanations"][0]["explanations"][0]["feature_names"]
     assert (
-        "store_id" in explanations["explanations"][1]["explanations"][0]["feature_names"]
+        "country" in explanations["explanations"][0]["explanations"][0]["feature_names"]
     )
-    assert "country" in explanations["explanations"][1]["explanations"][0]["feature_names"]
-    assert "region" in explanations["explanations"][1]["explanations"][0]["feature_names"]
+    assert (
+        "region" in explanations["explanations"][0]["explanations"][0]["feature_names"]
+    )
+    assert (
+        "store_id"
+        in explanations["explanations"][1]["explanations"][0]["feature_names"]
+    )
+    assert (
+        "country" in explanations["explanations"][1]["explanations"][0]["feature_names"]
+    )
+    assert (
+        "region" in explanations["explanations"][1]["explanations"][0]["feature_names"]
+    )
     assert (
         not pd.Series(
             explanations["explanations"][0]["explanations"][0][
