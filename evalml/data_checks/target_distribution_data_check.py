@@ -29,17 +29,16 @@ class TargetDistributionDataCheck(DataCheck):
 
         Example:
             >>> from scipy.stats import lognorm
-            >>> X = None
             >>> y = [0.946, 0.972, 1.154, 0.954, 0.969, 1.222, 1.038, 0.999, 0.973, 0.897]
             >>> target_check = TargetDistributionDataCheck()
-            >>> assert target_check.validate(X, y) == {
+            >>> assert target_check.validate(None, y) == {
             ...     "errors": [],
             ...     "warnings": [{"message": "Target may have a lognormal distribution.",
             ...                   "data_check_name": "TargetDistributionDataCheck",
             ...                   "level": "warning",
             ...                   "code": "TARGET_LOGNORMAL_DISTRIBUTION",
-            ...                   "details": {"shapiro-statistic/pvalue": '0.84/0.045'}}],
-            ...     "actions": [{'code': 'TRANSFORM_TARGET', 'metadata': {'column': None, 'transformation_strategy': 'lognormal', 'is_target': True}}]}
+            ...                   "details": {"shapiro-statistic/pvalue": '0.8/0.045', "columns": None, "rows": None}}],
+            ...     "actions": [{'code': 'TRANSFORM_TARGET', 'metadata': {'transformation_strategy': 'lognormal', 'is_target': True, "columns": None, "rows": None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
@@ -114,7 +113,6 @@ class TargetDistributionDataCheck(DataCheck):
                 DataCheckAction(
                     DataCheckActionCode.TRANSFORM_TARGET,
                     metadata={
-                        "column": None,
                         "is_target": True,
                         "transformation_strategy": "lognormal",
                     },

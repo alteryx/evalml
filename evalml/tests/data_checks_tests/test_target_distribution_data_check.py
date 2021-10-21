@@ -136,7 +136,7 @@ def test_target_distribution_data_check_warning_action(
                 DataCheckAction(
                     DataCheckActionCode.TRANSFORM_TARGET,
                     metadata={
-                        "column": None,
+                        "columns": None,
                         "is_target": True,
                         "transformation_strategy": "lognormal",
                     },
