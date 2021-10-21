@@ -101,7 +101,7 @@ class SelectColumns(ColumnSelector):
     """Selects specified columns in input data.
 
     Args:
-        columns (list(string)): List of column names, used to determine which columns to select.
+        columns (list(string)): List of column names, used to determine which columns to select. If columns are not present, available columns will be selected.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -110,8 +110,21 @@ class SelectColumns(ColumnSelector):
     """{}"""
     needs_fitting = False
 
+    def fit(self, X, y=None):
+        """Fits the transformer by checking if column names are present in the dataset.
+
+        Args:
+            X (pd.DataFrame): Data to check.
+            y (pd.Series, optional): Targets.
+
+        Returns:
+            self
+        """
+        return self
+
     def _modify_columns(self, cols, X, y=None):
-        return X.ww[cols]
+        column_intersection = set(cols).intersection(set(X.columns))
+        return X.ww[list(column_intersection)]
 
     def transform(self, X, y=None):
         """Transforms data X by selecting columns.
@@ -123,7 +136,10 @@ class SelectColumns(ColumnSelector):
         Returns:
             pd.DataFrame: Transformed X.
         """
-        return super().transform(X, y)
+        X = infer_feature_types(X)
+        cols = self.parameters.get("columns") or []
+        modified_cols = self._modify_columns(cols, X, y)
+        return infer_feature_types(modified_cols)
 
 
 class SelectByType(ColumnSelector):

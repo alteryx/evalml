@@ -282,3 +282,11 @@ def test_typeortag_column_transformer_ww_logical_and_semantic_types():
 
     X_t = SelectByType(column_types=["numeric"]).fit_transform(X)
     assert X_t.astype(str).equals(X[["three", "four"]].astype(str))
+
+
+def test_column_selector_missing_columns():
+    selector = SelectColumns(columns=["A", "B", "C", "D"])
+    X = pd.DataFrame(columns=["A", "C", "F", "G"])
+
+    X_t = selector.fit_transform(X)
+    assert set(X_t.columns) == set(["A", "C"])
