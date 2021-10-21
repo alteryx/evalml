@@ -1949,6 +1949,9 @@ def test_explain_predictions_invalid_algorithm():
 
 
 def test_explain_predictions_lime_catboost(X_y_binary):
+    pytest.importorskip(
+        "catboost", reason="Skipping test because catboost not installed"
+    )
     pl = BinaryClassificationPipeline(
         {
             "Label Encoder": ["Label Encoder", "X", "y"],
