@@ -104,7 +104,7 @@ def force_plot(pipeline, rows_to_explain, training_data, y):
         y,
         rows_to_explain,
         top_k_features=len(training_data.columns),
-        include_shap_values=True,
+        include_explainer_values=True,
         output_format="dict",
     )
     row_explanations = prediction_explanations["explanations"]
