@@ -21,12 +21,12 @@ from evalml.utils.logger import get_logger
 
 _ESTIMATOR_FAMILY_ORDER = [
     ModelFamily.LINEAR_MODEL,
-    ModelFamily.DECISION_TREE,
-    ModelFamily.EXTRA_TREES,
-    ModelFamily.RANDOM_FOREST,
     ModelFamily.XGBOOST,
     ModelFamily.LIGHTGBM,
     ModelFamily.CATBOOST,
+    ModelFamily.RANDOM_FOREST,
+    ModelFamily.DECISION_TREE,
+    ModelFamily.EXTRA_TREES,
     ModelFamily.ARIMA,
 ]
 

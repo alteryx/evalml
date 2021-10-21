@@ -907,11 +907,14 @@ class AutoMLSearch:
                         computation = self._engine.submit_evaluation_job(
                             self.automl_config, pipeline, self.X_train, self.y_train
                         )
-                        computations.append(computation)
+                        computations.append((computation, False))
                     current_computation_index = 0
-                while self._should_continue() and len(computations) > 0:
-                    computation = computations[current_computation_index]
-                    if computation.done():
+                    computations_left_to_process = len(computations)
+                while self._should_continue() and computations_left_to_process > 0:
+                    computation, has_been_processed = computations[
+                        current_computation_index
+                    ]
+                    if computation.done() and not has_been_processed:
                         evaluation = computation.get_result()
                         data, pipeline, job_log = (
                             evaluation.get("scores"),
@@ -922,7 +925,8 @@ class AutoMLSearch:
                             pipeline, data, job_log
                         )
                         new_pipeline_ids.append(pipeline_id)
-                        computations.pop(current_computation_index)
+                        computations[current_computation_index] = (computation, True)
+                        computations_left_to_process -= 1
                     current_computation_index = (current_computation_index + 1) % max(
                         len(computations), 1
                     )
@@ -932,8 +936,9 @@ class AutoMLSearch:
                 loop_interrupted = True
                 if self._handle_keyboard_interrupt():
                     self._interrupted = True
-                    for computation in computations:
-                        computation.cancel()
+                    for computation, has_been_processed in computations:
+                        if not has_been_processed:
+                            computation.cancel()
 
             full_rankings = self.full_rankings
             current_batch_idx = full_rankings["id"].isin(new_pipeline_ids)
