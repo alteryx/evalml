@@ -78,6 +78,7 @@ Release Notes
         * Removed ``TargetTransformer`` class :pr:`2833`
         * Added tests to verify ``ComponentGraph`` support by pipelines :pr:`2830`
         * Fixed incorrect parameter for baseline regression pipeline in ``AutoMLSearch`` :pr:`2847`
+        * Fixed bug where the desired estimator family order was not respected in ``IterativeAlgorithm`` :pr:`2850`
     * Changes
         * Changed woodwork initialization to use partial schemas :pr:`2774`
         * Made ``Transformer.transform()`` an abstract method :pr:`2744`
