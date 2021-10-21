@@ -110,6 +110,9 @@ class SelectColumns(ColumnSelector):
     """{}"""
     needs_fitting = False
 
+    def _check_input_for_columns(self, X):
+        pass
+
     def fit(self, X, y=None):
         """Fits the transformer by checking if column names are present in the dataset.
 
@@ -127,21 +130,6 @@ class SelectColumns(ColumnSelector):
             sorted(set(cols).intersection(X.columns), key=cols.index)
         )
         return X.ww[column_intersection]
-
-    def transform(self, X, y=None):
-        """Transforms data X by selecting columns.
-
-        Args:
-            X (pd.DataFrame): Data to transform.
-            y (pd.Series, optional): Targets.
-
-        Returns:
-            pd.DataFrame: Transformed X.
-        """
-        X = infer_feature_types(X)
-        cols = self.parameters.get("columns") or []
-        modified_cols = self._modify_columns(cols, X, y)
-        return infer_feature_types(modified_cols)
 
 
 class SelectByType(ColumnSelector):
