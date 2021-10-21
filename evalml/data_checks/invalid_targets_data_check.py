@@ -63,9 +63,9 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 "data_check_name": "InvalidTargetDataCheck",
             ...                 "level": "error",
             ...                 "code": "TARGET_HAS_NULL",
-            ...                 "details": {"num_null_rows": 2, "pct_null_rows": 50}}],
+            ...                 "details": {"num_null_rows": 2, "pct_null_rows": 50, "rows": None, "columns": None}}],
             ...     "warnings": [],
-            ...     "actions": [{'code': 'IMPUTE_COL', 'metadata': {'column': None, 'impute_strategy': 'most_frequent', 'is_target': True}}]}
+            ...     "actions": [{"code": "IMPUTE_COL", "metadata": {"impute_strategy": "most_frequent", "is_target": True, "rows": None, "columns": None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
@@ -130,7 +130,6 @@ class InvalidTargetDataCheck(DataCheck):
                 DataCheckAction(
                     DataCheckActionCode.IMPUTE_COL,
                     metadata={
-                        "column": None,
                         "is_target": True,
                         "impute_strategy": impute_strategy,
                     },

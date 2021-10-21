@@ -221,7 +221,6 @@ def test_invalid_target_data_input_formats():
             DataCheckAction(
                 DataCheckActionCode.IMPUTE_COL,
                 metadata={
-                    "column": None,
                     "is_target": True,
                     "impute_strategy": "most_frequent",
                 },
@@ -738,7 +737,6 @@ def test_invalid_target_data_action_for_data_with_null(problem_type):
             DataCheckAction(
                 DataCheckActionCode.IMPUTE_COL,
                 metadata={
-                    "column": None,
                     "is_target": True,
                     "impute_strategy": impute_strategy,
                 },

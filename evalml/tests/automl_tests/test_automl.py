@@ -16,6 +16,9 @@ from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
+from evalml.automl.automl_algorithm.iterative_algorithm import (
+    _ESTIMATOR_FAMILY_ORDER,
+)
 from evalml.automl.automl_search import build_engine_from_str
 from evalml.automl.callbacks import (
     log_error_callback,
@@ -5341,3 +5344,21 @@ def test_baseline_pipeline_properly_initalized(
 
     baseline_pipeline = automl.get_pipeline(0)
     assert expected_pipeline == baseline_pipeline
+
+
+def test_automl_respects_iterative_pipeline_order(X_y_binary, AutoMLTestEnv):
+
+    X, y = X_y_binary
+    automl = AutoMLSearch(X, y, "binary", engine="sequential", max_iterations=5)
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={automl.objective.name: 0.2}):
+        automl.search()
+    searched_model_families = [
+        automl.get_pipeline(search_index).estimator.model_family
+        for search_index in automl.results["search_order"][1:]
+    ]
+    # Check that sorting via the model family order results in the same list.
+    assert searched_model_families == sorted(
+        searched_model_families,
+        key=lambda model_family: _ESTIMATOR_FAMILY_ORDER.index(model_family),
+    )
