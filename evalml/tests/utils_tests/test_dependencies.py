@@ -30,7 +30,7 @@ def test_has_minimal_deps(
     for module in extra_deps:
         # We don't expect to install sktime in python 3.9. Let's verify it's not present:
         if (module == "sktime" and is_running_py_39_or_above) or (
-            module == "pmdarima" and is_using_conda
+            ((module == "pmdarima" or module == "vowpalwabbit") and is_using_conda)
         ):
             with pytest.raises(ModuleNotFoundError):
                 import_module(module)
