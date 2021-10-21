@@ -41,9 +41,9 @@ class OutliersDataCheck(DataCheck):
             ...                   "data_check_name": "OutliersDataCheck",
             ...                   "level": "warning",
             ...                   "code": "HAS_OUTLIERS",
-            ...                   "details": {"columns": ["z"], 'rows': {'z': [3]}}}],
+            ...                   "details": {"columns": ["z"], "rows": [3], "column_indices": {"z": [3]}}}],
             ...     "errors": [],
-            ...     "actions": [{'code': 'DROP_ROWS', 'metadata': {'indices': [3]}}]}
+            ...     "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [3], "columns": None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
@@ -76,24 +76,29 @@ class OutliersDataCheck(DataCheck):
         warning_msg = "Column(s) {} are likely to have outlier data.".format(
             ", ".join([f"'{col}'" for col in has_outliers])
         )
-        results["warnings"].append(
-            DataCheckWarning(
-                message=warning_msg,
-                data_check_name=self.name,
-                message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                details={"columns": has_outliers, "rows": outlier_row_indices},
-            ).to_dict()
-        )
         all_rows_with_indices_set = set()
         for row_indices in outlier_row_indices.values():
             all_rows_with_indices_set.update(row_indices)
 
         all_rows_with_indices = list(all_rows_with_indices_set)
         all_rows_with_indices.sort()
+        results["warnings"].append(
+            DataCheckWarning(
+                message=warning_msg,
+                data_check_name=self.name,
+                message_code=DataCheckMessageCode.HAS_OUTLIERS,
+                details={
+                    "columns": has_outliers,
+                    "rows": all_rows_with_indices,
+                    "column_indices": outlier_row_indices,
+                },
+            ).to_dict()
+        )
+
         results["actions"].append(
             DataCheckAction(
                 DataCheckActionCode.DROP_ROWS,
-                metadata={"indices": all_rows_with_indices},
+                metadata={"rows": all_rows_with_indices},
             ).to_dict()
         )
         return results

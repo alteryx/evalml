@@ -118,38 +118,27 @@ def test_sparsity_data_check_warnings():
     sparsity_check = SparsityDataCheck(
         problem_type="multiclass", threshold=0.4, unique_count_threshold=3
     )
-
     assert sparsity_check.validate(data) == {
         "warnings": [
             DataCheckWarning(
-                message="Input columns (most_sparse) for multiclass problem type are too sparse.",
+                message="Input columns ('most_sparse', 'more_sparse', 'sparse') for multiclass problem type are too sparse.",
                 data_check_name=sparsity_data_check_name,
                 message_code=DataCheckMessageCode.TOO_SPARSE,
-                details={"column": "most_sparse", "sparsity_score": 0},
-            ).to_dict(),
-            DataCheckWarning(
-                message="Input columns (more_sparse) for multiclass problem type are too sparse.",
-                data_check_name=sparsity_data_check_name,
-                message_code=DataCheckMessageCode.TOO_SPARSE,
-                details={"column": "more_sparse", "sparsity_score": 0},
-            ).to_dict(),
-            DataCheckWarning(
-                message="Input columns (sparse) for multiclass problem type are too sparse.",
-                data_check_name=sparsity_data_check_name,
-                message_code=DataCheckMessageCode.TOO_SPARSE,
-                details={"column": "sparse", "sparsity_score": 0.3333333333333333},
+                details={
+                    "columns": ["most_sparse", "more_sparse", "sparse"],
+                    "sparsity_score": {
+                        "most_sparse": 0,
+                        "more_sparse": 0,
+                        "sparse": 0.3333333333333333,
+                    },
+                },
             ).to_dict(),
         ],
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "most_sparse"}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "more_sparse"}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "sparse"}
+                DataCheckActionCode.DROP_COL,
+                metadata={"columns": ["most_sparse", "more_sparse", "sparse"]},
             ).to_dict(),
         ],
     }

@@ -35,6 +35,7 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                 "data_check_name": "DateTimeFormatDataCheck",
             ...                 "level": "error",
             ...                 "code": "DATETIME_HAS_UNEVEN_INTERVALS",
+            ...                 "details": {"columns": None, "rows": None}
             ...                 }],
             ...     "warnings": [],
             ...     "actions": []}

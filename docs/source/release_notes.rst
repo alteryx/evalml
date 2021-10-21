@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary :pr:`2869`
         * Added ``rows_of_interest`` to pipeline utils :pr:`2908`
         * Added support for woodwork version ``0.8.2`` :pr:`2909`
         * Enhanced the ``DateTimeFeaturizer`` to handle ``NaNs`` in date features :pr:`2909`
@@ -21,6 +22,8 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary. This may change the number of messages returned from a data check. :pr:`2869`
+
 
 
 **v0.35.0 Oct. 14, 2021**
