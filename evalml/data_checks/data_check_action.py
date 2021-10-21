@@ -11,7 +11,9 @@ class DataCheckAction:
 
     def __init__(self, action_code, metadata=None):
         self.action_code = action_code
-        self.metadata = metadata or {}
+        self.metadata = {"columns": None, "rows": None}
+        if metadata is not None:
+            self.metadata.update(metadata)
 
     def __eq__(self, other):
         """Check for equality.
