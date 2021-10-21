@@ -123,8 +123,10 @@ class SelectColumns(ColumnSelector):
         return self
 
     def _modify_columns(self, cols, X, y=None):
-        column_intersection = set(cols).intersection(set(X.columns))
-        return X.ww[list(column_intersection)]
+        column_intersection = list(
+            sorted(set(cols).intersection(X.columns), key=cols.index)
+        )
+        return X.ww[column_intersection]
 
     def transform(self, X, y=None):
         """Transforms data X by selecting columns.

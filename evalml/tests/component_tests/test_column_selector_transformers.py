@@ -50,8 +50,9 @@ def test_column_transformer_empty_X(class_to_test):
         transformer = class_to_test(column_types=["not in data"])
     else:
         transformer = class_to_test(columns=["not in data"])
-    with pytest.raises(ValueError, match="not found in input data"):
-        transformer.fit(X)
+    if class_to_test is not SelectColumns:
+        with pytest.raises(ValueError, match="not found in input data"):
+            transformer.fit(X)
 
     transformer = class_to_test(columns=list(X.columns))
     assert transformer.transform(X).empty
@@ -187,10 +188,11 @@ def test_column_transformer_fit_transform(class_to_test, checking_functions):
         assert check3(X, class_to_test(columns=list(X.columns)).fit_transform(X))
 
 
-@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns])
+@pytest.mark.parametrize("class_to_test", [DropColumns])
 def test_drop_column_transformer_input_invalid_col_name(class_to_test):
     X = pd.DataFrame({"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]})
     transformer = class_to_test(columns=["not in data"])
+
     with pytest.raises(ValueError, match="not found in input data"):
         transformer.fit(X)
     with pytest.raises(ValueError, match="not found in input data"):
