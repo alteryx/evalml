@@ -101,7 +101,7 @@ class SelectColumns(ColumnSelector):
     """Selects specified columns in input data.
 
     Args:
-        columns (list(string)): List of column names, used to determine which columns to select. If columns are not present, available columns will be selected.
+        columns (list(string)): List of column names, used to determine which columns to select. If columns are not present, they will not be selected.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
