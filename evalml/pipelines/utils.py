@@ -226,6 +226,7 @@ def make_pipeline(
         X, y, problem_type, estimator, sampler_name
     )
 
+    parameters = parameters if parameters else {}
     for component in preprocessing_parameters:
         if component in parameters:
             parameters[component].update(preprocessing_parameters[component])
