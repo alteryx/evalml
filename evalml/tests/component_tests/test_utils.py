@@ -38,8 +38,8 @@ def test_all_components(
     if has_minimal_dependencies:
         n_components = 43
     elif is_using_conda:
-        # No prophet and no arima
-        n_components = 54
+        # No prophet, ARIMA, and vowpalwabbit
+        n_components = 52
     elif is_using_windows and not is_running_py_39_or_above:
         # No prophet
         n_components = 55
