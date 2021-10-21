@@ -28,7 +28,7 @@ def test_nl_nan_data_check_error():
                 message="Input natural language column(s) (natural_language) contains NaN values. Please impute NaN values or drop these rows or columns.",
                 data_check_name=NaturalLanguageNaNDataCheck.name,
                 message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-                details={"columns": "natural_language"},
+                details={"columns": ["natural_language"]},
             ).to_dict()
         ],
     }
@@ -117,7 +117,7 @@ def test_nl_nan_data_check_error_multiple_nl_nan():
                 message="Input natural language column(s) (A, B) contains NaN values. Please impute NaN values or drop these rows or columns.",
                 data_check_name=NaturalLanguageNaNDataCheck.name,
                 message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-                details={"columns": "A, B"},
+                details={"columns": ["A", "B"]},
             ).to_dict()
         ],
     }
@@ -141,7 +141,7 @@ def test_nl_nan_check_input_formats():
                 message="Input natural language column(s) (nl) contains NaN values. Please impute NaN values or drop these rows or columns.",
                 data_check_name=NaturalLanguageNaNDataCheck.name,
                 message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-                details={"columns": "nl"},
+                details={"columns": ["nl"]},
             ).to_dict()
         ],
     }
@@ -165,7 +165,7 @@ def test_nl_nan_check_input_formats():
                 message="Input natural language column(s) (0) contains NaN values. Please impute NaN values or drop these rows or columns.",
                 data_check_name=NaturalLanguageNaNDataCheck.name,
                 message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-                details={"columns": "0"},
+                details={"columns": ["0"]},
             ).to_dict()
         ],
     }

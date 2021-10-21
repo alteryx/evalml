@@ -2,15 +2,20 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added LIME as an algorithm option for ``explain_predictions`` and ``explain_predictions_best_worst`` :pr:`2905`
+        * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary :pr:`2869`
+        * Added ``rows_of_interest`` to pipeline utils :pr:`2908`
         * Added support for woodwork version ``0.8.2`` :pr:`2909`
         * Enhanced the ``DateTimeFeaturizer`` to handle ``NaNs`` in date features :pr:`2909`
     * Fixes
         * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
+        * Fixed ``calculate_permutation_importance`` for datetimes on ``StandardScaler`` :pr:`2938`
     * Changes
         * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
         * Updated CI to run doctest (docstring tests) and apply necessary fixes to docstrings :pr:`2933`
+        * Added documentation for ``BinaryClassificationPipeline`` thresholding :pr:`2937`
     * Testing Changes
         * Fixed dependency checker to catch full names of packages :pr:`2930`
         * Refactored ``build_conda_pkg`` to work from a local recipe :pr:`2925`
@@ -18,6 +23,8 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary. This may change the number of messages returned from a data check. :pr:`2869`
+
 
 
 **v0.35.0 Oct. 14, 2021**
@@ -71,6 +78,7 @@ Release Notes
         * Removed ``TargetTransformer`` class :pr:`2833`
         * Added tests to verify ``ComponentGraph`` support by pipelines :pr:`2830`
         * Fixed incorrect parameter for baseline regression pipeline in ``AutoMLSearch`` :pr:`2847`
+        * Fixed bug where the desired estimator family order was not respected in ``IterativeAlgorithm`` :pr:`2850`
     * Changes
         * Changed woodwork initialization to use partial schemas :pr:`2774`
         * Made ``Transformer.transform()`` an abstract method :pr:`2744`

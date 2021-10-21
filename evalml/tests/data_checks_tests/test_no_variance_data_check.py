@@ -30,31 +30,31 @@ all_null_y_with_name = pd.Series([None] * 4)
 all_null_y_with_name.name = "Labels"
 
 feature_0_unique = DataCheckError(
-    message="feature has 0 unique value.",
+    message="'feature' has 0 unique values.",
     data_check_name=no_variance_data_check_name,
     message_code=DataCheckMessageCode.NO_VARIANCE,
-    details={"column": "feature"},
+    details={"columns": ["feature"]},
 ).to_dict()
 feature_1_unique = DataCheckError(
-    message="feature has 1 unique value.",
+    message="'feature' has 1 unique value.",
     data_check_name=no_variance_data_check_name,
     message_code=DataCheckMessageCode.NO_VARIANCE,
-    details={"column": "feature"},
+    details={"columns": ["feature"]},
 ).to_dict()
 labels_0_unique = DataCheckError(
-    message="Y has 0 unique value.",
+    message="Y has 0 unique values.",
     data_check_name=no_variance_data_check_name,
     message_code=DataCheckMessageCode.NO_VARIANCE,
-    details={"column": "Y"},
+    details={"columns": ["Y"]},
 ).to_dict()
 labels_1_unique = DataCheckError(
     message="Y has 1 unique value.",
     data_check_name=no_variance_data_check_name,
     message_code=DataCheckMessageCode.NO_VARIANCE,
-    details={"column": "Y"},
+    details={"columns": ["Y"]},
 ).to_dict()
 drop_feature_action = DataCheckAction(
-    DataCheckActionCode.DROP_COL, metadata={"column": "feature"}
+    DataCheckActionCode.DROP_COL, metadata={"columns": ["feature"]}
 ).to_dict()
 
 cases = [
@@ -125,18 +125,18 @@ cases = [
         {
             "warnings": [
                 DataCheckWarning(
-                    message="feature has two unique values including nulls. Consider encoding the nulls for "
+                    message="'feature' has two unique values including nulls. Consider encoding the nulls for "
                     "this column to be useful for machine learning.",
                     data_check_name=no_variance_data_check_name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
-                    details={"column": "feature"},
+                    details={"columns": ["feature"]},
                 ).to_dict(),
                 DataCheckWarning(
                     message="Y has two unique values including nulls. Consider encoding the nulls for "
                     "this column to be useful for machine learning.",
                     data_check_name=no_variance_data_check_name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
-                    details={"column": "Y"},
+                    details={"columns": ["Y"]},
                 ).to_dict(),
             ],
             "errors": [],
@@ -161,10 +161,10 @@ cases = [
             "warnings": [],
             "errors": [
                 DataCheckError(
-                    message="Labels has 0 unique value.",
+                    message="Labels has 0 unique values.",
                     data_check_name=no_variance_data_check_name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
-                    details={"column": "Labels"},
+                    details={"columns": ["Labels"]},
                 ).to_dict()
             ],
             "actions": [],
@@ -177,18 +177,16 @@ cases = [
         {
             "warnings": [
                 DataCheckWarning(
-                    message="feature has two unique values including nulls. Consider encoding the nulls for "
-                    "this column to be useful for machine learning.",
+                    message="'feature' has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.",
                     data_check_name=no_variance_data_check_name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
-                    details={"column": "feature"},
+                    details={"columns": ["feature"]},
                 ).to_dict(),
                 DataCheckWarning(
-                    message="Y has two unique values including nulls. Consider encoding the nulls for "
-                    "this column to be useful for machine learning.",
+                    message="Y has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.",
                     data_check_name=no_variance_data_check_name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
-                    details={"column": "Y"},
+                    details={"columns": ["Y"]},
                 ).to_dict(),
             ],
             "errors": [],

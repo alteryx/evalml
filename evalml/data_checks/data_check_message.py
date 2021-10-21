@@ -18,7 +18,9 @@ class DataCheckMessage:
         self.message = message
         self.data_check_name = data_check_name
         self.message_code = message_code
-        self.details = details
+        self.details = {"columns": None, "rows": None}
+        if details is not None:
+            self.details.update(details)
 
     def __str__(self):
         """String representation of data check message, equivalent to self.message attribute."""
@@ -50,11 +52,10 @@ class DataCheckMessage:
             "message": self.message,
             "data_check_name": self.data_check_name,
             "level": self.message_type.value,
+            "details": self.details,
         }
         if self.message_code is not None:
             message_dict.update({"code": self.message_code.name})
-        if self.details is not None:
-            message_dict.update({"details": self.details})
         return message_dict
 
 

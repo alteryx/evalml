@@ -38,7 +38,7 @@ class StandardScaler(Transformer):
             pd.DataFrame: Transformed data.
         """
         X = infer_feature_types(X)
-        X = X.ww.select_dtypes(exclude=["datetime"])
+        X = X.ww.select(exclude=["datetime"])
         X_t = self._component_obj.transform(X)
         X_t_df = pd.DataFrame(X_t, columns=X.columns, index=X.index)
 
