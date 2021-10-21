@@ -243,7 +243,7 @@ def test_boxplot_stats(data_type):
         + len(test[test >= field_bounds[1]].tolist())
     ) / test.count()
 
-    assert OutliersDataCheck._get_boxplot_data(test) == {
+    assert OutliersDataCheck.get_boxplot_data(test) == {
         "score": OutliersDataCheck._no_outlier_prob(test.count(), pct_outliers),
         "pct_outliers": pct_outliers,
         "values": {

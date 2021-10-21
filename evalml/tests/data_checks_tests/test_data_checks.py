@@ -119,6 +119,10 @@ messages = [
         details={
             "columns": ["all_null", "also_all_null"],
             "pct_null_rows": {"all_null": 1.0, "also_all_null": 1.0},
+            "null_row_indices": {
+                "all_null": [0, 1, 2, 3, 4],
+                "also_all_null": [0, 1, 2, 3, 4],
+            },
         },
     ).to_dict(),
     DataCheckWarning(
@@ -177,12 +181,6 @@ expected_actions = [
     DataCheckAction(
         DataCheckActionCode.DROP_COL,
         metadata={"columns": ["all_null", "also_all_null", "lots_of_null"]},
-    ).to_dict(),
-    DataCheckAction(
-        DataCheckActionCode.DROP_COL, metadata={"column": "all_null"}
-    ).to_dict(),
-    DataCheckAction(
-        DataCheckActionCode.DROP_COL, metadata={"column": "also_all_null"}
     ).to_dict(),
 ]
 
@@ -440,6 +438,10 @@ def test_default_data_checks_null_rows():
                 details={
                     "columns": ["all_null", "also_all_null"],
                     "pct_null_rows": {"all_null": 1.0, "also_all_null": 1.0},
+                    "null_row_indices": {
+                        "all_null": [0, 1, 2, 3, 4],
+                        "also_all_null": [0, 1, 2, 3, 4],
+                    },
                 },
             ).to_dict(),
         ],
@@ -472,12 +474,6 @@ def test_default_data_checks_null_rows():
                     "is_target": True,
                     "impute_strategy": "mean",
                 },
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "all_null"}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "also_all_null"}
             ).to_dict(),
         ],
     }
