@@ -701,6 +701,23 @@ def test_permutation_importance_url_email(df_with_url_and_email):
     assert "email" in data["feature"].tolist()
 
 
+def test_permutation_importance_postalcode_countrycode_subregion(fraud_100, logistic_regression_binary_pipeline_class):
+    X, y = fraud_100
+    X.ww.set_types(logical_types={
+        'store_id': 'PostalCode',
+        'country': 'CountryCode',
+        'region': 'SubRegionCode'
+    })
+
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    data = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary")
+    assert not data.isnull().any().any()
+    assert "store_id" in data["feature"].tolist()
+    assert "country" in data["feature"].tolist()
+    assert "region" in data["feature"].tolist()
+
+
 def test_permutation_importance_standard_scaler(fraud_100):
     X, y = fraud_100
     component_graph = [
