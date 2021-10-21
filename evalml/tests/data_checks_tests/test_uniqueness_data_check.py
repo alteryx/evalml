@@ -95,12 +95,12 @@ def test_uniqueness_data_check_warnings():
     assert uniqueness_check.validate(data) == {
         "warnings": [
             DataCheckWarning(
-                message="Input columns (regression_not_unique_enough) for regression problem type are not unique enough.",
+                message="Input columns 'regression_not_unique_enough' for regression problem type are not unique enough.",
                 data_check_name=uniqueness_data_check_name,
                 message_code=DataCheckMessageCode.NOT_UNIQUE_ENOUGH,
                 details={
-                    "column": "regression_not_unique_enough",
-                    "uniqueness_score": 0.0,
+                    "columns": ["regression_not_unique_enough"],
+                    "uniqueness_score": {"regression_not_unique_enough": 0.0},
                 },
             ).to_dict()
         ],
@@ -108,7 +108,7 @@ def test_uniqueness_data_check_warnings():
         "actions": [
             DataCheckAction(
                 DataCheckActionCode.DROP_COL,
-                metadata={"column": "regression_not_unique_enough"},
+                metadata={"columns": ["regression_not_unique_enough"]},
             ).to_dict()
         ],
     }
@@ -123,12 +123,12 @@ def test_uniqueness_data_check_warnings():
     assert uniqueness_check.validate(data) == {
         "warnings": [
             DataCheckWarning(
-                message="Input columns (multiclass_too_unique) for multiclass problem type are too unique.",
+                message="Input columns 'multiclass_too_unique' for multiclass problem type are too unique.",
                 data_check_name=uniqueness_data_check_name,
                 message_code=DataCheckMessageCode.TOO_UNIQUE,
                 details={
-                    "column": "multiclass_too_unique",
-                    "uniqueness_score": 0.7999999999999999,
+                    "columns": ["multiclass_too_unique"],
+                    "uniqueness_score": {"multiclass_too_unique": 0.7999999999999999},
                 },
             ).to_dict()
         ],
@@ -136,7 +136,7 @@ def test_uniqueness_data_check_warnings():
         "actions": [
             DataCheckAction(
                 DataCheckActionCode.DROP_COL,
-                metadata={"column": "multiclass_too_unique"},
+                metadata={"columns": ["multiclass_too_unique"]},
             ).to_dict()
         ],
     }
