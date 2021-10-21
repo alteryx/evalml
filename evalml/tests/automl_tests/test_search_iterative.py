@@ -95,7 +95,7 @@ def test_search_iterative_data_check_error_timeseries(problem_config):
             problem_type="time series regression",
             problem_configuration=problem_configuration,
         )
-        assert len(data_check_results["warnings"]) == 2
+        assert len(data_check_results["warnings"]) == 1
         assert len(data_check_results["errors"]) == 1
 
 

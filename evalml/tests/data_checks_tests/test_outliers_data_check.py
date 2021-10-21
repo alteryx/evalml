@@ -5,6 +5,8 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks import (
+    DataCheckAction,
+    DataCheckActionCode,
     DataCheckMessageCode,
     DataCheckWarning,
     OutliersDataCheck,
@@ -33,12 +35,17 @@ def test_outliers_data_check_warnings():
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
                 details={
                     "columns": [3, 25, 55, 72],
-                    "rows": {3: [0], 25: [3], 55: [5], 72: [10]},
+                    "rows": [0, 3, 5, 10],
+                    "column_indices": {3: [0], 25: [3], 55: [5], 72: [10]},
                 },
             ).to_dict()
         ],
         "errors": [],
-        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0, 3, 5, 10]}}],
+        "actions": [
+            DataCheckAction(
+                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 3, 5, 10]}
+            ).to_dict()
+        ],
     }
 
 
@@ -62,12 +69,17 @@ def test_outliers_data_check_warnings_with_duplicate_outlier_indices():
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
                 details={
                     "columns": [3, 25, 55, 72],
-                    "rows": {3: [0], 25: [3], 55: [0], 72: [0]},
+                    "rows": [0, 3],
+                    "column_indices": {3: [0], 25: [3], 55: [0], 72: [0]},
                 },
             ).to_dict()
         ],
         "errors": [],
-        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0, 3]}}],
+        "actions": [
+            DataCheckAction(
+                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 3]}
+            ).to_dict()
+        ],
     }
 
 
@@ -100,12 +112,17 @@ def test_outliers_data_check_input_formats():
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
                 details={
                     "columns": [3, 25, 55, 72],
-                    "rows": {3: [0], 25: [3], 55: [5], 72: [10]},
+                    "rows": [0, 3, 5, 10],
+                    "column_indices": {3: [0], 25: [3], 55: [5], 72: [10]},
                 },
             ).to_dict()
         ],
         "errors": [],
-        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0, 3, 5, 10]}}],
+        "actions": [
+            DataCheckAction(
+                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 3, 5, 10]}
+            ).to_dict()
+        ],
     }
 
     # test Woodwork
@@ -119,12 +136,17 @@ def test_outliers_data_check_input_formats():
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
                 details={
                     "columns": [3, 25, 55, 72],
-                    "rows": {3: [0], 25: [3], 55: [5], 72: [10]},
+                    "rows": [0, 3, 5, 10],
+                    "column_indices": {3: [0], 25: [3], 55: [5], 72: [10]},
                 },
             ).to_dict()
         ],
         "errors": [],
-        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0, 3, 5, 10]}}],
+        "actions": [
+            DataCheckAction(
+                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 3, 5, 10]}
+            ).to_dict()
+        ],
     }
 
 
@@ -145,11 +167,19 @@ def test_outliers_data_check_string_cols():
                 message="Column(s) 'd' are likely to have outlier data.",
                 data_check_name=outliers_data_check_name,
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                details={"columns": ["d"], "rows": {"d": [0]}},
+                details={
+                    "columns": ["d"],
+                    "rows": [0],
+                    "column_indices": {"d": [0]},
+                },
             ).to_dict()
         ],
         "errors": [],
-        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [0]}}],
+        "actions": [
+            DataCheckAction(
+                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0]}
+            ).to_dict()
+        ],
     }
 
 
@@ -183,11 +213,19 @@ def test_outliers_data_check_warnings_has_nan():
                 message="Column(s) '25', '55', '72' are likely to have outlier data.",
                 data_check_name=outliers_data_check_name,
                 message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                details={"columns": [25, 55, 72], "rows": {25: [3], 55: [5], 72: [10]}},
+                details={
+                    "columns": [25, 55, 72],
+                    "rows": [3, 5, 10],
+                    "column_indices": {25: [3], 55: [5], 72: [10]},
+                },
             ).to_dict()
         ],
         "errors": [],
-        "actions": [{"code": "DROP_ROWS", "metadata": {"indices": [3, 5, 10]}}],
+        "actions": [
+            DataCheckAction(
+                DataCheckActionCode.DROP_ROWS, metadata={"rows": [3, 5, 10]}
+            ).to_dict()
+        ],
     }
 
 
