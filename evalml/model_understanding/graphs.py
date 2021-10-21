@@ -648,7 +648,7 @@ def partial_dependence(
 
         if isinstance(features, (list, tuple)):
             is_categorical = [
-                _is_feature_of_type(f, X, ww.logical_types.Categorical)
+                _is_feature_of_semantic_type(f, X, "category")
                 for f in features
             ]
             is_datetime = [
@@ -656,7 +656,7 @@ def partial_dependence(
             ]
         else:
             is_categorical = [
-                _is_feature_of_type(features, X, ww.logical_types.Categorical)
+                _is_feature_of_semantic_type(features, X, "category")
             ]
             is_datetime = [_is_feature_of_type(features, X, ww.logical_types.Datetime)]
 
@@ -704,7 +704,7 @@ def partial_dependence(
                 code=PartialDependenceErrorCode.INVALID_FEATURE_TYPE,
             )
 
-        X_cats = X_features.ww.select("categorical")
+        X_cats = X_features.ww.select("category")
         X_dt = X_features.ww.select("datetime")
 
         if any(is_categorical):

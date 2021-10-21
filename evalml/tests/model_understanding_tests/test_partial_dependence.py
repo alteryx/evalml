@@ -23,6 +23,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
+from evalml.utils import infer_feature_types
 
 
 @pytest.fixture
@@ -161,6 +162,68 @@ def test_partial_dependence_with_non_numeric_columns(
     assert len(part_dep["partial_dependence"]) == 3
     assert len(part_dep["feature_values"]) == 3
     assert not part_dep.isnull().any(axis=None)
+
+@patch(
+    "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
+    side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
+)
+def test_partial_dependence_with_ww_category_columns(mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class):
+    X, y = fraud_100
+    X.ww.set_types(logical_types={
+        'store_id': 'PostalCode',
+        'country': 'CountryCode',
+        'region': 'SubRegionCode'
+    })
+
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+
+    part_dep = partial_dependence(pipeline, X, features="store_id")
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence", "class_label"]
+    assert len(part_dep["partial_dependence"]) == 11
+    assert len(part_dep["feature_values"]) == 11
+    assert not part_dep.isnull().any(axis=None)
+
+    part_dep = partial_dependence(pipeline, X, features="country")
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence", "class_label"]
+    assert len(part_dep["partial_dependence"]) == 8
+    assert len(part_dep["feature_values"]) == 8
+    assert not part_dep.isnull().any(axis=None)
+
+    part_dep = partial_dependence(pipeline, X, features="region")
+    assert list(part_dep.columns) == ["feature_values", "partial_dependence", "class_label"]
+    assert len(part_dep["partial_dependence"]) == 11
+    assert len(part_dep["feature_values"]) == 11
+    assert not part_dep.isnull().any(axis=None)
+
+
+@patch(
+    "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
+    side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
+)
+def test_two_way_partial_dependence_with_ww_category_columns(mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class):
+    X, y = fraud_100
+    X.ww.set_types(logical_types={
+        'store_id': 'PostalCode',
+        'country': 'CountryCode',
+        'region': 'SubRegionCode'
+    })
+
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+
+    part_dep = partial_dependence(pipeline, X, features=('store_id', 'country'))
+    assert "class_label" in part_dep.columns
+    assert part_dep["class_label"].nunique() == 1
+    assert len(part_dep.index) == len(set(X["store_id"]))
+    assert len(part_dep.columns) == len(set(X["country"])) + 1
+
+    grid_resolution = 5
+    part_dep = partial_dependence(pipeline, X, features=("store_id", "amount"), grid_resolution=grid_resolution)
+    assert "class_label" in part_dep.columns
+    assert part_dep["class_label"].nunique() == 1
+    assert len(part_dep.index) == len(set(X["store_id"]))
+    assert len(part_dep.columns) == grid_resolution + 1
 
 
 def test_partial_dependence_baseline():
