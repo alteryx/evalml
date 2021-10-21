@@ -12,3 +12,4 @@ statsmodels==0.12.2
 imbalanced-learn==0.8.0
 pmdarima==1.8.0
 sktime==0.7.0
+lime==0.2.0.1

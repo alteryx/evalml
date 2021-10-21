@@ -113,22 +113,19 @@ def test_data_checks(X_y_binary):
 
 messages = [
     DataCheckWarning(
-        message="Column 'all_null' is 95.0% or more null",
+        message="Columns 'all_null', 'also_all_null' are 95.0% or more null",
         data_check_name="HighlyNullDataCheck",
         message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-        details={"column": "all_null", "pct_null_rows": 1.0},
+        details={
+            "columns": ["all_null", "also_all_null"],
+            "pct_null_rows": {"all_null": 1.0, "also_all_null": 1.0},
+        },
     ).to_dict(),
     DataCheckWarning(
-        message="Column 'also_all_null' is 95.0% or more null",
-        data_check_name="HighlyNullDataCheck",
-        message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-        details={"column": "also_all_null", "pct_null_rows": 1.0},
-    ).to_dict(),
-    DataCheckWarning(
-        message="Column 'id' is 100.0% or more likely to be an ID column",
+        message="Columns 'id' are 100.0% or more likely to be an ID column",
         data_check_name="IDColumnsDataCheck",
         message_code=DataCheckMessageCode.HAS_ID_COLUMN,
-        details={"column": "id"},
+        details={"columns": ["id"]},
     ).to_dict(),
     DataCheckError(
         message="1 row(s) (20.0%) of target values are null",
@@ -137,55 +134,49 @@ messages = [
         details={"num_null_rows": 1, "pct_null_rows": 20.0},
     ).to_dict(),
     DataCheckError(
-        message="lots_of_null has 1 unique value.",
+        message="'all_null', 'also_all_null' has 0 unique values.",
         data_check_name="NoVarianceDataCheck",
         message_code=DataCheckMessageCode.NO_VARIANCE,
-        details={"column": "lots_of_null"},
+        details={"columns": ["all_null", "also_all_null"]},
     ).to_dict(),
     DataCheckError(
-        message="all_null has 0 unique value.",
+        message="'lots_of_null' has 1 unique value.",
         data_check_name="NoVarianceDataCheck",
         message_code=DataCheckMessageCode.NO_VARIANCE,
-        details={"column": "all_null"},
-    ).to_dict(),
-    DataCheckError(
-        message="also_all_null has 0 unique value.",
-        data_check_name="NoVarianceDataCheck",
-        message_code=DataCheckMessageCode.NO_VARIANCE,
-        details={"column": "also_all_null"},
+        details={"columns": ["lots_of_null"]},
     ).to_dict(),
     DataCheckError(
         message="Input natural language column(s) (natural_language_nan) contains NaN values. Please impute NaN values or drop these rows or columns.",
         data_check_name="NaturalLanguageNaNDataCheck",
         message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-        details={"columns": "natural_language_nan"},
+        details={"columns": ["natural_language_nan"]},
     ).to_dict(),
     DataCheckError(
         message="Input datetime column(s) (nan_dt_col) contains NaN values. Please impute NaN values or drop these rows or columns.",
         data_check_name="DateTimeNaNDataCheck",
         message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-        details={"columns": "nan_dt_col"},
+        details={"columns": ["nan_dt_col"]},
     ).to_dict(),
 ]
 
 expected_actions = [
     DataCheckAction(
-        DataCheckActionCode.DROP_COL, metadata={"column": "all_null"}
+        DataCheckActionCode.DROP_COL,
+        metadata={"columns": ["all_null", "also_all_null"]},
     ).to_dict(),
     DataCheckAction(
-        DataCheckActionCode.DROP_COL, metadata={"column": "also_all_null"}
+        DataCheckActionCode.DROP_COL, metadata={"columns": ["id"]}
     ).to_dict(),
-    DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "id"}).to_dict(),
     DataCheckAction(
         DataCheckActionCode.IMPUTE_COL,
         metadata={
-            "column": None,
             "is_target": True,
             "impute_strategy": "most_frequent",
         },
     ).to_dict(),
     DataCheckAction(
-        DataCheckActionCode.DROP_COL, metadata={"column": "lots_of_null"}
+        DataCheckActionCode.DROP_COL,
+        metadata={"columns": ["all_null", "also_all_null", "lots_of_null"]},
     ).to_dict(),
 ]
 
@@ -232,8 +223,8 @@ def test_default_data_checks_classification(input_type):
     ]
 
     assert data_checks.validate(X, y) == {
-        "warnings": messages[:3],
-        "errors": messages[3:] + imbalance,
+        "warnings": messages[:2],
+        "errors": messages[2:] + imbalance,
         "actions": expected_actions,
     }
 
@@ -247,8 +238,8 @@ def test_default_data_checks_classification(input_type):
         },
     )
     assert data_checks.validate(X, y) == {
-        "warnings": messages[:3],
-        "errors": messages[3:],
+        "warnings": messages[:2],
+        "errors": messages[2:],
         "actions": expected_actions,
     }
 
@@ -282,8 +273,8 @@ def test_default_data_checks_classification(input_type):
         "multiclass", get_default_primary_search_objective("multiclass")
     )
     assert data_checks.validate(X, y_multiclass) == {
-        "warnings": messages[:3] + high_class_to_sample_ratio,
-        "errors": [messages[3]] + min_2_class_count + messages[4:] + imbalance,
+        "warnings": messages[:2] + high_class_to_sample_ratio,
+        "errors": [messages[2]] + min_2_class_count + messages[3:] + imbalance,
         "actions": expected_actions,
     }
 
@@ -297,8 +288,8 @@ def test_default_data_checks_classification(input_type):
         },
     )
     assert data_checks.validate(X, y_multiclass) == {
-        "warnings": messages[:3] + high_class_to_sample_ratio,
-        "errors": [messages[3]] + min_2_class_count + messages[4:],
+        "warnings": messages[:2] + high_class_to_sample_ratio,
+        "errors": [messages[2]] + min_2_class_count + messages[3:],
         "actions": expected_actions,
     }
 
@@ -340,59 +331,57 @@ def test_default_data_checks_regression(input_type):
             message="Column 'lots_of_null' is 95.0% or more correlated with the target",
             data_check_name="TargetLeakageDataCheck",
             message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-            details={"column": "lots_of_null"},
+            details={"columns": ["lots_of_null"]},
         ).to_dict()
     ]
     data_checks = DefaultDataChecks(
         "regression", get_default_primary_search_objective("regression")
     )
-    id_leakage_warning = [
+    leakage_warning = [
         DataCheckWarning(
-            message="Column 'id' is 95.0% or more correlated with the target",
+            message="Columns 'id', 'nan_dt_col' are 95.0% or more correlated with the target",
             data_check_name="TargetLeakageDataCheck",
             message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-            details={"column": "id"},
+            details={"columns": ["id", "nan_dt_col"]},
         ).to_dict()
     ]
-    nan_dt_leakage_warning = [
-        DataCheckWarning(
-            message="Column 'nan_dt_col' is 95.0% or more correlated with the target",
-            data_check_name="TargetLeakageDataCheck",
-            message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-            details={"column": "nan_dt_col"},
-        ).to_dict()
-    ]
-
     impute_action = DataCheckAction(
         DataCheckActionCode.IMPUTE_COL,
-        metadata={"column": None, "is_target": True, "impute_strategy": "mean"},
+        metadata={"is_target": True, "impute_strategy": "mean"},
     ).to_dict()
-    nan_dt_action = DataCheckAction(
-        DataCheckActionCode.DROP_COL, metadata={"column": "nan_dt_col"}
+    leakage_drop_action = DataCheckAction(
+        DataCheckActionCode.DROP_COL, metadata={"columns": ["id", "nan_dt_col"]}
+    ).to_dict()
+    target_leakage_drop_action = DataCheckAction(
+        DataCheckActionCode.DROP_COL, metadata={"columns": ["lots_of_null"]}
     ).to_dict()
     expected_actions_with_drop_and_impute = (
-        expected_actions[:3] + [nan_dt_action, impute_action] + expected_actions[4:]
+        expected_actions[:2]
+        + [leakage_drop_action, impute_action]
+        + expected_actions[3:]
     )
     assert data_checks.validate(X, y) == {
-        "warnings": messages[:3] + id_leakage_warning + nan_dt_leakage_warning,
-        "errors": messages[3:],
+        "warnings": messages[:2] + leakage_warning,
+        "errors": messages[2:],
         "actions": expected_actions_with_drop_and_impute,
     }
 
     # Skip Invalid Target
     assert data_checks.validate(X, y_no_variance) == {
-        "warnings": messages[:3] + null_leakage,
-        "errors": messages[4:7]
+        "warnings": messages[:2] + null_leakage,
+        "errors": messages[3:5]
         + [
             DataCheckError(
                 message="Y has 1 unique value.",
                 data_check_name="NoVarianceDataCheck",
                 message_code=DataCheckMessageCode.NO_VARIANCE,
-                details={"column": "Y"},
+                details={"columns": ["Y"]},
             ).to_dict()
         ]
-        + messages[7:],
-        "actions": expected_actions[:3] + expected_actions[4:],
+        + messages[5:],
+        "actions": expected_actions[:2]
+        + [target_leakage_drop_action]
+        + expected_actions[3:],
     }
 
     data_checks = DataChecks(
@@ -405,8 +394,8 @@ def test_default_data_checks_regression(input_type):
         },
     )
     assert data_checks.validate(X, y) == {
-        "warnings": messages[:3] + id_leakage_warning + nan_dt_leakage_warning,
-        "errors": messages[3:],
+        "warnings": messages[:2] + leakage_warning,
+        "errors": messages[2:],
         "actions": expected_actions_with_drop_and_impute,
     }
 
@@ -436,19 +425,16 @@ def test_default_data_checks_null_rows():
                 message="5 out of 5 rows are more than 95.0% null",
                 data_check_name="HighlyNullDataCheck",
                 message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
-                details={"pct_null_cols": highly_null_rows},
+                details={"pct_null_cols": highly_null_rows, "rows": [0, 1, 2, 3, 4]},
             ).to_dict(),
             DataCheckWarning(
-                message="Column 'all_null' is 95.0% or more null",
+                message="Columns 'all_null', 'also_all_null' are 95.0% or more null",
                 data_check_name="HighlyNullDataCheck",
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-                details={"column": "all_null", "pct_null_rows": 1.0},
-            ).to_dict(),
-            DataCheckWarning(
-                message="Column 'also_all_null' is 95.0% or more null",
-                data_check_name="HighlyNullDataCheck",
-                message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-                details={"column": "also_all_null", "pct_null_rows": 1.0},
+                details={
+                    "columns": ["all_null", "also_all_null"],
+                    "pct_null_rows": {"all_null": 1.0, "also_all_null": 1.0},
+                },
             ).to_dict(),
         ],
         "errors": [
@@ -459,16 +445,10 @@ def test_default_data_checks_null_rows():
                 details={"num_null_rows": 1, "pct_null_rows": 20.0},
             ).to_dict(),
             DataCheckError(
-                message="all_null has 0 unique value.",
+                message="'all_null', 'also_all_null' has 0 unique values.",
                 data_check_name="NoVarianceDataCheck",
                 message_code=DataCheckMessageCode.NO_VARIANCE,
-                details={"column": "all_null"},
-            ).to_dict(),
-            DataCheckError(
-                message="also_all_null has 0 unique value.",
-                data_check_name="NoVarianceDataCheck",
-                message_code=DataCheckMessageCode.NO_VARIANCE,
-                details={"column": "also_all_null"},
+                details={"columns": ["all_null", "also_all_null"]},
             ).to_dict(),
         ],
         "actions": [
@@ -476,14 +456,16 @@ def test_default_data_checks_null_rows():
                 DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 1, 2, 3, 4]}
             ).to_dict(),
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "all_null"}
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "also_all_null"}
+                DataCheckActionCode.DROP_COL,
+                metadata={"columns": ["all_null", "also_all_null"]},
             ).to_dict(),
             DataCheckAction(
                 DataCheckActionCode.IMPUTE_COL,
-                metadata={"column": None, "is_target": True, "impute_strategy": "mean"},
+                metadata={
+                    "columns": None,
+                    "is_target": True,
+                    "impute_strategy": "mean",
+                },
             ).to_dict(),
         ],
     }
