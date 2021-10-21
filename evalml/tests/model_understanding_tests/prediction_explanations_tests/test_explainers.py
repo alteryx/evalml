@@ -1946,3 +1946,20 @@ def test_explain_predictions_invalid_algorithm():
         explain_predictions_best_worst(
             pipeline, input_features, y, top_k_features=1, algorithm="lIMe"
         )
+
+
+def test_explain_predictions_lime_catboost(X_y_binary):
+    pl = BinaryClassificationPipeline(
+        {
+            "Label Encoder": ["Label Encoder", "X", "y"],
+            "CatBoost": ["CatBoost Classifier", "X", "Label Encoder.y"],
+        }
+    )
+    X, y = X_y_binary
+    error_msg = "CatBoost models are not supported by LIME at this time"
+
+    with pytest.raises(ValueError, match=error_msg):
+        explain_predictions(pl, X, y, [0], algorithm="lime")
+
+    with pytest.raises(ValueError, match=error_msg):
+        explain_predictions_best_worst(pl, X, y, algorithm="lime")

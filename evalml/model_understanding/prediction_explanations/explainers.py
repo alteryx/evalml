@@ -54,9 +54,9 @@ def explain_predictions(
 ):
     """Creates a report summarizing the top contributing features for each data point in the input features.
 
-    XGBoost models and CatBoost multiclass classifiers, are not currently supported with the SHAP algorithm.
-    To explain these predictions, use the LIME algorithm. Stacked Ensemble models are not supported by either
-    algorithm at this time.
+    XGBoost models and CatBoost multiclass classifiers are not currently supported with the SHAP algorithm.
+    To explain XGBoost model predictions, use the LIME algorithm. The LIME algorithm does not currently support
+    any CatBoost models. Stacked Ensemble models are not supported by either algorithm at this time.
 
     Args:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP or LIME.
@@ -106,6 +106,8 @@ def explain_predictions(
         raise ValueError(
             f"Unknown algorithm {algorithm}, should be one of ['shap', 'lime']"
         )
+    if algorithm == "lime" and "CatBoost" in pipeline.estimator.name:
+        raise ValueError("CatBoost models are not supported by LIME at this time")
 
     pipeline_features = pipeline.transform_all_but_final(
         input_features, y, training_data, training_target
@@ -173,7 +175,9 @@ def explain_predictions_best_worst(
 ):
     """Creates a report summarizing the top contributing features for the best and worst points in the dataset as measured by error to true labels.
 
-    XGBoost and Stacked Ensemble models, as well as CatBoost multiclass classifiers, are not currently supported.
+    XGBoost models and CatBoost multiclass classifiers are not currently supported with the SHAP algorithm.
+    To explain XGBoost model predictions, use the LIME algorithm. The LIME algorithm does not currently support
+    any CatBoost models. Stacked Ensemble models are not supported by either algorithm at this time.
 
     Args:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP or LIME.
@@ -247,6 +251,8 @@ def explain_predictions_best_worst(
         raise ValueError(
             f"Unknown algorithm {algorithm}, should be one of ['shap', 'lime']"
         )
+    if algorithm == "lime" and "CatBoost" in pipeline.estimator.name:
+        raise ValueError("CatBoost models are not supported by LIME at this time")
 
     try:
         if is_regression(pipeline.problem_type):
