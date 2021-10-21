@@ -8,10 +8,11 @@ import pytest
 
 from evalml.model_family.model_family import ModelFamily
 from evalml.model_understanding.prediction_explanations._algorithms import (
-    _aggregate_shap_values,
+    _aggregate_explainer_values,
+    _compute_lime_values,
     _compute_shap_values,
     _create_dictionary,
-    _normalize_shap_values,
+    _normalize_explainer_values,
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -53,27 +54,31 @@ def make_test_pipeline(estimator, base_class):
 
 
 baseline_message = "You passed in a baseline pipeline. These are simple enough that SHAP values are not needed."
+baseline_lime_message = "You passed in a baseline pipeline. These are simple enough that LIME values are not needed."
 datatype_message = "^Unknown shap_values datatype"
 data_message = "You must pass in a value for parameter 'training_data' when the pipeline does not have a tree-based estimator. Current estimator model family is Linear."
 
 
 @pytest.mark.parametrize(
-    "pipeline,exception,match",
+    "pipeline,exception,match,algorithm",
     [
         (
             make_test_pipeline(BaselineRegressor, RegressionPipeline),
             ValueError,
             baseline_message,
+            "shap",
         ),
         (
             make_test_pipeline(BaselineClassifier, BinaryClassificationPipeline),
             ValueError,
             baseline_message,
+            "shap",
         ),
         (
             make_test_pipeline(BaselineClassifier, MulticlassClassificationPipeline),
             ValueError,
             baseline_message,
+            "shap",
         ),
         (
             make_test_pipeline(
@@ -81,30 +86,58 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
             ),
             ValueError,
             baseline_message,
+            "shap",
         ),
         (
             make_test_pipeline(RandomForestClassifier, BinaryClassificationPipeline),
             ValueError,
             datatype_message,
+            "shap",
         ),
         (
             make_test_pipeline(LinearRegressor, RegressionPipeline),
             ValueError,
             data_message,
+            "shap",
+        ),
+        (
+            make_test_pipeline(BaselineRegressor, RegressionPipeline),
+            ValueError,
+            baseline_lime_message,
+            "lime",
+        ),
+        (
+            make_test_pipeline(BaselineClassifier, BinaryClassificationPipeline),
+            ValueError,
+            baseline_lime_message,
+            "lime",
+        ),
+        (
+            make_test_pipeline(BaselineClassifier, MulticlassClassificationPipeline),
+            ValueError,
+            baseline_lime_message,
+            "lime",
+        ),
+        (
+            make_test_pipeline(
+                TimeSeriesBaselineEstimator, TimeSeriesRegressionPipeline
+            ),
+            ValueError,
+            baseline_lime_message,
+            "lime",
         ),
     ],
 )
 @patch(
     "evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer"
 )
-def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
-    if "xgboost" in pipeline.custom_name.lower():
+def test_explainer_value_errors_raised(
+    mock_tree_explainer, pipeline, exception, match, algorithm
+):
+    if algorithm == "lime":
         pytest.importorskip(
-            "xgboost", "Skipping test because xgboost is not installed."
-        )
-    if "catboost" in pipeline.custom_name.lower():
-        pytest.importorskip(
-            "catboost", "Skipping test because catboost is not installed."
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
         )
 
     pipeline = pipeline(
@@ -117,14 +150,18 @@ def test_value_errors_raised(mock_tree_explainer, pipeline, exception, match):
             }
         }
     )
-
     with pytest.raises(exception, match=match):
-        _ = _compute_shap_values(pipeline, pd.DataFrame(np.random.random((2, 16))))
+        if algorithm == "shap":
+            _ = _compute_shap_values(pipeline, pd.DataFrame(np.random.random((2, 16))))
+        else:
+            _ = _compute_lime_values(
+                pipeline, pd.DataFrame(np.random.random((2, 16))), 0
+            )
 
 
 def test_create_dictionary_exception():
     with pytest.raises(
-        ValueError, match="SHAP values must be stored in a numpy array!"
+        ValueError, match="Explainer values must be stored in a numpy array!"
     ):
         _create_dictionary([1, 2, 3], ["a", "b", "c"])
 
@@ -144,6 +181,17 @@ def calculate_shap_for_test(training_data, y, pipeline, n_points_to_explain):
     return shap_values
 
 
+def calculate_lime_for_test(training_data, y, pipeline, index_to_explain):
+    """Helper function to compute the LIME values for n_points_to_explain for a given pipeline."""
+    pipeline.fit(training_data, y)
+    lime_values = _compute_lime_values(
+        pipeline,
+        training_data,
+        index_to_explain,
+    )
+    return lime_values
+
+
 interpretable_estimators = [
     e
     for e in _all_estimators_used_in_search()
@@ -151,21 +199,30 @@ interpretable_estimators = [
 ]
 all_problems = [ProblemTypes.REGRESSION, ProblemTypes.BINARY, ProblemTypes.MULTICLASS]
 all_n_points_to_explain = [1, 5]
+algorithms = ["shap", "lime"]
 
 
 @pytest.mark.parametrize(
-    "estimator,problem_type,n_points_to_explain",
-    product(interpretable_estimators, all_problems, all_n_points_to_explain),
+    "estimator,problem_type,n_points_to_explain,algorithm",
+    product(
+        interpretable_estimators, all_problems, all_n_points_to_explain, algorithms
+    ),
 )
-def test_shap(
+def test_explainers(
     estimator,
     problem_type,
     n_points_to_explain,
+    algorithm,
     X_y_binary,
     X_y_multi,
     X_y_regression,
     helper_functions,
 ):
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping LIME test because lime not installed",
+        )
 
     if problem_type not in estimator.supported_problem_types:
         pytest.skip("Skipping because estimator and pipeline are not compatible.")
@@ -187,48 +244,69 @@ def test_shap(
     except ValueError:
         pipeline = make_pipeline(training_data, y, estimator, problem_type)
 
-    shap_values = calculate_shap_for_test(
-        training_data, y, pipeline, n_points_to_explain
-    )
+    if algorithm == "shap":
+        explainer_values = calculate_shap_for_test(
+            training_data, y, pipeline, n_points_to_explain
+        )
+    else:
+        explainer_values = calculate_lime_for_test(training_data, y, pipeline, 0)
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         assert isinstance(
-            shap_values, list
+            explainer_values, list
         ), "For binary classification, returned values must be a list"
         assert all(
-            isinstance(class_values, dict) for class_values in shap_values
+            isinstance(class_values, dict) for class_values in explainer_values
         ), "Not all list elements are lists!"
         if is_binary:
             assert (
-                len(shap_values) == N_CLASSES_BINARY
+                len(explainer_values) == N_CLASSES_BINARY
             ), "A dictionary should be returned for each class!"
         else:
             assert (
-                len(shap_values) == N_CLASSES_MULTICLASS
+                len(explainer_values) == N_CLASSES_MULTICLASS
             ), "A dictionary should be returned for each class!"
         assert all(
-            len(values) == N_FEATURES for values in shap_values
-        ), "A SHAP value must be computed for every feature!"
-        for class_values in shap_values:
+            len(values) == N_FEATURES for values in explainer_values
+        ), f"A {algorithm.upper()} value must be computed for every feature!"
+        for class_values in explainer_values:
             assert all(
                 isinstance(feature, list) for feature in class_values.values()
             ), "Every value in the dict must be a list!"
-            assert all(
-                len(v) == n_points_to_explain for v in class_values.values()
-            ), "A SHAP value must be computed for every data point to explain!"
+            if algorithm == "shap":
+                assert all(
+                    len(v) == n_points_to_explain for v in class_values.values()
+                ), f"A SHAP value must be computed for every data point to explain!"
     elif problem_type == ProblemTypes.REGRESSION:
         assert isinstance(
-            shap_values, dict
+            explainer_values, dict
         ), "For regression, returned values must be a dictionary!"
         assert (
-            len(shap_values) == N_FEATURES
-        ), "A SHAP value should be computed for every feature!"
+            len(explainer_values) == N_FEATURES
+        ), f"A {algorithm.upper()} value should be computed for every feature!"
         assert all(
-            isinstance(feature, list) for feature in shap_values.values()
+            isinstance(feature, list) for feature in explainer_values.values()
         ), "Every value in the dict must be a list!"
-        assert all(
-            len(v) == n_points_to_explain for v in shap_values.values()
-        ), "A SHAP value must be computed for every data point to explain!"
+        if algorithm == "shap":
+            assert all(
+                len(v) == n_points_to_explain for v in explainer_values.values()
+            ), f"A SHAP value must be computed for every data point to explain!"
+
+
+def test_lime_xgboost(X_y_multi):
+    pytest.importorskip("xgboost", reason="Skipping test because xgboost not installed")
+    pytest.importorskip(
+        "lime.lime_tabular", reason="Skipping test because lime not installed"
+    )
+
+    from evalml.pipelines.components import XGBoostClassifier
+
+    X, y = X_y_multi
+
+    xgboost_pipeline = make_pipeline(X, y, XGBoostClassifier, "multiclass")
+    xgboost_values = calculate_lime_for_test(X, y, xgboost_pipeline, 1)
+
+    assert len(xgboost_values) == len(set(y))
 
 
 @patch("evalml.model_understanding.prediction_explanations._algorithms.logger")
@@ -256,9 +334,9 @@ def test_compute_shap_values_catches_shap_tree_warnings(
 def test_normalize_values_exceptions():
 
     with pytest.raises(
-        ValueError, match="^Unsupported data type for _normalize_shap_values"
+        ValueError, match="^Unsupported data type for _normalize_explainer_values"
     ):
-        _normalize_shap_values(1)
+        _normalize_explainer_values(1)
 
 
 def check_equal_dicts(normalized, answer):
@@ -294,7 +372,7 @@ def check_equal_dicts(normalized, answer):
 )
 def test_normalize_values(values, answer):
 
-    normalized = _normalize_shap_values(values)
+    normalized = _normalize_explainer_values(values)
     if isinstance(normalized, dict):
         check_equal_dicts(normalized, answer)
 
@@ -326,7 +404,7 @@ def test_normalize_values(values, answer):
     ],
 )
 def test_aggregate_values(values, provenance, answer):
-    aggregated = _aggregate_shap_values(values, provenance)
+    aggregated = _aggregate_explainer_values(values, provenance)
 
     if isinstance(aggregated, dict):
         check_equal_dicts(aggregated, answer)

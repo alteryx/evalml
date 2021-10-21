@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added LIME as an algorithm option for ``explain_predictions`` and ``explain_predictions_best_worst`` :pr:`2905`
         * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary :pr:`2869`
         * Added ``rows_of_interest`` to pipeline utils :pr:`2908`
         * Added support for woodwork version ``0.8.2`` :pr:`2909`
