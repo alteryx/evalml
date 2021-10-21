@@ -41,9 +41,9 @@ class OutliersDataCheck(DataCheck):
             ...                   "data_check_name": "OutliersDataCheck",
             ...                   "level": "warning",
             ...                   "code": "HAS_OUTLIERS",
-            ...                   "details": {"columns": ["z"], 'rows': {'z': [3]}}}],
+            ...                   "details": {"columns": ["z"], "rows": [3], "column_indices": {"z": [3]}}}],
             ...     "errors": [],
-            ...     "actions": [{'code': 'DROP_ROWS', 'metadata': {'indices': [3]}}]}
+            ...     "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [3], "columns": None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

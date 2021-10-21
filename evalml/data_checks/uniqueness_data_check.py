@@ -55,13 +55,13 @@ class UniquenessDataCheck(DataCheck):
             >>> uniqueness_check = UniquenessDataCheck(problem_type="regression", threshold=0.8)
             >>> assert uniqueness_check.validate(df) == {
             ...     "errors": [],
-            ...     "warnings": [{"message": "Input columns (regression_not_unique_enough) for regression problem type are not unique enough.",
+            ...     "warnings": [{"message": "Input columns 'regression_not_unique_enough' for regression problem type are not unique enough.",
             ...                   "data_check_name": "UniquenessDataCheck",
             ...                   "level": "warning",
             ...                   "code": "NOT_UNIQUE_ENOUGH",
-            ...                   "details": {"columns": ["regression_not_unique_enough"], 'uniqueness_score': {"regression_not_unique_enough": 0.0}}}],
+            ...                   "details": {"columns": ["regression_not_unique_enough"], "uniqueness_score": {"regression_not_unique_enough": 0.0}, "rows": None}}],
             ...     "actions": [{"code": "DROP_COL",
-            ...                  "metadata": {"columns": ["regression_not_unique_enough"]}}]}
+            ...                  "metadata": {"columns": ["regression_not_unique_enough"], "rows": None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

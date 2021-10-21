@@ -66,14 +66,14 @@ class HighlyNullDataCheck(DataCheck):
             ...                   "data_check_name": "HighlyNullDataCheck",
             ...                   "level": "warning",
             ...                   "code": "HIGHLY_NULL_ROWS",
-            ...                   "details": {"pct_null_cols": highly_null_rows}},
-            ...                  {"message": "Column 'lots_of_null' is 50.0% or more null",
+            ...                   "details": {"pct_null_cols": highly_null_rows, "columns": None, "rows": [0, 1, 2, 3]}},
+            ...                  {"message": "Columns 'lots_of_null' are 50.0% or more null",
             ...                   "data_check_name": "HighlyNullDataCheck",
             ...                   "level": "warning",
             ...                   "code": "HIGHLY_NULL_COLS",
-            ...                   "details": {"column": "lots_of_null", "pct_null_rows": 0.8}}],
-            ...    "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [0, 1, 2, 3]}},
-            ...                {"code": "DROP_COL", "metadata": {"column": "lots_of_null"}}]}
+            ...                   "details": {"columns": ["lots_of_null"], "pct_null_rows": {"lots_of_null": 0.8}, "rows": None}}],
+            ...    "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [0, 1, 2, 3], "columns": None}},
+            ...                {"code": "DROP_COL", "metadata": {"columns": ["lots_of_null"], "rows": None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

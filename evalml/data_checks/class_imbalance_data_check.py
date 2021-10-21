@@ -67,17 +67,17 @@ class ClassImbalanceDataCheck(DataCheck):
             ...                                                    "data_check_name": "ClassImbalanceDataCheck",
             ...                                                    "level": "error",
             ...                                                    "code": "CLASS_IMBALANCE_BELOW_FOLDS",
-            ...                                                    "details": {"target_values": [0]}}],
+            ...                                                    "details": {"target_values": [0], "rows": None, "columns": None}}],
             ...                                      "warnings": [{"message": "The following labels fall below 10% of the target: [0]",
             ...                                                    "data_check_name": "ClassImbalanceDataCheck",
             ...                                                    "level": "warning",
             ...                                                    "code": "CLASS_IMBALANCE_BELOW_THRESHOLD",
-            ...                                                    "details": {"target_values": [0]}},
+            ...                                                    "details": {"target_values": [0], "rows": None, "columns": None}},
             ...                                                    {"message": "The following labels in the target have severe class imbalance because they fall under 10% of the target and have less than 100 samples: [0]",
             ...                                                    "data_check_name": "ClassImbalanceDataCheck",
             ...                                                    "level": "warning",
             ...                                                    "code": "CLASS_IMBALANCE_SEVERE",
-            ...                                                    "details": {"target_values": [0]}}],
+            ...                                                    "details": {"target_values": [0], "rows": None, "columns": None}}],
             ...                                      "actions": []}
         """
         results = {"warnings": [], "errors": [], "actions": []}
