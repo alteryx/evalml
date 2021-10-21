@@ -1,6 +1,5 @@
 """Utility methods for EvalML pipelines."""
 import logging
-from evalml.pipelines.components.transformers import preprocessing
 
 from woodwork import logical_types
 
@@ -42,6 +41,7 @@ from evalml.pipelines.components import (  # noqa: F401
     Undersampler,
     URLFeaturizer,
 )
+from evalml.pipelines.components.transformers import preprocessing
 from evalml.pipelines.components.transformers.encoders.label_encoder import (
     LabelEncoder,
 )
