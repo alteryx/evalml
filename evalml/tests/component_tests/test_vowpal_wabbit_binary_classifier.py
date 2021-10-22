@@ -58,8 +58,8 @@ def test_fit_predict(X_y_binary):
     vw_classifier = VowpalWabbitBinaryClassifier()
 
     vw_classifier.fit(X, y)
-    y_pred_sk = vw_classifier.predict(X)
-    y_pred_proba_sk = vw_classifier.predict_proba(X)
+    y_pred = vw_classifier.predict(X)
+    y_pred_proba = vw_classifier.predict_proba(X)
 
     clf = vw.VWClassifier(
         loss_function="logistic",
@@ -69,8 +69,8 @@ def test_fit_predict(X_y_binary):
         passes=1,
     )
     clf.fit(X, y)
-    y_pred = clf.predict(X)
-    y_pred_proba = clf.predict_proba(X)
+    y_pred_sk = clf.predict(X)
+    y_pred_proba_sk = clf.predict_proba(X)
 
     np.testing.assert_almost_equal(y_pred_sk, y_pred, decimal=5)
     np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba, decimal=5)

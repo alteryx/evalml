@@ -52,13 +52,13 @@ def test_vw_fit_predict(X_y_regression):
     vw_regressor = VowpalWabbitRegressor()
 
     vw_regressor.fit(X, y)
-    y_pred_sk = vw_regressor.predict(X)
+    y_pred = vw_regressor.predict(X)
 
     clf = vw.VWRegressor(
         learning_rate=0.5, decay_learning_rate=1.0, power_t=0.5, passes=1
     )
     clf.fit(X, y)
-    y_pred = clf.predict(X)
+    y_pred_sk = clf.predict(X)
 
     np.testing.assert_almost_equal(y_pred_sk, y_pred, decimal=5)
 
