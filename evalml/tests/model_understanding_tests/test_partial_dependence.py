@@ -697,6 +697,9 @@ def test_graph_partial_dependence_ww_categories(
         fig = graph_partial_dependence(pipeline, X, features=feat)
         assert isinstance(fig, go.Figure)
         fig_dict = fig.to_dict()
+
+        assert fig_dict["data"][0]["type"] == "bar"
+
         assert fig_dict["layout"]["title"]["text"] == f"Partial Dependence of '{feat}'"
         assert len(fig_dict["data"]) == 1
         assert fig_dict["data"][0]["name"] == "Partial Dependence"

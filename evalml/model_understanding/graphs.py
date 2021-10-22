@@ -956,7 +956,7 @@ def graph_partial_dependence(
             )
     elif isinstance(features, (int, str)):
         mode = "one-way"
-        is_categorical = _is_feature_of_type(features, X, ww.logical_types.Categorical)
+        is_categorical = _is_feature_of_semantic_type(features, X, "category")
 
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
