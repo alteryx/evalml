@@ -27,6 +27,11 @@ jobs:
           export DEPENDENCY_FILE_PATH=/tmp/dependencies_updated_artifacts/current_dependencies.txt
           evalml/tests/dependency_update_check/make_deps_diff.sh
           diff evalml/tests/dependency_update_check/latest_dependency_versions.txt /tmp/dependencies_updated_artifacts/current_dependencies.txt > /tmp/dependencies_updated_artifacts/diff.txt
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: dependencies
+          path: /tmp/dependencies_updated_artifacts/current_dependencies.txt
       - name: Display Dependency Changes
         if: steps.check.outcome != 'success'
         run: |
