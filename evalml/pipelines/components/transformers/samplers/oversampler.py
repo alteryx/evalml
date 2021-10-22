@@ -89,8 +89,11 @@ class Oversampler(BaseSampler):
         self.categorical_features = [
             i
             for i, val in enumerate(X.ww.semantic_tags.items())
-            if "category" in val[1]
+            if ("category" in val[1] or "boolean" in val[1])
         ]
+        for i, val in enumerate(X.ww.types["Logical Type"].items()):
+            if str(val[1]) == "Boolean":
+                self.categorical_features.append(i)
         self._parameters["categorical_features"] = self.categorical_features
 
     def _initialize_sampler(self, X, y):

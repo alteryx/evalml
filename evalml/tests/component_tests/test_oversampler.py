@@ -262,13 +262,14 @@ def test_smotenc_categorical_features(X_y_binary):
 def test_smotenc_category_features(X_y_binary):
     X, y = X_y_binary
     X = pd.DataFrame(X).rename({0: "postal", 1: "country"}, axis="columns")
+    X[2] = [i % 2 for i in range(X.shape[0])]
     X_ww = infer_feature_types(
-        X, feature_types={"postal": "PostalCode", "country": "CountryCode"}
+        X, feature_types={"postal": "PostalCode", "country": "CountryCode", 2: "Boolean"}
     )
     snc = Oversampler()
     X_out, y_out = snc.fit_transform(X_ww, y)
     assert snc.sampler == im.SMOTENC
-    assert snc.categorical_features == [0, 1]
+    assert snc.categorical_features == [0, 1, 2]
 
 
 def test_smotenc_output_shape(X_y_binary):
