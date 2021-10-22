@@ -519,9 +519,9 @@ def _is_feature_of_type(feature, X, ltype):
 def _is_feature_of_semantic_type(feature, X, stype):
     """Determine whether the feature the user passed to partial dependence is a certain Woodwork semantic type."""
     if isinstance(feature, int):
-        is_type = (stype in X.ww.semantic_tags[X.columns[feature]])
+        is_type = stype in X.ww.semantic_tags[X.columns[feature]]
     else:
-        is_type = (stype in X.ww.semantic_tags[feature])
+        is_type = stype in X.ww.semantic_tags[feature]
     return is_type
 
 
