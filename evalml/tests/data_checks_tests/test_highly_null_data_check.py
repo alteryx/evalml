@@ -96,6 +96,10 @@ def test_highly_null_data_check_warnings():
                 details={
                     "columns": ["lots_of_null", "all_null"],
                     "pct_null_rows": {"all_null": 1.0, "lots_of_null": 0.8},
+                    "null_row_indices": {
+                        "all_null": [0, 1, 2, 3, 4],
+                        "lots_of_null": [0, 1, 2, 3],
+                    },
                 },
             ).to_dict(),
         ],
@@ -134,6 +138,10 @@ def test_highly_null_data_check_warnings():
                 details={
                     "columns": ["lots_of_null", "all_null"],
                     "pct_null_rows": {"all_null": 1.0, "lots_of_null": 0.8},
+                    "null_row_indices": {
+                        "all_null": [0, 1, 2, 3, 4],
+                        "lots_of_null": [0, 1, 2, 3],
+                    },
                 },
             ).to_dict(),
         ],
@@ -158,7 +166,11 @@ def test_highly_null_data_check_warnings():
                 message="Columns 'all_null' are 100.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-                details={"columns": ["all_null"], "pct_null_rows": {"all_null": 1.0}},
+                details={
+                    "columns": ["all_null"],
+                    "pct_null_rows": {"all_null": 1.0},
+                    "null_row_indices": {"all_null": [0, 1, 2, 3, 4]},
+                },
             ).to_dict()
         ],
         "errors": [],
@@ -198,7 +210,11 @@ def test_highly_null_data_check_separate_rows_cols():
                 message="Columns 'all_null' are 90.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-                details={"columns": ["all_null"], "pct_null_rows": {"all_null": 1.0}},
+                details={
+                    "columns": ["all_null"],
+                    "pct_null_rows": {"all_null": 1.0},
+                    "null_row_indices": {"all_null": [0, 1, 2, 3, 4]},
+                },
             ).to_dict(),
         ],
         "errors": [],
@@ -225,6 +241,10 @@ def test_highly_null_data_check_separate_rows_cols():
                 details={
                     "columns": ["lots_of_null", "all_null"],
                     "pct_null_rows": {"lots_of_null": 0.8, "all_null": 1.0},
+                    "null_row_indices": {
+                        "all_null": [0, 1, 2, 3, 4],
+                        "lots_of_null": [0, 1, 2, 3],
+                    },
                 },
             ).to_dict(),
         ],
@@ -266,6 +286,7 @@ def test_highly_null_data_check_input_formats():
                 details={
                     "columns": [0, 1, 2],
                     "pct_null_rows": {0: 1.0, 1: 1.0, 2: 1.0},
+                    "null_row_indices": {0: [0, 1], 1: [0, 1], 2: [0, 1]},
                 },
             ).to_dict(),
         ],
