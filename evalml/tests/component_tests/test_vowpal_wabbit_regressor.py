@@ -14,11 +14,11 @@ vw = importorskip(
 )
 
 
-def test_model_family():
+def test_vw_model_family():
     assert VowpalWabbitRegressor.model_family == ModelFamily.VOWPAL_WABBIT
 
 
-def test_problem_types():
+def test_vw_problem_types():
     assert set(VowpalWabbitRegressor.supported_problem_types) == {
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
@@ -43,7 +43,7 @@ def test_vw_parameters():
     assert vw.parameters == expected_parameters
 
 
-def test_fit_predict(X_y_regression):
+def test_vw_fit_predict(X_y_regression):
     X, y = X_y_regression
     vw_regressor = VowpalWabbitRegressor()
 
@@ -57,7 +57,7 @@ def test_fit_predict(X_y_regression):
     np.testing.assert_almost_equal(y_pred_sk, y_pred, decimal=5)
 
 
-def test_feature_importance(X_y_regression):
+def test_vw_feature_importance(X_y_regression):
     X, y = X_y_regression
     vw = VowpalWabbitRegressor()
     vw.fit(X, y)

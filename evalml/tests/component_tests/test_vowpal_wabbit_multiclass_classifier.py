@@ -14,11 +14,11 @@ vw = importorskip(
 )
 
 
-def test_model_family():
+def test_vw_model_family():
     assert VowpalWabbitMulticlassClassifier.model_family == ModelFamily.VOWPAL_WABBIT
 
 
-def test_problem_types():
+def test_vw_problem_types():
     assert set(VowpalWabbitMulticlassClassifier.supported_problem_types) == {
         ProblemTypes.MULTICLASS,
         ProblemTypes.TIME_SERIES_MULTICLASS,
@@ -30,8 +30,8 @@ def test_vw_parameters():
     expected_parameters = {
         "loss_function": "logistic",
         "learning_rate": 0.5,
-        "decay_learning_rate": 0.95,
-        "power_t": 1.0,
+        "decay_learning_rate": 1.0,
+        "power_t": 0.5,
     }
     assert vw.parameters == expected_parameters
 
@@ -47,7 +47,7 @@ def test_vw_parameters():
     assert vw.parameters == expected_parameters
 
 
-def test_fit_predict(X_y_multi):
+def test_vw_fit_predict(X_y_multi):
     X, y = X_y_multi
     vw_classifier = VowpalWabbitMulticlassClassifier()
 
@@ -58,8 +58,8 @@ def test_fit_predict(X_y_multi):
     clf = vw.VWMultiClassifier(
         loss_function="logistic",
         learning_rate=0.5,
-        decay_learning_rate=0.95,
-        power_t=1.0,
+        decay_learning_rate=1.0,
+        power_t=0.5,
     )
     clf.fit(X, y)
     y_pred = clf.predict(X)
@@ -69,7 +69,7 @@ def test_fit_predict(X_y_multi):
     np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba, decimal=5)
 
 
-def test_feature_importance(X_y_multi):
+def test_vw_feature_importance(X_y_multi):
     X, y = X_y_multi
     vw = VowpalWabbitMulticlassClassifier()
     vw.fit(X, y)
