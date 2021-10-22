@@ -86,11 +86,13 @@ class Oversampler(BaseSampler):
 
     def _get_categorical(self, X):
         X = infer_feature_types(X)
+        # Grab categorical columns
         self.categorical_features = [
             i
             for i, val in enumerate(X.ww.semantic_tags.items())
-            if ("category" in val[1] or "boolean" in val[1])
+            if "category" in val[1]
         ]
+        # Grab boolean columns, since SMOTE considers these categorical as well
         for i, val in enumerate(X.ww.types["Logical Type"].items()):
             if str(val[1]) == "Boolean":
                 self.categorical_features.append(i)
