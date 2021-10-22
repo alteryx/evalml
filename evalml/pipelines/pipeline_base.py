@@ -613,7 +613,8 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             custom_name=self.custom_name,
             random_seed=self.random_seed,
         )
-        clone.threshold = self.threshold
+        if is_binary(self.problem_type):
+            clone.threshold = self.threshold
         return clone
 
     def new(self, parameters, random_seed=0):
