@@ -607,12 +607,14 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             A new instance of this pipeline with identical components, parameters, and random state.
         """
-        return self.__class__(
+        clone = self.__class__(
             self.component_graph,
             parameters=self.parameters,
             custom_name=self.custom_name,
             random_seed=self.random_seed,
         )
+        clone.threshold = self.threshold
+        return clone
 
     def new(self, parameters, random_seed=0):
         """Constructs a new instance of the pipeline with the same component graph but with a different set of parameters. Not to be confused with python's __new__ method.
