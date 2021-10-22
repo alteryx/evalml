@@ -15,6 +15,7 @@ Release Notes
         * Fixed bug where ``Oversampler`` selected ww logical categorical instead of ww semantic category :pr:`2946`
     * Changes
         * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
+        * Refactored ``OutliersDataCheck`` and ``HighlyNullDataCheck`` to add more descriptive metadata :pr:`2907`
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
         * Updated CI to run doctest (docstring tests) and apply necessary fixes to docstrings :pr:`2933`

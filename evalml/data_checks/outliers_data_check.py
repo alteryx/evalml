@@ -56,18 +56,15 @@ class OutliersDataCheck(DataCheck):
         has_outliers = []
         outlier_row_indices = {}
         for col in X.columns:
-            box_plot_dict = X.ww[col].ww.box_plot_dict()
-            num_records = len(X[col])
-            pct_outliers = (
-                len(box_plot_dict["low_values"]) + len(box_plot_dict["high_values"])
-            ) / num_records
-            if (
-                pct_outliers > 0
-                and OutliersDataCheck._no_outlier_prob(num_records, pct_outliers) <= 0.9
-            ):
+            box_plot_dict = OutliersDataCheck.get_boxplot_data(X.ww[col])
+            box_plot_dict_values = box_plot_dict["values"]
+
+            pct_outliers = box_plot_dict["pct_outliers"]
+            if pct_outliers > 0 and box_plot_dict["score"] <= 0.9:
                 has_outliers.append(col)
                 outlier_row_indices[col] = (
-                    box_plot_dict["low_indices"] + box_plot_dict["high_indices"]
+                    box_plot_dict_values["low_indices"]
+                    + box_plot_dict_values["high_indices"]
                 )
 
         if not len(has_outliers):
@@ -102,6 +99,46 @@ class OutliersDataCheck(DataCheck):
             ).to_dict()
         )
         return results
+
+    @staticmethod
+    def get_boxplot_data(data_):
+        """Returns box plot information for the given data.
+
+        Args:
+            data_ (pd.Series, np.ndarray): Input data.
+
+        Returns:
+            dict: A payload of box plot statistics.
+        """
+        if not data_.ww._schema:
+            data_.ww.init()
+        num_records = data_.count()
+        box_plot_dict = data_.ww.box_plot_dict()
+        quantiles = box_plot_dict["quantiles"]
+
+        q1, q2, q3 = quantiles[0.25], quantiles[0.5], quantiles[0.75]
+
+        pct_outliers = (
+            len(box_plot_dict["low_values"]) + len(box_plot_dict["high_values"])
+        ) / num_records
+        score = OutliersDataCheck._no_outlier_prob(num_records, pct_outliers)
+
+        payload = {
+            "score": score,
+            "pct_outliers": pct_outliers,
+            "values": {
+                "q1": q1,
+                "median": q2,
+                "q3": q3,
+                "low_bound": box_plot_dict["low_bound"],
+                "high_bound": box_plot_dict["high_bound"],
+                "low_values": box_plot_dict["low_values"],
+                "high_values": box_plot_dict["high_values"],
+                "low_indices": box_plot_dict["low_indices"],
+                "high_indices": box_plot_dict["high_indices"],
+            },
+        }
+        return payload
 
     @staticmethod
     def _no_outlier_prob(num_records: int, pct_outliers: float) -> float:
@@ -148,7 +185,7 @@ class OutliersDataCheck(DataCheck):
         shape_param = np.exp(log_shape)
         log_scale = (
             -19.8196822259052
-            + 8.5359212447622 * log_n
+            + 18.5359212447622 * log_n
             + -8.80487628113388 * log_n ** 2
             + 2.27711870991327 * log_n ** 3
             + -0.344443407676357 * log_n ** 4
