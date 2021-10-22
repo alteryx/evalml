@@ -1,5 +1,5 @@
-"""Vowpal Wabbit Classifier."""
-from skopt.space import Real
+"""Vowpal Wabbit Regressor."""
+from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
@@ -14,6 +14,7 @@ class VowpalWabbitRegressor(Estimator):
         learning_rate (float): Boosting learning rate. Defaults to 0.5.
         decay_learning_rate (float): Decay factor for learning_rate. Defaults to 1.0.
         power_t (float): Power on learning rate decay. Defaults to 0.5.
+        passes (int): Number of training passes. Defaults to 1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -22,6 +23,7 @@ class VowpalWabbitRegressor(Estimator):
         "learning_rate": Real(0.0000001, 10),
         "decay_learning_rate": Real(0.0000001, 1.0),
         "power_t": Real(0.01, 1.0),
+        "passes": Integer(1, 10),
     }
     """"""
     model_family = ModelFamily.VOWPAL_WABBIT
@@ -40,6 +42,7 @@ class VowpalWabbitRegressor(Estimator):
         learning_rate=0.5,
         decay_learning_rate=1.0,
         power_t=0.5,
+        passes=1,
         random_seed=0,
         **kwargs,
     ):
@@ -47,6 +50,7 @@ class VowpalWabbitRegressor(Estimator):
             "learning_rate": learning_rate,
             "decay_learning_rate": decay_learning_rate,
             "power_t": power_t,
+            "passes": passes,
         }
         parameters.update(kwargs)
         vw_error_msg = "Vowpal Wabbit is not installed. Please install using `pip install vowpalwabbit.`"

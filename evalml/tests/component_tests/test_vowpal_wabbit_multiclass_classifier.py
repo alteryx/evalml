@@ -32,17 +32,23 @@ def test_vw_parameters():
         "learning_rate": 0.5,
         "decay_learning_rate": 1.0,
         "power_t": 0.5,
+        "passes": 1,
     }
     assert vw.parameters == expected_parameters
 
     vw = VowpalWabbitMulticlassClassifier(
-        loss_function="classic", learning_rate=0.1, decay_learning_rate=1.0, power_t=0.1
+        loss_function="classic",
+        learning_rate=0.1,
+        decay_learning_rate=1.0,
+        power_t=0.1,
+        passes=2,
     )
     expected_parameters = {
         "loss_function": "classic",
         "learning_rate": 0.1,
         "decay_learning_rate": 1.0,
         "power_t": 0.1,
+        "passes": 2,
     }
     assert vw.parameters == expected_parameters
 

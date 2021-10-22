@@ -32,17 +32,23 @@ def test_vw_parameters():
         "learning_rate": 0.5,
         "decay_learning_rate": 1.0,
         "power_t": 0.5,
+        "passes": 1,
     }
     assert vw.parameters == expected_parameters
 
     vw = VowpalWabbitBinaryClassifier(
-        loss_function="classic", learning_rate=0.1, decay_learning_rate=1.0, power_t=0.1
+        loss_function="classic",
+        learning_rate=0.1,
+        decay_learning_rate=1.0,
+        power_t=0.1,
+        passes=2,
     )
     expected_parameters = {
         "loss_function": "classic",
         "learning_rate": 0.1,
         "decay_learning_rate": 1.0,
         "power_t": 0.1,
+        "passes": 2,
     }
     assert vw.parameters == expected_parameters
 
@@ -60,6 +66,7 @@ def test_fit_predict(X_y_binary):
         learning_rate=0.5,
         decay_learning_rate=1.0,
         power_t=0.5,
+        passes=1,
     )
     clf.fit(X, y)
     y_pred = clf.predict(X)
