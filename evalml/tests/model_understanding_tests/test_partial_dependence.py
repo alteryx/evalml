@@ -253,8 +253,8 @@ def test_two_way_partial_dependence_with_ww_category_columns(
     )
     assert "class_label" in part_dep.columns
     assert part_dep["class_label"].nunique() == 1
-    assert len(part_dep.index) == len(set(X["store_id"]))
-    assert len(part_dep.columns) == grid_resolution + 1
+    assert len(part_dep.columns) == len(set(X["store_id"])) + 1
+    assert len(part_dep.index) == grid_resolution
 
 
 def test_partial_dependence_baseline():
