@@ -17,6 +17,7 @@ jobs:
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
+          make installdeps-prophet
           make installdeps
       - name: Detect Dependency Changes
         id: check
