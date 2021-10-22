@@ -10,8 +10,10 @@ Release Notes
     * Fixes
         * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
         * Fixed ``calculate_permutation_importance`` for datetimes on ``StandardScaler`` :pr:`2938`
+        * Fixed ``SelectColumns`` to only select available features for feature selection in ``DefaultAlgorithm`` :pr:`2944`
     * Changes
         * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
+        * Refactored ``OutliersDataCheck`` and ``HighlyNullDataCheck`` to add more descriptive metadata :pr:`2907`
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
         * Updated CI to run doctest (docstring tests) and apply necessary fixes to docstrings :pr:`2933`
