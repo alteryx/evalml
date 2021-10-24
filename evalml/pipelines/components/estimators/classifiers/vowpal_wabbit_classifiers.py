@@ -77,6 +77,7 @@ class VowpalWabbitBinaryClassifier(VowpalWabbitBaseClassifier):
         learning_rate (float): Boosting learning rate. Defaults to 0.5.
         decay_learning_rate (float): Decay factor for learning_rate. Defaults to 1.0.
         power_t (float): Power on learning rate decay. Defaults to 0.5.
+        passes (int): Number of training passes. Defaults to 1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 

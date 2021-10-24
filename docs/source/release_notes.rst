@@ -7,6 +7,7 @@ Release Notes
         * Added ``rows_of_interest`` to pipeline utils :pr:`2908`
         * Added support for woodwork version ``0.8.2`` :pr:`2909`
         * Enhanced the ``DateTimeFeaturizer`` to handle ``NaNs`` in date features :pr:`2909`
+        * Added Vowpal Wabbit regressor and classifiers :pr:`2846`
     * Fixes
         * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
         * Fixed ``calculate_permutation_importance`` for datetimes on ``StandardScaler`` :pr:`2938`
@@ -73,7 +74,6 @@ Release Notes
         * Added the ability of ``AutoMLSearch`` to accept a ``SequentialEngine`` instance as engine input :pr:`2838`
         * Added new label encoder component to EvalML :pr:`2853`
         * Added our own partial dependence implementation :pr:`2834`
-        * Added Vowpal Wabbit classifiers and regressor components :pr:`2846`
     * Fixes
         * Fixed bug where ``calculate_permutation_importance`` was not calculating the right value for pipelines with target transformers :pr:`2782`
         * Fixed bug where transformed target values were not used in ``fit`` for time series pipelines :pr:`2780`

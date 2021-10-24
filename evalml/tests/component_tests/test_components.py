@@ -524,15 +524,17 @@ def test_describe_component():
             learning_rate=0.1,
             decay_learning_rate=1.0,
             power_t=0.1,
+            passes=1,
         )
-        vw_multi_classifier = VowpalWabbitBinaryClassifier(
+        vw_multi_classifier = VowpalWabbitMulticlassClassifier(
             loss_function="classic",
             learning_rate=0.1,
             decay_learning_rate=1.0,
             power_t=0.1,
+            passes=1,
         )
         vw_regressor = VowpalWabbitRegressor(
-            learning_rate=0.1, decay_learning_rate=1.0, power_t=0.1
+            learning_rate=0.1, decay_learning_rate=1.0, power_t=0.1, passes=1
         )
 
         assert vw_binary_classifier.describe(return_dict=True) == {
@@ -542,15 +544,17 @@ def test_describe_component():
                 "learning_rate": 0.1,
                 "decay_learning_rate": 1.0,
                 "power_t": 0.1,
+                "passes": 1,
             },
         }
         assert vw_multi_classifier.describe(return_dict=True) == {
-            "name": "Vowpal Wabbit Binary Classifier",
+            "name": "Vowpal Wabbit Multiclass Classifier",
             "parameters": {
                 "loss_function": "classic",
                 "learning_rate": 0.1,
                 "decay_learning_rate": 1.0,
                 "power_t": 0.1,
+                "passes": 1,
             },
         }
         assert vw_regressor.describe(return_dict=True) == {
@@ -559,6 +563,7 @@ def test_describe_component():
                 "learning_rate": 0.1,
                 "decay_learning_rate": 1.0,
                 "power_t": 0.1,
+                "passes": 1,
             },
         }
     except ImportError:
