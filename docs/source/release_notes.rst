@@ -7,10 +7,13 @@ Release Notes
         * Added ``rows_of_interest`` to pipeline utils :pr:`2908`
         * Added support for woodwork version ``0.8.2`` :pr:`2909`
         * Enhanced the ``DateTimeFeaturizer`` to handle ``NaNs`` in date features :pr:`2909`
+        * Added support for woodwork logical types ``PostalCode``, ``SubRegionCode``, and ``CountryCode`` in model understanding tools :pr:`2946`
+        * Added Vowpal Wabbit regressor and classifiers :pr:`2846`
     * Fixes
         * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
         * Fixed ``calculate_permutation_importance`` for datetimes on ``StandardScaler`` :pr:`2938`
         * Fixed ``SelectColumns`` to only select available features for feature selection in ``DefaultAlgorithm`` :pr:`2944`
+        * Fixed bug where ``Oversampler`` selected ww logical categorical instead of ww semantic category :pr:`2946`
     * Changes
         * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
         * Refactored ``OutliersDataCheck`` and ``HighlyNullDataCheck`` to add more descriptive metadata :pr:`2907`

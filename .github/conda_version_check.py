@@ -4,7 +4,7 @@ import requirements
 import pathlib
 import os
 
-IGNORE_PACKAGES = {"python", "pmdarima", "pyzmq"}
+IGNORE_PACKAGES = {"python", "pmdarima", "pyzmq", "vowpalwabbit"}
 CONDA_TO_PIP_NAME = {"python-kaleido": "kaleido", 'py-xgboost': 'xgboost', 'matplotlib-base': 'matplotlib',
                      'python-graphviz': 'graphviz'}
 
