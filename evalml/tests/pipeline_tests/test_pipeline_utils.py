@@ -243,9 +243,6 @@ def test_make_pipeline(
                 component.name for component in expected_components
             ], test_description
 
-            if drop_col:
-                assert "Drop Columns Transformer" in pipeline.parameters
-
 
 def test_make_pipeline_problem_type_mismatch():
     with pytest.raises(

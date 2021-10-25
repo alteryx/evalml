@@ -16,9 +16,6 @@ from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
-from evalml.automl.automl_algorithm.iterative_algorithm import (
-    _ESTIMATOR_FAMILY_ORDER,
-)
 from evalml.automl.automl_search import build_engine_from_str
 from evalml.automl.callbacks import (
     log_error_callback,
@@ -4909,7 +4906,7 @@ def test_automl_drop_unknown_columns(columns, AutoMLTestEnv, X_y_binary, caplog)
         assert "because they are of 'Unknown'" not in caplog.text
         return
 
-    # assert "because they are of 'Unknown'" in caplog.text
+    assert "because they are of 'Unknown'" in caplog.text
     for pipeline in automl.allowed_pipelines:
         assert pipeline.get_component("Drop Columns Transformer")
         assert "Drop Columns Transformer" in pipeline.parameters
@@ -5074,7 +5071,7 @@ def test_pipeline_parameter_warnings_with_other_types(
 
     def dummy_mock_get_preprocessing_components(*args, **kwargs):
         warnings.warn(UserWarning("dummy test warning"))
-        return ["Imputer"], {}
+        return ["Imputer"]
 
     mock_get_preprocessing_components.side_effect = (
         dummy_mock_get_preprocessing_components
@@ -5344,21 +5341,3 @@ def test_baseline_pipeline_properly_initalized(
 
     baseline_pipeline = automl.get_pipeline(0)
     assert expected_pipeline == baseline_pipeline
-
-
-def test_automl_respects_iterative_pipeline_order(X_y_binary, AutoMLTestEnv):
-
-    X, y = X_y_binary
-    automl = AutoMLSearch(X, y, "binary", engine="sequential", max_iterations=5)
-    env = AutoMLTestEnv("binary")
-    with env.test_context(score_return_value={automl.objective.name: 0.2}):
-        automl.search()
-    searched_model_families = [
-        automl.get_pipeline(search_index).estimator.model_family
-        for search_index in automl.results["search_order"][1:]
-    ]
-    # Check that sorting via the model family order results in the same list.
-    assert searched_model_families == sorted(
-        searched_model_families,
-        key=lambda model_family: _ESTIMATOR_FAMILY_ORDER.index(model_family),
-    )

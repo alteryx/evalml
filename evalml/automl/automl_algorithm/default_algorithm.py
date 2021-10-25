@@ -100,6 +100,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.num_long_explore_pipelines = num_long_explore_pipelines
         self.num_long_pipelines_per_batch = num_long_pipelines_per_batch
         self.top_n = top_n
+        self._set_additional_pipeline_params()
         if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
             raise ValueError(
                 f"If custom_hyperparameters provided, must be of type dict. Received {type(custom_hyperparameters)}"

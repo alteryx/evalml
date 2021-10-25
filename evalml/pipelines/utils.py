@@ -41,7 +41,6 @@ from evalml.pipelines.components import (  # noqa: F401
     Undersampler,
     URLFeaturizer,
 )
-from evalml.pipelines.components.transformers import preprocessing
 from evalml.pipelines.components.transformers.encoders.label_encoder import (
     LabelEncoder,
 )
@@ -76,7 +75,6 @@ def _get_preprocessing_components(
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
     pp_components = []
-    pp_parameters = {}
 
     if is_classification(problem_type):
         pp_components.append(LabelEncoder)
@@ -90,9 +88,6 @@ def _get_preprocessing_components(
     )
     if len(index_and_unknown_columns) > 0:
         pp_components.append(DropColumns)
-        pp_parameters["Drop Columns Transformer"] = {
-            "columns": index_and_unknown_columns
-        }
 
     email_columns = list(X.ww.select("EmailAddress", return_schema=True).columns)
     if len(email_columns) > 0:
@@ -165,7 +160,8 @@ def _get_preprocessing_components(
 
     if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
         pp_components.append(StandardScaler)
-    return pp_components, pp_parameters
+
+    return pp_components
 
 
 def _get_pipeline_base_class(problem_type):
@@ -222,17 +218,9 @@ def make_pipeline(
         raise ValueError(
             f"Sampling is unsupported for problem_type {str(problem_type)}"
         )
-    preprocessing_components, preprocessing_parameters = _get_preprocessing_components(
+    preprocessing_components = _get_preprocessing_components(
         X, y, problem_type, estimator, sampler_name
     )
-
-    parameters = parameters if parameters else {}
-    for component in preprocessing_parameters:
-        if component in parameters:
-            parameters[component].update(preprocessing_parameters[component])
-        else:
-            parameters[component] = preprocessing_parameters[component]
-
     extra_components = extra_components or []
     complete_component_list = preprocessing_components + extra_components + [estimator]
     component_graph = PipelineBase._make_component_dict_from_component_list(
