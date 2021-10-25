@@ -21,6 +21,7 @@ from evalml.pipelines.components.utils import (
 )
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import is_regression
+from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
 
@@ -89,8 +90,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             random_seed=random_seed,
         )
 
-        self.X = X
-        self.y = y
+        self.X = infer_feature_types(X)
+        self.y = infer_feature_types(y)
         self.problem_type = problem_type
         self.sampler_name = sampler_name
 
