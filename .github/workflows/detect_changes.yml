@@ -18,7 +18,6 @@ jobs:
           virtualenv test_python -q
           source test_python/bin/activate
           pip install cmdstan-builder==0.0.8
-          make installdeps-prophet
           make installdeps
       - name: Detect Dependency Changes
         id: check
