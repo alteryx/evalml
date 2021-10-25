@@ -34,3 +34,8 @@ jobs:
           echo Displaying dependencies which have changed, with main on the left and the new branch on the right:
           cat /tmp/dependencies_updated_artifacts/diff.txt
           exit 1
+      - name: Upload dependencies duration artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: deps
+          path: /tmp/dependencies_updated_artifacts/current_dependencies.txt
