@@ -25,16 +25,92 @@ binary = pd.Series([0] * 800 + [1] * 200)
 multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
 
 
+minimum_dependencies_list = [
+    "Stacked Ensemble Regressor",
+    "Stacked Ensemble Classifier",
+    "Vowpal Wabbit Regressor",
+    "ARIMA Regressor",
+    "SVM Regressor",
+    "Time Series Baseline Estimator",
+    "Decision Tree Regressor",
+    "Baseline Regressor",
+    "Extra Trees Regressor",
+    "XGBoost Regressor",
+    "CatBoost Regressor",
+    "Random Forest Regressor",
+    "LightGBM Regressor",
+    "Linear Regressor",
+    "Elastic Net Regressor",
+    "Vowpal Wabbit Multiclass Classifier",
+    "Vowpal Wabbit Binary Classifier",
+    "SVM Classifier",
+    "KNN Classifier",
+    "Decision Tree Classifier",
+    "LightGBM Classifier",
+    "Baseline Classifier",
+    "Extra Trees Classifier",
+    "Elastic Net Classifier",
+    "CatBoost Classifier",
+    "XGBoost Classifier",
+    "Random Forest Classifier",
+    "Logistic Regression Classifier",
+    "Drop Rows Transformer",
+    "URL Featurizer",
+    "Email Featurizer",
+    "Log Transformer",
+    "Polynomial Detrender",
+    "DFS Transformer",
+    "Delayed Feature Transformer",
+    "Text Featurization Component",
+    "LSA Transformer",
+    "Drop Null Columns Transformer",
+    "DateTime Featurization Component",
+    "PCA Transformer",
+    "Linear Discriminant Analysis Transformer",
+    "Select Columns By Type Transformer",
+    "Select Columns Transformer",
+    "Drop Columns Transformer",
+    "Oversampler",
+    "Undersampler",
+    "Standard Scaler",
+    "Target Imputer",
+    "Imputer",
+    "Per Column Imputer",
+    "Simple Imputer",
+    "RF Regressor Select From Model",
+    "RF Classifier Select From Model",
+    "Label Encoder",
+    "Target Encoder",
+    "One Hot Encoder",
+]
+requirements_list = [
+    "XGBoost Regressor",
+    "CatBoost Regressor",
+    "LightGBM Regressor",
+    "LightGBM Classifier",
+    "CatBoost Classifier",
+    "XGBoost Classifier",
+]
+not_supported_in_conda = [
+    "Prophet Regressor",
+    "ARIMA Regressor",
+    "Vowpal Wabbit Binary Classifier",
+    "Vowpal Wabbit Multiclass Classifier",
+    "Vowpal Wabbit Regressor",
+]
+not_supported_in_windows = [
+    "Polynomial Detrender",
+    "Prophet Regressor",
+    "ARIMA Regressor",
+]
+
+
 def test_all_components(
     has_minimal_dependencies,
     is_running_py_39_or_above,
     is_using_conda,
     is_using_windows,
 ):
-    # The total number of minimal components is 42
-    # The total number of components is 54
-    # Depending on the environment the detrender/Arima and/or Prophet will not be installed
-
     if has_minimal_dependencies:
         n_components = 43
     elif is_using_conda:
@@ -51,6 +127,8 @@ def test_all_components(
         n_components = 55
     else:
         n_components = 57
+    print (all_components())
+    assert False # purposefully fail test to see outpout :)
     assert len(all_components()) == n_components
 
 
