@@ -1247,7 +1247,10 @@ class AutoMLSearch:
             raise PipelineNotFoundError(
                 "Pipeline class or parameters not found in automl results"
             )
-        return pipeline.new(parameters, random_seed=self.random_seed)
+        new_pipeline = pipeline.new(parameters, random_seed=self.random_seed)
+        if is_binary(self.problem_type):
+            new_pipeline.threshold = pipeline.threshold
+        return new_pipeline
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
         """Describe a pipeline.
