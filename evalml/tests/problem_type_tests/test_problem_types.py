@@ -24,6 +24,7 @@ def correct_problem_types():
         ProblemTypes.TIME_SERIES_REGRESSION,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.CLUSTERING,
     ]
     yield correct_problem_types
 
@@ -153,6 +154,7 @@ def test_all_problem_types():
         ProblemTypes.TIME_SERIES_REGRESSION,
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.CLUSTERING
     ]
     assert ProblemTypes.all_problem_types == expected
 

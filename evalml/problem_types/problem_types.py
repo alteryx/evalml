@@ -19,6 +19,8 @@ class ProblemTypes(Enum):
     """Time series binary classification problem."""
     TIME_SERIES_MULTICLASS = "time series multiclass"
     """Time series multiclass classification problem."""
+    CLUSTERING = "clustering"
+    """Unsupervised learning using clustering."""
 
     def __str__(self):
         """String representation of the ProblemTypes enum."""
@@ -29,6 +31,7 @@ class ProblemTypes(Enum):
             ProblemTypes.TIME_SERIES_REGRESSION.name: "time series regression",
             ProblemTypes.TIME_SERIES_BINARY.name: "time series binary",
             ProblemTypes.TIME_SERIES_MULTICLASS.name: "time series multiclass",
+            ProblemTypes.CLUSTERING.name: "clustering",
         }
         return problem_type_dict[self.name]
 
