@@ -112,21 +112,21 @@ def test_all_components(
     is_using_windows,
 ):
     if has_minimal_dependencies:
-        n_components = 43
+        n_components = 0
     elif is_using_conda:
         # No prophet, ARIMA, and vowpalwabbit
-        n_components = 52
+        n_components = 0
     elif is_using_windows and not is_running_py_39_or_above:
         # No prophet
-        n_components = 56
+        n_components = 0
     elif is_using_windows and is_running_py_39_or_above:
         # No detrender, no arima, no prophet
-        n_components = 54
+        n_components = 0
     elif not is_using_windows and is_running_py_39_or_above:
         # No detrender or arima
-        n_components = 55
+        n_components = 0
     else:
-        n_components = 57
+        n_components = 0
     print (all_components())
     assert False # purposefully fail test to see outpout :)
     assert len(all_components()) == n_components
