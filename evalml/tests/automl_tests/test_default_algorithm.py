@@ -29,7 +29,7 @@ def test_default_algorithm_init(X_y_binary):
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
-    assert algo.verbose == True
+    assert algo.verbose is True
 
 
 def test_default_algorithm_custom_hyperparameters_error(X_y_binary):
