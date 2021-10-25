@@ -12,3 +12,4 @@ from .time_series_baseline_estimator import TimeSeriesBaselineEstimator
 from .prophet_regressor import ProphetRegressor
 from .svm_regressor import SVMRegressor
 from .arima_regressor import ARIMARegressor
+from .vowpal_wabbit_regressor import VowpalWabbitRegressor

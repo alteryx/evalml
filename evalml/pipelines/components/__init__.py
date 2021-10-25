@@ -26,6 +26,9 @@ from .estimators import (
     SVMClassifier,
     SVMRegressor,
     ARIMARegressor,
+    VowpalWabbitBinaryClassifier,
+    VowpalWabbitMulticlassClassifier,
+    VowpalWabbitRegressor,
 )
 from .transformers import (
     Transformer,
