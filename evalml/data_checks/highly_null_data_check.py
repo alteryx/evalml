@@ -71,7 +71,7 @@ class HighlyNullDataCheck(DataCheck):
             ...                   "data_check_name": "HighlyNullDataCheck",
             ...                   "level": "warning",
             ...                   "code": "HIGHLY_NULL_COLS",
-            ...                   "details": {"columns": ["lots_of_null"], "pct_null_rows": {"lots_of_null": 0.8}, "rows": None}}],
+            ...                   "details": {"columns": ["lots_of_null"], "pct_null_rows": {"lots_of_null": 0.8}, "null_row_indices": {"lots_of_null": [0, 1, 2, 3]}, "rows": None}}],
             ...    "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [0, 1, 2, 3], "columns": None}},
             ...                {"code": "DROP_COL", "metadata": {"columns": ["lots_of_null"], "rows": None}}]}
         """
@@ -109,6 +109,9 @@ class HighlyNullDataCheck(DataCheck):
             for key, value in percent_null_cols.items()
             if value >= self.pct_null_col_threshold and value != 0
         }
+        highly_null_cols_indices = {
+            col_: X[col_][X[col_].isnull()].index.tolist() for col_ in highly_null_cols
+        }
         warning_msg = "Columns {} are {}% or more null"
         if highly_null_cols:
             results["warnings"].append(
@@ -124,6 +127,7 @@ class HighlyNullDataCheck(DataCheck):
                     details={
                         "columns": list(highly_null_cols),
                         "pct_null_rows": highly_null_cols,
+                        "null_row_indices": highly_null_cols_indices,
                     },
                 ).to_dict()
             )

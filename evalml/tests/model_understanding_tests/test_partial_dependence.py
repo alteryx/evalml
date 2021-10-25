@@ -163,6 +163,100 @@ def test_partial_dependence_with_non_numeric_columns(
     assert not part_dep.isnull().any(axis=None)
 
 
+@patch(
+    "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
+    side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
+)
+def test_partial_dependence_with_ww_category_columns(
+    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class
+):
+    X, y = fraud_100
+    X.ww.set_types(
+        logical_types={
+            "store_id": "PostalCode",
+            "country": "CountryCode",
+            "region": "SubRegionCode",
+        }
+    )
+
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+
+    part_dep = partial_dependence(pipeline, X, features="store_id")
+    assert list(part_dep.columns) == [
+        "feature_values",
+        "partial_dependence",
+        "class_label",
+    ]
+    assert len(part_dep["partial_dependence"]) == 11
+    assert len(part_dep["feature_values"]) == 11
+    assert not part_dep.isnull().any(axis=None)
+
+    part_dep = partial_dependence(pipeline, X, features="country")
+    assert list(part_dep.columns) == [
+        "feature_values",
+        "partial_dependence",
+        "class_label",
+    ]
+    assert len(part_dep["partial_dependence"]) == 8
+    assert len(part_dep["feature_values"]) == 8
+    assert not part_dep.isnull().any(axis=None)
+
+    part_dep = partial_dependence(pipeline, X, features="region")
+    assert list(part_dep.columns) == [
+        "feature_values",
+        "partial_dependence",
+        "class_label",
+    ]
+    assert len(part_dep["partial_dependence"]) == 11
+    assert len(part_dep["feature_values"]) == 11
+    assert not part_dep.isnull().any(axis=None)
+
+
+@patch(
+    "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
+    side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
+)
+def test_two_way_partial_dependence_with_ww_category_columns(
+    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class
+):
+    X, y = fraud_100
+    X.ww.set_types(
+        logical_types={
+            "store_id": "PostalCode",
+            "country": "CountryCode",
+            "region": "SubRegionCode",
+        }
+    )
+
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+
+    part_dep = partial_dependence(pipeline, X, features=("store_id", "country"))
+    assert "class_label" in part_dep.columns
+    assert part_dep["class_label"].nunique() == 1
+    assert len(part_dep.index) == len(set(X["store_id"]))
+    assert len(part_dep.columns) == len(set(X["country"])) + 1
+
+    grid_resolution = 5
+    part_dep = partial_dependence(
+        pipeline, X, features=("store_id", "amount"), grid_resolution=grid_resolution
+    )
+    assert "class_label" in part_dep.columns
+    assert part_dep["class_label"].nunique() == 1
+    assert len(part_dep.index) == len(set(X["store_id"]))
+    assert len(part_dep.columns) == grid_resolution + 1
+
+    grid_resolution = 5
+    part_dep = partial_dependence(
+        pipeline, X, features=("amount", "store_id"), grid_resolution=grid_resolution
+    )
+    assert "class_label" in part_dep.columns
+    assert part_dep["class_label"].nunique() == 1
+    assert len(part_dep.columns) == len(set(X["store_id"])) + 1
+    assert len(part_dep.index) == grid_resolution
+
+
 def test_partial_dependence_baseline():
     X = pd.DataFrame([[1, 0], [0, 1]])
     y = pd.Series([0, 1])
@@ -577,6 +671,46 @@ def test_graph_partial_dependence(breast_cancer_local, test_pipeline):
     )
 
 
+@patch(
+    "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
+    side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
+)
+def test_graph_partial_dependence_ww_categories(
+    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class
+):
+    go = pytest.importorskip(
+        "plotly.graph_objects",
+        reason="Skipping plotting test because plotly not installed",
+    )
+    X, y = fraud_100
+    X.ww.set_types(
+        logical_types={
+            "store_id": "PostalCode",
+            "country": "CountryCode",
+            "region": "SubRegionCode",
+        }
+    )
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+
+    for feat in ["store_id", "country", "region"]:
+        fig = graph_partial_dependence(pipeline, X, features=feat)
+        assert isinstance(fig, go.Figure)
+        fig_dict = fig.to_dict()
+
+        assert fig_dict["data"][0]["type"] == "bar"
+
+        assert fig_dict["layout"]["title"]["text"] == f"Partial Dependence of '{feat}'"
+        assert len(fig_dict["data"]) == 1
+        assert fig_dict["data"][0]["name"] == "Partial Dependence"
+
+        part_dep_data = partial_dependence(pipeline, X, features=feat)
+        assert np.array_equal(fig_dict["data"][0]["x"], part_dep_data["feature_values"])
+        assert np.array_equal(
+            fig_dict["data"][0]["y"], part_dep_data["partial_dependence"].values
+        )
+
+
 def test_graph_two_way_partial_dependence(breast_cancer_local, test_pipeline):
     X, y = breast_cancer_local
 
@@ -604,6 +738,76 @@ def test_graph_two_way_partial_dependence(breast_cancer_local, test_pipeline):
     part_dep_data.drop(columns=["class_label"], inplace=True)
     assert np.array_equal(fig_dict["data"][0]["x"], part_dep_data.columns)
     assert np.array_equal(fig_dict["data"][0]["y"], part_dep_data.index)
+    assert np.array_equal(fig_dict["data"][0]["z"], part_dep_data.values)
+
+
+@patch(
+    "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
+    side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
+)
+def test_graph_two_way_partial_dependence_ww_categories(
+    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class
+):
+    go = pytest.importorskip(
+        "plotly.graph_objects",
+        reason="Skipping plotting test because plotly not installed",
+    )
+    X, y = fraud_100
+    X.ww.set_types(
+        logical_types={
+            "store_id": "PostalCode",
+            "country": "CountryCode",
+            "region": "SubRegionCode",
+        }
+    )
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+
+    # Two categorical columns
+    fig = graph_partial_dependence(pipeline, X, features=("country", "region"))
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert (
+        fig_dict["layout"]["title"]["text"]
+        == "Partial Dependence of 'country' vs. 'region'"
+    )
+    assert len(fig_dict["data"]) == 1
+    assert fig_dict["data"][0]["name"] == "Partial Dependence"
+
+    part_dep_data = partial_dependence(pipeline, X, features=("country", "region"))
+    part_dep_data.drop(columns=["class_label"], inplace=True)
+    assert np.array_equal(fig_dict["data"][0]["z"], part_dep_data.values)
+
+    # One categorical column, entered first
+    fig = graph_partial_dependence(pipeline, X, features=("country", "lat"))
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert (
+        fig_dict["layout"]["title"]["text"]
+        == "Partial Dependence of 'country' vs. 'lat'"
+    )
+    assert len(fig_dict["data"]) == 1
+    assert fig_dict["data"][0]["name"] == "Partial Dependence"
+
+    part_dep_data = partial_dependence(pipeline, X, features=("country", "lat"))
+    part_dep_data.drop(columns=["class_label"], inplace=True)
+    assert np.array_equal(fig_dict["data"][0]["x"], part_dep_data.columns)
+    assert np.array_equal(fig_dict["data"][0]["z"], part_dep_data.values)
+
+    # One categorical column, entered second
+    fig = graph_partial_dependence(pipeline, X, features=("lat", "country"))
+    assert isinstance(fig, go.Figure)
+    fig_dict = fig.to_dict()
+    assert (
+        fig_dict["layout"]["title"]["text"]
+        == "Partial Dependence of 'country' vs. 'lat'"
+    )
+    assert len(fig_dict["data"]) == 1
+    assert fig_dict["data"][0]["name"] == "Partial Dependence"
+
+    part_dep_data = partial_dependence(pipeline, X, features=("country", "lat"))
+    part_dep_data.drop(columns=["class_label"], inplace=True)
+    assert np.array_equal(fig_dict["data"][0]["x"], part_dep_data.columns)
     assert np.array_equal(fig_dict["data"][0]["z"], part_dep_data.values)
 
 
