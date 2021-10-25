@@ -70,6 +70,13 @@ from evalml.pipelines.components.ensemble import (
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
 )
+from evalml.pipelines.components.estimators.classifiers.vowpal_wabbit_classifiers import (
+    VowpalWabbitBinaryClassifier,
+    VowpalWabbitMulticlassClassifier,
+)
+from evalml.pipelines.components.estimators.regressors.vowpal_wabbit_regressor import (
+    VowpalWabbitRegressor,
+)
 from evalml.pipelines.components.transformers.encoders.label_encoder import (
     LabelEncoder,
 )
@@ -507,6 +514,56 @@ def test_describe_component():
                 "seasonality_mode": "additive",
                 "seasonality_prior_scale": 10,
                 "stan_backend": "CMDSTANPY",
+            },
+        }
+    except ImportError:
+        pass
+    try:
+        vw_binary_classifier = VowpalWabbitBinaryClassifier(
+            loss_function="classic",
+            learning_rate=0.1,
+            decay_learning_rate=1.0,
+            power_t=0.1,
+            passes=1,
+        )
+        vw_multi_classifier = VowpalWabbitMulticlassClassifier(
+            loss_function="classic",
+            learning_rate=0.1,
+            decay_learning_rate=1.0,
+            power_t=0.1,
+            passes=1,
+        )
+        vw_regressor = VowpalWabbitRegressor(
+            learning_rate=0.1, decay_learning_rate=1.0, power_t=0.1, passes=1
+        )
+
+        assert vw_binary_classifier.describe(return_dict=True) == {
+            "name": "Vowpal Wabbit Binary Classifier",
+            "parameters": {
+                "loss_function": "classic",
+                "learning_rate": 0.1,
+                "decay_learning_rate": 1.0,
+                "power_t": 0.1,
+                "passes": 1,
+            },
+        }
+        assert vw_multi_classifier.describe(return_dict=True) == {
+            "name": "Vowpal Wabbit Multiclass Classifier",
+            "parameters": {
+                "loss_function": "classic",
+                "learning_rate": 0.1,
+                "decay_learning_rate": 1.0,
+                "power_t": 0.1,
+                "passes": 1,
+            },
+        }
+        assert vw_regressor.describe(return_dict=True) == {
+            "name": "Vowpal Wabbit Regressor",
+            "parameters": {
+                "learning_rate": 0.1,
+                "decay_learning_rate": 1.0,
+                "power_t": 0.1,
+                "passes": 1,
             },
         }
     except ImportError:
@@ -1077,6 +1134,9 @@ def test_all_estimators_check_fit(
             StackedEnsembleClassifier,
             StackedEnsembleRegressor,
             TimeSeriesBaselineEstimator,
+            VowpalWabbitBinaryClassifier,
+            VowpalWabbitMulticlassClassifier,
+            VowpalWabbitRegressor,
         ]
     ] + [test_estimator_needs_fitting_false]
     for component_class in estimators_to_check:
@@ -1178,8 +1238,16 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                 return_dict=True
             )
             if issubclass(component_class, Estimator) and not (
-                isinstance(component, StackedEnsembleClassifier)
-                or isinstance(component, StackedEnsembleRegressor)
+                isinstance(
+                    component,
+                    (
+                        StackedEnsembleClassifier,
+                        StackedEnsembleRegressor,
+                        VowpalWabbitBinaryClassifier,
+                        VowpalWabbitMulticlassClassifier,
+                        VowpalWabbitRegressor,
+                    ),
+                )
             ):
                 assert (
                     component.feature_importance == loaded_component.feature_importance
