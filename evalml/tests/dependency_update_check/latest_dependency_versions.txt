@@ -1,6 +1,7 @@
 catboost==1.0.0
 click==8.0.3
 cloudpickle==2.0.0
+cmdstan-builder==0.0.8
 colorama==0.4.4
 dask==2021.10.0
 featuretools==1.0.0
