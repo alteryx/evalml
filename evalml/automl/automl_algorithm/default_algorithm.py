@@ -104,6 +104,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.num_long_explore_pipelines = num_long_explore_pipelines
         self.num_long_pipelines_per_batch = num_long_pipelines_per_batch
         self.top_n = top_n
+        self.verbose = verbose
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
         else:

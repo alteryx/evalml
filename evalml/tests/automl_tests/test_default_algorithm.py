@@ -22,13 +22,14 @@ def test_default_algorithm_init(X_y_binary):
     problem_type = "binary"
     sampler_name = "Undersampler"
 
-    algo = DefaultAlgorithm(X, y, problem_type, sampler_name)
+    algo = DefaultAlgorithm(X, y, problem_type, sampler_name, verbose=True)
 
     assert algo.problem_type == problem_type
     assert algo.sampler_name == sampler_name
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
+    assert algo.verbose == True
 
 
 def test_default_algorithm_custom_hyperparameters_error(X_y_binary):
