@@ -1,4 +1,7 @@
 """Recommended action returned by a DataCheck."""
+from types import MethodWrapperType
+
+from evalml.data_checks.data_check_action_code import DataCheckActionCode
 
 
 class DataCheckAction:
@@ -32,3 +35,10 @@ class DataCheckAction:
         """Return a dictionary form of the data check action."""
         action_dict = {"code": self.action_code.name, "metadata": self.metadata}
         return action_dict
+
+    @staticmethod
+    def convert_dict_to_action(action_dict):
+        return DataCheckAction(
+            action_code=DataCheckActionCode._all_values[action_dict["code"]],
+            metadata=action_dict["metadata"],
+        )

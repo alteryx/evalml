@@ -17,6 +17,7 @@ from evalml.data_checks import (
     TargetDistributionDataCheck,
 )
 from evalml.data_checks.highly_null_data_check import HighlyNullDataCheck
+from evalml.pipelines.components import DropColumns
 from evalml.pipelines.utils import _make_component_list_from_actions
 
 
@@ -49,20 +50,31 @@ def test_return_row_removal():
     assert data_checks_output == {
         "warnings": [
             DataCheckWarning(
-                message="Column 'all_null' is 95.0% or more null",
+                message="Columns 'all_null' are 95.0% or more null",
                 data_check_name=HighlyNullDataCheck.name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-                details={"column": "all_null", "pct_null_rows": 1.0},
+                details={
+                    "columns": ["all_null"],
+                    "pct_null_rows": {"all_null": 1.0},
+                    "null_row_indices": {"all_null": [0, 1, 2, 3, 4]},
+                },
             ).to_dict()
         ],
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "all_null"}
+                DataCheckActionCode.DROP_COL, metadata={"columns": ["all_null"]}
             ).to_dict(),
         ],
     }
-    assert _make_component_list_from_actions(data_checks_output["actions"]) == []
+    actions = [
+        DataCheckAction.convert_dict_to_action(action)
+        for action in data_checks_output["actions"]
+    ]
+
+    assert _make_component_list_from_actions(actions) == [
+        DropColumns(columns=["all_null"])
+    ]
 
 
 def test_impute_col():
