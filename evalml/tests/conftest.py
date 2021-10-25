@@ -53,7 +53,8 @@ def pytest_configure(config):
 def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
     est_parameters = (
         {estimator.name: {"n_jobs": 1}}
-        if estimator.model_family not in [ModelFamily.SVM, ModelFamily.DECISION_TREE]
+        if estimator.model_family
+        not in [ModelFamily.SVM, ModelFamily.DECISION_TREE, ModelFamily.VOWPAL_WABBIT]
         else {}
     )
 

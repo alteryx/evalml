@@ -10,3 +10,7 @@ from .lightgbm_classifier import LightGBMClassifier
 from .decision_tree_classifier import DecisionTreeClassifier
 from .kneighbors_classifier import KNeighborsClassifier
 from .svm_classifier import SVMClassifier
+from .vowpal_wabbit_classifiers import (
+    VowpalWabbitBinaryClassifier,
+    VowpalWabbitMulticlassClassifier,
+)

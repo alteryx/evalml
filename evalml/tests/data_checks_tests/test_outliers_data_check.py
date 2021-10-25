@@ -2,6 +2,7 @@ import string
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from evalml.data_checks import (
     DataCheckAction,
@@ -225,4 +226,35 @@ def test_outliers_data_check_warnings_has_nan():
                 DataCheckActionCode.DROP_ROWS, metadata={"rows": [3, 5, 10]}
             ).to_dict()
         ],
+    }
+
+
+@pytest.mark.parametrize("data_type", ["int", "mixed"])
+def test_boxplot_stats(data_type):
+    test = pd.Series(
+        [32, 33, 34, None, 96, 36, 37, 1.5 if data_type == "mixed" else 1, 2]
+    )
+
+    quantiles = test.quantile([0.25, 0.5, 0.75]).to_dict()
+    iqr = quantiles[0.75] - quantiles[0.25]
+    field_bounds = (quantiles[0.25] - (iqr * 1.5), quantiles[0.75] + (iqr * 1.5))
+    pct_outliers = (
+        len(test[test <= field_bounds[0]].tolist())
+        + len(test[test >= field_bounds[1]].tolist())
+    ) / test.count()
+
+    assert OutliersDataCheck.get_boxplot_data(test) == {
+        "score": OutliersDataCheck._no_outlier_prob(test.count(), pct_outliers),
+        "pct_outliers": pct_outliers,
+        "values": {
+            "q1": quantiles[0.25],
+            "median": quantiles[0.5],
+            "q3": quantiles[0.75],
+            "low_bound": field_bounds[0],
+            "high_bound": field_bounds[1],
+            "low_values": test[test < field_bounds[0]].tolist(),
+            "high_values": test[test > field_bounds[1]].tolist(),
+            "low_indices": test[test < field_bounds[0]].index.tolist(),
+            "high_indices": test[test > field_bounds[1]].index.tolist(),
+        },
     }

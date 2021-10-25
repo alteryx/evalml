@@ -44,6 +44,9 @@ class ModelFamily(Enum):
     PROPHET = "prophet"
     """Prophet model family."""
 
+    VOWPAL_WABBIT = "vowpal_wabbit"
+    """Vowpal Wabbit model family."""
+
     NONE = "none"
     """None"""
 
