@@ -45,22 +45,12 @@ jobs:
           # "!" negates return code. exit nonzero if any of these deps are found
           ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
           exit $?
-      - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel') }}
+      - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-integration') }}
         name: Installing Dependencies
         run: |
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
-          make installdeps
-          make installdeps-test
-          pip freeze
-      - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-automl' || matrix.command == 'git-test-prophet') }}
-        name: Installing Dependencies and Prophet
-        run: |
-          pip install virtualenv
-          virtualenv test_python -q
-          source test_python/bin/activate
-          pip install cmdstan-builder==0.0.8
           make installdeps
           make installdeps-test
           pip freeze
