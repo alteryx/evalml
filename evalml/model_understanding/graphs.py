@@ -516,6 +516,15 @@ def _is_feature_of_type(feature, X, ltype):
     return is_type
 
 
+def _is_feature_of_semantic_type(feature, X, stype):
+    """Determine whether the feature the user passed to partial dependence is a certain Woodwork semantic type."""
+    if isinstance(feature, int):
+        is_type = stype in X.ww.semantic_tags[X.columns[feature]]
+    else:
+        is_type = stype in X.ww.semantic_tags[feature]
+    return is_type
+
+
 def _put_categorical_feature_first(features, first_feature_categorical):
     """If the user is doing a two-way partial dependence plot and one of the features is categorical, we need to ensure the categorical feature is the first element in the tuple that's passed to sklearn.
 
@@ -639,16 +648,13 @@ def partial_dependence(
 
         if isinstance(features, (list, tuple)):
             is_categorical = [
-                _is_feature_of_type(f, X, ww.logical_types.Categorical)
-                for f in features
+                _is_feature_of_semantic_type(f, X, "category") for f in features
             ]
             is_datetime = [
                 _is_feature_of_type(f, X, ww.logical_types.Datetime) for f in features
             ]
         else:
-            is_categorical = [
-                _is_feature_of_type(features, X, ww.logical_types.Categorical)
-            ]
+            is_categorical = [_is_feature_of_semantic_type(features, X, "category")]
             is_datetime = [_is_feature_of_type(features, X, ww.logical_types.Datetime)]
 
         if isinstance(features, (list, tuple)):
@@ -695,7 +701,7 @@ def partial_dependence(
                 code=PartialDependenceErrorCode.INVALID_FEATURE_TYPE,
             )
 
-        X_cats = X_features.ww.select("categorical")
+        X_cats = X_features.ww.select("category")
         X_dt = X_features.ww.select("datetime")
 
         if any(is_categorical):
@@ -939,7 +945,7 @@ def graph_partial_dependence(
     if isinstance(features, (list, tuple)):
         mode = "two-way"
         is_categorical = [
-            _is_feature_of_type(f, X, ww.logical_types.Categorical) for f in features
+            _is_feature_of_semantic_type(f, X, "category") for f in features
         ]
         if any(is_categorical):
             features = _put_categorical_feature_first(features, is_categorical[0])
@@ -950,7 +956,7 @@ def graph_partial_dependence(
             )
     elif isinstance(features, (int, str)):
         mode = "one-way"
-        is_categorical = _is_feature_of_type(features, X, ww.logical_types.Categorical)
+        is_categorical = _is_feature_of_semantic_type(features, X, "category")
 
     _go = import_or_raise(
         "plotly.graph_objects", error_msg="Cannot find dependency plotly.graph_objects"
