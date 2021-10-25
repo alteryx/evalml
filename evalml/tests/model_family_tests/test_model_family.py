@@ -19,6 +19,7 @@ def correct_model_families():
         ModelFamily.SVM,
         ModelFamily.ARIMA,
         ModelFamily.PROPHET,
+        ModelFamily.VOWPAL_WABBIT,
         ModelFamily.NONE,
     ]
     yield correct_model_families
@@ -39,6 +40,7 @@ def test_handle_string(correct_model_families):
         "svm",
         "ARIMA",
         "prophet",
+        "vowpal_wabbit",
         "none",
     ]
     for model_family in zip(model_families, correct_model_families):
