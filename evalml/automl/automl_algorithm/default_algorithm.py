@@ -1,5 +1,6 @@
 """An automl algorithm that consists of two modes: fast and long, where fast is a subset of long."""
 import inspect
+import logging
 
 import numpy as np
 from skopt.space import Categorical, Integer, Real
@@ -20,6 +21,7 @@ from evalml.pipelines.components.utils import (
 )
 from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import is_regression
+from evalml.utils.logger import get_logger
 
 
 class DefaultAlgorithm(AutoMLAlgorithm):
@@ -78,6 +80,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         top_n=3,
         num_long_explore_pipelines=50,
         num_long_pipelines_per_batch=10,
+        verbose=False,
     ):
         super().__init__(
             allowed_pipelines=[],
@@ -100,6 +103,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.num_long_explore_pipelines = num_long_explore_pipelines
         self.num_long_pipelines_per_batch = num_long_pipelines_per_batch
         self.top_n = top_n
+        if verbose:
+            self.logger = get_logger(f"{__name__}.verbose")
+        else:
+            self.logger = logging.getLogger(__name__)
+
         self._set_additional_pipeline_params()
         if custom_hyperparameters and not isinstance(custom_hyperparameters, dict):
             raise ValueError(

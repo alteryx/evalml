@@ -114,8 +114,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         )
 
         self.allowed_component_graphs = allowed_component_graphs
-        self._create_pipelines()
         self._set_additional_pipeline_params()
+        self._create_pipelines()
 
         super().__init__(
             allowed_pipelines=self.allowed_pipelines,

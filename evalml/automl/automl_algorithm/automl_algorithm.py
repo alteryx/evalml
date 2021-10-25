@@ -138,9 +138,7 @@ class AutoMLAlgorithm(ABC):
         index_and_unknown_columns = list(
             self.X.ww.select(["index", "unknown"], return_schema=True).columns
         )
-        unknown_columns = list(
-            self.X.ww.select("unknown", return_schema=True).columns
-        )
+        unknown_columns = list(self.X.ww.select("unknown", return_schema=True).columns)
         index_and_unknown_columns = index_and_unknown_columns
         if len(index_and_unknown_columns) > 0 and drop_columns is None:
             self._pipeline_params["Drop Columns Transformer"] = {
