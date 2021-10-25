@@ -1,3 +1,4 @@
 """Data splitter classes."""
-from .training_validation_split import NoSplit, TrainingValidationSplit
+from .no_split import NoSplit
+from .training_validation_split import TrainingValidationSplit
 from .time_series_split import TimeSeriesSplit
