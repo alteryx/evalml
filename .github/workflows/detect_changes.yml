@@ -17,6 +17,7 @@ jobs:
           pip install virtualenv
           virtualenv test_python -q
           source test_python/bin/activate
+          pip install cmdstan-builder==0.0.8
           make installdeps-prophet
           make installdeps
       - name: Detect Dependency Changes
@@ -37,5 +38,5 @@ jobs:
       - name: Upload dependencies duration artifact
         uses: actions/upload-artifact@v2
         with:
-          name: deps
+          name: current_deps
           path: /tmp/dependencies_updated_artifacts/current_dependencies.txt
