@@ -1795,6 +1795,90 @@ def test_explain_predictions_url_email(df_with_url_and_email, algorithm):
     )
 
 
+@pytest.mark.parametrize("algorithm", algorithms)
+def test_explain_predictions_postalcodes(
+    algorithm, fraud_100, logistic_regression_binary_pipeline_class
+):
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
+    X, y = fraud_100
+    X.ww.set_types(
+        logical_types={
+            "store_id": "PostalCode",
+            "country": "CountryCode",
+            "region": "SubRegionCode",
+        }
+    )
+
+    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline.fit(X, y)
+    explanations = explain_predictions_best_worst(
+        pipeline,
+        X,
+        y,
+        output_format="dict",
+        num_to_explain=1,
+        top_k_features=X.shape[0],
+        algorithm=algorithm,
+    )
+    assert (
+        "store_id"
+        in explanations["explanations"][0]["explanations"][0]["feature_names"]
+    )
+    assert (
+        "country" in explanations["explanations"][0]["explanations"][0]["feature_names"]
+    )
+    assert (
+        "region" in explanations["explanations"][0]["explanations"][0]["feature_names"]
+    )
+    assert (
+        "store_id"
+        in explanations["explanations"][1]["explanations"][0]["feature_names"]
+    )
+    assert (
+        "country" in explanations["explanations"][1]["explanations"][0]["feature_names"]
+    )
+    assert (
+        "region" in explanations["explanations"][1]["explanations"][0]["feature_names"]
+    )
+    assert (
+        not pd.Series(
+            explanations["explanations"][0]["explanations"][0][
+                "qualitative_explanation"
+            ]
+        )
+        .isnull()
+        .any()
+    )
+    assert (
+        not pd.Series(
+            explanations["explanations"][1]["explanations"][0][
+                "qualitative_explanation"
+            ]
+        )
+        .isnull()
+        .any()
+    )
+
+    explanations = explain_predictions(
+        pipeline,
+        X,
+        y,
+        output_format="dataframe",
+        indices_to_explain=[0],
+        top_k_features=X.shape[0],
+        algorithm=algorithm,
+    )
+    assert "store_id" in list(explanations["feature_names"])
+    assert "country" in list(explanations["feature_names"])
+    assert "region" in list(explanations["feature_names"])
+    assert explanations["feature_names"].isnull().sum() == 0
+    assert explanations["feature_values"].isnull().sum() == 0
+
+
 @pytest.mark.parametrize(
     "pipeline_class_and_estimator, algorithm",
     product(pipeline_test_cases, algorithms),
