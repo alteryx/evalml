@@ -1,4 +1,4 @@
-name: Integration tests, linux, latest dependencies
+name: Integration tests, linux
 
 on:
   pull_request:
@@ -8,8 +8,8 @@ on:
       - main
 
 jobs:
-  unit_tests:
-    name: ${{ matrix.python_version }} unit ${{matrix.command}} tests, Core Dependencies (${{ matrix.core_dependencies }})
+  integration_tests:
+    name: ${{ matrix.python_version }} unit ${{matrix.command}} tests
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -32,20 +32,6 @@ jobs:
           fetch-depth: 2
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
-      - if: ${{ matrix.core_dependencies }}
-        name: Installing Core Dependencies
-        run: |
-          pip install virtualenv
-          virtualenv test_python -q
-          source test_python/bin/activate
-          pip install --upgrade pip -q
-          pip install -e . --no-dependencies
-          pip install -r core-requirements.txt
-          pip install -r test-requirements.txt
-          # "!" negates return code. exit nonzero if any of these deps are found
-          ! pip freeze | grep -E "xgboost|catboost|lightgbm|plotly|ipywidgets|category_encoders"
-          exit $?
-      - if: ${{ !matrix.core_dependencies && (matrix.command == 'git-test-integration') }}
         name: Installing Dependencies
         run: |
           pip install virtualenv
@@ -54,11 +40,7 @@ jobs:
           make installdeps
           make installdeps-test
           pip freeze
-      - name: Erase Coverage
-        run: |
-          source test_python/bin/activate
-          coverage erase
-      - name: Run unit tests
+      - name: Run integration tests
         run: |
           source test_python/bin/activate
           make ${{matrix.command}}
@@ -67,10 +49,3 @@ jobs:
         with:
           name: pytest-duration-report
           path: test-reports/${{matrix.command}}-junit.xml
-      - name: install coverage
-        run: pip install coverage
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          fail_ci_if_error: true
