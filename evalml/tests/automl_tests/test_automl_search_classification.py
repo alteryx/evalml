@@ -484,6 +484,32 @@ def test_non_optimizable_threshold(AutoMLTestEnv, X_y_binary):
     )
 
 
+def test_optimize_threshold_maintained(AutoMLTestEnv, X_y_binary):
+    X, y = X_y_binary
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        objective="precision",
+        max_iterations=1,
+        optimize_thresholds=True,
+    )
+    env = AutoMLTestEnv("binary")
+    with env.test_context(
+        score_return_value={"precision": 1.0},
+        optimize_threshold_return_value=0.8,
+    ):
+        automl.search()
+    assert automl.best_pipeline.threshold == 0.8
+
+    clone = automl.best_pipeline.clone()
+    assert clone.threshold == 0.8
+
+    best_pipeline_id = automl.rankings["id"][0]
+    best_get = automl.get_pipeline(best_pipeline_id)
+    assert best_get.threshold == 0.8
+
+
 def test_describe_pipeline_objective_ordered(X_y_binary, caplog):
     X, y = X_y_binary
     automl = AutoMLSearch(
