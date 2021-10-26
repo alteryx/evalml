@@ -115,8 +115,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - python_version: "3.8"
-            command: 'git-test-integration'
+          - python_version: ["3.8"]
 
     steps:
       - name: Set up Python ${{ matrix.python_version }}
@@ -142,12 +141,12 @@ jobs:
       - name: Run integration tests
         run: |
           source test_python/bin/activate
-          make ${{matrix.command}}
+          make 'git-test-integration'
       - name: Upload pytest duration artifact
         uses: actions/upload-artifact@v2
         with:
           name: pytest-duration-report
-          path: test-reports/${{matrix.command}}-junit.xml
+          path: test-reports/git-test-integration-junit.xml
       - name: install coverage
         run: pip install coverage
       - name: Upload coverage to Codecov
