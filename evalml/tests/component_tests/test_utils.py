@@ -137,8 +137,6 @@ def test_all_components(
     print (all_components())
     all_component_names = [component.name for component in all_components()]
     assert set(all_component_names) == set(expected_components)
-    assert False # purposefully fail test to see output :)
-    assert len(all_components()) == n_components
 
 
 def test_handle_component_class_names():
