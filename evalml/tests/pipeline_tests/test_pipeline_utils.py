@@ -272,17 +272,19 @@ def test_make_pipeline_problem_type_mismatch():
 def test_make_component_list_from_actions():
     assert _make_component_list_from_actions([]) == []
 
-    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some col"})]
+    actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ["some col"]})]
     assert _make_component_list_from_actions(actions) == [
         DropColumns(columns=["some col"])
     ]
 
     actions = [
-        DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "some col"}),
+        DataCheckAction(
+            DataCheckActionCode.DROP_COL, metadata={"columns": ["some col"]}
+        ),
         DataCheckAction(
             DataCheckActionCode.IMPUTE_COL,
             metadata={
-                "column": None,
+                "columns": None,
                 "is_target": True,
                 "impute_strategy": "most_frequent",
             },
@@ -298,8 +300,8 @@ def test_make_component_list_from_actions():
 
 def test_make_component_list_from_actions_with_duplicate_actions():
     actions = [
-        DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some col"}),
-        DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some other col"}),
+        DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ["some col"]}),
+        DataCheckAction(DataCheckActionCode.DROP_COL, {"columns": ["some other col"]}),
     ]
     assert _make_component_list_from_actions(actions) == [
         DropColumns(columns=["some col", "some other col"])

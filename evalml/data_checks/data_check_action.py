@@ -38,6 +38,23 @@ class DataCheckAction:
 
     @staticmethod
     def convert_dict_to_action(action_dict):
+        """Convert a dictionary into a DataCheckAction.
+
+        Args:
+            action_dict: Dictionary to convert into action. Should have keys "code" and "metadata".
+        """
+        if "code" not in action_dict or "metadata" not in action_dict:
+            raise ValueError(
+                "The input dictionary should have the keys `code` and `metadata`."
+            )
+        if (
+            "columns" not in action_dict["metadata"]
+            or "rows" not in action_dict["metadata"]
+        ):
+            raise ValueError(
+                "The metadata dictionary should have the keys `columns` and `rows`. Set to None if not using."
+            )
+
         return DataCheckAction(
             action_code=DataCheckActionCode._all_values[action_dict["code"]],
             metadata=action_dict["metadata"],
