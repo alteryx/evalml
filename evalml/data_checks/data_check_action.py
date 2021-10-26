@@ -1,5 +1,4 @@
 """Recommended action returned by a DataCheck."""
-from types import MethodWrapperType
 
 from evalml.data_checks.data_check_action_code import DataCheckActionCode
 
@@ -42,6 +41,12 @@ class DataCheckAction:
 
         Args:
             action_dict: Dictionary to convert into action. Should have keys "code" and "metadata".
+
+        Raises:
+            ValueError: If input dictionary does not have keys `code` and `metadata` and if the `metadata` dictionary does not have keys `columns` and `rows`.
+
+        Returns:
+            DataCheckAction object from the input dictionary.
         """
         if "code" not in action_dict or "metadata" not in action_dict:
             raise ValueError(

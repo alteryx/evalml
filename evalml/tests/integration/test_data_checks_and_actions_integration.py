@@ -1,5 +1,3 @@
-## Test data checks flow:
-## User runs data checks. Gets actions as a result. Uses it to create components. (Eventually pass to AutoML.)
 import numpy as np
 import pandas as pd
 import woodwork as ww
@@ -7,18 +5,9 @@ from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.automl import get_default_primary_search_objective
 from evalml.data_checks import (
-    ClassImbalanceDataCheck,
-    DataCheck,
     DataCheckAction,
-    DataCheckActionCode,
-    DataCheckError,
-    DataCheckMessageCode,
-    DataChecks,
-    DataCheckWarning,
-    DateTimeFormatDataCheck,
     DefaultDataChecks,
     OutliersDataCheck,
-    TargetDistributionDataCheck,
 )
 from evalml.data_checks.highly_null_data_check import HighlyNullDataCheck
 from evalml.data_checks.invalid_targets_data_check import (
@@ -42,7 +31,7 @@ def test_data_checks_with_healthy_data(X_y_binary):
     assert _make_component_list_from_actions(data_check_output["actions"]) == []
 
 
-def test_data_checks_return_drop_cols():
+def test_data_checks_suggests_drop_cols():
     X = pd.DataFrame(
         {
             "lots_of_null": [None, 2, None, 3, 5],
@@ -103,7 +92,7 @@ def test_data_checks_impute_cols():
     assert_series_equal(y_expected, y_t)
 
 
-def test_data_checks_returns_drop_rows():
+def test_data_checks_suggests_drop_rows():
     a = np.arange(10) * 0.01
     data = np.tile(a, (100, 10))
 
@@ -122,7 +111,6 @@ def test_data_checks_returns_drop_rows():
         DataCheckAction.convert_dict_to_action(action)
         for action in data_checks_output["actions"]
     ]
-
     action_components = _make_component_list_from_actions(actions)
     assert action_components == [DropRowsTransformer()]
 
@@ -142,7 +130,3 @@ def test_data_checks_returns_drop_rows():
         X_t, y_t = component.fit_transform(X_t, y_t)
     assert_frame_equal(X_expected, X_t)
     assert_series_equal(y_expected, y_t)
-
-
-def test_transform_target():
-    pass
