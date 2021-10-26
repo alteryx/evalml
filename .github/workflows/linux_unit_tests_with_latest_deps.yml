@@ -107,8 +107,9 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           fail_ci_if_error: true
+
   integration_tests:
-    name: ${{ matrix.python_version }} unit ${{matrix.command}} tests
+    name: ${{ matrix.python_version }} integration tests
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
