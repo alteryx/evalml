@@ -11,6 +11,7 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
+    components,
 )
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
@@ -35,11 +36,11 @@ from evalml.pipelines.components.transformers.encoders.label_encoder import (
 )
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
-    _make_component_list_from_actions,
     generate_pipeline_code,
     get_estimators,
     is_classification,
     make_pipeline,
+    make_pipeline_from_actions,
     rows_of_interest,
 )
 from evalml.problem_types import ProblemTypes, is_regression, is_time_series
@@ -269,11 +270,16 @@ def test_make_pipeline_problem_type_mismatch():
         make_pipeline(pd.DataFrame(), pd.Series(), Transformer, ProblemTypes.MULTICLASS)
 
 
-def test_make_component_list_from_actions():
-    assert _make_component_list_from_actions([]) == []
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
+def test_make_pipeline_from_actions(problem_type):
+    base_class = _get_pipeline_base_class(problem_type)
+
+    assert make_pipeline_from_actions(problem_type, []) == base_class(
+        component_graph={}
+    )
 
     actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some col"})]
-    assert _make_component_list_from_actions(actions) == [
+    assert make_pipeline_from_actions(problem_type, actions) == [
         DropColumns(columns=["some col"])
     ]
 
@@ -289,26 +295,29 @@ def test_make_component_list_from_actions():
         ),
         DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [1, 2]}),
     ]
-    assert _make_component_list_from_actions(actions) == [
+    assert make_pipeline_from_actions(problem_type, actions) == [
         TargetImputer(impute_strategy="most_frequent"),
         DropRowsTransformer(indices_to_drop=[1, 2]),
         DropColumns(columns=["some col"]),
     ]
 
 
-def test_make_component_list_from_actions_with_duplicate_actions():
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
+def test_make_pipeline_from_actions_with_duplicate_actions(problem_type):
+    base_class = _get_pipeline_base_class(problem_type)
+
     actions = [
         DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some col"}),
         DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some other col"}),
     ]
-    assert _make_component_list_from_actions(actions) == [
+    assert make_pipeline_from_actions(problem_type, actions) == [
         DropColumns(columns=["some col", "some other col"])
     ]
     actions = [
         DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [0, 3]}),
         DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [1, 2]}),
     ]
-    assert _make_component_list_from_actions(actions) == [
+    assert make_pipeline_from_actions(problem_type, actions) == [
         DropRowsTransformer(indices_to_drop=[0, 3]),
         DropRowsTransformer(indices_to_drop=[1, 2]),
     ]

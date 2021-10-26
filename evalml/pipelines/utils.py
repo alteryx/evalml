@@ -15,6 +15,7 @@ from .multiclass_classification_pipeline import (
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
+from evalml import problem_types
 from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (  # noqa: F401
@@ -166,6 +167,7 @@ def _get_preprocessing_components(
 
 def _get_pipeline_base_class(problem_type):
     """Returns pipeline base class for problem_type."""
+    problem_type = handle_problem_types(problem_type)
     if problem_type == ProblemTypes.BINARY:
         return BinaryClassificationPipeline
     elif problem_type == ProblemTypes.MULTICLASS:
@@ -366,6 +368,16 @@ def _make_stacked_ensemble_pipeline(
         custom_name=pipeline_name,
         random_seed=random_seed,
     )
+
+
+def make_pipeline_from_actions(problem_type, actions):
+    component_list = _make_component_list_from_actions(actions)
+    component_dict = PipelineBase._make_component_dict_from_component_list(
+        component_list
+    )
+    problem_type = handle_problem_types(problem_type)
+    base_class = _get_pipeline_base_class(problem_type)
+    return base_class(component_dict)
 
 
 def _make_component_list_from_actions(actions):
