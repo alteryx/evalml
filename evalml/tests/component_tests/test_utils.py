@@ -97,9 +97,17 @@ not_supported_in_conda = [
     "Vowpal Wabbit Regressor",
 ]
 not_supported_in_windows = [
-    "Polynomial Detrender",
     "Prophet Regressor",
+]
+not_supported_in_windows_py39 = [
+    "Prophet Regressor",
+    "Polynomial Detrender",
     "ARIMA Regressor",
+]
+not_supported_in_linux_py39 = [
+    "ARIMA Regressor",
+    "Polynomial Detrender",
+
 ]
 
 
@@ -110,31 +118,21 @@ def test_all_components(
     is_using_windows,
 ):
     if has_minimal_dependencies:
-        n_components = 0
         expected_components = minimum_dependencies_list
     elif is_using_conda:
         # No prophet, ARIMA, and vowpalwabbit
-        n_components = 0
-        expected_components = minimum_dependencies_list
-
+        expected_components = [component for component in minimum_dependencies_list + requirements_list if component not in not_supported_in_conda]
     elif is_using_windows and not is_running_py_39_or_above:
         # No prophet
-        n_components = 0
-        expected_components = minimum_dependencies_list
-
+        expected_components = [component for component in minimum_dependencies_list + requirements_list if component not in not_supported_in_windows]
     elif is_using_windows and is_running_py_39_or_above:
         # No detrender, no arima, no prophet
-        n_components = 0
-        expected_components = minimum_dependencies_list
-
+        expected_components = [component for component in minimum_dependencies_list + requirements_list if component not in not_supported_in_windows_py39]
     elif not is_using_windows and is_running_py_39_or_above:
         # No detrender or arima
-        n_components = 0
-        expected_components = minimum_dependencies_list
-
+        expected_components = [component for component in minimum_dependencies_list + requirements_list if component not in not_supported_in_linux_py39]
     else:
-        n_components = 0
-        expected_components = minimum_dependencies_list
+        expected_components = minimum_dependencies_list + requirements_list
 
     print (all_components())
     all_component_names = [component.name for component in all_components()]
