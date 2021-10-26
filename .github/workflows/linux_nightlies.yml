@@ -50,8 +50,10 @@ jobs:
           make installdeps
           make installdeps-test
           pip freeze
-	        pytest evalml/tests/component_tests/test_utils.py
-
+      - if: ${{ matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel' }}
+        name: Run util tests
+        run: |
+          pytest evalml/tests/component_tests/test_utils.py
       - name: Run unit tests
         run: |
           source test_python/bin/activate
