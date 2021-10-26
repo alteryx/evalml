@@ -389,8 +389,8 @@ def _make_component_list_from_actions(actions):
                     TargetImputer(impute_strategy=metadata["impute_strategy"])
                 )
         elif action.action_code == DataCheckActionCode.DROP_ROWS:
-            indices = action.metadata["indices"]  ## TODO
-            components.append(DropRowsTransformer(indices_to_drop=indices))
+            rows = action.metadata["rows"]
+            components.append(DropRowsTransformer(indices_to_drop=rows))
     if cols_to_drop:
         components.append(DropColumns(columns=cols_to_drop))
     return components
