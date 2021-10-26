@@ -328,7 +328,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                             self._selected_cols.remove(encoded_col)
                     if selected:
                         self._selected_cols.append(original_col)
-            except KeyError:
+            except ValueError:
                 pass
 
         current_best_score = self._best_pipeline_info.get(
