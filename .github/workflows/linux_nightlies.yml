@@ -53,6 +53,7 @@ jobs:
       - if: ${{ matrix.command == 'git-test-modelunderstanding' || matrix.command == 'git-test-other' || matrix.command == 'git-test-parallel' }}
         name: Run util tests
         run: |
+          source test_python/bin/activate
           pytest evalml/tests/component_tests/test_utils.py
       - name: Run unit tests
         run: |
