@@ -28,30 +28,24 @@ multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
 minimum_dependencies_list = [
     "Stacked Ensemble Regressor",
     "Stacked Ensemble Classifier",
-    "Vowpal Wabbit Regressor",
+
     "ARIMA Regressor",
     "SVM Regressor",
     "Time Series Baseline Estimator",
     "Decision Tree Regressor",
     "Baseline Regressor",
     "Extra Trees Regressor",
-    "XGBoost Regressor",
-    "CatBoost Regressor",
+
     "Random Forest Regressor",
-    "LightGBM Regressor",
     "Linear Regressor",
     "Elastic Net Regressor",
-    "Vowpal Wabbit Multiclass Classifier",
-    "Vowpal Wabbit Binary Classifier",
+
     "SVM Classifier",
     "KNN Classifier",
     "Decision Tree Classifier",
-    "LightGBM Classifier",
     "Baseline Classifier",
     "Extra Trees Classifier",
     "Elastic Net Classifier",
-    "CatBoost Classifier",
-    "XGBoost Classifier",
     "Random Forest Classifier",
     "Logistic Regression Classifier",
     "Drop Rows Transformer",
@@ -85,11 +79,15 @@ minimum_dependencies_list = [
 ]
 requirements_list = [
     "XGBoost Regressor",
+    "XGBoost Classifier",
     "CatBoost Regressor",
     "LightGBM Regressor",
     "LightGBM Classifier",
     "CatBoost Classifier",
     "XGBoost Classifier",
+    "Vowpal Wabbit Regressor",
+    "Vowpal Wabbit Multiclass Classifier",
+    "Vowpal Wabbit Binary Classifier",
 ]
 not_supported_in_conda = [
     "Prophet Regressor",
@@ -113,22 +111,35 @@ def test_all_components(
 ):
     if has_minimal_dependencies:
         n_components = 0
+        expected_components = minimum_dependencies_list
     elif is_using_conda:
         # No prophet, ARIMA, and vowpalwabbit
         n_components = 0
+        expected_components = minimum_dependencies_list
+
     elif is_using_windows and not is_running_py_39_or_above:
         # No prophet
         n_components = 0
+        expected_components = minimum_dependencies_list
+
     elif is_using_windows and is_running_py_39_or_above:
         # No detrender, no arima, no prophet
         n_components = 0
+        expected_components = minimum_dependencies_list
+
     elif not is_using_windows and is_running_py_39_or_above:
         # No detrender or arima
         n_components = 0
+        expected_components = minimum_dependencies_list
+
     else:
         n_components = 0
+        expected_components = minimum_dependencies_list
+
     print (all_components())
-    assert False # purposefully fail test to see outpout :)
+    all_component_names = [component.name for component in all_components()]
+    assert set(all_component_names) == set(expected_components)
+    assert False # purposefully fail test to see output :)
     assert len(all_components()) == n_components
 
 
