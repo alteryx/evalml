@@ -13,11 +13,8 @@ Release Notes
         * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
         * Fixed ``calculate_permutation_importance`` for datetimes on ``StandardScaler`` :pr:`2938`
         * Fixed ``SelectColumns`` to only select available features for feature selection in ``DefaultAlgorithm`` :pr:`2944`
-<<<<<<< HEAD
         * Fixed ``DropColumns`` not receiving parameters in ``DefaultAlgorithm`` :pr:`2945`
-=======
         * Fixed bug where trained binary thresholds were not being returned by ``get_pipeline`` or ``clone`` :pr:`2948`
->>>>>>> c690662d9e3d1f31f2396986ce9c61c0c4a3a509
         * Fixed bug where ``Oversampler`` selected ww logical categorical instead of ww semantic category :pr:`2946`
     * Changes
         * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
