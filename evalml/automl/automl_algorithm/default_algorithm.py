@@ -179,7 +179,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             feature_selector = []
 
         estimators = self._naive_estimators()
-        parameters = self._pipeline_params if self._pipeline_params else None
+        parameters = self._pipeline_params if self._pipeline_params else {}
         pipelines = [
             make_pipeline(
                 self.X,
@@ -189,6 +189,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 sampler_name=self.sampler_name,
                 parameters=parameters,
                 extra_components=feature_selector,
+                extra_components_position='before_estimator'
             )
             for estimator in estimators
         ]
@@ -315,6 +316,20 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 self._selected_cols = pipeline.get_component(
                     "RF Classifier Select From Model"
                 ).get_names()
+            
+            try:
+                ohe = pipeline.get_component('One Hot Encoder')
+                feature_provenance = ohe._get_feature_provenance()
+                for original_col in feature_provenance:
+                    selected = False
+                    for encoded_col in feature_provenance[original_col]:
+                        if encoded_col in self._selected_cols:
+                            selected = True
+                            self._selected_cols.remove(encoded_col)
+                    if selected:
+                        self._selected_cols.append(original_col)
+            except KeyError:
+                pass
 
         current_best_score = self._best_pipeline_info.get(
             pipeline.model_family, {}
