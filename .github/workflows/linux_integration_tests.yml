@@ -16,7 +16,6 @@ jobs:
       matrix:
         include:
           - python_version: "3.8"
-            core_dependencies: false
             command: 'git-test-integration'
 
     steps:
