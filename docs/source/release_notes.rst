@@ -2,6 +2,17 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.36.0 Oct. 27, 2021**
+    * Enhancements
         * Added LIME as an algorithm option for ``explain_predictions`` and ``explain_predictions_best_worst`` :pr:`2905`
         * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary :pr:`2869`
         * Added ``rows_of_interest`` to pipeline utils :pr:`2908`
@@ -32,7 +43,6 @@ Release Notes
 
     **Breaking Changes**
         * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary. This may change the number of messages returned from a data check. :pr:`2869`
-
 
 
 **v0.35.0 Oct. 14, 2021**
