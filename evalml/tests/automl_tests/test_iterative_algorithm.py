@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 import pytest
 from skopt.space import Categorical, Integer, Real
 
@@ -929,3 +930,91 @@ def test_iterative_algorithm_sampling_params(
             for component in p.component_graph:
                 if "sampler" in component.name:
                     assert component.parameters["sampling_ratio"] == 0.25
+
+
+@pytest.mark.parametrize("allowed_model_families", [None, [ModelFamily.XGBOOST]])
+@pytest.mark.parametrize(
+    "allowed_component_graphs",
+    [None, {"Pipeline_1": ["Imputer", "XGBoost Classifier"]}],
+)
+@pytest.mark.parametrize("allow_long_running_models", [True, False])
+@pytest.mark.parametrize(
+    "length,models_missing",
+    [
+        (10, []),
+        (75, []),
+        (100, ["Elastic Net Classifier", "XGBoost Classifier"]),
+        (160, ["Elastic Net Classifier", "XGBoost Classifier", "CatBoost Classifier"]),
+    ],
+)
+def test_iterative_algorithm_allow_long_running_models(
+    length,
+    models_missing,
+    allow_long_running_models,
+    allowed_component_graphs,
+    allowed_model_families,
+):
+    X = pd.DataFrame()
+    y = pd.Series([i for i in range(length)] * 5)
+    y_short = pd.Series([i for i in range(10)] * 5)
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type="multiclass",
+        random_seed=0,
+        allowed_model_families=allowed_model_families,
+        allowed_component_graphs=allowed_component_graphs,
+        allow_long_running_models=allow_long_running_models,
+    )
+    if allowed_model_families is not None or allowed_component_graphs is not None:
+        assert len(algo.allowed_pipelines) == 1
+        return
+    algo_short = IterativeAlgorithm(
+        X=X,
+        y=y_short,
+        problem_type="multiclass",
+        random_seed=0,
+        allowed_model_families=allowed_model_families,
+        allowed_component_graphs=allowed_component_graphs,
+    )
+    if allow_long_running_models:
+        assert len(algo_short.allowed_pipelines) == len(algo.allowed_pipelines)
+        return
+
+    assert len(algo_short.allowed_pipelines) == len(algo.allowed_pipelines) + len(
+        models_missing
+    )
+    for p in algo.allowed_pipelines:
+        assert all([s not in p.name for s in models_missing])
+
+
+@pytest.mark.parametrize("problem", ["binary", "multiclass", "regression"])
+@pytest.mark.parametrize("allow_long_running_models", [True, False])
+@pytest.mark.parametrize(
+    "length,models_missing", [(10, 0), (75, 0), (100, 2), (160, 3)]
+)
+def test_iterative_algorithm_allow_long_running_models_problem(
+    length, models_missing, allow_long_running_models, problem
+):
+    X = pd.DataFrame()
+    y = pd.Series([i for i in range(length)] * 5)
+    y_short = pd.Series([i for i in range(10)] * 5)
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type=problem,
+        random_seed=0,
+        allow_long_running_models=allow_long_running_models,
+    )
+    algo_reg = IterativeAlgorithm(
+        X=X,
+        y=y_short,
+        problem_type=problem,
+        random_seed=0,
+    )
+    if problem != "multiclass" or allow_long_running_models:
+        assert len(algo.allowed_pipelines) == len(algo_reg.allowed_pipelines)
+        return
+    assert len(algo.allowed_pipelines) + models_missing == len(
+        algo_reg.allowed_pipelines
+    )

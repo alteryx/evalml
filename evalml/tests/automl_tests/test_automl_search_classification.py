@@ -1629,3 +1629,19 @@ def test_time_series_pipeline_parameter_warnings(
     assert len(w) == (2 if len(set_values) else 1)
     if len(w) == 2:
         assert w[1].message.components == set_values
+
+
+@pytest.mark.parametrize("allow_long_running_models", [True, False])
+def test_automl_passes_allow_long_running_models_iterative(
+    allow_long_running_models, X_y_multi
+):
+    X, y = X_y_multi
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="multiclass",
+        allow_long_running_models=allow_long_running_models,
+    )
+    assert (
+        automl._automl_algorithm.allow_long_running_models == allow_long_running_models
+    )

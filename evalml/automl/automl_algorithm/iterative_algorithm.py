@@ -62,6 +62,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         pipeline_params (dict or None): Pipeline-level parameters that should be passed to the proposed pipelines. Defaults to None.
         custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
         _estimator_family_order (list(ModelFamily) or None): specify the sort order for the first batch. Defaults to None, which uses _ESTIMATOR_FAMILY_ORDER.
+        allow_long_running_models (bool): Whether or not to allow longer-running models for large multiclass problems. If False and no pipelines, component graphs, or model families are provided,
+            AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass target and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
     """
 
@@ -85,6 +87,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         pipeline_params=None,
         custom_hyperparameters=None,
         _estimator_family_order=None,
+        allow_long_running_models=False,
         verbose=False,
     ):
         self.X = infer_feature_types(X)
@@ -104,6 +107,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.text_in_ensembling = text_in_ensembling
         self.max_batches = max_batches
         self.max_iterations = max_iterations
+        self.allow_long_running_models = allow_long_running_models
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
         else:
@@ -146,6 +150,21 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         " and Real!"
                     )
 
+    def _filter_estimators(self, estimators):
+        estimators_to_drop = []
+        if (
+            str(self.problem_type) != "multiclass"
+            or self.allow_long_running_models
+            or self.allowed_model_families is not None
+        ):
+            return estimators
+        if self.y.nunique() > 75:
+            estimators_to_drop.extend(["Elastic Net Classifier", "XGBoost Classifier"])
+        if self.y.nunique() > 150:
+            estimators_to_drop.append("CatBoost Classifier")
+        estimators = [e for e in estimators if e.name not in estimators_to_drop]
+        return estimators
+
     def _create_pipelines(self):
         indices = []
         pipelines_to_sort = []
@@ -156,6 +175,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             allowed_estimators = get_estimators(
                 self.problem_type, self.allowed_model_families
             )
+            allowed_estimators = self._filter_estimators(allowed_estimators)
             if (
                 is_time_series(self.problem_type)
                 and self._pipeline_params["pipeline"]["date_index"]
