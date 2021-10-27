@@ -1649,7 +1649,7 @@ def test_explain_predictions_stacked_ensemble(
             }
         )
         exp_feature_names = {"RF.x", "Regression.x"}
-        exp_feature_values = [-43.3321141, -46.2504996]
+        exp_feature_values = [-43.2617589, -46.2504996]
         exp_qual = ["-", "-----"]
     pipeline.fit(X, y)
 
