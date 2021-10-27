@@ -141,7 +141,7 @@ def test_all_components(
         # No detrender or ARIMA
         expected_components = [
             component
-            for component in minimum_dependencies_list + requirements_list
+            for component in minimum_dependencies_list + requirements_list + prophet
             if component not in not_supported_in_linux_py39
         ]
     else:
