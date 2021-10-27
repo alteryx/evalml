@@ -7,7 +7,6 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
-from evalml import problem_types
 from evalml.exceptions import PipelineScoreError
 from evalml.model_understanding.prediction_explanations.explainers import (
     ExplainPredictionsStage,
@@ -22,10 +21,6 @@ from evalml.pipelines import (
     RegressionPipeline,
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesRegressionPipeline,
-)
-from evalml.pipelines.components import (
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
 )
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.problem_types import ProblemTypes, is_binary, is_multiclass
@@ -1601,11 +1596,11 @@ def test_explain_predictions_stacked_ensemble(
     classifier_pl = {
         "Imputer": ["Imputer", "X", "y"],
         "Logistic Regression": ["Logistic Regression Classifier", "Imputer.x", "y"],
-        "XGBoost": ["XGBoost Classifier", "X", "y"],
+        "Catboost": ["Catboost Classifier", "X", "y"],
         "Stacked Ensembler": [
             "Stacked Ensemble Classifier",
             "Logistic Regression.x",
-            "XGBoost.x",
+            "Catboost.x",
             "y",
         ],
     }
