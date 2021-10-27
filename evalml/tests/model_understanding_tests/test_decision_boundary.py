@@ -330,3 +330,18 @@ def test_find_confusion_matrix_per_threshold(
         assert sum([len(s) for s in res_df["data_in_bins"]]) == len(y)
     assert all([sum(v) == 100 for v in res_df["confusion_matrix"]])
     assert len(obj_dict) == 5
+
+
+def test_find_confusion_matrix_encode(
+    logistic_regression_binary_pipeline_class, X_y_binary
+):
+    bcp = logistic_regression_binary_pipeline_class({})
+    bcp_new = logistic_regression_binary_pipeline_class({})
+    X, y = X_y_binary
+    y_new = pd.Series(["Value_1" if s == 1 else "Value_0" for s in y])
+    bcp.fit(X, y)
+    bcp_new.fit(X, y_new)
+    res_df, obj_dict = find_confusion_matrix_per_thresholds(bcp, X, y)
+    res_df_new, obj_dict_new = find_confusion_matrix_per_thresholds(bcp_new, X, y_new)
+    pd.testing.assert_frame_equal(res_df, res_df_new)
+    assert obj_dict == obj_dict_new

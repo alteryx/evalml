@@ -154,11 +154,13 @@ def find_confusion_matrix_per_thresholds(pipeline, X, y, n_bins=None, top_k=5):
         raise ValueError("Expected a fitted binary classification pipeline")
     X = infer_feature_types(X)
     y = infer_feature_types(y)
+    if set(y.unique()) != {0, 1}:
+        y = pipeline._encode_targets(y)
+
     proba = pipeline.predict_proba(X)
     pos_preds = proba.iloc[:, -1]
     true_pos = y[y == 1]
     true_neg = y[y == 0]
-    # breakpoint()
     # separate the positive and negative predictions
     true_pos_preds = pos_preds.loc[true_pos.index]
     true_neg_preds = pos_preds.loc[true_neg.index]
