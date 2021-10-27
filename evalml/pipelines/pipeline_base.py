@@ -35,6 +35,8 @@ from evalml.utils import (
 )
 from evalml.utils.logger import get_logger
 
+from evalml.pipelines import components
+
 logger = logging.getLogger(__name__)
 
 
@@ -788,3 +790,22 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                 component_hyperparameters.update(custom_hyperparameters[component_name])
             hyperparameter_ranges[component_name] = component_hyperparameters
         return hyperparameter_ranges
+
+    def get_subpipeline(self, component_name):
+        """Given an end component, generates a new sub pipeline from the component's inputs.
+        Uses the current pipelines's instantiated components.
+
+        Args:
+            end_component (str): The name of the final component to generate a subpipeline from.
+
+        Returns:
+            PipelineBase: A new pipeline instance with all of the input components that feed into the end component.
+        """
+        new_component_graph = self.component_graph.get_subgraph(component_name)
+        new_parameters = {component: new_component_graph.component_dict[component] for component in new_component_graph.compute_order}
+        return self.__class__(
+            new_component_graph,
+            parameters=new_parameters,
+            custom_name=self.custom_name,
+            random_seed=self.random_seed,
+        )

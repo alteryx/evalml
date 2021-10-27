@@ -786,3 +786,28 @@ class ComponentGraph:
                 has_incoming_y_from_parent = False
 
         return data_to_transform
+
+    def get_subgraph(self, end_component):
+        """Given an end component, generates a subgraph from the component's inputs. Uses the current
+        component graph's instantiated components.
+
+        Args:
+            end_component (str): The name of the final component to generate a subgraph from.
+
+        Returns:
+            ComponentGraph: A new component graph with all of the input components that feed into the end component.
+        """
+        sub_graph = {}
+        component_add_queue = [end_component]
+        while len(component_add_queue) > 0:
+            curr_component = component_add_queue.pop(0)
+            sub_graph[curr_component] = [self.get_component(curr_component)] + self.component_dict[curr_component][1::]
+            curr_inputs = self.get_inputs(curr_component)
+            if curr_inputs == ['X', 'y']:
+                continue
+            for input_name in curr_inputs:
+                if input_name in ['X', 'y']:
+                    continue
+                input_component_name = input_name.split('.')[0]
+                component_add_queue.append(input_component_name)
+        return ComponentGraph(component_dict=sub_graph)
