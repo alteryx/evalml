@@ -322,6 +322,7 @@ def test_make_pipeline_from_actions_with_duplicate_actions(problem_type):
 
     actions = [
         DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some col"}),
+        DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some col"}),
         DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some other col"}),
     ]
     assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
@@ -332,7 +333,7 @@ def test_make_pipeline_from_actions_with_duplicate_actions(problem_type):
         random_seed=0,
     )
     actions = [
-        DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [0, 3]}),
+        DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [0, 1, 3]}),
         DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [1, 2]}),
     ]
     assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
