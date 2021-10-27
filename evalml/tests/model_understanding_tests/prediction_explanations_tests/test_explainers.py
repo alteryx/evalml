@@ -1592,7 +1592,6 @@ def test_explain_predictions_stacked_ensemble(
     X_y_multi,
     X_y_regression,
 ):
-    problem_type = ProblemTypes.BINARY
     classifier_pl = {
         "Imputer": ["Imputer", "X", "y"],
         "Logistic Regression": ["Logistic Regression Classifier", "Imputer.x", "y"],
