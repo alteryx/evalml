@@ -28,18 +28,15 @@ multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
 minimum_dependencies_list = [
     "Stacked Ensemble Regressor",
     "Stacked Ensemble Classifier",
-
     "ARIMA Regressor",
     "SVM Regressor",
     "Time Series Baseline Estimator",
     "Decision Tree Regressor",
     "Baseline Regressor",
     "Extra Trees Regressor",
-
     "Random Forest Regressor",
     "Linear Regressor",
     "Elastic Net Regressor",
-
     "SVM Classifier",
     "KNN Classifier",
     "Decision Tree Classifier",
@@ -108,7 +105,6 @@ not_supported_in_windows_py39 = [
 not_supported_in_linux_py39 = [
     "ARIMA Regressor",
     "Polynomial Detrender",
-
 ]
 
 
@@ -122,20 +118,36 @@ def test_all_components(
         expected_components = minimum_dependencies_list
     elif is_using_conda:
         # No prophet, ARIMA, and vowpalwabbit
-        expected_components = [component for component in minimum_dependencies_list + requirements_list if component not in not_supported_in_conda]
+        expected_components = [
+            component
+            for component in minimum_dependencies_list + requirements_list
+            if component not in not_supported_in_conda
+        ]
     elif is_using_windows and not is_running_py_39_or_above:
         # No prophet
-        expected_components = [component for component in minimum_dependencies_list + requirements_list if component not in not_supported_in_windows]
+        expected_components = [
+            component
+            for component in minimum_dependencies_list + requirements_list
+            if component not in not_supported_in_windows
+        ]
     elif is_using_windows and is_running_py_39_or_above:
         # No detrender, no ARIMA, no prophet
-        expected_components = [component for component in minimum_dependencies_list + requirements_list if component not in not_supported_in_windows_py39]
+        expected_components = [
+            component
+            for component in minimum_dependencies_list + requirements_list
+            if component not in not_supported_in_windows_py39
+        ]
     elif not is_using_windows and is_running_py_39_or_above:
         # No detrender or ARIMA
-        expected_components = [component for component in minimum_dependencies_list + requirements_list if component not in not_supported_in_linux_py39]
+        expected_components = [
+            component
+            for component in minimum_dependencies_list + requirements_list
+            if component not in not_supported_in_linux_py39
+        ]
     else:
         expected_components = minimum_dependencies_list + requirements_list + prophet
 
-    print (all_components())
+    print(all_components())
     all_component_names = [component.name for component in all_components()]
     assert set(all_component_names) == set(expected_components)
 
