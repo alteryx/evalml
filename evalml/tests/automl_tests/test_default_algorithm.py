@@ -1,6 +1,7 @@
 from unittest.mock import patch
 
 import numpy as np
+import pandas as pd
 import pytest
 from skopt.space import Categorical, Integer
 
@@ -22,13 +23,14 @@ def test_default_algorithm_init(X_y_binary):
     problem_type = "binary"
     sampler_name = "Undersampler"
 
-    algo = DefaultAlgorithm(X, y, problem_type, sampler_name)
+    algo = DefaultAlgorithm(X, y, problem_type, sampler_name, verbose=True)
 
     assert algo.problem_type == problem_type
     assert algo.sampler_name == sampler_name
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
+    assert algo.verbose is True
 
 
 def test_default_algorithm_custom_hyperparameters_error(X_y_binary):
@@ -235,3 +237,30 @@ def test_evalml_algo_custom_hyperparameters(mock_get_names, X_y_binary):
                 assert pipeline.parameters["Random Forest Classifier"][
                     "max_depth"
                 ] in Categorical([5, 6, 7])
+
+
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+@pytest.mark.parametrize("columns", [["unknown_col"], ["unknown1, unknown2"]])
+def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
+    X, y = X_y_binary
+    mock_get_names.return_value = ["0", "1", "2"]
+
+    X = pd.DataFrame(X)
+    for col in columns:
+        X[col] = pd.Series(range(len(X)))
+    X.ww.init()
+    X.ww.set_types({col: "Unknown" for col in columns})
+
+    algo = DefaultAlgorithm(X, y, "binary", sampler_name=None)
+
+    assert algo._pipeline_params["Drop Columns Transformer"]["columns"] == columns
+
+    for _ in range(4):
+        batch = algo.next_batch()
+        add_result(algo, batch)
+        for pipeline in batch:
+            if not isinstance(pipeline.estimator, StackedEnsembleClassifier):
+                assert (
+                    pipeline.parameters["Drop Columns Transformer"]["columns"]
+                    == columns
+                )
