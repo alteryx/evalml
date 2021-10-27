@@ -723,9 +723,6 @@ class ComponentGraph:
         attributes_to_check = ["component_dict", "compute_order"]
         for attribute in attributes_to_check:
             if getattr(self, attribute) != getattr(other, attribute):
-                import pdb
-
-                pdb.set_trace()
                 return False
         return True
 
