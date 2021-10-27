@@ -96,6 +96,7 @@ not_supported_in_conda = [
     "Vowpal Wabbit Multiclass Classifier",
     "Vowpal Wabbit Regressor",
 ]
+prophet = ["Prophet Regressor"]
 not_supported_in_windows = [
     "Prophet Regressor",
 ]
@@ -132,7 +133,7 @@ def test_all_components(
         # No detrender or arima
         expected_components = [component for component in minimum_dependencies_list + requirements_list if component not in not_supported_in_linux_py39]
     else:
-        expected_components = minimum_dependencies_list + requirements_list
+        expected_components = minimum_dependencies_list + requirements_list + prophet
 
     print (all_components())
     all_component_names = [component.name for component in all_components()]
