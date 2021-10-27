@@ -73,7 +73,7 @@ git-test-other:
 
 .PHONY: git-test-prophet
 git-test-prophet:
-	pytest evalml/tests/component_tests/test_prophet_regressor.py evalml/tests/component_tests/test_components.py evalml/tests/component_tests/test_utils.py evalml/tests/pipeline_tests/ evalml/tests/utils_tests/ -n 2 --durations 0 --timeout 300 --junitxml=test-reports/git-test-prophet-junit.xml
+	pytest evalml/tests/component_tests/test_prophet_regressor.py evalml/tests/component_tests/test_components.py evalml/tests/component_tests/test_utils.py evalml/tests/pipeline_tests/ evalml/tests/utils_tests/ -n 2 --durations 0 --timeout 300 --cov=evalml --junitxml=test-reports/git-test-prophet-junit.xml
 
 .PHONY: git-test-integration
 git-test-integration:
