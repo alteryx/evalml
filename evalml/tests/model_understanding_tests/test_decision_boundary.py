@@ -343,3 +343,27 @@ def test_find_confusion_matrix_encode(
     res_df_new, obj_dict_new = find_confusion_matrix_per_thresholds(bcp_new, X, y_new)
     pd.testing.assert_frame_equal(res_df, res_df_new)
     assert obj_dict == obj_dict_new
+
+
+def test_find_confusion_matrix_values():
+    pos_skew = [0, 5, 5, 15, 25]
+    neg_skew = [25, 15, 5, 5, 0]
+    ranges = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
+    expected_cm = [
+        [50, 25, 25, 0],
+        [45, 40, 10, 5],
+        [40, 45, 5, 10],
+        [25, 50, 0, 25],
+        [0, 50, 0, 50],
+    ]
+    expected_objective_dic = {
+        "accuracy": ([0.85, 0.4], _accuracy),
+        "balanced_accuracy": ([17 / 20, 0.4], _balanced_accuracy),
+        "precision": ([1.0, 0.8], _precision),
+        "f1": ([6 / 7, 0.4], _f1),
+    }
+    cm, ob_dic = _find_confusion_matrix_objective_threshold(pos_skew, neg_skew, ranges)
+    assert cm == expected_cm
+    for k, v in ob_dic.items():
+        np.testing.assert_allclose(v[0], expected_objective_dic[k][0])
+        assert v[1] == expected_objective_dic[k][1]

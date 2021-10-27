@@ -141,8 +141,8 @@ def find_confusion_matrix_per_thresholds(pipeline, X, y, n_bins=None, top_k=5):
 
     Returns:
         (pd.DataFrame, dict): The dataframe has the actual positive histogram, actual negative histogram,
-            and the confusion matrix, all for each threshold value. The dictionary contains the ideal threshold and score per objective,
-            keyed by objective name.
+            the confusion matrix, and a sample of rows that fall in the bin, all for each threshold value. The threshold value, represented through the dataframe index, represents the cutoff threshold at that value.
+            The dictionary contains the ideal threshold and score per objective, keyed by objective name.
 
     Raises:
         ValueError: If the pipeline isn't a binary classification pipeline or isn't yet fitted on data.
