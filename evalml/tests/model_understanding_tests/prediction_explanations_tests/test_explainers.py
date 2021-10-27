@@ -1594,11 +1594,11 @@ def test_explain_predictions_stacked_ensemble(
 ):
     classifier_pl = {
         "Imputer": ["Imputer", "X", "y"],
-        "Logistic Regression": ["Logistic Regression Classifier", "Imputer.x", "y"],
+        "Regression": ["Logistic Regression Classifier", "Imputer.x", "y"],
         "RF": ["Random Forest Classifier", "X", "y"],
         "Stacked Ensembler": [
             "Stacked Ensemble Classifier",
-            "Logistic Regression.x",
+            "Regression.x",
             "RF.x",
             "y",
         ],
@@ -1606,51 +1606,75 @@ def test_explain_predictions_stacked_ensemble(
     if is_binary(problem_type):
         X, y = X_y_binary
         pipeline = BinaryClassificationPipeline(classifier_pl)
+        exp_feature_names = {"Col 1 RF.x", "Col 1 Regression.x"}
+        exp_feature_values = [0.3277702030446267, 0.0218182]
+        exp_qual = ["--", "----"]
     elif is_multiclass(problem_type):
         X, y = X_y_multi
         pipeline = MulticlassClassificationPipeline(classifier_pl)
+        exp_feature_names = {
+            "Col 0 RF.x",
+            "Col 1 RF.x",
+            "Col 2 RF.x",
+            "Col 0 Regression.x",
+            "Col 1 Regression.x",
+            "Col 2 Regression.x",
+        }
+        exp_feature_values = [
+            0.0971485,
+            0.2605395,
+            0.6103259,
+            0.1291346,
+            0.839842,
+            0.0630095,
+        ]
+        exp_qual = ["+", "+", "-", "-", "--", "--"]
     else:
         X, y = X_y_regression
         pipeline = RegressionPipeline(
             {
                 "Imputer": ["Imputer", "X", "y"],
-                "Logistic Regression": [
-                    "Logisitc Regression Regressor",
+                "Regression": [
+                    "Linear Regressor",
                     "Imputer.x",
                     "y",
                 ],
                 "RF": ["Random Forest Regressor", "X", "y"],
                 "Stacked Ensembler": [
                     "Stacked Ensemble Regressor",
-                    "Logistic Regression.x",
+                    "Regression.x",
                     "RF.x",
                     "y",
                 ],
             }
         )
+        exp_feature_names = {"RF.x", "Regression.x"}
+        exp_feature_values = [-43.3321141, -46.2504996]
+        exp_qual = ["-", "-----"]
     pipeline.fit(X, y)
 
     report = explain_predictions(
-        pipeline, X, y, indices_to_explain=[0], output_format="dict"
+        pipeline, X, y, indices_to_explain=[0], output_format="dict", top_k_features=10
     )
     explanations_data = report["explanations"][0]["explanations"][0]
-    assert explanations_data["feature_names"] == [
-        "Col 1 Logistic Regression.x",
-        "Col 1 RF.x",
-    ]
+    assert set(explanations_data["feature_names"]) == exp_feature_names
     np.testing.assert_almost_equal(
-        explanations_data["feature_values"], [0.3277702030446267, 0.0218182]
+        explanations_data["feature_values"], exp_feature_values
     )
-    assert explanations_data["qualitative_explanation"] == ["--", "----"]
-    assert explanations_data["quantitative_explanation"] == [None, None]
+    assert explanations_data["qualitative_explanation"] == exp_qual
+    assert (
+        explanations_data["quantitative_explanation"]
+        == [None, None, None, None, None, None]
+        if problem_type == ProblemTypes.MULTICLASS
+        else [None, None]
+    )
 
-    report = explain_predictions_best_worst(pipeline, X, y, output_format="dict")
+    report = explain_predictions_best_worst(
+        pipeline, X, y, top_k_features=10, output_format="dict"
+    )
     explanations_data = report["explanations"]
     for entry in explanations_data:
-        assert set(entry["explanations"][0]["feature_names"]) == {
-            "Col 1 Logistic Regression.x",
-            "Col 1 RF.x",
-        }
+        assert set(entry["explanations"][0]["feature_names"]) == exp_feature_names
 
 
 @pytest.mark.parametrize(
