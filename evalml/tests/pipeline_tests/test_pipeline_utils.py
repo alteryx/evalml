@@ -300,17 +300,17 @@ def test_make_pipeline_from_actions(problem_type):
     assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
         component_graph={
             "Target Imputer": [TargetImputer, "X", "y"],
-            "Drop Rows Transformer": [DropRowsTransformer, "X", "Target Imputer.y"],
-            "Drop Columns Transformer": [
-                DropColumns,
-                "Drop Rows Transformer.x",
-                "Drop Rows Transformer.y",
+            "Drop Columns Transformer": [DropColumns, "X", "Target Imputer.y"],
+            "Drop Rows Transformer": [
+                DropRowsTransformer,
+                "Drop Columns Transformer.x",
+                "Target Imputer.y",
             ],
         },
         parameters={
             "Target Imputer": {"impute_strategy": "most_frequent", "fill_value": None},
-            "Drop Rows Transformer": {"indices_to_drop": [1, 2]},
             "Drop Columns Transformer": {"columns": ["some col"]},
+            "Drop Rows Transformer": {"indices_to_drop": [1, 2]},
         },
         random_seed=0,
     )
