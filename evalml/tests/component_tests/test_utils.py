@@ -116,10 +116,6 @@ def test_all_components(
 ):
     if has_minimal_dependencies:
         expected_components = minimum_dependencies_list
-        print(all_components())
-        all_component_names = [component.name for component in all_components()]
-        assert set(all_component_names) == set(expected_components)
-
     elif is_using_conda:
         # No prophet, ARIMA, and vowpalwabbit
         expected_components = [
@@ -127,10 +123,6 @@ def test_all_components(
             for component in minimum_dependencies_list + requirements_list
             if component not in not_supported_in_conda
         ]
-        print(all_components())
-        all_component_names = [component.name for component in all_components()]
-        assert set(all_component_names) == set(expected_components)
-
     elif is_using_windows and not is_running_py_39_or_above:
         # No prophet
         expected_components = [
@@ -138,10 +130,6 @@ def test_all_components(
             for component in minimum_dependencies_list + requirements_list
             if component not in not_supported_in_windows
         ]
-        print(all_components())
-        all_component_names = [component.name for component in all_components()]
-        assert set(all_component_names) == set(expected_components)
-
     elif is_using_windows and is_running_py_39_or_above:
         # No detrender, no ARIMA, no prophet
         expected_components = [
@@ -149,10 +137,6 @@ def test_all_components(
             for component in minimum_dependencies_list + requirements_list
             if component not in not_supported_in_windows_py39
         ]
-        print(all_components())
-        all_component_names = [component.name for component in all_components()]
-        assert set(all_component_names) == set(expected_components)
-
     elif not is_using_windows and is_running_py_39_or_above:
         # No detrender or ARIMA
         expected_components = [
@@ -160,16 +144,8 @@ def test_all_components(
             for component in minimum_dependencies_list + requirements_list + prophet
             if component not in not_supported_in_linux_py39
         ]
-        print(all_components())
-        all_component_names = [component.name for component in all_components()]
-        assert set(all_component_names) == set(expected_components)
-
     else:
         expected_components = minimum_dependencies_list + requirements_list + prophet
-        print(all_components())
-        all_component_names = [component.name for component in all_components()]
-        assert set(all_component_names) == set(expected_components)
-
     print(all_components())
     all_component_names = [component.name for component in all_components()]
     assert set(all_component_names) == set(expected_components)
