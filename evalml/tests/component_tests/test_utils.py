@@ -28,7 +28,6 @@ multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
 minimum_dependencies_list = [
     "Stacked Ensemble Regressor",
     "Stacked Ensemble Classifier",
-    "ARIMA Regressor",
     "SVM Regressor",
     "Time Series Baseline Estimator",
     "Decision Tree Regressor",
@@ -49,7 +48,6 @@ minimum_dependencies_list = [
     "URL Featurizer",
     "Email Featurizer",
     "Log Transformer",
-    "Polynomial Detrender",
     "DFS Transformer",
     "Delayed Feature Transformer",
     "Text Featurization Component",
@@ -61,7 +59,6 @@ minimum_dependencies_list = [
     "Select Columns By Type Transformer",
     "Select Columns Transformer",
     "Drop Columns Transformer",
-    "Oversampler",
     "Undersampler",
     "Standard Scaler",
     "Target Imputer",
@@ -71,7 +68,6 @@ minimum_dependencies_list = [
     "RF Regressor Select From Model",
     "RF Classifier Select From Model",
     "Label Encoder",
-    "Target Encoder",
     "One Hot Encoder",
 ]
 requirements_list = [
