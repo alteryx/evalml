@@ -154,7 +154,7 @@ def test_find_confusion_matrix_per_threshold_args_pass_through(
             "confusion_matrix": conf_matrix,
             "data_in_bins": range_result,
         },
-        index=pos_range[:-1],
+        index=pos_range[1:],
     )
     final_obj_dict = {"accuracy": [0.5, 0.5], "balanced_accuracy": [0.5, 0.25]}
 
@@ -208,7 +208,6 @@ def test_find_confusion_matrix_per_threshold_n_bins(
         "accuracy",
         "balanced_accuracy",
         "precision",
-        "recall",
         "f1",
     }
 
@@ -290,11 +289,10 @@ def test_find_confusion_matrix_objective_threshold(pos_skew, neg_skew):
         "accuracy": [[0, 0], _accuracy],
         "balanced_accuracy": [[0, 0], _balanced_accuracy],
         "precision": [[0, 0], _precision],
-        "recall": [[0, 0], _recall],
         "f1": [[0, 0], _f1],
     }
     expected_conf_mat = []
-    for i, range_val in enumerate(ranges[:-1]):
+    for i, range_val in enumerate(ranges[1:]):
         pos += pos_skew[i]
         neg += neg_skew[i]
         tp = total_pos - pos
@@ -329,7 +327,7 @@ def test_find_confusion_matrix_per_threshold(
     else:
         assert sum([len(s) for s in res_df["data_in_bins"]]) == len(y)
     assert all([sum(v) == 100 for v in res_df["confusion_matrix"]])
-    assert len(obj_dict) == 5
+    assert len(obj_dict) == 4
 
 
 def test_find_confusion_matrix_encode(

@@ -81,10 +81,9 @@ def _find_confusion_matrix_objective_threshold(pos_skew, neg_skew, ranges):
         "accuracy": [[0, 0], _accuracy],
         "balanced_accuracy": [[0, 0], _balanced_accuracy],
         "precision": [[0, 0], _precision],
-        "recall": [[0, 0], _recall],
         "f1": [[0, 0], _f1],
     }
-    for i, thresh_val in enumerate(ranges[:-1]):
+    for i, thresh_val in enumerate(ranges[1:]):
         num_fn += pos_skew[i]
         num_tn += neg_skew[i]
         num_tp = total_pos - num_fn
@@ -184,7 +183,7 @@ def find_confusion_matrix_per_thresholds(pipeline, X, y, n_bins=None, top_k=5):
             "confusion_matrix": conf_matrix_list,
             "data_in_bins": data_ranges,
         },
-        index=pos_range[:-1],
+        index=pos_range[1:],
     )
     final_obj_dict = {k: v[0] for k, v in objective_dict.items()}
     return (result_df, final_obj_dict)
