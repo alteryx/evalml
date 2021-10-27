@@ -6,8 +6,8 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from evalml import problem_types
 
+from evalml import problem_types
 from evalml.exceptions import PipelineScoreError
 from evalml.model_understanding.prediction_explanations.explainers import (
     ExplainPredictionsStage,
@@ -1599,10 +1599,15 @@ def test_explain_predictions_stacked_ensemble(
 ):
     problem_type = ProblemTypes.BINARY
     classifier_pl = {
-        'Imputer': ['Imputer', 'X', 'y'],
-        'Logistic Regression': ['Logistic Regression Classifier', 'Imputer.x', 'y'],
-        'XGBoost': ['XGBoost Classifier', 'X', 'y'],
-        'Stacked Ensembler': ['Stacked Ensemble Classifier', 'Logistic Regression.x', 'XGBoost.x', 'y']
+        "Imputer": ["Imputer", "X", "y"],
+        "Logistic Regression": ["Logistic Regression Classifier", "Imputer.x", "y"],
+        "XGBoost": ["XGBoost Classifier", "X", "y"],
+        "Stacked Ensembler": [
+            "Stacked Ensemble Classifier",
+            "Logistic Regression.x",
+            "XGBoost.x",
+            "y",
+        ],
     }
     if is_binary(problem_type):
         X, y = X_y_binary
@@ -1612,25 +1617,42 @@ def test_explain_predictions_stacked_ensemble(
         pipeline = MulticlassClassificationPipeline(classifier_pl)
     else:
         X, y = X_y_regression
-        pipeline = RegressionPipeline({
-            'Imputer': ['Imputer', 'X', 'y'],
-            'Catboost': ['Catboost Regressor', 'Imputer.x', 'y'],
-            'XGBoost': ['XGBoost Regressor', 'X', 'y'],
-            'Stacked Ensembler': ['Stacked Ensemble Regressor', 'Catboost.x', 'XGBoost.x', 'y']
-        })
+        pipeline = RegressionPipeline(
+            {
+                "Imputer": ["Imputer", "X", "y"],
+                "Catboost": ["Catboost Regressor", "Imputer.x", "y"],
+                "XGBoost": ["XGBoost Regressor", "X", "y"],
+                "Stacked Ensembler": [
+                    "Stacked Ensemble Regressor",
+                    "Catboost.x",
+                    "XGBoost.x",
+                    "y",
+                ],
+            }
+        )
     pipeline.fit(X, y)
 
-    report = explain_predictions(pipeline, X, y, indices_to_explain=[0], output_format='dict')
-    explanations_data = report['explanations'][0]['explanations'][0]
-    assert explanations_data['feature_names'] == ['Col 1 Logistic Regression.x', 'Col 1 XGBoost.x']
-    np.testing.assert_almost_equal(explanations_data['feature_values'], [0.3277702030446267, 0.044956497848033905])
-    assert explanations_data['qualitative_explanation'] == ['-', '-----']
-    assert explanations_data['quantitative_explanation'] == [None, None]
+    report = explain_predictions(
+        pipeline, X, y, indices_to_explain=[0], output_format="dict"
+    )
+    explanations_data = report["explanations"][0]["explanations"][0]
+    assert explanations_data["feature_names"] == [
+        "Col 1 Logistic Regression.x",
+        "Col 1 XGBoost.x",
+    ]
+    np.testing.assert_almost_equal(
+        explanations_data["feature_values"], [0.3277702030446267, 0.044956497848033905]
+    )
+    assert explanations_data["qualitative_explanation"] == ["-", "-----"]
+    assert explanations_data["quantitative_explanation"] == [None, None]
 
-    report = explain_predictions_best_worst(pipeline, X, y, output_format='dict')
-    explanations_data = report['explanations']
+    report = explain_predictions_best_worst(pipeline, X, y, output_format="dict")
+    explanations_data = report["explanations"]
     for entry in explanations_data:
-        assert set(entry['explanations'][0]['feature_names']) == {'Col 1 Logistic Regression.x', 'Col 1 XGBoost.x'}
+        assert set(entry["explanations"][0]["feature_names"]) == {
+            "Col 1 Logistic Regression.x",
+            "Col 1 XGBoost.x",
+        }
 
 
 @pytest.mark.parametrize(
