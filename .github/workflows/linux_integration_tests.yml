@@ -48,3 +48,10 @@ jobs:
         with:
           name: pytest-duration-report
           path: test-reports/${{matrix.command}}-junit.xml
+      - name: install coverage
+        run: pip install coverage
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
