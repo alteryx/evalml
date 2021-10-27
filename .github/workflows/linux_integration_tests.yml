@@ -1,4 +1,4 @@
-name: INTEGRATION tests, linux
+name: Integration tests, linux
 
 on:
   pull_request:
@@ -39,6 +39,10 @@ jobs:
           make installdeps
           make installdeps-test
           pip freeze
+      - name: Erase Coverage
+        run: |
+          source test_python/bin/activate
+          coverage erase
       - name: Run integration tests
         run: |
           source test_python/bin/activate
