@@ -1,4 +1,4 @@
-name: Integration tests, linux
+name: INTEGRATION tests, linux
 
 on:
   pull_request:
@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 2
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
-        name: Installing Dependencies
+      - name: Installing Dependencies
         run: |
           pip install virtualenv
           virtualenv test_python -q
