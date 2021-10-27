@@ -1596,11 +1596,11 @@ def test_explain_predictions_stacked_ensemble(
     classifier_pl = {
         "Imputer": ["Imputer", "X", "y"],
         "Logistic Regression": ["Logistic Regression Classifier", "Imputer.x", "y"],
-        "Catboost": ["Catboost Classifier", "X", "y"],
+        "RF": ["Random Forest Classifier", "X", "y"],
         "Stacked Ensembler": [
             "Stacked Ensemble Classifier",
             "Logistic Regression.x",
-            "Catboost.x",
+            "RF.x",
             "y",
         ],
     }
@@ -1615,12 +1615,16 @@ def test_explain_predictions_stacked_ensemble(
         pipeline = RegressionPipeline(
             {
                 "Imputer": ["Imputer", "X", "y"],
-                "Catboost": ["Catboost Regressor", "Imputer.x", "y"],
-                "XGBoost": ["XGBoost Regressor", "X", "y"],
+                "Logistic Regression": [
+                    "Logisitc Regression Regressor",
+                    "Imputer.x",
+                    "y",
+                ],
+                "RF": ["Random Forest Regressor", "X", "y"],
                 "Stacked Ensembler": [
                     "Stacked Ensemble Regressor",
-                    "Catboost.x",
-                    "XGBoost.x",
+                    "Logistic Regression.x",
+                    "RF.x",
                     "y",
                 ],
             }
@@ -1633,12 +1637,12 @@ def test_explain_predictions_stacked_ensemble(
     explanations_data = report["explanations"][0]["explanations"][0]
     assert explanations_data["feature_names"] == [
         "Col 1 Logistic Regression.x",
-        "Col 1 XGBoost.x",
+        "Col 1 RF.x",
     ]
     np.testing.assert_almost_equal(
-        explanations_data["feature_values"], [0.3277702030446267, 0.044956497848033905]
+        explanations_data["feature_values"], [0.3277702030446267, 0.0218182]
     )
-    assert explanations_data["qualitative_explanation"] == ["-", "-----"]
+    assert explanations_data["qualitative_explanation"] == ["--", "----"]
     assert explanations_data["quantitative_explanation"] == [None, None]
 
     report = explain_predictions_best_worst(pipeline, X, y, output_format="dict")
@@ -1646,7 +1650,7 @@ def test_explain_predictions_stacked_ensemble(
     for entry in explanations_data:
         assert set(entry["explanations"][0]["feature_names"]) == {
             "Col 1 Logistic Regression.x",
-            "Col 1 XGBoost.x",
+            "Col 1 RF.x",
         }
 
 
