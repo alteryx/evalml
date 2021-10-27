@@ -15,7 +15,6 @@ from .multiclass_classification_pipeline import (
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
-from evalml import problem_types
 from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (  # noqa: F401
@@ -371,13 +370,25 @@ def _make_stacked_ensemble_pipeline(
 
 
 def make_pipeline_from_actions(problem_type, actions):
+    """Creates a pipeline of components to address the input DataCheckAction list.
+
+    Args:
+        problem_type (str or ProblemType): The problem type that the pipeline should address.
+        actions (list[DataCheckAction]): List of DataCheckAction objects used to create list of components
+
+    Returns:
+        PipelineBase: Pipeline which can be used to address data check actions.
+    """
     component_list = _make_component_list_from_actions(actions)
+    parameters = {}
+    for component in component_list:
+        parameters[component.name] = component.parameters
     component_dict = PipelineBase._make_component_dict_from_component_list(
-        component_list
+        [component.name for component in component_list]
     )
     problem_type = handle_problem_types(problem_type)
     base_class = _get_pipeline_base_class(problem_type)
-    return base_class(component_dict)
+    return base_class(component_dict, parameters=parameters)
 
 
 def _make_component_list_from_actions(actions):
@@ -391,6 +402,7 @@ def _make_component_list_from_actions(actions):
     """
     components = []
     cols_to_drop = []
+    indices_to_drop = []
     for action in actions:
         if action.action_code == DataCheckActionCode.DROP_COL:
             cols_to_drop.append(action.metadata["column"])
@@ -401,10 +413,14 @@ def _make_component_list_from_actions(actions):
                     TargetImputer(impute_strategy=metadata["impute_strategy"])
                 )
         elif action.action_code == DataCheckActionCode.DROP_ROWS:
-            indices = action.metadata["indices"]
-            components.append(DropRowsTransformer(indices_to_drop=indices))
+            indices_to_drop.extend(action.metadata["indices"])
     if cols_to_drop:
+        cols_to_drop = sorted(set(cols_to_drop))
         components.append(DropColumns(columns=cols_to_drop))
+    if indices_to_drop:
+        indices_to_drop = sorted(set(indices_to_drop))
+        components.append(DropRowsTransformer(indices_to_drop=indices_to_drop))
+
     return components
 
 

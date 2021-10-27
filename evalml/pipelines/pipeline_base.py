@@ -651,6 +651,9 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         ]
         for attribute in attributes_to_check:
             if getattr(self, attribute) != getattr(other, attribute):
+                import pdb
+
+                pdb.set_trace()
                 return False
         return True
 

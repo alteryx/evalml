@@ -11,7 +11,6 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
-    components,
 )
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
@@ -272,16 +271,18 @@ def test_make_pipeline_problem_type_mismatch():
 
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
 def test_make_pipeline_from_actions(problem_type):
-    base_class = _get_pipeline_base_class(problem_type)
+    pipeline_class = _get_pipeline_base_class(problem_type)
 
-    assert make_pipeline_from_actions(problem_type, []) == base_class(
+    assert make_pipeline_from_actions(problem_type, []) == pipeline_class(
         component_graph={}
     )
 
     actions = [DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some col"})]
-    assert make_pipeline_from_actions(problem_type, actions) == [
-        DropColumns(columns=["some col"])
-    ]
+    assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
+        component_graph={"Drop Columns Transformer": [DropColumns, "X", "y"]},
+        parameters={"Drop Columns Transformer": {"columns": ["some col"]}},
+        random_seed=0,
+    )
 
     actions = [
         DataCheckAction(DataCheckActionCode.DROP_COL, metadata={"column": "some col"}),
@@ -295,32 +296,50 @@ def test_make_pipeline_from_actions(problem_type):
         ),
         DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [1, 2]}),
     ]
-    assert make_pipeline_from_actions(problem_type, actions) == [
-        TargetImputer(impute_strategy="most_frequent"),
-        DropRowsTransformer(indices_to_drop=[1, 2]),
-        DropColumns(columns=["some col"]),
-    ]
+
+    assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
+        component_graph={
+            "Target Imputer": [TargetImputer, "X", "y"],
+            "Drop Rows Transformer": [DropRowsTransformer, "X", "Target Imputer.y"],
+            "Drop Columns Transformer": [
+                DropColumns,
+                "Drop Rows Transformer.x",
+                "Drop Rows Transformer.y",
+            ],
+        },
+        parameters={
+            "Target Imputer": {"impute_strategy": "most_frequent", "fill_value": None},
+            "Drop Rows Transformer": {"indices_to_drop": [1, 2]},
+            "Drop Columns Transformer": {"columns": ["some col"]},
+        },
+        random_seed=0,
+    )
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
 def test_make_pipeline_from_actions_with_duplicate_actions(problem_type):
-    base_class = _get_pipeline_base_class(problem_type)
+    pipeline_class = _get_pipeline_base_class(problem_type)
 
     actions = [
         DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some col"}),
         DataCheckAction(DataCheckActionCode.DROP_COL, {"column": "some other col"}),
     ]
-    assert make_pipeline_from_actions(problem_type, actions) == [
-        DropColumns(columns=["some col", "some other col"])
-    ]
+    assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
+        component_graph={"Drop Columns Transformer": [DropColumns, "X", "y"]},
+        parameters={
+            "Drop Columns Transformer": {"columns": ["some col", "some other col"]}
+        },
+        random_seed=0,
+    )
     actions = [
         DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [0, 3]}),
         DataCheckAction(DataCheckActionCode.DROP_ROWS, metadata={"indices": [1, 2]}),
     ]
-    assert make_pipeline_from_actions(problem_type, actions) == [
-        DropRowsTransformer(indices_to_drop=[0, 3]),
-        DropRowsTransformer(indices_to_drop=[1, 2]),
-    ]
+    assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
+        component_graph={"Drop Rows Transformer": [DropRowsTransformer, "X", "y"]},
+        parameters={"Drop Rows Transformer": {"indices_to_drop": [0, 1, 2, 3]}},
+        random_seed=0,
+    )
 
 
 @pytest.mark.parametrize(
