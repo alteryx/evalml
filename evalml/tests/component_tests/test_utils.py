@@ -81,6 +81,10 @@ requirements_list = [
     "Vowpal Wabbit Regressor",
     "Vowpal Wabbit Multiclass Classifier",
     "Vowpal Wabbit Binary Classifier",
+    "ARIMA Regressor",
+    "Polynomial Detrender",
+    "Target Encoder",
+    "Oversampler",
 ]
 not_supported_in_conda = [
     "Prophet Regressor",
