@@ -63,6 +63,7 @@ git-test-modelunderstanding:
 
 .PHONY: git-test-other-core
 git-test-other-core:
+	pytest evalml/tests/component_tests/test_utils.py
 	pytest evalml/tests --ignore evalml/tests/automl_tests/ --ignore evalml/tests/tuner_tests/ --ignore evalml/tests/model_understanding_tests/ -n 2 --durations 0 --cov=evalml --junitxml=test-reports/git-test-other-core-junit.xml --has-minimal-dependencies
 	make doctests
 

@@ -127,10 +127,10 @@ def test_all_components(
         # No prophet
         expected_components = [component for component in minimum_dependencies_list + requirements_list if component not in not_supported_in_windows]
     elif is_using_windows and is_running_py_39_or_above:
-        # No detrender, no arima, no prophet
+        # No detrender, no ARIMA, no prophet
         expected_components = [component for component in minimum_dependencies_list + requirements_list if component not in not_supported_in_windows_py39]
     elif not is_using_windows and is_running_py_39_or_above:
-        # No detrender or arima
+        # No detrender or ARIMA
         expected_components = [component for component in minimum_dependencies_list + requirements_list if component not in not_supported_in_linux_py39]
     else:
         expected_components = minimum_dependencies_list + requirements_list + prophet
