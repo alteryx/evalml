@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Limit computationally-intensive models during ``AutoMLSearch`` for certain multiclass problems, allow for opt-in with parameter ``allow_long_running_models`` :pr:`2982`
     * Fixes
+        * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
     * Changes
     * Documentation Changes
     * Testing Changes
