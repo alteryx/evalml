@@ -299,7 +299,6 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
             else:
                 continue
             if "Drop Columns Transformer" in split:
-                print(component_name)
                 assert algo._pipeline_params[component_name]["columns"] == columns
                 assert pipeline.parameters[component_name]["columns"] == columns
 
