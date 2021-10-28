@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -27,7 +28,6 @@ Release Notes
         * Fixed ``DropColumns`` component not receiving parameters in ``DefaultAlgorithm`` :pr:`2945`
         * Fixed bug where trained binary thresholds were not being returned by ``get_pipeline`` or ``clone`` :pr:`2948`
         * Fixed bug where ``Oversampler`` selected ww logical categorical instead of ww semantic category :pr:`2946`
-        * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
     * Changes
         * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
         * Refactored ``OutliersDataCheck`` and ``HighlyNullDataCheck`` to add more descriptive metadata :pr:`2907`
