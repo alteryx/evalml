@@ -137,7 +137,9 @@ class CatBoostClassifier(Estimator):
             predictions = self._label_encoder.inverse_transform(
                 predictions.astype(np.int64)
             )
-        return infer_feature_types(predictions)
+        predictions = infer_feature_types(predictions)
+        predictions.index = X.index
+        return predictions
 
     @property
     def feature_importance(self):
