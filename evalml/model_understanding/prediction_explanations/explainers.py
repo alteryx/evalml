@@ -9,6 +9,7 @@ import numpy as np
 import pandas as pd
 
 from evalml.exceptions import PipelineScoreError
+from evalml.model_family import ModelFamily
 from evalml.model_understanding.prediction_explanations._report_creator_factory import (
     _report_creator_factory,
 )
@@ -20,6 +21,7 @@ from evalml.problem_types import (
 )
 from evalml.utils import infer_feature_types
 from evalml.utils.gen_utils import drop_rows_with_nans
+from evalml.pipelines.components import Estimator
 
 # Container for all of the pipeline-related data we need to create reports. Helps standardize APIs of report makers.
 _ReportData = namedtuple(
@@ -43,6 +45,7 @@ def explain_predictions(
     input_features,
     y,
     indices_to_explain,
+    estimator=None,
     top_k_features=3,
     include_explainer_values=False,
     include_expected_value=False,
@@ -63,6 +66,8 @@ def explain_predictions(
         input_features (pd.DataFrame): Dataframe of input data to evaluate the pipeline on.
         y (pd.Series): Labels for the input data.
         indices_to_explain (list[int]): List of integer indices to explain.
+        estimator (str): Used only for Stacked Ensemble pipelines, indicates which estimator to generate SHAP values from.
+            Passing "metalearner" will use the end stacked ensemble metalearner to generate SHAP values. 
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.  Default is 3.
         include_explainer_values (bool): Whether explainer (SHAP or LIME) values should be included in the table. Default is False.
@@ -106,6 +111,14 @@ def explain_predictions(
         )
     if algorithm == "lime" and "CatBoost" in pipeline.estimator.name:
         raise ValueError("CatBoost models are not supported by LIME at this time")
+    
+    ensemble_pipeline = None
+    if pipeline.model_family == ModelFamily.ENSEMBLE:
+        if estimator is None:
+            raise ValueError("`input_pipeline` is a stacked ensemble pipeline. Pass in a specific estimator component name into the 'estimator' parameter. To predict on the metalearner, use `estimator='metalearner'`.")
+        elif estimator != 'metalearner' and isinstance(pipeline.get_component(estimator), Estimator):
+            ensemble_pipeline = pipeline
+            pipeline = ensemble_pipeline.get_subpipeline(estimator)
 
     pipeline_features = pipeline.transform_all_but_final(
         input_features, y, training_data, training_target
@@ -161,6 +174,7 @@ def explain_predictions_best_worst(
     pipeline,
     input_features,
     y_true,
+    estimator=None,
     num_to_explain=5,
     top_k_features=3,
     include_explainer_values=False,
@@ -182,6 +196,8 @@ def explain_predictions_best_worst(
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP or LIME.
         input_features (pd.DataFrame): Input data to evaluate the pipeline on.
         y_true (pd.Series): True labels for the input data.
+        estimator (str): Used only for Stacked Ensemble pipelines, indicates which estimator to generate SHAP values from.
+            Passing "metalearner" will use the end stacked ensemble metalearner to generate SHAP values. 
         num_to_explain (int): How many of the best, worst, random data points to explain.
         top_k_features (int): How many of the highest/lowest contributing feature to include in the table for each
             data point.
@@ -232,6 +248,13 @@ def explain_predictions_best_worst(
         raise ValueError(
             f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}"
         )
+    ensemble_pipeline = None
+    if pipeline.model_family == ModelFamily.ENSEMBLE:
+        if estimator is None:
+            raise ValueError("`input_pipeline` is a stacked ensemble pipeline. Pass in a specific estimator component name into the 'estimator' parameter. To predict on the metalearner, use `estimator='metalearner'`.")
+        elif estimator != 'metalearner' and isinstance(pipeline.get_component(estimator), Estimator):
+            ensemble_pipeline = pipeline
+            pipeline = ensemble_pipeline.get_subpipeline(estimator)
     if not metric:
         metric = DEFAULT_METRICS[pipeline.problem_type]
     _update_progress(

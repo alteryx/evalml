@@ -803,9 +803,12 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         """
         new_component_graph = self.component_graph.get_subgraph(component_name)
         new_parameters = {component: new_component_graph.component_dict[component] for component in new_component_graph.compute_order}
-        return self.__class__(
+        new_pl = self.__class__(
             new_component_graph,
             parameters=new_parameters,
-            custom_name=self.custom_name,
-            random_seed=self.random_seed,
+            custom_name=None,
+            random_seed=self.random_seed
         )
+        new_pl.custom_name = f"{new_pl.summary}, a subpipeline of {self.name}"
+        new_pl._is_fitted = self._is_fitted
+        return new_pl
