@@ -8,6 +8,7 @@ from skopt.space import Categorical, Integer, Real
 from .automl_algorithm import AutoMLAlgorithm
 
 from evalml.model_family import ModelFamily
+from evalml.pipelines import pipeline_base
 from evalml.pipelines.components import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
@@ -19,8 +20,12 @@ from evalml.pipelines.components.utils import (
     get_estimators,
     handle_component_class,
 )
-from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types import is_regression
+from evalml.pipelines.utils import (
+    _make_pipeline_from_multiple_graphs,
+    make_pipeline,
+)
+from evalml.problem_types import is_classification, is_regression
+from evalml.problem_types.utils import is_classification
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
@@ -316,6 +321,21 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     "RF Classifier Select From Model"
                 ).get_names()
 
+            try:
+                self._selected_cat_cols = []
+                ohe = pipeline.get_component("One Hot Encoder")
+                feature_provenance = ohe._get_feature_provenance()
+                for original_col in feature_provenance:
+                    selected = False
+                    for encoded_col in feature_provenance[original_col]:
+                        if encoded_col in self._selected_cols:
+                            selected = True
+                            self._selected_cols.remove(encoded_col)
+                    if selected:
+                        self._selected_cat_cols.append(original_col)
+            except ValueError:
+                pass
+
         current_best_score = self._best_pipeline_info.get(
             pipeline.model_family, {}
         ).get("mean_cv_score", np.inf)
@@ -369,3 +389,48 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 component_parameters["n_jobs"] = self.n_jobs
             parameters[name] = component_parameters
         return parameters
+
+    def _make_split_pipeline(
+        self, estimator, extra_components, parameters, pipeline_name
+    ):
+        component_graph = (
+            {"Label Encoder": ["Label Encoder", "X", "y"]}
+            if is_classification(self.problem_type)
+            else {}
+        )
+        basic_pipeline_parameters = {
+            "Select Columns Transformer": {"columns": self._selected_cols}
+        }
+        basic_pipeline = make_pipeline(
+            self.X,
+            self.y,
+            None,
+            self.problem_type,
+            sampler_name=self.sampler_name,
+            parameters=basic_pipeline_parameters,
+            extra_components=[SelectColumns],
+            extra_components_position="before_estimator",
+        )
+
+        categorical_pipeline_parameters = {
+            "Select Columns Transformer": {"columns": self._selected_cat_cols}
+        }
+        categorical_pipeline = make_pipeline(
+            self.X,
+            self.y,
+            None,
+            self.problem_type,
+            sampler_name=self.sampler_name,
+            parameters=categorical_pipeline_parameters,
+            extra_components=[SelectColumns],
+            extra_components_position="before_preprocessing",
+        )
+        input_pipelines = [basic_pipeline, categorical_pipeline]
+        return _make_pipeline_from_multiple_graphs(
+            input_pipelines,
+            estimator,
+            self.problem_type,
+            component_graph,
+            pipeline_name=pipeline_name,
+            random_seed=self.random_seed,
+        )

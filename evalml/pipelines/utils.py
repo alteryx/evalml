@@ -17,6 +17,7 @@ from .regression_pipeline import RegressionPipeline
 
 from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
+from evalml.pipelines import components, pipeline_base
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
@@ -158,7 +159,7 @@ def _get_preprocessing_components(
             )
             pp_components.append(Undersampler)
 
-    if estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+    if estimator_class and estimator_class.model_family == ModelFamily.LINEAR_MODEL:
         pp_components.append(StandardScaler)
 
     return pp_components
@@ -188,6 +189,7 @@ def make_pipeline(
     parameters=None,
     sampler_name=None,
     extra_components=None,
+    extra_components_position="before_preprocessing",
 ):
     """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
@@ -211,18 +213,32 @@ def make_pipeline(
     X = infer_feature_types(X)
     y = infer_feature_types(y)
 
-    problem_type = handle_problem_types(problem_type)
-    if estimator not in get_estimators(problem_type):
-        raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
-    if not is_classification(problem_type) and sampler_name is not None:
-        raise ValueError(
-            f"Sampling is unsupported for problem_type {str(problem_type)}"
-        )
+    if estimator:
+        problem_type = handle_problem_types(problem_type)
+        if estimator not in get_estimators(problem_type):
+            raise ValueError(
+                f"{estimator.name} is not a valid estimator for problem type"
+            )
+        if not is_classification(problem_type) and sampler_name is not None:
+            raise ValueError(
+                f"Sampling is unsupported for problem_type {str(problem_type)}"
+            )
+
     preprocessing_components = _get_preprocessing_components(
         X, y, problem_type, estimator, sampler_name
     )
     extra_components = extra_components or []
-    complete_component_list = preprocessing_components + extra_components + [estimator]
+    estimator = estimator or []
+
+    if extra_components_position == "before_preprocessing":
+        complete_component_list = (
+            extra_components + preprocessing_components + estimator
+        )
+    else:
+        complete_component_list = (
+            preprocessing_components + extra_components + estimator
+        )
+
     component_graph = PipelineBase._make_component_dict_from_component_list(
         complete_component_list
     )
@@ -280,18 +296,12 @@ def _make_stacked_ensemble_pipeline(
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
-
-    def _make_new_component_name(model_type, component_name, idx=None):
-        idx = " " + str(idx) if idx is not None else ""
-        return f"{str(model_type)} Pipeline{idx} - {component_name}"
-
     component_graph = (
         {"Label Encoder": ["Label Encoder", "X", "y"]}
         if is_classification(problem_type)
         else {}
     )
-    final_components = []
-    used_model_families = []
+
     parameters = {}
 
     if is_classification(problem_type):
@@ -311,20 +321,50 @@ def _make_stacked_ensemble_pipeline(
         estimator = StackedEnsembleRegressor
         pipeline_name = "Stacked Ensemble Regression Pipeline"
 
-    pipeline_class = {
-        ProblemTypes.BINARY: BinaryClassificationPipeline,
-        ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
-        ProblemTypes.REGRESSION: RegressionPipeline,
-    }[problem_type]
+    return _make_pipeline_from_multiple_graphs(
+        input_pipelines,
+        estimator,
+        problem_type,
+        component_graph,
+        parameters,
+        pipeline_name,
+        random_seed,
+    )
+
+
+def _make_pipeline_from_multiple_graphs(
+    input_pipelines,
+    estimator,
+    problem_type,
+    component_graph={},
+    parameters={},
+    pipeline_name=None,
+    random_seed=0,
+):
+    def _make_new_component_name(model_type, component_name, idx=None):
+        idx = " " + str(idx) if idx is not None else ""
+        return f"{str(model_type)} Pipeline{idx} - {component_name}"
+
+    final_components = []
+    used_model_families = []
 
     for pipeline in input_pipelines:
-        model_family = pipeline.component_graph[-1].model_family
-        model_family_idx = (
-            used_model_families.count(model_family) + 1
-            if used_model_families.count(model_family) > 0
-            else None
-        )
-        used_model_families.append(model_family)
+        if pipeline.estimator:
+            model_family = pipeline.component_graph[-1].model_family
+            model_family_idx = (
+                used_model_families.count(model_family) + 1
+                if used_model_families.count(model_family) > 0
+                else None
+            )
+            used_model_families.append(model_family)
+        else:
+            model_family = pipeline.name
+            model_family_idx = (
+                used_model_families.count(model_family) + 1
+                if used_model_families.count(model_family) > 0
+                else None
+            )
+            used_model_families.append(model_family)
         final_component = None
         ensemble_y = "y"
         for name, component_list in pipeline.component_graph.component_dict.items():
@@ -360,6 +400,11 @@ def _make_stacked_ensemble_pipeline(
         [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
     )
 
+    pipeline_class = {
+        ProblemTypes.BINARY: BinaryClassificationPipeline,
+        ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
+        ProblemTypes.REGRESSION: RegressionPipeline,
+    }[problem_type]
     return pipeline_class(
         component_graph,
         parameters=parameters,

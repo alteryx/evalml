@@ -264,3 +264,24 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
                     pipeline.parameters["Drop Columns Transformer"]["columns"]
                     == columns
                 )
+
+
+def test_make_split_pipeline(X_y_binary):
+    X, y = X_y_binary
+    algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
+    algo._selected_cols = ["1", "2", "3"]
+    algo._selected_cat_cols = ["A", "B", "C"]
+    pipeline = algo._make_split_pipeline(
+        RandomForestClassifier, [], {}, "test_pipeline"
+    )
+    compute_order = [
+        "Label Encoder",
+        "Pipeline w/ Select Columns Transformer + Label Encoder + Imputer Pipeline - Select Columns Transformer",
+        "Pipeline w/ Select Columns Transformer + Label Encoder + Imputer Pipeline - Label Encoder",
+        "Pipeline w/ Select Columns Transformer + Label Encoder + Imputer Pipeline - Imputer",
+        "Pipeline w/ Label Encoder + Imputer + Select Columns Transformer Pipeline - Label Encoder",
+        "Pipeline w/ Label Encoder + Imputer + Select Columns Transformer Pipeline - Imputer",
+        "Pipeline w/ Label Encoder + Imputer + Select Columns Transformer Pipeline - Select Columns Transformer",
+        "Random Forest Classifier",
+    ]
+    assert pipeline.component_graph.compute_order == compute_order
