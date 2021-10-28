@@ -8,7 +8,7 @@ graphviz==0.17
 imbalanced-learn==0.8.1
 ipywidgets==7.6.5
 kaleido==0.2.1
-lightgbm==3.3.0
+lightgbm==3.3.1
 lime==0.2.0.1
 matplotlib==3.4.3
 matplotlib-inline==0.1.3
