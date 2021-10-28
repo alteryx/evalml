@@ -260,6 +260,14 @@ def test_smoten_categorical_boolean(X_y_binary):
     assert sn.sampler == im.SMOTEN
 
 
+def test_smotenc_boolean_numeric(X_y_binary):
+    X, y = X_y_binary
+    X_ww = infer_feature_types(X, feature_types={5: "Boolean", 12: "Boolean"})
+    snc = Oversampler()
+    _, _ = snc.fit_transform(X_ww, y)
+    assert snc.sampler == im.SMOTENC
+
+
 def test_smotenc_categorical_features(X_y_binary):
     X, y = X_y_binary
     X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
