@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Limit computationally-intensive models during ``AutoMLSearch``, allow for opt-in with parameter ``allow_long_running_models`` :pr:`2982`
+        * Limit computationally-intensive models during ``AutoMLSearch`` for certain multiclass problems, allow for opt-in with parameter ``allow_long_running_models`` :pr:`2982`
     * Fixes
     * Changes
     * Documentation Changes

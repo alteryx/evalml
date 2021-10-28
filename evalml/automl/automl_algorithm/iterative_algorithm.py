@@ -15,7 +15,7 @@ from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types import is_time_series
+from evalml.problem_types import is_multiclass, is_time_series
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
@@ -151,17 +151,27 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     )
 
     def _filter_estimators(self, estimators):
+        """Function to remove computationally expensive and long-running estimators from datasets with large numbers of unique classes. Thresholds were determined empirically."""
         estimators_to_drop = []
         if (
-            str(self.problem_type) != "multiclass"
+            not is_multiclass(self.problem_type)
             or self.allow_long_running_models
             or self.allowed_model_families is not None
         ):
             return estimators
-        if self.y.nunique() > 75:
+        unique = self.y.nunique()
+        if unique > 75:
             estimators_to_drop.extend(["Elastic Net Classifier", "XGBoost Classifier"])
-        if self.y.nunique() > 150:
+        if unique > 150:
             estimators_to_drop.append("CatBoost Classifier")
+        if len(estimators_to_drop):
+            self.logger.info(
+                "Dropping estimators {} because the number of unique targets is {} and `allow_long_running_models` is set to {}".format(
+                    ", ".join(estimators_to_drop),
+                    unique,
+                    self.allow_long_running_models,
+                )
+            )
         estimators = [e for e in estimators if e.name not in estimators_to_drop]
         return estimators
 

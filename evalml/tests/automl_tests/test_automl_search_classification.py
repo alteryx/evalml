@@ -1632,16 +1632,23 @@ def test_time_series_pipeline_parameter_warnings(
 
 
 @pytest.mark.parametrize("allow_long_running_models", [True, False])
+@pytest.mark.parametrize("unique", [10, 200])
 def test_automl_passes_allow_long_running_models_iterative(
-    allow_long_running_models, X_y_multi
+    unique, allow_long_running_models, caplog, has_minimal_dependencies
 ):
-    X, y = X_y_multi
+    X = pd.DataFrame()
+    y = pd.Series([i for i in range(unique)] * 5)
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type="multiclass",
         allow_long_running_models=allow_long_running_models,
+        verbose=True,
     )
     assert (
         automl._automl_algorithm.allow_long_running_models == allow_long_running_models
     )
+    if has_minimal_dependencies or allow_long_running_models or unique == 10:
+        assert "Dropping estimators" not in caplog.text
+        return
+    assert "Dropping estimators" in caplog.text
