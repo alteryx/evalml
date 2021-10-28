@@ -164,15 +164,16 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             estimators_to_drop.extend(["Elastic Net Classifier", "XGBoost Classifier"])
         if unique > 150:
             estimators_to_drop.append("CatBoost Classifier")
-        if len(estimators_to_drop):
+        dropped_estimators = [e for e in estimators if e.name in estimators_to_drop]
+        if len(dropped_estimators):
             self.logger.info(
                 "Dropping estimators {} because the number of unique targets is {} and `allow_long_running_models` is set to {}".format(
-                    ", ".join(estimators_to_drop),
+                    ", ".join(sorted([e.name for e in dropped_estimators])),
                     unique,
                     self.allow_long_running_models,
                 )
             )
-        estimators = [e for e in estimators if e.name not in estimators_to_drop]
+        estimators = list(set(estimators).difference(set(dropped_estimators)))
         return estimators
 
     def _create_pipelines(self):
