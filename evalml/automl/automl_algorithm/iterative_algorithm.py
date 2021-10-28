@@ -173,7 +173,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     self.allow_long_running_models,
                 )
             )
-        estimators = list(set(estimators).difference(set(dropped_estimators)))
+        estimators = [e for e in estimators if e not in dropped_estimators]
         return estimators
 
     def _create_pipelines(self):
