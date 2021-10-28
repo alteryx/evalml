@@ -228,7 +228,7 @@ def make_pipeline(
         X, y, problem_type, estimator, sampler_name
     )
     extra_components = extra_components or []
-    estimator = estimator or []
+    estimator = [estimator] if estimator else []
 
     if extra_components_position == "before_preprocessing":
         complete_component_list = (

@@ -390,9 +390,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             parameters[name] = component_parameters
         return parameters
 
-    def _make_split_pipeline(
-        self, estimator, extra_components, parameters, pipeline_name
-    ):
+    def _make_split_pipeline(self, estimator, pipeline_name):
         component_graph = (
             {"Label Encoder": ["Label Encoder", "X", "y"]}
             if is_classification(self.problem_type)
