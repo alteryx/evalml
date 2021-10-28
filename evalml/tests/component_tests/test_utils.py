@@ -26,81 +26,81 @@ multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
 
 
 minimum_dependencies_list = [
-    "Stacked Ensemble Regressor",
-    "Stacked Ensemble Classifier",
-    "SVM Regressor",
-    "Time Series Baseline Estimator",
-    "Decision Tree Regressor",
-    "Baseline Regressor",
-    "Extra Trees Regressor",
-    "Random Forest Regressor",
-    "Linear Regressor",
-    "Elastic Net Regressor",
-    "SVM Classifier",
-    "KNN Classifier",
-    "Decision Tree Classifier",
     "Baseline Classifier",
-    "Extra Trees Classifier",
-    "Elastic Net Classifier",
-    "Random Forest Classifier",
-    "Logistic Regression Classifier",
-    "Drop Rows Transformer",
-    "URL Featurizer",
-    "Email Featurizer",
-    "Log Transformer",
+    "Baseline Regressor",
     "DFS Transformer",
-    "Delayed Feature Transformer",
-    "Text Featurization Component",
-    "LSA Transformer",
-    "Drop Null Columns Transformer",
     "DateTime Featurization Component",
-    "PCA Transformer",
+    "Decision Tree Classifier",
+    "Decision Tree Regressor",
+    "Delayed Feature Transformer",
+    "Drop Columns Transformer",
+    "Drop Null Columns Transformer",
+    "Drop Rows Transformer",
+    "Elastic Net Classifier",
+    "Elastic Net Regressor",
+    "Email Featurizer",
+    "Extra Trees Classifier",
+    "Extra Trees Regressor",
+    "Imputer",
+    "KNN Classifier",
+    "LSA Transformer",
+    "Label Encoder",
     "Linear Discriminant Analysis Transformer",
+    "Linear Regressor",
+    "Log Transformer",
+    "Logistic Regression Classifier",
+    "One Hot Encoder",
+    "PCA Transformer",
+    "Per Column Imputer",
+    "RF Classifier Select From Model",
+    "RF Regressor Select From Model",
+    "Random Forest Classifier",
+    "Random Forest Regressor",
+    "SVM Classifier",
+    "SVM Regressor",
     "Select Columns By Type Transformer",
     "Select Columns Transformer",
-    "Drop Columns Transformer",
-    "Undersampler",
+    "Simple Imputer",
+    "Stacked Ensemble Classifier",
+    "Stacked Ensemble Regressor",
     "Standard Scaler",
     "Target Imputer",
-    "Imputer",
-    "Per Column Imputer",
-    "Simple Imputer",
-    "RF Regressor Select From Model",
-    "RF Classifier Select From Model",
-    "Label Encoder",
-    "One Hot Encoder",
+    "Text Featurization Component",
+    "Time Series Baseline Estimator",
+    "URL Featurizer",
+    "Undersampler",
 ]
 requirements_list = [
-    "XGBoost Regressor",
-    "XGBoost Classifier",
-    "CatBoost Regressor",
-    "LightGBM Regressor",
-    "LightGBM Classifier",
-    "CatBoost Classifier",
-    "XGBoost Classifier",
-    "Vowpal Wabbit Regressor",
-    "Vowpal Wabbit Multiclass Classifier",
-    "Vowpal Wabbit Binary Classifier",
     "ARIMA Regressor",
-    "Polynomial Detrender",
-    "Target Encoder",
+    "CatBoost Classifier",
+    "CatBoost Regressor",
+    "LightGBM Classifier",
+    "LightGBM Regressor",
     "Oversampler",
+    "Polynomial Detrender",
+    "Prophet Regressor"
+    "Target Encoder",
+    "Vowpal Wabbit Binary Classifier",
+    "Vowpal Wabbit Multiclass Classifier",
+    "Vowpal Wabbit Regressor",
+    "XGBoost Classifier",
+    "XGBoost Classifier",
+    "XGBoost Regressor",
 ]
 not_supported_in_conda = [
-    "Prophet Regressor",
     "ARIMA Regressor",
+    "Prophet Regressor",
     "Vowpal Wabbit Binary Classifier",
     "Vowpal Wabbit Multiclass Classifier",
     "Vowpal Wabbit Regressor",
 ]
-prophet = ["Prophet Regressor"]
 not_supported_in_windows = [
     "Prophet Regressor",
 ]
 not_supported_in_windows_py39 = [
-    "Prophet Regressor",
-    "Polynomial Detrender",
     "ARIMA Regressor",
+    "Polynomial Detrender",
+    "Prophet Regressor",
 ]
 not_supported_in_linux_py39 = [
     "ARIMA Regressor",
@@ -141,12 +141,11 @@ def test_all_components(
         # No detrender or ARIMA
         expected_components = [
             component
-            for component in minimum_dependencies_list + requirements_list + prophet
+            for component in minimum_dependencies_list + requirements_list
             if component not in not_supported_in_linux_py39
         ]
     else:
-        expected_components = minimum_dependencies_list + requirements_list + prophet
-    print(all_components())
+        expected_components = minimum_dependencies_list + requirements_list
     all_component_names = [component.name for component in all_components()]
     assert set(all_component_names) == set(expected_components)
 
