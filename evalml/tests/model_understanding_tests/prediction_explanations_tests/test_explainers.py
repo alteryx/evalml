@@ -1607,7 +1607,6 @@ def test_explain_predictions_stacked_ensemble(
         X, y = X_y_binary
         pipeline = BinaryClassificationPipeline(classifier_pl)
         exp_feature_names = {"Col 1 RF.x", "Col 1 Regression.x"}
-        exp_feature_values = [0.3277702030446267, 0.0218182]
         exp_qual = ["--", "----"]
     elif is_multiclass(problem_type):
         X, y = X_y_multi
@@ -1620,14 +1619,6 @@ def test_explain_predictions_stacked_ensemble(
             "Col 1 Regression.x",
             "Col 2 Regression.x",
         }
-        exp_feature_values = [
-            0.0971485,
-            0.2605395,
-            0.6103259,
-            0.1291346,
-            0.839842,
-            0.0630095,
-        ]
         exp_qual = ["+", "+", "-", "-", "--", "--"]
     else:
         X, y = X_y_regression
@@ -1649,7 +1640,6 @@ def test_explain_predictions_stacked_ensemble(
             }
         )
         exp_feature_names = {"RF.x", "Regression.x"}
-        exp_feature_values = [-43.2617589, -46.2504996]
         exp_qual = ["-", "-----"]
     pipeline.fit(X, y)
 
@@ -1658,9 +1648,6 @@ def test_explain_predictions_stacked_ensemble(
     )
     explanations_data = report["explanations"][0]["explanations"][0]
     assert set(explanations_data["feature_names"]) == exp_feature_names
-    np.testing.assert_almost_equal(
-        explanations_data["feature_values"], exp_feature_values
-    )
     assert explanations_data["qualitative_explanation"] == exp_qual
     assert (
         explanations_data["quantitative_explanation"]
