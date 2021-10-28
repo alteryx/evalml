@@ -969,12 +969,12 @@ def test_estimator_check_for_fit(X_y_binary):
             return self
 
         def predict(self, X):
-            series = pd.Series(dtype="string")
+            series = pd.Series([0] * len(X))
             series.ww.init()
             return series
 
         def predict_proba(self, X):
-            df = pd.DataFrame()
+            df = pd.DataFrame({0: [0] * len(X)})
             df.ww.init()
             return df
 

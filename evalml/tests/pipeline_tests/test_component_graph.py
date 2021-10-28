@@ -752,7 +752,7 @@ def test_component_graph_order(example_graph):
         pd.date_range("2020-09-08", periods=5),
     ],
 )
-def test_computation_input_custom_index(index, example_graph):
+def test_component_graph_predict_with_custom_index(index, example_graph):
     X = pd.DataFrame(
         {"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
         index=index,
@@ -765,7 +765,7 @@ def test_computation_input_custom_index(index, example_graph):
     component_graph.fit(X, y)
 
     X_t = component_graph.predict(X)
-    assert_index_equal(X_t.index, pd.RangeIndex(start=0, stop=5, step=1))
+    assert_index_equal(X_t.index, X.index)
     assert not X_t.isna().any(axis=None)
 
 
