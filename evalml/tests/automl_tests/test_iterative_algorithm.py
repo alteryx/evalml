@@ -3,6 +3,7 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
+from pytest import importorskip
 from skopt.space import Categorical, Integer, Real
 
 from evalml.automl.automl_algorithm import (
@@ -954,6 +955,7 @@ def test_iterative_algorithm_allow_long_running_models(
     allowed_component_graphs,
     allowed_model_families,
 ):
+    importorskip("xgboost", reason="Skipping test because XGBoost is not installed")
     X = pd.DataFrame()
     y = pd.Series([i for i in range(length)] * 5)
     y_short = pd.Series([i for i in range(10)] * 5)
@@ -1018,3 +1020,39 @@ def test_iterative_algorithm_allow_long_running_models_problem(
     assert len(algo.allowed_pipelines) + models_missing == len(
         algo_reg.allowed_pipelines
     )
+
+
+def test_iterative_algorithm_allow_long_running_models_next_batch():
+    models_missing = [
+        "Elastic Net Classifier",
+        "XGBoost Classifier",
+        "CatBoost Classifier",
+    ]
+    importorskip("xgboost", reason="Skipping test because XGBoost is not installed")
+    X = pd.DataFrame()
+    y = pd.Series([i for i in range(200)] * 5)
+
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type="multiclass",
+        random_seed=0,
+        allow_long_running_models=False,
+    )
+    next_batch = algo.next_batch()
+
+    for pipeline in next_batch:
+        assert all([m not in pipeline.name for m in models_missing])
+
+    # the "best" score will be the 1st dummy pipeline
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
+    for i in range(1, 5):
+        next_batch = algo.next_batch()
+        for pipeline in next_batch:
+            assert all([m not in pipeline.name for m in models_missing])
+        scores = -np.arange(0, len(next_batch))
+        for score, pipeline in zip(scores, next_batch):
+            algo.add_result(score, pipeline, {"id": algo.pipeline_number})
