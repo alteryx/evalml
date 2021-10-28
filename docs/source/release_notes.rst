@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
+        * Updated estimator and pipelines' ``predict``, ``predict_proba``, ``transform``, ``inverse_transform`` methods to preserve input indices :pr:`2979`
     * Changes
     * Documentation Changes
     * Testing Changes

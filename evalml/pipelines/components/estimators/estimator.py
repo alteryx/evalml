@@ -101,9 +101,6 @@ class Estimator(ComponentBase):
                 "Estimator requires a predict method or a component_obj that implements predict"
             )
         predictions = infer_feature_types(predictions)
-        import pdb
-
-        pdb.set_trace()
         predictions.index = X.index
         return predictions
 
