@@ -17,7 +17,6 @@ from .regression_pipeline import RegressionPipeline
 
 from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
-from evalml.pipelines import components, pipeline_base
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
@@ -203,7 +202,7 @@ def make_pipeline(
          sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
              Defaults to None
          extra_components (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
-
+         extra_components_position (str): Where to put extra components. Defaults to "before_preprocessing" and any other value will put components after preprocessing components.
     Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
 

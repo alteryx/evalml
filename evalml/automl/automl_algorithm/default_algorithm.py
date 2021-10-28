@@ -8,7 +8,6 @@ from skopt.space import Categorical, Integer, Real
 from .automl_algorithm import AutoMLAlgorithm
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines import pipeline_base
 from evalml.pipelines.components import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
@@ -25,7 +24,6 @@ from evalml.pipelines.utils import (
     make_pipeline,
 )
 from evalml.problem_types import is_classification, is_regression
-from evalml.problem_types.utils import is_classification
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
@@ -195,6 +193,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 sampler_name=self.sampler_name,
                 parameters=parameters,
                 extra_components=feature_selector,
+                extra_components_position="after_preprocessing"
             )
             for estimator in estimators
         ]
