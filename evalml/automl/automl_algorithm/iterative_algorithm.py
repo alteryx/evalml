@@ -63,7 +63,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         custom_hyperparameters (dict or None): Custom hyperparameter ranges specified for pipelines to iterate over. Defaults to None.
         _estimator_family_order (list(ModelFamily) or None): specify the sort order for the first batch. Defaults to None, which uses _ESTIMATOR_FAMILY_ORDER.
         allow_long_running_models (bool): Whether or not to allow longer-running models for large multiclass problems. If False and no pipelines, component graphs, or model families are provided,
-            AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass target and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
+            AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass targets and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
         verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
     """
 

@@ -380,7 +380,7 @@ class AutoMLSearch:
             then we will not add a sampler since the data is then considered balanced. Overrides the `sampler_ratio` of the samplers. Defaults to 0.25.
 
         allow_long_running_models (bool): Whether or not to allow longer-running models for large multiclass problems. If False and no pipelines, component graphs, or model families are provided,
-            AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass target and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
+            AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass targets and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
 
         _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
             Must be between 0 and 1, exclusive. Defaults to 0.2
