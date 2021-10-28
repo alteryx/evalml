@@ -20,7 +20,7 @@ from evalml.problem_types import ProblemTypes
 
 def test_default_algorithm_init(X_y_binary):
     X, y = X_y_binary
-    problem_type = "binary"
+    problem_type = ProblemTypes.BINARY
     sampler_name = "Undersampler"
 
     algo = DefaultAlgorithm(X, y, problem_type, sampler_name, verbose=True)
@@ -35,7 +35,7 @@ def test_default_algorithm_init(X_y_binary):
 
 def test_default_algorithm_custom_hyperparameters_error(X_y_binary):
     X, y = X_y_binary
-    problem_type = "binary"
+    problem_type = ProblemTypes.BINARY
     sampler_name = "Undersampler"
 
     custom_hyperparameters = [
@@ -97,7 +97,20 @@ def test_default_algorithm(
     X_y_multi,
     X_y_regression,
 ):
-
+    pipeline_names = {
+        ProblemTypes.BINARY: [
+            "Pipeline w/ Label Encoder + Imputer + Select Columns Transformer Pipeline - Select Columns Transformer",
+            "Pipeline w/ Select Columns Transformer + Label Encoder + Imputer Pipeline - Select Columns Transformer",
+        ],
+        ProblemTypes.MULTICLASS: [
+            "Pipeline w/ Label Encoder + Imputer + Select Columns Transformer Pipeline - Select Columns Transformer",
+            "Pipeline w/ Select Columns Transformer + Label Encoder + Imputer Pipeline - Select Columns Transformer",
+        ],
+        ProblemTypes.REGRESSION: [
+            "Pipeline w/ Imputer + Select Columns Transformer Pipeline - Select Columns Transformer",
+            "Pipeline w/ Select Columns Transformer + Imputer Pipeline - Select Columns Transformer",
+        ],
+    }
     if automl_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         fs = "RF Classifier Select From Model"
@@ -124,16 +137,26 @@ def test_default_algorithm(
     for pipeline in second_batch:
         assert pipeline.get_component(fs)
     add_result(algo, second_batch)
+    algo._selected_cat_cols = ["A", "B", "C"]
 
     assert algo._selected_cols == ["0", "1", "2"]
+    assert algo._selected_cat_cols == ["A", "B", "C"]
     final_batch = algo.next_batch()
     for pipeline in final_batch:
         if not isinstance(
             pipeline.estimator, (ElasticNetClassifier, ElasticNetRegressor)
         ):
             assert pipeline.model_family not in naive_model_families
-        select = pipeline.get_component("Select Columns Transformer")
-        assert select.parameters["columns"] == algo._selected_cols
+        assert pipeline.parameters[pipeline_names[automl_type][0]]["columns"] == [
+            "0",
+            "1",
+            "2",
+        ]
+        assert pipeline.parameters[pipeline_names[automl_type][1]]["columns"] == [
+            "A",
+            "B",
+            "C",
+        ]
         assert algo._tuners[pipeline.name]
     add_result(algo, final_batch)
 
@@ -145,6 +168,7 @@ def test_default_algorithm(
     add_result(algo, final_ensemble)
 
     long_explore = algo.next_batch()
+
     long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
     assert len(long_explore) == 150
     assert len(long_estimators) == 3
@@ -251,11 +275,11 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
     X.ww.init()
     X.ww.set_types({col: "Unknown" for col in columns})
 
-    algo = DefaultAlgorithm(X, y, "binary", sampler_name=None)
+    algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
 
     assert algo._pipeline_params["Drop Columns Transformer"]["columns"] == columns
 
-    for _ in range(4):
+    for _ in range(2):
         batch = algo.next_batch()
         add_result(algo, batch)
         for pipeline in batch:
@@ -264,6 +288,20 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
                     pipeline.parameters["Drop Columns Transformer"]["columns"]
                     == columns
                 )
+
+    batch = algo.next_batch()
+    add_result(algo, batch)
+    for pipeline in batch:
+        for component_name in pipeline.component_graph.compute_order:
+            split = component_name.split(" - ")
+            if len(split) == 2:
+                split = split[1]
+            else:
+                continue
+            if "Drop Columns Transformer" in split:
+                print(component_name)
+                assert algo._pipeline_params[component_name]["columns"] == columns
+                assert pipeline.parameters[component_name]["columns"] == columns
 
 
 def test_make_split_pipeline(X_y_binary):

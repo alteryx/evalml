@@ -110,6 +110,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.num_long_pipelines_per_batch = num_long_pipelines_per_batch
         self.top_n = top_n
         self.verbose = verbose
+        self._selected_cat_cols = []
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
         else:
@@ -201,6 +202,18 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         pipelines = self._create_pipelines_with_params(pipelines, parameters={})
         return pipelines
 
+    def _find_component_names(self, original_name, pipeline, key=None):
+        names = []
+        for component in pipeline.component_graph.compute_order:
+            split = component.split(" - ")
+            if len(split) > 1:
+                split = split[1]
+            if original_name in split:
+                names.append(component)
+        if key:
+            sorted(names, key=key)
+        return names
+
     def _create_fast_final(self):
         estimators = [
             estimator
@@ -212,21 +225,31 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             {"Select Columns Transformer": {"columns": self._selected_cols}}
         )
         pipelines = [
-            make_pipeline(
-                self.X,
-                self.y,
+            self._make_split_pipeline(
                 estimator,
-                self.problem_type,
-                sampler_name=self.sampler_name,
-                parameters=parameters,
-                extra_components=[SelectColumns],
             )
             for estimator in estimators
         ]
 
-        pipelines = self._create_pipelines_with_params(
-            pipelines, {"Select Columns Transformer": {"columns": self._selected_cols}}
+        # rename all pipeline params with correct component names
+        names_to_value = {}
+        for component_name in self._pipeline_params:
+            new_name = self._find_component_names(component_name, pipelines[0])
+            if new_name:
+                for name in new_name:
+                    names_to_value[name] = self._pipeline_params[component_name]
+        self._pipeline_params.update(names_to_value)
+
+        select_names = self._find_component_names(
+            "Select Columns",
+            pipelines[0],
+            lambda x: x.index("Select Columns Transformer"),
         )
+        parameters = {
+            select_names[0]: {"columns": self._selected_cat_cols},
+            select_names[1]: {"columns": self._selected_cols},
+        }
+        pipelines = self._create_pipelines_with_params(pipelines, parameters)
 
         for pipeline in pipelines:
             self._create_tuner(pipeline)
@@ -238,11 +261,18 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             for pipeline in pipelines:
                 if pipeline.name not in self._tuners:
                     self._create_tuner(pipeline)
+                select_names = self._find_component_names(
+                    "Select Columns",
+                    pipelines[0],
+                    lambda x: x.index("Select Columns Transformer"),
+                )
+                select_parameters = {
+                    select_names[0]: {"columns": self._selected_cat_cols},
+                    select_names[1]: {"columns": self._selected_cols},
+                }
                 proposed_parameters = self._tuners[pipeline.name].propose()
                 parameters = self._transform_parameters(pipeline, proposed_parameters)
-                parameters.update(
-                    {"Select Columns Transformer": {"columns": self._selected_cols}}
-                )
+                parameters.update(select_parameters)
                 next_batch.append(
                     pipeline.new(parameters=parameters, random_seed=self.random_seed)
                 )
@@ -256,17 +286,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         estimators.sort(key=lambda x: x[1])
         estimators = estimators[:n]
         estimators = [estimator[0].__class__ for estimator in estimators]
-        pipelines = [
-            make_pipeline(
-                self.X,
-                self.y,
-                estimator,
-                self.problem_type,
-                sampler_name=self.sampler_name,
-                extra_components=[SelectColumns],
-            )
-            for estimator in estimators
-        ]
+        pipelines = [self._make_split_pipeline(estimator) for estimator in estimators]
         self._top_n_pipelines = pipelines
         return self._create_n_pipelines(pipelines, self.num_long_explore_pipelines)
 
@@ -322,7 +342,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 ).get_names()
 
             try:
-                self._selected_cat_cols = []
                 ohe = pipeline.get_component("One Hot Encoder")
                 feature_provenance = ohe._get_feature_provenance()
                 for original_col in feature_provenance:
@@ -390,7 +409,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             parameters[name] = component_parameters
         return parameters
 
-    def _make_split_pipeline(self, estimator, pipeline_name):
+    def _make_split_pipeline(self, estimator, pipeline_name=None):
         component_graph = (
             {"Label Encoder": ["Label Encoder", "X", "y"]}
             if is_classification(self.problem_type)
