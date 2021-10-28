@@ -996,7 +996,7 @@ def test_iterative_algorithm_allow_long_running_models(
     "length,models_missing", [(10, 0), (75, 0), (100, 2), (160, 3)]
 )
 def test_iterative_algorithm_allow_long_running_models_problem(
-    length, models_missing, allow_long_running_models, problem
+    length, models_missing, allow_long_running_models, problem, has_minimal_dependencies
 ):
     X = pd.DataFrame()
     y = pd.Series([i for i in range(length)] * 5)
@@ -1017,6 +1017,10 @@ def test_iterative_algorithm_allow_long_running_models_problem(
     if problem != "multiclass" or allow_long_running_models:
         assert len(algo.allowed_pipelines) == len(algo_reg.allowed_pipelines)
         return
+
+    if has_minimal_dependencies and models_missing > 0:
+        # no XGBoost or CatBoost installed
+        models_missing = 1
     assert len(algo.allowed_pipelines) + models_missing == len(
         algo_reg.allowed_pipelines
     )
