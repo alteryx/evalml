@@ -1,8 +1,8 @@
 name: Nightly unit tests, windows
 
 on:
-  pull_request:
-    types: [opened, synchronize]
+  schedule:
+      - cron: '0 7 * * *'
 
 jobs:
   win_unit_tests:
@@ -37,9 +37,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
-          fetch-depth: 2
+          repository: ${{ github.repository }}
+          ref: main
       - name: Install make
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
@@ -65,13 +64,21 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install .
           python -m pip install -r test-requirements.txt
+          pip freeze
       - name: Run unit tests
         run: |
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda activate curr_py
           make ${{matrix.command}}
-      - name: Run util tests
-        run: |
-          . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
-          conda activate curr_py
-          pytest evalml/tests/component_tests/test_utils.py
+      - name: Notify on Slack
+        uses: 8398a7/action-slack@v3
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        with:
+          job_name: Nightly ${{ matrix.python_version }} windows ${{ matrix.command}}
+          status: ${{ job.status }}
+          fields: workflow,job,took
+          mention: channel
+          if_mention: failure,cancelled
+          text: ':elmofire:'
+        if: failure() 
