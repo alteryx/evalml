@@ -78,7 +78,7 @@ requirements_list = [
     "LightGBM Regressor",
     "Oversampler",
     "Polynomial Detrender",
-    "Prophet Regressor"
+    "Prophet Regressor",
     "Target Encoder",
     "Vowpal Wabbit Binary Classifier",
     "Vowpal Wabbit Multiclass Classifier",
