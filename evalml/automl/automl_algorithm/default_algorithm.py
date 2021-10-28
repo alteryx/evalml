@@ -193,7 +193,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 sampler_name=self.sampler_name,
                 parameters=parameters,
                 extra_components=feature_selector,
-                extra_components_position="after_preprocessing"
+                extra_components_position="after_preprocessing",
             )
             for estimator in estimators
         ]
