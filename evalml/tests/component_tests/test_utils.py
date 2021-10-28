@@ -25,87 +25,99 @@ binary = pd.Series([0] * 800 + [1] * 200)
 multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
 
 
-minimum_dependencies_list = [
-    "Baseline Classifier",
-    "Baseline Regressor",
-    "DFS Transformer",
-    "DateTime Featurization Component",
-    "Decision Tree Classifier",
-    "Decision Tree Regressor",
-    "Delayed Feature Transformer",
-    "Drop Columns Transformer",
-    "Drop Null Columns Transformer",
-    "Drop Rows Transformer",
-    "Elastic Net Classifier",
-    "Elastic Net Regressor",
-    "Email Featurizer",
-    "Extra Trees Classifier",
-    "Extra Trees Regressor",
-    "Imputer",
-    "KNN Classifier",
-    "LSA Transformer",
-    "Label Encoder",
-    "Linear Discriminant Analysis Transformer",
-    "Linear Regressor",
-    "Log Transformer",
-    "Logistic Regression Classifier",
-    "One Hot Encoder",
-    "PCA Transformer",
-    "Per Column Imputer",
-    "RF Classifier Select From Model",
-    "RF Regressor Select From Model",
-    "Random Forest Classifier",
-    "Random Forest Regressor",
-    "SVM Classifier",
-    "SVM Regressor",
-    "Select Columns By Type Transformer",
-    "Select Columns Transformer",
-    "Simple Imputer",
-    "Stacked Ensemble Classifier",
-    "Stacked Ensemble Regressor",
-    "Standard Scaler",
-    "Target Imputer",
-    "Text Featurization Component",
-    "Time Series Baseline Estimator",
-    "URL Featurizer",
-    "Undersampler",
-]
-requirements_list = [
-    "ARIMA Regressor",
-    "CatBoost Classifier",
-    "CatBoost Regressor",
-    "LightGBM Classifier",
-    "LightGBM Regressor",
-    "Oversampler",
-    "Polynomial Detrender",
-    "Prophet Regressor",
-    "Target Encoder",
-    "Vowpal Wabbit Binary Classifier",
-    "Vowpal Wabbit Multiclass Classifier",
-    "Vowpal Wabbit Regressor",
-    "XGBoost Classifier",
-    "XGBoost Classifier",
-    "XGBoost Regressor",
-]
-not_supported_in_conda = [
-    "ARIMA Regressor",
-    "Prophet Regressor",
-    "Vowpal Wabbit Binary Classifier",
-    "Vowpal Wabbit Multiclass Classifier",
-    "Vowpal Wabbit Regressor",
-]
-not_supported_in_windows = [
-    "Prophet Regressor",
-]
-not_supported_in_windows_py39 = [
-    "ARIMA Regressor",
-    "Polynomial Detrender",
-    "Prophet Regressor",
-]
-not_supported_in_linux_py39 = [
-    "ARIMA Regressor",
-    "Polynomial Detrender",
-]
+minimum_dependencies_set = set(
+    [
+        "Baseline Classifier",
+        "Baseline Regressor",
+        "DFS Transformer",
+        "DateTime Featurization Component",
+        "Decision Tree Classifier",
+        "Decision Tree Regressor",
+        "Delayed Feature Transformer",
+        "Drop Columns Transformer",
+        "Drop Null Columns Transformer",
+        "Drop Rows Transformer",
+        "Elastic Net Classifier",
+        "Elastic Net Regressor",
+        "Email Featurizer",
+        "Extra Trees Classifier",
+        "Extra Trees Regressor",
+        "Imputer",
+        "KNN Classifier",
+        "LSA Transformer",
+        "Label Encoder",
+        "Linear Discriminant Analysis Transformer",
+        "Linear Regressor",
+        "Log Transformer",
+        "Logistic Regression Classifier",
+        "One Hot Encoder",
+        "PCA Transformer",
+        "Per Column Imputer",
+        "RF Classifier Select From Model",
+        "RF Regressor Select From Model",
+        "Random Forest Classifier",
+        "Random Forest Regressor",
+        "SVM Classifier",
+        "SVM Regressor",
+        "Select Columns By Type Transformer",
+        "Select Columns Transformer",
+        "Simple Imputer",
+        "Stacked Ensemble Classifier",
+        "Stacked Ensemble Regressor",
+        "Standard Scaler",
+        "Target Imputer",
+        "Text Featurization Component",
+        "Time Series Baseline Estimator",
+        "URL Featurizer",
+        "Undersampler",
+    ]
+)
+additional_requirements_set = set(
+    [
+        "ARIMA Regressor",
+        "CatBoost Classifier",
+        "CatBoost Regressor",
+        "LightGBM Classifier",
+        "LightGBM Regressor",
+        "Oversampler",
+        "Polynomial Detrender",
+        "Prophet Regressor",
+        "Target Encoder",
+        "Vowpal Wabbit Binary Classifier",
+        "Vowpal Wabbit Multiclass Classifier",
+        "Vowpal Wabbit Regressor",
+        "XGBoost Classifier",
+        "XGBoost Regressor",
+    ]
+)
+all_requirements_set = minimum_dependencies_set.union(additional_requirements_set)
+not_supported_in_conda = set(
+    [
+        "ARIMA Regressor",
+        "Prophet Regressor",
+        "Vowpal Wabbit Binary Classifier",
+        "Vowpal Wabbit Multiclass Classifier",
+        "Vowpal Wabbit Regressor",
+    ]
+)
+not_supported_in_windows = set(
+    [
+        "Prophet Regressor",
+    ]
+)
+not_supported_in_windows_py39 = set(
+    [
+        "ARIMA Regressor",
+        "Polynomial Detrender",
+        "Prophet Regressor",
+    ]
+)
+not_supported_in_linux_py39 = set(
+    [
+        "ARIMA Regressor",
+        "Polynomial Detrender",
+    ]
+)
 
 
 def test_all_components(
@@ -115,39 +127,29 @@ def test_all_components(
     is_using_windows,
 ):
     if has_minimal_dependencies:
-        expected_components = minimum_dependencies_list
+        expected_components = minimum_dependencies_set
     elif is_using_conda:
         # No prophet, ARIMA, and vowpalwabbit
-        expected_components = [
-            component
-            for component in minimum_dependencies_list + requirements_list
-            if component not in not_supported_in_conda
-        ]
+        expected_components = all_requirements_set.difference(not_supported_in_conda)
+
     elif is_using_windows and not is_running_py_39_or_above:
         # No prophet
-        expected_components = [
-            component
-            for component in minimum_dependencies_list + requirements_list
-            if component not in not_supported_in_windows
-        ]
+        expected_components = all_requirements_set.difference(not_supported_in_windows)
+
     elif is_using_windows and is_running_py_39_or_above:
         # No detrender, no ARIMA, no prophet
-        expected_components = [
-            component
-            for component in minimum_dependencies_list + requirements_list
-            if component not in not_supported_in_windows_py39
-        ]
+        expected_components = all_requirements_set.difference(
+            not_supported_in_windows_py39
+        )
     elif not is_using_windows and is_running_py_39_or_above:
         # No detrender or ARIMA
-        expected_components = [
-            component
-            for component in minimum_dependencies_list + requirements_list
-            if component not in not_supported_in_linux_py39
-        ]
+        expected_components = all_requirements_set.difference(
+            not_supported_in_linux_py39
+        )
     else:
-        expected_components = minimum_dependencies_list + requirements_list
+        expected_components = all_requirements_set
     all_component_names = [component.name for component in all_components()]
-    assert set(all_component_names) == set(expected_components)
+    assert set(all_component_names) == expected_components
 
 
 def test_handle_component_class_names():
