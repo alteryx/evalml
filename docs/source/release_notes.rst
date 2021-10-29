@@ -40,6 +40,7 @@ Release Notes
     * Testing Changes
         * Fixed dependency checker to catch full names of packages :pr:`2930`
         * Refactored ``build_conda_pkg`` to work from a local recipe :pr:`2925`
+        * Refactored component test for different environments :pr:`2957`
 
 .. warning::
 
