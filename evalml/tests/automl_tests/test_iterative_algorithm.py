@@ -954,8 +954,10 @@ def test_iterative_algorithm_allow_long_running_models(
     allow_long_running_models,
     allowed_component_graphs,
     allowed_model_families,
+    has_minimal_dependencies,
 ):
-    importorskip("xgboost", reason="Skipping test because XGBoost is not installed")
+    if has_minimal_dependencies:
+        return
     X = pd.DataFrame()
     y = pd.Series([i for i in range(length)] * 5)
     y_short = pd.Series([i for i in range(10)] * 5)
@@ -981,13 +983,12 @@ def test_iterative_algorithm_allow_long_running_models(
     )
     if allow_long_running_models:
         assert len(algo_short.allowed_pipelines) == len(algo.allowed_pipelines)
-        return
-
-    assert len(algo_short.allowed_pipelines) == len(algo.allowed_pipelines) + len(
-        models_missing
-    )
-    for p in algo.allowed_pipelines:
-        assert all([s not in p.name for s in models_missing])
+    else:
+        assert len(algo_short.allowed_pipelines) == len(algo.allowed_pipelines) + len(
+            models_missing
+        )
+        for p in algo.allowed_pipelines:
+            assert all([s not in p.name for s in models_missing])
 
 
 @pytest.mark.parametrize("problem", ["binary", "multiclass", "regression"])
@@ -1016,7 +1017,7 @@ def test_iterative_algorithm_allow_long_running_models_problem(
     )
     if problem != "multiclass" or allow_long_running_models:
         assert len(algo.allowed_pipelines) == len(algo_reg.allowed_pipelines)
-        return
+        models_missing = 0
 
     if has_minimal_dependencies and models_missing > 0:
         # no XGBoost or CatBoost installed
@@ -1026,13 +1027,16 @@ def test_iterative_algorithm_allow_long_running_models_problem(
     )
 
 
-def test_iterative_algorithm_allow_long_running_models_next_batch():
+def test_iterative_algorithm_allow_long_running_models_next_batch(
+    has_minimal_dependencies,
+):
     models_missing = [
         "Elastic Net Classifier",
         "XGBoost Classifier",
         "CatBoost Classifier",
     ]
-    importorskip("xgboost", reason="Skipping test because XGBoost is not installed")
+    if has_minimal_dependencies:
+        models_missing = ["Elastic Net Classifier"]
     X = pd.DataFrame()
     y = pd.Series([i for i in range(200)] * 5)
 

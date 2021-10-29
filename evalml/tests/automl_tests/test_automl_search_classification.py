@@ -32,7 +32,6 @@ from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import TimeSeriesSplit, split_data
 from evalml.problem_types import ProblemTypes
-from evalml.utils import import_or_raise
 
 
 def test_init(X_y_binary):
@@ -1635,9 +1634,7 @@ def test_time_series_pipeline_parameter_warnings(
 @pytest.mark.parametrize("allow_long_running_models", [True, False])
 @pytest.mark.parametrize("unique", [10, 200])
 def test_automl_passes_allow_long_running_models_iterative(
-    unique,
-    allow_long_running_models,
-    caplog,
+    unique, allow_long_running_models, caplog, has_minimal_dependencies
 ):
     X = pd.DataFrame()
     y = pd.Series([i for i in range(unique)] * 5)
@@ -1646,6 +1643,7 @@ def test_automl_passes_allow_long_running_models_iterative(
         y_train=y,
         problem_type="multiclass",
         allow_long_running_models=allow_long_running_models,
+        _automl_algorithm="iterative",
         verbose=True,
     )
     assert (
@@ -1655,15 +1653,7 @@ def test_automl_passes_allow_long_running_models_iterative(
         assert "Dropping estimators" not in caplog.text
         return
     estimators = ["Elastic Net Classifier"]
-    try:
-        import_or_raise("xgboost")
-        estimators.append("XGBoost Classifier")
-    except ImportError:
-        pass
-    try:
-        import_or_raise("catboost")
-        estimators.append("CatBoost Classifier")
-    except ImportError:
-        pass
+    if not has_minimal_dependencies:
+        estimators.extend(["CatBoost Classifier", "XGBoost Classifier"])
 
     assert "Dropping estimators {}".format(", ".join(sorted(estimators))) in caplog.text
