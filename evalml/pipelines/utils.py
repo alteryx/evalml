@@ -203,7 +203,7 @@ def make_pipeline(
              Defaults to None
          extra_components (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
          extra_components_position (str): Where to put extra components. Defaults to "before_preprocessing" and any other value will put components after preprocessing components.
-         
+
     Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
 

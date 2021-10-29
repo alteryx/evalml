@@ -93,14 +93,14 @@ def add_result(algo, batch):
 def test_default_algorithm(
     mock_get_names,
     automl_type,
-    X_y_binary,
+    X_y_categorical_classification,
     X_y_multi,
     X_y_regression,
 ):
     pipeline_names = {
         ProblemTypes.BINARY: [
-            "Pipeline w/ Label Encoder + Imputer + Select Columns Transformer Pipeline - Select Columns Transformer",
-            "Pipeline w/ Select Columns Transformer + Label Encoder + Imputer Pipeline - Select Columns Transformer",
+            "Pipeline w/ Label Encoder + Drop Columns Transformer + Imputer + One Hot Encoder + Select Columns Transformer Pipeline - Select Columns Transformer",
+            "Pipeline w/ Select Columns Transformer + Label Encoder + Drop Columns Transformer + Imputer + One Hot Encoder Pipeline - Select Columns Transformer",
         ],
         ProblemTypes.MULTICLASS: [
             "Pipeline w/ Label Encoder + Imputer + Select Columns Transformer Pipeline - Select Columns Transformer",
@@ -112,7 +112,7 @@ def test_default_algorithm(
         ],
     }
     if automl_type == ProblemTypes.BINARY:
-        X, y = X_y_binary
+        X, y = X_y_categorical_classification
         fs = "RF Classifier Select From Model"
     elif automl_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
@@ -120,6 +120,7 @@ def test_default_algorithm(
     elif automl_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         fs = "RF Regressor Select From Model"
+
     mock_get_names.return_value = ["0", "1", "2"]
     problem_type = automl_type
     sampler_name = None

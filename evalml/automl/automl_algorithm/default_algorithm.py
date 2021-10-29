@@ -183,7 +183,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             feature_selector = []
 
         estimators = self._naive_estimators()
-        parameters = self._pipeline_params if self._pipeline_params else None
         pipelines = [
             make_pipeline(
                 self.X,
@@ -191,7 +190,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 estimator,
                 self.problem_type,
                 sampler_name=self.sampler_name,
-                parameters=parameters,
                 extra_components=feature_selector,
                 extra_components_position="after_preprocessing",
             )
@@ -219,10 +217,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             for estimator in get_estimators(self.problem_type)
             if estimator not in self._naive_estimators()
         ]
-        parameters = self._pipeline_params if self._pipeline_params else {}
-        parameters.update(
-            {"Select Columns Transformer": {"columns": self._selected_cols}}
-        )
+
         pipelines = [
             self._make_split_pipeline(
                 estimator,
