@@ -81,8 +81,14 @@ class DropColumns(ColumnSelector):
     """{}"""
     needs_fitting = False
 
+    def _check_input_for_columns(self, X):
+        pass
+
     def _modify_columns(self, cols, X, y=None):
-        return X.ww.drop(cols)
+        column_intersection = list(
+            sorted(set(cols).intersection(X.columns), key=cols.index)
+        )
+        return X.ww.drop(column_intersection)
 
     def transform(self, X, y=None):
         """Transforms data X by dropping columns.
