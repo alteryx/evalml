@@ -1583,34 +1583,62 @@ def test_categories_aggregated_when_some_are_dropped(
 
 
 @pytest.mark.parametrize(
+    "algorithm",
+    ["shap", "lime"],
+)
+@pytest.mark.parametrize(
     "problem_type",
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
 def test_explain_predictions_stacked_ensemble(
+    algorithm,
     problem_type,
-    X_y_binary,
+    fraud_100,
     X_y_multi,
     X_y_regression,
 ):
-    classifier_pl = {
-        "Imputer": ["Imputer", "X", "y"],
-        "Regression": ["Logistic Regression Classifier", "Imputer.x", "y"],
-        "RF": ["Random Forest Classifier", "X", "y"],
-        "Stacked Ensembler": [
-            "Stacked Ensemble Classifier",
-            "Regression.x",
-            "RF.x",
-            "y",
-        ],
-    }
     if is_binary(problem_type):
-        X, y = X_y_binary
-        pipeline = BinaryClassificationPipeline(classifier_pl)
+        X, y = fraud_100
+        pipeline = BinaryClassificationPipeline(
+            {
+                "DT": ["DateTime Featurization Component", "X", "y"],
+                "Imputer": ["Imputer", "DT.x", "y"],
+                "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
+                "Drop Columns Transformer": [
+                    "Drop Columns Transformer",
+                    "One Hot Encoder.x",
+                    "y",
+                ],
+                "Regression": [
+                    "Logistic Regression Classifier",
+                    "Drop Columns Transformer.x",
+                    "y",
+                ],
+                "RF": ["Random Forest Classifier", "One Hot Encoder.x", "y"],
+                "Stacked Ensembler": [
+                    "Stacked Ensemble Classifier",
+                    "Regression.x",
+                    "RF.x",
+                    "y",
+                ],
+            }
+        )
         exp_feature_names = {"Col 1 RF.x", "Col 1 Regression.x"}
-        exp_qual = ["--", "----"]
     elif is_multiclass(problem_type):
         X, y = X_y_multi
-        pipeline = MulticlassClassificationPipeline(classifier_pl)
+        pipeline = MulticlassClassificationPipeline(
+            {
+                "Imputer": ["Imputer", "X", "y"],
+                "Regression": ["Logistic Regression Classifier", "Imputer.x", "y"],
+                "RF": ["Random Forest Classifier", "X", "y"],
+                "Stacked Ensembler": [
+                    "Stacked Ensemble Classifier",
+                    "Regression.x",
+                    "RF.x",
+                    "y",
+                ],
+            }
+        )
         exp_feature_names = {
             "Col 0 RF.x",
             "Col 1 RF.x",
@@ -1619,7 +1647,6 @@ def test_explain_predictions_stacked_ensemble(
             "Col 1 Regression.x",
             "Col 2 Regression.x",
         }
-        exp_qual = ["+", "+", "-", "-", "--", "--"]
     else:
         X, y = X_y_regression
         pipeline = RegressionPipeline(
@@ -1640,15 +1667,19 @@ def test_explain_predictions_stacked_ensemble(
             }
         )
         exp_feature_names = {"RF.x", "Regression.x"}
-        exp_qual = ["-", "-----"]
     pipeline.fit(X, y)
 
     report = explain_predictions(
-        pipeline, X, y, indices_to_explain=[0], output_format="dict", top_k_features=10
+        pipeline,
+        X,
+        y,
+        indices_to_explain=[0],
+        output_format="dict",
+        top_k_features=10,
+        algorithm=algorithm,
     )
     explanations_data = report["explanations"][0]["explanations"][0]
     assert set(explanations_data["feature_names"]) == exp_feature_names
-    assert explanations_data["qualitative_explanation"] == exp_qual
     assert (
         explanations_data["quantitative_explanation"]
         == [None, None, None, None, None, None]
@@ -1657,7 +1688,7 @@ def test_explain_predictions_stacked_ensemble(
     )
 
     report = explain_predictions_best_worst(
-        pipeline, X, y, top_k_features=10, output_format="dict"
+        pipeline, X, y, top_k_features=10, output_format="dict", algorithm=algorithm
     )
     explanations_data = report["explanations"]
     for entry in explanations_data:

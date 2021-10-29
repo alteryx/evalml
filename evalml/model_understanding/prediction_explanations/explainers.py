@@ -55,8 +55,8 @@ def explain_predictions(
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported with the SHAP algorithm.
     To explain XGBoost model predictions, use the LIME algorithm. The LIME algorithm does not currently support
-    any CatBoost models. For Stacked Ensemble models, the SHAP value for each input pipeline's `predict_proba()`
-    (or `predict()` for regression pipelines) into the metalearner is used.
+    any CatBoost models. For Stacked Ensemble models, the SHAP value for each input pipeline's predict function
+    into the metalearner is used.
 
     Args:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP or LIME.
@@ -175,8 +175,8 @@ def explain_predictions_best_worst(
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported with the SHAP algorithm.
     To explain XGBoost model predictions, use the LIME algorithm. The LIME algorithm does not currently support
-    any CatBoost models. For Stacked Ensemble models, the SHAP value for each input pipeline's `predict_proba()`
-    (or `predict()` for regression pipelines) into the metalearner is used.
+    any CatBoost models. For Stacked Ensemble models, the SHAP value for each input pipeline's predict function
+    into the metalearner is used.
 
     Args:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP or LIME.

@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Added metalearner prediction explanations :pr:`2971`
+        * Added support for stacked ensemble pipelines to prediction explanations module :pr:`2971`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
     * Changes
