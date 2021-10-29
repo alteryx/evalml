@@ -16,4 +16,4 @@ def test_nosplit_default():
     assert len(splits) == 1 and len(splits[0]) == 2
 
     np.testing.assert_equal(splits[0][0], np.arange(0, 10))
-    np.testing.assert_equal(splits[0][1], [None] * 10)
+    assert len(splits[0][1]) == 0

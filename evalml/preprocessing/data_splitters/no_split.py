@@ -39,4 +39,4 @@ class NoSplit(BaseCrossValidator):
         Returns:
             list: Indices to split data into training and test set
         """
-        return iter([(np.arange(X.shape[0]), np.array([None] * X.shape[0]))])
+        return iter([(np.arange(X.shape[0]), [])])
