@@ -103,9 +103,8 @@ class ClassificationPipeline(PipelineBase):
         """
         _predictions = self._predict(X, objective=objective)
         predictions = self.inverse_transform(_predictions.astype(int))
-        predictions = pd.Series(
-            predictions, name=self.input_target_name, index=_predictions.index
-        )
+        predictions.index = _predictions.index
+        predictions = pd.Series(predictions, name=self.input_target_name)
         return infer_feature_types(predictions)
 
     def predict_proba(self, X, X_train=None, y_train=None):
