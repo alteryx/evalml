@@ -3,7 +3,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-from pytest import importorskip
 from skopt.space import Categorical, Integer, Real
 
 from evalml.automl.automl_algorithm import (
