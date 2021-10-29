@@ -1597,6 +1597,11 @@ def test_explain_predictions_stacked_ensemble(
     X_y_multi,
     X_y_regression,
 ):
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
+        )
     if is_binary(problem_type):
         X, y = fraud_100
         pipeline = BinaryClassificationPipeline(
