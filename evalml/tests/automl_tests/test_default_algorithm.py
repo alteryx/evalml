@@ -97,20 +97,10 @@ def test_default_algorithm(
     X_y_multi,
     X_y_regression,
 ):
-    pipeline_names = {
-        ProblemTypes.BINARY: [
-            "Pipeline w/ Label Encoder + Drop Columns Transformer + Imputer + One Hot Encoder + Select Columns Transformer Pipeline - Select Columns Transformer",
-            "Pipeline w/ Select Columns Transformer + Label Encoder + Drop Columns Transformer + Imputer + One Hot Encoder Pipeline - Select Columns Transformer",
-        ],
-        ProblemTypes.MULTICLASS: [
-            "Pipeline w/ Label Encoder + Imputer + Select Columns Transformer Pipeline - Select Columns Transformer",
-            "Pipeline w/ Select Columns Transformer + Label Encoder + Imputer Pipeline - Select Columns Transformer",
-        ],
-        ProblemTypes.REGRESSION: [
-            "Pipeline w/ Imputer + Select Columns Transformer Pipeline - Select Columns Transformer",
-            "Pipeline w/ Select Columns Transformer + Imputer Pipeline - Select Columns Transformer",
-        ],
-    }
+    pipeline_names = [
+        "Numeric Pipeline - Select Columns Transformer",
+        "Categorical Pipeline - Select Columns Transformer",
+    ]
     if automl_type == ProblemTypes.BINARY:
         X, y = X_y_categorical_classification
         fs = "RF Classifier Select From Model"
@@ -148,12 +138,12 @@ def test_default_algorithm(
             pipeline.estimator, (ElasticNetClassifier, ElasticNetRegressor)
         ):
             assert pipeline.model_family not in naive_model_families
-        assert pipeline.parameters[pipeline_names[automl_type][0]]["columns"] == [
+        assert pipeline.parameters[pipeline_names[0]]["columns"] == [
             "0",
             "1",
             "2",
         ]
-        assert pipeline.parameters[pipeline_names[automl_type][1]]["columns"] == [
+        assert pipeline.parameters[pipeline_names[1]]["columns"] == [
             "A",
             "B",
             "C",
@@ -312,20 +302,20 @@ def test_make_split_pipeline(X_y_binary):
     pipeline = algo._make_split_pipeline(RandomForestClassifier, "test_pipeline")
     compute_order = [
         "Label Encoder",
-        "Pipeline w/ Select Columns Transformer + Label Encoder + Imputer Pipeline - Select Columns Transformer",
-        "Pipeline w/ Select Columns Transformer + Label Encoder + Imputer Pipeline - Label Encoder",
-        "Pipeline w/ Select Columns Transformer + Label Encoder + Imputer Pipeline - Imputer",
-        "Pipeline w/ Label Encoder + Imputer + Select Columns Transformer Pipeline - Label Encoder",
-        "Pipeline w/ Label Encoder + Imputer + Select Columns Transformer Pipeline - Imputer",
-        "Pipeline w/ Label Encoder + Imputer + Select Columns Transformer Pipeline - Select Columns Transformer",
+        "Categorical Pipeline - Select Columns Transformer",
+        "Categorical Pipeline - Label Encoder",
+        "Categorical Pipeline - Imputer",
+        "Numeric Pipeline - Label Encoder",
+        "Numeric Pipeline - Imputer",
+        "Numeric Pipeline - Select Columns Transformer",
         "Random Forest Classifier",
     ]
     assert pipeline.component_graph.compute_order == compute_order
     assert pipeline.name == "test_pipeline"
-    assert pipeline.parameters[
-        "Pipeline w/ Label Encoder + Imputer + Select Columns Transformer Pipeline - Select Columns Transformer"
-    ]["columns"] == ["1", "2", "3"]
-    assert pipeline.parameters[
-        "Pipeline w/ Select Columns Transformer + Label Encoder + Imputer Pipeline - Select Columns Transformer"
-    ]["columns"] == ["A", "B", "C"]
+    assert pipeline.parameters["Numeric Pipeline - Select Columns Transformer"][
+        "columns"
+    ] == ["1", "2", "3"]
+    assert pipeline.parameters["Categorical Pipeline - Select Columns Transformer"][
+        "columns"
+    ] == ["A", "B", "C"]
     assert isinstance(pipeline.estimator, RandomForestClassifier)

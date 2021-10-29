@@ -189,6 +189,7 @@ def make_pipeline(
     sampler_name=None,
     extra_components=None,
     extra_components_position="before_preprocessing",
+    use_estimator=True,
 ):
     """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
@@ -228,7 +229,7 @@ def make_pipeline(
         X, y, problem_type, estimator, sampler_name
     )
     extra_components = extra_components or []
-    estimator = [estimator] if estimator else []
+    estimator = [estimator] if use_estimator else []
 
     if extra_components_position == "before_preprocessing":
         complete_component_list = (
@@ -339,10 +340,15 @@ def _make_pipeline_from_multiple_graphs(
     component_graph={},
     parameters={},
     pipeline_name=None,
+    sub_pipeline_names=None,
     random_seed=0,
 ):
-    def _make_new_component_name(model_type, component_name, idx=None):
+    def _make_new_component_name(
+        model_type, component_name, idx=None, pipeline_name=None
+    ):
         idx = " " + str(idx) if idx is not None else ""
+        if pipeline_name:
+            return f"{pipeline_name} Pipeline{idx} - {component_name}"
         return f"{str(model_type)} Pipeline{idx} - {component_name}"
 
     final_components = []
@@ -367,10 +373,13 @@ def _make_pipeline_from_multiple_graphs(
             used_model_families.append(model_family)
         final_component = None
         ensemble_y = "y"
+        sub_pipeline_name = (
+            sub_pipeline_names[pipeline.name] if sub_pipeline_names else None
+        )
         for name, component_list in pipeline.component_graph.component_dict.items():
             new_component_list = []
             new_component_name = _make_new_component_name(
-                model_family, name, model_family_idx
+                model_family, name, model_family_idx, sub_pipeline_name
             )
             for i, item in enumerate(component_list):
                 if i == 0:
@@ -379,7 +388,9 @@ def _make_pipeline_from_multiple_graphs(
                     parameters[new_component_name] = pipeline.parameters.get(name, {})
                 elif isinstance(item, str) and item not in ["X", "y"]:
                     new_component_list.append(
-                        _make_new_component_name(model_family, item, model_family_idx)
+                        _make_new_component_name(
+                            model_family, item, model_family_idx, sub_pipeline_name
+                        )
                     )
                 elif isinstance(item, str) and item == "y":
                     if is_classification(problem_type):
@@ -390,7 +401,7 @@ def _make_pipeline_from_multiple_graphs(
                     new_component_list.append(item)
                 if i != 0 and item.endswith(".y"):
                     ensemble_y = _make_new_component_name(
-                        model_family, item, model_family_idx
+                        model_family, item, model_family_idx, sub_pipeline_name
                     )
             component_graph[new_component_name] = new_component_list
             final_component = new_component_name
