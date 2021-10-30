@@ -1159,6 +1159,9 @@ def test_all_estimators_check_fit(
             ) as mock_component_obj_predict:
                 mock_component_obj_predict.return_value = pd.Series([0] * len(y))
 
+                if "Prophet" in component.name:
+                    mock_component_obj_predict.return_value = {"yhat": pd.Series([0] * len(y))}
+
                 with pytest.raises(
                     ComponentNotYetFittedError,
                     match=f"You must fit {component_class.__name__}",
