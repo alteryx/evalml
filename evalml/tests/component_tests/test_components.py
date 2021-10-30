@@ -2,7 +2,7 @@ import importlib
 import inspect
 import os
 import warnings
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import cloudpickle
 import numpy as np
@@ -1152,38 +1152,46 @@ def test_all_estimators_check_fit(
             X, y = X_y_binary
 
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
-        with patch.object(component, "_component_obj"):
-            with pytest.raises(
-                ComponentNotYetFittedError,
-                match=f"You must fit {component_class.__name__}",
-            ):
-                component.predict(X)
-            if (
-                ProblemTypes.BINARY in component.supported_problem_types
-                or ProblemTypes.MULTICLASS in component.supported_problem_types
-            ):
+
+        with patch.object(component, "_component_obj") as mock_component_obj:
+            with patch.object(
+                mock_component_obj, "predict"
+            ) as mock_component_obj_predict:
+                mock_component_obj_predict.return_value = pd.Series([0] * len(y))
+
                 with pytest.raises(
                     ComponentNotYetFittedError,
                     match=f"You must fit {component_class.__name__}",
                 ):
+                    component.predict(X)
+                if (
+                    ProblemTypes.BINARY in component.supported_problem_types
+                    or ProblemTypes.MULTICLASS in component.supported_problem_types
+                ):
+                    with pytest.raises(
+                        ComponentNotYetFittedError,
+                        match=f"You must fit {component_class.__name__}",
+                    ):
+                        component.predict_proba(X)
+
+                with pytest.raises(
+                    ComponentNotYetFittedError,
+                    match=f"You must fit {component_class.__name__}",
+                ):
+                    component.feature_importance
+
+                component.fit(X, y)
+
+                if (
+                    ProblemTypes.BINARY in component.supported_problem_types
+                    or ProblemTypes.MULTICLASS in component.supported_problem_types
+                ):
                     component.predict_proba(X)
-
-            with pytest.raises(
-                ComponentNotYetFittedError,
-                match=f"You must fit {component_class.__name__}",
-            ):
+                try:
+                    component.predict(X)
+                except Exception:
+                    component.predict(X)
                 component.feature_importance
-
-            component.fit(X, y)
-
-            if (
-                ProblemTypes.BINARY in component.supported_problem_types
-                or ProblemTypes.MULTICLASS in component.supported_problem_types
-            ):
-                component.predict_proba(X)
-
-            component.predict(X)
-            component.feature_importance
 
 
 @pytest.mark.parametrize("data_type", ["li", "np", "pd", "ww"])
