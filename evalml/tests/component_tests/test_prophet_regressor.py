@@ -6,7 +6,7 @@ from pytest import importorskip
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ProphetRegressor
 from evalml.problem_types import ProblemTypes
-
+from pands.testing import assert_series_equal
 prophet = importorskip("prophet", reason="Skipping test because prophet not installed")
 
 
@@ -78,9 +78,7 @@ def test_fit_predict_ts_with_X_index(ts_data):
     clf = ProphetRegressor(uncertainty_samples=False, changepoint_prior_scale=2.0)
     clf.fit(X, y)
     y_pred = clf.predict(X)
-
-    assert (y_pred == y_pred_p).all()
-
+    assert_series_equal(y_pred, y_pred_p, check_index_type=False)
 
 def test_fit_predict_ts_with_y_index(ts_data):
     X, y = ts_data
@@ -97,7 +95,7 @@ def test_fit_predict_ts_with_y_index(ts_data):
     clf.fit(X, y)
     y_pred = clf.predict(X, y)
 
-    assert (y_pred == y_pred_p).all()
+    assert_series_equal(y_pred, y_pred_p, check_index_type=False)
 
 
 def test_fit_predict_ts_no_X(ts_data):
