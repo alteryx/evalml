@@ -215,7 +215,6 @@ class ARIMARegressor(Estimator):
                 else:
                     raise ve
         predictions = infer_feature_types(predictions)
-        predictions.index = X.index
         return predictions
 
     @property
