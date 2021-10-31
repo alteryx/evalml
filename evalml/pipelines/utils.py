@@ -386,7 +386,6 @@ def make_pipeline_from_actions(problem_type, actions):
     component_dict = PipelineBase._make_component_dict_from_component_list(
         [component.name for component in component_list]
     )
-    problem_type = handle_problem_types(problem_type)
     base_class = _get_pipeline_base_class(problem_type)
     return base_class(component_dict, parameters=parameters)
 
