@@ -1161,7 +1161,8 @@ def test_all_estimators_check_fit(
 
                 if "Prophet" in component.name:
                     mock_component_obj_predict.return_value = {
-                        "yhat": pd.Series([0] * len(y))
+                        "yhat": pd.Series([0] * len(y)),
+                        "ds": pd.Series([0] * len(y))
                     }
 
                 with pytest.raises(
