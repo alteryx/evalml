@@ -146,10 +146,11 @@ class ProphetRegressor(Estimator):
             X=X, y=y, date_column=self.parameters["date_index"]
         )
 
-        predictions = self._component_obj.predict(prophet_df)["yhat"]
+        prophet_output = self._component_obj.predict(prophet_df)
+        predictions = prophet_output["yhat"]
         predictions = infer_feature_types(predictions)
         predictions = predictions.rename(None)
-        predictions.index = X.index
+        predictions.index = prophet_output["ds"]
         return predictions
 
     def get_params(self):
