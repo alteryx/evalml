@@ -22,6 +22,7 @@ Release Notes
         * Enhanced the ``DateTimeFeaturizer`` to handle ``NaNs`` in date features :pr:`2909`
         * Added support for woodwork logical types ``PostalCode``, ``SubRegionCode``, and ``CountryCode`` in model understanding tools :pr:`2946`
         * Added Vowpal Wabbit regressor and classifiers :pr:`2846`
+        * Added method to convert actions into a preprocessing pipeline :pr:`2968`
     * Fixes
         * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
         * Fixed ``calculate_permutation_importance`` for datetimes on ``StandardScaler`` :pr:`2938`
