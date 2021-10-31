@@ -6,6 +6,7 @@ Release Notes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
     * Changes
     * Documentation Changes
+        * Fixed cost benefit matrix demo formatting :pr:`2990`
     * Testing Changes
 
 .. warning::
