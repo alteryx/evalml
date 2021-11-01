@@ -112,7 +112,7 @@ def test_data_checks_suggests_drop_rows():
         for action in data_checks_output["actions"]
     ]
     action_components = _make_component_list_from_actions(actions)
-    assert action_components == [DropRowsTransformer()]
+    assert action_components == [DropRowsTransformer(indices_to_drop=[0, 3, 5, 10])]
 
     X_t = pd.DataFrame(data=data)
     X_t.iloc[0, 3] = 1000
