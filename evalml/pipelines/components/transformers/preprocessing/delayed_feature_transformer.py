@@ -56,6 +56,7 @@ class DelayedFeatureTransformer(Transformer):
         self.forecast_horizon = forecast_horizon
         self.gap = gap
         self.conf_level = conf_level
+        self.statistically_significant_lags = None
 
         self.start_delay = self.forecast_horizon + self.gap
 
@@ -81,6 +82,9 @@ class DelayedFeatureTransformer(Transformer):
         Returns:
             self
         """
+        self.statistically_significant_lags = self._find_significant_lags(
+            y, conf_level=self.conf_level, max_delay=self.max_delay
+        )
         return self
 
     @staticmethod
@@ -104,7 +108,7 @@ class DelayedFeatureTransformer(Transformer):
     @staticmethod
     def _find_significant_lags(y, conf_level, max_delay):
         all_lags = np.arange(max_delay + 1)
-        if conf_level is not None:
+        if conf_level is not None and y is not None:
             # Compute the acf and find its peaks
             acf_values, ci_intervals = acf(
                 y, nlags=len(y) - 1, fft=True, alpha=conf_level
@@ -147,9 +151,6 @@ class DelayedFeatureTransformer(Transformer):
         X_ww = X_ww.ww.copy()
         categorical_columns = self._get_categorical_columns(X_ww)
         original_features = list(X_ww.columns)
-        statistically_significant_lags = self._find_significant_lags(
-            y, conf_level=self.conf_level, max_delay=self.max_delay
-        )
         if self.delay_features and len(X) > 0:
             X_categorical = self._encode_X_while_preserving_index(
                 X_ww[categorical_columns]
@@ -158,7 +159,7 @@ class DelayedFeatureTransformer(Transformer):
                 col = X_ww[col_name]
                 if col_name in categorical_columns:
                     col = X_categorical[col_name]
-                for t in statistically_significant_lags:
+                for t in self.statistically_significant_lags:
                     X_ww.ww[f"{col_name}_delay_{self.start_delay + t}"] = col.shift(
                         self.start_delay + t
                     )
@@ -167,7 +168,7 @@ class DelayedFeatureTransformer(Transformer):
             y = infer_feature_types(y)
             if type(y.ww.logical_type) == logical_types.Categorical:
                 y = self._encode_y_while_preserving_index(y)
-            for t in statistically_significant_lags:
+            for t in self.statistically_significant_lags:
                 X_ww.ww[
                     self.target_colname_prefix.format(t + self.start_delay)
                 ] = y.shift(self.start_delay + t)

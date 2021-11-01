@@ -38,7 +38,7 @@ def test_delayed_features_transformer_init():
         "gap": 0,
         "forecast_horizon": 1,
         "date_index": "Date",
-        "conf_level": None,
+        "conf_level": 0.05,
     }
 
 
@@ -90,7 +90,7 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
     )
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=3, gap=0, forecast_horizon=1).fit_transform(
+        DelayedFeatureTransformer(max_delay=3, gap=0, forecast_horizon=1, conf_level=1.0).fit_transform(
             X=X, y=y
         ),
     )
@@ -105,7 +105,7 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
     )
     assert_frame_equal(
         answer_only_y,
-        DelayedFeatureTransformer(max_delay=3, gap=0, forecast_horizon=1).fit_transform(
+        DelayedFeatureTransformer(max_delay=3, gap=0, forecast_horizon=1, conf_level=1.0).fit_transform(
             X=None, y=y
         ),
     )
@@ -138,7 +138,7 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
     )
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=5, gap=0, forecast_horizon=1).fit_transform(
+        DelayedFeatureTransformer(max_delay=5, gap=0, forecast_horizon=1, conf_level=1.0).fit_transform(
             X, y
         ),
     )
@@ -155,7 +155,7 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
     )
     assert_frame_equal(
         answer_only_y,
-        DelayedFeatureTransformer(max_delay=5, gap=0, forecast_horizon=1).fit_transform(
+        DelayedFeatureTransformer(max_delay=5, gap=0, forecast_horizon=1, conf_level=1.0).fit_transform(
             X=None, y=y
         ),
     )
@@ -185,7 +185,7 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
 
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1).fit_transform(
+        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0).fit_transform(
             X, y
         ),
     )
@@ -200,7 +200,7 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
     )
     assert_frame_equal(
         answer_only_y,
-        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1).fit_transform(
+        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0).fit_transform(
             X=None, y=y
         ),
     )
@@ -225,7 +225,7 @@ def test_delayed_feature_extractor_numpy(delayed_features_data):
     )
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1).fit_transform(
+        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0).fit_transform(
             X_np, y_np
         ),
     )
@@ -240,7 +240,7 @@ def test_delayed_feature_extractor_numpy(delayed_features_data):
     )
     assert_frame_equal(
         answer_only_y,
-        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1).fit_transform(
+        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0).fit_transform(
             X=None, y=y_np
         ),
     )
@@ -289,6 +289,7 @@ def test_lagged_feature_extractor_delay_features_delay_target(
         forecast_horizon=1,
         delay_features=delay_features,
         delay_target=delay_target,
+        conf_level=1.0
     )
     assert_frame_equal(all_delays, transformer.fit_transform(X, y))
 
@@ -325,6 +326,7 @@ def test_lagged_feature_extractor_delay_target(
         forecast_horizon=1,
         delay_features=delay_features,
         delay_target=delay_target,
+        conf_level=1.0
     )
     assert_frame_equal(answer, transformer.fit_transform(None, y))
 
@@ -362,7 +364,7 @@ def test_delay_feature_transformer_supports_custom_index(
 
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7).fit_transform(X, y),
+        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, conf_level=1.0).fit_transform(X, y),
     )
 
     answer_only_y = pd.DataFrame(
@@ -376,7 +378,7 @@ def test_delay_feature_transformer_supports_custom_index(
     )
     assert_frame_equal(
         answer_only_y,
-        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7).fit_transform(
+        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, conf_level=1.0).fit_transform(
             X=None, y=y
         ),
     )
@@ -399,7 +401,7 @@ def test_delay_feature_transformer_multiple_categorical_columns(delayed_features
     )
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=1, forecast_horizon=9, gap=2).fit_transform(
+        DelayedFeatureTransformer(max_delay=1, forecast_horizon=9, gap=2, conf_level=1.0).fit_transform(
             X, y
         ),
     )
@@ -415,7 +417,7 @@ def test_delay_feature_transformer_y_is_none(delayed_features_data):
     )
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=1, forecast_horizon=11).fit_transform(
+        DelayedFeatureTransformer(max_delay=1, forecast_horizon=11, conf_level=1.0).fit_transform(
             X, y=None
         ),
     )
@@ -424,7 +426,7 @@ def test_delay_feature_transformer_y_is_none(delayed_features_data):
 def test_delayed_feature_transformer_does_not_modify_input_data(delayed_features_data):
     X, _ = delayed_features_data
     expected = X.copy()
-    _ = DelayedFeatureTransformer(max_delay=1, forecast_horizon=11).fit_transform(
+    _ = DelayedFeatureTransformer(max_delay=1, forecast_horizon=11, conf_level=1.0).fit_transform(
         X, y=None
     )
 
@@ -524,7 +526,7 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
         if X.loc[:, 0].isna().all():
             # Casting the fourth and fifth dataframes to datetime will produce all NaNs
             continue
-        dft = DelayedFeatureTransformer(max_delay=1, forecast_horizon=1)
+        dft = DelayedFeatureTransformer(max_delay=1, forecast_horizon=1, conf_level=1.0)
         if fit_transform:
             transformed = dft.fit_transform(X, y)
         else:
