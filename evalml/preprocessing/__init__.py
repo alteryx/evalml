@@ -5,4 +5,4 @@ from .utils import (
     number_of_features,
     target_distribution,
 )
-from .data_splitters import TrainingValidationSplit, TimeSeriesSplit
+from .data_splitters import NoSplit, TrainingValidationSplit, TimeSeriesSplit
