@@ -1,3 +1,6 @@
+from unittest.mock import patch
+
+import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
@@ -35,6 +38,7 @@ def test_delayed_features_transformer_init():
         "gap": 0,
         "forecast_horizon": 1,
         "date_index": "Date",
+        "conf_level": None,
     }
 
 
@@ -84,7 +88,6 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
             "target_delay_4": y_answer.shift(4),
         }
     )
-
     assert_frame_equal(
         answer,
         DelayedFeatureTransformer(max_delay=3, gap=0, forecast_horizon=1).fit_transform(
@@ -133,7 +136,6 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
             "target_delay_6": y_answer.shift(6),
         }
     )
-
     assert_frame_equal(
         answer,
         DelayedFeatureTransformer(max_delay=5, gap=0, forecast_horizon=1).fit_transform(
@@ -427,6 +429,66 @@ def test_delayed_feature_transformer_does_not_modify_input_data(delayed_features
     )
 
     assert_frame_equal(X, expected)
+
+
+@pytest.mark.parametrize("peaks", [[14, 21, 28], [32, 45], [18, 29, 56], [5, 8, 12]])
+@pytest.mark.parametrize(
+    "significant_lags",
+    [[1, 2, 8, 14, 21], [1, 19, 20, 32], [14, 21, 28, 56, 18], [13, 25, 8]],
+)
+@patch(
+    "evalml.pipelines.components.transformers.preprocessing.delayed_feature_transformer.find_peaks"
+)
+@patch(
+    "evalml.pipelines.components.transformers.preprocessing.delayed_feature_transformer.acf"
+)
+def test_delayed_feature_transformer_conf_level(
+    mock_acf, mock_peaks, peaks, significant_lags
+):
+    X = pd.DataFrame({"feature": np.arange(10000)})
+    y = pd.Series(np.arange(10000))
+
+    def create_acf_return_value(y, significant_lags, peaks):
+        """Create ci intervals such that significant_lags and peaks are significant."""
+        acf_series = np.arange(len(y))
+        ci = np.ones((len(y), 2))
+        ci[:, 0] = -1
+        ci[significant_lags + peaks, 0] = 0.1
+        ci[significant_lags + peaks, 1] = 0.3
+        return acf_series, ci
+
+    mock_acf.return_value = create_acf_return_value(y, significant_lags, peaks)
+    mock_peaks.return_value = peaks, None
+
+    MAX_DELAY = 50
+    FORECAST_HORIZON = 10
+
+    dft = DelayedFeatureTransformer(
+        max_delay=MAX_DELAY, forecast_horizon=FORECAST_HORIZON, conf_level=0.05, gap=0
+    )
+    new_X = dft.fit_transform(X, y)
+
+    first_significant_10 = [l for l in significant_lags if l < 10]
+    expected_lags = (
+        set(significant_lags + peaks).intersection(peaks).union(first_significant_10)
+    )
+    expected_lags = sorted(expected_lags.intersection(np.arange(MAX_DELAY + 1)))
+    answer = pd.DataFrame()
+    answer = answer.assign(
+        **{
+            f"feature_delay_{t + FORECAST_HORIZON}": X["feature"].shift(t + 10)
+            for t in expected_lags
+        }
+    )
+    answer = answer.assign(
+        **{
+            f"target_delay_{t + FORECAST_HORIZON}": y.shift(t + 10)
+            for t in expected_lags
+        }
+    )
+    # Sort columns in alphabetical order
+    answer = answer.sort_index(axis=1)
+    assert_frame_equal(new_X, answer)
 
 
 @pytest.mark.parametrize(

@@ -1,6 +1,10 @@
 """Transformer that delays input features and target variable for time series problems."""
+import numpy as np
 import pandas as pd
+from scipy.signal import find_peaks
 from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from skopt.space import Real
+from statsmodels.tsa.stattools import acf
 from woodwork import logical_types
 
 from evalml.pipelines.components.transformers.transformer import Transformer
@@ -14,6 +18,9 @@ class DelayedFeatureTransformer(Transformer):
         date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
         max_delay (int): Maximum number of time units to delay each feature. Defaults to 2.
         forecast_horizon (int): The number of time periods the pipeline is expected to forecast.
+        conf_level (float, None): Float between 0 and 1 that determines the confidence interval size used to select
+            which lags to compute from the set of [1, max_delay]. A delay of 1 will always be computed. If None,
+            selects all possible lags in the set of [1, max_delay], inclusive.
         delay_features (bool): Whether to delay the input features. Defaults to True.
         delay_target (bool): Whether to delay the target. Defaults to True.
         gap (int): The number of time units between when the features are collected and
@@ -24,7 +31,7 @@ class DelayedFeatureTransformer(Transformer):
     """
 
     name = "Delayed Feature Transformer"
-    hyperparameter_ranges = {}
+    hyperparameter_ranges = {"conf_level": Real(0.001, 0.2)}
     """{}"""
     needs_fitting = False
     target_colname_prefix = "target_delay_{}"
@@ -36,6 +43,7 @@ class DelayedFeatureTransformer(Transformer):
         max_delay=2,
         gap=0,
         forecast_horizon=1,
+        conf_level=None,
         delay_features=True,
         delay_target=True,
         random_seed=0,
@@ -47,6 +55,7 @@ class DelayedFeatureTransformer(Transformer):
         self.delay_target = delay_target
         self.forecast_horizon = forecast_horizon
         self.gap = gap
+        self.conf_level = conf_level
 
         self.start_delay = self.forecast_horizon + self.gap
 
@@ -56,6 +65,7 @@ class DelayedFeatureTransformer(Transformer):
             "delay_target": delay_target,
             "delay_features": delay_features,
             "forecast_horizon": forecast_horizon,
+            "conf_level": conf_level,
             "gap": gap,
         }
         parameters.update(kwargs)
@@ -91,6 +101,28 @@ class DelayedFeatureTransformer(Transformer):
             index=X_categorical.index,
         )
 
+    @staticmethod
+    def _find_significant_lags(y, conf_level, max_delay):
+        all_lags = np.arange(max_delay + 1)
+        if conf_level is not None:
+            # Compute the acf and find its peaks
+            acf_values, ci_intervals = acf(
+                y, nlags=len(y) - 1, fft=True, alpha=conf_level
+            )
+            peaks, _ = find_peaks(acf_values)
+
+            # Return lags that are significant peaks or the first 10 significant lags
+            index = np.arange(len(acf_values))
+            significant = np.logical_or(ci_intervals[:, 0] > 0, ci_intervals[:, 1] < 0)
+            first_significant_10 = index[:10][significant[:10]]
+            significant_lags = (
+                set(index[significant]).intersection(peaks).union(first_significant_10)
+            )
+            significant_lags = sorted(significant_lags.intersection(all_lags))
+        else:
+            significant_lags = all_lags
+        return significant_lags
+
     def transform(self, X, y=None):
         """Computes the delayed features for all features in X and y.
 
@@ -115,6 +147,9 @@ class DelayedFeatureTransformer(Transformer):
         X_ww = X_ww.ww.copy()
         categorical_columns = self._get_categorical_columns(X_ww)
         original_features = list(X_ww.columns)
+        statistically_significant_lags = self._find_significant_lags(
+            y, conf_level=self.conf_level, max_delay=self.max_delay
+        )
         if self.delay_features and len(X) > 0:
             X_categorical = self._encode_X_while_preserving_index(
                 X_ww[categorical_columns]
@@ -123,15 +158,19 @@ class DelayedFeatureTransformer(Transformer):
                 col = X_ww[col_name]
                 if col_name in categorical_columns:
                     col = X_categorical[col_name]
-                for t in range(self.start_delay, self.start_delay + self.max_delay + 1):
-                    X_ww.ww[f"{col_name}_delay_{t}"] = col.shift(t)
+                for t in statistically_significant_lags:
+                    X_ww.ww[f"{col_name}_delay_{self.start_delay + t}"] = col.shift(
+                        self.start_delay + t
+                    )
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
             y = infer_feature_types(y)
             if type(y.ww.logical_type) == logical_types.Categorical:
                 y = self._encode_y_while_preserving_index(y)
-            for t in range(self.start_delay, self.start_delay + self.max_delay + 1):
-                X_ww.ww[self.target_colname_prefix.format(t)] = y.shift(t)
+            for t in statistically_significant_lags:
+                X_ww.ww[
+                    self.target_colname_prefix.format(t + self.start_delay)
+                ] = y.shift(self.start_delay + t)
         return X_ww.ww.drop(original_features)
 
     def fit_transform(self, X, y):
