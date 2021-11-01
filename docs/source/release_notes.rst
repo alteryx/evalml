@@ -2,6 +2,22 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added support for stacked ensemble pipelines to prediction explanations module :pr:`2971`
+        * Added integration tests for data checks and data checks actions workflow :pr:`2883`
+    * Fixes
+        * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
+    * Changes
+    * Documentation Changes
+        * Fixed cost benefit matrix demo formatting :pr:`2990`
+        * Update ReadMe.md with new badge links and updated installation instructions for conda :pr:`2998`
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.36.0 Oct. 27, 2021**
+    * Enhancements
         * Added LIME as an algorithm option for ``explain_predictions`` and ``explain_predictions_best_worst`` :pr:`2905`
         * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary :pr:`2869`
         * Added ``rows_of_interest`` to pipeline utils :pr:`2908`
@@ -9,15 +25,18 @@ Release Notes
         * Enhanced the ``DateTimeFeaturizer`` to handle ``NaNs`` in date features :pr:`2909`
         * Added support for woodwork logical types ``PostalCode``, ``SubRegionCode``, and ``CountryCode`` in model understanding tools :pr:`2946`
         * Added Vowpal Wabbit regressor and classifiers :pr:`2846`
+        * Added method to convert actions into a preprocessing pipeline :pr:`2968`
     * Fixes
         * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
         * Fixed ``calculate_permutation_importance`` for datetimes on ``StandardScaler`` :pr:`2938`
         * Fixed ``SelectColumns`` to only select available features for feature selection in ``DefaultAlgorithm`` :pr:`2944`
+        * Fixed ``DropColumns`` component not receiving parameters in ``DefaultAlgorithm`` :pr:`2945`
         * Fixed bug where trained binary thresholds were not being returned by ``get_pipeline`` or ``clone`` :pr:`2948`
         * Fixed bug where ``Oversampler`` selected ww logical categorical instead of ww semantic category :pr:`2946`
     * Changes
         * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
         * Refactored ``OutliersDataCheck`` and ``HighlyNullDataCheck`` to add more descriptive metadata :pr:`2907`
+        * Bumped minimum version of ``dask`` from 2021.2.0 to 2021.10.0 :pr:`2978`
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
         * Updated CI to run doctest (docstring tests) and apply necessary fixes to docstrings :pr:`2933`
@@ -25,14 +44,12 @@ Release Notes
     * Testing Changes
         * Fixed dependency checker to catch full names of packages :pr:`2930`
         * Refactored ``build_conda_pkg`` to work from a local recipe :pr:`2925`
-        * Added integration tests for data checks and data checks actions workflow :pr:`2883`
-
+        * Refactored component test for different environments :pr:`2957`
 
 .. warning::
 
     **Breaking Changes**
         * Standardized data check messages and added default "rows" and "columns" to data check message details dictionary. This may change the number of messages returned from a data check. :pr:`2869`
-
 
 
 **v0.35.0 Oct. 14, 2021**
