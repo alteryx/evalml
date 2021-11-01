@@ -404,7 +404,7 @@ def _make_pipeline_from_multiple_graphs(
         parameters (Dict): Parameters to initialize pipeline with. Defaults to an empty dictionary.
         sub_pipeline_names (Dict): Dictionary mapping original input pipeline names to new names. This will be used to rename components. Defaults to None.
         random_seed (int): Random seed for the pipeline. Defaults to 0.
-        
+
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
