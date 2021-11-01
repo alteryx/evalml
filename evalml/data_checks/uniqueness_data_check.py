@@ -46,7 +46,7 @@ class UniquenessDataCheck(DataCheck):
             dict: dict with a DataCheckWarning if there are any too unique or not
                 unique enough columns.
 
-        Example:
+        Examples:
             >>> import pandas as pd
             >>> df = pd.DataFrame({
             ...    'regression_unique_enough': [float(x) for x in range(100)],

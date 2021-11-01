@@ -29,7 +29,7 @@ class MulticollinearityDataCheck(DataCheck):
         Returns:
             dict: dict with a DataCheckWarning if there are any potentially multicollinear columns.
 
-        Example:
+        Examples:
             >>> import pandas as pd
             >>> col = pd.Series([1, 0, 2, 3, 4])
             >>> X = pd.DataFrame({"col_1": col, "col_2": col * 3})

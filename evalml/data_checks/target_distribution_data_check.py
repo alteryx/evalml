@@ -27,7 +27,7 @@ class TargetDistributionDataCheck(DataCheck):
         Returns:
             dict (DataCheckError): List with DataCheckErrors if certain distributions are found in the target data.
 
-        Example:
+        Examples:
             >>> from scipy.stats import lognorm
             >>> y = [0.946, 0.972, 1.154, 0.954, 0.969, 1.222, 1.038, 0.999, 0.973, 0.897]
             >>> target_check = TargetDistributionDataCheck()
