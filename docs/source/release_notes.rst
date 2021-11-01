@@ -7,6 +7,7 @@ Release Notes
     * Changes
     * Documentation Changes
         * Fixed cost benefit matrix demo formatting :pr:`2990`
+        * Update ReadMe.md with new badge links and updated installation instructions for conda :pr:`2990`
     * Testing Changes
 
 .. warning::
