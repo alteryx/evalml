@@ -424,9 +424,13 @@ def _make_pipeline_from_multiple_graphs(
         else {}
     )
     for pipeline in input_pipelines:
-        name = pipeline.name
-        name_idx = used_names.count(name) + 1 if used_names.count(name) > 0 else None
-        used_names.append(name)
+        pipeline_name = pipeline.name
+        name_idx = (
+            used_names.count(pipeline_name) + 1
+            if used_names.count(pipeline_name) > 0
+            else None
+        )
+        used_names.append(pipeline_name)
         sub_pipeline_name = (
             sub_pipeline_names[pipeline.name] if sub_pipeline_names else None
         )
@@ -438,7 +442,7 @@ def _make_pipeline_from_multiple_graphs(
                 pipeline.component_graph.compute_order[-1]
             ).modifies_target
             else _make_new_component_name(
-                name,
+                pipeline_name,
                 pipeline.component_graph.compute_order[-1],
                 name_idx,
                 sub_pipeline_name,
@@ -448,7 +452,7 @@ def _make_pipeline_from_multiple_graphs(
         for name, component_list in pipeline.component_graph.component_dict.items():
             new_component_list = []
             new_component_name = _make_new_component_name(
-                name, name, name_idx, sub_pipeline_name
+                pipeline_name, name, name_idx, sub_pipeline_name
             )
             for i, item in enumerate(component_list):
                 if i == 0:
@@ -458,7 +462,7 @@ def _make_pipeline_from_multiple_graphs(
                 elif isinstance(item, str) and item not in ["X", "y"]:
                     new_component_list.append(
                         _make_new_component_name(
-                            name, item, name_idx, sub_pipeline_name
+                            pipeline_name, item, name_idx, sub_pipeline_name
                         )
                     )
                 elif isinstance(item, str) and item == "y":
@@ -470,7 +474,7 @@ def _make_pipeline_from_multiple_graphs(
                     new_component_list.append(item)
                 if i != 0 and item.endswith(".y"):
                     final_y = _make_new_component_name(
-                        name, item, name_idx, sub_pipeline_name
+                        pipeline_name, item, name_idx, sub_pipeline_name
                     )
             component_graph[new_component_name] = new_component_list
             final_component = new_component_name
@@ -485,6 +489,7 @@ def _make_pipeline_from_multiple_graphs(
         ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
         ProblemTypes.REGRESSION: RegressionPipeline,
     }[problem_type]
+    print(component_graph)
     return pipeline_class(
         component_graph,
         parameters=parameters,
