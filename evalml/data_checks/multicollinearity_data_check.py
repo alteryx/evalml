@@ -34,7 +34,7 @@ class MulticollinearityDataCheck(DataCheck):
             >>> col = pd.Series([1, 0, 2, 3, 4])
             >>> X = pd.DataFrame({"col_1": col, "col_2": col * 3})
             >>> y = pd.Series([1, 0, 0, 1, 0])
-            >>> multicollinearity_check = MulticollinearityDataCheck(threshold=0.8)
+            >>> multicollinearity_check = MulticollinearityDataCheck(threshold=1.0)
             >>> assert multicollinearity_check.validate(X, y) == {
             ...     "errors": [],
             ...     "warnings": [{'message': "Columns are likely to be correlated: [('col_1', 'col_2')]",

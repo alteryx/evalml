@@ -56,16 +56,149 @@ class InvalidTargetDataCheck(DataCheck):
         Example:
             >>> import pandas as pd
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
-            >>> y = pd.Series([0, 1, None, None])
+            >>> y = None
             >>> target_check = InvalidTargetDataCheck('binary', 'Log Loss Binary')
             >>> assert target_check.validate(X, y) == {
-            ...     "errors": [{"message": "2 row(s) (50.0%) of target values are null",
-            ...                 "data_check_name": "InvalidTargetDataCheck",
-            ...                 "level": "error",
-            ...                 "code": "TARGET_HAS_NULL",
-            ...                 "details": {"num_null_rows": 2, "pct_null_rows": 50, "rows": None, "columns": None}}],
-            ...     "warnings": [],
-            ...     "actions": [{"code": "IMPUTE_COL", "metadata": {"impute_strategy": "most_frequent", "is_target": True, "rows": None, "columns": None}}]}
+            ...     'warnings': [],
+            ...     'errors': [{'message': 'Target is None',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None},
+            ...                 'code': 'TARGET_IS_NONE'}],
+            ...                 'actions': []}
+            ...
+            >>> target_check = InvalidTargetDataCheck('regression', 'R2')
+            >>> y = pd.Series(["cat_1", "cat_2", "cat_1", "cat_2"])
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': 'Target is unsupported Unknown type. Valid Woodwork logical types include: integer, double, boolean',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None, 'unsupported_type': 'unknown'},
+            ...                 'code': 'TARGET_UNSUPPORTED_TYPE'},
+            ...                {'message': 'Target data type should be numeric for regression type problems.',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None},
+            ...                 'code': 'TARGET_UNSUPPORTED_TYPE'}],
+            ...     'actions': []}
+            ...
+            >>> y = pd.Series([None, pd.NA, pd.NaT, None])
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': 'Target is either empty or fully null.',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None},
+            ...                 'code': 'TARGET_IS_EMPTY_OR_FULLY_NULL'}],
+            ...     'actions': []}
+            ...
+            >>> y = pd.Series([1, None, 3, None])
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': '2 row(s) (50.0%) of target values are null',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None,
+            ...                             'rows': None,
+            ...                             'num_null_rows': 2,
+            ...                             'pct_null_rows': 50.0},
+            ...                 'code': 'TARGET_HAS_NULL'}],
+            ...     'actions': [{'code': 'IMPUTE_COL',
+            ...                  'metadata': {'columns': None,
+            ...                               'rows': None,
+            ...                               'is_target': True,
+            ...                               'impute_strategy': 'mean'}}]}
+            ...
+            >>> target_check = InvalidTargetDataCheck('binary', 'Log Loss Binary')
+            >>> y = pd.Series([1, 2, 3, 1])
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': 'Binary class targets require exactly two unique values.',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None, 'target_values': [1, 2, 3]},
+            ...                 'code': 'TARGET_BINARY_NOT_TWO_UNIQUE_VALUES'}],
+            ...     'actions': []}
+            ...
+            >>> X = pd.DataFrame([i for i in range(50)])
+            >>> y = pd.Series([i%2 for i in range(50)])
+            >>> inv_dc = InvalidTargetDataCheck('multiclass', 'Log Loss Multiclass')
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': 'Target has two or less classes, which is too few for multiclass problems.  Consider changing to binary.',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None, 'num_classes': 2},
+            ...                 'code': 'TARGET_MULTICLASS_NOT_ENOUGH_CLASSES'}],
+            ...     'actions': []}
+            ...
+            >>> X = pd.DataFrame([i for i in range(100)])
+            >>> y = pd.Series([1] + [2] + [3]*98)
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': 'Target does not have at least two instances per class which is required for multiclass classification',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None,
+            ...                             'rows': None,
+            ...                             'least_populated_class_labels': [1, 2]},
+            ...                 'code': 'TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS'}],
+            ...     'actions': []}
+            ...
+            >>> y = pd.Series([i%10 for i in range(100)])
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [{'message': 'Target has a large number of unique values, could be regression type problem.',
+            ...                   'data_check_name': 'InvalidTargetDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': None, 'rows': None, 'class_to_value_ratio': 0.1},
+            ...                   'code': 'TARGET_MULTICLASS_HIGH_UNIQUE_CLASS'}],
+            ...     'errors': [],
+            ...     'actions': []}
+            ...
+            >>> X = pd.DataFrame([i for i in range(5)])
+            >>> y = pd.Series([1, 2, 3, 4, -5])
+            >>> target_check = InvalidTargetDataCheck('regression', 'mean absolute percentage error')
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': 'Target has non-positive values which is not supported for Mean Absolute Percentage Error',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None, 'Count of offending values': 1},
+            ...                 'code': 'TARGET_INCOMPATIBLE_OBJECTIVE'}],
+            ...     'actions': []}
+            ...
+            >>> X.index = [5, 4, 3, 2, 1]
+            >>> y = pd.Series([1, 2, 3, 4, 5], index=[1, 2, 3, 4, 5])
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [{'message': 'Input target and features have mismatched indices order',
+            ...                   'data_check_name': 'InvalidTargetDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': None, 'rows': None},
+            ...                   'code': 'MISMATCHED_INDICES_ORDER'}],
+            ...     'errors': [],
+            ...     'actions': []}
+            ...
+            >>> y = pd.Series([1, 2, 3, 4])
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [{'message': 'Input target and features have different lengths',
+            ...                   'data_check_name': 'InvalidTargetDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': None,
+            ...                               'rows': None,
+            ...                               'features_length': 5,
+            ...                               'target_length': 4},
+            ...                   'code': 'MISMATCHED_LENGTHS'},
+            ...                  {'message': 'Input target and features have mismatched indices',
+            ...                   'data_check_name': 'InvalidTargetDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': None,
+            ...                               'rows': None,
+            ...                               'indices_not_in_features': [],
+            ...                               'indices_not_in_target': [4]},
+            ...                   'code': 'MISMATCHED_INDICES'}],
+            ...     'errors': [],
+            ...     'actions': []}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

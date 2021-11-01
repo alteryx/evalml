@@ -37,23 +37,53 @@ class IDColumnsDataCheck(DataCheck):
         Returns:
             dict: A dictionary of features with column name or index and their probability of being ID columns
 
-        Example:
+        Examples:
             >>> import pandas as pd
             >>> df = pd.DataFrame({
-            ...     'df_id': [0, 1, 2, 3, 4],
-            ...     'x': [10, 42, 31, 51, 61],
-            ...     'y': [42, 54, 12, 64, 12]
+            ...     'customer_id': [123, 124, 125, 126, 127],
+            ...     'Sales': [10, 42, 31, 51, 61]
             ... })
             >>> id_col_check = IDColumnsDataCheck()
             >>> assert id_col_check.validate(df) == {
             ...     "errors": [],
-            ...     "warnings": [{"message": "Columns 'df_id' are 100.0% or more likely to be an ID column",
+            ...     "warnings": [{"message": "Columns 'customer_id' are 100.0% or more likely to be an ID column",
             ...                   "data_check_name": "IDColumnsDataCheck",
             ...                   "level": "warning",
             ...                   "code": "HAS_ID_COLUMN",
-            ...                   "details": {"columns": ["df_id"], "rows": None}}],
+            ...                   "details": {"columns": ["customer_id"], "rows": None}}],
             ...     "actions": [{"code": "DROP_COL",
-            ...                  "metadata": {"columns": ["df_id"], "rows": None}}]}
+            ...                  "metadata": {"columns": ["customer_id"], "rows": None}}]}
+            ...
+            >>> df = df.rename(columns={"customer_id": "ID"})
+            >>> id_col_check = IDColumnsDataCheck()
+            >>> assert id_col_check.validate(df) == {
+            ...     "errors": [],
+            ...     "warnings": [{"message": "Columns 'ID' are 100.0% or more likely to be an ID column",
+            ...                   "data_check_name": "IDColumnsDataCheck",
+            ...                   "level": "warning",
+            ...                   "code": "HAS_ID_COLUMN",
+            ...                   "details": {"columns": ["ID"], "rows": None}}],
+            ...     "actions": [{"code": "DROP_COL",
+            ...                  "metadata": {"columns": ["ID"], "rows": None}}]}
+            ...
+            >>> df = pd.DataFrame({
+            ...    'Country_Rank': [1, 2, 3, 4, 5],
+            ...    'Sales': ["very high", "high", "high", "medium", "very low"]
+            ... })
+            >>> id_col_check = IDColumnsDataCheck()
+            >>> assert id_col_check.validate(df) == {'warnings': [], 'errors': [], 'actions': []}
+            ...
+            ... id_col_check = IDColumnsDataCheck()
+            >>> id_col_check = IDColumnsDataCheck(id_threshold=0.95)
+            >>> assert id_col_check.validate(df) == {
+            ...     {'warnings': [{'message': "Columns 'Country_Rank' are 95.0% or more likely to be an ID column",
+           ...                     'data_check_name': 'IDColumnsDataCheck',
+           ...                     'level': 'warning',
+           ...                     'details': {'columns': ['Country_Rank'], 'rows': None},
+           ...                     'code': 'HAS_ID_COLUMN'}],
+           ...      'errors': [],
+           ...      'actions': [{'code': 'DROP_COL',
+           ...                   'metadata': {'columns': ['Country_Rank'], 'rows': None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

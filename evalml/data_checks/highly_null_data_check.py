@@ -43,7 +43,7 @@ class HighlyNullDataCheck(DataCheck):
         Returns:
             dict: dict with a DataCheckWarning if there are any highly-null columns or rows.
 
-        Example:
+        Examples:
             >>> import pandas as pd
             >>> class SeriesWrap():
             ...     def __init__(self, series):
@@ -53,27 +53,49 @@ class HighlyNullDataCheck(DataCheck):
             ...         return all(self.series.eq(series_2.series))
             ...
             >>> df = pd.DataFrame({
-            ...    'lots_of_null': [None, None, None, None, 5],
-            ...    'no_null': [1, 2, 3, 4, 5]
+            ...     'all_null': [None, pd.NA, None, None, None],
+            ...     'lots_of_null': [None, None, None, None, 5],
+            ...     'few_null': ["near", "far", pd.NaT, "wherever", "nowhere"],
+            ...     'no_null': [1, 2, 3, 4, 5]})
             ... })
-            >>> null_check = HighlyNullDataCheck(pct_null_col_threshold=0.50, pct_null_row_threshold=0.50)
-            >>> validation_results = null_check.validate(df)
-            >>> validation_results['warnings'][0]['details']['pct_null_cols'] = SeriesWrap(validation_results['warnings'][0]['details']['pct_null_cols'])
-            >>> highly_null_rows = SeriesWrap(pd.Series([0.5, 0.5, 0.5, 0.5]))
-            >>> assert validation_results == {
-            ...     "errors": [],
-            ...     "warnings": [{"message": "4 out of 5 rows are more than 50.0% null",
-            ...                   "data_check_name": "HighlyNullDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "HIGHLY_NULL_ROWS",
-            ...                   "details": {"pct_null_cols": highly_null_rows, "columns": None, "rows": [0, 1, 2, 3]}},
-            ...                  {"message": "Columns 'lots_of_null' are 50.0% or more null",
-            ...                   "data_check_name": "HighlyNullDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "HIGHLY_NULL_COLS",
-            ...                   "details": {"columns": ["lots_of_null"], "pct_null_rows": {"lots_of_null": 0.8}, "null_row_indices": {"lots_of_null": [0, 1, 2, 3]}, "rows": None}}],
-            ...    "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [0, 1, 2, 3], "columns": None}},
-            ...                {"code": "DROP_COL", "metadata": {"columns": ["lots_of_null"], "rows": None}}]}
+            >>> highly_null_dc = HighlyNullDataCheck(pct_null_col_threshold=0.50)
+            >>> assert highly_null_dc.validate(df) == {
+            ...     'warnings': [{'message': "Columns 'all_null', 'lots_of_null' are 50.0% or more null",
+            ...                   'data_check_name': 'HighlyNullDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': ['all_null', 'lots_of_null'],
+            ...                               'rows': None,
+            ...                               'pct_null_rows': {'all_null': 1.0, 'lots_of_null': 0.8},
+            ...                               'null_row_indices': {'all_null': [0, 1, 2, 3, 4],
+            ...                                                    'lots_of_null': [0, 1, 2, 3]}},
+            ...                   'code': 'HIGHLY_NULL_COLS'}],
+            ...     'errors': [],
+            ...     'actions': [{'code': 'DROP_COL',
+            ...                  'metadata': {'columns': ['all_null', 'lots_of_null'], 'rows': None}}]}
+            ...
+            >>> highly_null_rows = SeriesWrap(pd.Series([0.5, 0.5, 0.75, 0.5]))
+            >>> highly_null_dc = HighlyNullDataCheck(pct_null_row_threshold=0.50)
+            >>> assert highly_null_dc.validate(df) == {
+            ...     'warnings': [{'message': '4 out of 5 rows are more than 50.0% null',
+            ...                   'data_check_name': 'HighlyNullDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': None,
+            ...                               'rows': [0, 1, 2, 3],
+            ...                               'pct_null_cols': highly_null_dc},
+            ...                   'code': 'HIGHLY_NULL_ROWS'},
+            ...                  {'message': "Columns 'all_null' are 95.0% or more null",
+            ...                   'data_check_name': 'HighlyNullDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': ['all_null'],
+            ...                               'rows': None,
+            ...                               'pct_null_rows': {'all_null': 1.0},
+            ...                               'null_row_indices': {'all_null': [0, 1, 2, 3, 4]}},
+            ...                   'code': 'HIGHLY_NULL_COLS'}],
+            ...     'errors': [],
+            ...     'actions': [{'code': 'DROP_ROWS',
+            ...                  'metadata': {'columns': None, 'rows': [0, 1, 2, 3]}},
+            ...                 {'code': 'DROP_COL',
+            ...                  'metadata': {'columns': ['all_null'], 'rows': None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
@@ -84,7 +106,7 @@ class HighlyNullDataCheck(DataCheck):
             percent_null_rows >= self.pct_null_row_threshold
         ]
         if len(highly_null_rows) > 0:
-            warning_msg = f"{len(highly_null_rows)} out of {len(X)} rows are more than {self.pct_null_row_threshold*100}% null"
+            warning_msg = f"{len(highly_null_rows)} out of {len(X)} rows are {self.pct_null_row_threshold*100}% or more null"
             results["warnings"].append(
                 DataCheckWarning(
                     message=warning_msg,

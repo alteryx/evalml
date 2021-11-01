@@ -44,6 +44,19 @@ class OutliersDataCheck(DataCheck):
             ...                   "details": {"columns": ["z"], "rows": [3], "column_indices": {"z": [3]}}}],
             ...     "errors": [],
             ...     "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [3], "columns": None}}]}
+            ...
+            >>> assert OutliersDataCheck.get_boxplot_data(df['z']) == {
+            ...     'score': 0.888652177485398,
+            ...     'pct_outliers': 0.2,
+            ...     'values': {'q1': -4.0,
+            ...                'median': -3.0,
+            ...                'q3': -2.0,
+            ...                'low_bound': -7.0,
+            ...                'high_bound': 1.0,
+            ...                'low_values': [-1201],
+            ...                'high_values': [],
+            ...                'low_indices': [3],
+            ...                'high_indices': []}}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
