@@ -294,7 +294,7 @@ def _make_stacked_ensemble_pipeline(
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             Defaults to -1.
-        
+
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
@@ -407,6 +407,7 @@ def _make_pipeline_from_multiple_graphs(
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
+
     def _make_new_component_name(
         model_type, component_name, idx=None, pipeline_name=None
     ):
@@ -439,6 +440,7 @@ def _make_pipeline_from_multiple_graphs(
             sub_pipeline_names[pipeline.name] if sub_pipeline_names else None
         )
         final_component = None
+        final_y = "y"
         final_y_candidate = (
             None
             if not handle_component_class(
@@ -482,7 +484,6 @@ def _make_pipeline_from_multiple_graphs(
     component_graph[estimator.name] = (
         [estimator] + [comp + ".x" for comp in final_components] + [final_y]
     )
-
     pipeline_class = {
         ProblemTypes.BINARY: BinaryClassificationPipeline,
         ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
@@ -494,6 +495,8 @@ def _make_pipeline_from_multiple_graphs(
         custom_name=pipeline_name,
         random_seed=random_seed,
     )
+
+
 def make_pipeline_from_actions(problem_type, actions):
     """Creates a pipeline of components to address the input DataCheckAction list.
 
