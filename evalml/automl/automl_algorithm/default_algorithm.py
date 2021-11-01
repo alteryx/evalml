@@ -439,11 +439,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
 
         if self._selected_cat_cols:
             self._split = True
-            component_graph = (
-                {"Label Encoder": ["Label Encoder", "X", "y"]}
-                if is_classification(self.problem_type)
-                else {}
-            )
             categorical_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cat_cols}
             }
@@ -467,7 +462,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 input_pipelines,
                 estimator,
                 self.problem_type,
-                component_graph,
+                {},
                 pipeline_name=pipeline_name,
                 random_seed=self.random_seed,
                 sub_pipeline_names=sub_pipeline_names,
