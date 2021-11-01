@@ -200,7 +200,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         pipelines = self._create_pipelines_with_params(pipelines, parameters={})
         return pipelines
 
-    def _find_component_names(self, original_name, pipeline, key=None):
+    def _find_component_names(self, original_name, pipeline):
         names = []
         for component in pipeline.component_graph.compute_order:
             split = component.split(" - ")
@@ -208,8 +208,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 split = split[1]
             if original_name in split:
                 names.append(component)
-        if key:
-            sorted(names, key=key)
         return names
 
     def _create_split_select_parameters(self, pipeline):

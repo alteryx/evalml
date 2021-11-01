@@ -410,38 +410,23 @@ def _make_pipeline_from_multiple_graphs(
         Pipeline with appropriate stacked ensemble estimator.
     """
 
-    def _make_new_component_name(
-        model_type, component_name, idx=None, pipeline_name=None
-    ):
+    def _make_new_component_name(name, component_name, idx=None, pipeline_name=None):
         idx = " " + str(idx) if idx is not None else ""
         if pipeline_name:
             return f"{pipeline_name} Pipeline{idx} - {component_name}"
-        return f"{str(model_type)} Pipeline{idx} - {component_name}"
+        return f"{str(name)} Pipeline{idx} - {component_name}"
 
     final_components = []
-    used_model_families = []
+    used_names = []
     component_graph = (
         {"Label Encoder": ["Label Encoder", "X", "y"]}
         if is_classification(problem_type)
         else {}
     )
     for pipeline in input_pipelines:
-        if pipeline.estimator:
-            model_family = pipeline.component_graph[-1].model_family
-            model_family_idx = (
-                used_model_families.count(model_family) + 1
-                if used_model_families.count(model_family) > 0
-                else None
-            )
-            used_model_families.append(model_family)
-        else:
-            model_family = pipeline.name
-            model_family_idx = (
-                used_model_families.count(model_family) + 1
-                if used_model_families.count(model_family) > 0
-                else None
-            )
-            used_model_families.append(model_family)
+        name = pipeline.name
+        name_idx = used_names.count(name) + 1 if used_names.count(name) > 0 else None
+        used_names.append(name)
         sub_pipeline_name = (
             sub_pipeline_names[pipeline.name] if sub_pipeline_names else None
         )
@@ -453,9 +438,9 @@ def _make_pipeline_from_multiple_graphs(
                 pipeline.component_graph.compute_order[-1]
             ).modifies_target
             else _make_new_component_name(
-                model_family,
+                name,
                 pipeline.component_graph.compute_order[-1],
-                model_family_idx,
+                name_idx,
                 sub_pipeline_name,
             )
             + ".y"
@@ -463,7 +448,7 @@ def _make_pipeline_from_multiple_graphs(
         for name, component_list in pipeline.component_graph.component_dict.items():
             new_component_list = []
             new_component_name = _make_new_component_name(
-                model_family, name, model_family_idx, sub_pipeline_name
+                name, name, name_idx, sub_pipeline_name
             )
             for i, item in enumerate(component_list):
                 if i == 0:
@@ -473,7 +458,7 @@ def _make_pipeline_from_multiple_graphs(
                 elif isinstance(item, str) and item not in ["X", "y"]:
                     new_component_list.append(
                         _make_new_component_name(
-                            model_family, item, model_family_idx, sub_pipeline_name
+                            name, item, name_idx, sub_pipeline_name
                         )
                     )
                 elif isinstance(item, str) and item == "y":
@@ -485,7 +470,7 @@ def _make_pipeline_from_multiple_graphs(
                     new_component_list.append(item)
                 if i != 0 and item.endswith(".y"):
                     final_y = _make_new_component_name(
-                        model_family, item, model_family_idx, sub_pipeline_name
+                        name, item, name_idx, sub_pipeline_name
                     )
             component_graph[new_component_name] = new_component_list
             final_component = new_component_name

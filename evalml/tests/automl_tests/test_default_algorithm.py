@@ -285,10 +285,6 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
     for pipeline in batch:
         for component_name in pipeline.component_graph.compute_order:
             split = component_name.split(" - ")
-            if len(split) == 2:
-                split = split[1]
-            else:
-                continue
             if "Drop Columns Transformer" in split:
                 assert algo._pipeline_params[component_name]["columns"] == columns
                 assert pipeline.parameters[component_name]["columns"] == columns
@@ -319,3 +315,30 @@ def test_make_split_pipeline(X_y_binary):
         "columns"
     ] == ["A", "B", "C"]
     assert isinstance(pipeline.estimator, RandomForestClassifier)
+
+
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+@patch("evalml.pipelines.components.OneHotEncoder._get_feature_provenance")
+def test_select_cat_cols(
+    mock_get_feature_provenance, mock_get_names, X_y_categorical_classification
+):
+    X, y = X_y_categorical_classification
+    X.ww.init()
+    cat_cols = list(X.ww.select("categorical").columns)
+
+    mock_get_names.return_value = ["0", "1", "2", "Sex_male", "Embarked_S"]
+    mock_get_feature_provenance.return_value = {
+        "Sex": ["Sex_male"],
+        "Embarked": ["Embarked_S"],
+    }
+
+    algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, None)
+
+    batch = algo.next_batch()
+    add_result(algo, batch)
+
+    batch = algo.next_batch()
+    add_result(algo, batch)
+
+    assert algo._selected_cols == ["0", "1", "2"]
+    assert algo._selected_cat_cols == cat_cols
