@@ -19,7 +19,7 @@ class DelayedFeatureTransformer(Transformer):
         max_delay (int): Maximum number of time units to delay each feature. Defaults to 2.
         forecast_horizon (int): The number of time periods the pipeline is expected to forecast.
         conf_level (float, None): Float between 0 and 1 that determines the confidence interval size used to select
-            which lags to compute from the set of [1, max_delay]. A delay of 1 will always be computed. If None,
+            which lags to compute from the set of [1, max_delay]. A delay of 1 will always be computed. If 1,
             selects all possible lags in the set of [1, max_delay], inclusive.
         delay_features (bool): Whether to delay the input features. Defaults to True.
         delay_target (bool): Whether to delay the target. Defaults to True.
@@ -31,7 +31,7 @@ class DelayedFeatureTransformer(Transformer):
     """
 
     name = "Delayed Feature Transformer"
-    hyperparameter_ranges = {"conf_level": Real(0.001, 0.2)}
+    hyperparameter_ranges = {"conf_level": Real(0.001, 1.0)}
     """{}"""
     needs_fitting = False
     target_colname_prefix = "target_delay_{}"
@@ -43,7 +43,7 @@ class DelayedFeatureTransformer(Transformer):
         max_delay=2,
         gap=0,
         forecast_horizon=1,
-        conf_level=None,
+        conf_level=0.05,
         delay_features=True,
         delay_target=True,
         random_seed=0,
