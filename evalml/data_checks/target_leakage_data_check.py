@@ -94,6 +94,18 @@ class TargetLeakageDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": [{"code": "DROP_COL",
             ...                  "metadata": {"columns": ["leak"], "rows": None}}]}
+            ...
+            >>> X['x'] = y / 2
+            >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method='pearson')
+            >>> assert target_leakage_check.validate(X, y) == {
+            ...     'warnings': [{'message': "Columns 'leak', 'x' are 80.0% or more correlated with the target",
+            ...                   'data_check_name': 'TargetLeakageDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': ['leak', 'x'], 'rows': None},
+            ...                   'code': 'TARGET_LEAKAGE'}],
+            ...     'errors': [],
+            ...     'actions': [{'code': 'DROP_COL',
+            ...                  'metadata': {'columns': ['leak', 'x'], 'rows': None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
