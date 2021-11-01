@@ -418,7 +418,11 @@ def _make_pipeline_from_multiple_graphs(
 
     final_components = []
     used_model_families = []
-    component_graph = {}
+    component_graph = (
+        {"Label Encoder": ["Label Encoder", "X", "y"]}
+        if is_classification(problem_type)
+        else {}
+    )
     for pipeline in input_pipelines:
         if pipeline.estimator:
             model_family = pipeline.component_graph[-1].model_family
@@ -470,6 +474,11 @@ def _make_pipeline_from_multiple_graphs(
                             model_family, item, model_family_idx, sub_pipeline_name
                         )
                     )
+                elif isinstance(item, str) and item == "y":
+                    if is_classification(problem_type):
+                        new_component_list.append("Label Encoder.y")
+                    else:
+                        new_component_list.append("y")
                 else:
                     new_component_list.append(item)
                 if i != 0 and item.endswith(".y"):

@@ -301,6 +301,7 @@ def test_make_split_pipeline(X_y_binary):
     algo._selected_cat_cols = ["A", "B", "C"]
     pipeline = algo._make_split_pipeline(RandomForestClassifier, "test_pipeline")
     compute_order = [
+        "Label Encoder",
         "Categorical Pipeline - Select Columns Transformer",
         "Categorical Pipeline - Label Encoder",
         "Categorical Pipeline - Imputer",
