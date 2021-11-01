@@ -3,8 +3,11 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
     * Changes
     * Documentation Changes
+        * Fixed cost benefit matrix demo formatting :pr:`2990`
+        * Update ReadMe.md with new badge links and updated installation instructions for conda :pr:`2998`
     * Testing Changes
 
 .. warning::
@@ -20,6 +23,7 @@ Release Notes
         * Enhanced the ``DateTimeFeaturizer`` to handle ``NaNs`` in date features :pr:`2909`
         * Added support for woodwork logical types ``PostalCode``, ``SubRegionCode``, and ``CountryCode`` in model understanding tools :pr:`2946`
         * Added Vowpal Wabbit regressor and classifiers :pr:`2846`
+        * Added method to convert actions into a preprocessing pipeline :pr:`2968`
     * Fixes
         * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
         * Fixed ``calculate_permutation_importance`` for datetimes on ``StandardScaler`` :pr:`2938`
@@ -38,6 +42,7 @@ Release Notes
     * Testing Changes
         * Fixed dependency checker to catch full names of packages :pr:`2930`
         * Refactored ``build_conda_pkg`` to work from a local recipe :pr:`2925`
+        * Refactored component test for different environments :pr:`2957`
 
 .. warning::
 

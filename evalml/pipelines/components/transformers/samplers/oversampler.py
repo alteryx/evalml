@@ -76,7 +76,7 @@ class Oversampler(BaseSampler):
         return self
 
     def _get_best_oversampler(self, X):
-        cat_cols = X.ww.select("category").columns
+        cat_cols = X.ww.select(["category", "boolean"]).columns
         if len(cat_cols) == X.shape[1]:
             return "SMOTEN"
         elif not len(cat_cols):
