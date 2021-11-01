@@ -25,33 +25,131 @@ binary = pd.Series([0] * 800 + [1] * 200)
 multiclass = pd.Series([0] * 800 + [1] * 150 + [2] * 50)
 
 
+minimum_dependencies_set = set(
+    [
+        "Baseline Classifier",
+        "Baseline Regressor",
+        "DFS Transformer",
+        "DateTime Featurization Component",
+        "Decision Tree Classifier",
+        "Decision Tree Regressor",
+        "Delayed Feature Transformer",
+        "Drop Columns Transformer",
+        "Drop Null Columns Transformer",
+        "Drop Rows Transformer",
+        "Elastic Net Classifier",
+        "Elastic Net Regressor",
+        "Email Featurizer",
+        "Extra Trees Classifier",
+        "Extra Trees Regressor",
+        "Imputer",
+        "KNN Classifier",
+        "LSA Transformer",
+        "Label Encoder",
+        "Linear Discriminant Analysis Transformer",
+        "Linear Regressor",
+        "Log Transformer",
+        "Logistic Regression Classifier",
+        "One Hot Encoder",
+        "PCA Transformer",
+        "Per Column Imputer",
+        "RF Classifier Select From Model",
+        "RF Regressor Select From Model",
+        "Random Forest Classifier",
+        "Random Forest Regressor",
+        "SVM Classifier",
+        "SVM Regressor",
+        "Select Columns By Type Transformer",
+        "Select Columns Transformer",
+        "Simple Imputer",
+        "Stacked Ensemble Classifier",
+        "Stacked Ensemble Regressor",
+        "Standard Scaler",
+        "Target Imputer",
+        "Text Featurization Component",
+        "Time Series Baseline Estimator",
+        "URL Featurizer",
+        "Undersampler",
+    ]
+)
+additional_requirements_set = set(
+    [
+        "ARIMA Regressor",
+        "CatBoost Classifier",
+        "CatBoost Regressor",
+        "LightGBM Classifier",
+        "LightGBM Regressor",
+        "Oversampler",
+        "Polynomial Detrender",
+        "Prophet Regressor",
+        "Target Encoder",
+        "Vowpal Wabbit Binary Classifier",
+        "Vowpal Wabbit Multiclass Classifier",
+        "Vowpal Wabbit Regressor",
+        "XGBoost Classifier",
+        "XGBoost Regressor",
+    ]
+)
+all_requirements_set = minimum_dependencies_set.union(additional_requirements_set)
+not_supported_in_conda = set(
+    [
+        "ARIMA Regressor",
+        "Prophet Regressor",
+        "Vowpal Wabbit Binary Classifier",
+        "Vowpal Wabbit Multiclass Classifier",
+        "Vowpal Wabbit Regressor",
+    ]
+)
+not_supported_in_windows = set(
+    [
+        "Prophet Regressor",
+    ]
+)
+not_supported_in_windows_py39 = set(
+    [
+        "ARIMA Regressor",
+        "Polynomial Detrender",
+        "Prophet Regressor",
+    ]
+)
+not_supported_in_linux_py39 = set(
+    [
+        "ARIMA Regressor",
+        "Polynomial Detrender",
+    ]
+)
+
+
 def test_all_components(
     has_minimal_dependencies,
     is_running_py_39_or_above,
     is_using_conda,
     is_using_windows,
 ):
-    # The total number of minimal components is 42
-    # The total number of components is 54
-    # Depending on the environment the detrender/Arima and/or Prophet will not be installed
-
     if has_minimal_dependencies:
-        n_components = 43
+        expected_components = minimum_dependencies_set
     elif is_using_conda:
         # No prophet, ARIMA, and vowpalwabbit
-        n_components = 52
+        expected_components = all_requirements_set.difference(not_supported_in_conda)
+
     elif is_using_windows and not is_running_py_39_or_above:
         # No prophet
-        n_components = 56
+        expected_components = all_requirements_set.difference(not_supported_in_windows)
+
     elif is_using_windows and is_running_py_39_or_above:
-        # No detrender, no arima, no prophet
-        n_components = 54
+        # No detrender, no ARIMA, no prophet
+        expected_components = all_requirements_set.difference(
+            not_supported_in_windows_py39
+        )
     elif not is_using_windows and is_running_py_39_or_above:
-        # No detrender or arima
-        n_components = 55
+        # No detrender or ARIMA
+        expected_components = all_requirements_set.difference(
+            not_supported_in_linux_py39
+        )
     else:
-        n_components = 57
-    assert len(all_components()) == n_components
+        expected_components = all_requirements_set
+    all_component_names = [component.name for component in all_components()]
+    assert set(all_component_names) == expected_components
 
 
 def test_handle_component_class_names():
