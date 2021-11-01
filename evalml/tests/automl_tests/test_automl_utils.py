@@ -20,6 +20,7 @@ from evalml.pipelines import (
     RegressionPipeline,
 )
 from evalml.preprocessing.data_splitters import (
+    NoSplit,
     TimeSeriesSplit,
     TrainingValidationSplit,
 )
@@ -113,6 +114,10 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
         assert data_splitter.date_index is None
+
+    if problem_type is ProblemTypes.CLUSTERING:
+        assert isinstance(data_splitter, NoSplit)
+        assert data_splitter.random_seed == 0
 
 
 @pytest.mark.parametrize(

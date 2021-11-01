@@ -387,6 +387,11 @@ def test_make_pipeline_samplers(
                 )
 
 
+def test_make_pipeline_clustering():
+    with pytest.raises(ValueError, match="Pipelines for clustering problems are not supported yet"):
+        make_pipeline(pd.DataFrame(), pd.Series(), LinearRegressor, ProblemTypes.CLUSTERING)
+
+
 def test_get_estimators(has_minimal_dependencies):
     if has_minimal_dependencies:
         assert len(get_estimators(problem_type=ProblemTypes.BINARY)) == 5

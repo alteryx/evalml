@@ -14,6 +14,7 @@ from evalml.pipelines import (
     TimeSeriesRegressionPipeline,
 )
 from evalml.preprocessing.data_splitters import (
+    NoSplit,
     TimeSeriesSplit,
     TrainingValidationSplit,
 )
@@ -22,6 +23,7 @@ from evalml.problem_types import (
     handle_problem_types,
     is_binary,
     is_time_series,
+    is_clustering,
 )
 from evalml.utils import import_or_raise
 
@@ -80,6 +82,8 @@ def make_data_splitter(
     """
     random_seed = random_seed
     problem_type = handle_problem_types(problem_type)
+    if is_clustering(problem_type):
+        return NoSplit()
     if is_time_series(problem_type):
         if not problem_configuration:
             raise ValueError(

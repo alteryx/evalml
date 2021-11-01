@@ -53,6 +53,7 @@ from evalml.problem_types import (
     handle_problem_types,
     is_classification,
     is_time_series,
+    is_clustering,
 )
 from evalml.utils import import_or_raise, infer_feature_types
 
@@ -209,10 +210,13 @@ def make_pipeline(
     Raises:
         ValueError: If estimator is not valid for the given problem type, or sampling is not supported for the given problem type.
     """
+    problem_type = handle_problem_types(problem_type)
+    if is_clustering(problem_type):
+        raise ValueError("Pipelines for clustering problems are not supported yet")
+
     X = infer_feature_types(X)
     y = infer_feature_types(y)
 
-    problem_type = handle_problem_types(problem_type)
     if estimator not in get_estimators(problem_type):
         raise ValueError(f"{estimator.name} is not a valid estimator for problem type")
     if not is_classification(problem_type) and sampler_name is not None:

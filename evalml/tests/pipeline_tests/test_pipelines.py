@@ -57,6 +57,7 @@ from evalml.problem_types import (
     is_binary,
     is_multiclass,
     is_time_series,
+    is_clustering,
 )
 
 
@@ -1963,6 +1964,8 @@ def test_predict_has_input_target_name(
     time_series_binary_classification_pipeline_class,
     time_series_multiclass_classification_pipeline_class,
 ):
+    if is_clustering(problem_type):
+        return
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         clf = logistic_regression_binary_pipeline_class(

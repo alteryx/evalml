@@ -23,6 +23,7 @@ from evalml.problem_types import (
     is_binary,
     is_multiclass,
     is_regression,
+    is_clustering,
 )
 from evalml.utils.woodwork_utils import numeric_and_boolean_ww
 
@@ -715,6 +716,8 @@ def test_invalid_target_data_check_numeric_binary_does_not_return_warnings():
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_invalid_target_data_action_for_data_with_null(problem_type):
+    if is_clustering(problem_type):
+        return
     y = pd.Series([None, None, None, 0, 0, 0, 0, 0, 0, 0])
     X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck(
@@ -775,6 +778,8 @@ def test_invalid_target_data_action_for_data_with_null(problem_type):
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_invalid_target_data_action_for_all_null(problem_type):
+    if is_clustering(problem_type):
+        return
     invalid_targets_check = InvalidTargetDataCheck(
         problem_type, get_default_primary_search_objective(problem_type)
     )

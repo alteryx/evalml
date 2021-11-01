@@ -8,4 +8,5 @@ from .utils import (
     is_multiclass,
     is_classification,
     is_time_series,
+    is_clustering,
 )

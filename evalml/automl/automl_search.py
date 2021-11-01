@@ -54,6 +54,7 @@ from evalml.problem_types import (
     is_binary,
     is_classification,
     is_time_series,
+    is_clustering,
 )
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, infer_feature_types
@@ -146,7 +147,7 @@ def search(
         ValueError: If search configuration is not valid.
     """
     X_train = infer_feature_types(X_train)
-    y_train = infer_feature_types(y_train)
+    y_train = infer_feature_types(y_train) if y_train else None
     problem_type = handle_problem_types(problem_type)
 
     datetime_column = None
@@ -236,7 +237,7 @@ def search_iterative(
         ValueError: If the search configuration is invalid.
     """
     X_train = infer_feature_types(X_train)
-    y_train = infer_feature_types(y_train)
+    y_train = infer_feature_types(y_train) if y_train else None
     problem_type = handle_problem_types(problem_type)
 
     datetime_column = None
@@ -441,15 +442,15 @@ class AutoMLSearch:
             raise ValueError(
                 "Must specify training data as a 2d array using the X_train argument"
             )
-        if y_train is None:
-            raise ValueError(
-                "Must specify training data target values as a 1d vector using the y_train argument"
-            )
         try:
             self.problem_type = handle_problem_types(problem_type)
         except ValueError:
             raise ValueError(
                 "choose one of (binary, multiclass, regression) as problem_type"
+            )
+        if y_train is None and not is_clustering(self.problem_type):
+            raise ValueError(
+                "Must specify training data target values as a 1d vector using the y_train argument with supervised learning problems"
             )
 
         if is_time_series(self.problem_type):
@@ -600,7 +601,8 @@ class AutoMLSearch:
         self._searched = False
 
         self.X_train = infer_feature_types(X_train)
-        self.y_train = infer_feature_types(y_train)
+        if y_train is not None:
+            self.y_train = infer_feature_types(y_train)
 
         default_data_splitter = make_data_splitter(
             self.X_train,
@@ -653,6 +655,7 @@ class AutoMLSearch:
                 "Invalid type provided for 'engine'.  Requires string, DaskEngine instance, or CFEngine instance."
             )
 
+        y_schema = self.y_train.ww.schema if self.y_train is not None else None
         self.automl_config = AutoMLConfig(
             self.data_splitter,
             self.problem_type,
@@ -663,7 +666,7 @@ class AutoMLSearch:
             self.error_callback,
             self.random_seed,
             self.X_train.ww.schema,
-            self.y_train.ww.schema,
+            y_schema,
         )
 
         text_in_ensembling = (
@@ -711,6 +714,8 @@ class AutoMLSearch:
         self.allowed_model_families = [p.model_family for p in self.allowed_pipelines]
         if _automl_algorithm == "iterative":
             self.max_iterations = self._automl_algorithm.max_iterations
+        if is_clustering(problem_type):
+            raise ValueError("Clustering problems are not supported by AutoMLSearch at this time")
 
     def close_engine(self):
         """Function to explicitly close the engine, client, parallel resources."""

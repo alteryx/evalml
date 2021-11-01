@@ -88,7 +88,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         verbose=False,
     ):
         self.X = infer_feature_types(X)
-        self.y = infer_feature_types(y)
+        self.y = infer_feature_types(y) if y is not None else None
         self.problem_type = problem_type
         self.random_seed = random_seed
         self.sampler_name = sampler_name

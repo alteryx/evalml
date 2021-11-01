@@ -5,6 +5,7 @@ from sklearn.model_selection import ShuffleSplit, StratifiedShuffleSplit
 from evalml.preprocessing.data_splitters import TrainingValidationSplit
 from evalml.problem_types import (
     is_classification,
+    is_clustering,
     is_regression,
     is_time_series,
 )
@@ -63,8 +64,12 @@ def split_data(
     Returns:
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets.
     """
+    if is_clustering(problem_type):
+        raise ValueError("Clustering problems do not support splitting data")
+
     X = infer_feature_types(X)
-    y = infer_feature_types(y)
+    if y is not None:
+        y = infer_feature_types(y)
 
     data_splitter = None
     if is_time_series(problem_type):
