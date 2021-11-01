@@ -491,8 +491,7 @@ def test_invalid_target_data_check_initialize_with_none_objective():
         )
 
 
-@pytest.mark.parametrize("problem_type", ["regression"])
-def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_type):
+def test_invalid_target_data_check_regression_problem_nonnumeric_data():
     y_categorical = pd.Series(["Peace", "Is", "A", "Lie"] * 100)
     y_mixed_cat_numeric = pd.Series(["Peace", 2, "A", 4] * 100)
     y_integer = pd.Series([1, 2, 3, 4])
@@ -507,7 +506,7 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_ty
     ).to_dict()
 
     invalid_targets_check = InvalidTargetDataCheck(
-        problem_type, get_default_primary_search_objective(problem_type)
+        "regression", get_default_primary_search_objective("regression")
     )
     assert invalid_targets_check.validate(
         X=pd.DataFrame({"col": range(len(y_categorical))}), y=y_categorical
