@@ -293,16 +293,22 @@ def _make_stacked_ensemble_pipeline(
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             Defaults to -1.
-
+        
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
     """
+
+    def _make_new_component_name(model_type, component_name, idx=None):
+        idx = " " + str(idx) if idx is not None else ""
+        return f"{str(model_type)} Pipeline{idx} - {component_name}"
+
     component_graph = (
         {"Label Encoder": ["Label Encoder", "X", "y"]}
         if is_classification(problem_type)
         else {}
     )
-
+    final_components = []
+    used_model_families = []
     parameters = {}
 
     if is_classification(problem_type):
@@ -322,14 +328,60 @@ def _make_stacked_ensemble_pipeline(
         estimator = StackedEnsembleRegressor
         pipeline_name = "Stacked Ensemble Regression Pipeline"
 
-    return _make_pipeline_from_multiple_graphs(
-        input_pipelines,
-        estimator,
-        problem_type,
+    pipeline_class = {
+        ProblemTypes.BINARY: BinaryClassificationPipeline,
+        ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
+        ProblemTypes.REGRESSION: RegressionPipeline,
+    }[problem_type]
+
+    for pipeline in input_pipelines:
+        model_family = pipeline.component_graph[-1].model_family
+        model_family_idx = (
+            used_model_families.count(model_family) + 1
+            if used_model_families.count(model_family) > 0
+            else None
+        )
+        used_model_families.append(model_family)
+        final_component = None
+        ensemble_y = "y"
+        for name, component_list in pipeline.component_graph.component_dict.items():
+            new_component_list = []
+            new_component_name = _make_new_component_name(
+                model_family, name, model_family_idx
+            )
+            for i, item in enumerate(component_list):
+                if i == 0:
+                    fitted_comp = handle_component_class(item)
+                    new_component_list.append(fitted_comp)
+                    parameters[new_component_name] = pipeline.parameters.get(name, {})
+                elif isinstance(item, str) and item not in ["X", "y"]:
+                    new_component_list.append(
+                        _make_new_component_name(model_family, item, model_family_idx)
+                    )
+                elif isinstance(item, str) and item == "y":
+                    if is_classification(problem_type):
+                        new_component_list.append("Label Encoder.y")
+                    else:
+                        new_component_list.append("y")
+                else:
+                    new_component_list.append(item)
+                if i != 0 and item.endswith(".y"):
+                    ensemble_y = _make_new_component_name(
+                        model_family, item, model_family_idx
+                    )
+            component_graph[new_component_name] = new_component_list
+            final_component = new_component_name
+        final_components.append(final_component)
+
+    component_graph[estimator.name] = (
+        [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
+    )
+
+    return pipeline_class(
         component_graph,
-        parameters,
-        pipeline_name,
-        random_seed,
+        parameters=parameters,
+        custom_name=pipeline_name,
+        random_seed=random_seed,
     )
 
 
@@ -337,12 +389,23 @@ def _make_pipeline_from_multiple_graphs(
     input_pipelines,
     estimator,
     problem_type,
-    component_graph={},
     parameters={},
     pipeline_name=None,
     sub_pipeline_names=None,
     random_seed=0,
 ):
+    """Creates a pipeline from multiple preprocessing pipelines and a final estimator. Final y input to the estimator will be chosen from the last of the input pipelines.
+
+    Args:
+        input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use for preprocessing.
+        problem_type (ProblemType): problem type of pipeline.
+        estimator (Estimator): Final estimator for the pipelines.
+        parameters (Dict): Parameters to initialize pipeline with. Defaults to an empty dictionary.
+        sub_pipeline_names (Dict): Dictionary mapping original input pipeline names to new names. This will be used to rename components. Defaults to None.
+        random_seed (int): Random seed for the pipeline. Defaults to 0.
+    Returns:
+        Pipeline with appropriate stacked ensemble estimator.
+    """
     def _make_new_component_name(
         model_type, component_name, idx=None, pipeline_name=None
     ):
@@ -353,7 +416,7 @@ def _make_pipeline_from_multiple_graphs(
 
     final_components = []
     used_model_families = []
-
+    component_graph = {}
     for pipeline in input_pipelines:
         if pipeline.estimator:
             model_family = pipeline.component_graph[-1].model_family
@@ -371,10 +434,22 @@ def _make_pipeline_from_multiple_graphs(
                 else None
             )
             used_model_families.append(model_family)
-        final_component = None
-        ensemble_y = "y"
         sub_pipeline_name = (
             sub_pipeline_names[pipeline.name] if sub_pipeline_names else None
+        )
+        final_component = None
+        final_y_candidate = (
+            None
+            if not handle_component_class(
+                pipeline.component_graph.compute_order[-1]
+            ).modifies_target
+            else _make_new_component_name(
+                model_family,
+                pipeline.component_graph.compute_order[-1],
+                model_family_idx,
+                sub_pipeline_name,
+            )
+            + ".y"
         )
         for name, component_list in pipeline.component_graph.component_dict.items():
             new_component_list = []
@@ -392,23 +467,19 @@ def _make_pipeline_from_multiple_graphs(
                             model_family, item, model_family_idx, sub_pipeline_name
                         )
                     )
-                elif isinstance(item, str) and item == "y":
-                    if is_classification(problem_type):
-                        new_component_list.append("Label Encoder.y")
-                    else:
-                        new_component_list.append("y")
                 else:
                     new_component_list.append(item)
                 if i != 0 and item.endswith(".y"):
-                    ensemble_y = _make_new_component_name(
+                    final_y = _make_new_component_name(
                         model_family, item, model_family_idx, sub_pipeline_name
                     )
             component_graph[new_component_name] = new_component_list
             final_component = new_component_name
         final_components.append(final_component)
 
+    final_y = final_y_candidate if final_y_candidate else final_y
     component_graph[estimator.name] = (
-        [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
+        [estimator] + [comp + ".x" for comp in final_components] + [final_y]
     )
 
     pipeline_class = {
