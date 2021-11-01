@@ -289,6 +289,7 @@ def explain_predictions_best_worst(
         )
 
     errors = pd.Series(errors)
+    errors.index = y_pred_no_nan.index
     sorted_scores = errors.sort_values()
     best_indices = sorted_scores.index[:num_to_explain]
     worst_indices = sorted_scores.index[-num_to_explain:]
