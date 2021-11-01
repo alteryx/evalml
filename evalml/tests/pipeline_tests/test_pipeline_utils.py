@@ -11,7 +11,6 @@ from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
     RegressionPipeline,
-    pipeline_base,
 )
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
@@ -30,7 +29,6 @@ from evalml.pipelines.components import (
     TextFeaturizer,
     Transformer,
     URLFeaturizer,
-    estimators,
 )
 from evalml.pipelines.components.transformers.encoders.label_encoder import (
     LabelEncoder,

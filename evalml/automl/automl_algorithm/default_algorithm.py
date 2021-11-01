@@ -23,7 +23,7 @@ from evalml.pipelines.utils import (
     _make_pipeline_from_multiple_graphs,
     make_pipeline,
 )
-from evalml.problem_types import is_classification, is_regression
+from evalml.problem_types import is_regression
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
