@@ -16,16 +16,27 @@ class GridSearchTuner(Tuner):
             defined in the ``space`` argument. Defaults to 10.
         random_seed (int): Seed for random number generator. Unused in this class, defaults to 0.
 
-    Example:
+    Examples:
         >>> tuner = GridSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, n_points=5)
         >>> proposal = tuner.propose()
         >>> assert proposal.keys() == {'My Component'}
         >>> assert proposal['My Component'] == {'param a': 0.0, 'param b': 'a'}
+        ...
+        >>> for each in range(6):
+        ...     print(tuner.propose())
+        {'My Component': {'param a': 0.0, 'param b': 'a'}}
+        {'My Component': {'param a': 0.0, 'param b': 'b'}}
+        {'My Component': {'param a': 0.0, 'param b': 'c'}}
+        {'My Component': {'param a': 10.0, 'param b': 'a'}}
+        {'My Component': {'param a': 10.0, 'param b': 'b'}}
+        {'My Component': {'param a': 10.0, 'param b': 'c'}}
     """
 
     def __init__(self, pipeline_hyperparameter_ranges, n_points=10, random_seed=0):
         super().__init__(pipeline_hyperparameter_ranges, random_seed=random_seed)
         raw_dimensions = list()
+        import pandas as pd
+        pd.DataFrame().iterrows()
         for dimension in self._search_space_ranges:
             # Categorical dimension
             if isinstance(dimension, list):

@@ -27,9 +27,15 @@ class ComponentGraph:
         component_dict (dict): A dictionary which specifies the components and edges between components that should be used to create the component graph. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
-    Example:
-        >>> component_dict = {'Imputer': ['Imputer', 'X', 'y'], 'OHE': ['One Hot Encoder', 'Imputer.x', 'y'],
-        ...                   'estimator_1': ['Random Forest Classifier', 'OHE.x', 'y'], 'estimator_2': ['Decision Tree Classifier', 'OHE.x', 'y'],
+    Examples:
+        >>> component_dict = {'Imputer': ['Imputer', 'X', 'y'],
+        ...                   'Logistic Regression': ['Logistic Regression Classifier', 'Imputer.x', 'y']}
+        >>> component_graph = ComponentGraph(component_dict)
+        ...
+        >>> component_dict = {'Imputer': ['Imputer', 'X', 'y'],
+        ...                   'OHE': ['One Hot Encoder', 'Imputer.x', 'y'],
+        ...                   'estimator_1': ['Random Forest Classifier', 'OHE.x', 'y'],
+        ...                   'estimator_2': ['Decision Tree Classifier', 'OHE.x', 'y'],
         ...                   'final': ['Logistic Regression Classifier', 'estimator_1.x', 'estimator_2.x', 'y']}
         >>> component_graph = ComponentGraph(component_dict)
     """

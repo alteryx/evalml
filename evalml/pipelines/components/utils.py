@@ -39,6 +39,26 @@ def allowed_model_families(problem_type):
 
     Returns:
         list[ModelFamily]: A list of model families.
+
+    Examples:
+        >>> allowed_model_families("binary")
+        [ModelFamily.CATBOOST,
+         ModelFamily.RANDOM_FOREST,
+         ModelFamily.XGBOOST,
+         ModelFamily.LIGHTGBM,
+         ModelFamily.EXTRA_TREES,
+         ModelFamily.DECISION_TREE,
+         ModelFamily.LINEAR_MODEL]
+        >>> allowed_model_families(ProblemTypes.TIME_SERIES_REGRESSION) # With Prophet installed
+        [ModelFamily.CATBOOST,
+         ModelFamily.RANDOM_FOREST,
+         ModelFamily.XGBOOST,
+         ModelFamily.LIGHTGBM,
+         ModelFamily.EXTRA_TREES,
+         ModelFamily.ARIMA,
+         ModelFamily.PROPHET,
+         ModelFamily.LINEAR_MODEL,
+         ModelFamily.DECISION_TREE]
     """
     estimators = []
     problem_type = handle_problem_types(problem_type)
@@ -67,6 +87,26 @@ def get_estimators(problem_type, model_families=None):
     Raises:
         TypeError: If the model_families parameter is not a list.
         RuntimeError: If a model family is not valid for the problem type.
+
+    Examples:
+        >>> get_estimators("regression")
+        [evalml.pipelines.components.estimators.regressors.decision_tree_regressor.DecisionTreeRegressor,
+         evalml.pipelines.components.estimators.regressors.et_regressor.ExtraTreesRegressor,
+         evalml.pipelines.components.estimators.regressors.xgboost_regressor.XGBoostRegressor,
+         evalml.pipelines.components.estimators.regressors.catboost_regressor.CatBoostRegressor,
+         evalml.pipelines.components.estimators.regressors.rf_regressor.RandomForestRegressor,
+         evalml.pipelines.components.estimators.regressors.lightgbm_regressor.LightGBMRegressor,
+         evalml.pipelines.components.estimators.regressors.elasticnet_regressor.ElasticNetRegressor]
+         >>> get_estimators(ProblemTypes.TIME_SERIES_REGRESSION) # With Prophet installed
+         [evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor,
+         evalml.pipelines.components.estimators.regressors.prophet_regressor.ProphetRegressor,
+         evalml.pipelines.components.estimators.regressors.decision_tree_regressor.DecisionTreeRegressor,
+         evalml.pipelines.components.estimators.regressors.et_regressor.ExtraTreesRegressor,
+         evalml.pipelines.components.estimators.regressors.xgboost_regressor.XGBoostRegressor,
+         evalml.pipelines.components.estimators.regressors.catboost_regressor.CatBoostRegressor,
+         evalml.pipelines.components.estimators.regressors.rf_regressor.RandomForestRegressor,
+         evalml.pipelines.components.estimators.regressors.lightgbm_regressor.LightGBMRegressor,
+         evalml.pipelines.components.estimators.regressors.elasticnet_regressor.ElasticNetRegressor]
     """
     if model_families is not None and not isinstance(model_families, list):
         raise TypeError("model_families parameter is not a list.")
@@ -114,6 +154,13 @@ def handle_component_class(component_class):
     Raises:
         ValueError: If input is not a valid component class.
         MissingComponentError: If the component cannot be found.
+
+    Examples:
+        >>> from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor
+        >>> handle_component_class(DecisionTreeRegressor)
+        evalml.pipelines.components.estimators.regressors.decision_tree_regressor.DecisionTreeRegressor
+        >>> handle_component_class("Random Forest Regressor")
+        evalml.pipelines.components.estimators.regressors.rf_regressor.RandomForestRegressor
     """
     if isinstance(component_class, ComponentBase) or (
         inspect.isclass(component_class) and issubclass(component_class, ComponentBase)
@@ -274,6 +321,18 @@ def generate_component_code(element):
 
     Raises:
         ValueError: If the input element is not a component instance.
+
+    Examples:
+        >>> from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor
+        >>> generate_component_code(DecisionTreeRegressor())
+        "from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor
+
+        decisionTreeRegressor = DecisionTreeRegressor(**{'criterion': 'mse', 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0})"
+        >>> from evalml.pipelines.components.transformers.imputers.simple_imputer import SimpleImputer
+        >>> generate_component_code(SimpleImputer())
+        "from evalml.pipelines.components.transformers.imputers.simple_imputer import SimpleImputer
+
+        simpleImputer = SimpleImputer(**{'impute_strategy': 'most_frequent', 'fill_value': None})"
     """
     # hold the imports needed and add code to end
     code_strings = []
@@ -313,6 +372,12 @@ def make_balancing_dictionary(y, sampling_ratio):
 
     Raises:
         ValueError: If sampling ratio is not in the range (0, 1] or the target is empty.
+
+    Examples:
+        >>> y = pd.Series([1] * 4 + [2] * 8 + [3])
+        >>> assert make_balancing_dictionary(y, 0.5) == {2: 8, 1: 4, 3: 4}
+        >>> assert make_balancing_dictionary(y, 0.9) == {2: 8, 1: 7, 3: 7}
+        >>> assert make_balancing_dictionary(y, 0.1) == {2: 8, 1: 4, 3: 1}
     """
     if sampling_ratio <= 0 or sampling_ratio > 1:
         raise ValueError(

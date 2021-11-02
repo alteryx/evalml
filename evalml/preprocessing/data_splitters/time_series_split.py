@@ -19,6 +19,20 @@ class TimeSeriesSplit(BaseCrossValidator):
         gap (int): Gap used in time series problem. Time series pipelines shift the target variable by gap rows. Defaults to 0.
         date_index (str): Name of the column containing the datetime information used to order the data. Defaults to None.
         n_splits (int): number of data splits to make. Defaults to 3.
+
+    Example:
+        >>> X = pd.DataFrame([i for i in range(10)], columns=["First"])
+        >>> y = pd.Series([i for i in range(10)])
+        >>> ts_split = TimeSeriesSplit(n_splits=4)
+        >>> generator_ = ts_split.split(X, y)
+        >>> next(generator_)
+        (array([0, 1]), array([2, 3]))
+        >>> next(generator_)
+        (array([0, 1, 2, 3]), array([4, 5]))
+        >>> next(generator_)
+        (array([0, 1, 2, 3, 4, 5]), array([6, 7]))
+        >>> next(generator_)
+        (array([0, 1, 2, 3, 4, 5, 6, 7]), array([8, 9]))
     """
 
     def __init__(self, max_delay=0, gap=0, date_index=None, n_splits=3):

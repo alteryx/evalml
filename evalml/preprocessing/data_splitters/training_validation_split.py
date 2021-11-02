@@ -16,6 +16,22 @@ class TrainingValidationSplit(BaseCrossValidator):
         stratify (list): Splits the data in a stratified fashion, using this argument as class labels.
             Defaults to None.
         random_seed (int): The seed to use for random sampling. Defaults to 0.
+
+    Examples:
+        >>> X = pd.DataFrame([i for i in range(10)], columns=["First"])
+        >>> y = pd.Series([i for i in range(10)])
+        >>> tv_split = TrainingValidationSplit()
+        >>> next(tv_split.split(X, y))
+        (array([0, 1, 2, 3, 4, 5, 6]), array([7, 8, 9]))
+        >>> tv_split = TrainingValidationSplit(test_size=0.5)
+        >>> next(tv_split.split(X, y))
+        (array([0, 1, 2, 3, 4]), array([5, 6, 7, 8, 9]))
+        >>> tv_split = TrainingValidationSplit(shuffle=True)
+        >>> next(tv_split.split(X, y))
+        (array([9, 1, 6, 7, 3, 0, 5]), array([2, 8, 4]))
+        >>> tv_split = TrainingValidationSplit(shuffle=True, stratify=y)
+        >>> next(tv_split.split(X, y))
+        (array([1, 9, 3, 2, 8, 6, 7]), array([0, 4, 5]))
     """
 
     def __init__(

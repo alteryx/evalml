@@ -25,6 +25,23 @@ class BinaryClassificationPipeline(
              An empty dictionary or None implies using all default values for component parameters. Defaults to None.
         custom_name (str): Custom name for the pipeline. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+
+    Example:
+        >>> pipeline = BinaryClassificationPipeline(component_graph=["Simple Imputer", "Logistic Regression Classifier"],
+        ...                                         parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
+        ...                                                                                        "solver": "liblinear"}},
+        ...                                         custom_name="My Binary Pipeline")
+        >>> assert pipeline.custom_name == "My Binary Pipeline"
+        >>> pipeline.component_graph
+        {'Simple Imputer': ['Simple Imputer', 'X', 'y'],
+        'Logistic Regression Classifier': ['Logistic Regression Classifier', 'Simple Imputer.x', 'y']}
+        >>> pipeline.parameters
+        {'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
+         'Logistic Regression Classifier': {'penalty': 'elasticnet',
+                                            'C': 1.0,
+                                            'n_jobs': -1,
+                                            'multi_class': 'auto',
+                                            'solver': 'liblinear'}}
     """
 
     problem_type = ProblemTypes.BINARY

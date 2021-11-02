@@ -204,6 +204,25 @@ class TimeSeriesBinaryClassificationPipeline(
              parameters such as date_index, gap, and max_delay must be specified with the "pipeline" key. For example:
              Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
         random_seed (int): Seed for the random number generator. Defaults to 0.
+
+    Example:
+        >>> pipeline = TimeSeriesBinaryClassificationPipeline(component_graph=["Simple Imputer", "Logistic Regression Classifier"],
+        ...                                                   parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
+        ...                                                                                                  "solver": "liblinear"},
+        ...                                                               "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": None}},
+        ...                                                   custom_name="My TimeSeriesBinary Pipeline")
+        >>> assert pipeline.custom_name == "My TimeSeriesBinary Pipeline"
+        >>> pipeline.component_graph
+        {'Simple Imputer': ['Simple Imputer', 'X', 'y'],
+        'Logistic Regression Classifier': ['Logistic Regression Classifier', 'Simple Imputer.x', 'y']}
+        >>> pipeline.parameters
+        {'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
+        'Logistic Regression Classifier': {'penalty': 'elasticnet',
+                                           'C': 1.0,
+                                           'n_jobs': -1,
+                                           'multi_class': 'auto',
+                                           'solver': 'liblinear'},
+        'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': None}}
     """
 
     problem_type = ProblemTypes.TIME_SERIES_BINARY
@@ -278,6 +297,25 @@ class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipelin
              parameters such as date_index, gap, and max_delay must be specified with the "pipeline" key. For example:
              Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
         random_seed (int): Seed for the random number generator. Defaults to 0.
+
+    Example:
+        >>> pipeline = TimeSeriesMulticlassClassificationPipeline(component_graph=["Simple Imputer", "Logistic Regression Classifier"],
+        ...                                                       parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
+        ...                                                                                                      "solver": "liblinear"},
+        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": None}},
+        ...                                                       custom_name="My TimeSeriesMulticlass Pipeline")
+        >>> assert pipeline.custom_name == "My TimeSeriesMulticlass Pipeline"
+        >>> pipeline.component_graph
+        {'Simple Imputer': ['Simple Imputer', 'X', 'y'],
+        'Logistic Regression Classifier': ['Logistic Regression Classifier', 'Simple Imputer.x', 'y']}
+        >>> pipeline.parameters
+        {'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
+        'Logistic Regression Classifier': {'penalty': 'elasticnet',
+                                           'C': 1.0,
+                                           'n_jobs': -1,
+                                           'multi_class': 'auto',
+                                           'solver': 'liblinear'},
+        'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': None}}
     """
 
     problem_type = ProblemTypes.TIME_SERIES_MULTICLASS

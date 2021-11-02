@@ -62,6 +62,31 @@ def split_data(
 
     Returns:
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets.
+
+    Examples:
+        >>> X = pd.DataFrame([1, 2, 3, 4, 5, 6], columns=["First"])
+        >>> y = pd.Series([8, 9, 10, 11, 12, 13])
+        >>> splits = split_data(X, y, "regression", random_seed=42)
+        >>> splits[0]
+            First
+        5   16
+        2   13
+        4   15
+        3   14
+        >>> splits[1]
+            First
+        0   11
+        1   12
+        >>> splits[2]
+        5   1.1
+        2   1.2
+        4   1.3
+        3   1.4
+        dtype: float64
+        >>> splits[3]
+        0   1.1
+        1   1.3
+        dtype: float64
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
@@ -98,6 +123,18 @@ def number_of_features(dtypes):
 
     Returns:
         pd.Series: dtypes and the number of features for each input type.
+
+    Example:
+        >>> X = pd.DataFrame()
+        >>> X["integers"] = [i for i in range(10)]
+        >>> X["floats"] = [float(i) for i in range(10)]
+        >>> X["strings"] = [str(i) for i in range(10)]
+        >>> X["booleans"] = [bool(i%2) for i in range(10)]
+        >>> number_of_features(X.dtypes)
+                    Number of Features
+        Boolean     1
+        Categorical 1
+        Numeric     2
     """
     dtype_to_vtype = {
         "bool": "Boolean",
@@ -120,6 +157,21 @@ def target_distribution(targets):
 
     Returns:
         pd.Series: Target data and their frequency distribution as percentages.
+
+    Examples:
+        >>> y = pd.Series([1, 2, 4, 1, 3, 3, 1, 2])
+        >>> target_distribution(y)
+        Targets
+        1   37.50%
+        2   25.00%
+        3   25.00%
+        4   12.50%
+        dtype: object
+        >>> y = pd.Series([True, False, False, False, True])
+        Targets
+        False   60.00%
+        True    40.00%
+        dtype: object
     """
     distribution = targets.value_counts() / len(targets)
     return distribution.mul(100).apply("{:.2f}%".format).rename_axis("Targets")

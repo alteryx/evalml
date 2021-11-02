@@ -18,6 +18,18 @@ class RegressionPipeline(PipelineBase):
              An empty dictionary or None implies using all default values for component parameters. Defaults to None.
         custom_name (str): Custom name for the pipeline. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+
+    Example:
+        >>> pipeline = RegressionPipeline(component_graph=["Simple Imputer", "Linear Regressor"],
+        ...                               parameters={"Linear Regressor": {"normalize": True}},
+        ...                               custom_name="My Regression Pipeline")
+        >>> assert pipeline.custom_name == "My Regression Pipeline"
+        >>> pipeline.component_graph
+        {'Simple Imputer': ['Simple Imputer', 'X', 'y'],
+        'Linear Regressor': ['Linear Regressor', 'Simple Imputer.x', 'y']}
+        >>> pipeline.parameters
+        {'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
+         'Linear Regressor': {'fit_intercept': True, 'normalize': True, 'n_jobs': -1}}
     """
 
     problem_type = ProblemTypes.REGRESSION
