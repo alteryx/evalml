@@ -12,7 +12,11 @@ from evalml.utils import infer_feature_types
 def _accuracy(val_list):
     """Helper function to help us find the accuracy.
 
-    The input expected should be [tp, tn, fp, fn]
+    Args:
+        val_list (list): The confusion matrix input, expected format is [tp, tn, fp, fn].
+
+    Returns:
+        float: Accuracy.
     """
     acc = sum(val_list[:2]) / sum(val_list)
     return acc
@@ -21,7 +25,11 @@ def _accuracy(val_list):
 def _balanced_accuracy(val_list):
     """Helper function to help us find the balanced accuracy.
 
-    The input expected should be [tp, tn, fp, fn]
+    Args:
+        val_list (list): The confusion matrix input, expected format is [tp, tn, fp, fn].
+
+    Returns:
+        float: Balanced Accuracy.
     """
     sens = _recall(val_list)
     if val_list[1] == 0:
@@ -34,7 +42,11 @@ def _balanced_accuracy(val_list):
 def _precision(val_list):
     """Helper function to help us find the precision.
 
-    The input expected should be [tp, tn, fp, fn]
+    Args:
+        val_list (list): The confusion matrix input, expected format is [tp, tn, fp, fn].
+
+    Returns:
+        float: Precision.
     """
     if val_list[0] == 0:
         return 0
@@ -44,7 +56,11 @@ def _precision(val_list):
 def _recall(val_list):
     """Helper function to help us find the recall.
 
-    The input expected should be [tp, tn, fp, fn]
+    Args:
+        val_list (list): The confusion matrix input, expected format is [tp, tn, fp, fn].
+
+    Returns:
+        float: Recall.
     """
     if val_list[0] == 0:
         return 0
@@ -54,7 +70,11 @@ def _recall(val_list):
 def _f1(val_list):
     """Helper function to help us find the F1 score.
 
-    The input expected should be [tp, tn, fp, fn]
+    Args:
+        val_list (list): The confusion matrix input, expected format is [tp, tn, fp, fn].
+
+    Returns:
+        float: F1 Score.
     """
     prec = _precision(val_list)
     rec = _recall(val_list)
@@ -66,7 +86,7 @@ def _f1(val_list):
 def _find_confusion_matrix_objective_threshold(pos_skew, neg_skew, ranges):
     """Iterates through the arrays and determines the ideal objective thresholds and confusion matrix values for each threshold value.
 
-    Arguments:
+    Args:
         pos_skew (list): The number of rows per bin value for the actual postive values.
         neg_skew (list): The number of rows per bin value for the actual negative values.
         ranges (list): The bin ranges, spanning from 0.0 to 1.0. The length of this list - 1 is equal to the number of bins.
@@ -115,7 +135,7 @@ def _find_confusion_matrix_objective_threshold(pos_skew, neg_skew, ranges):
 def _find_data_between_ranges(data, ranges, top_k):
     """Finds the rows of the data that fall between each range.
 
-    Arguments:
+    Args:
         data (pd.Series): The predicted probability values for the postive class.
         ranges (list): The threshold ranges defining the bins. Should include 0 and 1 as the first and last value.
         top_k (int): The number of row indices per bin to include as samples.
@@ -138,7 +158,7 @@ def find_confusion_matrix_per_thresholds(
 ):
     """Gets the confusion matrix and histogram bins for each threshold as well as the best threshold per objective. Only works with Binary Classification Pipelines.
 
-    Arguments:
+    Args:
         pipeline (PipelineBase): A fitted Binary Classification Pipeline to get the confusion matrix with.
         X (pd.DataFrame): The input features.
         y (pd.Series): The input target.
