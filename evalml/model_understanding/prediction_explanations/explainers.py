@@ -91,10 +91,10 @@ def explain_predictions(
         raise ValueError(
             f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}"
         )
-    # if any([x < 0 or x >= len(input_features) for x in indices_to_explain]):
-    #     raise ValueError(
-    #         f"Explained indices should be between 0 and {len(input_features) - 1}"
-    #     )
+    if any([x < 0 or x >= len(input_features) for x in indices_to_explain]):
+        raise ValueError(
+            f"Explained indices should be between 0 and {len(input_features) - 1}"
+        )
     if is_time_series(pipeline.problem_type) and (
         training_target is None or training_data is None
     ):
@@ -289,7 +289,7 @@ def explain_predictions_best_worst(
         )
 
     errors = pd.Series(errors)
-    errors.index = y_pred_no_nan.index
+    # errors.index = y_pred_no_nan.index
     sorted_scores = errors.sort_values()
     best_indices = sorted_scores.index[:num_to_explain]
     worst_indices = sorted_scores.index[-num_to_explain:]

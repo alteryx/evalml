@@ -528,7 +528,6 @@ def _make_single_prediction_explanation_table(
     Raises:
         ValueError: if requested index results in a NaN in the computed features.
     """
-    index_to_explain = pipeline_features.index.get_loc(index_to_explain)
     pipeline_features_row = pipeline_features.iloc[[index_to_explain]]
     input_features_row = input_features.iloc[[index_to_explain]]
 
@@ -719,7 +718,6 @@ class _ClassificationPredictedValues(_SectionMaker):
         Returns:
             The predicted values section for classification problem best/worst reports formatted as text.
         """
-        index = y_pred.index.get_loc(index)
         pred_value = [
             f"{col_name}: {pred}"
             for col_name, pred in zip(
@@ -731,7 +729,7 @@ class _ClassificationPredictedValues(_SectionMaker):
 
         return [
             f"\t\tPredicted Probabilities: {pred_value}\n",
-            f"\t\tPredicted Value: {self.predicted_values[index]}\n",
+            f"\t\tPredicted Value: {self.predicted_values.iloc[index]}\n",
             f"\t\tTarget Value: {true_value}\n",
             f"\t\t{self.error_name}: {round(scores[index], 3)}\n",
             f"\t\tIndex ID: {dataframe_index.iloc[index]}\n\n",
@@ -739,12 +737,13 @@ class _ClassificationPredictedValues(_SectionMaker):
 
     def make_dict(self, index, y_pred, y_true, scores, dataframe_index):
         """Makes the predicted values section for classification problem best/worst reports formatted as dictionary."""
-        index = y_pred.index.get_loc(index)
         pred_values = dict(zip(y_pred.columns, round(y_pred.iloc[index], 3).tolist()))
 
         return {
             "probabilities": pred_values,
-            "predicted_value": _make_json_serializable(self.predicted_values[index]),
+            "predicted_value": _make_json_serializable(
+                self.predicted_values.iloc[index]
+            ),
             "target_value": _make_json_serializable(y_true.iloc[index]),
             "error_name": self.error_name,
             "error_value": _make_json_serializable(scores[index]),
@@ -777,7 +776,6 @@ class _RegressionPredictedValues(_SectionMaker):
         Returns:
             The predicted values section for regression problem best/worst reports formatted as text.
         """
-        index = y_pred.index.get_loc(index)
         return [
             f"\t\tPredicted Value: {round(y_pred.iloc[index], 3)}\n",
             f"\t\tTarget Value: {round(y_true.iloc[index], 3)}\n",
@@ -787,7 +785,6 @@ class _RegressionPredictedValues(_SectionMaker):
 
     def make_dict(self, index, y_pred, y_true, scores, dataframe_index):
         """Makes the predicted values section for regression problem best/worst reports formatted as a dictionary."""
-        index = y_pred.index.get_loc(index)
         return {
             "probabilities": None,
             "predicted_value": round(y_pred.iloc[index], 3),
