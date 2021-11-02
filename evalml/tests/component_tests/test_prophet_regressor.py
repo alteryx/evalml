@@ -1,7 +1,6 @@
 import numpy as np
 import pandas as pd
 import pytest
-from pandas.testing import assert_series_equal
 from pytest import importorskip
 
 from evalml.model_family import ModelFamily
@@ -79,7 +78,7 @@ def test_fit_predict_ts_with_X_index(ts_data):
     clf = ProphetRegressor(uncertainty_samples=False, changepoint_prior_scale=2.0)
     clf.fit(X, y)
     y_pred = clf.predict(X)
-    np.array_equal(y_pred_p.values,y_pred.values)
+    np.array_equal(y_pred_p.values, y_pred.values)
 
     # assert y_pred.equals(y_pred_p)
 
@@ -101,7 +100,7 @@ def test_fit_predict_ts_with_y_index(ts_data):
     clf.fit(X, y)
     y_pred = clf.predict(X, y)
 
-    np.array_equal(y_pred_p.values,y_pred.values)
+    np.array_equal(y_pred_p.values, y_pred.values)
 
     # assert y_pred.equals(y_pred_p)
     # assert (y_pred == y_pred_p).all()
@@ -123,7 +122,7 @@ def test_fit_predict_ts_no_X(ts_data):
     clf.fit(X=None, y=y)
     y_pred = clf.predict(X=None, y=y)
 
-    np.array_equal(y_pred_p.values,y_pred.values)
+    np.array_equal(y_pred_p.values, y_pred.values)
 
     # assert y_pred.equals(y_pred_p)
 
@@ -152,7 +151,7 @@ def test_fit_predict_date_col(ts_data):
     p_clf.fit(prophet_df)
     y_pred_p = p_clf.predict(prophet_df)["yhat"]
 
-    np.array_equal(y_pred_p.values,y_pred.values)
+    np.array_equal(y_pred_p.values, y_pred.values)
 
     # assert y_pred.equals(y_pred_p)
 
