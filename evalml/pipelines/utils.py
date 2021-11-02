@@ -407,7 +407,7 @@ def _make_pipeline_from_multiple_graphs(
         random_seed (int): Random seed for the pipeline. Defaults to 0.
 
     Returns:
-        Pipeline with appropriate stacked ensemble estimator.
+        pipeline (PipelineBase): pipelined created with the input pipelines and ending with the provided estimator.
     """
 
     def _make_new_component_name(name, component_name, idx=None, pipeline_name=None):
