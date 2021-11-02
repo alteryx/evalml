@@ -114,19 +114,11 @@ def test_data_checks_suggests_drop_rows():
     action_components = _make_component_list_from_actions(actions)
     assert action_components == [DropRowsTransformer(indices_to_drop=[0, 3, 5, 10])]
 
-    X_t = pd.DataFrame(data=data)
-    X_t.iloc[0, 3] = 1000
-    X_t.iloc[3, 25] = 1000
-    X_t.iloc[5, 55] = 10000
-    X_t.iloc[10, 72] = -1000
-    X_t.iloc[:, 90] = "string_values"
-    X_t.ww.init()
-    y_t = pd.Series(np.tile([0, 1], 50))
-
     X_expected = X.drop([0, 3, 5, 10])
     X_expected.ww.init()
     y_expected = y.drop([0, 3, 5, 10])
+
     for component in action_components:
-        X_t, y_t = component.fit_transform(X_t, y_t)
-    assert_frame_equal(X_expected, X_t)
-    assert_series_equal(y_expected, y_t)
+        X, y = component.fit_transform(X, y)
+    assert_frame_equal(X_expected, X)
+    assert_series_equal(y_expected, y)
