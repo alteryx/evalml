@@ -351,7 +351,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     "RF Classifier Select From Model"
                 ).get_names()
 
-            try:
+            if list(self.X.ww.select("categorical").columns):
                 ohe = pipeline.get_component("One Hot Encoder")
                 feature_provenance = ohe._get_feature_provenance()
                 for original_col in feature_provenance:
@@ -362,8 +362,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                             self._selected_cols.remove(encoded_col)
                     if selected:
                         self._selected_cat_cols.append(original_col)
-            except ValueError:
-                pass
 
         current_best_score = self._best_pipeline_info.get(
             pipeline.model_family, {}
@@ -420,16 +418,16 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return parameters
 
     def _make_split_pipeline(self, estimator, pipeline_name=None):
-        basic_pipeline_parameters = {
+        numeric_pipeline_parameters = {
             "Select Columns Transformer": {"columns": self._selected_cols}
         }
-        basic_pipeline = make_pipeline(
+        numeric_pipeline = make_pipeline(
             self.X,
             self.y,
             estimator,
             self.problem_type,
             sampler_name=self.sampler_name,
-            parameters=basic_pipeline_parameters,
+            parameters=numeric_pipeline_parameters,
             extra_components=[SelectColumns],
             extra_components_position="before_estimator",
             use_estimator=False if self._selected_cat_cols else True,
@@ -451,9 +449,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 extra_components_position="before_preprocessing",
                 use_estimator=False,
             )
-            input_pipelines = [basic_pipeline, categorical_pipeline]
+            input_pipelines = [numeric_pipeline, categorical_pipeline]
             sub_pipeline_names = {
-                basic_pipeline.name: "Numeric",
+                numeric_pipeline.name: "Numeric",
                 categorical_pipeline.name: "Categorical",
             }
             return _make_pipeline_from_multiple_graphs(
@@ -465,4 +463,4 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 random_seed=self.random_seed,
                 sub_pipeline_names=sub_pipeline_names,
             )
-        return basic_pipeline
+        return numeric_pipeline
