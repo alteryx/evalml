@@ -22,10 +22,6 @@ from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesRegressionPipeline,
 )
-from evalml.pipelines.components import (
-    StackedEnsembleClassifier,
-    StackedEnsembleRegressor,
-)
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.problem_types import ProblemTypes, is_binary, is_multiclass
 
@@ -1587,38 +1583,121 @@ def test_categories_aggregated_when_some_are_dropped(
 
 
 @pytest.mark.parametrize(
+    "algorithm",
+    ["shap", "lime"],
+)
+@pytest.mark.parametrize(
     "problem_type",
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
 def test_explain_predictions_stacked_ensemble(
+    algorithm,
     problem_type,
-    X_y_binary,
+    fraud_100,
     X_y_multi,
     X_y_regression,
 ):
-    if is_binary(problem_type):
-        X, y = X_y_binary
-        pipeline = BinaryClassificationPipeline(
-            [StackedEnsembleClassifier(random_seed=0)]
+    if algorithm == "lime":
+        pytest.importorskip(
+            "lime.lime_tabular",
+            reason="Skipping lime value errors test because lime not installed",
         )
+    if is_binary(problem_type):
+        X, y = fraud_100
+        pipeline = BinaryClassificationPipeline(
+            {
+                "DT": ["DateTime Featurization Component", "X", "y"],
+                "Imputer": ["Imputer", "DT.x", "y"],
+                "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
+                "Drop Columns Transformer": [
+                    "Drop Columns Transformer",
+                    "One Hot Encoder.x",
+                    "y",
+                ],
+                "Regression": [
+                    "Logistic Regression Classifier",
+                    "Drop Columns Transformer.x",
+                    "y",
+                ],
+                "RF": ["Random Forest Classifier", "One Hot Encoder.x", "y"],
+                "Stacked Ensembler": [
+                    "Stacked Ensemble Classifier",
+                    "Regression.x",
+                    "RF.x",
+                    "y",
+                ],
+            }
+        )
+        exp_feature_names = {"Col 1 RF.x", "Col 1 Regression.x"}
     elif is_multiclass(problem_type):
         X, y = X_y_multi
         pipeline = MulticlassClassificationPipeline(
-            [StackedEnsembleClassifier(random_seed=0)]
+            {
+                "Imputer": ["Imputer", "X", "y"],
+                "Regression": ["Logistic Regression Classifier", "Imputer.x", "y"],
+                "RF": ["Random Forest Classifier", "X", "y"],
+                "Stacked Ensembler": [
+                    "Stacked Ensemble Classifier",
+                    "Regression.x",
+                    "RF.x",
+                    "y",
+                ],
+            }
         )
+        exp_feature_names = {
+            "Col 0 RF.x",
+            "Col 1 RF.x",
+            "Col 2 RF.x",
+            "Col 0 Regression.x",
+            "Col 1 Regression.x",
+            "Col 2 Regression.x",
+        }
     else:
         X, y = X_y_regression
-        pipeline = RegressionPipeline([StackedEnsembleRegressor(random_seed=0)])
+        pipeline = RegressionPipeline(
+            {
+                "Imputer": ["Imputer", "X", "y"],
+                "Regression": [
+                    "Linear Regressor",
+                    "Imputer.x",
+                    "y",
+                ],
+                "RF": ["Random Forest Regressor", "X", "y"],
+                "Stacked Ensembler": [
+                    "Stacked Ensemble Regressor",
+                    "Regression.x",
+                    "RF.x",
+                    "y",
+                ],
+            }
+        )
+        exp_feature_names = {"RF.x", "Regression.x"}
+    pipeline.fit(X, y)
 
-    with pytest.raises(
-        ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"
-    ):
-        explain_predictions(pipeline, X, y, indices_to_explain=[0])
+    report = explain_predictions(
+        pipeline,
+        X,
+        y,
+        indices_to_explain=[0],
+        output_format="dict",
+        top_k_features=10,
+        algorithm=algorithm,
+    )
+    explanations_data = report["explanations"][0]["explanations"][0]
+    assert set(explanations_data["feature_names"]) == exp_feature_names
+    assert (
+        explanations_data["quantitative_explanation"]
+        == [None, None, None, None, None, None]
+        if problem_type == ProblemTypes.MULTICLASS
+        else [None, None]
+    )
 
-    with pytest.raises(
-        ValueError, match="Cannot explain predictions for a stacked ensemble pipeline"
-    ):
-        explain_predictions_best_worst(pipeline, X, y)
+    report = explain_predictions_best_worst(
+        pipeline, X, y, top_k_features=10, output_format="dict", algorithm=algorithm
+    )
+    explanations_data = report["explanations"]
+    for entry in explanations_data:
+        assert set(entry["explanations"][0]["feature_names"]) == exp_feature_names
 
 
 @pytest.mark.parametrize(

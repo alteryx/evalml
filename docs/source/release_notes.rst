@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Limit computationally-intensive models during ``AutoMLSearch`` for certain multiclass problems, allow for opt-in with parameter ``allow_long_running_models`` :pr:`2982`
+        * Added support for stacked ensemble pipelines to prediction explanations module :pr:`2971`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
     * Changes
@@ -24,6 +25,7 @@ Release Notes
         * Enhanced the ``DateTimeFeaturizer`` to handle ``NaNs`` in date features :pr:`2909`
         * Added support for woodwork logical types ``PostalCode``, ``SubRegionCode``, and ``CountryCode`` in model understanding tools :pr:`2946`
         * Added Vowpal Wabbit regressor and classifiers :pr:`2846`
+        * Added `NoSplit` data splitter for future unsupervised learning searches :pr:`2958`
         * Added method to convert actions into a preprocessing pipeline :pr:`2968`
     * Fixes
         * Fixed bug where partial dependence was not respecting the ww schema :pr:`2929`
