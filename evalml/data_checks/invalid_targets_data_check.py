@@ -55,6 +55,7 @@ class InvalidTargetDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
+<<<<<<< HEAD
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = None
             >>> target_check = InvalidTargetDataCheck('binary', 'Log Loss Binary')

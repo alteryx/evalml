@@ -1,3 +1,5 @@
+import pytest
+
 from evalml.data_checks import DataCheckAction, DataCheckActionCode
 
 
@@ -72,3 +74,61 @@ def test_data_check_action_to_dict():
             "rows": None,
         },
     }
+
+
+def test_convert_dict_to_action_bad_input():
+    data_check_action_dict_no_code = {
+        "metadata": {"columns": None, "rows": None},
+    }
+    with pytest.raises(ValueError, match="The input dictionary should have the keys"):
+        DataCheckAction.convert_dict_to_action(data_check_action_dict_no_code)
+
+    data_check_action_dict_no_metadata = {
+        "code": DataCheckActionCode.DROP_COL.name,
+    }
+    with pytest.raises(ValueError, match="The input dictionary should have the keys"):
+        DataCheckAction.convert_dict_to_action(data_check_action_dict_no_metadata)
+
+    data_check_action_dict_no_columns = {
+        "code": DataCheckActionCode.DROP_COL.name,
+        "metadata": {"rows": None},
+    }
+    with pytest.raises(
+        ValueError, match="The metadata dictionary should have the keys"
+    ):
+        DataCheckAction.convert_dict_to_action(data_check_action_dict_no_columns)
+
+    data_check_action_dict_no_rows = {
+        "code": DataCheckActionCode.DROP_COL.name,
+        "metadata": {"columns": None},
+    }
+    with pytest.raises(
+        ValueError, match="The metadata dictionary should have the keys"
+    ):
+        DataCheckAction.convert_dict_to_action(data_check_action_dict_no_rows)
+
+
+def test_convert_dict_to_action():
+    data_check_action_dict = {
+        "code": DataCheckActionCode.DROP_COL.name,
+        "metadata": {"columns": None, "rows": None},
+    }
+    expected_data_check_action = DataCheckAction(DataCheckActionCode.DROP_COL)
+    data_check_action = DataCheckAction.convert_dict_to_action(data_check_action_dict)
+    assert data_check_action == expected_data_check_action
+
+    data_check_action_dict_with_other_metadata = {
+        "code": DataCheckActionCode.DROP_COL.name,
+        "metadata": {
+            "some detail": ["this is different"],
+            "columns": None,
+            "rows": None,
+        },
+    }
+    expected_data_check_action = DataCheckAction(
+        DataCheckActionCode.DROP_COL, metadata={"some detail": ["this is different"]}
+    )
+    data_check_action = DataCheckAction.convert_dict_to_action(
+        data_check_action_dict_with_other_metadata
+    )
+    assert data_check_action == expected_data_check_action
