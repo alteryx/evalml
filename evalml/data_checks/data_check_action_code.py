@@ -1,6 +1,8 @@
 """Enum for data check action code."""
 from enum import Enum
 
+from evalml.utils import classproperty
+
 
 class DataCheckActionCode(Enum):
     """Enum for data check action code."""
@@ -16,3 +18,7 @@ class DataCheckActionCode(Enum):
 
     TRANSFORM_TARGET = "transform_target"
     """Action code for transforming the target data."""
+
+    @classproperty
+    def _all_values(cls):
+        return {code.value.upper(): code for code in list(cls)}

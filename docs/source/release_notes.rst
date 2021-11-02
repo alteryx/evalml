@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Limit computationally-intensive models during ``AutoMLSearch`` for certain multiclass problems, allow for opt-in with parameter ``allow_long_running_models`` :pr:`2982`
         * Added support for stacked ensemble pipelines to prediction explanations module :pr:`2971`
+        * Added integration tests for data checks and data checks actions workflow :pr:`2883`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
     * Changes
