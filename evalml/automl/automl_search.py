@@ -379,6 +379,9 @@ class AutoMLSearch:
         sampler_balanced_ratio (float): The minority:majority class ratio that we consider balanced, so a 1:4 ratio would be equal to 0.25. If the class balance is larger than this provided value,
             then we will not add a sampler since the data is then considered balanced. Overrides the `sampler_ratio` of the samplers. Defaults to 0.25.
 
+        allow_long_running_models (bool): Whether or not to allow longer-running models for large multiclass problems. If False and no pipelines, component graphs, or model families are provided,
+            AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass targets and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
+
         _ensembling_split_size (float): The amount of the training data we'll set aside for training ensemble metalearners. Only used when ensembling is True.
             Must be between 0 and 1, exclusive. Defaults to 0.2
 
@@ -426,6 +429,7 @@ class AutoMLSearch:
         custom_hyperparameters=None,
         sampler_method="auto",
         sampler_balanced_ratio=0.25,
+        allow_long_running_models=False,
         _ensembling_split_size=0.2,
         _pipelines_per_batch=5,
         _automl_algorithm="iterative",
@@ -587,6 +591,7 @@ class AutoMLSearch:
                     )
         self.allowed_component_graphs = allowed_component_graphs
         self.allowed_model_families = allowed_model_families
+        self.allow_long_running_models = allow_long_running_models
         self._start = 0.0
         self._baseline_cv_scores = {}
         self.show_batch_output = False
@@ -690,6 +695,7 @@ class AutoMLSearch:
                 text_in_ensembling=text_in_ensembling,
                 pipeline_params=parameters,
                 custom_hyperparameters=custom_hyperparameters,
+                allow_long_running_models=allow_long_running_models,
                 verbose=self.verbose,
             )
         elif _automl_algorithm == "default":
