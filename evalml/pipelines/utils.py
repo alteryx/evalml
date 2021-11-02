@@ -488,6 +488,9 @@ def _make_pipeline_from_multiple_graphs(
         ProblemTypes.BINARY: BinaryClassificationPipeline,
         ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
         ProblemTypes.REGRESSION: RegressionPipeline,
+        ProblemTypes.TIME_SERIES_BINARY: TimeSeriesBinaryClassificationPipeline,
+        ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesMulticlassClassificationPipeline,
+        ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesRegressionPipeline
     }[problem_type]
     return pipeline_class(
         component_graph,
