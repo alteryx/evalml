@@ -34,7 +34,7 @@ def get_default_primary_search_objective(problem_type):
     """Get the default primary search objective for a problem type.
 
     Args:
-        problem_type (str or ProblemType): problem type of interest.
+        problem_type (str or ProblemType): Problem type of interest.
 
     Returns:
         ObjectiveBase: primary objective instance for the problem type.
