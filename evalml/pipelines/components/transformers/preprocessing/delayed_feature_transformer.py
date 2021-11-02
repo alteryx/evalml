@@ -33,7 +33,7 @@ class DelayedFeatureTransformer(Transformer):
     name = "Delayed Feature Transformer"
     hyperparameter_ranges = {"conf_level": Real(0.001, 1.0)}
     """{}"""
-    needs_fitting = False
+    needs_fitting = True
     target_colname_prefix = "target_delay_{}"
     """target_delay_{}"""
 
