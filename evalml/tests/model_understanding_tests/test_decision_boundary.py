@@ -1,3 +1,4 @@
+import json
 from unittest.mock import patch
 
 import numpy as np
@@ -133,10 +134,13 @@ def test_find_confusion_matrix_per_threshold_args_pass_through(
 
     # set the output for the thresholding private method
     obj_dict = {
-        "accuracy": [[0.5, 0.5], "some function"],
-        "balanced_accuracy": [[0.5, 0.25], "some function"],
+        "accuracy": [{"objective score": 0.5, "threshold value": 0.5}, "some function"],
+        "balanced_accuracy": [
+            {"objective score": 0.5, "threshold value": 0.25},
+            "some function",
+        ],
     }
-    conf_matrix = [[0, 100, 280, 0] for i in range(n_bins)]
+    conf_matrix = np.array([[0, 100, 280, 0] for i in range(n_bins)])
     mock_threshold.return_value = (conf_matrix, obj_dict)
 
     # set the output for data between ranges
@@ -149,14 +153,20 @@ def test_find_confusion_matrix_per_threshold_args_pass_through(
     expected_neg_skew, _ = np.histogram(pred_proba.iloc[:, -1][:500], bins=bins)
     expected_result_df = pd.DataFrame(
         {
-            "pos_bins": expected_pos_skew,
-            "neg_bins": expected_neg_skew,
-            "confusion_matrix": conf_matrix,
+            "true_pos_count": expected_pos_skew,
+            "true_neg_count": expected_neg_skew,
+            "true_positives": conf_matrix[:, 0].tolist(),
+            "true_negatives": conf_matrix[:, 1].tolist(),
+            "false_positives": conf_matrix[:, 2].tolist(),
+            "false_negatives": conf_matrix[:, 3].tolist(),
             "data_in_bins": range_result,
         },
         index=pos_range[1:],
     )
-    final_obj_dict = {"accuracy": [0.5, 0.5], "balanced_accuracy": [0.5, 0.25]}
+    final_obj_dict = {
+        "accuracy": {"objective score": 0.5, "threshold value": 0.5},
+        "balanced_accuracy": {"objective score": 0.5, "threshold value": 0.25},
+    }
 
     returned_result = find_confusion_matrix_per_thresholds(bcp, X, y, n_bins)
     call_args = mock_threshold.call_args
@@ -194,15 +204,17 @@ def test_find_confusion_matrix_per_threshold_n_bins(
     if n_bins is not None:
         assert len(returned_result[0]) == n_bins
     assert returned_result[0].columns.tolist() == [
-        "pos_bins",
-        "neg_bins",
-        "confusion_matrix",
+        "true_pos_count",
+        "true_neg_count",
+        "true_positives",
+        "true_negatives",
+        "false_positives",
+        "false_negatives",
         "data_in_bins",
     ]
-    assert sum(returned_result[0]["pos_bins"]) == 800
-    assert sum(returned_result[0]["neg_bins"]) == 1200
+    assert sum(returned_result[0]["true_pos_count"]) == 800
+    assert sum(returned_result[0]["true_neg_count"]) == 1200
     assert all([len(v) <= top_k for v in returned_result[0]["data_in_bins"]])
-    assert all([len(v) == 4 for v in returned_result[0]["confusion_matrix"]])
     assert isinstance(returned_result[1], dict)
     assert set(returned_result[1].keys()) == {
         "accuracy",
@@ -286,10 +298,13 @@ def test_find_confusion_matrix_objective_threshold(pos_skew, neg_skew):
     total_pos, total_neg = 100, 100
     pos, neg = 0, 0
     objective_dict = {
-        "accuracy": [[0, 0], _accuracy],
-        "balanced_accuracy": [[0, 0], _balanced_accuracy],
-        "precision": [[0, 0], _precision],
-        "f1": [[0, 0], _f1],
+        "accuracy": [{"objective score": 0, "threshold value": 0}, _accuracy],
+        "balanced_accuracy": [
+            {"objective score": 0, "threshold value": 0},
+            _balanced_accuracy,
+        ],
+        "precision": [{"objective score": 0, "threshold value": 0}, _precision],
+        "f1": [{"objective score": 0, "threshold value": 0}, _f1],
     }
     expected_conf_mat = []
     for i, range_val in enumerate(ranges[1:]):
@@ -303,9 +318,9 @@ def test_find_confusion_matrix_objective_threshold(pos_skew, neg_skew):
 
         for k, v in objective_dict.items():
             obj_val = v[1](cm)
-            if obj_val > v[0][0]:
-                v[0][0] = obj_val
-                v[0][1] = range_val
+            if obj_val > v[0]["objective score"]:
+                v[0]["objective score"] = obj_val
+                v[0]["threshold value"] = range_val
 
     assert conf_mat_list == expected_conf_mat
     assert obj_dict == objective_dict
@@ -326,7 +341,7 @@ def test_find_confusion_matrix_per_threshold(
         assert sum([len(s) for s in res_df["data_in_bins"]]) <= 30
     else:
         assert sum([len(s) for s in res_df["data_in_bins"]]) == len(y)
-    assert all([sum(v) == 100 for v in res_df["confusion_matrix"]])
+    # assert all([sum(v) == 100 for v in res_df[["true_positives", "true_negatives", "false_postives", "false_negatives"]])
     assert len(obj_dict) == 4
 
 
@@ -357,13 +372,34 @@ def test_find_confusion_matrix_values():
         [0, 50, 0, 50],
     ]
     expected_objective_dic = {
-        "accuracy": ([0.85, 0.4], _accuracy),
-        "balanced_accuracy": ([17 / 20, 0.4], _balanced_accuracy),
-        "precision": ([1.0, 0.8], _precision),
-        "f1": ([6 / 7, 0.4], _f1),
+        "accuracy": [{"objective score": 0.85, "threshold value": 0.4}, _accuracy],
+        "balanced_accuracy": [
+            {"objective score": 17 / 20, "threshold value": 0.4},
+            _balanced_accuracy,
+        ],
+        "precision": [{"objective score": 1.0, "threshold value": 0.8}, _precision],
+        "f1": [{"objective score": 6 / 7, "threshold value": 0.4}, _f1],
     }
     cm, ob_dic = _find_confusion_matrix_objective_threshold(pos_skew, neg_skew, ranges)
     assert cm == expected_cm
     for k, v in ob_dic.items():
-        np.testing.assert_allclose(v[0], expected_objective_dic[k][0])
+        np.testing.assert_allclose(
+            list(v[0].values()), list(expected_objective_dic[k][0].values())
+        )
         assert v[1] == expected_objective_dic[k][1]
+
+
+def test_find_confusion_matrix_json(
+    logistic_regression_binary_pipeline_class, X_y_binary
+):
+    bcp = logistic_regression_binary_pipeline_class({})
+    X, y = X_y_binary
+    bcp.fit(X, y)
+    res_df, obj_dict = find_confusion_matrix_per_thresholds(bcp, X, y)
+    json_result = find_confusion_matrix_per_thresholds(bcp, X, y, to_json=True)
+
+    result = json.loads(json_result)
+    df = pd.DataFrame(result["results"], index=result["thresholds"])
+    object_dict = result["objectives"]
+    assert object_dict == obj_dict
+    pd.testing.assert_frame_equal(res_df, df)

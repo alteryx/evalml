@@ -1,4 +1,6 @@
 """Model Understanding for decision boundary on Binary Classification problems."""
+import json
+
 import numpy as np
 import pandas as pd
 
@@ -76,12 +78,14 @@ def _find_confusion_matrix_objective_threshold(pos_skew, neg_skew, ranges):
     thresh_conf_matrix_list = []
     num_fn, num_tn = 0, 0
     total_pos, total_neg = sum(pos_skew), sum(neg_skew)
-    # in the dict, [0, 0] corresponds to [objective_score, threshold value]
     objective_dict = {
-        "accuracy": [[0, 0], _accuracy],
-        "balanced_accuracy": [[0, 0], _balanced_accuracy],
-        "precision": [[0, 0], _precision],
-        "f1": [[0, 0], _f1],
+        "accuracy": [{"objective score": 0, "threshold value": 0}, _accuracy],
+        "balanced_accuracy": [
+            {"objective score": 0, "threshold value": 0},
+            _balanced_accuracy,
+        ],
+        "precision": [{"objective score": 0, "threshold value": 0}, _precision],
+        "f1": [{"objective score": 0, "threshold value": 0}, _f1],
     }
     for i, thresh_val in enumerate(ranges[1:]):
         num_fn += pos_skew[i]
@@ -95,9 +99,9 @@ def _find_confusion_matrix_objective_threshold(pos_skew, neg_skew, ranges):
         # let's iterate through the list to find the vals
         for k, v in objective_dict.items():
             obj_val = v[1](val_list)
-            if obj_val > v[0][0]:
-                v[0][0] = obj_val
-                v[0][1] = thresh_val
+            if obj_val > v[0]["objective score"]:
+                v[0]["objective score"] = obj_val
+                v[0]["threshold value"] = thresh_val
 
         if num_fn == total_pos and num_tn == total_pos and i < len(ranges) - 1:
             # finished iterating through, there are no other changes
@@ -129,7 +133,9 @@ def _find_data_between_ranges(data, ranges, top_k):
     return results
 
 
-def find_confusion_matrix_per_thresholds(pipeline, X, y, n_bins=None, top_k=5):
+def find_confusion_matrix_per_thresholds(
+    pipeline, X, y, n_bins=None, top_k=5, to_json=False
+):
     """Gets the confusion matrix and histogram bins for each threshold as well as the best threshold per objective. Only works with Binary Classification Pipelines.
 
     Arguments:
@@ -138,11 +144,13 @@ def find_confusion_matrix_per_thresholds(pipeline, X, y, n_bins=None, top_k=5):
         y (pd.Series): The input target.
         n_bins (int): The number of bins to use to calculate the threshold values. Defaults to None, which will default to using Freedman-Diaconis rule.
         top_k (int): The maximum number of row indices per bin to include as samples. -1 includes all row indices that fall between the bins. Defaults to 5.
+        to_json (bool): Whether or not to return a json output. If False, returns the (DataFrame, dict) tuple, otherwise returns a json.
 
     Returns:
-        (pd.DataFrame, dict): The dataframe has the actual positive histogram, actual negative histogram,
+        (tuple(pd.DataFrame, dict)), json): The dataframe has the actual positive histogram, actual negative histogram,
             the confusion matrix, and a sample of rows that fall in the bin, all for each threshold value. The threshold value, represented through the dataframe index, represents the cutoff threshold at that value.
             The dictionary contains the ideal threshold and score per objective, keyed by objective name.
+            If json, returns the info for both the dataframe and dictionary as a json output.
 
     Raises:
         ValueError: If the pipeline isn't a binary classification pipeline or isn't yet fitted on data.
@@ -153,13 +161,17 @@ def find_confusion_matrix_per_thresholds(pipeline, X, y, n_bins=None, top_k=5):
         raise ValueError("Expected a fitted binary classification pipeline")
     X = infer_feature_types(X)
     y = infer_feature_types(y)
-    if set(y.unique()) != {0, 1}:
-        y = pipeline._encode_targets(y)
 
     proba = pipeline.predict_proba(X)
     pos_preds = proba.iloc[:, -1]
-    true_pos = y[y == 1]
-    true_neg = y[y == 0]
+    pos_preds.index = y.index.tolist()
+    neg_class, pos_class = 0, 1
+    if pipeline._encoder is not None:
+        pos_class = pipeline._encoder._component_obj.classes_[1]
+        neg_class = pipeline._encoder._component_obj.classes_[0]
+    true_pos = y[y == pos_class]
+    true_neg = y[y == neg_class]
+
     # separate the positive and negative predictions
     true_pos_preds = pos_preds.loc[true_pos.index]
     true_neg_preds = pos_preds.loc[true_neg.index]
@@ -169,21 +181,34 @@ def find_confusion_matrix_per_thresholds(pipeline, X, y, n_bins=None, top_k=5):
         bins = [i / n_bins for i in range(n_bins + 1)]
     else:
         bins = np.histogram_bin_edges(pos_preds, bins="fd", range=(0, 1))
-    pos_skew, pos_range = np.histogram(true_pos_preds, bins=bins)
-    neg_skew, neg_range = np.histogram(true_neg_preds, bins=bins)
-    data_ranges = _find_data_between_ranges(pos_preds, pos_range, top_k)
+    pos_skew, _ = np.histogram(true_pos_preds, bins=bins)
+    neg_skew, _ = np.histogram(true_neg_preds, bins=bins)
+    data_ranges = _find_data_between_ranges(pos_preds, bins, top_k)
 
     conf_matrix_list, objective_dict = _find_confusion_matrix_objective_threshold(
-        pos_skew, neg_skew, pos_range
+        pos_skew, neg_skew, bins
     )
-    result_df = pd.DataFrame(
-        {
-            "pos_bins": pos_skew,
-            "neg_bins": neg_skew,
-            "confusion_matrix": conf_matrix_list,
-            "data_in_bins": data_ranges,
-        },
-        index=pos_range[1:],
-    )
+    conf_matrix_list = np.array(conf_matrix_list)
     final_obj_dict = {k: v[0] for k, v in objective_dict.items()}
+    res = {
+        "true_pos_count": pos_skew.tolist(),
+        "true_neg_count": neg_skew.tolist(),
+        "true_positives": conf_matrix_list[:, 0].tolist(),
+        "true_negatives": conf_matrix_list[:, 1].tolist(),
+        "false_positives": conf_matrix_list[:, 2].tolist(),
+        "false_negatives": conf_matrix_list[:, 3].tolist(),
+        "data_in_bins": data_ranges,
+    }
+    if to_json:
+        final_res = {
+            "results": res,
+            "thresholds": bins[1:].tolist(),
+            "objectives": final_obj_dict,
+        }
+        return json.dumps(final_res)
+
+    result_df = pd.DataFrame(
+        res,
+        index=bins[1:],
+    )
     return (result_df, final_obj_dict)
