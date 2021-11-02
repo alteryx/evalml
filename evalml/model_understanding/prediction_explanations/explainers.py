@@ -9,7 +9,6 @@ import numpy as np
 import pandas as pd
 
 from evalml.exceptions import PipelineScoreError
-from evalml.model_family import ModelFamily
 from evalml.model_understanding.prediction_explanations._report_creator_factory import (
     _report_creator_factory,
 )
@@ -56,7 +55,8 @@ def explain_predictions(
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported with the SHAP algorithm.
     To explain XGBoost model predictions, use the LIME algorithm. The LIME algorithm does not currently support
-    any CatBoost models. Stacked Ensemble models are not supported by either algorithm at this time.
+    any CatBoost models. For Stacked Ensemble models, the SHAP value for each input pipeline's predict function
+    into the metalearner is used.
 
     Args:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP or LIME.
@@ -83,8 +83,6 @@ def explain_predictions(
     """
     input_features = infer_feature_types(input_features)
 
-    if pipeline.model_family == ModelFamily.ENSEMBLE:
-        raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if input_features.empty:
         raise ValueError("Parameter input_features must be a non-empty dataframe.")
     if output_format not in {"text", "dict", "dataframe"}:
@@ -177,7 +175,8 @@ def explain_predictions_best_worst(
 
     XGBoost models and CatBoost multiclass classifiers are not currently supported with the SHAP algorithm.
     To explain XGBoost model predictions, use the LIME algorithm. The LIME algorithm does not currently support
-    any CatBoost models. Stacked Ensemble models are not supported by either algorithm at this time.
+    any CatBoost models. For Stacked Ensemble models, the SHAP value for each input pipeline's predict function
+    into the metalearner is used.
 
     Args:
         pipeline (PipelineBase): Fitted pipeline whose predictions we want to explain with SHAP or LIME.
@@ -233,8 +232,6 @@ def explain_predictions_best_worst(
         raise ValueError(
             f"Parameter output_format must be either text, dict, or dataframe. Received {output_format}"
         )
-    if pipeline.model_family == ModelFamily.ENSEMBLE:
-        raise ValueError("Cannot explain predictions for a stacked ensemble pipeline")
     if not metric:
         metric = DEFAULT_METRICS[pipeline.problem_type]
     _update_progress(

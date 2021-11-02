@@ -1,11 +1,28 @@
 <p align="center">
-<img width=50% src="https://evalml-web-images.s3.amazonaws.com/evalml_horizontal.svg" alt="Featuretools" />
+<img width=50% src="https://evalml-web-images.s3.amazonaws.com/evalml_horizontal.svg" alt="EvalML" />
 </p>
 
-[![GitHub Actions](https://github.com/alteryx/evalml/actions/workflows/linux_unit_tests.yml/badge.svg?branch=main)](https://github.com/alteryx/evalml/actions/workflows/linux_unit_tests.yml?query=branch%3Amain)
-[![Codecov.io](https://codecov.io/gh/alteryx/evalml/branch/main/graph/badge.svg?token=JDc0Ib7kYL)](https://codecov.io/gh/alteryx/evalml)
-[![PyPI](https://badge.fury.io/py/evalml.svg?maxAge=2592000)](https://badge.fury.io/py/evalml)
-[![PyPI Stats](https://img.shields.io/pypi/dm/evalml.svg)](https://pypistats.org/packages/evalml)
+<p align="center">
+    <a href="https://github.com/alteryx/woodwork/actions?query=branch%3Amain+workflow%3ATests" target="_blank">
+        <img src="https://github.com/alteryx/woodwork/workflows/Tests/badge.svg?branch=main" alt="Tests" />
+    </a>
+    <a href="https://codecov.io/gh/alteryx/evalml">
+        <img src="https://codecov.io/gh/alteryx/evalml/branch/main/graph/badge.svg?token=JDc0Ib7kYL"/>
+    </a>
+    <a href="https://evalml.alteryx.com/en/latest/?badge=stable" target="_blank">
+        <img src="https://readthedocs.com/projects/feature-labs-inc-evalml/badge/?version=stable" alt="Documentation Status" />
+    </a>
+    <a href="https://badge.fury.io/py/evalml" target="_blank">
+        <img src="https://badge.fury.io/py/evalml.svg?maxAge=2592000" alt="PyPI Version" />
+    </a>
+    <a href="https://anaconda.org/conda-forge/evalml" target="_blank">
+        <img src="https://anaconda.org/conda-forge/evalml/badges/version.svg" alt="Anaconda Version" />
+    </a>
+    <a href="https://pepy.tech/project/evalml" target="_blank">
+        <img src="https://pepy.tech/badge/evalml/month" alt="PyPI Downloads" />
+    </a>
+</p>
+<hr>
 
 EvalML is an AutoML library which builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.
 
@@ -17,17 +34,31 @@ EvalML is an AutoML library which builds, optimizes, and evaluates machine learn
 * **Model Understanding** - Provides tools to understand and introspect on models, to learn how they'll behave in your problem domain.
 * **Domain-specific** - Includes repository of domain-specific objective functions and an interface to define your own.
 
-## Install [from PyPI](https://pypi.org/project/evalml/)
-```shell
+## Installation 
+
+Install from [PyPI](https://pypi.org/project/evalml/):
+
+```bash
 pip install evalml
 ```
+
+or from the conda-forge channel on [conda](https://anaconda.org/conda-forge/evalml):
+
+```bash
+conda install -c conda-forge evalml
+```
+
 ### Add-ons
+**Update checker** - Receive automatic notifications of new Woodwork releases
 
-#### Update checker
+PyPI:
 
-Receive automatic notifications of new EvalML releases
-```shell
-pip install evalml[update_checker]
+```bash
+pip install "evalml[update_checker]"
+```
+Conda:
+```
+conda install -c conda-forge alteryx-open-src-update-checker
 ```
 
 ## Start
