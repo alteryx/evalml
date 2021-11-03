@@ -706,8 +706,6 @@ def logistic_regression_component_graph():
 @pytest.fixture
 def logistic_regression_multiclass_pipeline_class(logistic_regression_component_graph):
     class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
-        """Logistic Regression Pipeline for binary classification."""
-
         custom_name = "Logistic Regression Multiclass Pipeline"
         component_graph = logistic_regression_component_graph
 

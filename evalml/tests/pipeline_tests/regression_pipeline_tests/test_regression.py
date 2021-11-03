@@ -84,7 +84,8 @@ def test_woodwork_regression_pipeline(diabetes_local, linear_regression_pipeline
     assert not pd.isnull(regression_pipeline.predict(X)).any()
 
 
-def test_custom_indices():
+# TODO: replace?
+def test_transform_and_predict_with_custom_indices():
     X = pd.DataFrame(
         {
             "a": ["a", "b", "a", "a", "a", "c", "c", "c"] * 3,
