@@ -80,10 +80,6 @@ def test_fit_predict_ts_with_X_index(ts_data):
     y_pred = clf.predict(X)
     np.array_equal(y_pred_p.values, y_pred.values)
 
-    # assert y_pred.equals(y_pred_p)
-
-    # assert_series_equal(y_pred, y_pred_p, check_index_type=False)
-
 
 def test_fit_predict_ts_with_y_index(ts_data):
     X, y = ts_data
@@ -100,9 +96,7 @@ def test_fit_predict_ts_with_y_index(ts_data):
     clf.fit(X, y)
     y_pred = clf.predict(X, y)
 
-    # np.array_equal(y_pred_p.values, y_pred.values)
-
-    assert (y_pred == y_pred_p).all()
+    np.array_equal(y_pred_p.values, y_pred.values)
 
 
 def test_fit_predict_ts_no_X(ts_data):
@@ -121,11 +115,7 @@ def test_fit_predict_ts_no_X(ts_data):
     clf.fit(X=None, y=y)
     y_pred = clf.predict(X=None, y=y)
 
-    # np.array_equal(y_pred_p.values, y_pred.values)
-
-    # assert y_pred.equals(y_pred_p)
-
-    assert (y_pred == y_pred_p).all()
+    np.array_equal(y_pred_p.values, y_pred.values)
 
 
 def test_fit_predict_date_col(ts_data):
@@ -151,10 +141,6 @@ def test_fit_predict_date_col(ts_data):
     y_pred_p = p_clf.predict(prophet_df)["yhat"]
 
     np.array_equal(y_pred_p.values, y_pred.values)
-
-    # assert y_pred.equals(y_pred_p)
-
-    assert (y_pred == y_pred_p).all()
 
 
 def test_fit_predict_no_date_col_or_index(ts_data):
