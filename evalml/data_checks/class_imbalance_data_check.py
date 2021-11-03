@@ -84,7 +84,7 @@ class ClassImbalanceDataCheck(DataCheck):
             >>> y = pd.Series([0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2])
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.30, min_samples=5, num_cv_folds=1)
             >>> assert class_imb_dc.validate(X, y) == {
-            ...     {'warnings': [{'message': 'The following labels fall below 30% of the target: [0]',
+            ...     'warnings': [{'message': 'The following labels fall below 30% of the target: [0]',
             ...                    'data_check_name': 'ClassImbalanceDataCheck',
             ...                    'level': 'warning',
             ...                    'code': 'CLASS_IMBALANCE_BELOW_THRESHOLD',
@@ -94,8 +94,8 @@ class ClassImbalanceDataCheck(DataCheck):
             ...                     'level': 'warning',
             ...                     'code': 'CLASS_IMBALANCE_SEVERE',
             ...                     'details': {'target_values': [0], "rows": None, "columns": None}}],
-            ...      'errors': [],
-            ...      'actions': []}}
+            ...     'errors': [],
+            ...     'actions': []}
             ...
             >>> y = pd.Series([0, 0, 1, 1, 1, 1, 2, 2, 2, 2])
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.30, num_cv_folds=1)

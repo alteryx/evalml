@@ -51,10 +51,10 @@ class NoVarianceDataCheck(DataCheck):
             ...                 'details': {'columns': ['Y'], 'rows': None},
             ...                 'code': 'NO_VARIANCE'}],
             ...     'actions': [{'code': 'DROP_COL',
-            ...                  'metadata': {'columns': [First_Column], 'rows': None}}]}
+            ...                  'metadata': {'columns': ["First_Column"], 'rows': None}}]}
             ...
-            >>> X["First_Column"] = [2, 2, 2, 3, 3, 3, None]
-            >>> y = pd.Series([1, 1, 1, 2, 2, 2, None])
+            >>> X["First_Column"] = [2, 2, 2, 3, 3, 3, None, None]
+            >>> y = pd.Series([1, 1, 1, 2, 2, 2, None, None])
             >>> assert novar_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
             ...
             >>> y = pd.Series([None] * 7)
@@ -67,8 +67,8 @@ class NoVarianceDataCheck(DataCheck):
             ...                 'code': 'NO_VARIANCE'}],
             ...     'actions': []}
             ...
-            >>> X["First_Column"] = [2, 2, 2, None, None, None, None]
-            >>> y = pd.Series([1, 1, 1, None, None, None, None])
+            >>> X["First_Column"] = [2, 2, 2, 2, None, None, None, None]
+            >>> y = pd.Series([1, 1, 1, 1, None, None, None, None])
             >>> assert novar_dc.validate(X, y) == {
             ...     'warnings': [],
             ...     'errors': [{'message': "'First_Column' has 1 unique value.",

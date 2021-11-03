@@ -67,6 +67,7 @@ class DateTimeFormatDataCheck(DataCheck):
             ...     'errors': [{'message': 'Datetime values must be sorted in ascending order.',
             ...                 'data_check_name': 'DateTimeFormatDataCheck',
             ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None},
             ...                 'code': 'DATETIME_IS_NOT_MONOTONIC'}],
             ...     'actions': []}
         """

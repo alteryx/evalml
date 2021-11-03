@@ -212,17 +212,17 @@ class TimeSeriesBinaryClassificationPipeline(
         ...                                                               "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": None}},
         ...                                                   custom_name="My TimeSeriesBinary Pipeline")
         >>> assert pipeline.custom_name == "My TimeSeriesBinary Pipeline"
-        >>> pipeline.component_graph
-        {'Simple Imputer': ['Simple Imputer', 'X', 'y'],
-        'Logistic Regression Classifier': ['Logistic Regression Classifier', 'Simple Imputer.x', 'y']}
-        >>> pipeline.parameters
-        {'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
-        'Logistic Regression Classifier': {'penalty': 'elasticnet',
-                                           'C': 1.0,
-                                           'n_jobs': -1,
-                                           'multi_class': 'auto',
-                                           'solver': 'liblinear'},
-        'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': None}}
+        >>> assert pipeline.component_graph == {
+        ...     'Simple Imputer': ['Simple Imputer', 'X', 'y'],
+        ...     'Logistic Regression Classifier': ['Logistic Regression Classifier', 'Simple Imputer.x', 'y']}
+        >>> assert pipeline.parameters == {
+        ...     {'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
+        ...      'Logistic Regression Classifier': {'penalty': 'elasticnet',
+        ...                                         'C': 1.0,
+        ...                                         'n_jobs': -1,
+        ...                                         'multi_class': 'auto',
+        ...                                         'solver': 'liblinear'},
+        ...      'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': None}}
     """
 
     problem_type = ProblemTypes.TIME_SERIES_BINARY

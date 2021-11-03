@@ -46,7 +46,7 @@ class TargetDistributionDataCheck(DataCheck):
             >>> y = pd.Series([1, 1, 1, 2, 2, 3, 4, 4, 5, 5, 5])
             >>> assert target_check.validate(None, y) == {'warnings': [], 'errors': [], 'actions': []}
             ...
-            >>> pd.Series(pd.date_range('1/1/21', periods=10))
+            >>> y = pd.Series(pd.date_range('1/1/21', periods=10))
             >>> assert target_check.validate(None, y) == {
             ...     'warnings': [],
             ...     'errors': [{'message': 'Target is unsupported datetime type. Valid Woodwork logical types include: integer, double',

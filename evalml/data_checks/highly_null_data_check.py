@@ -57,7 +57,7 @@ class HighlyNullDataCheck(DataCheck):
             ...     'lots_of_null': [None, None, None, None, 5],
             ...     'few_null': ["near", "far", pd.NaT, "wherever", "nowhere"],
             ...     'no_null': [1, 2, 3, 4, 5]})
-            ... })
+            ...
             >>> highly_null_dc = HighlyNullDataCheck(pct_null_col_threshold=0.50)
             >>> assert highly_null_dc.validate(df) == {
             ...     'warnings': [{'message': "Columns 'all_null', 'lots_of_null' are 50.0% or more null",
@@ -73,15 +73,17 @@ class HighlyNullDataCheck(DataCheck):
             ...     'actions': [{'code': 'DROP_COL',
             ...                  'metadata': {'columns': ['all_null', 'lots_of_null'], 'rows': None}}]}
             ...
-            >>> highly_null_rows = SeriesWrap(pd.Series([0.5, 0.5, 0.75, 0.5]))
             >>> highly_null_dc = HighlyNullDataCheck(pct_null_row_threshold=0.50)
-            >>> assert highly_null_dc.validate(df) == {
+            >>> validation_results = highly_null_dc.validate(df)
+            >>> validation_results['warnings'][0]['details']['pct_null_cols'] = SeriesWrap(validation_results['warnings'][0]['details']['pct_null_cols'])
+            >>> highly_null_rows = SeriesWrap(pd.Series([0.5, 0.5, 0.75, 0.5]))
+            >>> assert validation_results == {
             ...     'warnings': [{'message': '4 out of 5 rows are more than 50.0% null',
             ...                   'data_check_name': 'HighlyNullDataCheck',
             ...                   'level': 'warning',
             ...                   'details': {'columns': None,
             ...                               'rows': [0, 1, 2, 3],
-            ...                               'pct_null_cols': highly_null_dc},
+            ...                               'pct_null_cols': highly_null_rows},
             ...                   'code': 'HIGHLY_NULL_ROWS'},
             ...                  {'message': "Columns 'all_null' are 95.0% or more null",
             ...                   'data_check_name': 'HighlyNullDataCheck',

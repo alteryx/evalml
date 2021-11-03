@@ -502,7 +502,7 @@ class AUCWeighted(MulticlassClassificationObjective):
         >>> y_pred = [[0.7, 0.2, 0.1],
         ...           [0.1, 0.0, 0.9],
         ...           [0.1, 0.3, 0.6],
-        ...           [0.1, 0.2, 0.7]
+        ...           [0.1, 0.2, 0.7],
         ...           [0.6, 0.1, 0.3],
         ...           [0.5, 0.2, 0.3]]
         >>> assert AUCWeighted().objective_function(y_true, y_pred) == 0.4375
@@ -577,7 +577,7 @@ class LogLossMulticlass(MulticlassClassificationObjective):
         ...           [0.9, 0.1, 0.0],
         ...           [0.3, 0.1, 0.6],
         ...           [0.5, 0.5, 0.0]]
-        >>> assert PrecisionMacro().objective_function(y_true, y_pred) == 0.4783301780414055
+        >>> assert LogLossMulticlass().objective_function(y_true, y_pred) == 0.4783301780414055
     """
 
     name = "Log Loss Multiclass"
