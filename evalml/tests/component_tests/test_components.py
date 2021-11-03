@@ -1193,10 +1193,7 @@ def test_all_estimators_check_fit(
                     or ProblemTypes.MULTICLASS in component.supported_problem_types
                 ):
                     component.predict_proba(X)
-                try:
-                    component.predict(X)
-                except Exception:
-                    component.predict(X)
+                component.predict(X)
                 component.feature_importance
 
 
