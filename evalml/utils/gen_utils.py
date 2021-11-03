@@ -54,6 +54,15 @@ def import_or_raise(library, error_msg=None, warning=False):
 def convert_to_seconds(input_str):
     """Converts a string describing a length of time to its length in seconds.
 
+    Args:
+        input_str (str): The string to be parsed and converted to seconds.
+
+    Returns:
+        Returns the library if importing succeeded.
+
+    Raises:
+        AssertionError: If an invalid unit is used.
+
     Examples:
         >>> assert convert_to_seconds("10 hr") == 36000.0
         >>> assert convert_to_seconds("30 minutes") == 1800.0

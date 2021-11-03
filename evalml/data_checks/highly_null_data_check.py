@@ -56,7 +56,8 @@ class HighlyNullDataCheck(DataCheck):
             ...     'all_null': [None, pd.NA, None, None, None],
             ...     'lots_of_null': [None, None, None, None, 5],
             ...     'few_null': ["near", "far", pd.NaT, "wherever", "nowhere"],
-            ...     'no_null': [1, 2, 3, 4, 5]})
+            ...     'no_null': [1, 2, 3, 4, 5]
+            ... })
             ...
             >>> highly_null_dc = HighlyNullDataCheck(pct_null_col_threshold=0.50)
             >>> assert highly_null_dc.validate(df) == {
@@ -73,7 +74,7 @@ class HighlyNullDataCheck(DataCheck):
             ...     'actions': [{'code': 'DROP_COL',
             ...                  'metadata': {'columns': ['all_null', 'lots_of_null'], 'rows': None}}]}
             ...
-            >>> highly_null_dc = HighlyNullDataCheck(pct_null_row_threshold=0.50)
+            >>> highly_null_dc = HighlyNullDataCheck(pct_null_col_threshold=0.50, pct_null_row_threshold=0.50)
             >>> validation_results = highly_null_dc.validate(df)
             >>> validation_results['warnings'][0]['details']['pct_null_cols'] = SeriesWrap(validation_results['warnings'][0]['details']['pct_null_cols'])
             >>> highly_null_rows = SeriesWrap(pd.Series([0.5, 0.5, 0.75, 0.5]))
