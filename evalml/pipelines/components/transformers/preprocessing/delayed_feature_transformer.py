@@ -14,11 +14,26 @@ from evalml.utils import infer_feature_types
 class DelayedFeatureTransformer(Transformer):
     """Transformer that delays input features and target variable for time series problems.
 
+    This component uses an algorithm based on the autocorrelation values of the target variable
+    to determine which lags to select from the set of all possible lags.
+
+    The algorithm is based on the idea that the local maxima of the autocorrelation function indicate the lags that have
+    the most impact on the present time.
+
+    The algorithm computes the autocorrelation values and finds the local maxima, called "peaks", that are significant at the given
+    conf_level. Since lags in the range [0, 10] tend to be predictive but not local maxima, the union of the peaks is taken
+    with the significant lags in the range [0, 10]. At the end, only selected lags in the range [0, max_delay] are used.
+
+    Parametrizing the algorithm by conf_level lets the AutoMLAlgorithm tune the set of lags chosen so that the chances
+    of finding a good set of lags is higher.
+
+    Using conf_level value of 1 selects all possible lags.
+
     Args:
         date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
         max_delay (int): Maximum number of time units to delay each feature. Defaults to 2.
         forecast_horizon (int): The number of time periods the pipeline is expected to forecast.
-        conf_level (float, None): Float between 0 and 1 that determines the confidence interval size used to select
+        conf_level (float): Float in range (0, 1] that determines the confidence interval size used to select
             which lags to compute from the set of [1, max_delay]. A delay of 1 will always be computed. If 1,
             selects all possible lags in the set of [1, max_delay], inclusive.
         delay_features (bool): Whether to delay the input features. Defaults to True.
@@ -55,8 +70,14 @@ class DelayedFeatureTransformer(Transformer):
         self.delay_target = delay_target
         self.forecast_horizon = forecast_horizon
         self.gap = gap
-        self.conf_level = conf_level
         self.statistically_significant_lags = None
+
+        if conf_level <= 0 or conf_level > 1:
+            raise ValueError(
+                f"Parameter conf_level must be in range (0, 1]. Received {conf_level}."
+            )
+
+        self.conf_level = conf_level
 
         self.start_delay = self.forecast_horizon + self.gap
 
@@ -115,14 +136,17 @@ class DelayedFeatureTransformer(Transformer):
             )
             peaks, _ = find_peaks(acf_values)
 
-            # Return lags that are significant peaks or the first 10 significant lags
+            # Significant lags are the union of:
+            # 1. the peaks (local maxima) that are significant
+            # 2. The significant lags among the first 10 lags.
+            # We then filter the list to be in the range [0, max_delay]
             index = np.arange(len(acf_values))
             significant = np.logical_or(ci_intervals[:, 0] > 0, ci_intervals[:, 1] < 0)
             first_significant_10 = index[:10][significant[:10]]
             significant_lags = (
                 set(index[significant]).intersection(peaks).union(first_significant_10)
             )
-            # If not lags are significant get the first lag
+            # If no lags are significant get the first lag
             significant_lags = sorted(significant_lags.intersection(all_lags)) or [1]
         else:
             significant_lags = all_lags

@@ -42,6 +42,14 @@ def test_delayed_features_transformer_init():
     }
 
 
+@pytest.mark.parametrize("conf_level", [-0.05, 0, 1.2])
+def test_delayed_features_init_raises_if_conf_level_not_in_range(conf_level):
+    with pytest.raises(
+        ValueError, match="Parameter conf_level must be in range \\(0, 1\\]"
+    ):
+        DelayedFeatureTransformer(conf_level=conf_level)
+
+
 def encode_y_as_string(y):
     y = y.astype("category")
     y_answer = y.astype(int) - 1
@@ -475,9 +483,7 @@ def test_delayed_feature_transformer_conf_level(
     new_X = dft.fit_transform(X, y)
 
     first_significant_10 = [l for l in significant_lags if l < 10]
-    expected_lags = (
-        set(significant_lags + peaks).intersection(peaks).union(first_significant_10)
-    )
+    expected_lags = set(peaks).union(first_significant_10)
     expected_lags = sorted(expected_lags.intersection(np.arange(MAX_DELAY + 1)))
     answer = pd.DataFrame()
     answer = answer.assign(
