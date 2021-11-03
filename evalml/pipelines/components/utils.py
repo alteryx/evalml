@@ -327,12 +327,12 @@ def generate_component_code(element):
         >>> generate_component_code(DecisionTreeRegressor())
         "from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor
 
-        decisionTreeRegressor = DecisionTreeRegressor(**{'criterion': 'mse', 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0})"
+        ``decisionTreeRegressor = DecisionTreeRegressor(**{'criterion': 'mse', 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0})"``
         >>> from evalml.pipelines.components.transformers.imputers.simple_imputer import SimpleImputer
         >>> generate_component_code(SimpleImputer())
         "from evalml.pipelines.components.transformers.imputers.simple_imputer import SimpleImputer
 
-        simpleImputer = SimpleImputer(**{'impute_strategy': 'most_frequent', 'fill_value': None})"
+        ``simpleImputer = SimpleImputer(**{'impute_strategy': 'most_frequent', 'fill_value': None})"``
     """
     # hold the imports needed and add code to end
     code_strings = []
@@ -374,6 +374,7 @@ def make_balancing_dictionary(y, sampling_ratio):
         ValueError: If sampling ratio is not in the range (0, 1] or the target is empty.
 
     Examples:
+        >>> import pandas as pd
         >>> y = pd.Series([1] * 4 + [2] * 8 + [3])
         >>> assert make_balancing_dictionary(y, 0.5) == {2: 8, 1: 4, 3: 4}
         >>> assert make_balancing_dictionary(y, 0.9) == {2: 8, 1: 7, 3: 7}
