@@ -39,28 +39,6 @@ def allowed_model_families(problem_type):
 
     Returns:
         list[ModelFamily]: A list of model families.
-
-    Examples:
-        >>> from evalml.model_family import ModelFamily
-        >>> assert set(allowed_model_families("binary")) == {
-        ...     ModelFamily.CATBOOST,
-        ...     ModelFamily.RANDOM_FOREST,
-        ...     ModelFamily.XGBOOST,
-        ...     ModelFamily.LIGHTGBM,
-        ...     ModelFamily.EXTRA_TREES,
-        ...     ModelFamily.DECISION_TREE,
-        ...     ModelFamily.LINEAR_MODEL}
-        >>> # With Prophet installed
-        >>> assert set(allowed_model_families(ProblemTypes.TIME_SERIES_REGRESSION))== {
-        ...     ModelFamily.CATBOOST,
-        ...     ModelFamily.RANDOM_FOREST,
-        ...     ModelFamily.XGBOOST,
-        ...     ModelFamily.LIGHTGBM,
-        ...     ModelFamily.EXTRA_TREES,
-        ...     ModelFamily.ARIMA,
-        ...     ModelFamily.PROPHET,
-        ...     ModelFamily.LINEAR_MODEL,
-        ...     ModelFamily.DECISION_TREE}
     """
     estimators = []
     problem_type = handle_problem_types(problem_type)
@@ -89,28 +67,6 @@ def get_estimators(problem_type, model_families=None):
     Raises:
         TypeError: If the model_families parameter is not a list.
         RuntimeError: If a model family is not valid for the problem type.
-
-    Examples:
-        >>> from evalml.pipelines.components.estimators.regressors import *
-        >>> assert set(get_estimators("regression")) == {
-        ...     DecisionTreeRegressor,
-        ...     ExtraTreesRegressor,
-        ...     XGBoostRegressor,
-        ...     CatBoostRegressor,
-        ...     RandomForestRegressor,
-        ...     LightGBMRegressor,
-        ...     ElasticNetRegressor}
-        >>> # With Prophet installed
-        >>> assert set(get_estimators(ProblemTypes.TIME_SERIES_REGRESSION)) == {
-        ...     ARIMARegressor,
-        ...     ProphetRegressor,
-        ...     DecisionTreeRegressor,
-        ...     ExtraTreesRegressor,
-        ...     XGBoostRegressor,
-        ...     CatBoostRegressor,
-        ...     RandomForestRegressor,
-        ...     LightGBMRegressor,
-        ...     ElasticNetRegressor}
     """
     if model_families is not None and not isinstance(model_families, list):
         raise TypeError("model_families parameter is not a list.")
