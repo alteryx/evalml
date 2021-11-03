@@ -251,6 +251,7 @@ Utility Methods
     evalml.model_understanding.get_prediction_vs_actual_data
     evalml.model_understanding.get_linear_coefficients
     evalml.model_understanding.t_sne
+    evalml.model_understanding.find_confusion_matrix_per_thresholds
 
 
 Graph Utility Methods
