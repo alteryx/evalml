@@ -83,14 +83,18 @@ class SparsityDataCheck(DataCheck):
             results["warnings"].append(
                 DataCheckWarning(
                     message=warning_too_unique.format(
-                        (", ").join(["'{}'".format(str(col)) for col in too_sparse_cols]),
+                        (", ").join(
+                            ["'{}'".format(str(col)) for col in too_sparse_cols]
+                        ),
                         self.problem_type,
                     ),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TOO_SPARSE,
                     details={
                         "columns": too_sparse_cols,
-                        "sparsity_score": {col: res.loc[col] for col in too_sparse_cols},
+                        "sparsity_score": {
+                            col: res.loc[col] for col in too_sparse_cols
+                        },
                     },
                 ).to_dict()
             )

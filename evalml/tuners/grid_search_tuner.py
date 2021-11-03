@@ -36,6 +36,7 @@ class GridSearchTuner(Tuner):
         super().__init__(pipeline_hyperparameter_ranges, random_seed=random_seed)
         raw_dimensions = list()
         import pandas as pd
+
         pd.DataFrame().iterrows()
         for dimension in self._search_space_ranges:
             # Categorical dimension

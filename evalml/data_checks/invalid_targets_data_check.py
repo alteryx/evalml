@@ -55,7 +55,6 @@ class InvalidTargetDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
-<<<<<<< HEAD
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = None
             >>> target_check = InvalidTargetDataCheck('binary', 'Log Loss Binary')
@@ -95,7 +94,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...     'actions': []}
             ...
             >>> y = pd.Series([1, None, 3, None])
-            >>> assert target_check.validate(X, y) == {
+            >>> assert target_check.validate(None, y) == {
             ...     'warnings': [],
             ...     'errors': [{'message': '2 row(s) (50.0%) of target values are null',
             ...                 'data_check_name': 'InvalidTargetDataCheck',
