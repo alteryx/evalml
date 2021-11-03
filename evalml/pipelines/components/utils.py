@@ -41,24 +41,26 @@ def allowed_model_families(problem_type):
         list[ModelFamily]: A list of model families.
 
     Examples:
-        >>> allowed_model_families("binary")
-        [ModelFamily.CATBOOST,
-         ModelFamily.RANDOM_FOREST,
-         ModelFamily.XGBOOST,
-         ModelFamily.LIGHTGBM,
-         ModelFamily.EXTRA_TREES,
-         ModelFamily.DECISION_TREE,
-         ModelFamily.LINEAR_MODEL]
-        >>> allowed_model_families(ProblemTypes.TIME_SERIES_REGRESSION) # With Prophet installed
-        [ModelFamily.CATBOOST,
-         ModelFamily.RANDOM_FOREST,
-         ModelFamily.XGBOOST,
-         ModelFamily.LIGHTGBM,
-         ModelFamily.EXTRA_TREES,
-         ModelFamily.ARIMA,
-         ModelFamily.PROPHET,
-         ModelFamily.LINEAR_MODEL,
-         ModelFamily.DECISION_TREE]
+        >>> from evalml.model_family import ModelFamily
+        >>> assert set(allowed_model_families("binary")) == {
+        ...     ModelFamily.CATBOOST,
+        ...     ModelFamily.RANDOM_FOREST,
+        ...     ModelFamily.XGBOOST,
+        ...     ModelFamily.LIGHTGBM,
+        ...     ModelFamily.EXTRA_TREES,
+        ...     ModelFamily.DECISION_TREE,
+        ...     ModelFamily.LINEAR_MODEL}
+        >>> # With Prophet installed
+        >>> assert set(allowed_model_families(ProblemTypes.TIME_SERIES_REGRESSION))== {
+        ...     ModelFamily.CATBOOST,
+        ...     ModelFamily.RANDOM_FOREST,
+        ...     ModelFamily.XGBOOST,
+        ...     ModelFamily.LIGHTGBM,
+        ...     ModelFamily.EXTRA_TREES,
+        ...     ModelFamily.ARIMA,
+        ...     ModelFamily.PROPHET,
+        ...     ModelFamily.LINEAR_MODEL,
+        ...     ModelFamily.DECISION_TREE}
     """
     estimators = []
     problem_type = handle_problem_types(problem_type)
@@ -89,24 +91,26 @@ def get_estimators(problem_type, model_families=None):
         RuntimeError: If a model family is not valid for the problem type.
 
     Examples:
-        >>> get_estimators("regression")
-        [evalml.pipelines.components.estimators.regressors.decision_tree_regressor.DecisionTreeRegressor,
-         evalml.pipelines.components.estimators.regressors.et_regressor.ExtraTreesRegressor,
-         evalml.pipelines.components.estimators.regressors.xgboost_regressor.XGBoostRegressor,
-         evalml.pipelines.components.estimators.regressors.catboost_regressor.CatBoostRegressor,
-         evalml.pipelines.components.estimators.regressors.rf_regressor.RandomForestRegressor,
-         evalml.pipelines.components.estimators.regressors.lightgbm_regressor.LightGBMRegressor,
-         evalml.pipelines.components.estimators.regressors.elasticnet_regressor.ElasticNetRegressor]
-         >>> get_estimators(ProblemTypes.TIME_SERIES_REGRESSION) # With Prophet installed
-         [evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor,
-         evalml.pipelines.components.estimators.regressors.prophet_regressor.ProphetRegressor,
-         evalml.pipelines.components.estimators.regressors.decision_tree_regressor.DecisionTreeRegressor,
-         evalml.pipelines.components.estimators.regressors.et_regressor.ExtraTreesRegressor,
-         evalml.pipelines.components.estimators.regressors.xgboost_regressor.XGBoostRegressor,
-         evalml.pipelines.components.estimators.regressors.catboost_regressor.CatBoostRegressor,
-         evalml.pipelines.components.estimators.regressors.rf_regressor.RandomForestRegressor,
-         evalml.pipelines.components.estimators.regressors.lightgbm_regressor.LightGBMRegressor,
-         evalml.pipelines.components.estimators.regressors.elasticnet_regressor.ElasticNetRegressor]
+        >>> from evalml.pipelines.components.estimators.regressors import *
+        >>> assert set(get_estimators("regression")) == {
+        ...     DecisionTreeRegressor,
+        ...     ExtraTreesRegressor,
+        ...     XGBoostRegressor,
+        ...     CatBoostRegressor,
+        ...     RandomForestRegressor,
+        ...     LightGBMRegressor,
+        ...     ElasticNetRegressor}
+        >>> # With Prophet installed
+        >>> assert set(get_estimators(ProblemTypes.TIME_SERIES_REGRESSION)) == {
+        ...     ARIMARegressor,
+        ...     ProphetRegressor,
+        ...     DecisionTreeRegressor,
+        ...     ExtraTreesRegressor,
+        ...     XGBoostRegressor,
+        ...     CatBoostRegressor,
+        ...     RandomForestRegressor,
+        ...     LightGBMRegressor,
+        ...     ElasticNetRegressor}
     """
     if model_families is not None and not isinstance(model_families, list):
         raise TypeError("model_families parameter is not a list.")
@@ -158,9 +162,9 @@ def handle_component_class(component_class):
     Examples:
         >>> from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor
         >>> handle_component_class(DecisionTreeRegressor)
-        evalml.pipelines.components.estimators.regressors.decision_tree_regressor.DecisionTreeRegressor
+        <class 'evalml.pipelines.components.estimators.regressors.decision_tree_regressor.DecisionTreeRegressor'>
         >>> handle_component_class("Random Forest Regressor")
-        evalml.pipelines.components.estimators.regressors.rf_regressor.RandomForestRegressor
+        <class 'evalml.pipelines.components.estimators.regressors.rf_regressor.RandomForestRegressor'>
     """
     if isinstance(component_class, ComponentBase) or (
         inspect.isclass(component_class) and issubclass(component_class, ComponentBase)
@@ -324,15 +328,14 @@ def generate_component_code(element):
 
     Examples:
         >>> from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor
-        >>> generate_component_code(DecisionTreeRegressor())
-        "from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor
-
-        ``decisionTreeRegressor = DecisionTreeRegressor(**{'criterion': 'mse', 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0})"``
+        >>> import_text = "from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor\\n\\n"
+        >>> dt_text = "decisionTreeRegressor = DecisionTreeRegressor(**{'criterion': 'mse', 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0})"
+        >>> assert generate_component_code(DecisionTreeRegressor()) == import_text + dt_text
+        ...
         >>> from evalml.pipelines.components.transformers.imputers.simple_imputer import SimpleImputer
-        >>> generate_component_code(SimpleImputer())
-        "from evalml.pipelines.components.transformers.imputers.simple_imputer import SimpleImputer
-
-        ``simpleImputer = SimpleImputer(**{'impute_strategy': 'most_frequent', 'fill_value': None})"``
+        >>> import_text = "from evalml.pipelines.components.transformers.imputers.simple_imputer import SimpleImputer\\n\\n"
+        >>> si_text = "simpleImputer = SimpleImputer(**{'impute_strategy': 'most_frequent', 'fill_value': None})"
+        >>> assert generate_component_code(SimpleImputer()) == import_text + si_text
     """
     # hold the imports needed and add code to end
     code_strings = []

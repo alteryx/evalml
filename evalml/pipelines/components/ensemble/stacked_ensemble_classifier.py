@@ -18,6 +18,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
     Example:
         >>> from evalml.pipelines.component_graph import ComponentGraph
         >>> from evalml.pipelines.components.estimators.classifiers.decision_tree_classifier import DecisionTreeClassifier
+        >>> from evalml.pipelines.components.estimators.classifiers.elasticnet_classifier import ElasticNetClassifier
         >>> component_graph = {
         ...     "Decision Tree": [DecisionTreeClassifier(random_seed=3), "X", "y"],
         ...     "Decision Tree B": [DecisionTreeClassifier(random_seed=4), "X", "y"],
@@ -28,15 +29,16 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
         ...         "y",
         ...     ],
         ... }
+        ...
         >>> cg = ComponentGraph(component_graph)
-        >>> cg.default_parameters
-        {'Decision Tree Classifier': {'criterion': 'gini',
-                                      'max_features': 'auto',
-                                      'max_depth': 6,
-                                      'min_samples_split': 2,
-                                      'min_weight_fraction_leaf': 0.0},
-         'Stacked Ensemble Classifier': {'final_estimator': evalml.pipelines.components.estimators.classifiers.elasticnet_classifier.ElasticNetClassifier,
-                                         'n_jobs': -1}}
+        >>> assert cg.default_parameters == {
+        ...     'Decision Tree Classifier': {'criterion': 'gini',
+        ...                                  'max_features': 'auto',
+        ...                                  'max_depth': 6,
+        ...                                  'min_samples_split': 2,
+        ...                                  'min_weight_fraction_leaf': 0.0},
+        ...     'Stacked Ensemble Classifier': {'final_estimator': ElasticNetClassifier,
+        ...                                     'n_jobs': -1}}
     """
 
     name = "Stacked Ensemble Classifier"

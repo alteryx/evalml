@@ -22,9 +22,8 @@ class GridSearchTuner(Tuner):
         >>> assert proposal.keys() == {'My Component'}
         >>> assert proposal['My Component'] == {'param a': 0.0, 'param b': 'a'}
         ...
-        >>> for each in range(6):
+        >>> for each in range(5):
         ...     print(tuner.propose())
-        {'My Component': {'param a': 0.0, 'param b': 'a'}}
         {'My Component': {'param a': 0.0, 'param b': 'b'}}
         {'My Component': {'param a': 0.0, 'param b': 'c'}}
         {'My Component': {'param a': 10.0, 'param b': 'a'}}

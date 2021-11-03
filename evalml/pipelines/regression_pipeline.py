@@ -24,12 +24,10 @@ class RegressionPipeline(PipelineBase):
         ...                               parameters={"Linear Regressor": {"normalize": True}},
         ...                               custom_name="My Regression Pipeline")
         >>> assert pipeline.custom_name == "My Regression Pipeline"
-        >>> pipeline.component_graph
-        {'Simple Imputer': ['Simple Imputer', 'X', 'y'],
-        'Linear Regressor': ['Linear Regressor', 'Simple Imputer.x', 'y']}
-        >>> pipeline.parameters
-        {'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
-         'Linear Regressor': {'fit_intercept': True, 'normalize': True, 'n_jobs': -1}}
+        >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Linear Regressor'}
+        >>> assert pipeline.parameters == {
+        ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
+        ...     'Linear Regressor': {'fit_intercept': True, 'normalize': True, 'n_jobs': -1}}
     """
 
     problem_type = ProblemTypes.REGRESSION

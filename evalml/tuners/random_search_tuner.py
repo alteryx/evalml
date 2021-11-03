@@ -22,9 +22,8 @@ class RandomSearchTuner(Tuner):
         >>> assert proposal.keys() == {'My Component'}
         >>> assert proposal['My Component'] == {'param a': 3.7454011884736254, 'param b': 'c'}
         ...
-        >>> for each in range(8):
+        >>> for each in range(7):
         ...     print(tuner.propose())
-        {'My Component': {'param a': 3.7454011884736254, 'param b': 'c'}}
         {'My Component': {'param a': 7.3199394181140525, 'param b': 'b'}}
         {'My Component': {'param a': 1.5601864044243654, 'param b': 'a'}}
         {'My Component': {'param a': 0.5808361216819947, 'param b': 'c'}}

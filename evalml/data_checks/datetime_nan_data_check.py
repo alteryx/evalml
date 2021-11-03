@@ -23,9 +23,9 @@ class DateTimeNaNDataCheck(DataCheck):
             >>> import pandas as pd
             >>> import numpy as np
             >>> dates = [['2-1-21', '3-1-21'],
-            >>>         ['2-2-21', '3-2-21'],
-            >>>         ['2-3-21', '3-3-21'],
-            >>>         ['2-4-21', '3-4-21']]
+            ...         ['2-2-21', '3-2-21'],
+            ...         ['2-3-21', '3-3-21'],
+            ...         ['2-4-21', '3-4-21']]
             >>> df = pd.DataFrame(dates, columns=['index', "days"])
             >>> dt_nan_dc = DateTimeNaNDataCheck()
             >>> assert dt_nan_dc.validate(df) == {'warnings': [], 'errors': [], 'actions': []}

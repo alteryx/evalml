@@ -68,25 +68,25 @@ def split_data(
         >>> y = pd.Series([8, 9, 10, 11, 12, 13])
         >>> splits = split_data(X, y, "regression", random_seed=42)
         >>> splits[0]
-            First
-        5   16
-        2   13
-        4   15
-        3   14
+           First
+        5      6
+        2      3
+        4      5
+        3      4
         >>> splits[1]
-            First
-        0   11
-        1   12
+           First
+        0      1
+        1      2
         >>> splits[2]
-        5   1.1
-        2   1.2
-        4   1.3
-        3   1.4
-        dtype: float64
+        5    13
+        2    10
+        4    12
+        3    11
+        dtype: int64
         >>> splits[3]
-        0   1.1
-        1   1.3
-        dtype: float64
+        0    8
+        1    9
+        dtype: int64
     """
     X = infer_feature_types(X)
     y = infer_feature_types(y)
@@ -131,10 +131,10 @@ def number_of_features(dtypes):
         >>> X["strings"] = [str(i) for i in range(10)]
         >>> X["booleans"] = [bool(i%2) for i in range(10)]
         >>> number_of_features(X.dtypes)
-                    Number of Features
-        Boolean     1
-        Categorical 1
-        Numeric     2
+                     Number of Features
+        Boolean                       1
+        Categorical                   1
+        Numeric                       2
     """
     dtype_to_vtype = {
         "bool": "Boolean",
@@ -162,15 +162,16 @@ def target_distribution(targets):
         >>> y = pd.Series([1, 2, 4, 1, 3, 3, 1, 2])
         >>> target_distribution(y)
         Targets
-        1   37.50%
-        2   25.00%
-        3   25.00%
-        4   12.50%
+        1    37.50%
+        2    25.00%
+        3    25.00%
+        4    12.50%
         dtype: object
         >>> y = pd.Series([True, False, False, False, True])
+        >>> target_distribution(y)
         Targets
-        False   60.00%
-        True    40.00%
+        False    60.00%
+        True     40.00%
         dtype: object
     """
     distribution = targets.value_counts() / len(targets)

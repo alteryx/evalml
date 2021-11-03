@@ -32,16 +32,14 @@ class BinaryClassificationPipeline(
         ...                                                                                        "solver": "liblinear"}},
         ...                                         custom_name="My Binary Pipeline")
         >>> assert pipeline.custom_name == "My Binary Pipeline"
-        >>> pipeline.component_graph
-        {'Simple Imputer': ['Simple Imputer', 'X', 'y'],
-        'Logistic Regression Classifier': ['Logistic Regression Classifier', 'Simple Imputer.x', 'y']}
-        >>> pipeline.parameters
-        {'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
-         'Logistic Regression Classifier': {'penalty': 'elasticnet',
-                                            'C': 1.0,
-                                            'n_jobs': -1,
-                                            'multi_class': 'auto',
-                                            'solver': 'liblinear'}}
+        >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Logistic Regression Classifier'}
+        >>> assert pipeline.parameters == {
+        ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
+        ...     'Logistic Regression Classifier': {'penalty': 'elasticnet',
+        ...                                        'C': 1.0,
+        ...                                        'n_jobs': -1,
+        ...                                        'multi_class': 'auto',
+        ...                                        'solver': 'liblinear'}}
     """
 
     problem_type = ProblemTypes.BINARY

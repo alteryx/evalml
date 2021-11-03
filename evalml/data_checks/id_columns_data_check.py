@@ -73,17 +73,17 @@ class IDColumnsDataCheck(DataCheck):
             >>> id_col_check = IDColumnsDataCheck()
             >>> assert id_col_check.validate(df) == {'warnings': [], 'errors': [], 'actions': []}
             ...
-            ... id_col_check = IDColumnsDataCheck()
+            >>> id_col_check = IDColumnsDataCheck()
             >>> id_col_check = IDColumnsDataCheck(id_threshold=0.95)
             >>> assert id_col_check.validate(df) == {
-            ...     {'warnings': [{'message': "Columns 'Country_Rank' are 95.0% or more likely to be an ID column",
-           ...                     'data_check_name': 'IDColumnsDataCheck',
-           ...                     'level': 'warning',
-           ...                     'details': {'columns': ['Country_Rank'], 'rows': None},
-           ...                     'code': 'HAS_ID_COLUMN'}],
-           ...      'errors': [],
-           ...      'actions': [{'code': 'DROP_COL',
-           ...                   'metadata': {'columns': ['Country_Rank'], 'rows': None}}]}
+            ...     'warnings': [{'message': "Columns 'Country_Rank' are 95.0% or more likely to be an ID column",
+            ...                   'data_check_name': 'IDColumnsDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': ['Country_Rank'], 'rows': None},
+            ...                   'code': 'HAS_ID_COLUMN'}],
+            ...     'errors': [],
+            ...     'actions': [{'code': 'DROP_COL',
+            ...                  'metadata': {'columns': ['Country_Rank'], 'rows': None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

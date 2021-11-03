@@ -19,21 +19,20 @@ class SKOptTuner(Tuner):
         random_seed (int): The seed for the random number generator. Defaults to 0.
 
     Examples:
-        >>> tuner = SKOptTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, n_points=5)
+        >>> tuner = SKOptTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}})
         >>> proposal = tuner.propose()
         >>> assert proposal.keys() == {'My Component'}
-        >>> assert proposal['My Component'] == {'param a': 0.0, 'param b': 'a'}
+        >>> assert proposal['My Component'] == {'param a': 5.928446182250184, 'param b': 'c'}
         ...
-        >>> for each in range(8):
+        >>> for each in range(7):
         ...     print(tuner.propose())
-        {'My Component': {'param a': 7.96542986860233, 'param b': 'a'}}
-        {'My Component': {'param a': 7.796910002727694, 'param b': 'b'}}
-        {'My Component': {'param a': 4.4583275285359125, 'param b': 'a'}}
-        {'My Component': {'param a': 4.592488919658672, 'param b': 'b'}}
-        {'My Component': {'param a': 1.428668179219408, 'param b': 'b'}}
-        {'My Component': {'param a': 0.5641157902710027, 'param b': 'c'}}
-        {'My Component': {'param a': 9.385527090157503, 'param b': 'a'}}
-        {'My Component': {'param a': 9.922115592912176, 'param b': 'b'}}
+        {'My Component': {'param a': 8.57945617622757, 'param b': 'c'}}
+        {'My Component': {'param a': 6.235636967859724, 'param b': 'b'}}
+        {'My Component': {'param a': 2.9753460654447235, 'param b': 'a'}}
+        {'My Component': {'param a': 2.7265629458011325, 'param b': 'b'}}
+        {'My Component': {'param a': 8.121687287754932, 'param b': 'b'}}
+        {'My Component': {'param a': 3.927847961008298, 'param b': 'c'}}
+        {'My Component': {'param a': 3.3739616041726843, 'param b': 'b'}}
     """
 
     def __init__(self, pipeline_hyperparameter_ranges, random_seed=0):

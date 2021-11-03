@@ -123,7 +123,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...
             >>> X = pd.DataFrame([i for i in range(50)])
             >>> y = pd.Series([i%2 for i in range(50)])
-            >>> inv_dc = InvalidTargetDataCheck('multiclass', 'Log Loss Multiclass')
+            >>> target_check = InvalidTargetDataCheck('multiclass', 'Log Loss Multiclass')
             >>> assert target_check.validate(X, y) == {
             ...     'warnings': [],
             ...     'errors': [{'message': 'Target has two or less classes, which is too few for multiclass problems.  Consider changing to binary.',
@@ -179,6 +179,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...     'errors': [],
             ...     'actions': []}
             ...
+            >>> X = pd.DataFrame([i for i in range(5)])
             >>> y = pd.Series([1, 2, 3, 4])
             >>> assert target_check.validate(X, y) == {
             ...     'warnings': [{'message': 'Input target and features have different lengths',
