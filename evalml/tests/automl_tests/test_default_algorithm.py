@@ -325,7 +325,6 @@ def test_select_cat_cols(
     X, y = X_y_categorical_classification
     X.ww.init()
     cat_cols = list(X.ww.select("categorical").columns)
-
     mock_get_names.return_value = ["0", "1", "2", "Sex_male", "Embarked_S"]
     mock_get_feature_provenance.return_value = {
         "Sex": ["Sex_male"],
@@ -342,3 +341,14 @@ def test_select_cat_cols(
 
     assert algo._selected_cols == ["0", "1", "2"]
     assert algo._selected_cat_cols == cat_cols
+
+    batch = algo.next_batch()
+    add_result(algo, batch)
+
+    batch = algo.next_batch()
+    add_result(algo, batch)
+    for component, value in batch[0].parameters.items():
+        if "Numeric Pipeline - Select Columns Transformer" in component:
+            assert value["columns"] == algo._selected_cols
+        elif "Categorical Pipeline - Select Columns Transformer" in component:
+            assert value["columns"] == algo._selected_cat_cols

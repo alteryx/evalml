@@ -210,7 +210,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 names.append(component)
         return names
 
-    def _create_split_select_parameters(self, pipeline):
+    def _create_split_select_parameters(self):
         parameters = {
             "Categorical Pipeline - Select Columns Transformer": {
                 "columns": self._selected_cat_cols
@@ -219,6 +219,15 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 "columns": self._selected_cols
             },
         }
+        return parameters
+
+    def _create_select_parameters(self):
+        if self._split:
+            parameters = self._create_split_select_parameters()
+        else:
+            parameters = {
+                "Select Columns Transformer": {"columns": self._selected_cols}
+            }
         return parameters
 
     def _create_fast_final(self):
@@ -251,12 +260,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
 
         next_batch = []
         for pipeline in pipelines:
-            if self._split:
-                parameters = self._create_split_select_parameters(pipeline)
-            else:
-                parameters = {
-                    "Select Columns Transformer": {"columns": self._selected_cols}
-                }
+            parameters = self._create_select_parameters()
             pipeline = pipeline.new(
                 parameters=self._transform_parameters(pipeline, parameters),
                 random_seed=self.random_seed,
@@ -274,12 +278,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 if pipeline.name not in self._tuners:
                     self._create_tuner(pipeline)
 
-                if self._split:
-                    select_parameters = self._create_split_select_parameters(pipeline)
-                else:
-                    select_parameters = {
-                        "Select Columns Transformer": {"columns": self._selected_cols}
-                    }
+                select_parameters = self._create_select_parameters()
                 proposed_parameters = self._tuners[pipeline.name].propose()
                 parameters = self._transform_parameters(pipeline, proposed_parameters)
                 parameters.update(select_parameters)

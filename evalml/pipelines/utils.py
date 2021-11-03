@@ -415,6 +415,7 @@ def _make_pipeline_from_multiple_graphs(
         if pipeline_name:
             return f"{pipeline_name} Pipeline{idx} - {component_name}"
         return f"{str(name)} Pipeline{idx} - {component_name}"
+
     parameters = parameters if parameters else {}
     final_components = []
     used_names = []
