@@ -391,7 +391,7 @@ def _make_pipeline_from_multiple_graphs(
     input_pipelines,
     estimator,
     problem_type,
-    parameters={},
+    parameters=None,
     pipeline_name=None,
     sub_pipeline_names=None,
     random_seed=0,
@@ -415,7 +415,7 @@ def _make_pipeline_from_multiple_graphs(
         if pipeline_name:
             return f"{pipeline_name} Pipeline{idx} - {component_name}"
         return f"{str(name)} Pipeline{idx} - {component_name}"
-
+    parameters = parameters if parameters else {}
     final_components = []
     used_names = []
     component_graph = (

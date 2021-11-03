@@ -458,7 +458,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 input_pipelines,
                 estimator,
                 self.problem_type,
-                {},
                 pipeline_name=pipeline_name,
                 random_seed=self.random_seed,
                 sub_pipeline_names=sub_pipeline_names,
