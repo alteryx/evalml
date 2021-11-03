@@ -270,7 +270,7 @@ def scikit_learn_wrapped_estimator(evalml_obj):
 
 
 def generate_component_code(element):
-    r"""Creates and returns a string that contains the Python imports and code required for running the EvalML component.
+    """Creates and returns a string that contains the Python imports and code required for running the EvalML component.
 
     Args:
         element (component instance): The instance of the component to generate string Python code for.
@@ -284,14 +284,10 @@ def generate_component_code(element):
 
     Examples:
         >>> from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor
-        >>> import_text = "from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor\\n\\n"
-        >>> dt_text = "decisionTreeRegressor = DecisionTreeRegressor(**{'criterion': 'mse', 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0})"
-        >>> assert generate_component_code(DecisionTreeRegressor()) == import_text + dt_text
+        >>> assert generate_component_code(DecisionTreeRegressor()) == "from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor\\n\\ndecisionTreeRegressor = DecisionTreeRegressor(**{'criterion': 'mse', 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0})"
         ...
         >>> from evalml.pipelines.components.transformers.imputers.simple_imputer import SimpleImputer
-        >>> import_text = "from evalml.pipelines.components.transformers.imputers.simple_imputer import SimpleImputer\\n\\n"
-        >>> si_text = "simpleImputer = SimpleImputer(**{'impute_strategy': 'most_frequent', 'fill_value': None})"
-        >>> assert generate_component_code(SimpleImputer()) == import_text + si_text
+        >>> assert generate_component_code(SimpleImputer()) == "from evalml.pipelines.components.transformers.imputers.simple_imputer import SimpleImputer\\n\\nsimpleImputer = SimpleImputer(**{'impute_strategy': 'most_frequent', 'fill_value': None})"
     """
     # hold the imports needed and add code to end
     code_strings = []
