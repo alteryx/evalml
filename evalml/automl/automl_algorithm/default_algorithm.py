@@ -252,7 +252,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                         if name not in names_to_value_custom_hyperparameters:
                             names_to_value_custom_hyperparameters[
                                 name
-                            ] = self._pipeline_params[component_name]
+                            ] = self._custom_hyperparameters[component_name]
         self._custom_hyperparameters.update(names_to_value_custom_hyperparameters)
 
     def _create_fast_final(self):

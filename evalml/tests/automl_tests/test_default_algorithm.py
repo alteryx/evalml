@@ -219,16 +219,28 @@ def test_evalml_algo_pipeline_params(mock_get_names, X_y_binary):
 
 
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
-def test_evalml_algo_custom_hyperparameters(mock_get_names, X_y_binary):
-    X, y = X_y_binary
-    mock_get_names.return_value = ["0", "1", "2"]
+@patch("evalml.pipelines.components.OneHotEncoder._get_feature_provenance")
+def test_evalml_algo_custom_hyperparameters(
+    mock_get_feature_provenance, mock_get_names, X_y_categorical_classification
+):
+    X, y = X_y_categorical_classification
+    X.ww.init()
+    cat_cols = list(X.ww.select("categorical").columns)
+    mock_get_names.return_value = ["0", "1", "2", "Sex_male", "Embarked_S"]
+    mock_get_feature_provenance.return_value = {
+        "Sex": ["Sex_male"],
+        "Embarked": ["Embarked_S"],
+    }
+
     problem_type = ProblemTypes.BINARY
     sampler_name = None
+    impute_strategy = Categorical(["mean", "median"])
     custom_hyperparameters = {
         "Random Forest Classifier": {
             "n_estimators": Integer(5, 7),
             "max_depth": Categorical([5, 6, 7]),
-        }
+        },
+        "Imputer": {"numeric_impute_strategy": impute_strategy},
     }
 
     algo = DefaultAlgorithm(
@@ -241,7 +253,7 @@ def test_evalml_algo_custom_hyperparameters(mock_get_names, X_y_binary):
         num_long_pipelines_per_batch=3,
     )
 
-    for _ in range(10):
+    for _ in range(2):
         batch = algo.next_batch()
         add_result(algo, batch)
         for pipeline in batch:
@@ -252,6 +264,23 @@ def test_evalml_algo_custom_hyperparameters(mock_get_names, X_y_binary):
                 assert pipeline.parameters["Random Forest Classifier"][
                     "max_depth"
                 ] in Categorical([5, 6, 7])
+
+    assert algo._selected_cols == ["0", "1", "2"]
+    assert algo._selected_cat_cols == cat_cols
+
+    batch = algo.next_batch()
+    add_result(algo, batch)
+    for pipeline in batch:
+        assert (
+            pipeline.parameters["Numeric Pipeline - Imputer"]["numeric_impute_strategy"]
+            in impute_strategy
+        )
+        assert (
+            pipeline.parameters["Categorical Pipeline - Imputer"][
+                "numeric_impute_strategy"
+            ]
+            in impute_strategy
+        )
 
 
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
