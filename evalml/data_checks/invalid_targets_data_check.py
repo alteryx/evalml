@@ -122,18 +122,6 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 'code': 'TARGET_MULTICLASS_NOT_ENOUGH_CLASSES'}],
             ...     'actions': []}
             ...
-            >>> X = pd.DataFrame([i for i in range(100)])
-            >>> y = pd.Series([1] + [2] + [3]*98)
-            >>> assert target_check.validate(X, y) == {
-            ...     'warnings': [],
-            ...     'errors': [{'message': 'Target does not have at least two instances per class which is required for multiclass classification',
-            ...                 'data_check_name': 'InvalidTargetDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': None,
-            ...                             'rows': None,
-            ...                             'least_populated_class_labels': [1, 2]},
-            ...                 'code': 'TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS'}],
-            ...     'actions': []}
             ...
             >>> X = pd.DataFrame([i for i in range(5)])
             >>> y = pd.Series([1, 2, 4, 3], index=[1, 2, 4, 3])
