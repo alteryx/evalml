@@ -1573,6 +1573,12 @@ def test_transformer_fit_and_transform_respect_custom_indices(
         pd.testing.assert_index_equal(
             y.index, y_original_index, check_names=check_names
         )
+
+    if hasattr(transformer_class, "inverse_transform"):
+        y_inv = transformer.inverse_transform(y)
+        pd.testing.assert_index_equal(
+            y_inv.index, y_original_index, check_names=check_names
+        )
     pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
 
 
