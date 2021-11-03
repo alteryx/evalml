@@ -270,7 +270,7 @@ def scikit_learn_wrapped_estimator(evalml_obj):
 
 
 def generate_component_code(element):
-    """Creates and returns a string that contains the Python imports and code required for running the EvalML component.
+    r"""Creates and returns a string that contains the Python imports and code required for running the EvalML component.
 
     Args:
         element (component instance): The instance of the component to generate string Python code for.
