@@ -1,7 +1,9 @@
 from itertools import product
 
+import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_index_equal
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multi"])
@@ -80,48 +82,42 @@ def test_woodwork_classification_pipeline(
     assert not pd.isnull(mock_pipeline.predict_proba(X)).any().any()
 
 
-# @pytest.mark.parametrize(
-#     "index",
-#     [
-#         list(range(-5, 0)),
-#         list(range(100, 105)),
-#         [f"row_{i}" for i in range(5)],
-#         pd.date_range("2020-09-08", periods=5),
-#     ],
-# )
-# @pytest.mark.parametrize("with_estimator_last_component", [True, False])
-# def test_pipeline_transform_and_predict_with_custom_index(
-#     index,
-#     with_estimator_last_component,
-#     example_graph,
-#     example_graph_with_transformer_last_component,
-# ):
-#     X = pd.DataFrame(
-#         {"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
-#         index=index,
-#     )
-#     y = pd.Series([1, 2, 1, 2, 1], index=index)
-#     X.ww.init(logical_types={"categories": "categorical"})
+@pytest.mark.parametrize(
+    "index",
+    [
+        list(range(-5, 0)),
+        list(range(100, 105)),
+        [f"row_{i}" for i in range(5)],
+        pd.date_range("2020-09-08", periods=5),
+    ],
+)
+@pytest.mark.parametrize("problem_type", ["binary", "multi"])
+def test_pipeline_transform_and_predict_with_custom_index(
+    index,
+    problem_type,
+    logistic_regression_binary_pipeline_class,
+    logistic_regression_multiclass_pipeline_class,
+):
+    X = pd.DataFrame(
+        {"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
+        index=index,
+    )
+    X.ww.init(logical_types={"categories": "categorical"})
 
-#     graph_to_use = (
-#         example_graph
-#         if with_estimator_last_component
-#         else example_graph_with_transformer_last_component
-#     )
-#     component_graph = ComponentGraph(graph_to_use)
-#     component_graph.instantiate()
-#     component_graph.fit(X, y)
+    if problem_type == "binary":
+        y = pd.Series([0, 1, 1, 1, 0], index=index)
+        pipeline = logistic_regression_binary_pipeline_class(
+            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
+        )
+    elif problem_type == "multi":
+        y = pd.Series([0, 1, 2, 1, 0], index=index)
+        pipeline = logistic_regression_multiclass_pipeline_class(
+            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
+        )
+    pipeline.fit(X, y)
 
-#     if with_estimator_last_component:
-#         predictions = component_graph.predict(X)
-#         assert_index_equal(predictions.index, X.index)
-#         assert not predictions.isna().any(axis=None)
-#     else:
-#         X_t = component_graph.transform(X)
-#         assert_index_equal(X_t.index, X.index)
-#         assert not X_t.isna().any(axis=None)
+    predictions = pipeline.predict(X)
+    predict_proba = pipeline.predict_proba(X)
 
-#         y_in = pd.Series([0, 1, 0, 1, 0], index=index)
-#         y_inv = component_graph.inverse_transform(y_in)
-#         assert_index_equal(y_inv.index, y.index)
-#         assert not y_inv.isna().any(axis=None)
+    assert_index_equal(predictions.index, X.index)
+    assert_index_equal(predict_proba.index, X.index)
