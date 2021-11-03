@@ -752,21 +752,42 @@ def test_component_graph_order(example_graph):
         pd.date_range("2020-09-08", periods=5),
     ],
 )
-def test_component_graph_predict_with_custom_index(index, example_graph):
+@pytest.mark.parametrize("with_estimator_last_component", [True, False])
+def test_component_graph_transform_and_predict_with_custom_index(
+    index,
+    with_estimator_last_component,
+    example_graph,
+    example_graph_with_transformer_last_component,
+):
     X = pd.DataFrame(
         {"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
         index=index,
     )
-    y = pd.Series([1, 2, 1, 2, 1])
+    y = pd.Series([1, 2, 1, 2, 1], index=index)
     X.ww.init(logical_types={"categories": "categorical"})
 
-    component_graph = ComponentGraph(example_graph)
+    graph_to_use = (
+        example_graph
+        if with_estimator_last_component
+        else example_graph_with_transformer_last_component
+    )
+    component_graph = ComponentGraph(graph_to_use)
     component_graph.instantiate()
     component_graph.fit(X, y)
 
-    X_t = component_graph.predict(X)
-    assert_index_equal(X_t.index, X.index)
-    assert not X_t.isna().any(axis=None)
+    if with_estimator_last_component:
+        predictions = component_graph.predict(X)
+        assert_index_equal(predictions.index, X.index)
+        assert not predictions.isna().any(axis=None)
+    else:
+        X_t = component_graph.transform(X)
+        assert_index_equal(X_t.index, X.index)
+        assert not X_t.isna().any(axis=None)
+
+        y_in = pd.Series([0, 1, 0, 1, 0], index=index)
+        y_inv = component_graph.inverse_transform(y_in)
+        assert_index_equal(y_inv.index, y.index)
+        assert not y_inv.isna().any(axis=None)
 
 
 @patch(f"{__name__}.EstimatorC.predict")

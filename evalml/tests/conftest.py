@@ -489,6 +489,16 @@ def example_graph():
 
 
 @pytest.fixture
+def example_graph_with_transformer_last_component():
+    component_graph = {
+        "Label Encoder": ["Label Encoder", "X", "y"],
+        "Imputer": ["Imputer", "X", "Label Encoder.y"],
+        "OneHotEncoder": ["One Hot Encoder", "Imputer.x", "Label Encoder.y"],
+    }
+    return component_graph
+
+
+@pytest.fixture
 def example_pass_target_graph():
     component_graph = {
         "Imputer": ["Imputer", "X", "y"],
