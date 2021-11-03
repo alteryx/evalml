@@ -467,6 +467,8 @@ def test_delayed_feature_transformer_conf_level(
     MAX_DELAY = 50
     FORECAST_HORIZON = 10
 
+    # Although the conf_level is hard-coded we mock the return values of
+    # find_peaks and acf so that we simulate different significant lags.
     dft = DelayedFeatureTransformer(
         max_delay=MAX_DELAY, forecast_horizon=FORECAST_HORIZON, conf_level=0.05, gap=0
     )
@@ -480,18 +482,59 @@ def test_delayed_feature_transformer_conf_level(
     answer = pd.DataFrame()
     answer = answer.assign(
         **{
-            f"feature_delay_{t + FORECAST_HORIZON}": X["feature"].shift(t + 10)
+            f"feature_delay_{t + FORECAST_HORIZON}": X["feature"].shift(
+                t + FORECAST_HORIZON
+            )
             for t in expected_lags
         }
     )
     answer = answer.assign(
         **{
-            f"target_delay_{t + FORECAST_HORIZON}": y.shift(t + 10)
+            f"target_delay_{t + FORECAST_HORIZON}": y.shift(t + FORECAST_HORIZON)
             for t in expected_lags
         }
     )
     # Sort columns in alphabetical order
     answer = answer.sort_index(axis=1)
+    assert_frame_equal(new_X, answer)
+
+
+@patch(
+    "evalml.pipelines.components.transformers.preprocessing.delayed_feature_transformer.find_peaks"
+)
+@patch(
+    "evalml.pipelines.components.transformers.preprocessing.delayed_feature_transformer.acf"
+)
+def test_delayed_feature_transformer_selects_first_lag_if_none_significant(
+    mock_acf,
+    mock_peaks,
+):
+    X = pd.DataFrame({"feature": np.arange(10000)})
+    y = pd.Series(np.arange(10000))
+
+    acf_series = np.arange(len(y))
+    ci = np.ones((len(y), 2))
+    ci[:, 0] = -1
+
+    mock_acf.return_value = acf_series, ci
+    mock_peaks.return_value = [], None
+
+    MAX_DELAY = 50
+    FORECAST_HORIZON = 10
+
+    dft = DelayedFeatureTransformer(
+        max_delay=MAX_DELAY, forecast_horizon=FORECAST_HORIZON, conf_level=0.1, gap=0
+    )
+    new_X = dft.fit_transform(X, y)
+
+    answer = pd.DataFrame(
+        {
+            f"feature_delay_{1 + FORECAST_HORIZON}": X["feature"].shift(
+                1 + FORECAST_HORIZON
+            ),
+            f"target_delay_{1 + FORECAST_HORIZON}": y.shift(1 + FORECAST_HORIZON),
+        }
+    )
     assert_frame_equal(new_X, answer)
 
 

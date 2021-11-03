@@ -122,7 +122,8 @@ class DelayedFeatureTransformer(Transformer):
             significant_lags = (
                 set(index[significant]).intersection(peaks).union(first_significant_10)
             )
-            significant_lags = sorted(significant_lags.intersection(all_lags))
+            # If not lags are significant get the first lag
+            significant_lags = sorted(significant_lags.intersection(all_lags)) or [1]
         else:
             significant_lags = all_lags
         return significant_lags
