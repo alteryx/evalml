@@ -230,6 +230,31 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             }
         return parameters
 
+    def _rename_pipeline_parameters_custom_hyperparameters(self, pipelines):
+        names_to_value_pipeline_params = {}
+        for component_name in self._pipeline_params:
+            for pipeline in pipelines:
+                new_name = self._find_component_names(component_name, pipeline)
+                if new_name:
+                    for name in new_name:
+                        if name not in names_to_value_pipeline_params:
+                            names_to_value_pipeline_params[
+                                name
+                            ] = self._pipeline_params[component_name]
+        self._pipeline_params.update(names_to_value_pipeline_params)
+
+        names_to_value_custom_hyperparameters = {}
+        for component_name in self._custom_hyperparameters:
+            for pipeline in pipelines:
+                new_name = self._find_component_names(component_name, pipeline)
+                if new_name:
+                    for name in new_name:
+                        if name not in names_to_value_custom_hyperparameters:
+                            names_to_value_custom_hyperparameters[
+                                name
+                            ] = self._pipeline_params[component_name]
+        self._custom_hyperparameters.update(names_to_value_custom_hyperparameters)
+
     def _create_fast_final(self):
         estimators = [
             estimator
@@ -245,18 +270,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         ]
 
         if self._split:
-            # rename all pipeline params with correct component names
-            names_to_value = {}
-            for component_name in self._pipeline_params:
-                for pipeline in pipelines:
-                    new_name = self._find_component_names(component_name, pipeline)
-                    if new_name:
-                        for name in new_name:
-                            if name not in names_to_value:
-                                names_to_value[name] = self._pipeline_params[
-                                    component_name
-                                ]
-            self._pipeline_params.update(names_to_value)
+            self._rename_pipeline_parameters_custom_hyperparameters(pipelines)
 
         next_batch = []
         for pipeline in pipelines:
