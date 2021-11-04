@@ -74,12 +74,12 @@ class HighlyNullDataCheck(DataCheck):
             ...     'actions': [{'code': 'DROP_COL',
             ...                  'metadata': {'columns': ['all_null', 'lots_of_null'], 'rows': None}}]}
             ...
-            >>> highly_null_dc = HighlyNullDataCheck(pct_null_col_threshold=0.50, pct_null_row_threshold=0.50)
+            >>> highly_null_dc = HighlyNullDataCheck(pct_null_row_threshold=0.50)
             >>> validation_results = highly_null_dc.validate(df)
             >>> validation_results['warnings'][0]['details']['pct_null_cols'] = SeriesWrap(validation_results['warnings'][0]['details']['pct_null_cols'])
             >>> highly_null_rows = SeriesWrap(pd.Series([0.5, 0.5, 0.75, 0.5]))
             >>> assert validation_results == {
-            ...     'warnings': [{'message': '4 out of 5 rows are more than 50.0% null',
+            ...     'warnings': [{'message': '4 out of 5 rows are 50.0% or more null',
             ...                   'data_check_name': 'HighlyNullDataCheck',
             ...                   'level': 'warning',
             ...                   'details': {'columns': None,
@@ -99,6 +99,7 @@ class HighlyNullDataCheck(DataCheck):
             ...                  'metadata': {'columns': None, 'rows': [0, 1, 2, 3]}},
             ...                 {'code': 'DROP_COL',
             ...                  'metadata': {'columns': ['all_null'], 'rows': None}}]}
+
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
