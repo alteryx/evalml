@@ -5363,3 +5363,47 @@ def test_automl_respects_iterative_pipeline_order(X_y_binary, AutoMLTestEnv):
         searched_model_families,
         key=lambda model_family: _ESTIMATOR_FAMILY_ORDER.index(model_family),
     )
+
+
+def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
+    X, y = X_y_binary
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=_get_first_stacked_classifier_no(),
+        objective="Log Loss Binary",
+        ensembling=True,
+        optimize_thresholds=False,
+        error_callback=raise_error_callback,
+    )
+
+    score_side_effect = [
+        {"Log Loss Binary": score}
+        for score in np.arange(
+            0, -1 * automl.max_iterations * automl.data_splitter.get_n_splits(), -0.1
+        )
+    ]  # Decreases with each call
+
+    test_env = AutoMLTestEnv("binary")
+    with test_env.test_context(mock_score_side_effect=score_side_effect):
+        automl.search()
+
+    best_pipeline_ids = [
+        pipeline["id"]
+        for pipeline in list(automl._automl_algorithm._best_pipeline_info.values())
+    ]
+    assert (
+        best_pipeline_ids.sort()
+        == automl.get_ensembler_input_pipelines(
+            _get_first_stacked_classifier_no() - 1
+        ).sort()
+    )
+
+    error_text = "Pipeline ID 12 is not a valid ensemble pipeline"
+    with pytest.raises(ValueError, match=error_text):
+        automl.get_ensembler_input_pipelines(12)
+
+    error_text = "Pipeline ID 100 is not a valid ensemble pipeline"
+    with pytest.raises(ValueError, match=error_text):
+        automl.get_ensembler_input_pipelines(100)
