@@ -201,10 +201,10 @@ class ARIMARegressor(Estimator):
         X, y, fh_ = self._format_dates(dates, X, y, predict=True)
         if X is not None and not X.empty:
             X = X.select_dtypes(exclude=["datetime64"])
-            predictions = self._component_obj.predict(fh=fh_, X=X)
+            y_pred = self._component_obj.predict(fh=fh_, X=X)
         else:
             try:
-                predictions = self._component_obj.predict(fh=fh_)
+                y_pred = self._component_obj.predict(fh=fh_)
             except ValueError as ve:
                 error = str(ve)
                 if "When an ARIMA is fit with an X array" in error:
@@ -214,8 +214,7 @@ class ARIMARegressor(Estimator):
                     )
                 else:
                     raise ve
-        predictions = infer_feature_types(predictions)
-        return predictions
+        return infer_feature_types(y_pred)
 
     @property
     def feature_importance(self):
