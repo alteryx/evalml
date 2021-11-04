@@ -72,6 +72,9 @@ class DelayedFeatureTransformer(Transformer):
         self.gap = gap
         self.statistically_significant_lags = None
 
+        if conf_level is None:
+            raise ValueError("Parameter conf_level cannot be None.")
+
         if conf_level <= 0 or conf_level > 1:
             raise ValueError(
                 f"Parameter conf_level must be in range (0, 1]. Received {conf_level}."
@@ -129,7 +132,7 @@ class DelayedFeatureTransformer(Transformer):
     @staticmethod
     def _find_significant_lags(y, conf_level, max_delay):
         all_lags = np.arange(max_delay + 1)
-        if conf_level is not None and y is not None:
+        if y is not None:
             # Compute the acf and find its peaks
             acf_values, ci_intervals = acf(
                 y, nlags=len(y) - 1, fft=True, alpha=conf_level

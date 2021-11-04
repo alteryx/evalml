@@ -50,6 +50,11 @@ def test_delayed_features_init_raises_if_conf_level_not_in_range(conf_level):
         DelayedFeatureTransformer(conf_level=conf_level)
 
 
+def test_delayed_features_init_raises_if_conf_level_None():
+    with pytest.raises(ValueError, match="Parameter conf_level cannot be None"):
+        DelayedFeatureTransformer(conf_level=None)
+
+
 def encode_y_as_string(y):
     y = y.astype("category")
     y_answer = y.astype(int) - 1
