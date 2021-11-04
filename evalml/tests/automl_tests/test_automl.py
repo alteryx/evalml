@@ -1,5 +1,6 @@
 import json
 import os
+from typing import final
 import warnings
 from collections import OrderedDict, defaultdict
 from itertools import product
@@ -5374,8 +5375,6 @@ def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
         max_iterations=_get_first_stacked_classifier_no(),
         objective="Log Loss Binary",
         ensembling=True,
-        optimize_thresholds=False,
-        error_callback=raise_error_callback,
     )
 
     score_side_effect = [
@@ -5393,17 +5392,53 @@ def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
         pipeline["id"]
         for pipeline in list(automl._automl_algorithm._best_pipeline_info.values())
     ]
-    assert (
-        best_pipeline_ids.sort()
-        == automl.get_ensembler_input_pipelines(
-            _get_first_stacked_classifier_no() - 1
-        ).sort()
+    best_pipeline_ids.sort()
+
+    input_pipeline_ids = automl.get_ensembler_input_pipelines(_get_first_stacked_classifier_no() - 1)
+    input_pipeline_ids.sort()
+
+    assert best_pipeline_ids == input_pipeline_ids
+
+    two_stacking_batches = 1 + 2 * (len(get_estimators(ProblemTypes.BINARY)) + 1)
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_batches=two_stacking_batches,
+        objective="Log Loss Binary",
+        ensembling=True,
     )
+
+    test_env = AutoMLTestEnv("binary")
+    with test_env.test_context(mock_score_side_effect=score_side_effect):
+        automl.search()
+    pipeline_names = automl.rankings["pipeline_name"]
+    assert pipeline_names.str.contains("Ensemble").any()
+
+    ensemble_ids = [
+        _get_first_stacked_classifier_no() - 1,
+        len(automl.results["pipeline_results"]) - 1,
+    ]
+
+    final_best_pipeline_ids = [
+        pipeline["id"]
+        for pipeline in list(automl._automl_algorithm._best_pipeline_info.values())
+    ]
+    final_best_pipeline_ids.sort()
+
+    input_pipeline_0_ids = automl.get_ensembler_input_pipelines(ensemble_ids[0])
+    input_pipeline_0_ids.sort()
+
+    input_pipeline_1_ids = automl.get_ensembler_input_pipelines(ensemble_ids[1])
+    input_pipeline_1_ids.sort()
+
+    assert (final_best_pipeline_ids != input_pipeline_0_ids)
+    assert (final_best_pipeline_ids == input_pipeline_1_ids)
 
     error_text = "Pipeline ID 12 is not a valid ensemble pipeline"
     with pytest.raises(ValueError, match=error_text):
         automl.get_ensembler_input_pipelines(12)
 
-    error_text = "Pipeline ID 100 is not a valid ensemble pipeline"
+    error_text = "Pipeline ID 500 is not a valid ensemble pipeline"
     with pytest.raises(ValueError, match=error_text):
-        automl.get_ensembler_input_pipelines(100)
+        automl.get_ensembler_input_pipelines(500)
