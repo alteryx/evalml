@@ -1,6 +1,5 @@
 import json
 import os
-from typing import final
 import warnings
 from collections import OrderedDict, defaultdict
 from itertools import product
@@ -5394,7 +5393,9 @@ def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
     ]
     best_pipeline_ids.sort()
 
-    input_pipeline_ids = automl.get_ensembler_input_pipelines(_get_first_stacked_classifier_no() - 1)
+    input_pipeline_ids = automl.get_ensembler_input_pipelines(
+        _get_first_stacked_classifier_no() - 1
+    )
     input_pipeline_ids.sort()
 
     assert best_pipeline_ids == input_pipeline_ids
@@ -5432,8 +5433,8 @@ def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
     input_pipeline_1_ids = automl.get_ensembler_input_pipelines(ensemble_ids[1])
     input_pipeline_1_ids.sort()
 
-    assert (final_best_pipeline_ids != input_pipeline_0_ids)
-    assert (final_best_pipeline_ids == input_pipeline_1_ids)
+    assert final_best_pipeline_ids != input_pipeline_0_ids
+    assert final_best_pipeline_ids == input_pipeline_1_ids
 
     error_text = "Pipeline ID 12 is not a valid ensemble pipeline"
     with pytest.raises(ValueError, match=error_text):
