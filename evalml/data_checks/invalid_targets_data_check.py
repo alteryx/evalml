@@ -99,17 +99,6 @@ class InvalidTargetDataCheck(DataCheck):
             ...                               'is_target': True,
             ...                               'impute_strategy': 'mean'}}]}
             ...
-            >>> target_check = InvalidTargetDataCheck('binary', 'Log Loss Binary')
-            >>> y = pd.Series([1, 2, 3, 1])
-            >>> assert target_check.validate(X, y) == {
-            ...     'warnings': [],
-            ...     'errors': [{'message': 'Binary class targets require exactly two unique values.',
-            ...                 'data_check_name': 'InvalidTargetDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': None, 'rows': None, 'target_values': [1, 2, 3]},
-            ...                 'code': 'TARGET_BINARY_NOT_TWO_UNIQUE_VALUES'}],
-            ...     'actions': []}
-            ...
             >>> X = pd.DataFrame([i for i in range(50)])
             >>> y = pd.Series([i%2 for i in range(50)])
             >>> target_check = InvalidTargetDataCheck('multiclass', 'Log Loss Multiclass')
@@ -122,23 +111,18 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 'code': 'TARGET_MULTICLASS_NOT_ENOUGH_CLASSES'}],
             ...     'actions': []}
             ...
-            ...
+            >>> target_check = InvalidTargetDataCheck('regression', 'R2')
             >>> X = pd.DataFrame([i for i in range(5)])
             >>> y = pd.Series([1, 2, 4, 3], index=[1, 2, 4, 3])
             >>> assert target_check.validate(X, y) == {
-            ...     'warnings': [{'message': 'Target has a large number of unique values, could be regression type problem.',
-            ...                   'data_check_name': 'InvalidTargetDataCheck',
-            ...                   'level': 'warning',
-            ...                   'details': {'columns': None, 'rows': None, 'class_to_value_ratio': 1.0},
-            ...                   'code': 'TARGET_MULTICLASS_HIGH_UNIQUE_CLASS'},
-            ...                  {'message': 'Input target and features have different lengths',
+            ...     'warnings': [{'message': 'Input target and features have different lengths',
             ...                   'data_check_name': 'InvalidTargetDataCheck',
             ...                   'level': 'warning',
             ...                   'details': {'columns': None,
             ...                               'rows': None,
             ...                               'features_length': 5,
             ...                               'target_length': 4},
-            ...                               'code': 'MISMATCHED_LENGTHS'},
+            ...                   'code': 'MISMATCHED_LENGTHS'},
             ...                  {'message': 'Input target and features have mismatched indices',
             ...                   'data_check_name': 'InvalidTargetDataCheck',
             ...                   'level': 'warning',
@@ -147,13 +131,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                               'indices_not_in_features': [],
             ...                               'indices_not_in_target': [0]},
             ...                   'code': 'MISMATCHED_INDICES'}],
-            ...     'errors': [{'message': 'Target does not have at least two instances per class which is required for multiclass classification',
-            ...                 'data_check_name': 'InvalidTargetDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': None,
-            ...                             'rows': None,
-            ...                             'least_populated_class_labels': [1, 2, 3, 4]},
-            ...                 'code': 'TARGET_MULTICLASS_NOT_TWO_EXAMPLES_PER_CLASS'}],
+            ...     'errors': [],
             ...     'actions': []}
         """
         results = {"warnings": [], "errors": [], "actions": []}
