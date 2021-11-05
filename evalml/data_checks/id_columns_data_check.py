@@ -39,10 +39,12 @@ class IDColumnsDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
+            ...
             >>> df = pd.DataFrame({
             ...     'customer_id': [123, 124, 125, 126, 127],
             ...     'Sales': [10, 42, 31, 51, 61]
             ... })
+            ...
             >>> id_col_check = IDColumnsDataCheck()
             >>> assert id_col_check.validate(df) == {
             ...     "errors": [],
@@ -53,6 +55,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "details": {"columns": ["customer_id"], "rows": None}}],
             ...     "actions": [{"code": "DROP_COL",
             ...                  "metadata": {"columns": ["customer_id"], "rows": None}}]}
+            ...
             ...
             >>> df = df.rename(columns={"customer_id": "ID"})
             >>> id_col_check = IDColumnsDataCheck()
@@ -66,12 +69,15 @@ class IDColumnsDataCheck(DataCheck):
             ...     "actions": [{"code": "DROP_COL",
             ...                  "metadata": {"columns": ["ID"], "rows": None}}]}
             ...
+            ...
             >>> df = pd.DataFrame({
             ...    'Country_Rank': [1, 2, 3, 4, 5],
             ...    'Sales': ["very high", "high", "high", "medium", "very low"]
             ... })
+            ...
             >>> id_col_check = IDColumnsDataCheck()
             >>> assert id_col_check.validate(df) == {'warnings': [], 'errors': [], 'actions': []}
+            ...
             ...
             >>> id_col_check = IDColumnsDataCheck()
             >>> id_col_check = IDColumnsDataCheck(id_threshold=0.95)

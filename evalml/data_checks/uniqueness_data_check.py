@@ -48,10 +48,12 @@ class UniquenessDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
+            ...
             >>> df = pd.DataFrame({
             ...    'regression_unique_enough': [float(x) for x in range(100)],
             ...    'regression_not_unique_enough': [float(1) for x in range(100)]
             ... })
+            ...
             >>> uniqueness_check = UniquenessDataCheck(problem_type="regression", threshold=0.8)
             >>> assert uniqueness_check.validate(df) == {
             ...     "errors": [],
@@ -62,6 +64,7 @@ class UniquenessDataCheck(DataCheck):
             ...                   "details": {"columns": ["regression_not_unique_enough"], "uniqueness_score": {"regression_not_unique_enough": 0.0}, "rows": None}}],
             ...     "actions": [{"code": "DROP_COL",
             ...                  "metadata": {"columns": ["regression_not_unique_enough"], "rows": None}}]}
+            ...
             ...
             >>> uniqueness_check = UniquenessDataCheck(problem_type="multiclass", threshold=0.8)
             >>> assert uniqueness_check.validate(df) == {

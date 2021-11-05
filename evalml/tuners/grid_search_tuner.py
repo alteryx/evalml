@@ -19,6 +19,7 @@ class GridSearchTuner(Tuner):
     Examples:
         >>> tuner = GridSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, n_points=5)
         >>> proposal = tuner.propose()
+        ...
         >>> assert proposal.keys() == {'My Component'}
         >>> assert proposal['My Component'] == {'param a': 0.0, 'param b': 'a'}
         ...

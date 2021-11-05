@@ -19,6 +19,7 @@ class RandomSearchTuner(Tuner):
     Example:
         >>> tuner = RandomSearchTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}}, random_seed=42)
         >>> proposal = tuner.propose()
+        ...
         >>> assert proposal.keys() == {'My Component'}
         >>> assert proposal['My Component'] == {'param a': 3.7454011884736254, 'param b': 'c'}
         ...

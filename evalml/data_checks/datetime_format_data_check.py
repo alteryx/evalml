@@ -27,6 +27,7 @@ class DateTimeFormatDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
+            ...
             >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=9).append(pd.date_range("2021-01-31", periods=1)), columns=["dates"])
             >>> y = pd.Series([0, 1, 0, 1, 1, 0, 0, 0, 1, 0])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
@@ -40,6 +41,7 @@ class DateTimeFormatDataCheck(DataCheck):
             ...     "warnings": [],
             ...     "actions": []}
             ...
+            ...
             >>> X = pd.DataFrame([1, 2, 3, 4], columns=["Weeks"])
             >>> y = pd.Series([0] * 4)
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
@@ -52,13 +54,16 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                 'code': 'DATETIME_INFORMATION_NOT_FOUND'}],
             ...     'actions': []}
             ...
+            ...
             >>> X = pd.DataFrame(pd.to_datetime([1, 2, 3, 4]), columns=["Weeks"])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
             >>> assert datetime_format_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
             ...
+            ...
             >>> X = pd.DataFrame(pd.date_range("2021-01-01", freq='W', periods=10), columns=["Weeks"])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
             >>> assert datetime_format_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
+            ...
             ...
             >>> X = X.iloc[::-1]
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")

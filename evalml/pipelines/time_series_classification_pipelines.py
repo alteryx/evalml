@@ -211,8 +211,10 @@ class TimeSeriesBinaryClassificationPipeline(
         ...                                                                                                  "solver": "liblinear"},
         ...                                                               "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": None}},
         ...                                                   custom_name="My TimeSeriesBinary Pipeline")
+        ...
         >>> assert pipeline.custom_name == "My TimeSeriesBinary Pipeline"
         >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Logistic Regression Classifier'}
+        ...
         >>> assert pipeline.parameters == {
         ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
         ...     'Logistic Regression Classifier': {'penalty': 'elasticnet',

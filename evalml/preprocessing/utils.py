@@ -66,24 +66,25 @@ def split_data(
     Examples:
         >>> X = pd.DataFrame([1, 2, 3, 4, 5, 6], columns=["First"])
         >>> y = pd.Series([8, 9, 10, 11, 12, 13])
-        >>> splits = split_data(X, y, "regression", random_seed=42)
-        >>> splits[0]
+        ...
+        >>> X_train, X_validation, y_train, y_validation = split_data(X, y, "regression", random_seed=42)
+        >>> X_train
            First
         5      6
         2      3
         4      5
         3      4
-        >>> splits[1]
+        >>> X_validation
            First
         0      1
         1      2
-        >>> splits[2]
+        >>> y_train
         5    13
         2    10
         4    12
         3    11
         dtype: int64
-        >>> splits[3]
+        >>> y_validation
         0    8
         1    9
         dtype: int64

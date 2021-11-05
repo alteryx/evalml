@@ -23,8 +23,10 @@ class MulticlassClassificationPipeline(ClassificationPipeline):
         ...                                             parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
         ...                                                                                            "solver": "liblinear"}},
         ...                                             custom_name="My Multiclass Pipeline")
+        ...
         >>> assert pipeline.custom_name == "My Multiclass Pipeline"
         >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Logistic Regression Classifier'}
+        ...
         >>> assert pipeline.parameters == {
         ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
         ...     'Logistic Regression Classifier': {'penalty': 'elasticnet',

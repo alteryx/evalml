@@ -21,6 +21,7 @@ class SKOptTuner(Tuner):
     Examples:
         >>> tuner = SKOptTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}})
         >>> proposal = tuner.propose()
+        ...
         >>> assert proposal.keys() == {'My Component'}
         >>> assert proposal['My Component'] == {'param a': 5.928446182250184, 'param b': 'c'}
         ...

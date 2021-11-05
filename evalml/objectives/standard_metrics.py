@@ -21,7 +21,7 @@ class AccuracyBinary(BinaryClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1])
         >>> y_pred = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-        >>> assert AccuracyBinary().objective_function(y_true, y_pred) == 0.6363636363636364
+        >>> np.testing.assert_almost_equal(AccuracyBinary().objective_function(y_true, y_pred), 0.6363636)
     """
 
     name = "Accuracy Binary"
@@ -42,7 +42,7 @@ class AccuracyMulticlass(MulticlassClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 0, 2, 0, 1, 2, 1, 2, 0, 2])
         >>> y_pred = pd.Series([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2])
-        >>> assert AccuracyMulticlass().objective_function(y_true, y_pred) == 0.5454545454545454
+        >>> np.testing.assert_almost_equal(AccuracyMulticlass().objective_function(y_true, y_pred), 0.5454545)
     """
 
     name = "Accuracy Multiclass"
@@ -63,7 +63,7 @@ class BalancedAccuracyBinary(BinaryClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 1])
         >>> y_pred = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-        >>> assert BalancedAccuracyBinary().objective_function(y_true, y_pred) == 0.60
+        >>> np.testing.assert_almost_equal(BalancedAccuracyBinary().objective_function(y_true, y_pred), 0.60)
     """
 
     name = "Balanced Accuracy Binary"
@@ -86,7 +86,7 @@ class BalancedAccuracyMulticlass(MulticlassClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 0, 2, 0, 1, 2, 1, 2, 0, 2])
         >>> y_pred = pd.Series([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2])
-        >>> assert BalancedAccuracyMulticlass().objective_function(y_true, y_pred) == 0.5555555555555555
+        >>> np.testing.assert_almost_equal(BalancedAccuracyMulticlass().objective_function(y_true, y_pred), 0.5555555)
     """
 
     name = "Balanced Accuracy Multiclass"
@@ -109,7 +109,7 @@ class F1(BinaryClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1])
         >>> y_pred = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-        >>> assert F1().objective_function(y_true, y_pred) == 0.25
+        >>> np.testing.assert_almost_equal(F1().objective_function(y_true, y_pred), 0.25)
     """
 
     name = "F1"
@@ -132,7 +132,7 @@ class F1Micro(MulticlassClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 0, 2, 0, 1, 2, 1, 2, 0, 2])
         >>> y_pred = pd.Series([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2])
-        >>> assert F1Micro().objective_function(y_true, y_pred) == 0.5454545454545454
+        >>> np.testing.assert_almost_equal(F1Micro().objective_function(y_true, y_pred), 0.5454545)
     """
 
     name = "F1 Micro"
@@ -159,7 +159,7 @@ class F1Macro(MulticlassClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 0, 2, 0, 1, 2, 1, 2, 0, 2])
         >>> y_pred = pd.Series([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2])
-        >>> assert F1Macro().objective_function(y_true, y_pred) == 0.5476190476190478
+        >>> np.testing.assert_almost_equal(F1Macro().objective_function(y_true, y_pred), 0.5476190)
     """
 
     name = "F1 Macro"
@@ -186,7 +186,7 @@ class F1Weighted(MulticlassClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 0, 2, 0, 1, 2, 1, 2, 0, 2])
         >>> y_pred = pd.Series([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2])
-        >>> assert F1Weighted().objective_function(y_true, y_pred) == 0.5454545454545454
+        >>> np.testing.assert_almost_equal(F1Weighted().objective_function(y_true, y_pred), 0.5454545)
     """
 
     name = "F1 Weighted"
@@ -213,7 +213,7 @@ class Precision(BinaryClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1])
         >>> y_pred = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-        >>> assert Precision().objective_function(y_true, y_pred) == 1.0
+        >>> np.testing.assert_almost_equal(Precision().objective_function(y_true, y_pred), 1.0)
     """
 
     name = "Precision"
@@ -236,7 +236,7 @@ class PrecisionMicro(MulticlassClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 0, 2, 0, 1, 2, 1, 2, 0, 2])
         >>> y_pred = pd.Series([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2])
-        >>> assert PrecisionMicro().objective_function(y_true, y_pred) == 0.5454545454545454
+        >>> np.testing.assert_almost_equal(PrecisionMicro().objective_function(y_true, y_pred), 0.5454545)
     """
 
     name = "Precision Micro"
@@ -263,7 +263,7 @@ class PrecisionMacro(MulticlassClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 0, 2, 0, 1, 2, 1, 2, 0, 2])
         >>> y_pred = pd.Series([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2])
-        >>> assert PrecisionMacro().objective_function(y_true, y_pred) == 0.5555555555555555
+        >>> np.testing.assert_almost_equal(PrecisionMacro().objective_function(y_true, y_pred), 0.5555555)
     """
 
     name = "Precision Macro"
@@ -290,7 +290,7 @@ class PrecisionWeighted(MulticlassClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 0, 2, 0, 1, 2, 1, 2, 0, 2])
         >>> y_pred = pd.Series([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2])
-        >>> assert PrecisionWeighted().objective_function(y_true, y_pred) == 0.5606060606060606
+        >>> np.testing.assert_almost_equal(PrecisionWeighted().objective_function(y_true, y_pred), 0.5606060)
     """
 
     name = "Precision Weighted"
@@ -317,7 +317,7 @@ class Recall(BinaryClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1])
         >>> y_pred = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-        >>> assert Recall().objective_function(y_true, y_pred) == 0.14285714285714285
+        >>> np.testing.assert_almost_equal(Recall().objective_function(y_true, y_pred), 0.1428571)
     """
 
     name = "Recall"
@@ -340,7 +340,7 @@ class RecallMicro(MulticlassClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 0, 2, 0, 1, 2, 1, 2, 0, 2])
         >>> y_pred = pd.Series([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2])
-        >>> assert RecallMicro().objective_function(y_true, y_pred) == 0.5454545454545454
+        >>> np.testing.assert_almost_equal(RecallMicro().objective_function(y_true, y_pred), 0.5454545)
     """
 
     name = "Recall Micro"
@@ -367,7 +367,7 @@ class RecallMacro(MulticlassClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 0, 2, 0, 1, 2, 1, 2, 0, 2])
         >>> y_pred = pd.Series([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2])
-        >>> assert RecallMacro().objective_function(y_true, y_pred) == 0.5555555555555555
+        >>> np.testing.assert_almost_equal(RecallMacro().objective_function(y_true, y_pred), 0.5555555)
     """
 
     name = "Recall Macro"
@@ -394,7 +394,7 @@ class RecallWeighted(MulticlassClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 0, 2, 0, 1, 2, 1, 2, 0, 2])
         >>> y_pred = pd.Series([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2])
-        >>> assert RecallWeighted().objective_function(y_true, y_pred) == 0.5454545454545454
+        >>> np.testing.assert_almost_equal(RecallWeighted().objective_function(y_true, y_pred), 0.5454545)
     """
 
     name = "Recall Weighted"
@@ -421,7 +421,7 @@ class AUC(BinaryClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1])
         >>> y_pred = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-        >>> assert AUC().objective_function(y_true, y_pred) == 0.5714285714285714
+        >>> np.testing.assert_almost_equal(AUC().objective_function(y_true, y_pred), 0.5714285)
     """
 
     name = "AUC"
@@ -447,7 +447,7 @@ class AUCMicro(MulticlassClassificationObjective):
         ...           [0.9, 0.1, 0.0],
         ...           [0.3, 0.1, 0.6],
         ...           [0.5, 0.5, 0.0]]
-        >>> assert AUCMicro().objective_function(y_true, y_pred) == 0.9861111111111112
+        >>> np.testing.assert_almost_equal(AUCMicro().objective_function(y_true, y_pred), 0.9861111)
     """
 
     name = "AUC Micro"
@@ -476,7 +476,7 @@ class AUCMacro(MulticlassClassificationObjective):
         ...           [0.9, 0.1, 0.0],
         ...           [0.6, 0.1, 0.3],
         ...           [0.5, 0.5, 0.0]]
-        >>> assert AUCMacro().objective_function(y_true, y_pred) == 0.75
+        >>> np.testing.assert_almost_equal(AUCMacro().objective_function(y_true, y_pred), 0.75)
     """
 
     name = "AUC Macro"
@@ -505,7 +505,7 @@ class AUCWeighted(MulticlassClassificationObjective):
         ...           [0.1, 0.2, 0.7],
         ...           [0.6, 0.1, 0.3],
         ...           [0.5, 0.2, 0.3]]
-        >>> assert AUCWeighted().objective_function(y_true, y_pred) == 0.4375
+        >>> np.testing.assert_almost_equal(AUCWeighted().objective_function(y_true, y_pred), 0.4375)
     """
 
     name = "AUC Weighted"
@@ -529,7 +529,7 @@ class Gini(BinaryClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1])
         >>> y_pred = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-        >>> assert Gini().objective_function(y_true, y_pred) == 0.1428571428571428
+        >>> np.testing.assert_almost_equal(Gini().objective_function(y_true, y_pred), 0.1428571)
     """
 
     name = "Gini"
@@ -551,7 +551,7 @@ class LogLossBinary(BinaryClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1])
         >>> y_pred = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-        >>> assert LogLossBinary().objective_function(y_true, y_pred) == 18.839332579042193
+        >>> np.testing.assert_almost_equal(LogLossBinary().objective_function(y_true, y_pred), 18.8393325)
     """
 
     name = "Log Loss Binary"
@@ -577,7 +577,7 @@ class LogLossMulticlass(MulticlassClassificationObjective):
         ...           [0.9, 0.1, 0.0],
         ...           [0.3, 0.1, 0.6],
         ...           [0.5, 0.5, 0.0]]
-        >>> assert LogLossMulticlass().objective_function(y_true, y_pred) == 0.4783301780414055
+        >>> np.testing.assert_almost_equal(LogLossMulticlass().objective_function(y_true, y_pred), 0.4783301)
     """
 
     name = "Log Loss Multiclass"
@@ -598,7 +598,7 @@ class MCCBinary(BinaryClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 1, 0, 0, 1, 1, 1, 0, 1, 1])
         >>> y_pred = pd.Series([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1])
-        >>> assert MCCBinary().objective_function(y_true, y_pred) == 0.23904572186687872
+        >>> np.testing.assert_almost_equal(MCCBinary().objective_function(y_true, y_pred), 0.2390457)
     """
 
     name = "MCC Binary"
@@ -624,7 +624,7 @@ class MCCMulticlass(MulticlassClassificationObjective):
     Example:
         >>> y_true = pd.Series([0, 1, 0, 2, 0, 1, 2, 1, 2, 0, 2])
         >>> y_pred = pd.Series([0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2])
-        >>> assert MCCMulticlass().objective_function(y_true, y_pred) == 0.325
+        >>> np.testing.assert_almost_equal(MCCMulticlass().objective_function(y_true, y_pred), 0.325)
     """
 
     name = "MCC Multiclass"
@@ -650,7 +650,7 @@ class RootMeanSquaredError(RegressionObjective):
     Example:
         >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
         >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
-        >>> assert RootMeanSquaredError().objective_function(y_true, y_pred) == 0.3988620176087328
+        >>> np.testing.assert_almost_equal(RootMeanSquaredError().objective_function(y_true, y_pred), 0.3988620)
     """
 
     name = "Root Mean Squared Error"
@@ -675,7 +675,7 @@ class RootMeanSquaredLogError(RegressionObjective):
     Example:
         >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
         >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
-        >>> assert round(RootMeanSquaredLogError().objective_function(y_true, y_pred), 4) == 0.1309
+        >>> np.testing.assert_almost_equal(RootMeanSquaredLogError().objective_function(y_true, y_pred), 0.13090204)
     """
 
     name = "Root Mean Squared Log Error"
@@ -707,7 +707,7 @@ class MeanSquaredLogError(RegressionObjective):
     Example:
         >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
         >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
-        >>> assert round(MeanSquaredLogError().objective_function(y_true, y_pred), 4) == 0.0171
+        >>> np.testing.assert_almost_equal(MeanSquaredLogError().objective_function(y_true, y_pred), 0.0171353)
     """
 
     name = "Mean Squared Log Error"
@@ -735,7 +735,7 @@ class R2(RegressionObjective):
     Example:
         >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
         >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
-        >>> assert R2().objective_function(y_true, y_pred) == 0.7638036809815951
+        >>> np.testing.assert_almost_equal(R2().objective_function(y_true, y_pred), 0.7638036)
     """
 
     name = "R2"
@@ -756,7 +756,7 @@ class MAE(RegressionObjective):
     Example:
         >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
         >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
-        >>> assert MAE().objective_function(y_true, y_pred) == 0.2727272727272727
+        >>> np.testing.assert_almost_equal(MAE().objective_function(y_true, y_pred), 0.2727272)
     """
 
     name = "MAE"
@@ -781,7 +781,7 @@ class MAPE(TimeSeriesRegressionObjective):
     Example:
         >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
         >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
-        >>> assert MAPE().objective_function(y_true, y_pred) == 15.984848484848484
+        >>> np.testing.assert_almost_equal(MAPE().objective_function(y_true, y_pred), 15.9848484)
     """
 
     name = "Mean Absolute Percentage Error"
@@ -817,7 +817,7 @@ class MSE(RegressionObjective):
     Example:
         >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
         >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
-        >>> assert MSE().objective_function(y_true, y_pred) == 0.1590909090909091
+        >>> np.testing.assert_almost_equal(MSE().objective_function(y_true, y_pred), 0.1590909)
     """
 
     name = "MSE"
@@ -840,7 +840,7 @@ class MedianAE(RegressionObjective):
     Example:
         >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
         >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
-        >>> assert MedianAE().objective_function(y_true, y_pred) == 0.25
+        >>> np.testing.assert_almost_equal(MedianAE().objective_function(y_true, y_pred), 0.25)
     """
 
     name = "MedianAE"
@@ -863,7 +863,7 @@ class MaxError(RegressionObjective):
     Example:
         >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
         >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
-        >>> assert MaxError().objective_function(y_true, y_pred) == 1.0
+        >>> np.testing.assert_almost_equal(MaxError().objective_function(y_true, y_pred), 1.0)
     """
 
     name = "MaxError"
@@ -884,7 +884,7 @@ class ExpVariance(RegressionObjective):
     Example:
         >>> y_true = pd.Series([1.5, 2, 3, 1, 0.5, 1, 2.5, 2.5, 1, 0.5, 2])
         >>> y_pred = pd.Series([1.5, 2.5, 2, 1, 0.5, 1, 3, 2.25, 0.75, 0.25, 1.75])
-        >>> assert ExpVariance().objective_function(y_true, y_pred) == 0.7760736196319018
+        >>> np.testing.assert_almost_equal(ExpVariance().objective_function(y_true, y_pred), 0.7760736)
     """
 
     name = "ExpVariance"

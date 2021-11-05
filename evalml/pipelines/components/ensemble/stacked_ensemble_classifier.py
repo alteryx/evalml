@@ -19,6 +19,7 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
         >>> from evalml.pipelines.component_graph import ComponentGraph
         >>> from evalml.pipelines.components.estimators.classifiers.decision_tree_classifier import DecisionTreeClassifier
         >>> from evalml.pipelines.components.estimators.classifiers.elasticnet_classifier import ElasticNetClassifier
+        ...
         >>> component_graph = {
         ...     "Decision Tree": [DecisionTreeClassifier(random_seed=3), "X", "y"],
         ...     "Decision Tree B": [DecisionTreeClassifier(random_seed=4), "X", "y"],

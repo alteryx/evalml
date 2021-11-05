@@ -45,6 +45,7 @@ class HighlyNullDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
+            ...
             >>> class SeriesWrap():
             ...     def __init__(self, series):
             ...         self.series = series
@@ -73,6 +74,7 @@ class HighlyNullDataCheck(DataCheck):
             ...     'errors': [],
             ...     'actions': [{'code': 'DROP_COL',
             ...                  'metadata': {'columns': ['all_null', 'lots_of_null'], 'rows': None}}]}
+            ...
             ...
             >>> highly_null_dc = HighlyNullDataCheck(pct_null_row_threshold=0.50)
             >>> validation_results = highly_null_dc.validate(df)

@@ -31,6 +31,8 @@ class ComponentGraph:
         >>> component_dict = {'Imputer': ['Imputer', 'X', 'y'],
         ...                   'Logistic Regression': ['Logistic Regression Classifier', 'Imputer.x', 'y']}
         >>> component_graph = ComponentGraph(component_dict)
+        >>> assert component_graph.compute_order == ['Imputer', 'Logistic Regression']
+        ...
         ...
         >>> component_dict = {'Imputer': ['Imputer', 'X', 'y'],
         ...                   'OHE': ['One Hot Encoder', 'Imputer.x', 'y'],
@@ -38,6 +40,31 @@ class ComponentGraph:
         ...                   'estimator_2': ['Decision Tree Classifier', 'OHE.x', 'y'],
         ...                   'final': ['Logistic Regression Classifier', 'estimator_1.x', 'estimator_2.x', 'y']}
         >>> component_graph = ComponentGraph(component_dict)
+        >>> assert component_graph.default_parameters == {
+        ...     'Imputer': {'categorical_impute_strategy': 'most_frequent',
+        ...                 'numeric_impute_strategy': 'mean',
+        ...                 'categorical_fill_value': None,
+        ...                 'numeric_fill_value': None},
+        ...     'One Hot Encoder': {'top_n': 10,
+        ...                         'features_to_encode': None,
+        ...                         'categories': None,
+        ...                         'drop': 'if_binary',
+        ...                         'handle_unknown': 'ignore',
+        ...                         'handle_missing': 'error'},
+        ...     'Random Forest Classifier': {'n_estimators': 100,
+        ...                                  'max_depth': 6,
+        ...                                  'n_jobs': -1},
+        ...     'Decision Tree Classifier': {'criterion': 'gini',
+        ...                                  'max_features': 'auto',
+        ...                                  'max_depth': 6,
+        ...                                  'min_samples_split': 2,
+        ...                                  'min_weight_fraction_leaf': 0.0},
+        ...     'Logistic Regression Classifier': {'penalty': 'l2',
+        ...                                        'C': 1.0,
+        ...                                        'n_jobs': -1,
+        ...                                        'multi_class': 'auto',
+        ...                                        'solver': 'lbfgs'}}
+
     """
 
     def __init__(self, component_dict=None, random_seed=0):

@@ -24,8 +24,10 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         ...                                                       parameters={"Linear Regressor": {"normalize": True},
         ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": None}},
         ...                                                       custom_name="My TimeSeriesRegression Pipeline")
+        ...
         >>> assert pipeline.custom_name == "My TimeSeriesRegression Pipeline"
         >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Linear Regressor'}
+        ...
         >>> assert pipeline.parameters == {
         ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
         ...     'Linear Regressor': {'fit_intercept': True, 'normalize': True, 'n_jobs': -1},

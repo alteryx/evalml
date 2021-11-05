@@ -19,6 +19,7 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
         >>> from evalml.pipelines.component_graph import ComponentGraph
         >>> from evalml.pipelines.components.estimators.regressors.rf_regressor import RandomForestRegressor
         >>> from evalml.pipelines.components.estimators.regressors.elasticnet_regressor import ElasticNetRegressor
+        ...
         >>> component_graph = {
         ...     "Random Forest": [RandomForestRegressor(random_seed=3), "X", "y"],
         ...     "Random Forest B": [RandomForestRegressor(random_seed=4), "X", "y"],

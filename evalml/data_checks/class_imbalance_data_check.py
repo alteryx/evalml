@@ -60,6 +60,7 @@ class ClassImbalanceDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
+            ...
             >>> X = pd.DataFrame()
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.10)
@@ -81,6 +82,7 @@ class ClassImbalanceDataCheck(DataCheck):
             ...                   "details": {"target_values": [0], "rows": None, "columns": None}}],
             ...      "actions": []}
             ...
+            ...
             >>> y = pd.Series([0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2])
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.30, min_samples=5, num_cv_folds=1)
             >>> assert class_imb_dc.validate(X, y) == {
@@ -96,6 +98,7 @@ class ClassImbalanceDataCheck(DataCheck):
             ...                     'details': {'target_values': [0], "rows": None, "columns": None}}],
             ...     'errors': [],
             ...     'actions': []}
+            ...
             ...
             >>> y = pd.Series([0, 0, 1, 1, 1, 1, 2, 2, 2, 2])
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.30, num_cv_folds=1)

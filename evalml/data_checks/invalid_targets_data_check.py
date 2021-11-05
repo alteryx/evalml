@@ -55,9 +55,10 @@ class InvalidTargetDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
-            >>> target_check = InvalidTargetDataCheck('regression', 'R2')
+            ...
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = pd.Series(["cat_1", "cat_2", "cat_1", "cat_2"])
+            >>> target_check = InvalidTargetDataCheck('regression', 'R2')
             >>> assert target_check.validate(X, y) == {
             ...     'warnings': [],
             ...     'errors': [{'message': 'Target is unsupported Unknown type. Valid Woodwork logical types include: integer, double, boolean',
@@ -72,6 +73,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 'code': 'TARGET_UNSUPPORTED_TYPE'}],
             ...     'actions': []}
             ...
+            ...
             >>> y = pd.Series([None, pd.NA, pd.NaT, None])
             >>> assert target_check.validate(X, y) == {
             ...     'warnings': [],
@@ -81,6 +83,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 'details': {'columns': None, 'rows': None},
             ...                 'code': 'TARGET_IS_EMPTY_OR_FULLY_NULL'}],
             ...     'actions': []}
+            ...
             ...
             >>> y = pd.Series([1, None, 3, None])
             >>> assert target_check.validate(None, y) == {
@@ -99,6 +102,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                               'is_target': True,
             ...                               'impute_strategy': 'mean'}}]}
             ...
+            ...
             >>> X = pd.DataFrame([i for i in range(50)])
             >>> y = pd.Series([i%2 for i in range(50)])
             >>> target_check = InvalidTargetDataCheck('multiclass', 'Log Loss Multiclass')
@@ -110,6 +114,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 'details': {'columns': None, 'rows': None, 'num_classes': 2},
             ...                 'code': 'TARGET_MULTICLASS_NOT_ENOUGH_CLASSES'}],
             ...     'actions': []}
+            ...
             ...
             >>> target_check = InvalidTargetDataCheck('regression', 'R2')
             >>> X = pd.DataFrame([i for i in range(5)])

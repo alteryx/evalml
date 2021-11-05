@@ -22,6 +22,7 @@ class DateTimeNaNDataCheck(DataCheck):
         Examples:
             >>> import pandas as pd
             >>> import numpy as np
+            ...
             >>> dates = [['2-1-21', '3-1-21'],
             ...         ['2-2-21', '3-2-21'],
             ...         ['2-3-21', '3-3-21'],
@@ -29,6 +30,7 @@ class DateTimeNaNDataCheck(DataCheck):
             >>> df = pd.DataFrame(dates, columns=['index', "days"])
             >>> dt_nan_dc = DateTimeNaNDataCheck()
             >>> assert dt_nan_dc.validate(df) == {'warnings': [], 'errors': [], 'actions': []}
+            ...
             ...
             >>> dates[0][0] = np.datetime64('NaT')
             >>> df = pd.DataFrame(dates, columns=['index', "days"])
@@ -41,6 +43,7 @@ class DateTimeNaNDataCheck(DataCheck):
             ...                 'code': 'DATETIME_HAS_NAN'}],
             ...     'actions': []}
             ...
+            ...
             >>> dates[0][1] = None
             >>> df = pd.DataFrame(dates, columns=['index', "days"])
             >>> assert dt_nan_dc.validate(df) == {
@@ -51,6 +54,7 @@ class DateTimeNaNDataCheck(DataCheck):
             ...                 'details': {'columns': ['index', 'days'], 'rows': None},
             ...                 'code': 'DATETIME_HAS_NAN'}],
             ...     'actions': []}
+            ...
             ...
             >>> dates[0][1] = pd.NA
             >>> df = pd.DataFrame(dates, columns=['index', "days"])
