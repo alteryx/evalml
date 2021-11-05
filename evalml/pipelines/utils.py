@@ -205,7 +205,7 @@ def make_pipeline(
              Defaults to None
          extra_components (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
          extra_components_position (str): Where to put extra components. Defaults to "before_preprocessing" and any other value will put components after preprocessing components.
-         use_estimator (Bool): Whether to add the provided estimator to the pipeline or not. Defaults to True.
+         use_estimator (bool): Whether to add the provided estimator to the pipeline or not. Defaults to True.
 
     Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
@@ -290,7 +290,7 @@ def _make_stacked_ensemble_pipeline(
     Args:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
             This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
-        problem_type (ProblemType): problem type of pipeline
+        problem_type (ProblemType): Problem type of pipeline
         final_estimator (Estimator): Metalearner to use for the ensembler. Defaults to None.
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
@@ -400,14 +400,15 @@ def _make_pipeline_from_multiple_graphs(
 
     Args:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use for preprocessing.
-        problem_type (ProblemType): problem type of pipeline.
         estimator (Estimator): Final estimator for the pipelines.
+        problem_type (ProblemType): Problem type of pipeline.
         parameters (Dict): Parameters to initialize pipeline with. Defaults to an empty dictionary.
+        pipeline_name (str): Custom name for the final pipeline.
         sub_pipeline_names (Dict): Dictionary mapping original input pipeline names to new names. This will be used to rename components. Defaults to None.
         random_seed (int): Random seed for the pipeline. Defaults to 0.
 
     Returns:
-        pipeline (PipelineBase): pipelined created with the input pipelines and ending with the provided estimator.
+        pipeline (PipelineBase): Pipeline created with the input pipelines.
     """
 
     def _make_new_component_name(name, component_name, idx=None, pipeline_name=None):
@@ -437,6 +438,7 @@ def _make_pipeline_from_multiple_graphs(
         )
         final_component = None
         final_y = "y"
+
         final_y_candidate = (
             None
             if not handle_component_class(
@@ -466,6 +468,10 @@ def _make_pipeline_from_multiple_graphs(
                             component_pipeline_name, item, name_idx, sub_pipeline_name
                         )
                     )
+                    if i != 0 and item.endswith(".y"):
+                        final_y = _make_new_component_name(
+                            component_pipeline_name, item, name_idx, sub_pipeline_name
+                        )
                 elif isinstance(item, str) and item == "y":
                     if is_classification(problem_type):
                         new_component_list.append("Label Encoder.y")
@@ -473,10 +479,6 @@ def _make_pipeline_from_multiple_graphs(
                         new_component_list.append("y")
                 else:
                     new_component_list.append(item)
-                if i != 0 and item.endswith(".y"):
-                    final_y = _make_new_component_name(
-                        component_pipeline_name, item, name_idx, sub_pipeline_name
-                    )
             component_graph[new_component_name] = new_component_list
             final_component = new_component_name
         final_components.append(final_component)

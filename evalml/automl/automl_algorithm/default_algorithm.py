@@ -204,9 +204,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         names = []
         for component in pipeline.component_graph.compute_order:
             split = component.split(" - ")
-            if len(split) > 1:
-                split = split[1]
-            if original_name in split:
+            split = split[1] if len(split) > 1 else split[0]
+            if original_name == split:
                 names.append(component)
         return names
 
@@ -222,37 +221,32 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return parameters
 
     def _create_select_parameters(self):
+        parameters = {"Select Columns Transformer": {"columns": self._selected_cols}}
         if self._split:
             parameters = self._create_split_select_parameters()
-        else:
-            parameters = {
-                "Select Columns Transformer": {"columns": self._selected_cols}
-            }
         return parameters
 
-    def _rename_pipeline_parameters_custom_hyperparameters(self, pipelines):
-        names_to_value_pipeline_params = {}
-        for component_name in self._pipeline_params:
+    def _find_component_names_from_parameters(self, old_names, pipelines):
+        new_names = {}
+        for component_name in old_names:
             for pipeline in pipelines:
                 new_name = self._find_component_names(component_name, pipeline)
                 if new_name:
                     for name in new_name:
-                        if name not in names_to_value_pipeline_params:
-                            names_to_value_pipeline_params[
-                                name
-                            ] = self._pipeline_params[component_name]
-        self._pipeline_params.update(names_to_value_pipeline_params)
+                        if name not in new_names:
+                            new_names[name] = old_names[component_name]
+        return new_names
 
-        names_to_value_custom_hyperparameters = {}
-        for component_name in self._custom_hyperparameters:
-            for pipeline in pipelines:
-                new_name = self._find_component_names(component_name, pipeline)
-                if new_name:
-                    for name in new_name:
-                        if name not in names_to_value_custom_hyperparameters:
-                            names_to_value_custom_hyperparameters[
-                                name
-                            ] = self._custom_hyperparameters[component_name]
+    def _rename_pipeline_parameters_custom_hyperparameters(self, pipelines):
+        names_to_value_pipeline_params = self._find_component_names_from_parameters(
+            self._pipeline_params, pipelines
+        )
+        names_to_value_custom_hyperparameters = (
+            self._find_component_names_from_parameters(
+                self._custom_hyperparameters, pipelines
+            )
+        )
+        self._pipeline_params.update(names_to_value_pipeline_params)
         self._custom_hyperparameters.update(names_to_value_custom_hyperparameters)
 
     def _create_fast_final(self):

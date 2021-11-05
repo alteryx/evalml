@@ -85,9 +85,7 @@ class DropColumns(ColumnSelector):
         pass
 
     def _modify_columns(self, cols, X, y=None):
-        column_intersection = list(
-            sorted(set(cols).intersection(X.columns), key=cols.index)
-        )
+        column_intersection = list(set(cols).intersection(X.columns))
         return X.ww.drop(column_intersection)
 
     def transform(self, X, y=None):
