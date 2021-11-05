@@ -139,6 +139,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
             "max_delay": 5,
             "delay_features": True,
             "delay_target": True,
+            "conf_level": 0.05,
         }
         assert pl.parameters["pipeline"] == {
             "gap": 0,
@@ -216,6 +217,7 @@ def test_fit_drop_nans_before_estimator(
                 "max_delay": max_delay,
                 "delay_features": include_delayed_features,
                 "delay_target": include_delayed_features,
+                "conf_level": 1.0,
             },
             "pipeline": {
                 "date_index": None,
@@ -281,6 +283,7 @@ def test_transform_all_but_final_for_time_series(
                 "max_delay": max_delay,
                 "gap": gap,
                 "forecast_horizon": forecast_horizon,
+                "conf_level": 1.0,
             },
         },
     )
@@ -289,7 +292,7 @@ def test_transform_all_but_final_for_time_series(
     pipeline.fit(X_train, y_train)
     features = pipeline.transform_all_but_final(X_validation, y_validation)
     delayer = DelayedFeatureTransformer(
-        max_delay=max_delay, gap=gap, forecast_horizon=forecast_horizon
+        max_delay=max_delay, gap=gap, forecast_horizon=forecast_horizon, conf_level=1.0
     )
     assert_frame_equal(features, delayer.fit_transform(X_validation, y_validation))
     features_with_training = pipeline.transform_all_but_final(
@@ -368,6 +371,7 @@ def test_predict_and_predict_in_sample(
             "forecast_horizon": forecast_horizon,
             "delay_features": True,
             "delay_target": True,
+            "conf_level": 1.0,
         }
         parameters.update({"Delayed Feature Transformer": delayer_params})
         expected_features = DelayedFeatureTransformer(**delayer_params).fit_transform(
@@ -443,6 +447,7 @@ def test_predict_and_predict_in_sample_with_date_index(
         "forecast_horizon": 1,
         "delay_features": True,
         "delay_target": True,
+        "conf_level": 1.0,
     }
     parameters = {
         "pipeline": {
@@ -646,6 +651,7 @@ def test_classification_pipeline_encodes_targets(
                 "gap": 0,
                 "max_delay": 1,
                 "forecast_horizon": 1,
+                "conf_level": 1.0,
             },
             "pipeline": {
                 "date_index": None,
@@ -721,6 +727,7 @@ def test_ts_score_works(
         estimator = "Random Forest Regressor"
     elif pipeline_class == TimeSeriesBinaryClassificationPipeline:
         pipeline = time_series_binary_classification_pipeline_class
+        estimator = "Logistic Regression Classifier"
     else:
         pipeline = time_series_multiclass_classification_pipeline_class
         estimator = "Logistic Regression Classifier"

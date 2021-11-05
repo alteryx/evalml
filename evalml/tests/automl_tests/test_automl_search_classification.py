@@ -1155,6 +1155,7 @@ def test_automl_supports_time_series_classification(
         "forecast_horizon": 1,
         "delay_target": False,
         "delay_features": True,
+        "conf_level": 0.05,
     }
 
     automl = AutoMLSearch(

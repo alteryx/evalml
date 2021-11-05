@@ -1,3 +1,6 @@
+from unittest.mock import patch
+
+import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
@@ -35,7 +38,21 @@ def test_delayed_features_transformer_init():
         "gap": 0,
         "forecast_horizon": 1,
         "date_index": "Date",
+        "conf_level": 0.05,
     }
+
+
+@pytest.mark.parametrize("conf_level", [-0.05, 0, 1.2])
+def test_delayed_features_init_raises_if_conf_level_not_in_range(conf_level):
+    with pytest.raises(
+        ValueError, match="Parameter conf_level must be in range \\(0, 1\\]"
+    ):
+        DelayedFeatureTransformer(conf_level=conf_level)
+
+
+def test_delayed_features_init_raises_if_conf_level_None():
+    with pytest.raises(ValueError, match="Parameter conf_level cannot be None"):
+        DelayedFeatureTransformer(conf_level=None)
 
 
 def encode_y_as_string(y):
@@ -84,12 +101,11 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
             "target_delay_4": y_answer.shift(4),
         }
     )
-
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=3, gap=0, forecast_horizon=1).fit_transform(
-            X=X, y=y
-        ),
+        DelayedFeatureTransformer(
+            max_delay=3, gap=0, forecast_horizon=1, conf_level=1.0
+        ).fit_transform(X=X, y=y),
     )
 
     answer_only_y = pd.DataFrame(
@@ -102,9 +118,9 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
     )
     assert_frame_equal(
         answer_only_y,
-        DelayedFeatureTransformer(max_delay=3, gap=0, forecast_horizon=1).fit_transform(
-            X=None, y=y
-        ),
+        DelayedFeatureTransformer(
+            max_delay=3, gap=0, forecast_horizon=1, conf_level=1.0
+        ).fit_transform(X=None, y=y),
     )
 
 
@@ -133,12 +149,11 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
             "target_delay_6": y_answer.shift(6),
         }
     )
-
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=5, gap=0, forecast_horizon=1).fit_transform(
-            X, y
-        ),
+        DelayedFeatureTransformer(
+            max_delay=5, gap=0, forecast_horizon=1, conf_level=1.0
+        ).fit_transform(X, y),
     )
 
     answer_only_y = pd.DataFrame(
@@ -153,9 +168,9 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
     )
     assert_frame_equal(
         answer_only_y,
-        DelayedFeatureTransformer(max_delay=5, gap=0, forecast_horizon=1).fit_transform(
-            X=None, y=y
-        ),
+        DelayedFeatureTransformer(
+            max_delay=5, gap=0, forecast_horizon=1, conf_level=1.0
+        ).fit_transform(X=None, y=y),
     )
 
 
@@ -183,9 +198,9 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
 
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1).fit_transform(
-            X, y
-        ),
+        DelayedFeatureTransformer(
+            max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0
+        ).fit_transform(X, y),
     )
 
     answer_only_y = pd.DataFrame(
@@ -198,9 +213,9 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
     )
     assert_frame_equal(
         answer_only_y,
-        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1).fit_transform(
-            X=None, y=y
-        ),
+        DelayedFeatureTransformer(
+            max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0
+        ).fit_transform(X=None, y=y),
     )
 
 
@@ -223,9 +238,9 @@ def test_delayed_feature_extractor_numpy(delayed_features_data):
     )
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1).fit_transform(
-            X_np, y_np
-        ),
+        DelayedFeatureTransformer(
+            max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0
+        ).fit_transform(X_np, y_np),
     )
 
     answer_only_y = pd.DataFrame(
@@ -238,9 +253,9 @@ def test_delayed_feature_extractor_numpy(delayed_features_data):
     )
     assert_frame_equal(
         answer_only_y,
-        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7, gap=1).fit_transform(
-            X=None, y=y_np
-        ),
+        DelayedFeatureTransformer(
+            max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0
+        ).fit_transform(X=None, y=y_np),
     )
 
 
@@ -287,6 +302,7 @@ def test_lagged_feature_extractor_delay_features_delay_target(
         forecast_horizon=1,
         delay_features=delay_features,
         delay_target=delay_target,
+        conf_level=1.0,
     )
     assert_frame_equal(all_delays, transformer.fit_transform(X, y))
 
@@ -323,6 +339,7 @@ def test_lagged_feature_extractor_delay_target(
         forecast_horizon=1,
         delay_features=delay_features,
         delay_target=delay_target,
+        conf_level=1.0,
     )
     assert_frame_equal(answer, transformer.fit_transform(None, y))
 
@@ -360,7 +377,9 @@ def test_delay_feature_transformer_supports_custom_index(
 
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7).fit_transform(X, y),
+        DelayedFeatureTransformer(
+            max_delay=3, forecast_horizon=7, conf_level=1.0
+        ).fit_transform(X, y),
     )
 
     answer_only_y = pd.DataFrame(
@@ -374,9 +393,9 @@ def test_delay_feature_transformer_supports_custom_index(
     )
     assert_frame_equal(
         answer_only_y,
-        DelayedFeatureTransformer(max_delay=3, forecast_horizon=7).fit_transform(
-            X=None, y=y
-        ),
+        DelayedFeatureTransformer(
+            max_delay=3, forecast_horizon=7, conf_level=1.0
+        ).fit_transform(X=None, y=y),
     )
 
 
@@ -397,9 +416,9 @@ def test_delay_feature_transformer_multiple_categorical_columns(delayed_features
     )
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=1, forecast_horizon=9, gap=2).fit_transform(
-            X, y
-        ),
+        DelayedFeatureTransformer(
+            max_delay=1, forecast_horizon=9, gap=2, conf_level=1.0
+        ).fit_transform(X, y),
     )
 
 
@@ -413,20 +432,121 @@ def test_delay_feature_transformer_y_is_none(delayed_features_data):
     )
     assert_frame_equal(
         answer,
-        DelayedFeatureTransformer(max_delay=1, forecast_horizon=11).fit_transform(
-            X, y=None
-        ),
+        DelayedFeatureTransformer(
+            max_delay=1, forecast_horizon=11, conf_level=1.0
+        ).fit_transform(X, y=None),
     )
 
 
 def test_delayed_feature_transformer_does_not_modify_input_data(delayed_features_data):
     X, _ = delayed_features_data
     expected = X.copy()
-    _ = DelayedFeatureTransformer(max_delay=1, forecast_horizon=11).fit_transform(
-        X, y=None
-    )
+    _ = DelayedFeatureTransformer(
+        max_delay=1, forecast_horizon=11, conf_level=1.0
+    ).fit_transform(X, y=None)
 
     assert_frame_equal(X, expected)
+
+
+@pytest.mark.parametrize("peaks", [[14, 21, 28], [32, 45], [18, 29, 56], [5, 8, 12]])
+@pytest.mark.parametrize(
+    "significant_lags",
+    [[1, 2, 8, 14, 21], [1, 19, 20, 32], [14, 21, 28, 56, 18], [13, 25, 8]],
+)
+@patch(
+    "evalml.pipelines.components.transformers.preprocessing.delayed_feature_transformer.find_peaks"
+)
+@patch(
+    "evalml.pipelines.components.transformers.preprocessing.delayed_feature_transformer.acf"
+)
+def test_delayed_feature_transformer_conf_level(
+    mock_acf, mock_peaks, peaks, significant_lags
+):
+    X = pd.DataFrame({"feature": np.arange(10000)})
+    y = pd.Series(np.arange(10000))
+
+    def create_acf_return_value(y, significant_lags, peaks):
+        """Create ci intervals such that significant_lags and peaks are significant."""
+        acf_series = np.arange(len(y))
+        ci = np.ones((len(y), 2))
+        ci[:, 0] = -1
+        ci[significant_lags + peaks, 0] = 0.1
+        ci[significant_lags + peaks, 1] = 0.3
+        return acf_series, ci
+
+    mock_acf.return_value = create_acf_return_value(y, significant_lags, peaks)
+    mock_peaks.return_value = peaks, None
+
+    MAX_DELAY = 50
+    FORECAST_HORIZON = 10
+
+    # Although the conf_level is hard-coded we mock the return values of
+    # find_peaks and acf so that we simulate different significant lags.
+    dft = DelayedFeatureTransformer(
+        max_delay=MAX_DELAY, forecast_horizon=FORECAST_HORIZON, conf_level=0.05, gap=0
+    )
+    new_X = dft.fit_transform(X, y)
+
+    first_significant_10 = [l for l in significant_lags if l < 10]
+    expected_lags = set(peaks).union(first_significant_10)
+    expected_lags = sorted(expected_lags.intersection(np.arange(MAX_DELAY + 1)))
+    answer = pd.DataFrame()
+    answer = answer.assign(
+        **{
+            f"feature_delay_{t + FORECAST_HORIZON}": X["feature"].shift(
+                t + FORECAST_HORIZON
+            )
+            for t in expected_lags
+        }
+    )
+    answer = answer.assign(
+        **{
+            f"target_delay_{t + FORECAST_HORIZON}": y.shift(t + FORECAST_HORIZON)
+            for t in expected_lags
+        }
+    )
+    # Sort columns in alphabetical order
+    answer = answer.sort_index(axis=1)
+    assert_frame_equal(new_X, answer)
+
+
+@patch(
+    "evalml.pipelines.components.transformers.preprocessing.delayed_feature_transformer.find_peaks"
+)
+@patch(
+    "evalml.pipelines.components.transformers.preprocessing.delayed_feature_transformer.acf"
+)
+def test_delayed_feature_transformer_selects_first_lag_if_none_significant(
+    mock_acf,
+    mock_peaks,
+):
+    X = pd.DataFrame({"feature": np.arange(10000)})
+    y = pd.Series(np.arange(10000))
+
+    acf_series = np.arange(len(y))
+    ci = np.ones((len(y), 2))
+    ci[:, 0] = -1
+
+    mock_acf.return_value = acf_series, ci
+    mock_peaks.return_value = [], None
+
+    MAX_DELAY = 50
+    FORECAST_HORIZON = 10
+
+    dft = DelayedFeatureTransformer(
+        max_delay=MAX_DELAY, forecast_horizon=FORECAST_HORIZON, conf_level=0.1, gap=0
+    )
+    new_X = dft.fit_transform(X, y)
+
+    answer = pd.DataFrame(
+        {
+            f"feature_delay_{1 + FORECAST_HORIZON}": X["feature"].shift(
+                1 + FORECAST_HORIZON
+            ),
+            f"target_delay_{1 + FORECAST_HORIZON}": y.shift(1 + FORECAST_HORIZON),
+        }
+    )
+    assert_frame_equal(new_X, answer)
 
 
 @pytest.mark.parametrize(
@@ -462,7 +582,7 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
         if X.loc[:, 0].isna().all():
             # Casting the fourth and fifth dataframes to datetime will produce all NaNs
             continue
-        dft = DelayedFeatureTransformer(max_delay=1, forecast_horizon=1)
+        dft = DelayedFeatureTransformer(max_delay=1, forecast_horizon=1, conf_level=1.0)
         if fit_transform:
             transformed = dft.fit_transform(X, y)
         else:
