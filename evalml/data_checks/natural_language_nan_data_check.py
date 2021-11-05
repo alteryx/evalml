@@ -22,11 +22,13 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             >>> import pandas as pd
             >>> import woodwork as ww
             >>> import numpy as np
+            ...
             >>> data = pd.DataFrame()
             >>> data['A'] = [None, "string_that_is_long_enough_for_natural_language"]
             >>> data['B'] = ['string_that_is_long_enough_for_natural_language', 'string_that_is_long_enough_for_natural_language']
             >>> data['C'] = np.random.randint(0, 3, size=len(data))
             >>> data.ww.init(logical_types={'A': 'NaturalLanguage', 'B': 'NaturalLanguage'})
+            ...
             >>> nl_nan_check = NaturalLanguageNaNDataCheck()
             >>> assert nl_nan_check.validate(data) == {
             ...        "warnings": [],

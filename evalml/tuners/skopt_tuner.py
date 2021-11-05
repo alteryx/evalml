@@ -17,6 +17,23 @@ class SKOptTuner(Tuner):
     Args:
         pipeline_hyperparameter_ranges (dict): A set of hyperparameter ranges corresponding to a pipeline's parameters.
         random_seed (int): The seed for the random number generator. Defaults to 0.
+
+    Examples:
+        >>> tuner = SKOptTuner({'My Component': {'param a': [0.0, 10.0], 'param b': ['a', 'b', 'c']}})
+        >>> proposal = tuner.propose()
+        ...
+        >>> assert proposal.keys() == {'My Component'}
+        >>> assert proposal['My Component'] == {'param a': 5.928446182250184, 'param b': 'c'}
+        ...
+        >>> for each in range(7):
+        ...     print(tuner.propose())
+        {'My Component': {'param a': 8.57945617622757, 'param b': 'c'}}
+        {'My Component': {'param a': 6.235636967859724, 'param b': 'b'}}
+        {'My Component': {'param a': 2.9753460654447235, 'param b': 'a'}}
+        {'My Component': {'param a': 2.7265629458011325, 'param b': 'b'}}
+        {'My Component': {'param a': 8.121687287754932, 'param b': 'b'}}
+        {'My Component': {'param a': 3.927847961008298, 'param b': 'c'}}
+        {'My Component': {'param a': 3.3739616041726843, 'param b': 'b'}}
     """
 
     def __init__(self, pipeline_hyperparameter_ranges, random_seed=0):
