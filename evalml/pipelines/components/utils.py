@@ -114,6 +114,13 @@ def handle_component_class(component_class):
     Raises:
         ValueError: If input is not a valid component class.
         MissingComponentError: If the component cannot be found.
+
+    Examples:
+        >>> from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor
+        >>> handle_component_class(DecisionTreeRegressor)
+        <class 'evalml.pipelines.components.estimators.regressors.decision_tree_regressor.DecisionTreeRegressor'>
+        >>> handle_component_class("Random Forest Regressor")
+        <class 'evalml.pipelines.components.estimators.regressors.rf_regressor.RandomForestRegressor'>
     """
     if isinstance(component_class, ComponentBase) or (
         inspect.isclass(component_class) and issubclass(component_class, ComponentBase)
@@ -263,7 +270,7 @@ def scikit_learn_wrapped_estimator(evalml_obj):
 
 
 def generate_component_code(element):
-    """Creates and returns a string that contains the Python imports and code required for running the EvalML component.
+    r"""Creates and returns a string that contains the Python imports and code required for running the EvalML component.
 
     Args:
         element (component instance): The instance of the component to generate string Python code for.
@@ -274,6 +281,13 @@ def generate_component_code(element):
 
     Raises:
         ValueError: If the input element is not a component instance.
+
+    Examples:
+        >>> from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor
+        >>> assert generate_component_code(DecisionTreeRegressor()) == "from evalml.pipelines.components.estimators.regressors.decision_tree_regressor import DecisionTreeRegressor\n\ndecisionTreeRegressor = DecisionTreeRegressor(**{'criterion': 'mse', 'max_features': 'auto', 'max_depth': 6, 'min_samples_split': 2, 'min_weight_fraction_leaf': 0.0})"
+        ...
+        >>> from evalml.pipelines.components.transformers.imputers.simple_imputer import SimpleImputer
+        >>> assert generate_component_code(SimpleImputer()) == "from evalml.pipelines.components.transformers.imputers.simple_imputer import SimpleImputer\n\nsimpleImputer = SimpleImputer(**{'impute_strategy': 'most_frequent', 'fill_value': None})"
     """
     # hold the imports needed and add code to end
     code_strings = []
@@ -313,6 +327,13 @@ def make_balancing_dictionary(y, sampling_ratio):
 
     Raises:
         ValueError: If sampling ratio is not in the range (0, 1] or the target is empty.
+
+    Examples:
+        >>> import pandas as pd
+        >>> y = pd.Series([1] * 4 + [2] * 8 + [3])
+        >>> assert make_balancing_dictionary(y, 0.5) == {2: 8, 1: 4, 3: 4}
+        >>> assert make_balancing_dictionary(y, 0.9) == {2: 8, 1: 7, 3: 7}
+        >>> assert make_balancing_dictionary(y, 0.1) == {2: 8, 1: 4, 3: 1}
     """
     if sampling_ratio <= 0 or sampling_ratio > 1:
         raise ValueError(

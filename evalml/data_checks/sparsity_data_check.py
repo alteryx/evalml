@@ -46,12 +46,14 @@ class SparsityDataCheck(DataCheck):
         Returns:
             dict: dict with a DataCheckWarning if there are any sparse columns.
 
-        Example:
+        Examples:
             >>> import pandas as pd
+            ...
             >>> df = pd.DataFrame({
             ...    'sparse': [float(x) for x in range(100)],
             ...    'not_sparse': [float(1) for x in range(100)]
             ... })
+            ...
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=0.5, unique_count_threshold=10)
             >>> assert sparsity_check.validate(df) == {
             ...     "errors": [],
@@ -62,6 +64,15 @@ class SparsityDataCheck(DataCheck):
             ...                    "details": {"columns": ["sparse"], "sparsity_score": {"sparse": 0.0}, "rows": None}}],
             ...     "actions": [{"code": "DROP_COL",
             ...                  "metadata": {"columns": ["sparse"], "rows": None}}]}
+            ...
+            ...
+            >>> df['sparse'] = [float(x % 10) for x in range(100)]
+            >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=1, unique_count_threshold=5)
+            >>> assert sparsity_check.validate(df) == {'warnings': [], 'errors': [], 'actions': []}
+            ...
+            ...
+            >>> sparse_array = pd.Series([1, 1, 1, 2, 2, 3] * 3)
+            >>> assert SparsityDataCheck.sparsity_score(sparse_array, count_threshold=5) == 0.6666666666666666
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
@@ -72,26 +83,31 @@ class SparsityDataCheck(DataCheck):
             count_threshold=self.unique_count_threshold,
         )
         too_sparse_cols = [col for col in res.index[res < self.threshold]]
-        results["warnings"].append(
-            DataCheckWarning(
-                message=warning_too_unique.format(
-                    (", ").join(["'{}'".format(str(col)) for col in too_sparse_cols]),
-                    self.problem_type,
-                ),
-                data_check_name=self.name,
-                message_code=DataCheckMessageCode.TOO_SPARSE,
-                details={
-                    "columns": too_sparse_cols,
-                    "sparsity_score": {col: res.loc[col] for col in too_sparse_cols},
-                },
-            ).to_dict()
-        )
-        results["actions"].append(
-            DataCheckAction(
-                action_code=DataCheckActionCode.DROP_COL,
-                metadata={"columns": too_sparse_cols},
-            ).to_dict()
-        )
+        if too_sparse_cols:
+            results["warnings"].append(
+                DataCheckWarning(
+                    message=warning_too_unique.format(
+                        (", ").join(
+                            ["'{}'".format(str(col)) for col in too_sparse_cols]
+                        ),
+                        self.problem_type,
+                    ),
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.TOO_SPARSE,
+                    details={
+                        "columns": too_sparse_cols,
+                        "sparsity_score": {
+                            col: res.loc[col] for col in too_sparse_cols
+                        },
+                    },
+                ).to_dict()
+            )
+            results["actions"].append(
+                DataCheckAction(
+                    action_code=DataCheckActionCode.DROP_COL,
+                    metadata={"columns": too_sparse_cols},
+                ).to_dict()
+            )
         return results
 
     @staticmethod

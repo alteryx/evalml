@@ -32,6 +32,80 @@ class NoVarianceDataCheck(DataCheck):
 
         Returns:
             dict: A dict of warnings/errors corresponding to features or target with no variance.
+
+        Examples:
+            >>> import pandas as pd
+            ...
+            >>> X = pd.DataFrame([2, 2, 2, 2, 2, 2, 2, 2], columns=["First_Column"])
+            >>> y = pd.Series([1, 1, 1, 1, 1, 1, 1, 1])
+            ...
+            >>> novar_dc = NoVarianceDataCheck()
+            >>> assert novar_dc.validate(X, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': "'First_Column' has 1 unique value.",
+            ...                 'data_check_name': 'NoVarianceDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': ['First_Column'], 'rows': None},
+            ...                 'code': 'NO_VARIANCE'},
+            ...                {'message': 'Y has 1 unique value.',
+            ...                 'data_check_name': 'NoVarianceDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': ['Y'], 'rows': None},
+            ...                 'code': 'NO_VARIANCE'}],
+            ...     'actions': [{'code': 'DROP_COL',
+            ...                  'metadata': {'columns': ["First_Column"], 'rows': None}}]}
+            ...
+            ...
+            >>> X["First_Column"] = [2, 2, 2, 3, 3, 3, None, None]
+            >>> y = pd.Series([1, 1, 1, 2, 2, 2, None, None])
+            >>> assert novar_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
+            ...
+            ...
+            >>> y = pd.Series([None] * 7)
+            >>> assert novar_dc.validate(X, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': 'Y has 0 unique values.',
+            ...                 'data_check_name': 'NoVarianceDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': ['Y'], 'rows': None},
+            ...                 'code': 'NO_VARIANCE'}],
+            ...     'actions': []}
+            ...
+            ...
+            >>> X["First_Column"] = [2, 2, 2, 2, None, None, None, None]
+            >>> y = pd.Series([1, 1, 1, 1, None, None, None, None])
+            >>> assert novar_dc.validate(X, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': "'First_Column' has 1 unique value.",
+            ...                 'data_check_name': 'NoVarianceDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': ['First_Column'], 'rows': None},
+            ...                 'code': 'NO_VARIANCE'},
+            ...                {'message': 'Y has 1 unique value.',
+            ...                 'data_check_name': 'NoVarianceDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': ['Y'], 'rows': None},
+            ...                 'code': 'NO_VARIANCE'}],
+            ...     'actions': [{'code': 'DROP_COL',
+            ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}]}
+            ...
+            ...
+            >>> novar_dc = NoVarianceDataCheck(count_nan_as_value=True)
+            >>> assert novar_dc.validate(X, y) == {
+            ...     'warnings': [{'message': "'First_Column' has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.",
+            ...                   'data_check_name': 'NoVarianceDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': ['First_Column'], 'rows': None},
+            ...                   'code': 'NO_VARIANCE_WITH_NULL'},
+            ...                  {'message': 'Y has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.',
+            ...                   'data_check_name': 'NoVarianceDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': ['Y'], 'rows': None},
+            ...                   'code': 'NO_VARIANCE_WITH_NULL'}],
+            ...     'errors': [],
+            ...     'actions': [{'code': 'DROP_COL',
+            ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}]}
+
         """
         results = {"warnings": [], "errors": [], "actions": []}
         X = infer_feature_types(X)
