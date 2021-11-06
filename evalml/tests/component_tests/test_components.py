@@ -1090,7 +1090,6 @@ def test_all_transformers_needs_fitting():
             "DropColumns",
             "SelectColumns",
             "SelectByType",
-            "DelayedFeatureTransformer",
         ]:
             assert not component_class.needs_fitting
         else:

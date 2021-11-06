@@ -6,6 +6,7 @@ Release Notes
         * Limit computationally-intensive models during ``AutoMLSearch`` for certain multiclass problems, allow for opt-in with parameter ``allow_long_running_models`` :pr:`2982`
         * Added support for stacked ensemble pipelines to prediction explanations module :pr:`2971`
         * Added integration tests for data checks and data checks actions workflow :pr:`2883`
+        * Added an algorithm to ``DelayedFeatureTransformer`` to select better lags :pr:`3005`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
         * Updated estimator and pipelines' ``predict``, ``predict_proba``, ``transform``, ``inverse_transform`` methods to preserve input indices :pr:`2979`
@@ -13,6 +14,7 @@ Release Notes
     * Documentation Changes
         * Fixed cost benefit matrix demo formatting :pr:`2990`
         * Update ReadMe.md with new badge links and updated installation instructions for conda :pr:`2998`
+        * Added more comprehensive doctests :pr:`3002`
     * Testing Changes
 
 .. warning::
