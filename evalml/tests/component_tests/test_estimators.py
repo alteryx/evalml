@@ -301,6 +301,7 @@ def test_estimator_manage_woodwork(X_y_binary):
     assert isinstance(y, pd.Series)
 
 
+@pytest.mark.parametrize("use_numerical_targets_for_classification", [True, False])
 @pytest.mark.parametrize("estimator_class", _all_estimators())
 @pytest.mark.parametrize("use_custom_index", [True, False])
 @pytest.mark.parametrize(
@@ -308,6 +309,7 @@ def test_estimator_manage_woodwork(X_y_binary):
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
 def test_estimator_fit_predict_and_predict_proba_respect_custom_indices(
+    use_numerical_targets_for_classification,
     problem_type,
     use_custom_index,
     estimator_class,
@@ -315,7 +317,10 @@ def test_estimator_fit_predict_and_predict_proba_respect_custom_indices(
     X_y_multi,
     X_y_regression,
 ):
-    if estimator_class not in get_estimators(problem_type):
+    if estimator_class not in get_estimators(problem_type) or (
+        problem_type == ProblemTypes.REGRESSION
+        and use_numerical_targets_for_classification
+    ):
         return
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
@@ -326,6 +331,9 @@ def test_estimator_fit_predict_and_predict_proba_respect_custom_indices(
 
     X = pd.DataFrame(X)
     y = pd.Series(y)
+
+    if is_classification(problem_type) and not use_numerical_targets_for_classification:
+        y = y.map({val: str(val) for val in np.unique(y)})
 
     if use_custom_index:
         gen = np.random.default_rng(seed=0)
