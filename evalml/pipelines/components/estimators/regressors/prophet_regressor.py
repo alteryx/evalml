@@ -151,7 +151,7 @@ class ProphetRegressor(Estimator):
         predictions = infer_feature_types(predictions)
         predictions = predictions.rename(None)
 
-        if X.empty:
+        if not X.empty:
             predictions.index = X.index
         return predictions
 
