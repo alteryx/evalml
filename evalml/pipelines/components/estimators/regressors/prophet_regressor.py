@@ -138,10 +138,8 @@ class ProphetRegressor(Estimator):
         Returns:
             pd.Series: Predicted values.
         """
-        use_original_index = True
         if X is None:
             X = pd.DataFrame()
-            use_original_index = False
         X = infer_feature_types(X)
 
         prophet_df = ProphetRegressor.build_prophet_df(
@@ -153,7 +151,7 @@ class ProphetRegressor(Estimator):
         predictions = infer_feature_types(predictions)
         predictions = predictions.rename(None)
 
-        if use_original_index:
+        if X.empty:
             predictions.index = X.index
         return predictions
 
