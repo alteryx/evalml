@@ -9,6 +9,7 @@ Release Notes
         * Added an algorithm to ``DelayedFeatureTransformer`` to select better lags :pr:`3005`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
+        * Fixed permutation importance failing when target is categorical :pr:`3017`
     * Changes
     * Documentation Changes
         * Fixed cost benefit matrix demo formatting :pr:`2990`
