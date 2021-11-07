@@ -150,7 +150,7 @@ class ProphetRegressor(Estimator):
         predictions = prophet_output["yhat"]
         predictions = infer_feature_types(predictions)
         predictions = predictions.rename(None)
-        predictions.index = prophet_output["ds"]
+        predictions.index = X.index
         return predictions
 
     def get_params(self):
