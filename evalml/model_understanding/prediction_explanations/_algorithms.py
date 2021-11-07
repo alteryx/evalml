@@ -259,6 +259,15 @@ def _aggregate_explainer_values(values, provenance):
 
     Returns:
         dict or list(dict)
+
+    Examples:
+        >>> values = {"a_0": [1, 0.4, -1.3],
+        ...           "a_1": [0.5, 0.6, -0.7],
+        ...           "b_0": [0.1, -0.6, 2.2],
+        ...           "b_1": [2, 3.6, -0.2]}
+        >>> provenance = {"a": ["a_0", "a_1"],
+        ...               "b": ["b_0", "b_1"]}
+        >>> assert _aggregate_explainer_values(values, provenance) == {'a': [1.5, 1.0, -2.0], 'b': [2.1, 3.0, 2.0]}
     """
     if isinstance(values, dict):
         return _aggreggate_explainer_values_dict(values, provenance)

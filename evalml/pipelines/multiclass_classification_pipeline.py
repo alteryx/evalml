@@ -17,6 +17,23 @@ class MulticlassClassificationPipeline(ClassificationPipeline):
              An empty dictionary or None implies using all default values for component parameters. Defaults to None.
         custom_name (str): Custom name for the pipeline. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+
+    Example:
+        >>> pipeline = MulticlassClassificationPipeline(component_graph=["Simple Imputer", "Logistic Regression Classifier"],
+        ...                                             parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
+        ...                                                                                            "solver": "liblinear"}},
+        ...                                             custom_name="My Multiclass Pipeline")
+        ...
+        >>> assert pipeline.custom_name == "My Multiclass Pipeline"
+        >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Logistic Regression Classifier'}
+        ...
+        >>> assert pipeline.parameters == {
+        ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
+        ...     'Logistic Regression Classifier': {'penalty': 'elasticnet',
+        ...                                        'C': 1.0,
+        ...                                        'n_jobs': -1,
+        ...                                        'multi_class': 'auto',
+        ...                                        'solver': 'liblinear'}}
     """
 
     problem_type = ProblemTypes.MULTICLASS

@@ -3716,6 +3716,7 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(
             "max_delay": 0,
             "gap": 6,
             "forecast_horizon": 7,
+            "conf_level": 0.05,
         },
         "Time Series Baseline Estimator": {"forecast_horizon": 7, "gap": 6},
     }

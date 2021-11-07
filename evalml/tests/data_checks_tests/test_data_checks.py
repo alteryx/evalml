@@ -426,7 +426,7 @@ def test_default_data_checks_null_rows():
     expected = {
         "warnings": [
             DataCheckWarning(
-                message="5 out of 5 rows are more than 95.0% null",
+                message="5 out of 5 rows are 95.0% or more null",
                 data_check_name="HighlyNullDataCheck",
                 message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
                 details={"pct_null_cols": highly_null_rows, "rows": [0, 1, 2, 3, 4]},
