@@ -478,14 +478,20 @@ def test_get_permutation_importance_invalid_objective(
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
+@pytest.mark.parametrize("use_numerical_target", [True, False])
 def test_get_permutation_importance_binary(
-    X_y_binary,
     data_type,
+    use_numerical_target,
+    X_y_binary,
+    fraud_100,
     logistic_regression_binary_pipeline_class,
     binary_test_objectives,
     make_data_type,
 ):
-    X, y = X_y_binary
+    if use_numerical_target:
+        X, y = X_y_binary
+    else:
+        X, y = fraud_100
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
@@ -510,8 +516,11 @@ def test_get_permutation_importance_binary(
                     pipeline, X, y, col, objective, fast=False
                 )
             )
+            permutation_importance_sorted_row = permutation_importance_sorted[
+                permutation_importance_sorted["feature"] == col
+            ]["importance"]
             np.testing.assert_almost_equal(
-                permutation_importance_sorted["importance"][col],
+                permutation_importance_sorted_row.iloc[0],
                 permutation_importance_one_col,
             )
 
