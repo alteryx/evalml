@@ -37,24 +37,19 @@ def test_select_by_type_init():
     assert transformer.parameters["column_types"] == ["a", "b"]
 
 
-@pytest.mark.parametrize("class_to_test", [DropColumns, SelectColumns, SelectByType])
-def test_column_transformer_empty_X(class_to_test):
+def test_select_by_type_empty_X():
     X = pd.DataFrame()
-    transformer = class_to_test(columns=[])
+    transformer = SelectByType(columns=[])
     assert_frame_equal(X, transformer.transform(X))
 
-    transformer = class_to_test(columns=[])
+    transformer = SelectByType(columns=[])
     assert_frame_equal(X, transformer.fit_transform(X))
 
-    if class_to_test is SelectByType:
-        transformer = class_to_test(column_types=["not in data"])
-    else:
-        transformer = class_to_test(columns=["not in data"])
-    if class_to_test is not SelectColumns:
-        with pytest.raises(ValueError, match="not found in input data"):
-            transformer.fit(X)
+    transformer = SelectByType(column_types=["not in data"])
+    with pytest.raises(ValueError, match="not found in input data"):
+        transformer.fit(X)
 
-    transformer = class_to_test(columns=list(X.columns))
+    transformer = SelectByType(columns=list(X.columns))
     assert transformer.transform(X).empty
 
 
@@ -186,27 +181,6 @@ def test_column_transformer_fit_transform(class_to_test, checking_functions):
         )
     else:
         assert check3(X, class_to_test(columns=list(X.columns)).fit_transform(X))
-
-
-def test_drop_column_transformer_input_invalid_col_name():
-    X = pd.DataFrame({"one": [1, 2, 3, 4], "two": [2, 3, 4, 5], "three": [1, 2, 3, 4]})
-    transformer = DropColumns(columns=["not in data"])
-
-    with pytest.raises(ValueError, match="not found in input data"):
-        transformer.fit(X)
-    with pytest.raises(ValueError, match="not found in input data"):
-        transformer.transform(X)
-    with pytest.raises(ValueError, match="not found in input data"):
-        transformer.fit_transform(X)
-
-    X = np.arange(12).reshape(3, 4)
-    transformer = DropColumns(columns=[5])
-    with pytest.raises(ValueError, match="not found in input data"):
-        transformer.fit(X)
-    with pytest.raises(ValueError, match="not found in input data"):
-        transformer.transform(X)
-    with pytest.raises(ValueError, match="not found in input data"):
-        transformer.fit_transform(X)
 
 
 @pytest.mark.parametrize(
