@@ -7,9 +7,9 @@ import numpy as np
 import pandas as pd
 import py
 import pytest
-import woodwork as ww
 from sklearn import datasets
 from skopt.space import Integer, Real
+import woodwork as ww
 
 from evalml.model_family import ModelFamily
 from evalml.objectives import BinaryClassificationObjective
