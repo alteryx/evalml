@@ -13,10 +13,7 @@ from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
 from evalml.objectives import BinaryClassificationObjective
-from evalml.objectives.utils import (
-    get_core_objectives,
-    get_non_core_objectives,
-)
+from evalml.objectives.utils import get_core_objectives, get_non_core_objectives
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -36,11 +33,7 @@ from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
 )
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.preprocessing import load_data
-from evalml.problem_types import (
-    ProblemTypes,
-    handle_problem_types,
-    is_regression,
-)
+from evalml.problem_types import ProblemTypes, handle_problem_types, is_regression
 
 
 def pytest_configure(config):
@@ -1475,3 +1468,22 @@ def CustomClassificationObjectiveRanges(ranges):
             """Not implementing since mocked in our tests."""
 
     return CustomClassificationObjectiveRanges()
+
+
+def load_daily_temp_local(n_rows=None):
+    currdir_path = os.path.dirname(os.path.abspath(__file__))
+    data_folder_path = os.path.join(currdir_path, "data")
+    fraud_data_path = os.path.join(data_folder_path, "daily-min-temperatures.csv")
+    X, y = load_data(
+        path=fraud_data_path,
+        index=None,
+        target="Temp",
+        n_rows=n_rows,
+    )
+    return X, y
+
+
+@pytest.fixture
+def daily_temp_local():
+    X, y = load_daily_temp_local()
+    return X, y

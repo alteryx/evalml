@@ -118,7 +118,8 @@ def test_churn_data(churn_local):
     X_local, y_local = churn_local
     pd.testing.assert_frame_equal(X, X_local)
     pd.testing.assert_series_equal(y, y_local)
-    
+
+
 def test_daily_temp(daily_temp_local):
     X, y = daily_temp_local
     assert X.shape == (3650, 2)
