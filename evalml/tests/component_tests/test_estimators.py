@@ -9,6 +9,7 @@ from evalml.exceptions import ComponentNotYetFittedError
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import Estimator
 from evalml.pipelines.components.utils import (
+    _all_estimators,
     _all_estimators_used_in_search,
     get_estimators,
 )
@@ -19,6 +20,7 @@ from evalml.problem_types import (
     is_multiclass,
     is_regression,
 )
+from evalml.problem_types.utils import is_classification
 from evalml.utils import get_random_state
 
 
@@ -297,3 +299,59 @@ def test_estimator_manage_woodwork(X_y_binary):
     X, y = est._manage_woodwork(X_df, y_series)
     assert isinstance(X, pd.DataFrame)
     assert isinstance(y, pd.Series)
+
+
+@pytest.mark.parametrize("use_numerical_targets_for_classification", [True, False])
+@pytest.mark.parametrize("estimator_class", _all_estimators())
+@pytest.mark.parametrize("use_custom_index", [True, False])
+@pytest.mark.parametrize(
+    "problem_type",
+    [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
+)
+def test_estimator_fit_predict_and_predict_proba_respect_custom_indices(
+    use_numerical_targets_for_classification,
+    problem_type,
+    use_custom_index,
+    estimator_class,
+    X_y_binary,
+    X_y_multi,
+    X_y_regression,
+):
+    if estimator_class not in get_estimators(problem_type) or (
+        problem_type == ProblemTypes.REGRESSION
+        and use_numerical_targets_for_classification
+    ):
+        return
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+
+    if is_classification(problem_type) and not use_numerical_targets_for_classification:
+        y = y.map({val: str(val) for val in np.unique(y)})
+
+    if use_custom_index:
+        custom_index = range(100, 100 + X.shape[0])
+        X.index = custom_index
+        y.index = custom_index
+
+    X_original_index = X.index.copy()
+    y_original_index = y.index.copy()
+
+    estimator = estimator_class()
+    estimator.fit(X, y)
+    pd.testing.assert_index_equal(X.index, X_original_index)
+    pd.testing.assert_index_equal(y.index, y_original_index)
+
+    if is_classification(problem_type):
+        X_pred_proba = estimator.predict_proba(X)
+        pd.testing.assert_index_equal(
+            X_original_index, X_pred_proba.index, check_names=True
+        )
+    X_pred = estimator.predict(X)
+    pd.testing.assert_index_equal(X_original_index, X_pred.index, check_names=True)

@@ -97,5 +97,7 @@ class LabelEncoder(Transformer):
         """
         if y is None:
             raise ValueError("y cannot be None!")
+        y_ww = infer_feature_types(y)
         y_it = self._component_obj.inverse_transform(y)
-        return ww.init_series(y_it)
+        y_it = infer_feature_types(pd.Series(y_it, index=y_ww.index))
+        return y_it

@@ -1,5 +1,6 @@
 """Component that applies a log transformation to the target data."""
 import numpy as np
+import pandas as pd
 
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
@@ -73,8 +74,10 @@ class LogTransformer(Transformer):
             pd.Series: Target with exponential applied.
 
         """
-        y_ww_inv = infer_feature_types(y)
-        y_inv = y_ww_inv.apply(np.exp)
+        y_ww = infer_feature_types(y)
+        y_inv = y_ww.apply(np.exp)
         if self.min <= 0:
             y_inv = y_inv.apply(lambda x: x - abs(self.min) - 1)
-        return infer_feature_types(y_inv)
+
+        y_inv = infer_feature_types(pd.Series(y_inv, index=y_ww.index))
+        return y_inv
