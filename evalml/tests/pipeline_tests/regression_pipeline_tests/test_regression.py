@@ -1,9 +1,9 @@
 import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_index_equal
 
 from evalml.pipelines import RegressionPipeline
-from evalml.preprocessing import split_data
 
 
 def test_regression_init():
@@ -84,20 +84,29 @@ def test_woodwork_regression_pipeline(diabetes_local, linear_regression_pipeline
     assert not pd.isnull(regression_pipeline.predict(X)).any()
 
 
-def test_custom_indices():
+@pytest.mark.parametrize(
+    "index",
+    [
+        list(range(-5, 0)),
+        list(range(100, 105)),
+        [f"row_{i}" for i in range(5)],
+        pd.date_range("2020-09-08", periods=5),
+    ],
+)
+def test_pipeline_transform_and_predict_with_custom_index(
+    index,
+    linear_regression_pipeline_class,
+):
     X = pd.DataFrame(
-        {
-            "a": ["a", "b", "a", "a", "a", "c", "c", "c"] * 3,
-            "b": [0, 1, 1, 1, 1, 1, 0, 1] * 3,
-        }
+        {"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
+        index=index,
     )
-    y = pd.Series(
-        [0, 0, 0, 1, 0, 1, 0, 0] * 3, index=np.random.choice(24, 24, replace=False)
+    X.ww.init(logical_types={"categories": "categorical"})
+
+    y = pd.Series([0, 1.0, 1, 1, 0], index=index)
+    pipeline = linear_regression_pipeline_class(
+        parameters={"Linear Regressor": {"n_jobs": 1}}
     )
-    x1, x2, y1, y2 = split_data(X, y, problem_type="regression")
-    pipeline = RegressionPipeline(
-        component_graph=["Imputer", "One Hot Encoder", "Linear Regressor"],
-        parameters={},
-    )
-    pipeline.fit(x2, y2)
-    assert not pd.isnull(pipeline.predict(X)).any()
+    pipeline.fit(X, y)
+    predictions = pipeline.predict(X)
+    assert_index_equal(predictions.index, X.index)

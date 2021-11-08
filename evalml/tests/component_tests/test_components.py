@@ -969,12 +969,12 @@ def test_estimator_check_for_fit(X_y_binary):
             return self
 
         def predict(self, X):
-            series = pd.Series(dtype="string")
+            series = pd.Series([0] * len(X))
             series.ww.init()
             return series
 
         def predict_proba(self, X):
-            df = pd.DataFrame()
+            df = pd.DataFrame({0: [0] * len(X)})
             df.ww.init()
             return df
 
@@ -1151,38 +1151,49 @@ def test_all_estimators_check_fit(
             X, y = X_y_binary
 
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
-        with patch.object(component, "_component_obj"):
-            with pytest.raises(
-                ComponentNotYetFittedError,
-                match=f"You must fit {component_class.__name__}",
-            ):
-                component.predict(X)
-            if (
-                ProblemTypes.BINARY in component.supported_problem_types
-                or ProblemTypes.MULTICLASS in component.supported_problem_types
-            ):
+
+        with patch.object(component, "_component_obj") as mock_component_obj:
+            with patch.object(
+                mock_component_obj, "predict"
+            ) as mock_component_obj_predict:
+                mock_component_obj_predict.return_value = pd.Series([0] * len(y))
+
+                if "Prophet" in component.name:
+                    mock_component_obj_predict.return_value = {
+                        "yhat": pd.Series([0] * len(y)),
+                        "ds": pd.Series([0] * len(y)),
+                    }
+
                 with pytest.raises(
                     ComponentNotYetFittedError,
                     match=f"You must fit {component_class.__name__}",
                 ):
+                    component.predict(X)
+                if (
+                    ProblemTypes.BINARY in component.supported_problem_types
+                    or ProblemTypes.MULTICLASS in component.supported_problem_types
+                ):
+                    with pytest.raises(
+                        ComponentNotYetFittedError,
+                        match=f"You must fit {component_class.__name__}",
+                    ):
+                        component.predict_proba(X)
+
+                with pytest.raises(
+                    ComponentNotYetFittedError,
+                    match=f"You must fit {component_class.__name__}",
+                ):
+                    component.feature_importance
+
+                component.fit(X, y)
+
+                if (
+                    ProblemTypes.BINARY in component.supported_problem_types
+                    or ProblemTypes.MULTICLASS in component.supported_problem_types
+                ):
                     component.predict_proba(X)
-
-            with pytest.raises(
-                ComponentNotYetFittedError,
-                match=f"You must fit {component_class.__name__}",
-            ):
+                component.predict(X)
                 component.feature_importance
-
-            component.fit(X, y)
-
-            if (
-                ProblemTypes.BINARY in component.supported_problem_types
-                or ProblemTypes.MULTICLASS in component.supported_problem_types
-            ):
-                component.predict_proba(X)
-
-            component.predict(X)
-            component.feature_importance
 
 
 @pytest.mark.parametrize("data_type", ["li", "np", "pd", "ww"])
@@ -1535,8 +1546,7 @@ def test_transformer_fit_and_transform_respect_custom_indices(
     y = pd.Series(y)
 
     if use_custom_index:
-        gen = np.random.default_rng(seed=0)
-        custom_index = gen.permutation(range(200, 200 + X.shape[0]))
+        custom_index = range(100, 100 + X.shape[0])
         X.index = custom_index
         y.index = custom_index
 
@@ -1561,6 +1571,12 @@ def test_transformer_fit_and_transform_respect_custom_indices(
         pd.testing.assert_index_equal(
             y.index, y_original_index, check_names=check_names
         )
+
+    if hasattr(transformer_class, "inverse_transform"):
+        y_inv = transformer.inverse_transform(y)
+        pd.testing.assert_index_equal(
+            y_inv.index, y_original_index, check_names=check_names
+        )
     pd.testing.assert_index_equal(X_t.index, X_original_index, check_names=check_names)
 
 
@@ -1572,8 +1588,6 @@ def test_estimator_fit_respects_custom_indices(
     X_y_binary,
     X_y_regression,
     ts_data,
-    logistic_regression_binary_pipeline_class,
-    linear_regression_pipeline_class,
     helper_functions,
 ):
 
@@ -1596,8 +1610,7 @@ def test_estimator_fit_respects_custom_indices(
         X.index = pd.date_range("2020-10-01", "2020-10-31")
         y.index = pd.date_range("2020-10-01", "2020-10-31")
     elif use_custom_index and not ts_problem:
-        gen = np.random.default_rng(seed=0)
-        custom_index = gen.permutation(range(200, 200 + X.shape[0]))
+        custom_index = range(100, 100 + X.shape[0])
         X.index = custom_index
         y.index = custom_index
 

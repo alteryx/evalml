@@ -11,6 +11,7 @@ Release Notes
         * Added AutoML function to access ensemble pipeline's input pipelines IDs :pr:`3011`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
+        * Updated estimator and pipelines' ``predict``, ``predict_proba``, ``transform``, ``inverse_transform`` methods to preserve input indices :pr:`2979`
     * Changes
     * Documentation Changes
         * Fixed cost benefit matrix demo formatting :pr:`2990`
