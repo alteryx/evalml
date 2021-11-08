@@ -112,7 +112,7 @@ class PolynomialDetrender(Transformer):
         """
         if y is None:
             raise ValueError("y cannot be None for PolynomialDetrender!")
-        y_dt = infer_feature_types(y)
-        y_t = self._component_obj.inverse_transform(y_dt)
-        y_t = infer_feature_types(pd.Series(y_t, index=y_dt.index))
+        y_ww = infer_feature_types(y)
+        y_t = self._component_obj.inverse_transform(y_ww)
+        y_t = infer_feature_types(pd.Series(y_t, index=y_ww.index))
         return y_t
