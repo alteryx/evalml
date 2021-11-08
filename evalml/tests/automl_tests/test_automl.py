@@ -5413,8 +5413,6 @@ def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
     test_env = AutoMLTestEnv("binary")
     with test_env.test_context(mock_score_side_effect=score_side_effect):
         automl.search()
-    pipeline_names = automl.rankings["pipeline_name"]
-    assert pipeline_names.str.contains("Ensemble").any()
 
     ensemble_ids = [
         _get_first_stacked_classifier_no() - 1,

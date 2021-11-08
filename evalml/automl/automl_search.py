@@ -1592,7 +1592,7 @@ class AutoMLSearch:
         return self._SLEEP_TIME
 
     def get_ensembler_input_pipelines(self, ensemble_pipeline_id):
-        """Score a list of pipelines on the given holdout data.
+        """Returns a list of input pipeline IDs given an ensembler pipeline ID.
 
         Args:
             ensemble_pipeline_id (id): Ensemble pipeline ID to get input pipeline IDs from.
@@ -1605,8 +1605,8 @@ class AutoMLSearch:
         """
         pipeline_results = self._results["pipeline_results"]
         if (
-            ensemble_pipeline_id not in pipeline_results.keys()
-            or "input_pipeline_ids" not in pipeline_results[ensemble_pipeline_id].keys()
+            ensemble_pipeline_id not in pipeline_results
+            or "input_pipeline_ids" not in pipeline_results[ensemble_pipeline_id]
         ):
             raise ValueError(
                 f"Pipeline ID {ensemble_pipeline_id} is not a valid ensemble pipeline"
