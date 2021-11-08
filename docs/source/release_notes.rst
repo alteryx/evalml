@@ -6,7 +6,7 @@ Release Notes
         * Limit computationally-intensive models during ``AutoMLSearch`` for certain multiclass problems, allow for opt-in with parameter ``allow_long_running_models`` :pr:`2982`
         * Added support for stacked ensemble pipelines to prediction explanations module :pr:`2971`
         * Added integration tests for data checks and data checks actions workflow :pr:`2883`
-        * Added a change in pipeline structure to handle categorical columns separately for ``DefaultAlgorithm`` pipelines :pr:`2986`
+        * Added a change in pipeline structure to handle categorical columns separately for pipelines in ``DefaultAlgorithm`` :pr:`2986`
         * Added an algorithm to ``DelayedFeatureTransformer`` to select better lags :pr:`3005`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
