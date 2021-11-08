@@ -150,6 +150,7 @@ class UniquenessDataCheck(DataCheck):
 
         Args:
             col (pd.Series): Feature values.
+            drop_na (bool): Whether to drop null values when computing the uniqueness score. Defaults to True.
 
         Returns:
             (float): Uniqueness score.
