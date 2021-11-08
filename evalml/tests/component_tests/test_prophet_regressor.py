@@ -78,8 +78,7 @@ def test_fit_predict_ts_with_X_index(ts_data):
     clf = ProphetRegressor(uncertainty_samples=False, changepoint_prior_scale=2.0)
     clf.fit(X, y)
     y_pred = clf.predict(X)
-
-    assert (y_pred == y_pred_p).all()
+    np.array_equal(y_pred_p.values, y_pred.values)
 
 
 def test_fit_predict_ts_with_y_index(ts_data):
@@ -97,7 +96,7 @@ def test_fit_predict_ts_with_y_index(ts_data):
     clf.fit(X, y)
     y_pred = clf.predict(X, y)
 
-    assert (y_pred == y_pred_p).all()
+    np.array_equal(y_pred_p.values, y_pred.values)
 
 
 def test_fit_predict_ts_no_X(ts_data):
@@ -116,7 +115,7 @@ def test_fit_predict_ts_no_X(ts_data):
     clf.fit(X=None, y=y)
     y_pred = clf.predict(X=None, y=y)
 
-    assert (y_pred == y_pred_p).all()
+    np.array_equal(y_pred_p.values, y_pred.values)
 
 
 def test_fit_predict_date_col(ts_data):
@@ -141,7 +140,7 @@ def test_fit_predict_date_col(ts_data):
     p_clf.fit(prophet_df)
     y_pred_p = p_clf.predict(prophet_df)["yhat"]
 
-    assert (y_pred == y_pred_p).all()
+    np.array_equal(y_pred_p.values, y_pred.values)
 
 
 def test_fit_predict_no_date_col_or_index(ts_data):

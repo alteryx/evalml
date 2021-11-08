@@ -201,7 +201,8 @@ class LightGBMClassifier(Estimator):
         if not self._label_encoder:
             return predictions
         predictions = pd.Series(
-            self._label_encoder.inverse_transform(predictions.astype(np.int64))
+            self._label_encoder.inverse_transform(predictions.astype(np.int64)),
+            index=predictions.index,
         )
         return infer_feature_types(predictions)
 
