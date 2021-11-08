@@ -16,6 +16,37 @@ class TrainingValidationSplit(BaseCrossValidator):
         stratify (list): Splits the data in a stratified fashion, using this argument as class labels.
             Defaults to None.
         random_seed (int): The seed to use for random sampling. Defaults to 0.
+
+    Examples:
+        >>> import numpy as np
+        >>> import pandas as pd
+        ...
+        >>> X = pd.DataFrame([i for i in range(10)], columns=["First"])
+        >>> y = pd.Series([i for i in range(10)])
+        ...
+        >>> tv_split = TrainingValidationSplit()
+        >>> split_ = next(tv_split.split(X, y))
+        >>> assert (split_[0] == np.array([0, 1, 2, 3, 4, 5, 6])).all()
+        >>> assert (split_[1] == np.array([7, 8, 9])).all()
+        ...
+        ...
+        >>> tv_split = TrainingValidationSplit(test_size=0.5)
+        >>> split_ = next(tv_split.split(X, y))
+        >>> assert (split_[0] == np.array([0, 1, 2, 3, 4])).all()
+        >>> assert (split_[1] == np.array([5, 6, 7, 8, 9])).all()
+        ...
+        ...
+        >>> tv_split = TrainingValidationSplit(shuffle=True)
+        >>> split_ = next(tv_split.split(X, y))
+        >>> assert (split_[0] == np.array([9, 1, 6, 7, 3, 0, 5])).all()
+        >>> assert (split_[1] == np.array([2, 8, 4])).all()
+        ...
+        ...
+        >>> y = pd.Series([i % 3 for i in range(10)])
+        >>> tv_split = TrainingValidationSplit(shuffle=True, stratify=y)
+        >>> split_ = next(tv_split.split(X, y))
+        >>> assert (split_[0] == np.array([1, 9, 3, 2, 8, 6, 7])).all()
+        >>> assert (split_[1] == np.array([0, 4, 5])).all()
     """
 
     def __init__(

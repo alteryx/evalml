@@ -81,7 +81,7 @@ def test_highly_null_data_check_warnings():
     assert validate_results == {
         "warnings": [
             DataCheckWarning(
-                message="5 out of 5 rows are more than 0.0% null",
+                message="5 out of 5 rows are 0.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
                 details={
@@ -126,7 +126,7 @@ def test_highly_null_data_check_warnings():
     assert validate_results == {
         "warnings": [
             DataCheckWarning(
-                message="4 out of 5 rows are more than 50.0% null",
+                message="4 out of 5 rows are 50.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
                 details={"pct_null_cols": highly_null_rows, "rows": [0, 1, 2, 3]},
@@ -201,7 +201,7 @@ def test_highly_null_data_check_separate_rows_cols():
     assert validate_results == {
         "warnings": [
             DataCheckWarning(
-                message="5 out of 5 rows are more than 0.0% null",
+                message="5 out of 5 rows are 0.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
                 details={"pct_null_cols": highly_null_rows, "rows": [0, 1, 2, 3, 4]},
@@ -274,7 +274,7 @@ def test_highly_null_data_check_input_formats():
     expected = {
         "warnings": [
             DataCheckWarning(
-                message="1 out of 2 rows are more than 80.0% null",
+                message="1 out of 2 rows are 80.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
                 details={"pct_null_cols": highly_null_rows, "rows": [0]},
