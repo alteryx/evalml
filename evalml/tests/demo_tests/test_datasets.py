@@ -122,7 +122,7 @@ def test_churn_data(churn_local):
 
 def test_daily_temp(daily_temp_local):
     X, y = daily_temp_local
-    assert X.shape == (3650, 2)
+    assert X.shape == (3650, 1)
     assert y.shape == (3650,)
     assert isinstance(X, pd.DataFrame)
     assert isinstance(y, pd.Series)
