@@ -729,7 +729,7 @@ class _ClassificationPredictedValues(_SectionMaker):
 
         return [
             f"\t\tPredicted Probabilities: {pred_value}\n",
-            f"\t\tPredicted Value: {self.predicted_values[index]}\n",
+            f"\t\tPredicted Value: {self.predicted_values.iloc[index]}\n",
             f"\t\tTarget Value: {true_value}\n",
             f"\t\t{self.error_name}: {round(scores[index], 3)}\n",
             f"\t\tIndex ID: {dataframe_index.iloc[index]}\n\n",
@@ -741,7 +741,9 @@ class _ClassificationPredictedValues(_SectionMaker):
 
         return {
             "probabilities": pred_values,
-            "predicted_value": _make_json_serializable(self.predicted_values[index]),
+            "predicted_value": _make_json_serializable(
+                self.predicted_values.iloc[index]
+            ),
             "target_value": _make_json_serializable(y_true.iloc[index]),
             "error_name": self.error_name,
             "error_value": _make_json_serializable(scores[index]),

@@ -101,9 +101,11 @@ class ClassificationPipeline(PipelineBase):
         Returns:
             pd.Series: Estimated labels.
         """
-        predictions = self._predict(X, objective=objective)
-        predictions = self.inverse_transform(predictions.astype(int))
-        predictions = pd.Series(predictions, name=self.input_target_name)
+        _predictions = self._predict(X, objective=objective)
+        predictions = self.inverse_transform(_predictions.astype(int))
+        predictions = pd.Series(
+            predictions, name=self.input_target_name, index=_predictions.index
+        )
         return infer_feature_types(predictions)
 
     def predict_proba(self, X, X_train=None, y_train=None):

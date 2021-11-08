@@ -10,6 +10,7 @@ Release Notes
         * Added AutoML function to access ensemble pipeline's input pipelines IDs :pr:`3011`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
+        * Updated estimator and pipelines' ``predict``, ``predict_proba``, ``transform``, ``inverse_transform`` methods to preserve input indices :pr:`2979`
     * Changes
         * Updated ``OutliersDataCheck`` and ``UniquenessDataCheck`` and suspended use of Nullable types detection :pr:`3018`
     * Documentation Changes
