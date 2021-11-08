@@ -128,7 +128,7 @@ class OutliersDataCheck(DataCheck):
         Returns:
             dict: A payload of box plot statistics.
         """
-        data_ = infer_feature_types(data_)
+        data_ = infer_feature_types(data_, ignore_nullable_types=True)
         num_records = data_.count()
         box_plot_dict = data_.ww.box_plot_dict()
         quantiles = box_plot_dict["quantiles"]
