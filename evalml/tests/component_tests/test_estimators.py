@@ -336,8 +336,7 @@ def test_estimator_fit_predict_and_predict_proba_respect_custom_indices(
         y = y.map({val: str(val) for val in np.unique(y)})
 
     if use_custom_index:
-        gen = np.random.default_rng(seed=0)
-        custom_index = gen.permutation(range(200, 200 + X.shape[0]))
+        custom_index = range(100, 100 + X.shape[0])
         X.index = custom_index
         y.index = custom_index
 

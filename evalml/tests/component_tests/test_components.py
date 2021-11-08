@@ -1546,8 +1546,7 @@ def test_transformer_fit_and_transform_respect_custom_indices(
     y = pd.Series(y)
 
     if use_custom_index:
-        gen = np.random.default_rng(seed=0)
-        custom_index = gen.permutation(range(200, 200 + X.shape[0]))
+        custom_index = range(100, 100 + X.shape[0])
         X.index = custom_index
         y.index = custom_index
 
@@ -1589,8 +1588,6 @@ def test_estimator_fit_respects_custom_indices(
     X_y_binary,
     X_y_regression,
     ts_data,
-    logistic_regression_binary_pipeline_class,
-    linear_regression_pipeline_class,
     helper_functions,
 ):
 
@@ -1613,8 +1610,7 @@ def test_estimator_fit_respects_custom_indices(
         X.index = pd.date_range("2020-10-01", "2020-10-31")
         y.index = pd.date_range("2020-10-01", "2020-10-31")
     elif use_custom_index and not ts_problem:
-        gen = np.random.default_rng(seed=0)
-        custom_index = gen.permutation(range(200, 200 + X.shape[0]))
+        custom_index = range(100, 100 + X.shape[0])
         X.index = custom_index
         y.index = custom_index
 
