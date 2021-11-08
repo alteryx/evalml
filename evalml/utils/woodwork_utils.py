@@ -65,7 +65,7 @@ def infer_feature_types(data, feature_types=None):
     elif isinstance(data, np.ndarray):
         data = _numpy_to_pandas(data)
 
-    _raise_value_error_if_nullable_types_detected(data)
+    #_raise_value_error_if_nullable_types_detected(data)
 
     def convert_all_nan_unknown_to_double(data):
         def is_column_pd_na(data, col):
