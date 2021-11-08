@@ -11,7 +11,7 @@ Release Notes
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
     * Changes
-        * Updated ``OutliersDataCheck`` and ``UniquenessDataCheck`` and suspended use of Nullable types detection :pr:`3018`
+        * Updated ``OutliersDataCheck`` and ``UniquenessDataCheck`` and allow for the suspension of the Nullable types error :pr:`3018`
     * Documentation Changes
         * Fixed cost benefit matrix demo formatting :pr:`2990`
         * Update ReadMe.md with new badge links and updated installation instructions for conda :pr:`2998`
