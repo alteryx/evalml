@@ -19,6 +19,35 @@ class TimeSeriesSplit(BaseCrossValidator):
         gap (int): Gap used in time series problem. Time series pipelines shift the target variable by gap rows. Defaults to 0.
         date_index (str): Name of the column containing the datetime information used to order the data. Defaults to None.
         n_splits (int): number of data splits to make. Defaults to 3.
+
+    Example:
+        >>> import numpy as np
+        >>> import pandas as pd
+        ...
+        >>> X = pd.DataFrame([i for i in range(10)], columns=["First"])
+        >>> y = pd.Series([i for i in range(10)])
+        ...
+        >>> ts_split = TimeSeriesSplit(n_splits=4)
+        >>> generator_ = ts_split.split(X, y)
+        ...
+        >>> first_split = next(generator_)
+        >>> assert (first_split[0] == np.array([0, 1])).all()
+        >>> assert (first_split[1] == np.array([2, 3])).all()
+        ...
+        ...
+        >>> second_split = next(generator_)
+        >>> assert (second_split[0] == np.array([0, 1, 2, 3])).all()
+        >>> assert (second_split[1] == np.array([4, 5])).all()
+        ...
+        ...
+        >>> third_split = next(generator_)
+        >>> assert (third_split[0] == np.array([0, 1, 2, 3, 4, 5])).all()
+        >>> assert (third_split[1] == np.array([6, 7])).all()
+        ...
+        ...
+        >>> fourth_split = next(generator_)
+        >>> assert (fourth_split[0] == np.array([0, 1, 2, 3, 4, 5, 6, 7])).all()
+        >>> assert (fourth_split[1] == np.array([8, 9])).all()
     """
 
     def __init__(self, max_delay=0, gap=0, date_index=None, n_splits=3):

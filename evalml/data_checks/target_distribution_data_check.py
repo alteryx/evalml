@@ -27,8 +27,9 @@ class TargetDistributionDataCheck(DataCheck):
         Returns:
             dict (DataCheckError): List with DataCheckErrors if certain distributions are found in the target data.
 
-        Example:
-            >>> from scipy.stats import lognorm
+        Examples:
+            >>> import pandas as pd
+            ...
             >>> y = [0.946, 0.972, 1.154, 0.954, 0.969, 1.222, 1.038, 0.999, 0.973, 0.897]
             >>> target_check = TargetDistributionDataCheck()
             >>> assert target_check.validate(None, y) == {
@@ -38,7 +39,26 @@ class TargetDistributionDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "TARGET_LOGNORMAL_DISTRIBUTION",
             ...                   "details": {"shapiro-statistic/pvalue": '0.8/0.045', "columns": None, "rows": None}}],
-            ...     "actions": [{'code': 'TRANSFORM_TARGET', 'metadata': {'transformation_strategy': 'lognormal', 'is_target': True, "columns": None, "rows": None}}]}
+            ...     "actions": [{'code': 'TRANSFORM_TARGET',
+            ...                  'metadata': {'transformation_strategy': 'lognormal',
+            ...                               'is_target': True,
+            ...                               "columns": None,
+            ...                               "rows": None}}]}
+            ...
+            ...
+            >>> y = pd.Series([1, 1, 1, 2, 2, 3, 4, 4, 5, 5, 5])
+            >>> assert target_check.validate(None, y) == {'warnings': [], 'errors': [], 'actions': []}
+            ...
+            ...
+            >>> y = pd.Series(pd.date_range('1/1/21', periods=10))
+            >>> assert target_check.validate(None, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': 'Target is unsupported datetime type. Valid Woodwork logical types include: integer, double',
+            ...                 'data_check_name': 'TargetDistributionDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None, 'unsupported_type': 'datetime'},
+            ...                 'code': 'TARGET_UNSUPPORTED_TYPE'}],
+            ...     'actions': []}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

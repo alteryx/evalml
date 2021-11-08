@@ -53,19 +53,91 @@ class InvalidTargetDataCheck(DataCheck):
         Returns:
             dict (DataCheckError): List with DataCheckErrors if any invalid values are found in the target data.
 
-        Example:
+        Examples:
             >>> import pandas as pd
+            ...
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
-            >>> y = pd.Series([0, 1, None, None])
-            >>> target_check = InvalidTargetDataCheck('binary', 'Log Loss Binary')
+            >>> y = pd.Series(["cat_1", "cat_2", "cat_1", "cat_2"])
+            >>> target_check = InvalidTargetDataCheck('regression', 'R2')
             >>> assert target_check.validate(X, y) == {
-            ...     "errors": [{"message": "2 row(s) (50.0%) of target values are null",
-            ...                 "data_check_name": "InvalidTargetDataCheck",
-            ...                 "level": "error",
-            ...                 "code": "TARGET_HAS_NULL",
-            ...                 "details": {"num_null_rows": 2, "pct_null_rows": 50, "rows": None, "columns": None}}],
-            ...     "warnings": [],
-            ...     "actions": [{"code": "IMPUTE_COL", "metadata": {"impute_strategy": "most_frequent", "is_target": True, "rows": None, "columns": None}}]}
+            ...     'warnings': [],
+            ...     'errors': [{'message': 'Target is unsupported Unknown type. Valid Woodwork logical types include: integer, double, boolean',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None, 'unsupported_type': 'unknown'},
+            ...                 'code': 'TARGET_UNSUPPORTED_TYPE'},
+            ...                {'message': 'Target data type should be numeric for regression type problems.',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None},
+            ...                 'code': 'TARGET_UNSUPPORTED_TYPE'}],
+            ...     'actions': []}
+            ...
+            ...
+            >>> y = pd.Series([None, pd.NA, pd.NaT, None])
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': 'Target is either empty or fully null.',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None},
+            ...                 'code': 'TARGET_IS_EMPTY_OR_FULLY_NULL'}],
+            ...     'actions': []}
+            ...
+            ...
+            >>> y = pd.Series([1, None, 3, None])
+            >>> assert target_check.validate(None, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': '2 row(s) (50.0%) of target values are null',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None,
+            ...                             'rows': None,
+            ...                             'num_null_rows': 2,
+            ...                             'pct_null_rows': 50.0},
+            ...                 'code': 'TARGET_HAS_NULL'}],
+            ...     'actions': [{'code': 'IMPUTE_COL',
+            ...                  'metadata': {'columns': None,
+            ...                               'rows': None,
+            ...                               'is_target': True,
+            ...                               'impute_strategy': 'mean'}}]}
+            ...
+            ...
+            >>> X = pd.DataFrame([i for i in range(50)])
+            >>> y = pd.Series([i%2 for i in range(50)])
+            >>> target_check = InvalidTargetDataCheck('multiclass', 'Log Loss Multiclass')
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [],
+            ...     'errors': [{'message': 'Target has two or less classes, which is too few for multiclass problems.  Consider changing to binary.',
+            ...                 'data_check_name': 'InvalidTargetDataCheck',
+            ...                 'level': 'error',
+            ...                 'details': {'columns': None, 'rows': None, 'num_classes': 2},
+            ...                 'code': 'TARGET_MULTICLASS_NOT_ENOUGH_CLASSES'}],
+            ...     'actions': []}
+            ...
+            ...
+            >>> target_check = InvalidTargetDataCheck('regression', 'R2')
+            >>> X = pd.DataFrame([i for i in range(5)])
+            >>> y = pd.Series([1, 2, 4, 3], index=[1, 2, 4, 3])
+            >>> assert target_check.validate(X, y) == {
+            ...     'warnings': [{'message': 'Input target and features have different lengths',
+            ...                   'data_check_name': 'InvalidTargetDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': None,
+            ...                               'rows': None,
+            ...                               'features_length': 5,
+            ...                               'target_length': 4},
+            ...                   'code': 'MISMATCHED_LENGTHS'},
+            ...                  {'message': 'Input target and features have mismatched indices',
+            ...                   'data_check_name': 'InvalidTargetDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': None,
+            ...                               'rows': None,
+            ...                               'indices_not_in_features': [],
+            ...                               'indices_not_in_target': [0]},
+            ...                   'code': 'MISMATCHED_INDICES'}],
+            ...     'errors': [],
+            ...     'actions': []}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

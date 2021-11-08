@@ -408,7 +408,7 @@ def _make_component_list_from_actions(actions):
     indices_to_drop = []
     for action in actions:
         if action.action_code == DataCheckActionCode.DROP_COL:
-            cols_to_drop.append(action.metadata["column"])
+            cols_to_drop.extend(action.metadata["columns"])
         elif action.action_code == DataCheckActionCode.IMPUTE_COL:
             metadata = action.metadata
             if metadata["is_target"]:
@@ -416,7 +416,7 @@ def _make_component_list_from_actions(actions):
                     TargetImputer(impute_strategy=metadata["impute_strategy"])
                 )
         elif action.action_code == DataCheckActionCode.DROP_ROWS:
-            indices_to_drop.extend(action.metadata["indices"])
+            indices_to_drop.extend(action.metadata["rows"])
     if cols_to_drop:
         cols_to_drop = sorted(set(cols_to_drop))
         components.append(DropColumns(columns=cols_to_drop))

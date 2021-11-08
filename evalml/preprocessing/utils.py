@@ -63,6 +63,32 @@ def split_data(
 
     Returns:
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets.
+
+    Examples:
+        >>> X = pd.DataFrame([1, 2, 3, 4, 5, 6], columns=["First"])
+        >>> y = pd.Series([8, 9, 10, 11, 12, 13])
+        ...
+        >>> X_train, X_validation, y_train, y_validation = split_data(X, y, "regression", random_seed=42)
+        >>> X_train
+           First
+        5      6
+        2      3
+        4      5
+        3      4
+        >>> X_validation
+           First
+        0      1
+        1      2
+        >>> y_train
+        5    13
+        2    10
+        4    12
+        3    11
+        dtype: int64
+        >>> y_validation
+        0    8
+        1    9
+        dtype: int64
     """
     if is_clustering(problem_type):
         raise ValueError("Clustering problems do not support splitting data")
@@ -103,6 +129,18 @@ def number_of_features(dtypes):
 
     Returns:
         pd.Series: dtypes and the number of features for each input type.
+
+    Example:
+        >>> X = pd.DataFrame()
+        >>> X["integers"] = [i for i in range(10)]
+        >>> X["floats"] = [float(i) for i in range(10)]
+        >>> X["strings"] = [str(i) for i in range(10)]
+        >>> X["booleans"] = [bool(i%2) for i in range(10)]
+        >>> number_of_features(X.dtypes)
+                     Number of Features
+        Boolean                       1
+        Categorical                   1
+        Numeric                       2
     """
     dtype_to_vtype = {
         "bool": "Boolean",
@@ -125,6 +163,22 @@ def target_distribution(targets):
 
     Returns:
         pd.Series: Target data and their frequency distribution as percentages.
+
+    Examples:
+        >>> y = pd.Series([1, 2, 4, 1, 3, 3, 1, 2])
+        >>> target_distribution(y)
+        Targets
+        1    37.50%
+        2    25.00%
+        3    25.00%
+        4    12.50%
+        dtype: object
+        >>> y = pd.Series([True, False, False, False, True])
+        >>> target_distribution(y)
+        Targets
+        False    60.00%
+        True     40.00%
+        dtype: object
     """
     distribution = targets.value_counts() / len(targets)
     return distribution.mul(100).apply("{:.2f}%".format).rename_axis("Targets")
