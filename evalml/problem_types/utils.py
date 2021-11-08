@@ -167,6 +167,7 @@ def is_time_series(problem_type):
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]
 
+
 def is_clustering(problem_type):
     """Determines if the provided problem_type is a clustering problem type.
 

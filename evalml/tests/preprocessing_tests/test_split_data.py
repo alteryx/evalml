@@ -5,10 +5,10 @@ from evalml.preprocessing import split_data
 from evalml.problem_types import (
     ProblemTypes,
     is_binary,
+    is_clustering,
     is_multiclass,
     is_regression,
     is_time_series,
-    is_clustering,
 )
 
 
@@ -31,7 +31,9 @@ def test_split_data(
     y = make_data_type(data_type, y)
 
     if is_clustering(problem_type):
-        with pytest.raises(ValueError, match="Clustering problems do not support splitting data"):
+        with pytest.raises(
+            ValueError, match="Clustering problems do not support splitting data"
+        ):
             split_data(X, y, problem_type=problem_type)
         return
 

@@ -15,7 +15,7 @@ from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types import is_multiclass, is_time_series
+from evalml.problem_types import is_clustering, is_multiclass, is_time_series
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
@@ -93,6 +93,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self.X = infer_feature_types(X)
         self.y = infer_feature_types(y) if y is not None else None
         self.problem_type = problem_type
+        if self.y is None and not is_clustering(self.problem_type):
+            raise ValueError("y cannot be None for supervised learning problems")
         self.random_seed = random_seed
         self.sampler_name = sampler_name
         self.allowed_model_families = allowed_model_families

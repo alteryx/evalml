@@ -22,8 +22,8 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_binary,
-    is_time_series,
     is_clustering,
+    is_time_series,
 )
 from evalml.utils import import_or_raise
 
@@ -42,6 +42,10 @@ def get_default_primary_search_objective(problem_type):
         ObjectiveBase: primary objective instance for the problem type.
     """
     problem_type = handle_problem_types(problem_type)
+    if problem_type.value == "clustering":
+        raise NotImplementedError(
+            "Search objectives for clustering have not been implemented yet"
+        )
     objective_name = {
         "binary": "Log Loss Binary",
         "multiclass": "Log Loss Multiclass",
@@ -49,6 +53,7 @@ def get_default_primary_search_objective(problem_type):
         "time series regression": "R2",
         "time series binary": "Log Loss Binary",
         "time series multiclass": "Log Loss Multiclass",
+        "clustering": None,
     }[problem_type.value]
     return get_objective(objective_name, return_instance=True)
 

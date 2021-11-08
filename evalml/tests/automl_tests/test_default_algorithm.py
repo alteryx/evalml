@@ -33,6 +33,19 @@ def test_default_algorithm_init(X_y_binary):
     assert algo.verbose is True
 
 
+def test_default_algorithm_init_clustering(X_y_binary):
+    X, _ = X_y_binary
+
+    algo = DefaultAlgorithm(X, None, "clustering", "Undersampler")
+    assert algo.y == None
+    assert algo.problem_type == "clustering"
+
+    with pytest.raises(
+        ValueError, match="y cannot be None for supervised learning problems"
+    ):
+        DefaultAlgorithm(X, None, "binary", "Undersampler")
+
+
 def test_default_algorithm_custom_hyperparameters_error(X_y_binary):
     X, y = X_y_binary
     problem_type = "binary"

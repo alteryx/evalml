@@ -55,9 +55,9 @@ from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import (
     ProblemTypes,
     is_binary,
+    is_clustering,
     is_multiclass,
     is_time_series,
-    is_clustering,
 )
 
 

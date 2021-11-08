@@ -58,6 +58,8 @@ def test_get_default_primary_search_objective():
     )
     with pytest.raises(KeyError, match="Problem type 'auto' does not exist"):
         get_default_primary_search_objective("auto")
+    with pytest.raises(NotImplementedError, match="Search objectives for clustering"):
+        get_default_primary_search_objective("clustering")
 
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)

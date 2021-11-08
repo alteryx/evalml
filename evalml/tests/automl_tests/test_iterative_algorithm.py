@@ -83,6 +83,21 @@ def test_iterative_algorithm_init(
     )
 
 
+def test_iterative_algorithm_init_clustering(X_y_binary):
+    X, _ = X_y_binary
+
+    # Workaround to test desired behavior
+    with pytest.raises(ValueError, match="No allowed pipelines to search"):
+        algo = IterativeAlgorithm(X, None, "clustering")
+        assert algo.y == None
+        assert algo.problem_type == "clustering"
+
+    with pytest.raises(
+        ValueError, match="y cannot be None for supervised learning problems"
+    ):
+        IterativeAlgorithm(X, None, "binary")
+
+
 def test_make_iterative_algorithm_custom_hyperparameters_error(
     dummy_binary_pipeline_classes, X_y_binary
 ):

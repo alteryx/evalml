@@ -53,8 +53,8 @@ from evalml.problem_types import (
     handle_problem_types,
     is_binary,
     is_classification,
-    is_time_series,
     is_clustering,
+    is_time_series,
 )
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, infer_feature_types
@@ -147,7 +147,7 @@ def search(
         ValueError: If search configuration is not valid.
     """
     X_train = infer_feature_types(X_train)
-    y_train = infer_feature_types(y_train) if y_train else None
+    y_train = infer_feature_types(y_train) if y_train is not None else None
     problem_type = handle_problem_types(problem_type)
 
     datetime_column = None
@@ -237,7 +237,7 @@ def search_iterative(
         ValueError: If the search configuration is invalid.
     """
     X_train = infer_feature_types(X_train)
-    y_train = infer_feature_types(y_train) if y_train else None
+    y_train = infer_feature_types(y_train) if y_train is not None else None
     problem_type = handle_problem_types(problem_type)
 
     datetime_column = None
@@ -721,7 +721,9 @@ class AutoMLSearch:
         if _automl_algorithm == "iterative":
             self.max_iterations = self._automl_algorithm.max_iterations
         if is_clustering(problem_type):
-            raise ValueError("Clustering problems are not supported by AutoMLSearch at this time")
+            raise ValueError(
+                "Clustering problems are not supported by AutoMLSearch at this time"
+            )
 
     def close_engine(self):
         """Function to explicitly close the engine, client, parallel resources."""

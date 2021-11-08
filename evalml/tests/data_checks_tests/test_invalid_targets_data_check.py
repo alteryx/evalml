@@ -21,9 +21,9 @@ from evalml.objectives import (
 from evalml.problem_types import (
     ProblemTypes,
     is_binary,
+    is_clustering,
     is_multiclass,
     is_regression,
-    is_clustering,
 )
 from evalml.utils.woodwork_utils import numeric_and_boolean_ww
 

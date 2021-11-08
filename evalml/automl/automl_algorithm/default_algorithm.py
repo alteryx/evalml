@@ -20,7 +20,7 @@ from evalml.pipelines.components.utils import (
     handle_component_class,
 )
 from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types import is_regression
+from evalml.problem_types import is_clustering, is_regression
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
@@ -93,6 +93,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.X = infer_feature_types(X)
         self.y = infer_feature_types(y) if y is not None else None
         self.problem_type = problem_type
+        if self.y is None and not is_clustering(self.problem_type):
+            raise ValueError("y cannot be None for supervised learning problems")
         self.sampler_name = sampler_name
 
         self.n_jobs = n_jobs

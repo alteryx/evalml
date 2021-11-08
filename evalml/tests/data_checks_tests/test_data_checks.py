@@ -20,7 +20,7 @@ from evalml.data_checks import (
     TargetDistributionDataCheck,
 )
 from evalml.exceptions import DataCheckInitError
-from evalml.problem_types import ProblemTypes, is_time_series
+from evalml.problem_types import ProblemTypes, is_clustering, is_time_series
 
 
 def test_data_checks_not_list_error(X_y_binary):
@@ -488,6 +488,8 @@ def test_default_data_checks_null_rows():
 def test_default_data_checks_across_problem_types(problem_type):
     default_data_check_list = DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES
 
+    if is_clustering(problem_type):
+        return
     if is_time_series(problem_type):
         default_data_check_list = default_data_check_list + [DateTimeFormatDataCheck]
     if problem_type in [
