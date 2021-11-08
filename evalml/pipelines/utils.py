@@ -22,7 +22,6 @@ from evalml.pipelines.components import (  # noqa: F401
     CatBoostRegressor,
     ComponentBase,
     DateTimeFeaturizer,
-    DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
     DropRowsTransformer,
@@ -38,6 +37,7 @@ from evalml.pipelines.components import (  # noqa: F401
     StackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
+    TimeSeriesFeaturizer,
     Undersampler,
     URLFeaturizer,
 )
@@ -144,6 +144,11 @@ def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None):
 
 def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
+    if (
+        is_time_series(problem_type)
+        and estimator_class.model_family != ModelFamily.ARIMA
+    ):
+        components.append(TimeSeriesFeaturizer)
 
     # The URL and EmailAddress Featurizers will create categorical columns
     categorical_cols = list(
@@ -191,7 +196,7 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
         is_time_series(problem_type)
         and estimator_class.model_family != ModelFamily.ARIMA
     ):
-        components.append(DelayedFeatureTransformer)
+        components.append(TimeSeriesFeaturizer)
     return components
 
 
@@ -666,7 +671,7 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, date_
     }[problem_type]
     baseline = pipeline_class(
         component_graph=[
-            "Delayed Feature Transformer",
+            "Time Series Featurizer",
             "Time Series Baseline Estimator",
         ],
         custom_name=pipeline_name,
@@ -677,7 +682,7 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, date_
                 "max_delay": 0,
                 "forecast_horizon": forecast_horizon,
             },
-            "Delayed Feature Transformer": {
+            "Time Series Featurizer": {
                 "max_delay": 0,
                 "gap": gap,
                 "forecast_horizon": forecast_horizon,

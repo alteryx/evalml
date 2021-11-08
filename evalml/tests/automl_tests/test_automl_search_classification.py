@@ -1175,7 +1175,7 @@ def test_automl_supports_time_series_classification(
             assert result["pipeline_class"] == baseline.__class__
             continue
 
-        assert result["parameters"]["Delayed Feature Transformer"] == configuration
+        assert result["parameters"]["Time Series Featurizer"] == configuration
         assert result["parameters"]["pipeline"] == configuration
 
 

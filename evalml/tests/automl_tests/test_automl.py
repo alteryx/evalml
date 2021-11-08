@@ -3721,7 +3721,7 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(AutoMLTestEnv, ts_d
             "max_delay": 0,
             "forecast_horizon": 7,
         },
-        "Delayed Feature Transformer": {
+        "Time Series Featurizer": {
             "date_index": "date",
             "delay_features": False,
             "delay_target": True,

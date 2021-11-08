@@ -16,7 +16,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
-    DelayedFeatureTransformer,
+    TimeSeriesFeaturizer,
     Transformer,
 )
 from evalml.pipelines.utils import _get_pipeline_base_class
@@ -86,11 +86,11 @@ def test_time_series_pipeline_validates_holdout_data(
 )
 @pytest.mark.parametrize(
     "components",
-    [["One Hot Encoder"], ["Delayed Feature Transformer", "One Hot Encoder"]],
+    [["One Hot Encoder"], ["Time Series Featurizer", "One Hot Encoder"]],
 )
 def test_time_series_pipeline_init(pipeline_class, estimator, components):
     component_graph = components + [estimator]
-    if "Delayed Feature Transformer" not in components:
+    if "Time Series Featurizer" not in components:
         pl = pipeline_class(
             component_graph=component_graph,
             parameters={
@@ -102,7 +102,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
                 }
             },
         )
-        assert "Delayed Feature Transformer" not in pl.parameters
+        assert "Time Series Featurizer" not in pl.parameters
         assert pl.parameters["pipeline"] == {
             "forecast_horizon": 3,
             "gap": 0,
@@ -111,7 +111,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
         }
     else:
         parameters = {
-            "Delayed Feature Transformer": {
+            "Time Series Featurizer": {
                 "date_index": "date",
                 "gap": 0,
                 "max_delay": 5,
@@ -125,7 +125,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
             },
         }
         pl = pipeline_class(component_graph=component_graph, parameters=parameters)
-        assert pl.parameters["Delayed Feature Transformer"] == {
+        assert pl.parameters["Time Series Featurizer"] == {
             "date_index": "date",
             "gap": 0,
             "forecast_horizon": 3,
@@ -196,9 +196,9 @@ def test_fit_drop_nans_before_estimator(
         expected_target = np.arange(1, 32)
 
     pl = pipeline_class(
-        component_graph=["Delayed Feature Transformer", estimator_name],
+        component_graph=["Time Series Featurizer", estimator_name],
         parameters={
-            "Delayed Feature Transformer": {
+            "Time Series Featurizer": {
                 "date_index": "date",
                 "gap": gap,
                 "forecast_horizon": forecast_horizon,
@@ -256,7 +256,7 @@ def test_transform_all_but_final_for_time_series(
     X, y = ts_data
     pipeline = TimeSeriesRegressionPipeline(
         [
-            "Delayed Feature Transformer",
+            "Time Series Featurizer",
             "DateTime Featurization Component",
             "Random Forest Regressor",
         ],
@@ -268,7 +268,7 @@ def test_transform_all_but_final_for_time_series(
                 "date_index": "date",
             },
             "Random Forest Regressor": {"n_jobs": 1},
-            "Delayed Feature Transformer": {
+            "Time Series Featurizer": {
                 "max_delay": max_delay,
                 "gap": gap,
                 "forecast_horizon": forecast_horizon,
@@ -281,13 +281,8 @@ def test_transform_all_but_final_for_time_series(
     X_validation, y_validation = X[15:], y[15:]
     pipeline.fit(X_train, y_train)
     features = pipeline.transform_all_but_final(X_validation, y_validation)
-    delayer = DelayedFeatureTransformer(
-        max_delay=max_delay,
-        gap=gap,
-        forecast_horizon=forecast_horizon,
-        conf_level=1.0,
-        date_index="date",
-    )
+    delayer = TimeSeriesFeaturizer(max_delay=max_delay, gap=gap, forecast_horizon=forecast_horizon,
+                                   conf_level=1.0, date_index="date")
     date_featurizer = DateTimeFeaturizer()
     expected_features = date_featurizer.fit_transform(
         delayer.fit_transform(X_validation, y_validation)
@@ -394,7 +389,7 @@ def test_predict_and_predict_in_sample(
         X_predict = X_predict.reset_index(drop=True)
 
     if include_delayed_features:
-        component_graph = ["Delayed Feature Transformer"] + component_graph
+        component_graph = ["Time Series Featurizer"] + component_graph
         delayer_params = {
             "date_index": "date",
             "gap": gap,
@@ -404,8 +399,8 @@ def test_predict_and_predict_in_sample(
             "delay_target": True,
             "conf_level": 1.0,
         }
-        parameters.update({"Delayed Feature Transformer": delayer_params})
-        expected_features = DelayedFeatureTransformer(**delayer_params).fit_transform(
+        parameters.update({"Time Series Featurizer": delayer_params})
+        expected_features = TimeSeriesFeaturizer(**delayer_params).fit_transform(
             X, target
         )
         expected_features = DateTimeFeaturizer().fit_transform(
@@ -477,7 +472,7 @@ def test_predict_and_predict_in_sample_with_date_index(
 
     component_graph = [
         "DateTime Featurization Component",
-        "Delayed Feature Transformer",
+        "Time Series Featurizer",
         estimator_name,
     ]
     delayer_params = {
@@ -496,12 +491,12 @@ def test_predict_and_predict_in_sample_with_date_index(
             "max_delay": 3,
             "forecast_horizon": 1,
         },
-        "Delayed Feature Transformer": delayer_params,
+        "Time Series Featurizer": delayer_params,
         estimator_name: {"n_jobs": 1},
     }
 
     feature_pipeline = pipeline_class(
-        ["DateTime Featurization Component", "Delayed Feature Transformer"],
+        ["DateTime Featurization Component", "Time Series Featurizer"],
         parameters=parameters,
     )
     feature_pipeline.fit(X, target)
@@ -592,9 +587,9 @@ def test_ts_score(
     target_index = pd.date_range(f"2020-10-{last_train_date + 1}", f"2020-10-31")
 
     pl = pipeline_class(
-        component_graph=["Delayed Feature Transformer", estimator_name],
+        component_graph=["Time Series Featurizer", estimator_name],
         parameters={
-            "Delayed Feature Transformer": {
+            "Time Series Featurizer": {
                 "date_index": "date",
                 "gap": gap,
                 "max_delay": max_delay,
@@ -671,24 +666,25 @@ def test_classification_pipeline_encodes_targets(
     pl = pipeline_class(
         component_graph={
             "Label Encoder": ["Label Encoder", "X", "y"],
-            "Delayed Feature Transformer": [
-                "Delayed Feature Transformer",
+            "Time Series Featurizer": [
+                "Time Series Featurizer",
                 "Label Encoder.x",
                 "Label Encoder.y",
             ],
             "DT": [
                 "DateTime Featurization Component",
-                "Delayed Feature Transformer.x",
+                "Time Series Featurizer.x",
                 "Label Encoder.y",
             ],
             "Logistic Regression Classifier": [
                 "Logistic Regression Classifier",
                 "DT.x",
+                "Time Series Featurizer.x",
                 "Label Encoder.y",
             ],
         },
         parameters={
-            "Delayed Feature Transformer": {
+            "Time Series Featurizer": {
                 "date_index": "date",
                 "gap": 0,
                 "max_delay": 1,
@@ -783,7 +779,7 @@ def test_ts_score_works(
                 "delay_features": False,
                 "forecast_horizon": 10,
             },
-            "Delayed Feature Transformer": {
+            "Time Series Featurizer": {
                 "date_index": "date",
                 "gap": 1,
                 "max_delay": 3,
@@ -948,7 +944,7 @@ def test_time_series_pipeline_not_fitted_error(
                     "date_index": "date",
                     "forecast_horizon": 10,
                 },
-                "Delayed Feature Transformer": {
+                "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "date_index": "date",
@@ -968,7 +964,7 @@ def test_time_series_pipeline_not_fitted_error(
                     "date_index": "date",
                     "forecast_horizon": 10,
                 },
-                "Delayed Feature Transformer": {
+                "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "date_index": "date",
@@ -987,7 +983,7 @@ def test_time_series_pipeline_not_fitted_error(
                     "date_index": "date",
                     "forecast_horizon": 10,
                 },
-                "Delayed Feature Transformer": {
+                "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "date_index": "date",
@@ -1058,7 +1054,7 @@ def test_ts_binary_pipeline_target_thresholding(
                 "date_index": "date",
                 "forecast_horizon": 10,
             },
-            "Delayed Feature Transformer": {
+            "Time Series Featurizer": {
                 "date_index": "date",
                 "gap": 0,
                 "max_delay": 0,
@@ -1089,7 +1085,7 @@ def test_binary_predict_pipeline_use_objective(
                 "date_index": "date",
                 "forecast_horizon": 5,
             },
-            "Delayed Feature Transformer": {
+            "Time Series Featurizer": {
                 "gap": 3,
                 "max_delay": 0,
                 "date_index": "date",
@@ -1177,8 +1173,8 @@ def test_time_series_pipeline_with_detrender(ts_data):
     X, y = ts_data
     component_graph = {
         "Polynomial Detrender": ["Polynomial Detrender", "X", "y"],
-        "DelayedFeatures": ["Delayed Feature Transformer", "X", "y"],
-        "Dt": ["DateTime Featurization Component", "DelayedFeatures.x", "y"],
+        "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
+        "Dt": ["DateTime Featurization Component", "Time Series Featurizer.x", "y"],
         "Regressor": [
             "Linear Regressor",
             "Dt.x",
@@ -1194,12 +1190,7 @@ def test_time_series_pipeline_with_detrender(ts_data):
                 "date_index": "date",
                 "forecast_horizon": 7,
             },
-            "DelayedFeatures": {
-                "max_delay": 2,
-                "gap": 1,
-                "forecast_horizon": 10,
-                "date_index": "date",
-            },
+            "Time Series Featurizer": {"max_delay": 2, "gap": 1, "forecast_horizon": 10, "date_index": "date"},
         },
     )
     X_train, y_train = X[:23], y[:23]
@@ -1353,7 +1344,7 @@ def test_ts_pipeline_transform_with_final_estimator(
                     "date_index": "date",
                     "forecast_horizon": 5,
                 },
-                "Delayed Feature Transformer": {
+                "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "date_index": "date",
@@ -1374,7 +1365,7 @@ def test_ts_pipeline_transform_with_final_estimator(
                     "date_index": "date",
                     "forecast_horizon": 5,
                 },
-                "Delayed Feature Transformer": {
+                "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "date_index": "date",
@@ -1394,7 +1385,7 @@ def test_ts_pipeline_transform_with_final_estimator(
                     "date_index": "date",
                     "forecast_horizon": 5,
                 },
-                "Delayed Feature Transformer": {
+                "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "date_index": "date",
