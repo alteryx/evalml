@@ -20,6 +20,7 @@ Release Notes
         * Added integration tests for data checks and data checks actions workflow :pr:`2883`
         * Added a change in pipeline structure to handle categorical columns separately for pipelines in ``DefaultAlgorithm`` :pr:`2986`
         * Added an algorithm to ``DelayedFeatureTransformer`` to select better lags :pr:`3005`
+        * Added test to ensure pickling pipelines preserves thresholds :pr:`3027`
         * Added AutoML function to access ensemble pipeline's input pipelines IDs :pr:`3011`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
