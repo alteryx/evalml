@@ -89,8 +89,6 @@ def test_iterative_algorithm_init_clustering(X_y_binary):
     # Workaround to test desired behavior
     with pytest.raises(ValueError, match="No allowed pipelines to search"):
         algo = IterativeAlgorithm(X, None, "clustering")
-        assert algo.y is None
-        assert algo.problem_type == "clustering"
 
     with pytest.raises(
         ValueError, match="y cannot be None for supervised learning problems"

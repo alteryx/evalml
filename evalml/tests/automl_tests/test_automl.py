@@ -1041,7 +1041,6 @@ def test_init_clustering(mock_iterative, mock_is_defined, X_y_binary):
         match="Clustering problems are not supported by AutoMLSearch",
     ):
         automl = AutoMLSearch(X, problem_type="clustering", objective="log loss binary")
-        assert automl.automl_config.y_schema is None
 
 
 @patch("evalml.automl.automl_search.AutoMLSearch.search")
