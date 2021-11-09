@@ -1,5 +1,4 @@
 """Data check that checks if any of the features are highly correlated with the target by using mutual information or Pearson correlation."""
-
 from evalml.data_checks import (
     DataCheck,
     DataCheckAction,
