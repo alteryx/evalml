@@ -7,6 +7,7 @@ Release Notes
         * Added support for stacked ensemble pipelines to prediction explanations module :pr:`2971`
         * Added integration tests for data checks and data checks actions workflow :pr:`2883`
         * Added an algorithm to ``DelayedFeatureTransformer`` to select better lags :pr:`3005`
+        * Added test to ensure pickling pipelines preserves thresholds :pr:``
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
     * Changes

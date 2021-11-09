@@ -5,6 +5,7 @@ from unittest.mock import patch
 import cloudpickle
 import numpy as np
 import pandas as pd
+import pickle
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
@@ -2877,3 +2878,30 @@ def test_component_graph_pipeline_initialized():
         ]
         == "median"
     )
+
+
+def test_pickled_pipeline_preserves_threshold(
+    X_y_binary, tmpdir, logistic_regression_binary_pipeline_class
+):
+    X, y = X_y_binary
+    path = os.path.join(str(tmpdir), "pickled_pipe.pkl")
+    pipeline = BinaryClassificationPipeline(["Imputer", "Decision Tree Classifier"])
+    with open(path, "wb") as f:
+        pickle.dump(pipeline, f)
+
+    with open(path, "rb") as f:
+        pipe = pickle.load(f)
+    assert pipe == pipeline
+    assert pipe.threshold is None
+
+    pipeline.fit(X, y)
+    preds = pipeline.predict_proba(X).iloc[:, -1]
+    return path
+    pipeline.optimize_threshold(X, y, preds, Precision())
+    with open(path, "wb") as f:
+        pickle.dump(pipeline, f)
+
+    with open(path, "rb") as f:
+        pipe = pickle.load(f)
+    assert pipe == pipeline
+    assert pipe.threshold is not None
