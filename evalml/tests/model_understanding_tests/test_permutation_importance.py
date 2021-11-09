@@ -17,8 +17,8 @@ from evalml.pipelines.components import (
     PCA,
     DateTimeFeaturizer,
     DFSTransformer,
-    OneHotEncoder,
     NaturalLanguageFeaturizer,
+    OneHotEncoder,
 )
 from evalml.utils import infer_feature_types
 

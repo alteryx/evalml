@@ -23,10 +23,10 @@ from evalml.pipelines.components import (
     Imputer,
     LinearRegressor,
     LogisticRegressionClassifier,
+    NaturalLanguageFeaturizer,
     OneHotEncoder,
     StandardScaler,
     TargetImputer,
-    NaturalLanguageFeaturizer,
     Transformer,
     URLFeaturizer,
 )

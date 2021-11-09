@@ -30,6 +30,7 @@ from evalml.pipelines.components import (  # noqa: F401
     Estimator,
     Imputer,
     LogTransformer,
+    NaturalLanguageFeaturizer,
     OneHotEncoder,
     Oversampler,
     RandomForestClassifier,
@@ -37,7 +38,6 @@ from evalml.pipelines.components import (  # noqa: F401
     StackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
-    NaturalLanguageFeaturizer,
     Undersampler,
     URLFeaturizer,
 )

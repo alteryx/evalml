@@ -26,12 +26,12 @@ from evalml.pipelines.components import (
     Estimator,
     Imputer,
     LogisticRegressionClassifier,
+    NaturalLanguageFeaturizer,
     OneHotEncoder,
     RandomForestClassifier,
     SelectColumns,
     StandardScaler,
     TargetImputer,
-    NaturalLanguageFeaturizer,
     Transformer,
     Undersampler,
 )
