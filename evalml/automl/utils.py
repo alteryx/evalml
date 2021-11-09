@@ -40,6 +40,9 @@ def get_default_primary_search_objective(problem_type):
 
     Returns:
         ObjectiveBase: primary objective instance for the problem type.
+
+    Raises:
+        NotImplementedError: if this function is called on with a clustering problem type.
     """
     problem_type = handle_problem_types(problem_type)
     if problem_type.value == "clustering":

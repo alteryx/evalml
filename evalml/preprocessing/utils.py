@@ -64,6 +64,9 @@ def split_data(
     Returns:
         pd.DataFrame, pd.DataFrame, pd.Series, pd.Series: Feature and target data each split into train and test sets.
 
+    Raises:
+        ValueError: If the problem type is not a supervised learning problem type.
+
     Examples:
         >>> X = pd.DataFrame([1, 2, 3, 4, 5, 6], columns=["First"])
         >>> y = pd.Series([8, 9, 10, 11, 12, 13])

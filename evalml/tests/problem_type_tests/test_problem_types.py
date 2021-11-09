@@ -37,6 +37,7 @@ def test_handle_string(correct_problem_types):
         ProblemTypes.TIME_SERIES_REGRESSION,
         "time series binary",
         "time series multiclass",
+        ProblemTypes.CLUSTERING,
     ]
     for problem_type in zip(problem_types, correct_problem_types):
         assert handle_problem_types(problem_type[0]) == problem_type[1]

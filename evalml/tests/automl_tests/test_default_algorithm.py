@@ -37,7 +37,7 @@ def test_default_algorithm_init_clustering(X_y_binary):
     X, _ = X_y_binary
 
     algo = DefaultAlgorithm(X, None, "clustering", "Undersampler")
-    assert algo.y == None
+    assert algo.y is None
     assert algo.problem_type == "clustering"
 
     with pytest.raises(

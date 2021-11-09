@@ -1023,6 +1023,26 @@ def test_init_objective(X_y_binary):
         assert error_automl.objective.name == defaults[problem_type]
 
 
+@patch("evalml.objectives.standard_metrics.LogLossBinary.is_defined_for_problem_type")
+@patch("evalml.automl.automl_algorithm.IterativeAlgorithm.__init__")
+def test_init_clustering(mock_iterative, mock_is_defined, X_y_binary):
+    X, y = X_y_binary
+    mock_is_defined.return_value = True
+    mock_iterative.return_value = None
+
+    with pytest.raises(
+        ValueError, match="y_train argument with supervised learning problems"
+    ):
+        AutoMLSearch(X, problem_type="binary")
+
+    with pytest.raises(
+        NotImplementedError,
+        match="Clustering problems are not supported by AutoMLSearch",
+    ):
+        automl = AutoMLSearch(X, problem_type="clustering", objective="log loss binary")
+        assert automl.automl_config.y_schema is None
+
+
 @patch("evalml.automl.automl_search.AutoMLSearch.search")
 def test_checks_at_search_time(mock_search, X_y_multi):
     X, y = X_y_multi

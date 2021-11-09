@@ -606,8 +606,7 @@ class AutoMLSearch:
         self._searched = False
 
         self.X_train = infer_feature_types(X_train)
-        if y_train is not None:
-            self.y_train = infer_feature_types(y_train)
+        self.y_train = infer_feature_types(y_train) if y_train is not None else None
 
         default_data_splitter = make_data_splitter(
             self.X_train,
@@ -716,14 +715,15 @@ class AutoMLSearch:
         else:
             raise ValueError("Please specify a valid automl algorithm.")
 
+        if is_clustering(problem_type):
+            raise NotImplementedError(
+                "Clustering problems are not supported by AutoMLSearch at this time"
+            )
+
         self.allowed_pipelines = self._automl_algorithm.allowed_pipelines
         self.allowed_model_families = [p.model_family for p in self.allowed_pipelines]
         if _automl_algorithm == "iterative":
             self.max_iterations = self._automl_algorithm.max_iterations
-        if is_clustering(problem_type):
-            raise ValueError(
-                "Clustering problems are not supported by AutoMLSearch at this time"
-            )
 
     def close_engine(self):
         """Function to explicitly close the engine, client, parallel resources."""
