@@ -1,11 +1,11 @@
 import os
+import pickle
 import re
 from unittest.mock import patch
 
 import cloudpickle
 import numpy as np
 import pandas as pd
-import pickle
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
@@ -2893,10 +2893,10 @@ def test_pickled_pipeline_preserves_threshold(
         pipe = pickle.load(f)
     assert pipe == pipeline
     assert pipe.threshold is None
+    assert not pipe._is_fitted
 
     pipeline.fit(X, y)
     preds = pipeline.predict_proba(X).iloc[:, -1]
-    return path
     pipeline.optimize_threshold(X, y, preds, Precision())
     with open(path, "wb") as f:
         pickle.dump(pipeline, f)
@@ -2905,3 +2905,4 @@ def test_pickled_pipeline_preserves_threshold(
         pipe = pickle.load(f)
     assert pipe == pipeline
     assert pipe.threshold is not None
+    assert pipe._is_fitted
