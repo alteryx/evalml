@@ -1475,3 +1475,22 @@ def CustomClassificationObjectiveRanges(ranges):
             """Not implementing since mocked in our tests."""
 
     return CustomClassificationObjectiveRanges()
+
+
+def load_daily_temp_local(n_rows=None):
+    currdir_path = os.path.dirname(os.path.abspath(__file__))
+    data_folder_path = os.path.join(currdir_path, "data")
+    fraud_data_path = os.path.join(data_folder_path, "daily-min-temperatures.csv")
+    X, y = load_data(
+        path=fraud_data_path,
+        index=None,
+        target="Temp",
+        n_rows=n_rows,
+    )
+    return X, y
+
+
+@pytest.fixture
+def daily_temp_local():
+    X, y = load_daily_temp_local()
+    return X, y

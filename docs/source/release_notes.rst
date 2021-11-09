@@ -13,6 +13,7 @@ Release Notes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
         * Fixed permutation importance failing when target is categorical :pr:`3017`
         * Updated estimator and pipelines' ``predict``, ``predict_proba``, ``transform``, ``inverse_transform`` methods to preserve input indices :pr:`2979`
+        * Updated demo dataset link for daily min temperatures :pr:`3023`
     * Changes
         * Updated ``OutliersDataCheck`` and ``UniquenessDataCheck`` and allow for the suspension of the Nullable types error :pr:`3018`
     * Documentation Changes
