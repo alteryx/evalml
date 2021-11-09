@@ -191,12 +191,14 @@ def test_fit_drop_nans_before_estimator(
             f"2020-10-{1 + forecast_horizon + gap + max_delay}", "2020-10-31"
         )
         expected_target = np.arange(1 + gap + max_delay + forecast_horizon, 32)
+        component_graph = ["Time Series Featurizer", estimator_name]
     else:
         train_index = pd.date_range(f"2020-10-01", f"2020-10-31")
         expected_target = np.arange(1, 32)
+        component_graph = [estimator_name]
 
     pl = pipeline_class(
-        component_graph=["Time Series Featurizer", estimator_name],
+        component_graph=component_graph,
         parameters={
             "Time Series Featurizer": {
                 "date_index": "date",
@@ -792,16 +794,13 @@ def test_ts_score_works(
     if pl.problem_type == ProblemTypes.TIME_SERIES_BINARY:
         X, y = ts_data_binary
         y = pd.Series(y).map(lambda label: "good" if label == 1 else "bad")
-        expected_unique_values = {"good", "bad"}
     elif pl.problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
         X, y = ts_data_multi
         label_map = {0: "good", 1: "bad", 2: "best"}
         y = pd.Series(y).map(lambda label: label_map[label])
-        expected_unique_values = {"good", "bad", "best"}
     else:
         X, y = ts_data
         y = pd.Series(y)
-        expected_unique_values = None
 
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
@@ -810,15 +809,6 @@ def test_ts_score_works(
     X_valid, y_valid = X.iloc[21:], y.iloc[21:]
 
     pl.fit(X_train, y_train)
-    if expected_unique_values:
-        assert (
-            set(
-                pl.predict(
-                    X_valid.iloc[:10], objective=None, X_train=X_train, y_train=y_train
-                ).unique()
-            )
-            == expected_unique_values
-        )
     pl.score(X_valid, y_valid, objectives, X_train, y_train)
 
 

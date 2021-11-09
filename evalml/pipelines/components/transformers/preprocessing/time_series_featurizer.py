@@ -202,7 +202,7 @@ class TimeSeriesFeaturizer(Transformer):
     def _compute_delays(self, X_ww, y, original_features):
         """Computes the delayed features for all features in X and y.
 
-       Use the autocorrelation to determine delays.
+        Use the autocorrelation to determine delays.
 
         Args:
             X (pd.DataFrame): Data to transform.
