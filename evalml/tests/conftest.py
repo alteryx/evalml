@@ -7,13 +7,16 @@ import numpy as np
 import pandas as pd
 import py
 import pytest
+import woodwork as ww
 from sklearn import datasets
 from skopt.space import Integer, Real
-import woodwork as ww
 
 from evalml.model_family import ModelFamily
 from evalml.objectives import BinaryClassificationObjective
-from evalml.objectives.utils import get_core_objectives, get_non_core_objectives
+from evalml.objectives.utils import (
+    get_core_objectives,
+    get_non_core_objectives,
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -33,7 +36,11 @@ from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
 )
 from evalml.pipelines.components.utils import _all_estimators
 from evalml.preprocessing import load_data
-from evalml.problem_types import ProblemTypes, handle_problem_types, is_regression
+from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
+    is_regression,
+)
 
 
 def pytest_configure(config):
