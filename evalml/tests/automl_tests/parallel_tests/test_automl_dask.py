@@ -9,6 +9,7 @@ from evalml.automl.engine import CFEngine, DaskEngine, SequentialEngine
 from evalml.problem_types import (
     ProblemTypes,
     is_binary,
+    is_clustering,
     is_multiclass,
     is_time_series,
 )
@@ -285,6 +286,8 @@ def test_automl_closes_engines(engine_str, X_y_binary_cls):
 def test_score_pipelines_passes_X_train_y_train(
     problem_type, engine_str, X_y_binary, X_y_regression, X_y_multi, AutoMLTestEnv
 ):
+    if is_clustering(problem_type):
+        return
     if is_binary(problem_type):
         X, y = X_y_binary
     elif is_multiclass(problem_type):
