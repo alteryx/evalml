@@ -1040,7 +1040,7 @@ def test_init_clustering(mock_iterative, mock_is_defined, X_y_binary):
         NotImplementedError,
         match="Clustering problems are not supported by AutoMLSearch",
     ):
-        automl = AutoMLSearch(X, problem_type="clustering", objective="log loss binary")
+        AutoMLSearch(X, problem_type="clustering", objective="log loss binary")
 
 
 @patch("evalml.automl.automl_search.AutoMLSearch.search")
