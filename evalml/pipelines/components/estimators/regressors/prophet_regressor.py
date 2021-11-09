@@ -146,9 +146,14 @@ class ProphetRegressor(Estimator):
             X=X, y=y, date_column=self.parameters["date_index"]
         )
 
-        y_pred = self._component_obj.predict(prophet_df)["yhat"]
-        y_pred = y_pred.rename(None)
-        return y_pred
+        prophet_output = self._component_obj.predict(prophet_df)
+        predictions = prophet_output["yhat"]
+        predictions = infer_feature_types(predictions)
+        predictions = predictions.rename(None)
+
+        if not X.empty:
+            predictions.index = X.index
+        return predictions
 
     def get_params(self):
         """Get parameters for the Prophet regressor."""

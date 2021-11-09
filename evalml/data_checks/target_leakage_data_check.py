@@ -1,5 +1,4 @@
 """Data check that checks if any of the features are highly correlated with the target by using mutual information or Pearson correlation."""
-
 from evalml.data_checks import (
     DataCheck,
     DataCheckAction,
@@ -76,14 +75,16 @@ class TargetLeakageDataCheck(DataCheck):
         Returns:
             dict (DataCheckWarning): dict with a DataCheckWarning if target leakage is detected.
 
-        Example:
+        Examples:
             >>> import pandas as pd
+            ...
             >>> X = pd.DataFrame({
             ...    'leak': [10, 42, 31, 51, 61],
             ...    'x': [42, 54, 12, 64, 12],
             ...    'y': [13, 5, 13, 74, 24],
             ... })
             >>> y = pd.Series([10, 42, 31, 51, 40])
+            ...
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.95)
             >>> assert target_leakage_check.validate(X, y) == {
             ...     "warnings": [{"message": "Column 'leak' is 95.0% or more correlated with the target",
@@ -94,6 +95,19 @@ class TargetLeakageDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": [{"code": "DROP_COL",
             ...                  "metadata": {"columns": ["leak"], "rows": None}}]}
+            ...
+            ...
+            >>> X['x'] = y / 2
+            >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method='pearson')
+            >>> assert target_leakage_check.validate(X, y) == {
+            ...     'warnings': [{'message': "Columns 'leak', 'x' are 80.0% or more correlated with the target",
+            ...                   'data_check_name': 'TargetLeakageDataCheck',
+            ...                   'level': 'warning',
+            ...                   'details': {'columns': ['leak', 'x'], 'rows': None},
+            ...                   'code': 'TARGET_LEAKAGE'}],
+            ...     'errors': [],
+            ...     'actions': [{'code': 'DROP_COL',
+            ...                  'metadata': {'columns': ['leak', 'x'], 'rows': None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

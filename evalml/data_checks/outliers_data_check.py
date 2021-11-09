@@ -28,13 +28,15 @@ class OutliersDataCheck(DataCheck):
         Returns:
             dict: A dictionary with warnings if any columns have outliers.
 
-        Example:
+        Examples:
             >>> import pandas as pd
+            ...
             >>> df = pd.DataFrame({
             ...     'x': [1, 2, 3, 4, 5],
             ...     'y': [6, 7, 8, 9, 10],
             ...     'z': [-1, -2, -3, -1201, -4]
             ... })
+            ...
             >>> outliers_check = OutliersDataCheck()
             >>> assert outliers_check.validate(df) == {
             ...     "warnings": [{"message": "Column(s) 'z' are likely to have outlier data.",
@@ -44,6 +46,22 @@ class OutliersDataCheck(DataCheck):
             ...                   "details": {"columns": ["z"], "rows": [3], "column_indices": {"z": [3]}}}],
             ...     "errors": [],
             ...     "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [3], "columns": None}}]}
+            ...
+            ...
+            >>> box_plot_data = OutliersDataCheck.get_boxplot_data(df['z'])
+            >>> box_plot_data["score"] = round(box_plot_data["score"], 2)
+            >>> assert box_plot_data == {
+            ...     'score': 0.89,
+            ...     'pct_outliers': 0.2,
+            ...     'values': {'q1': -4.0,
+            ...                'median': -3.0,
+            ...                'q3': -2.0,
+            ...                'low_bound': -7.0,
+            ...                'high_bound': 1.0,
+            ...                'low_values': [-1201],
+            ...                'high_values': [],
+            ...                'low_indices': [3],
+            ...                'high_indices': []}}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 

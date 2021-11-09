@@ -1,7 +1,9 @@
 from itertools import product
 
+import numpy as np
 import pandas as pd
 import pytest
+from pandas.testing import assert_index_equal
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multi"])
@@ -78,3 +80,44 @@ def test_woodwork_classification_pipeline(
     mock_pipeline.fit(X, y)
     assert not pd.isnull(mock_pipeline.predict(X)).any()
     assert not pd.isnull(mock_pipeline.predict_proba(X)).any().any()
+
+
+@pytest.mark.parametrize(
+    "index",
+    [
+        list(range(-5, 0)),
+        list(range(100, 105)),
+        [f"row_{i}" for i in range(5)],
+        pd.date_range("2020-09-08", periods=5),
+    ],
+)
+@pytest.mark.parametrize("problem_type", ["binary", "multi"])
+def test_pipeline_transform_and_predict_with_custom_index(
+    index,
+    problem_type,
+    logistic_regression_binary_pipeline_class,
+    logistic_regression_multiclass_pipeline_class,
+):
+    X = pd.DataFrame(
+        {"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
+        index=index,
+    )
+    X.ww.init(logical_types={"categories": "categorical"})
+
+    if problem_type == "binary":
+        y = pd.Series([0, 1, 1, 1, 0], index=index)
+        pipeline = logistic_regression_binary_pipeline_class(
+            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
+        )
+    elif problem_type == "multi":
+        y = pd.Series([0, 1, 2, 1, 0], index=index)
+        pipeline = logistic_regression_multiclass_pipeline_class(
+            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
+        )
+    pipeline.fit(X, y)
+
+    predictions = pipeline.predict(X)
+    predict_proba = pipeline.predict_proba(X)
+
+    assert_index_equal(predictions.index, X.index)
+    assert_index_equal(predict_proba.index, X.index)

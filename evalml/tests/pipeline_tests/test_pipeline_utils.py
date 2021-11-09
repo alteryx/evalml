@@ -33,8 +33,10 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.transformers.encoders.label_encoder import (
     LabelEncoder,
 )
+from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
+    _make_pipeline_from_multiple_graphs,
     generate_pipeline_code,
     get_estimators,
     is_classification,
@@ -836,3 +838,38 @@ def test_rows_of_interest_empty(mock_fit, mock_pred_proba):
     mock_pred_proba.return_value = predicted_proba_values
     vals = rows_of_interest(pipeline, X, y, epsilon=0.5, types="correct")
     assert len(vals) == 0
+
+
+def test_make_pipeline_from_multiple_graphs_with_sampler(X_y_binary):
+    X, y = X_y_binary
+    estimator = handle_component_class("Random Forest Classifier")
+    pipeline_1 = make_pipeline(
+        X,
+        y,
+        estimator,
+        ProblemTypes.BINARY,
+        sampler_name="Undersampler",
+        use_estimator=False,
+    )
+    pipeline_2 = make_pipeline(
+        X,
+        y,
+        estimator,
+        ProblemTypes.BINARY,
+        sampler_name="Undersampler",
+        use_estimator=False,
+    )
+    input_pipelines = [pipeline_1, pipeline_2]
+
+    combined_pipeline = _make_pipeline_from_multiple_graphs(
+        input_pipelines=input_pipelines,
+        estimator=estimator,
+        problem_type=ProblemTypes.BINARY,
+    )
+    second_pipeline_sampler = (
+        "Pipeline w/ Label Encoder + Imputer + Undersampler Pipeline 2 - Undersampler.y"
+    )
+    assert (
+        combined_pipeline.component_graph.get_inputs("Random Forest Classifier")[2]
+        == second_pipeline_sampler
+    )

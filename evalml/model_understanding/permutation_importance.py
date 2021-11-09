@@ -5,6 +5,7 @@ from joblib import Parallel, delayed
 
 from evalml.objectives.utils import get_objective
 from evalml.problem_types import is_classification
+from evalml.problem_types.utils import is_regression
 from evalml.utils import infer_feature_types
 
 
@@ -324,6 +325,7 @@ def _fast_scorer(pipeline, features, X, y, objective):
         preds = pipeline.estimator.predict_proba(features)
     else:
         preds = pipeline.estimator.predict(features)
-        preds = pipeline.inverse_transform(preds)
+        if is_regression(pipeline.problem_type):
+            preds = pipeline.inverse_transform(preds)
     score = pipeline._score(X, y, preds, objective)
     return score if objective.greater_is_better else -score

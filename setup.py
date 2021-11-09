@@ -25,12 +25,12 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-          'evalml = evalml.__main__:cli'
+            'evalml = evalml.__main__:cli'
         ]
     },
-    data_files=[('evalml/tests/data', ['evalml/tests/data/tips.csv',
-                                       'evalml/tests/data/titanic.csv',
-                                       'evalml/tests/data/churn.csv',
-                                       'evalml/tests/data/fraud_transactions.csv.gz']),
-                ('evalml/demos/data', ['evalml/demos/data/daily-min-temperatures.csv'])],
+    data_files=[('evalml/tests/data', ['evalml/tests/data/churn.csv',
+                                       'evalml/tests/data/daily-min-temperatures.csv',
+                                       'evalml/tests/data/fraud_transactions.csv.gz',
+                                       'evalml/tests/data/tips.csv',
+                                       'evalml/tests/data/titanic.csv'])],
 )

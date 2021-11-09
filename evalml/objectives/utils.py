@@ -125,6 +125,27 @@ def get_core_objectives(problem_type):
 
     Returns:
         List of ObjectiveBase instances
+
+    Examples:
+        >>> for objective in get_core_objectives("regression"):
+        ...     print(objective.name)
+        ExpVariance
+        MaxError
+        MedianAE
+        MSE
+        MAE
+        R2
+        Root Mean Squared Error
+        >>> for objective in get_core_objectives("binary"):
+        ...     print(objective.name)
+        MCC Binary
+        Log Loss Binary
+        Gini
+        AUC
+        Precision
+        F1
+        Balanced Accuracy Binary
+        Accuracy Binary
     """
     problem_type = handle_problem_types(problem_type)
     all_objectives_dict = _all_objectives_dict()
