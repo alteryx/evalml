@@ -6,10 +6,17 @@ Release Notes
         * Limit computationally-intensive models during ``AutoMLSearch`` for certain multiclass problems, allow for opt-in with parameter ``allow_long_running_models`` :pr:`2982`
         * Added support for stacked ensemble pipelines to prediction explanations module :pr:`2971`
         * Added integration tests for data checks and data checks actions workflow :pr:`2883`
+        * Added a change in pipeline structure to handle categorical columns separately for pipelines in ``DefaultAlgorithm`` :pr:`2986`
         * Added an algorithm to ``DelayedFeatureTransformer`` to select better lags :pr:`3005`
+        * Added test to ensure pickling pipelines preserves thresholds :pr:`3027`
+        * Added AutoML function to access ensemble pipeline's input pipelines IDs :pr:`3011`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
+        * Fixed permutation importance failing when target is categorical :pr:`3017`
+        * Updated estimator and pipelines' ``predict``, ``predict_proba``, ``transform``, ``inverse_transform`` methods to preserve input indices :pr:`2979`
+        * Updated demo dataset link for daily min temperatures :pr:`3023`
     * Changes
+        * Updated ``OutliersDataCheck`` and ``UniquenessDataCheck`` and allow for the suspension of the Nullable types error :pr:`3018`
     * Documentation Changes
         * Fixed cost benefit matrix demo formatting :pr:`2990`
         * Update ReadMe.md with new badge links and updated installation instructions for conda :pr:`2998`

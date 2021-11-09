@@ -105,7 +105,7 @@ class HighlyNullDataCheck(DataCheck):
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
-        X = infer_feature_types(X)
+        X = infer_feature_types(X, ignore_nullable_types=True)
 
         percent_null_rows = X.isnull().mean(axis=1)
         highly_null_rows = percent_null_rows[

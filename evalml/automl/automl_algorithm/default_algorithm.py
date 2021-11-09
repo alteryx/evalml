@@ -19,7 +19,10 @@ from evalml.pipelines.components.utils import (
     get_estimators,
     handle_component_class,
 )
-from evalml.pipelines.utils import make_pipeline
+from evalml.pipelines.utils import (
+    _make_pipeline_from_multiple_graphs,
+    make_pipeline,
+)
 from evalml.problem_types import is_clustering, is_regression
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
@@ -107,6 +110,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.num_long_pipelines_per_batch = num_long_pipelines_per_batch
         self.top_n = top_n
         self.verbose = verbose
+        self._selected_cat_cols = []
+        self._split = False
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
         else:
@@ -181,7 +186,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             feature_selector = []
 
         estimators = self._naive_estimators()
-        parameters = self._pipeline_params if self._pipeline_params else None
         pipelines = [
             make_pipeline(
                 self.X,
@@ -189,8 +193,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 estimator,
                 self.problem_type,
                 sampler_name=self.sampler_name,
-                parameters=parameters,
                 extra_components=feature_selector,
+                extra_components_position="after_preprocessing",
             )
             for estimator in estimators
         ]
@@ -198,36 +202,84 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         pipelines = self._create_pipelines_with_params(pipelines, parameters={})
         return pipelines
 
+    def _find_component_names(self, original_name, pipeline):
+        names = []
+        for component in pipeline.component_graph.compute_order:
+            split = component.split(" - ")
+            split = split[1] if len(split) > 1 else split[0]
+            if original_name == split:
+                names.append(component)
+        return names
+
+    def _create_split_select_parameters(self):
+        parameters = {
+            "Categorical Pipeline - Select Columns Transformer": {
+                "columns": self._selected_cat_cols
+            },
+            "Numeric Pipeline - Select Columns Transformer": {
+                "columns": self._selected_cols
+            },
+        }
+        return parameters
+
+    def _create_select_parameters(self):
+        parameters = {"Select Columns Transformer": {"columns": self._selected_cols}}
+        if self._split:
+            parameters = self._create_split_select_parameters()
+        return parameters
+
+    def _find_component_names_from_parameters(self, old_names, pipelines):
+        new_names = {}
+        for component_name in old_names:
+            for pipeline in pipelines:
+                new_name = self._find_component_names(component_name, pipeline)
+                if new_name:
+                    for name in new_name:
+                        if name not in new_names:
+                            new_names[name] = old_names[component_name]
+        return new_names
+
+    def _rename_pipeline_parameters_custom_hyperparameters(self, pipelines):
+        names_to_value_pipeline_params = self._find_component_names_from_parameters(
+            self._pipeline_params, pipelines
+        )
+        names_to_value_custom_hyperparameters = (
+            self._find_component_names_from_parameters(
+                self._custom_hyperparameters, pipelines
+            )
+        )
+        self._pipeline_params.update(names_to_value_pipeline_params)
+        self._custom_hyperparameters.update(names_to_value_custom_hyperparameters)
+
     def _create_fast_final(self):
         estimators = [
             estimator
             for estimator in get_estimators(self.problem_type)
             if estimator not in self._naive_estimators()
         ]
-        parameters = self._pipeline_params if self._pipeline_params else {}
-        parameters.update(
-            {"Select Columns Transformer": {"columns": self._selected_cols}}
-        )
+
         pipelines = [
-            make_pipeline(
-                self.X,
-                self.y,
+            self._make_split_pipeline(
                 estimator,
-                self.problem_type,
-                sampler_name=self.sampler_name,
-                parameters=parameters,
-                extra_components=[SelectColumns],
             )
             for estimator in estimators
         ]
 
-        pipelines = self._create_pipelines_with_params(
-            pipelines, {"Select Columns Transformer": {"columns": self._selected_cols}}
-        )
+        if self._split:
+            self._rename_pipeline_parameters_custom_hyperparameters(pipelines)
 
+        next_batch = []
         for pipeline in pipelines:
+            parameters = self._create_select_parameters()
+            pipeline = pipeline.new(
+                parameters=self._transform_parameters(pipeline, parameters),
+                random_seed=self.random_seed,
+            )
+            next_batch.append(pipeline)
+
+        for pipeline in next_batch:
             self._create_tuner(pipeline)
-        return pipelines
+        return next_batch
 
     def _create_n_pipelines(self, pipelines, n):
         next_batch = []
@@ -235,11 +287,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             for pipeline in pipelines:
                 if pipeline.name not in self._tuners:
                     self._create_tuner(pipeline)
+
+                select_parameters = self._create_select_parameters()
                 proposed_parameters = self._tuners[pipeline.name].propose()
                 parameters = self._transform_parameters(pipeline, proposed_parameters)
-                parameters.update(
-                    {"Select Columns Transformer": {"columns": self._selected_cols}}
-                )
+                parameters.update(select_parameters)
                 next_batch.append(
                     pipeline.new(parameters=parameters, random_seed=self.random_seed)
                 )
@@ -253,17 +305,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         estimators.sort(key=lambda x: x[1])
         estimators = estimators[:n]
         estimators = [estimator[0].__class__ for estimator in estimators]
-        pipelines = [
-            make_pipeline(
-                self.X,
-                self.y,
-                estimator,
-                self.problem_type,
-                sampler_name=self.sampler_name,
-                extra_components=[SelectColumns],
-            )
-            for estimator in estimators
-        ]
+        pipelines = [self._make_split_pipeline(estimator) for estimator in estimators]
         self._top_n_pipelines = pipelines
         return self._create_n_pipelines(pipelines, self.num_long_explore_pipelines)
 
@@ -318,6 +360,18 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     "RF Classifier Select From Model"
                 ).get_names()
 
+            if list(self.X.ww.select("categorical").columns):
+                ohe = pipeline.get_component("One Hot Encoder")
+                feature_provenance = ohe._get_feature_provenance()
+                for original_col in feature_provenance:
+                    selected = False
+                    for encoded_col in feature_provenance[original_col]:
+                        if encoded_col in self._selected_cols:
+                            selected = True
+                            self._selected_cols.remove(encoded_col)
+                    if selected:
+                        self._selected_cat_cols.append(original_col)
+
         current_best_score = self._best_pipeline_info.get(
             pipeline.model_family, {}
         ).get("mean_cv_score", np.inf)
@@ -371,3 +425,50 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 component_parameters["n_jobs"] = self.n_jobs
             parameters[name] = component_parameters
         return parameters
+
+    def _make_split_pipeline(self, estimator, pipeline_name=None):
+        numeric_pipeline_parameters = {
+            "Select Columns Transformer": {"columns": self._selected_cols}
+        }
+        numeric_pipeline = make_pipeline(
+            self.X,
+            self.y,
+            estimator,
+            self.problem_type,
+            sampler_name=self.sampler_name,
+            parameters=numeric_pipeline_parameters,
+            extra_components=[SelectColumns],
+            extra_components_position="before_estimator",
+            use_estimator=False if self._selected_cat_cols else True,
+        )
+
+        if self._selected_cat_cols:
+            self._split = True
+            categorical_pipeline_parameters = {
+                "Select Columns Transformer": {"columns": self._selected_cat_cols}
+            }
+            categorical_pipeline = make_pipeline(
+                self.X,
+                self.y,
+                estimator,
+                self.problem_type,
+                sampler_name=self.sampler_name,
+                parameters=categorical_pipeline_parameters,
+                extra_components=[SelectColumns],
+                extra_components_position="before_preprocessing",
+                use_estimator=False,
+            )
+            input_pipelines = [numeric_pipeline, categorical_pipeline]
+            sub_pipeline_names = {
+                numeric_pipeline.name: "Numeric",
+                categorical_pipeline.name: "Categorical",
+            }
+            return _make_pipeline_from_multiple_graphs(
+                input_pipelines,
+                estimator,
+                self.problem_type,
+                pipeline_name=pipeline_name,
+                random_seed=self.random_seed,
+                sub_pipeline_names=sub_pipeline_names,
+            )
+        return numeric_pipeline

@@ -110,6 +110,11 @@ class AutoMLAlgorithm(ABC):
                 pipeline, pipeline_dict["parameters"]
             )
             if (
+                "Numeric Pipeline - Select Columns Transformer"
+                in pipeline.component_graph.component_instances
+            ):
+                pipeline_params.update(self._create_split_select_parameters())
+            elif (
                 "Select Columns Transformer"
                 in pipeline.component_graph.component_instances
             ):

@@ -100,7 +100,9 @@ class Estimator(ComponentBase):
             raise MethodPropertyNotFoundError(
                 "Estimator requires a predict method or a component_obj that implements predict"
             )
-        return infer_feature_types(predictions)
+        predictions = infer_feature_types(predictions)
+        predictions.index = X.index
+        return predictions
 
     def predict_proba(self, X):
         """Make probability estimates for labels.
@@ -121,7 +123,9 @@ class Estimator(ComponentBase):
             raise MethodPropertyNotFoundError(
                 "Estimator requires a predict_proba method or a component_obj that implements predict_proba"
             )
-        return infer_feature_types(pred_proba)
+        pred_proba = infer_feature_types(pred_proba)
+        pred_proba.index = X.index
+        return pred_proba
 
     @property
     def feature_importance(self):

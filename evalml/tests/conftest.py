@@ -489,6 +489,16 @@ def example_graph():
 
 
 @pytest.fixture
+def example_graph_with_transformer_last_component():
+    component_graph = {
+        "Label Encoder": ["Label Encoder", "X", "y"],
+        "Imputer": ["Imputer", "X", "Label Encoder.y"],
+        "OneHotEncoder": ["One Hot Encoder", "Imputer.x", "Label Encoder.y"],
+    }
+    return component_graph
+
+
+@pytest.fixture
 def example_pass_target_graph():
     component_graph = {
         "Imputer": ["Imputer", "X", "y"],
@@ -696,8 +706,6 @@ def logistic_regression_component_graph():
 @pytest.fixture
 def logistic_regression_multiclass_pipeline_class(logistic_regression_component_graph):
     class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
-        """Logistic Regression Pipeline for binary classification."""
-
         custom_name = "Logistic Regression Multiclass Pipeline"
         component_graph = logistic_regression_component_graph
 
@@ -1467,3 +1475,22 @@ def CustomClassificationObjectiveRanges(ranges):
             """Not implementing since mocked in our tests."""
 
     return CustomClassificationObjectiveRanges()
+
+
+def load_daily_temp_local(n_rows=None):
+    currdir_path = os.path.dirname(os.path.abspath(__file__))
+    data_folder_path = os.path.join(currdir_path, "data")
+    fraud_data_path = os.path.join(data_folder_path, "daily-min-temperatures.csv")
+    X, y = load_data(
+        path=fraud_data_path,
+        index=None,
+        target="Temp",
+        n_rows=n_rows,
+    )
+    return X, y
+
+
+@pytest.fixture
+def daily_temp_local():
+    X, y = load_daily_temp_local()
+    return X, y

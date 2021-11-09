@@ -118,3 +118,21 @@ def test_churn_data(churn_local):
     X_local, y_local = churn_local
     pd.testing.assert_frame_equal(X, X_local)
     pd.testing.assert_series_equal(y, y_local)
+
+
+def test_daily_temp(daily_temp_local):
+    X, y = daily_temp_local
+    assert X.shape == (3650, 1)
+    assert y.shape == (3650,)
+    assert isinstance(X, pd.DataFrame)
+    assert isinstance(y, pd.Series)
+    assert X.ww.schema is not None
+    assert y.ww.schema is not None
+
+
+@pytest.mark.skip_offline
+def test_daily_(daily_temp_local):
+    X, y = demos.load_weather()
+    X_local, y_local = daily_temp_local
+    pd.testing.assert_frame_equal(X, X_local)
+    pd.testing.assert_series_equal(y, y_local)
