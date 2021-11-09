@@ -20,6 +20,7 @@ Release Notes
         * Required the ``date_index`` parameter to be specified for time series problems  in ``AutoMLSearch`` :pr:`3041`
         * Allowed time series pipelines to predict on test datasets whose length is less than or equal to the ``forecast_horizon``. Also allowed the test set index to start at 0. :pr:`3071`
         * Enabled time series pipeline to predict on data with features that are not known-in-advanced :pr:`3094`
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
     * Fixes
         * Added in error message when fit and predict/predict_proba data types are different :pr:`3036`
         * Fixed bug where ensembling components could not get converted to JSON format :pr:`3049`
@@ -48,6 +49,7 @@ Release Notes
         * Changed time series problems in ``AutoMLSearch`` to need a not-``None`` ``date_index`` :pr:`3041`
         * Changed the ``DelayedFeatureTransformer`` to throw a ``ValueError`` during fit if the ``date_index`` is ``None`` :pr:`3041`
         * Passing ``X=None`` to ``DelayedFeatureTransformer`` is deprecated :pr:`3041`
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` :pr:`3028`
 
 
 **v0.37.0 Nov. 9, 2021**

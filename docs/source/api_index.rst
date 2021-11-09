@@ -175,7 +175,7 @@ Transformers are components that take in data as input and output transformed da
     evalml.pipelines.components.DropNullColumns
     evalml.pipelines.components.DateTimeFeaturizer
     evalml.pipelines.components.NaturalLanguageFeaturizer
-    evalml.pipelines.components.DelayedFeatureTransformer
+    evalml.pipelines.components.TimeSeriesFeaturizer
     evalml.pipelines.components.DFSTransformer
     evalml.pipelines.components.PolynomialDetrender
     evalml.pipelines.components.Undersampler
