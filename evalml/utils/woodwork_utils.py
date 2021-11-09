@@ -45,7 +45,7 @@ def _raise_value_error_if_nullable_types_detected(data):
         )
 
 
-def infer_feature_types(data, feature_types=None):
+def infer_feature_types(data, feature_types=None, ignore_nullable_types=False):
     """Create a Woodwork structure from the given list, pandas, or numpy input, with specified types for columns. If a column's type is not specified, it will be inferred by Woodwork.
 
     Args:
@@ -53,6 +53,7 @@ def infer_feature_types(data, feature_types=None):
         feature_types (string, ww.logical_type obj, dict, optional): If data is a 2D structure, feature_types must be a dictionary
             mapping column names to the type of data represented in the column. If data is a 1D structure, then feature_types must be
             a Woodwork logical type or a string representing a Woodwork logical type ("Double", "Integer", "Boolean", "Categorical", "Datetime", "NaturalLanguage")
+        ignore_nullable_types (bool): Whether to ignore raising an error upon detection of Nullable types. Defaults to False.
 
     Returns:
         A Woodwork data structure where the data type of each column was either specified or inferred.
@@ -65,7 +66,8 @@ def infer_feature_types(data, feature_types=None):
     elif isinstance(data, np.ndarray):
         data = _numpy_to_pandas(data)
 
-    _raise_value_error_if_nullable_types_detected(data)
+    if not ignore_nullable_types:
+        _raise_value_error_if_nullable_types_detected(data)
 
     def convert_all_nan_unknown_to_double(data):
         def is_column_pd_na(data, col):
