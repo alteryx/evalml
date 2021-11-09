@@ -143,18 +143,21 @@ class UniquenessDataCheck(DataCheck):
         return results
 
     @staticmethod
-    def uniqueness_score(col):
+    def uniqueness_score(col, drop_na=True):
         """Calculate a uniqueness score for the provided field.  NaN values are not considered as unique values in the calculation.
 
         Based on the Herfindahl–Hirschman Index.
 
         Args:
             col (pd.Series): Feature values.
+            drop_na (bool): Whether to drop null values when computing the uniqueness score. Defaults to True.
 
         Returns:
             (float): Uniqueness score.
         """
-        norm_counts = col.value_counts() / col.value_counts().sum()
+        norm_counts = (
+            col.value_counts(dropna=drop_na) / col.value_counts(dropna=drop_na).sum()
+        )
         square_counts = norm_counts ** 2
         score = 1 - square_counts.sum()
         return score

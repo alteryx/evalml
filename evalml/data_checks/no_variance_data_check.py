@@ -108,8 +108,8 @@ class NoVarianceDataCheck(DataCheck):
 
         """
         results = {"warnings": [], "errors": [], "actions": []}
-        X = infer_feature_types(X)
-        y = infer_feature_types(y)
+        X = infer_feature_types(X, ignore_nullable_types=True)
+        y = infer_feature_types(y, ignore_nullable_types=True)
 
         unique_counts = X.nunique(dropna=self._dropnan).to_dict()
         any_nulls = (X.isnull().any()).to_dict()
