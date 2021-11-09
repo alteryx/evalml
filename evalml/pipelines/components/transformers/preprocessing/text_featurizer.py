@@ -11,7 +11,7 @@ from evalml.pipelines.components.transformers.preprocessing import (
 from evalml.utils import infer_feature_types
 
 
-class TextFeaturizer(TextTransformer):
+class NaturalLanguageFeaturizer(TextTransformer):
     """Transformer that can automatically featurize text columns using featuretools' nlp_primitives.
 
     Since models cannot handle non-numeric data, any text must be broken down into features that
@@ -47,7 +47,7 @@ class TextFeaturizer(TextTransformer):
             return text.lower()
 
         for col_name in X.columns:
-            # we assume non-str values will have been filtered out prior to calling TextFeaturizer. casting to str is a safeguard.
+            # we assume non-str values will have been filtered out prior to calling NaturalLanguageFeaturizer. casting to str is a safeguard.
             X[col_name].fillna("", inplace=True)
             col = X[col_name].astype(str)
             X[col_name] = col.apply(normalize)

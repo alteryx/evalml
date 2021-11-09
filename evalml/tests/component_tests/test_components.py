@@ -58,7 +58,7 @@ from evalml.pipelines.components import (
     SVMClassifier,
     SVMRegressor,
     TargetImputer,
-    TextFeaturizer,
+    NaturalLanguageFeaturizer,
     TimeSeriesBaselineEstimator,
     Transformer,
     Undersampler,
@@ -192,7 +192,7 @@ def test_describe_component():
     drop_col_transformer = DropColumns(columns=["col_one", "col_two"])
     drop_null_transformer = DropNullColumns()
     datetime = DateTimeFeaturizer()
-    text_featurizer = TextFeaturizer()
+    text_featurizer = NaturalLanguageFeaturizer()
     lsa = LSA()
     pca = PCA()
     lda = LinearDiscriminantAnalysis()

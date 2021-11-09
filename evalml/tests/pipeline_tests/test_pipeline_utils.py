@@ -26,7 +26,7 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     StandardScaler,
     TargetImputer,
-    TextFeaturizer,
+    NaturalLanguageFeaturizer,
     Transformer,
     URLFeaturizer,
 )
@@ -209,7 +209,7 @@ def test_make_pipeline(
             )
             drop_null = [DropNullColumns] if "all_null" in column_names else []
             text_featurizer = (
-                [TextFeaturizer]
+                [NaturalLanguageFeaturizer]
                 if "text" in column_names and input_type == "ww"
                 else []
             )

@@ -18,7 +18,7 @@ from evalml.pipelines.components import (
     DateTimeFeaturizer,
     DFSTransformer,
     OneHotEncoder,
-    TextFeaturizer,
+    NaturalLanguageFeaturizer,
 )
 from evalml.utils import infer_feature_types
 
@@ -100,14 +100,14 @@ class LinearPipelineWithTextFeatures(BinaryClassificationPipeline):
     component_graph = [
         "Select Columns Transformer",
         "Imputer",
-        TextFeaturizer,
+        NaturalLanguageFeaturizer,
         OneHotEncoder,
         "Random Forest Classifier",
     ]
 
 
-class LinearPipelineWithTextFeaturizerNoTextFeatures(LinearPipelineWithTextFeatures):
-    """Testing a pipeline with TextFeaturizer but no text features."""
+class LinearPipelineWithNaturalLanguageFeaturizerNoTextFeatures(LinearPipelineWithTextFeatures):
+    """Testing a pipeline with NaturalLanguageFeaturizer but no text features."""
 
 
 class LinearPipelineWithDoubling(BinaryClassificationPipeline):
@@ -235,7 +235,7 @@ test_cases = [
         {"Select Columns Transformer": {"columns": ["provider", "amount", "currency"]}},
     ),
     (
-        LinearPipelineWithTextFeaturizerNoTextFeatures,
+        LinearPipelineWithNaturalLanguageFeaturizerNoTextFeatures,
         {"Select Columns Transformer": {"columns": ["amount", "currency"]}},
     ),
     (
