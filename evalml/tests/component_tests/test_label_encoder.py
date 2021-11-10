@@ -125,3 +125,72 @@ def test_label_encoder_inverse_transform():
     y_expected = ww.init_series(pd.Series(["b", "a", "c", "b"]))
     y_inverse_transformed = encoder.inverse_transform(y_encoded)
     assert_series_equal(y_expected, y_inverse_transformed)
+
+
+def test_label_encoder_with_positive_label_multiclass_error():
+    y = pd.Series(["a", "b", "c", "a"])
+    encoder = LabelEncoder(positive_label="a")
+    with pytest.raises(
+        ValueError,
+        match="positive_label should only be set for binary classification targets",
+    ):
+        encoder.fit(None, y)
+
+
+def test_label_encoder_with_positive_label_missing_from_input():
+    y = pd.Series(["a", "b", "a"])
+    encoder = LabelEncoder(positive_label="z")
+    with pytest.raises(
+        ValueError,
+        match="positive_label was set to `z` but was not found in the input target data.",
+    ):
+        encoder.fit(None, y)
+
+
+@pytest.mark.parametrize(
+    "y, positive_label, y_encoded_expected",
+    [
+        (
+            pd.Series([True, False, False, True]),
+            False,
+            pd.Series([0, 1, 1, 0]),
+        ),  # boolean
+        (
+            pd.Series([True, False, False, True]),
+            True,
+            pd.Series([1, 0, 0, 1]),
+        ),  # boolean
+        (
+            pd.Series([0, 1, 1, 0]),
+            0,
+            pd.Series([1, 0, 0, 1]),
+        ),  # int, 0 / 1, encoding should flip
+        (
+            pd.Series([0, 1, 1, 0]),
+            1,
+            pd.Series([0, 1, 1, 0]),
+        ),  # int, 0 / 1, encoding should not change
+        (
+            pd.Series([6, 2, 2, 6]),
+            6,
+            pd.Series([1, 0, 0, 1]),
+        ),  # ints, not 0 / 1, encoding should not change
+        (
+            pd.Series([6, 2, 2, 6]),
+            2,
+            pd.Series([0, 1, 1, 0]),
+        ),  # ints, not 0 / 1, encoding should flip
+        (pd.Series(["b", "a", "a", "b"]), "a", pd.Series([0, 1, 1, 0])),  # categorical
+        (pd.Series(["b", "a", "a", "b"]), "b", pd.Series([1, 0, 0, 1])),  # categorical
+    ],
+)
+def test_label_encoder_with_positive_label(y, positive_label, y_encoded_expected):
+    encoder = LabelEncoder(positive_label=positive_label)
+    _, y_fit_transformed = encoder.fit_transform(None, y)
+
+    assert_series_equal(y_encoded_expected, y_fit_transformed)
+
+    y_inverse_transformed = encoder.inverse_transform(y_fit_transformed)
+    assert_series_equal(ww.init_series(y), y_inverse_transformed)
+
+    # transform array different from original --> can't map
