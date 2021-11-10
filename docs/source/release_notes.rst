@@ -2,6 +2,18 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.37.0 Nov. 9, 2021**
+    * Enhancements
         * Added ``find_confusion_matrix_per_threshold`` to Model Understanding :pr:`2972`
         * Limit computationally-intensive models during ``AutoMLSearch`` for certain multiclass problems, allow for opt-in with parameter ``allow_long_running_models`` :pr:`2982`
         * Added support for stacked ensemble pipelines to prediction explanations module :pr:`2971`
@@ -21,11 +33,7 @@ Release Notes
         * Fixed cost benefit matrix demo formatting :pr:`2990`
         * Update ReadMe.md with new badge links and updated installation instructions for conda :pr:`2998`
         * Added more comprehensive doctests :pr:`3002`
-    * Testing Changes
 
-.. warning::
-
-    **Breaking Changes**
 
 **v0.36.0 Oct. 27, 2021**
     * Enhancements
