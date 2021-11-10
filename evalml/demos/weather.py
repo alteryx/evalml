@@ -4,7 +4,7 @@ from evalml.preprocessing import load_data
 
 
 def load_weather():
-    """Load the Australian daily-min-termperatures weather dataset.
+    """Load the Australian daily-min-temperatures weather dataset.
 
     Returns:
         (pd.Dataframe, pd.Series): X and y
