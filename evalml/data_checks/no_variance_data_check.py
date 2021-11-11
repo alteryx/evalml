@@ -172,6 +172,7 @@ class NoVarianceDataCheck(DataCheck):
             results["actions"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_COL,
+                    data_check_name=self.name,
                     metadata={"columns": all_cols},
                 ).to_dict()
             )

@@ -111,6 +111,7 @@ class UniquenessDataCheck(DataCheck):
             results["actions"].append(
                 DataCheckAction(
                     action_code=DataCheckActionCode.DROP_COL,
+                    data_check_name=self.name,
                     metadata={"columns": not_unique_enough_cols},
                 ).to_dict()
             )
@@ -137,6 +138,7 @@ class UniquenessDataCheck(DataCheck):
             results["actions"].append(
                 DataCheckAction(
                     action_code=DataCheckActionCode.DROP_COL,
+                    data_check_name=self.name,
                     metadata={"columns": too_unique_cols},
                 ).to_dict()
             )

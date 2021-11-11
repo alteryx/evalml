@@ -143,7 +143,9 @@ class TargetLeakageDataCheck(DataCheck):
             )
             results["actions"].append(
                 DataCheckAction(
-                    DataCheckActionCode.DROP_COL, metadata={"columns": highly_corr_cols}
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=self.name,
+                    metadata={"columns": highly_corr_cols},
                 ).to_dict()
             )
         return results

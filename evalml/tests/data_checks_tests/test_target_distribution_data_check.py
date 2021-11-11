@@ -135,6 +135,7 @@ def test_target_distribution_data_check_warning_action(
             "actions": [
                 DataCheckAction(
                     DataCheckActionCode.TRANSFORM_TARGET,
+                    data_check_name=target_dist_check_name,
                     metadata={
                         "columns": None,
                         "is_target": True,

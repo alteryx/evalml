@@ -60,6 +60,7 @@ def test_id_columns_warning():
         "actions": [
             DataCheckAction(
                 DataCheckActionCode.DROP_COL,
+                data_check_name=id_data_check_name,
                 metadata={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
             ).to_dict(),
         ],
@@ -79,7 +80,9 @@ def test_id_columns_warning():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"columns": ["Id", "col_1_id"]}
+                DataCheckActionCode.DROP_COL,
+                data_check_name=id_data_check_name,
+                metadata={"columns": ["Id", "col_1_id"]},
             ).to_dict(),
         ],
     }
@@ -122,6 +125,7 @@ def test_id_columns_strings():
         "actions": [
             DataCheckAction(
                 DataCheckActionCode.DROP_COL,
+                data_check_name=id_data_check_name,
                 metadata={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
             ).to_dict(),
         ],
@@ -140,7 +144,9 @@ def test_id_columns_strings():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"columns": ["Id", "col_1_id"]}
+                DataCheckActionCode.DROP_COL,
+                data_check_name=id_data_check_name,
+                metadata={"columns": ["Id", "col_1_id"]},
             ).to_dict()
         ],
     }
@@ -171,7 +177,9 @@ def test_id_cols_data_check_input_formats():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"columns": [0, 1]}
+                DataCheckActionCode.DROP_COL,
+                data_check_name=id_data_check_name,
+                metadata={"columns": [0, 1]},
             ).to_dict(),
         ],
     }
@@ -189,7 +197,9 @@ def test_id_cols_data_check_input_formats():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"columns": [0, 1]}
+                DataCheckActionCode.DROP_COL,
+                data_check_name=id_data_check_name,
+                metadata={"columns": [0, 1]},
             ).to_dict(),
         ],
     }
@@ -209,7 +219,9 @@ def test_id_cols_data_check_input_formats():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"columns": [0, 1]}
+                DataCheckActionCode.DROP_COL,
+                data_check_name=id_data_check_name,
+                metadata={"columns": [0, 1]},
             ).to_dict(),
         ],
     }

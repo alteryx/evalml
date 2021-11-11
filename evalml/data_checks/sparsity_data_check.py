@@ -105,6 +105,7 @@ class SparsityDataCheck(DataCheck):
             results["actions"].append(
                 DataCheckAction(
                     action_code=DataCheckActionCode.DROP_COL,
+                    data_check_name=self.name,
                     metadata={"columns": too_sparse_cols},
                 ).to_dict()
             )

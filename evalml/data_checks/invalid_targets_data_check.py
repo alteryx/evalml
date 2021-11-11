@@ -201,6 +201,7 @@ class InvalidTargetDataCheck(DataCheck):
             results["actions"].append(
                 DataCheckAction(
                     DataCheckActionCode.IMPUTE_COL,
+                    data_check_name=self.name,
                     metadata={
                         "is_target": True,
                         "impute_strategy": impute_strategy,

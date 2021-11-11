@@ -43,7 +43,9 @@ def test_outliers_data_check_warnings():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 3, 5, 10]}
+                DataCheckActionCode.DROP_ROWS,
+                data_check_name=outliers_data_check_name,
+                metadata={"rows": [0, 3, 5, 10]},
             ).to_dict()
         ],
     }
@@ -77,7 +79,9 @@ def test_outliers_data_check_warnings_with_duplicate_outlier_indices():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 3]}
+                DataCheckActionCode.DROP_ROWS,
+                data_check_name=outliers_data_check_name,
+                metadata={"rows": [0, 3]},
             ).to_dict()
         ],
     }
@@ -120,7 +124,9 @@ def test_outliers_data_check_input_formats():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 3, 5, 10]}
+                DataCheckActionCode.DROP_ROWS,
+                data_check_name=outliers_data_check_name,
+                metadata={"rows": [0, 3, 5, 10]},
             ).to_dict()
         ],
     }
@@ -144,7 +150,9 @@ def test_outliers_data_check_input_formats():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 3, 5, 10]}
+                DataCheckActionCode.DROP_ROWS,
+                data_check_name=outliers_data_check_name,
+                metadata={"rows": [0, 3, 5, 10]},
             ).to_dict()
         ],
     }
@@ -223,7 +231,9 @@ def test_outliers_data_check_warnings_has_nan():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_ROWS, metadata={"rows": [3, 5, 10]}
+                DataCheckActionCode.DROP_ROWS,
+                data_check_name=outliers_data_check_name,
+                metadata={"rows": [3, 5, 10]},
             ).to_dict()
         ],
     }

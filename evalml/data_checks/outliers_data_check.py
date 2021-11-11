@@ -113,6 +113,7 @@ class OutliersDataCheck(DataCheck):
         results["actions"].append(
             DataCheckAction(
                 DataCheckActionCode.DROP_ROWS,
+                data_check_name=self.name,
                 metadata={"rows": all_rows_with_indices},
             ).to_dict()
         )

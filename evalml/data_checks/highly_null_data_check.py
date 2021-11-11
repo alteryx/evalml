@@ -127,6 +127,7 @@ class HighlyNullDataCheck(DataCheck):
             results["actions"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_ROWS,
+                    data_check_name=self.name,
                     metadata={"rows": highly_null_rows.index.tolist()},
                 ).to_dict()
             )
@@ -162,6 +163,7 @@ class HighlyNullDataCheck(DataCheck):
             results["actions"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_COL,
+                    data_check_name=self.name,
                     metadata={"columns": list(highly_null_cols)},
                 ).to_dict()
             )
