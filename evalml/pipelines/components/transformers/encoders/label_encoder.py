@@ -53,7 +53,7 @@ class LabelEncoder(Transformer):
             self._component_obj.fit(y)
         else:
             classes_ = set(pd.Series(y).unique())
-            if len(self.classes_) != 2:
+            if len(classes_) != 2:
                 raise ValueError(
                     "positive_label should only be set for binary classification targets. Otherwise, positive_label should be None."
                 )

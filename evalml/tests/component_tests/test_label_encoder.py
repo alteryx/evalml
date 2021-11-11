@@ -12,7 +12,7 @@ from evalml.pipelines.components import LabelEncoder
 
 def test_label_encoder_init():
     encoder = LabelEncoder()
-    assert encoder.parameters == {}
+    assert encoder.parameters == {"positive_label": None}
     assert encoder.random_seed == 0
 
 
@@ -202,9 +202,7 @@ def test_label_encoder_with_positive_label_fit_different_from_transform():
     encoder = LabelEncoder(positive_label="a")
     y = pd.Series(["a", "b", "b", "a"])
     encoder.fit(None, y)
-    with pytest.raises(
-        ValueError, match="y contains previously unseen labels: {'x', 'y'}"
-    ):
+    with pytest.raises(ValueError, match="y contains previously unseen labels"):
         encoder.transform(None, pd.Series(["x", "y", "x"]))
 
 
