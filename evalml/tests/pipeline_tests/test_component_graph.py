@@ -35,6 +35,7 @@ from evalml.pipelines.components import (
     Transformer,
     Undersampler,
 )
+from evalml.problem_types import is_classification
 from evalml.utils import infer_feature_types
 
 
@@ -2414,3 +2415,59 @@ def test_training_only_component_in_component_graph_transform_all_but_final(
     component_graph.fit(X, y)
     transformed_X = component_graph.transform_all_but_final(X, y)
     assert len(transformed_X) == len(X)
+
+
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
+def test_fit_predict_different_types(
+    problem_type, X_y_binary, X_y_multi, X_y_regression
+):
+    if problem_type == "binary":
+        X, y = X_y_binary
+    elif problem_type == "multiclass":
+        X, y = X_y_multi
+    else:
+        X, y = X_y_regression
+
+    X = infer_feature_types(X)
+    X.ww.set_types({0: "Double"})
+    X2 = infer_feature_types(X.copy())
+    X2.ww.set_types({0: "Integer"})
+    if is_classification(problem_type):
+        component_dict = {
+            "Imputer": ["Imputer", "X", "y"],
+            "RF": [
+                "Random Forest Classifier",
+                "Imputer.x",
+                "y",
+            ],
+        }
+    else:
+        component_dict = {
+            "Imputer": ["Imputer", "X", "y"],
+            "RF": [
+                "Random Forest Regressor",
+                "Imputer.x",
+                "y",
+            ],
+        }
+    component_graph = ComponentGraph(component_dict).instantiate({})
+    component_graph.fit(X, y)
+    with pytest.raises(
+        ValueError, match="Input X data types are different from the input types"
+    ):
+        component_graph.predict(X2)
+
+
+def test_fit_transform_different_types(X_y_binary):
+    X, y = X_y_binary
+    X = infer_feature_types(X)
+    X.ww.set_types({0: "Double"})
+    X2 = infer_feature_types(X.copy())
+    X2.ww.set_types({0: "Integer"})
+    component_dict = {"Imputer": ["Imputer", "X", "y"]}
+    component_graph = ComponentGraph(component_dict).instantiate({})
+    component_graph.fit(X, y)
+    with pytest.raises(
+        ValueError, match="Input X data types are different from the input types"
+    ):
+        component_graph.transform(X2)

@@ -59,6 +59,7 @@ from evalml.problem_types import (
     is_multiclass,
     is_time_series,
 )
+from evalml.utils import infer_feature_types
 
 
 @pytest.mark.parametrize(
@@ -2905,3 +2906,28 @@ def test_component_graph_pipeline_initialized():
         ]
         == "median"
     )
+
+
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
+def test_fit_predict_proba_types(problem_type, X_y_binary, X_y_multi):
+    component_graph = ["Imputer", "Random Forest Classifier"]
+    if problem_type == "binary":
+        pipeline = BinaryClassificationPipeline(component_graph)
+        X, y = X_y_binary
+    else:
+        pipeline = MulticlassClassificationPipeline(component_graph)
+        X, y = X_y_multi
+    X = infer_feature_types(X)
+    X.ww.set_types({0: "Double"})
+    X2 = infer_feature_types(X.copy())
+    X2.ww.set_types({0: "Integer"})
+
+    pipeline.fit(X, y)
+    with pytest.raises(
+        ValueError, match="Input X data types are different from the input types"
+    ):
+        pipeline.predict(X2)
+    with pytest.raises(
+        ValueError, match="Input X data types are different from the input types"
+    ):
+        pipeline.predict_proba(X2)

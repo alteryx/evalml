@@ -88,6 +88,7 @@ class ComponentGraph:
         self._feature_provenance = {}
         self._i = 0
         self._compute_order = self.generate_order(self.component_dict)
+        self._input_types = {}
 
     def _validate_component_dict(self):
         for _, component_inputs in self.component_dict.items():
@@ -219,8 +220,8 @@ class ComponentGraph:
         Returns:
             self
         """
-        X = infer_feature_types(X)
-        y = infer_feature_types(y)
+        # X = infer_feature_types(X)
+        # y = infer_feature_types(y)
         self._transform_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
         return self
@@ -378,6 +379,14 @@ class ComponentGraph:
             dict: Outputs from each component.
         """
         X = infer_feature_types(X)
+        if not fit:
+            if X.ww.types.to_dict() != self._input_types:
+                raise ValueError(
+                    "Input X data types are different from the input types the pipeline was fitted on."
+                )
+        else:
+            self._input_types = X.ww.types.to_dict()
+
         if y is not None:
             y = infer_feature_types(y)
 
