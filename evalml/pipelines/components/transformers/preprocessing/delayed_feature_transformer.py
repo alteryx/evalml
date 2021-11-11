@@ -106,6 +106,8 @@ class DelayedFeatureTransformer(Transformer):
         Returns:
             self
         """
+        if self.date_index is None:
+            raise ValueError("date_index cannot be None!")
         self.statistically_significant_lags = self._find_significant_lags(
             y, conf_level=self.conf_level, max_delay=self.max_delay
         )
@@ -176,14 +178,16 @@ class DelayedFeatureTransformer(Transformer):
             X = pd.DataFrame()
         # Normalize the data into pandas objects
         X_ww = infer_feature_types(X)
+        cols_to_delay = list(
+            X_ww.ww.select(["numeric", "category"], return_schema=True).columns
+        )
         X_ww = X_ww.ww.copy()
         categorical_columns = self._get_categorical_columns(X_ww)
-        original_features = list(X_ww.columns)
         if self.delay_features and len(X) > 0:
             X_categorical = self._encode_X_while_preserving_index(
                 X_ww[categorical_columns]
             )
-            for col_name in X_ww:
+            for col_name in cols_to_delay:
                 col = X_ww[col_name]
                 if col_name in categorical_columns:
                     col = X_categorical[col_name]
@@ -200,7 +204,7 @@ class DelayedFeatureTransformer(Transformer):
                 X_ww.ww[
                     self.target_colname_prefix.format(t + self.start_delay)
                 ] = y.shift(self.start_delay + t)
-        return X_ww.ww.drop(original_features)
+        return X_ww.ww.drop(cols_to_delay)
 
     def fit_transform(self, X, y):
         """Fit the component and transform the input data.

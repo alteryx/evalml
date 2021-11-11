@@ -2027,7 +2027,7 @@ def test_percent_better_than_baseline_in_rankings(
     pipeline_parameters = (
         {
             "pipeline": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 2,
@@ -2050,6 +2050,8 @@ def test_percent_better_than_baseline_in_rankings(
             n_jobs=1,
         )
     elif problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION:
+        X = pd.DataFrame(X)
+        X["date"] = pd.date_range("2021-01-02", periods=X.shape[0])
         automl = AutoMLSearch(
             X_train=X,
             y_train=y,
@@ -2058,7 +2060,7 @@ def test_percent_better_than_baseline_in_rankings(
             objective=objective,
             additional_objectives=[],
             problem_configuration={
-                "date_index": None,
+                "date_index": "date",
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 2,
@@ -2227,9 +2229,11 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     DummyPipeline.score = mock_score_1
     parameters = {}
     if problem_type_enum == ProblemTypes.TIME_SERIES_REGRESSION:
+        X = pd.DataFrame(X)
+        X["foo"] = pd.date_range("2021-01-01", periods=X.shape[0])
         parameters = {
             "pipeline": {
-                "date_index": None,
+                "date_index": "foo",
                 "gap": 6,
                 "max_delay": 3,
                 "forecast_horizon": 3,
@@ -2243,7 +2247,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         max_iterations=2,
         objective="auto",
         problem_configuration={
-            "date_index": None,
+            "date_index": "foo",
             "gap": 1,
             "max_delay": 1,
             "forecast_horizon": 3,
@@ -2264,7 +2268,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         text_in_ensembling=False,
         pipeline_params={
             "pipeline": {
-                "date_index": None,
+                "date_index": "foo",
                 "gap": 1,
                 "max_delay": 1,
                 "forecast_horizon": 2,
@@ -3521,7 +3525,7 @@ def test_automl_validates_problem_configuration(ts_data):
         ).problem_configuration
         == {}
     )
-    msg = "user_parameters must be a dict containing values for at least the date_index, gap, max_delay, and forecast_horizon parameters"
+    msg = "problem_configuration must be a dict containing values for at least the date_index, gap, max_delay, and forecast_horizon parameters"
     with pytest.raises(ValueError, match=msg):
         AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression")
     with pytest.raises(ValueError, match=msg):
@@ -3537,6 +3541,19 @@ def test_automl_validates_problem_configuration(ts_data):
             y_train=y,
             problem_type="time series regression",
             problem_configuration={"max_delay": 2, "gap": 3},
+        )
+
+    with pytest.raises(ValueError, match="date_index cannot be None!"):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="time series regression",
+            problem_configuration={
+                "date_index": None,
+                "max_delay": 2,
+                "gap": 3,
+                "forecast_horizon": 2,
+            },
         )
 
     problem_config = AutoMLSearch(
@@ -3691,7 +3708,7 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(
         y_train=y,
         problem_type="time series regression",
         problem_configuration={
-            "date_index": None,
+            "date_index": 0,
             "gap": 6,
             "max_delay": 3,
             "forecast_horizon": 7,
@@ -3705,13 +3722,13 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(
     # Best pipeline is baseline pipeline because we only run one iteration
     assert automl.best_pipeline.parameters == {
         "pipeline": {
-            "date_index": None,
+            "date_index": 0,
             "gap": 6,
             "max_delay": 0,
             "forecast_horizon": 7,
         },
         "Delayed Feature Transformer": {
-            "date_index": None,
+            "date_index": 0,
             "delay_features": False,
             "delay_target": True,
             "max_delay": 0,
@@ -3749,7 +3766,7 @@ def test_automl_does_not_include_positive_only_objectives_by_default(
         y_train=y,
         problem_type=problem_type,
         problem_configuration={
-            "date_index": None,
+            "date_index": 0,
             "gap": 0,
             "max_delay": 0,
             "forecast_horizon": 2,
@@ -4624,7 +4641,7 @@ def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
             y,
             problem_type=problem_type,
             problem_configuration={
-                "date_index": None,
+                "date_index": 0,
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 9,
@@ -4757,7 +4774,9 @@ def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
     ],
 )
 def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_type):
-    X = pd.DataFrame({"a": [4, 5, 6, 7, 8]})
+    X = pd.DataFrame(
+        {"a": [4, 5, 6, 7, 8], "b": pd.date_range("2021-01-01", periods=5)}
+    )
     y = pd.Series([0, 1, 1, 0, 1])
     expected_predictions_proba = pd.DataFrame(
         {
@@ -4780,7 +4799,7 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
         y,
         problem_type=problem_type,
         problem_configuration={
-            "date_index": None,
+            "date_index": "b",
             "gap": 0,
             "max_delay": 1,
             "forecast_horizon": 1,
@@ -4803,9 +4822,7 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
             expected_predictions_proba,
             baseline.predict_proba(X_validation, X_train, y_train),
         )
-    np.testing.assert_allclose(
-        baseline.feature_importance.iloc[:, 1], np.array([0.0] * X_validation.shape[1])
-    )
+    np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], np.array([0.0]))
 
 
 @pytest.mark.parametrize(

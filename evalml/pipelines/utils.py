@@ -97,6 +97,12 @@ def _get_preprocessing_components(
     if len(url_columns) > 0:
         pp_components.append(URLFeaturizer)
 
+    if (
+        is_time_series(problem_type)
+        and estimator_class.model_family != ModelFamily.ARIMA
+    ):
+        pp_components.append(DelayedFeatureTransformer)
+
     input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
     types_imputer_handles = {
         logical_types.Boolean,
@@ -125,12 +131,6 @@ def _get_preprocessing_components(
         text_columns
     ):
         pp_components.append(Imputer)
-
-    if (
-        is_time_series(problem_type)
-        and estimator_class.model_family != ModelFamily.ARIMA
-    ):
-        pp_components.append(DelayedFeatureTransformer)
 
     # The URL and EmailAddress Featurizers will create categorical columns
     categorical_cols = list(
@@ -557,7 +557,7 @@ def _make_component_list_from_actions(actions):
     return components
 
 
-def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon):
+def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, date_index):
     """Make a baseline pipeline for time series regression problems.
 
     Args:
@@ -591,7 +591,7 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon):
         custom_name=pipeline_name,
         parameters={
             "pipeline": {
-                "date_index": None,
+                "date_index": date_index,
                 "gap": gap,
                 "max_delay": 0,
                 "forecast_horizon": forecast_horizon,
@@ -602,6 +602,7 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon):
                 "forecast_horizon": forecast_horizon,
                 "delay_target": True,
                 "delay_features": False,
+                "date_index": date_index,
             },
             "Time Series Baseline Estimator": {
                 "gap": gap,

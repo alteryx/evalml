@@ -459,6 +459,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                     if param_name in init_params:
                         component_parameters[param_name] = value
             parameters[name] = component_parameters
+        # breakpoint()
+        # parameters = pipeline._apply_pipeline_parameters_to_components(parameters)
+        # breakpoint()
         return parameters
 
     def _catch_warnings(self, warning_list):
