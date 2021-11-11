@@ -1766,12 +1766,16 @@ def test_partial_dependence_preserves_woodwork_schema(mock_predict_proba, fraud_
     pl = BinaryClassificationPipeline(
         component_graph={
             "Label Encoder": ["Label Encoder", "X", "y"],
-            "Text Featurization Component": [
-                "Text Featurization Component",
+            "Natural Language Featurizer Component": [
+                "Natural Language Featurizer Component",
                 "X",
                 "Label Encoder.y",
             ],
-            "Imputer": ["Imputer", "Text Featurization Component.x", "Label Encoder.y"],
+            "Imputer": [
+                "Imputer",
+                "Natural Language Featurizer Component.x",
+                "Label Encoder.y",
+            ],
             "Random Forest Classifier": [
                 "Random Forest Classifier",
                 "Imputer.x",

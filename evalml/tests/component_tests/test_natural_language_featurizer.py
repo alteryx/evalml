@@ -326,7 +326,7 @@ def test_lsa_primitive_output():
 
 def test_featurizer_custom_types(text_df):
     # force one of the two provided columns to be a user-specified type.
-    # if the output contains text features for col_2, then the text featurizer didn't pass the right
+    # if the output contains text features for col_2, then the natural language featurizer didn't pass the right
     # ww types to LSA, because LSA still thought col_2 was natural language even though the user said otherwise.
     X = infer_feature_types(
         pd.DataFrame(text_df), {"col_1": "NaturalLanguage", "col_2": "categorical"}

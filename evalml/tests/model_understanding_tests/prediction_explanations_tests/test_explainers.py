@@ -1164,6 +1164,8 @@ EXPECTED_PROVIDER_FEATURES_TEXT = {
     "LSA(provider)[0]",
     "LSA(provider)[1]",
     "MEAN_CHARACTERS_PER_WORD(provider)",
+    "NUM_CHARACTERS(provider)",
+    "NUM_WORDS(provider)",
     "POLARITY_SCORE(provider)",
 }
 
@@ -1252,7 +1254,7 @@ def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fra
     component_graph = [
         "Select Columns Transformer",
         "One Hot Encoder",
-        "Text Featurization Component",
+        "Natural Language Featurizer Component",
         "DateTime Featurization Component",
         estimator,
     ]
@@ -1976,7 +1978,7 @@ def test_explain_predictions_report_shows_original_value_if_possible(
     component_graph = [
         "Imputer",
         "DateTime Featurization Component",
-        "Text Featurization Component",
+        "Natural Language Featurizer Component",
         "One Hot Encoder",
         "Standard Scaler",
         estimator,
@@ -2041,7 +2043,7 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
     component_graph = [
         "Imputer",
         "DateTime Featurization Component",
-        "Text Featurization Component",
+        "Natural Language Featurizer Component",
         "One Hot Encoder",
         "Standard Scaler",
         "Random Forest Classifier",

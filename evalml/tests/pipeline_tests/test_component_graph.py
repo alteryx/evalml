@@ -1068,6 +1068,8 @@ def test_component_graph_dataset_with_different_types():
         text_columns = [
             "DIVERSITY_SCORE(column_5)",
             "MEAN_CHARACTERS_PER_WORD(column_5)",
+            "NUM_CHARACTERS(column_5)",
+            "NUM_WORDS(column_5)",
             "POLARITY_SCORE(column_5)",
             "LSA(column_5)[0]",
             "LSA(column_5)[1]",
@@ -1403,6 +1405,8 @@ def test_component_graph_types_merge():
             "column_4_hour",
             "DIVERSITY_SCORE(column_5)",
             "MEAN_CHARACTERS_PER_WORD(column_5)",
+            "NUM_CHARACTERS(column_5)",
+            "NUM_WORDS(column_5)",
             "POLARITY_SCORE(column_5)",
             "LSA(column_5)[0]",
             "LSA(column_5)[1]",
