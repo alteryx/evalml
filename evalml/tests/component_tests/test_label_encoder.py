@@ -1,7 +1,11 @@
 import pandas as pd
 import pytest
 import woodwork as ww
-from pandas.testing import assert_frame_equal, assert_series_equal
+from pandas.testing import (
+    assert_frame_equal,
+    assert_index_equal,
+    assert_series_equal,
+)
 
 from evalml.pipelines.components import LabelEncoder
 
@@ -186,11 +190,28 @@ def test_label_encoder_with_positive_label_missing_from_input():
 )
 def test_label_encoder_with_positive_label(y, positive_label, y_encoded_expected):
     encoder = LabelEncoder(positive_label=positive_label)
-    _, y_fit_transformed = encoder.fit_transform(None, y)
 
+    _, y_fit_transformed = encoder.fit_transform(None, y)
     assert_series_equal(y_encoded_expected, y_fit_transformed)
 
     y_inverse_transformed = encoder.inverse_transform(y_fit_transformed)
     assert_series_equal(ww.init_series(y), y_inverse_transformed)
 
-    # transform array different from original --> can't map
+
+def test_label_encoder_with_positive_label_fit_different_from_transform():
+    encoder = LabelEncoder(positive_label="a")
+    y = pd.Series(["a", "b", "b", "a"])
+    encoder.fit(None, y)
+    with pytest.raises(
+        ValueError, match="y contains previously unseen labels: {'x', 'y'}"
+    ):
+        encoder.transform(None, pd.Series(["x", "y", "x"]))
+
+
+def test_label_encoder_with_positive_label_with_custom_indices():
+    encoder = LabelEncoder(positive_label="a")
+    y = pd.Series(["a", "b", "a"])
+    encoder.fit(None, y)
+    y_with_custom_indices = pd.Series(["b", "a", "a"], index=[5, 6, 7])
+    _, y_transformed = encoder.transform(None, y_with_custom_indices)
+    assert_index_equal(y_with_custom_indices.index, y_transformed.index)
