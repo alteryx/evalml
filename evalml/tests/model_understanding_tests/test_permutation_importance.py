@@ -106,7 +106,9 @@ class LinearPipelineWithTextFeatures(BinaryClassificationPipeline):
     ]
 
 
-class LinearPipelineWithNaturalLanguageFeaturizerNoTextFeatures(LinearPipelineWithTextFeatures):
+class LinearPipelineWithNaturalLanguageFeaturizerNoTextFeatures(
+    LinearPipelineWithTextFeatures
+):
     """Testing a pipeline with NaturalLanguageFeaturizer but no text features."""
 
 

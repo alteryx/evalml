@@ -26,13 +26,17 @@ def test_featurizer_only_text(text_df):
             "LSA(col_2)[1]",
             "MEAN_CHARACTERS_PER_WORD(col_1)",
             "MEAN_CHARACTERS_PER_WORD(col_2)",
+            "NUM_CHARACTERS(col_1)",
+            "NUM_CHARACTERS(col_2)",
+            "NUM_WORDS(col_1)",
+            "NUM_WORDS(col_2)",
             "POLARITY_SCORE(col_1)",
             "POLARITY_SCORE(col_2)",
         ]
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 10
+    assert len(X_t.columns) == 14
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
         ww.logical_types.Double
     }
@@ -55,6 +59,10 @@ def test_featurizer_with_nontext(text_df):
             "LSA(col_2)[1]",
             "MEAN_CHARACTERS_PER_WORD(col_1)",
             "MEAN_CHARACTERS_PER_WORD(col_2)",
+            "NUM_CHARACTERS(col_1)",
+            "NUM_CHARACTERS(col_2)",
+            "NUM_WORDS(col_1)",
+            "NUM_WORDS(col_2)",
             "POLARITY_SCORE(col_1)",
             "POLARITY_SCORE(col_2)",
             "col_3",
@@ -62,7 +70,7 @@ def test_featurizer_with_nontext(text_df):
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 11
+    assert len(X_t.columns) == 15
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
         ww.logical_types.Double
     }
@@ -89,6 +97,10 @@ def test_some_missing_col_names(text_df, caplog):
             "LSA(col_2)[1]",
             "MEAN_CHARACTERS_PER_WORD(col_1)",
             "MEAN_CHARACTERS_PER_WORD(col_2)",
+            "NUM_CHARACTERS(col_1)",
+            "NUM_CHARACTERS(col_2)",
+            "NUM_WORDS(col_1)",
+            "NUM_WORDS(col_2)",
             "POLARITY_SCORE(col_1)",
             "POLARITY_SCORE(col_2)",
         ]
@@ -96,7 +108,7 @@ def test_some_missing_col_names(text_df, caplog):
     tf.fit(X)
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 10
+    assert len(X_t.columns) == 14
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
         ww.logical_types.Double
     }
@@ -187,13 +199,17 @@ def test_index_col_names():
             "LSA(1)[1]",
             "MEAN_CHARACTERS_PER_WORD(0)",
             "MEAN_CHARACTERS_PER_WORD(1)",
+            "NUM_CHARACTERS(0)",
+            "NUM_CHARACTERS(1)",
+            "NUM_WORDS(0)",
+            "NUM_WORDS(1)",
             "POLARITY_SCORE(0)",
             "POLARITY_SCORE(1)",
         ]
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 10
+    assert len(X_t.columns) == 14
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
         ww.logical_types.Double
     }
@@ -227,13 +243,17 @@ def test_float_col_names():
             "LSA(-1.0)[1]",
             "MEAN_CHARACTERS_PER_WORD(4.75)",
             "MEAN_CHARACTERS_PER_WORD(-1.0)",
+            "NUM_CHARACTERS(4.75)",
+            "NUM_CHARACTERS(-1.0)",
+            "NUM_WORDS(4.75)",
+            "NUM_WORDS(-1.0)",
             "POLARITY_SCORE(4.75)",
             "POLARITY_SCORE(-1.0)",
         ]
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 10
+    assert len(X_t.columns) == 14
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
         ww.logical_types.Double
     }
@@ -321,6 +341,8 @@ def test_featurizer_custom_types(text_df):
             "LSA(col_1)[0]",
             "LSA(col_1)[1]",
             "MEAN_CHARACTERS_PER_WORD(col_1)",
+            "NUM_CHARACTERS(col_1)",
+            "NUM_WORDS(col_1)",
             "POLARITY_SCORE(col_1)",
         ]
     )
@@ -330,6 +352,8 @@ def test_featurizer_custom_types(text_df):
         "col_2": Categorical,
         "DIVERSITY_SCORE(col_1)": Double,
         "MEAN_CHARACTERS_PER_WORD(col_1)": Double,
+        "NUM_CHARACTERS(col_1)": Double,
+        "NUM_WORDS(col_1)": Double,
         "POLARITY_SCORE(col_1)": Double,
         "LSA(col_1)[0]": Double,
         "LSA(col_1)[1]": Double,
@@ -414,7 +438,9 @@ def test_natural_language_featurizer_does_not_modify_input_data(text_df):
         ),
     ],
 )
-def test_natural_language_featurizer_woodwork_custom_overrides_returned_by_components(X_df):
+def test_natural_language_featurizer_woodwork_custom_overrides_returned_by_components(
+    X_df,
+):
     X_df = X_df.copy()
     X_df["text col"] = pd.Series(
         ["this will be a natural language column because length", "yay", "hay"],
@@ -440,6 +466,8 @@ def test_natural_language_featurizer_woodwork_custom_overrides_returned_by_compo
             "LSA(text col)[1]": Double,
             "DIVERSITY_SCORE(text col)": Double,
             "MEAN_CHARACTERS_PER_WORD(text col)": Double,
+            "NUM_CHARACTERS(text col)": Double,
+            "NUM_WORDS(text col)": Double,
             "POLARITY_SCORE(text col)": Double,
         }
 
@@ -491,6 +519,8 @@ def test_nan_allowed(nones):
         "LSA(col_1)[1]",
         "DIVERSITY_SCORE(col_1)",
         "MEAN_CHARACTERS_PER_WORD(col_1)",
+        "NUM_CHARACTERS(col_1)",
+        "NUM_WORDS(col_1)",
         "POLARITY_SCORE(col_1)",
     ]
     # find the columns that should be null
@@ -528,6 +558,8 @@ def test_multiple_nan_allowed(nones):
         "LSA({})[1]",
         "DIVERSITY_SCORE({})",
         "MEAN_CHARACTERS_PER_WORD({})",
+        "NUM_CHARACTERS({})",
+        "NUM_WORDS({})",
         "POLARITY_SCORE({})",
     ]
     cols = [c.format(n) for n in ["col_1", "col_2"] for c in col_names]

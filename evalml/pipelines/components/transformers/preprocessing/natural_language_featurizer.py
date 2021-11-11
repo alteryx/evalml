@@ -3,6 +3,7 @@ import string
 
 import featuretools as ft
 import nlp_primitives
+from featuretools.primitives import NumWords, NumCharacters
 
 from evalml.pipelines.components.transformers.preprocessing import (
     LSA,
@@ -24,12 +25,14 @@ class NaturalLanguageFeaturizer(TextTransformer):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    name = "Text Featurization Component"
+    name = "Natural Language Featurizer Component"
     hyperparameter_ranges = {}
     """{}"""
 
     def __init__(self, random_seed=0, **kwargs):
         self._trans = [
+            NumWords,
+            NumCharacters,
             nlp_primitives.DiversityScore,
             nlp_primitives.MeanCharactersPerWord,
             nlp_primitives.PolarityScore,
