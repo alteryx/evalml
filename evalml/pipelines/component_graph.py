@@ -220,8 +220,6 @@ class ComponentGraph:
         Returns:
             self
         """
-        # X = infer_feature_types(X)
-        # y = infer_feature_types(y)
         self._transform_features(self.compute_order, X, y, fit=True)
         self._feature_provenance = self._get_feature_provenance(X.columns)
         return self

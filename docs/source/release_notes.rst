@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Added in error message when fit and predict/predict_proba data types are different :pr:``
+        * Added in error message when fit and predict/predict_proba data types are different :pr:`3036`
     * Changes
     * Documentation Changes
     * Testing Changes
