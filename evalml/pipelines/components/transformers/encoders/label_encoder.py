@@ -91,7 +91,6 @@ class LabelEncoder(Transformer):
         if self.parameters["positive_label"] is None:
             y_t = self._component_obj.transform(y_ww)
             y_t = pd.Series(y_t, index=y_ww.index)
-            return X, ww.init_series(y_t)
         else:
             y_unique_values = set(pd.Series(y).unique())
             if y_unique_values != self.mapping.keys():
@@ -99,7 +98,7 @@ class LabelEncoder(Transformer):
                     f"y contains previously unseen labels: {y_unique_values.difference(self.mapping.keys())}"
                 )
             y_t = y.map(self.mapping)
-            return X, ww.init_series(y_t)
+        return X, ww.init_series(y_t)
 
     def fit_transform(self, X, y):
         """Fit and transform data using the label encoder.
@@ -129,7 +128,6 @@ class LabelEncoder(Transformer):
             raise ValueError("y cannot be None!")
         y_ww = infer_feature_types(y)
         if self.parameters["positive_label"] is None:
-
             y_it = self._component_obj.inverse_transform(y)
             y_it = infer_feature_types(pd.Series(y_it, index=y_ww.index))
         else:
