@@ -757,8 +757,9 @@ def test_score_regression_objective_error(
 @patch("evalml.objectives.F1.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
+@patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
 def test_score_binary_objective_error(
-    mock_predict, mock_fit, mock_objective_score, mock_encode, X_y_binary
+    mock_schema, mock_predict, mock_fit, mock_objective_score, mock_encode, X_y_binary
 ):
     mock_objective_score.side_effect = Exception("finna kabooom 💣")
     X, y = X_y_binary
