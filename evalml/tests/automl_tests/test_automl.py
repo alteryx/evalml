@@ -1977,13 +1977,13 @@ def test_percent_better_than_baseline_in_rankings(
     dummy_multiclass_pipeline_class,
     dummy_regression_pipeline_class,
     dummy_time_series_regression_pipeline_class,
-    X_y_binary,
+    ts_data_binary,
 ):
     if not objective.is_defined_for_problem_type(problem_type_value):
         pytest.skip("Skipping because objective is not defined for problem type")
 
     # Ok to only use binary labels since score and fit methods are mocked
-    X, y = X_y_binary
+    X, y = ts_data_binary
 
     pipeline_class = {
         ProblemTypes.BINARY: dummy_binary_pipeline_class,
@@ -2050,8 +2050,6 @@ def test_percent_better_than_baseline_in_rankings(
             n_jobs=1,
         )
     elif problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION:
-        X = pd.DataFrame(X)
-        X["date"] = pd.date_range("2021-01-02", periods=X.shape[0])
         automl = AutoMLSearch(
             X_train=X,
             y_train=y,
@@ -2162,9 +2160,9 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     dummy_multiclass_pipeline_class,
     dummy_regression_pipeline_class,
     dummy_time_series_regression_pipeline_class,
-    X_y_binary,
+    ts_data_binary,
 ):
-    X, y = X_y_binary
+    X, y = ts_data_binary
 
     problem_type_enum = handle_problem_types(problem_type)
 
@@ -2229,11 +2227,11 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     DummyPipeline.score = mock_score_1
     parameters = {}
     if problem_type_enum == ProblemTypes.TIME_SERIES_REGRESSION:
-        X = pd.DataFrame(X)
-        X["foo"] = pd.date_range("2021-01-01", periods=X.shape[0])
+        # X = pd.DataFrame(X)
+        # X["foo"] = pd.date_range("2021-01-01", periods=X.shape[0])
         parameters = {
             "pipeline": {
-                "date_index": "foo",
+                "date_index": "date",
                 "gap": 6,
                 "max_delay": 3,
                 "forecast_horizon": 3,
@@ -2247,7 +2245,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         max_iterations=2,
         objective="auto",
         problem_configuration={
-            "date_index": "foo",
+            "date_index": "date",
             "gap": 1,
             "max_delay": 1,
             "forecast_horizon": 3,
@@ -2268,7 +2266,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         text_in_ensembling=False,
         pipeline_params={
             "pipeline": {
-                "date_index": "foo",
+                "date_index": "date",
                 "gap": 1,
                 "max_delay": 1,
                 "forecast_horizon": 2,
@@ -2301,9 +2299,9 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
 
 def test_time_series_regression_with_parameters(ts_data):
     X, y = ts_data
-    X.index.name = "Date"
+    X.index.name = "date"
     problem_configuration = {
-        "date_index": "Date",
+        "date_index": "date",
         "gap": 1,
         "max_delay": 0,
         "forecast_horizon": 2,
@@ -3698,17 +3696,15 @@ def test_automl_rerun(AutoMLTestEnv, X_y_binary, caplog):
     assert msg in caplog.text
 
 
-def test_timeseries_baseline_init_with_correct_gap_max_delay(
-    AutoMLTestEnv, X_y_regression
-):
+def test_timeseries_baseline_init_with_correct_gap_max_delay(AutoMLTestEnv, ts_data):
 
-    X, y = X_y_regression
+    X, y = ts_data
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type="time series regression",
         problem_configuration={
-            "date_index": 0,
+            "date_index": "date",
             "gap": 6,
             "max_delay": 3,
             "forecast_horizon": 7,
@@ -3722,13 +3718,13 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(
     # Best pipeline is baseline pipeline because we only run one iteration
     assert automl.best_pipeline.parameters == {
         "pipeline": {
-            "date_index": 0,
+            "date_index": "date",
             "gap": 6,
             "max_delay": 0,
             "forecast_horizon": 7,
         },
         "Delayed Feature Transformer": {
-            "date_index": 0,
+            "date_index": "date",
             "delay_features": False,
             "delay_target": True,
             "max_delay": 0,

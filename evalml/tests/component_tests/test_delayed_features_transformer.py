@@ -636,67 +636,63 @@ def test_delayed_feature_transformer_selects_first_lag_if_none_significant(
     assert_frame_equal(new_X, answer)
 
 
-# @pytest.mark.parametrize(
-#     "X_df",
-#     [
-#         pd.DataFrame(
-#             pd.to_datetime(["20190902", "20200519", "20190607"] * 5, format="%Y%m%d")
-#         ),
-#         pd.DataFrame(pd.Series([0, 0, 3, 1] * 5, dtype="int64")),
-#         pd.DataFrame(pd.Series([0, 0, 3.0, 2] * 5, dtype="float")),
-#         pd.DataFrame(pd.Series(["a", "b", "a"] * 5, dtype="category")),
-#         pd.DataFrame(
-#             pd.Series(
-#                 ["this will be a natural language column because length", "yay", "hay"]
-#                 * 5,
-#                 dtype="string",
-#             )
-#         ),
-#     ],
-# )
-# @pytest.mark.parametrize("fit_transform", [True, False])
-# def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_components(
-#     X_df, fit_transform
-# ):
-#     y = pd.Series([1, 2, 1])
-#     override_types = [Integer, Double, Categorical, Datetime, Boolean]
-#     for logical_type in override_types:
-#         try:
-#             X = X_df.copy()
-#             X.ww.init(logical_types={0: logical_type})
-#         except (ww.exceptions.TypeConversionError, ValueError):
-#             continue
-#         if X.loc[:, 0].isna().all():
-#             # Casting the fourth and fifth dataframes to datetime will produce all NaNs
-#             continue
-#         dft = DelayedFeatureTransformer(max_delay=1, forecast_horizon=1, conf_level=1.0)
-#         if fit_transform:
-#             transformed = dft.fit_transform(X, y)
-#         else:
-#             dft.fit(X, y)
-#             transformed = dft.transform(X, y)
-#         assert isinstance(transformed, pd.DataFrame)
-#         transformed_logical_types = {
-#             k: type(v) for k, v in transformed.ww.logical_types.items()
-#         }
-#         if logical_type in [Integer, Double, Categorical]:
-#             assert transformed_logical_types == {
-#                 "0_delay_1": Double,
-#                 "0_delay_2": Double,
-#                 "target_delay_1": Double,
-#                 "target_delay_2": Double,
-#             }
-#         elif logical_type == Boolean:
-#             assert transformed_logical_types == {
-#                 "0_delay_1": Categorical,
-#                 "0_delay_2": Categorical,
-#                 "target_delay_1": Double,
-#                 "target_delay_2": Double,
-#             }
-#         else:
-#             assert transformed_logical_types == {
-#                 "0_delay_1": logical_type,
-#                 "0_delay_2": logical_type,
-#                 "target_delay_1": Double,
-#                 "target_delay_2": Double,
-#             }
+@pytest.mark.parametrize(
+    "X_df",
+    [
+        pd.DataFrame(pd.Series([0, 0, 3, 1] * 5, dtype="int64")),
+        pd.DataFrame(pd.Series([0, 0, 3.0, 2] * 5, dtype="float")),
+        pd.DataFrame(pd.Series(["a", "b", "a"] * 5, dtype="category")),
+    ],
+)
+@pytest.mark.parametrize("fit_transform", [True, False])
+def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_components(
+    X_df, fit_transform
+):
+    y = pd.Series([1, 2, 1])
+    override_types = [Integer, Double, Categorical, Datetime, Boolean]
+    for logical_type in override_types:
+        try:
+            X = X_df.copy()
+            X["date"] = pd.date_range("2021-01-01", periods=3)
+            X.ww.init(logical_types={0: logical_type})
+        except (ww.exceptions.TypeConversionError, ValueError):
+            continue
+        if X.loc[:, 0].isna().all():
+            # Casting the fourth and fifth dataframes to datetime will produce all NaNs
+            continue
+        dft = DelayedFeatureTransformer(
+            max_delay=1, forecast_horizon=1, conf_level=1.0, date_index="date"
+        )
+        if fit_transform:
+            transformed = dft.fit_transform(X, y)
+        else:
+            dft.fit(X, y)
+            transformed = dft.transform(X, y)
+        assert isinstance(transformed, pd.DataFrame)
+        transformed_logical_types = {
+            k: type(v) for k, v in transformed.ww.logical_types.items()
+        }
+        if logical_type in [Integer, Double, Categorical]:
+            assert transformed_logical_types == {
+                "date": Datetime,
+                "0_delay_1": Double,
+                "0_delay_2": Double,
+                "target_delay_1": Double,
+                "target_delay_2": Double,
+            }
+        elif logical_type == Boolean:
+            assert transformed_logical_types == {
+                "date": Datetime,
+                "0_delay_1": Categorical,
+                "0_delay_2": Categorical,
+                "target_delay_1": Double,
+                "target_delay_2": Double,
+            }
+        else:
+            assert transformed_logical_types == {
+                "date": Datetime,
+                "0_delay_1": logical_type,
+                "0_delay_2": logical_type,
+                "target_delay_1": Double,
+                "target_delay_2": Double,
+            }
