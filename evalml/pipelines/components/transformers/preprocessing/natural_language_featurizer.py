@@ -3,7 +3,7 @@ import string
 
 import featuretools as ft
 import nlp_primitives
-from featuretools.primitives import NumWords, NumCharacters
+from featuretools.primitives import NumCharacters, NumWords
 
 from evalml.pipelines.components.transformers.preprocessing import (
     LSA,
