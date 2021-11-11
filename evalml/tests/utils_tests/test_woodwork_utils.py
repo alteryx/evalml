@@ -4,9 +4,13 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from woodwork.logical_types import Double, Unknown
+from woodwork.logical_types import Categorical, Double, Integer, Unknown
 
-from evalml.utils import _convert_numeric_dataset_pandas, infer_feature_types
+from evalml.utils import (
+    _convert_numeric_dataset_pandas,
+    _schema_is_equal,
+    infer_feature_types,
+)
 
 
 def test_infer_feature_types_no_type_change():
@@ -252,3 +256,46 @@ def test_infer_feature_types_NA_to_nan(null_col, already_inited):
         assert all([isinstance(x, type(np.nan)) for x in inferred_df["unknown"]])
     else:
         assert all([isinstance(x, str) for x in df["unknown"]])
+
+
+@pytest.mark.parametrize(
+    "logical_types,l_equal",
+    [
+        ({"first": Categorical(), "second": Integer(), "third": Double()}, True),
+        ({"first": Categorical(), "second": Double(), "third": Double()}, False),
+    ],
+)
+@pytest.mark.parametrize(
+    "semantic_tags,s_equal",
+    [
+        ({"first": [], "second": ["numeric"], "third": ["numeric"]}, True),
+        ({"first": [], "second": ["numeric"], "third": []}, False),
+    ],
+)
+def test_schema_is_equal(semantic_tags, s_equal, logical_types, l_equal):
+    schema = ww.table_schema.TableSchema(
+        column_names=["first", "second", "third"],
+        logical_types={"first": Categorical(), "second": Integer(), "third": Double()},
+        semantic_tags={"first": [], "second": ["numeric"], "third": ["numeric"]},
+    )
+    schema_other = ww.table_schema.TableSchema(
+        column_names=["first", "second", "third"],
+        logical_types=logical_types,
+        semantic_tags=semantic_tags,
+    )
+    res = _schema_is_equal(schema, schema_other)
+    assert res == (l_equal and s_equal)
+
+
+def test_schema_is_equal_column_names():
+    schema = ww.table_schema.TableSchema(
+        column_names=["first", "second"],
+        logical_types={"first": Categorical(), "second": Integer()},
+        semantic_tags={"first": [], "second": ["numeric"]},
+    )
+    schema2 = ww.table_schema.TableSchema(
+        column_names=["second", "first"],
+        logical_types={"first": Categorical(), "second": Integer()},
+        semantic_tags={"first": [], "second": ["numeric"]},
+    )
+    assert not _schema_is_equal(schema, schema2)
