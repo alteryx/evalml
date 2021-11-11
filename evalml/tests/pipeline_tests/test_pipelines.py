@@ -643,7 +643,8 @@ def test_score_nonlinear_regression(
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_binary_single(mock_predict, mock_fit, X_y_binary):
+@patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
+def test_score_binary_single(mock_schema, mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_binary_pipeline()
@@ -657,7 +658,8 @@ def test_score_binary_single(mock_predict, mock_fit, X_y_binary):
 
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_multiclass_single(mock_predict, mock_fit, X_y_binary):
+@patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
+def test_score_multiclass_single(mock_schema, mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_multiclass_pipeline()
@@ -699,7 +701,8 @@ def test_score_regression_list(mock_predict, mock_fit, X_y_binary):
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_binary_list(mock_predict, mock_fit, X_y_binary):
+@patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
+def test_score_binary_list(mock_schema, mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_binary_pipeline()
@@ -714,7 +717,8 @@ def test_score_binary_list(mock_predict, mock_fit, X_y_binary):
 @patch("evalml.pipelines.MulticlassClassificationPipeline._encode_targets")
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_multi_list(mock_predict, mock_fit, mock_encode, X_y_binary):
+@patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
+def test_score_multi_list(mock_schema, mock_predict, mock_fit, mock_encode, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     mock_encode.return_value = y
@@ -806,8 +810,9 @@ def test_score_nonlinear_binary_objective_error(
 @patch("evalml.objectives.F1Micro.score")
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
+@patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
 def test_score_multiclass_objective_error(
-    mock_predict, mock_fit, mock_objective_score, mock_encode, X_y_binary
+    mock_schema, mock_predict, mock_fit, mock_objective_score, mock_encode, X_y_binary
 ):
     mock_objective_score.side_effect = Exception("finna kabooom 💣")
     X, y = X_y_binary
