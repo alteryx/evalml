@@ -105,6 +105,9 @@ class DelayedFeatureTransformer(Transformer):
 
         Returns:
             self
+
+        Raises:
+            ValueError: if self.date_index is None
         """
         if self.date_index is None:
             raise ValueError("date_index cannot be None!")

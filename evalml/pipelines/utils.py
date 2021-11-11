@@ -564,6 +564,7 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, date_
         problem_type: One of TIME_SERIES_REGRESSION, TIME_SERIES_MULTICLASS, TIME_SERIES_BINARY
         gap (int): Non-negative gap parameter.
         forecast_horizon (int): Positive forecast_horizon parameter.
+        date_index (str): Column name of date_index parameter.
 
     Returns:
         TimeSeriesPipelineBase, a time series pipeline corresponding to the problem type.
