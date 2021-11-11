@@ -192,7 +192,7 @@ def test_describe_component():
     drop_col_transformer = DropColumns(columns=["col_one", "col_two"])
     drop_null_transformer = DropNullColumns()
     datetime = DateTimeFeaturizer()
-    text_featurizer = NaturalLanguageFeaturizer()
+    natural_language_featurizer = NaturalLanguageFeaturizer()
     lsa = LSA()
     pca = PCA()
     lda = LinearDiscriminantAnalysis()
@@ -271,7 +271,7 @@ def test_describe_component():
             "date_index": None,
         },
     }
-    assert text_featurizer.describe(return_dict=True) == {
+    assert natural_language_featurizer.describe(return_dict=True) == {
         "name": "Natural Language Featurizer Component",
         "parameters": {},
     }
