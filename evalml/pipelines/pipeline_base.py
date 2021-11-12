@@ -94,7 +94,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             raise ValueError(
                 "component_graph must be a list, dict, or ComponentGraph object"
             )
-        # parameters = self._apply_pipeline_parameters_to_components(parameters)
         self.component_graph.instantiate(parameters)
 
         self.input_feature_names = {}
@@ -120,20 +119,6 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             self._pipeline_params = parameters.get("pipeline", {})
 
         self._custom_name = custom_name
-
-    # def _apply_pipeline_parameters_to_components(self, parameters):
-    #     for (
-    #         name,
-    #         component_instance,
-    #     ) in self.component_graph.component_instances.items():
-    #         component_parameters = parameters.get(name, {})
-    #         init_params = inspect.signature(component_instance.__init__).parameters
-    #         if "pipeline" in parameters:
-    #             for param_name, value in parameters["pipeline"].items():
-    #                 if param_name in init_params:
-    #                     component_parameters[param_name] = value
-    #             parameters[name] = component_parameters
-    #     return parameters
 
     @property
     def custom_name(self):
