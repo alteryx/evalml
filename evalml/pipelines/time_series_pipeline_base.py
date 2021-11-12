@@ -37,7 +37,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 "Please specify them as a dictionary with the key 'pipeline'."
             )
         pipeline_params = parameters["pipeline"]
-        self.date_index = pipeline_params["date_index"]
+        date_index = pipeline_params["date_index"]
+        if date_index is None:
+            raise ValueError("Parameter date_index cannot be None!")
         self.gap = pipeline_params["gap"]
         self.max_delay = pipeline_params["max_delay"]
         self.forecast_horizon = pipeline_params["forecast_horizon"]

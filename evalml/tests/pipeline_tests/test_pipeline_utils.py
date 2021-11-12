@@ -168,7 +168,7 @@ def test_make_pipeline(
             if is_time_series(problem_type):
                 parameters = {
                     "pipeline": {
-                        "date_index": None,
+                        "date_index": "date",
                         "gap": 1,
                         "max_delay": 1,
                         "forecast_horizon": 3,

@@ -2227,8 +2227,6 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     DummyPipeline.score = mock_score_1
     parameters = {}
     if problem_type_enum == ProblemTypes.TIME_SERIES_REGRESSION:
-        # X = pd.DataFrame(X)
-        # X["foo"] = pd.date_range("2021-01-01", periods=X.shape[0])
         parameters = {
             "pipeline": {
                 "date_index": "date",

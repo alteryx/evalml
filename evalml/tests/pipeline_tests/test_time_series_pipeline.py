@@ -54,7 +54,7 @@ def test_time_series_pipeline_validates_holdout_data(
         component_graph=[estimator],
         parameters={
             "pipeline": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": gap,
                 "max_delay": 2,
                 "forecast_horizon": forecast_horizon,
@@ -106,7 +106,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
             component_graph=component_graph,
             parameters={
                 "pipeline": {
-                    "date_index": None,
+                    "date_index": "date",
                     "gap": 0,
                     "max_delay": 5,
                     "forecast_horizon": 3,
@@ -118,18 +118,18 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
             "forecast_horizon": 3,
             "gap": 0,
             "max_delay": 5,
-            "date_index": None,
+            "date_index": "date",
         }
     else:
         parameters = {
             "Delayed Feature Transformer": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": 0,
                 "max_delay": 5,
                 "forecast_horizon": 3,
             },
             "pipeline": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": 0,
                 "max_delay": 5,
                 "forecast_horizon": 3,
@@ -137,7 +137,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
         }
         pl = pipeline_class(component_graph=component_graph, parameters=parameters)
         assert pl.parameters["Delayed Feature Transformer"] == {
-            "date_index": None,
+            "date_index": "date",
             "gap": 0,
             "forecast_horizon": 3,
             "max_delay": 5,
@@ -149,7 +149,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
             "gap": 0,
             "forecast_horizon": 3,
             "max_delay": 5,
-            "date_index": None,
+            "date_index": "date",
         }
 
     assert (
@@ -194,9 +194,6 @@ def test_fit_drop_nans_before_estimator(
     include_delayed_features,
     ts_data,
 ):
-
-    # if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
-    #     pytest.skip("This would result in an empty feature dataframe.")
 
     X, y = ts_data
 
@@ -825,7 +822,7 @@ def test_binary_classification_predictions_thresholded_properly(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 3,
-                "date_index": None,
+                "date_index": "date",
                 "forecast_horizon": 3,
             },
         }
@@ -881,7 +878,7 @@ def test_binary_predict_pipeline_objective_mismatch(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 0,
-                "date_index": None,
+                "date_index": "date",
                 "forecast_horizon": 2,
             },
         }
@@ -1134,7 +1131,7 @@ def test_time_series_pipeline_fit_with_transformed_target(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 2,
-                "date_index": None,
+                "date_index": "date",
                 "forecast_horizon": 3,
             },
         },
@@ -1218,7 +1215,7 @@ def test_ts_pipeline_predict_without_final_estimator(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 2,
-                "date_index": None,
+                "date_index": "date",
                 "forecast_horizon": 3,
             },
         },
@@ -1278,7 +1275,7 @@ def test_ts_pipeline_transform(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 0,
-                "date_index": None,
+                "date_index": "date",
                 "forecast_horizon": 3,
             },
         },

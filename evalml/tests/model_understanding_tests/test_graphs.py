@@ -1037,7 +1037,7 @@ def test_graph_prediction_vs_actual_over_time(ts_data):
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "date_index": None,
+                "date_index": "date",
             }
         },
     )

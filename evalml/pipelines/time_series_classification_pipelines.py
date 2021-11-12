@@ -205,7 +205,7 @@ class TimeSeriesBinaryClassificationPipeline(
         >>> pipeline = TimeSeriesBinaryClassificationPipeline(component_graph=["Simple Imputer", "Logistic Regression Classifier"],
         ...                                                   parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
         ...                                                                                                  "solver": "liblinear"},
-        ...                                                               "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": None}},
+        ...                                                               "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "date"}},
         ...                                                   custom_name="My TimeSeriesBinary Pipeline")
         ...
         >>> assert pipeline.custom_name == "My TimeSeriesBinary Pipeline"
@@ -218,7 +218,7 @@ class TimeSeriesBinaryClassificationPipeline(
         ...                                         'n_jobs': -1,
         ...                                         'multi_class': 'auto',
         ...                                         'solver': 'liblinear'},
-        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': None}}
+        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': "date"}}
     """
 
     problem_type = ProblemTypes.TIME_SERIES_BINARY
@@ -299,7 +299,7 @@ class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipelin
         >>> pipeline = TimeSeriesMulticlassClassificationPipeline(component_graph=["Simple Imputer", "Logistic Regression Classifier"],
         ...                                                       parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
         ...                                                                                                      "solver": "liblinear"},
-        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": None}},
+        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "date"}},
         ...                                                       custom_name="My TimeSeriesMulticlass Pipeline")
         >>> assert pipeline.custom_name == "My TimeSeriesMulticlass Pipeline"
         >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Logistic Regression Classifier'}
@@ -310,7 +310,7 @@ class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipelin
         ...                                     'n_jobs': -1,
         ...                                     'multi_class': 'auto',
         ...                                     'solver': 'liblinear'},
-        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': None}}
+        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': "date"}}
     """
 
     problem_type = ProblemTypes.TIME_SERIES_MULTICLASS
