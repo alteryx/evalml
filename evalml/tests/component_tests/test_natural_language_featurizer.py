@@ -7,13 +7,13 @@ import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
 from woodwork.logical_types import Boolean, Categorical, Double, Integer
 
-from evalml.pipelines.components import TextFeaturizer
+from evalml.pipelines.components import NaturalLanguageFeaturizer
 from evalml.utils import infer_feature_types
 
 
 def test_featurizer_only_text(text_df):
     X = text_df
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
 
     expected_col_names = set(
@@ -26,13 +26,17 @@ def test_featurizer_only_text(text_df):
             "LSA(col_2)[1]",
             "MEAN_CHARACTERS_PER_WORD(col_1)",
             "MEAN_CHARACTERS_PER_WORD(col_2)",
+            "NUM_CHARACTERS(col_1)",
+            "NUM_CHARACTERS(col_2)",
+            "NUM_WORDS(col_1)",
+            "NUM_WORDS(col_2)",
             "POLARITY_SCORE(col_1)",
             "POLARITY_SCORE(col_2)",
         ]
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 10
+    assert len(X_t.columns) == 14
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
         ww.logical_types.Double
     }
@@ -42,7 +46,7 @@ def test_featurizer_with_nontext(text_df):
     X = text_df
     X["col_3"] = [73.7, 67.213, 92]
     X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
 
     tf.fit(X)
     expected_col_names = set(
@@ -55,6 +59,10 @@ def test_featurizer_with_nontext(text_df):
             "LSA(col_2)[1]",
             "MEAN_CHARACTERS_PER_WORD(col_1)",
             "MEAN_CHARACTERS_PER_WORD(col_2)",
+            "NUM_CHARACTERS(col_1)",
+            "NUM_CHARACTERS(col_2)",
+            "NUM_WORDS(col_1)",
+            "NUM_WORDS(col_2)",
             "POLARITY_SCORE(col_1)",
             "POLARITY_SCORE(col_2)",
             "col_3",
@@ -62,7 +70,7 @@ def test_featurizer_with_nontext(text_df):
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 11
+    assert len(X_t.columns) == 15
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
         ww.logical_types.Double
     }
@@ -70,7 +78,7 @@ def test_featurizer_with_nontext(text_df):
 
 def test_featurizer_no_text():
     X = pd.DataFrame({"col_1": [1, 2, 3], "col_2": [4, 5, 6]})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
     assert len(X_t.columns) == 2
@@ -78,7 +86,7 @@ def test_featurizer_no_text():
 
 def test_some_missing_col_names(text_df, caplog):
     X = text_df
-    tf = TextFeaturizer(text_columns=["col_1", "col_2", "col_3"])
+    tf = NaturalLanguageFeaturizer(text_columns=["col_1", "col_2", "col_3"])
     expected_col_names = set(
         [
             "DIVERSITY_SCORE(col_1)",
@@ -89,6 +97,10 @@ def test_some_missing_col_names(text_df, caplog):
             "LSA(col_2)[1]",
             "MEAN_CHARACTERS_PER_WORD(col_1)",
             "MEAN_CHARACTERS_PER_WORD(col_2)",
+            "NUM_CHARACTERS(col_1)",
+            "NUM_CHARACTERS(col_2)",
+            "NUM_WORDS(col_1)",
+            "NUM_WORDS(col_2)",
             "POLARITY_SCORE(col_1)",
             "POLARITY_SCORE(col_2)",
         ]
@@ -96,7 +108,7 @@ def test_some_missing_col_names(text_df, caplog):
     tf.fit(X)
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 10
+    assert len(X_t.columns) == 14
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
         ww.logical_types.Double
     }
@@ -105,7 +117,7 @@ def test_some_missing_col_names(text_df, caplog):
 def test_empty_text_column():
     X = pd.DataFrame({"col_1": []})
     X = infer_feature_types(X, {"col_1": "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     with pytest.raises(
         ValueError,
         match="empty vocabulary; perhaps the documents only contain stop words",
@@ -129,7 +141,7 @@ def test_invalid_text_column():
         }
     )
     X = infer_feature_types(X, {"col_1": "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
 
 
@@ -149,7 +161,7 @@ def test_no_null_output():
         }
     )
     X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
     assert not X_t.isnull().any().any()
@@ -174,7 +186,7 @@ def test_index_col_names():
     )
     X = pd.DataFrame(X)
     X.ww.init(logical_types={0: "NaturalLanguage", 1: "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
 
     tf.fit(X)
     expected_col_names = set(
@@ -187,13 +199,17 @@ def test_index_col_names():
             "LSA(1)[1]",
             "MEAN_CHARACTERS_PER_WORD(0)",
             "MEAN_CHARACTERS_PER_WORD(1)",
+            "NUM_CHARACTERS(0)",
+            "NUM_CHARACTERS(1)",
+            "NUM_WORDS(0)",
+            "NUM_WORDS(1)",
             "POLARITY_SCORE(0)",
             "POLARITY_SCORE(1)",
         ]
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 10
+    assert len(X_t.columns) == 14
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
         ww.logical_types.Double
     }
@@ -215,7 +231,7 @@ def test_float_col_names():
         }
     )
     X.ww.init(logical_types={4.75: "NaturalLanguage", -1: "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
     expected_col_names = set(
         [
@@ -227,13 +243,17 @@ def test_float_col_names():
             "LSA(-1.0)[1]",
             "MEAN_CHARACTERS_PER_WORD(4.75)",
             "MEAN_CHARACTERS_PER_WORD(-1.0)",
+            "NUM_CHARACTERS(4.75)",
+            "NUM_CHARACTERS(-1.0)",
+            "NUM_WORDS(4.75)",
+            "NUM_WORDS(-1.0)",
             "POLARITY_SCORE(4.75)",
             "POLARITY_SCORE(-1.0)",
         ]
     )
     X_t = tf.transform(X)
     assert set(X_t.columns) == expected_col_names
-    assert len(X_t.columns) == 10
+    assert len(X_t.columns) == 14
     assert set([type(v) for v in X_t.ww.logical_types.values()]) == {
         ww.logical_types.Double
     }
@@ -255,7 +275,7 @@ def test_output_null():
         }
     )
     X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
     assert not X_t.isnull().any().any()
@@ -272,7 +292,7 @@ def test_diversity_primitive_output():
         }
     )
     X.ww.init(logical_types={"diverse": "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
 
     expected_features = pd.Series([1.0, 0.5, 0.75], name="DIVERSITY_SCORE(diverse)")
@@ -292,7 +312,7 @@ def test_lsa_primitive_output():
         }
     )
     X.ww.init(logical_types={"lsa": "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
 
     expected_features = pd.DataFrame(
@@ -306,12 +326,12 @@ def test_lsa_primitive_output():
 
 def test_featurizer_custom_types(text_df):
     # force one of the two provided columns to be a user-specified type.
-    # if the output contains text features for col_2, then the text featurizer didn't pass the right
+    # if the output contains text features for col_2, then the natural language featurizer didn't pass the right
     # ww types to LSA, because LSA still thought col_2 was natural language even though the user said otherwise.
     X = infer_feature_types(
         pd.DataFrame(text_df), {"col_1": "NaturalLanguage", "col_2": "categorical"}
     )
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
 
     expected_col_names = set(
@@ -321,6 +341,8 @@ def test_featurizer_custom_types(text_df):
             "LSA(col_1)[0]",
             "LSA(col_1)[1]",
             "MEAN_CHARACTERS_PER_WORD(col_1)",
+            "NUM_CHARACTERS(col_1)",
+            "NUM_WORDS(col_1)",
             "POLARITY_SCORE(col_1)",
         ]
     )
@@ -330,6 +352,8 @@ def test_featurizer_custom_types(text_df):
         "col_2": Categorical,
         "DIVERSITY_SCORE(col_1)": Double,
         "MEAN_CHARACTERS_PER_WORD(col_1)": Double,
+        "NUM_CHARACTERS(col_1)": Double,
+        "NUM_WORDS(col_1)": Double,
         "POLARITY_SCORE(col_1)": Double,
         "LSA(col_1)[0]": Double,
         "LSA(col_1)[1]": Double,
@@ -350,7 +374,7 @@ def test_mean_characters_primitive_output():
         }
     )
     X.ww.init(logical_types={"mean_characters": "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
 
     expected_features = pd.Series(
@@ -373,7 +397,7 @@ def test_polarity_primitive_output():
         }
     )
     X.ww.init(logical_types={"polarity": "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
 
     expected_features = pd.Series([0.0, -0.214, 0.602], name="POLARITY_SCORE(polarity)")
@@ -385,16 +409,16 @@ def test_polarity_primitive_output():
 def test_featurizer_with_custom_indices(text_df):
     X = text_df
     X = X.set_index(pd.Series([2, 5, 19]))
-    tf = TextFeaturizer(text_columns=["col_1", "col_2"])
+    tf = NaturalLanguageFeaturizer(text_columns=["col_1", "col_2"])
     tf.fit(X)
     X_t = tf.transform(X)
     assert not X_t.isnull().any().any()
 
 
-def test_text_featurizer_does_not_modify_input_data(text_df):
+def test_natural_language_featurizer_does_not_modify_input_data(text_df):
     X = text_df
     expected = X.copy()
-    tf = TextFeaturizer(text_columns=["col_1", "col_2"])
+    tf = NaturalLanguageFeaturizer(text_columns=["col_1", "col_2"])
     _ = tf.fit_transform(X)
     pd.testing.assert_frame_equal(X, expected)
 
@@ -414,7 +438,9 @@ def test_text_featurizer_does_not_modify_input_data(text_df):
         ),
     ],
 )
-def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df):
+def test_natural_language_featurizer_woodwork_custom_overrides_returned_by_components(
+    X_df,
+):
     X_df = X_df.copy()
     X_df["text col"] = pd.Series(
         ["this will be a natural language column because length", "yay", "hay"],
@@ -422,7 +448,7 @@ def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df):
     )
     y = pd.Series([1, 2, 1])
     override_types = [Integer, Double, Categorical, Boolean]
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
 
     for logical_type in override_types:
         try:
@@ -440,12 +466,14 @@ def test_text_featurizer_woodwork_custom_overrides_returned_by_components(X_df):
             "LSA(text col)[1]": Double,
             "DIVERSITY_SCORE(text col)": Double,
             "MEAN_CHARACTERS_PER_WORD(text col)": Double,
+            "NUM_CHARACTERS(text col)": Double,
+            "NUM_WORDS(text col)": Double,
             "POLARITY_SCORE(text col)": Double,
         }
 
 
 @patch("featuretools.dfs")
-def test_text_featurizer_sets_max_depth_1(mock_dfs):
+def test_natural_language_featurizer_sets_max_depth_1(mock_dfs):
     X = pd.DataFrame(
         {
             "polarity": [
@@ -456,7 +484,7 @@ def test_text_featurizer_sets_max_depth_1(mock_dfs):
         }
     )
     X.ww.init(logical_types={"polarity": "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
     _, kwargs = mock_dfs.call_args
     assert kwargs["max_depth"] == 1
@@ -483,7 +511,7 @@ def test_nan_allowed(nones):
         }
     )
     X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
     cols = [
@@ -491,6 +519,8 @@ def test_nan_allowed(nones):
         "LSA(col_1)[1]",
         "DIVERSITY_SCORE(col_1)",
         "MEAN_CHARACTERS_PER_WORD(col_1)",
+        "NUM_CHARACTERS(col_1)",
+        "NUM_WORDS(col_1)",
         "POLARITY_SCORE(col_1)",
     ]
     # find the columns that should be null
@@ -520,7 +550,7 @@ def test_multiple_nan_allowed(nones):
         }
     )
     X.ww.init(logical_types={"col_1": "NaturalLanguage", "col_2": "NaturalLanguage"})
-    tf = TextFeaturizer()
+    tf = NaturalLanguageFeaturizer()
     tf.fit(X)
     X_t = tf.transform(X)
     col_names = [
@@ -528,6 +558,8 @@ def test_multiple_nan_allowed(nones):
         "LSA({})[1]",
         "DIVERSITY_SCORE({})",
         "MEAN_CHARACTERS_PER_WORD({})",
+        "NUM_CHARACTERS({})",
+        "NUM_WORDS({})",
         "POLARITY_SCORE({})",
     ]
     cols = [c.format(n) for n in ["col_1", "col_2"] for c in col_names]

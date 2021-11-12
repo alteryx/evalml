@@ -26,12 +26,12 @@ from evalml.pipelines.components import (
     Estimator,
     Imputer,
     LogisticRegressionClassifier,
+    NaturalLanguageFeaturizer,
     OneHotEncoder,
     RandomForestClassifier,
     SelectColumns,
     StandardScaler,
     TargetImputer,
-    TextFeaturizer,
     Transformer,
     Undersampler,
 )
@@ -1015,7 +1015,7 @@ def test_component_graph_dataset_with_different_types():
     # Also, column_4 will be treated as a datetime feature, but the identical column_5 set as natural language
     # should be treated as natural language, not as datetime.
     graph = {
-        "Text": [TextFeaturizer, "X", "y"],
+        "Text": [NaturalLanguageFeaturizer, "X", "y"],
         "Imputer": [Imputer, "Text.x", "y"],
         "OneHot": [OneHotEncoder, "Imputer.x", "y"],
         "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
@@ -1069,6 +1069,8 @@ def test_component_graph_dataset_with_different_types():
         text_columns = [
             "DIVERSITY_SCORE(column_5)",
             "MEAN_CHARACTERS_PER_WORD(column_5)",
+            "NUM_CHARACTERS(column_5)",
+            "NUM_WORDS(column_5)",
             "POLARITY_SCORE(column_5)",
             "LSA(column_5)[0]",
             "LSA(column_5)[1]",
@@ -1335,7 +1337,7 @@ def test_component_graph_types_merge():
         "Select numeric": [SelectColumns, "X", "y"],
         "Imputer numeric": [Imputer, "Select numeric.x", "y"],
         "Select text": [SelectColumns, "X", "y"],
-        "Text": [TextFeaturizer, "Select text.x", "y"],
+        "Text": [NaturalLanguageFeaturizer, "Select text.x", "y"],
         "Imputer text": [Imputer, "Text.x", "y"],
         "Scaler": [StandardScaler, "Imputer numeric.x", "y"],
         "Select categorical": [SelectColumns, "X", "y"],
@@ -1404,6 +1406,8 @@ def test_component_graph_types_merge():
             "column_4_hour",
             "DIVERSITY_SCORE(column_5)",
             "MEAN_CHARACTERS_PER_WORD(column_5)",
+            "NUM_CHARACTERS(column_5)",
+            "NUM_WORDS(column_5)",
             "POLARITY_SCORE(column_5)",
             "LSA(column_5)[0]",
             "LSA(column_5)[1]",
