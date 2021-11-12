@@ -46,8 +46,8 @@ class LabelEncoder(Transformer):
         """
         if y is None:
             raise ValueError("y cannot be None!")
-
-        self.mapping = {val: i for i, val in enumerate(sorted(y.unique()))}
+        y_ww = infer_feature_types(y)
+        self.mapping = {val: i for i, val in enumerate(sorted(y_ww.unique()))}
         if self.parameters["positive_label"] is not None:
             if len(self.mapping) != 2:
                 raise ValueError(
