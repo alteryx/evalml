@@ -185,7 +185,9 @@ def test_outliers_data_check_string_cols():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0]}
+                DataCheckActionCode.DROP_ROWS,
+                data_check_name=outliers_data_check_name,
+                metadata={"rows": [0]},
             ).to_dict()
         ],
     }
