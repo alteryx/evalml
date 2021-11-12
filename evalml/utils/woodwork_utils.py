@@ -146,10 +146,13 @@ def _schema_is_equal(first, other):
     """
     if first.types.index.tolist() != other.types.index.tolist():
         return False
-    logical = (
-        first.types["Logical Type"].astype(str).tolist()
-        == other.types["Logical Type"].astype(str).tolist()
-    )
+    logical = [
+        x if x != "Integer" else "Double"
+        for x in first.types["Logical Type"].astype(str).tolist()
+    ] == [
+        x if x != "Integer" else "Double"
+        for x in other.types["Logical Type"].astype(str).tolist()
+    ]
     semantic = (
         first.types["Semantic Tag(s)"].tolist()
         == other.types["Semantic Tag(s)"].tolist()

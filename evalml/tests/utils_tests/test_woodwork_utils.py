@@ -262,7 +262,8 @@ def test_infer_feature_types_NA_to_nan(null_col, already_inited):
     "logical_types,l_equal",
     [
         ({"first": Categorical(), "second": Integer(), "third": Double()}, True),
-        ({"first": Categorical(), "second": Double(), "third": Double()}, False),
+        ({"first": Categorical(), "second": Double(), "third": Double()}, True),
+        ({"first": Categorical(), "second": Double(), "third": Categorical()}, False),
     ],
 )
 @pytest.mark.parametrize(
