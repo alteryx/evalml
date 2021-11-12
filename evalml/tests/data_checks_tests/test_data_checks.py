@@ -477,7 +477,7 @@ def test_default_data_checks_null_rows():
             ).to_dict(),
             DataCheckAction(
                 DataCheckActionCode.DROP_COL,
-                data_check_name="NoVarianceDataCheck",
+                data_check_name="HighlyNullDataCheck",
                 metadata={"columns": ["all_null", "also_all_null"]},
             ).to_dict(),
             DataCheckAction(
@@ -488,6 +488,11 @@ def test_default_data_checks_null_rows():
                     "is_target": True,
                     "impute_strategy": "mean",
                 },
+            ).to_dict(),
+            DataCheckAction(
+                DataCheckActionCode.DROP_COL,
+                data_check_name="NoVarianceDataCheck",
+                metadata={"columns": ["all_null", "also_all_null"]},
             ).to_dict(),
         ],
     }

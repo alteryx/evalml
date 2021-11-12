@@ -324,13 +324,18 @@ def test_make_pipeline_from_actions(problem_type):
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
-def test_make_pipeline_from_actions_with_duplicate_actions(problem_type):
+@pytest.mark.parametrize("different_names", [True, False])
+def test_make_pipeline_from_actions_with_duplicate_actions(
+    problem_type, different_names
+):
     pipeline_class = _get_pipeline_base_class(problem_type)
 
     actions = [
         DataCheckAction(DataCheckActionCode.DROP_COL, None, {"columns": ["some col"]}),
         DataCheckAction(
-            DataCheckActionCode.DROP_COL, None, {"columns": ["some other col"]}
+            DataCheckActionCode.DROP_COL,
+            None if different_names else "Data check name",
+            {"columns": ["some other col"]},
         ),
     ]
     assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
@@ -344,7 +349,11 @@ def test_make_pipeline_from_actions_with_duplicate_actions(problem_type):
         DataCheckAction(
             DataCheckActionCode.DROP_ROWS, None, metadata={"rows": [0, 1, 3]}
         ),
-        DataCheckAction(DataCheckActionCode.DROP_ROWS, None, metadata={"rows": [1, 2]}),
+        DataCheckAction(
+            DataCheckActionCode.DROP_ROWS,
+            None if different_names else "Data check name",
+            metadata={"rows": [1, 2]},
+        ),
     ]
     assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
         component_graph={"Drop Rows Transformer": [DropRowsTransformer, "X", "y"]},
