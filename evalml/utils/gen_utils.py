@@ -215,6 +215,8 @@ _not_used_in_automl = {
     "VowpalWabbitBinaryClassifier",
     "VowpalWabbitMulticlassClassifier",
     "VowpalWabbitRegressor",
+    "RidgeClassifier",
+    "RidgeRegressor",
 }
 
 

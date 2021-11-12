@@ -38,6 +38,8 @@ from .components import (
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
     VowpalWabbitRegressor,
+    RidgeClassifier,
+    RidgeRegressor,
 )
 
 from .component_graph import ComponentGraph

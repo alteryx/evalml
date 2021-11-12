@@ -29,6 +29,8 @@ from .estimators import (
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
     VowpalWabbitRegressor,
+    RidgeRegressor,
+    RidgeClassifier,
 )
 from .transformers import (
     Transformer,

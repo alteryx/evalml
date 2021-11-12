@@ -14,3 +14,4 @@ from .vowpal_wabbit_classifiers import (
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
 )
+from .ridge_classifier import RidgeClassifier

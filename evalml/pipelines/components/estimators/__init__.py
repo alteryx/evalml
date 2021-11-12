@@ -14,6 +14,7 @@ from .classifiers import (
     SVMClassifier,
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
+    RidgeClassifier,
 )
 from .regressors import (
     LinearRegressor,
@@ -30,4 +31,5 @@ from .regressors import (
     ARIMARegressor,
     ProphetRegressor,
     VowpalWabbitRegressor,
+    RidgeRegressor,
 )
