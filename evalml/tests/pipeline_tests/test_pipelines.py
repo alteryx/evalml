@@ -2926,7 +2926,7 @@ def test_fit_predict_proba_types(problem_type, X_y_binary, X_y_multi):
     X = infer_feature_types(X)
     X.ww.set_types({0: "Double"})
     X2 = infer_feature_types(X.copy())
-    X2.ww.set_types({0: "Integer"})
+    X2.ww.set_types({0: "Categorical"})
 
     pipeline.fit(X, y)
     with pytest.raises(
