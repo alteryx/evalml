@@ -256,7 +256,7 @@ def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
     component_graph = [
         "Select Columns Transformer",
         "One Hot Encoder",
-        "Text Featurization Component",
+        "Natural Language Featurization Component",
         "DateTime Featurization Component",
         estimator,
     ]

@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``NumWords`` and ``NumCharacters`` primitives to ``TextFeaturizer`` and renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
     * Fixes
     * Changes
     * Documentation Changes
@@ -10,6 +11,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
 
 
 **v0.37.0 Nov. 9, 2021**

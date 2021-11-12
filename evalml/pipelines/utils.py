@@ -30,6 +30,7 @@ from evalml.pipelines.components import (  # noqa: F401
     Estimator,
     Imputer,
     LogTransformer,
+    NaturalLanguageFeaturizer,
     OneHotEncoder,
     Oversampler,
     RandomForestClassifier,
@@ -37,7 +38,6 @@ from evalml.pipelines.components import (  # noqa: F401
     StackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
-    TextFeaturizer,
     Undersampler,
     URLFeaturizer,
 )
@@ -119,7 +119,7 @@ def _get_preprocessing_components(
 
     text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
     if len(text_columns) > 0:
-        pp_components.append(TextFeaturizer)
+        pp_components.append(NaturalLanguageFeaturizer)
 
     if len(input_logical_types.intersection(types_imputer_handles)) or len(
         text_columns
