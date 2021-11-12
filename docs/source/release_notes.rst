@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``NumWords`` and ``NumCharacters`` primitives to ``TextFeaturizer`` and renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
     * Fixes
     * Changes
     * Documentation Changes
@@ -10,6 +11,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
 
 
 **v0.37.0 Nov. 9, 2021**
@@ -22,7 +24,6 @@ Release Notes
         * Added an algorithm to ``DelayedFeatureTransformer`` to select better lags :pr:`3005`
         * Added test to ensure pickling pipelines preserves thresholds :pr:`3027`
         * Added AutoML function to access ensemble pipeline's input pipelines IDs :pr:`3011`
-        * Added ``NumWords`` and ``NumCharacters`` primitives to ``TextFeaturizer`` and renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
         * Fixed permutation importance failing when target is categorical :pr:`3017`
@@ -34,11 +35,6 @@ Release Notes
         * Fixed cost benefit matrix demo formatting :pr:`2990`
         * Update ReadMe.md with new badge links and updated installation instructions for conda :pr:`2998`
         * Added more comprehensive doctests :pr:`3002`
-
-.. warning::
-
-    **Breaking Changes**
-        * Renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
 
 
 **v0.36.0 Oct. 27, 2021**
