@@ -53,6 +53,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 'details': {'columns': ['Y'], 'rows': None},
             ...                 'code': 'NO_VARIANCE'}],
             ...     'actions': [{'code': 'DROP_COL',
+            ...                  'data_check_name': 'NoVarianceDataCheck',
             ...                  'metadata': {'columns': ["First_Column"], 'rows': None}}]}
             ...
             ...
@@ -87,6 +88,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 'details': {'columns': ['Y'], 'rows': None},
             ...                 'code': 'NO_VARIANCE'}],
             ...     'actions': [{'code': 'DROP_COL',
+            ...                  'data_check_name': 'NoVarianceDataCheck',
             ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}]}
             ...
             ...
@@ -104,6 +106,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                   'code': 'NO_VARIANCE_WITH_NULL'}],
             ...     'errors': [],
             ...     'actions': [{'code': 'DROP_COL',
+            ...                  'data_check_name': 'NoVarianceDataCheck',
             ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}]}
 
         """

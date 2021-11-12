@@ -94,6 +94,7 @@ class TargetLeakageDataCheck(DataCheck):
             ...                   "details": {"columns": ["leak"], "rows": None}}],
             ...     "errors": [],
             ...     "actions": [{"code": "DROP_COL",
+            ...                  "data_check_name": "TargetLeakageDataCheck",
             ...                  "metadata": {"columns": ["leak"], "rows": None}}]}
             ...
             ...
@@ -107,6 +108,7 @@ class TargetLeakageDataCheck(DataCheck):
             ...                   'code': 'TARGET_LEAKAGE'}],
             ...     'errors': [],
             ...     'actions': [{'code': 'DROP_COL',
+            ...                  "data_check_name": "TargetLeakageDataCheck",
             ...                  'metadata': {'columns': ['leak', 'x'], 'rows': None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}

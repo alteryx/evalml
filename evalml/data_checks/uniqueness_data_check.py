@@ -63,6 +63,7 @@ class UniquenessDataCheck(DataCheck):
             ...                   "code": "NOT_UNIQUE_ENOUGH",
             ...                   "details": {"columns": ["regression_not_unique_enough"], "uniqueness_score": {"regression_not_unique_enough": 0.0}, "rows": None}}],
             ...     "actions": [{"code": "DROP_COL",
+            ...                  "data_check_name": 'UniquenessDataCheck',
             ...                  "metadata": {"columns": ["regression_not_unique_enough"], "rows": None}}]}
             ...
             ...
@@ -77,6 +78,7 @@ class UniquenessDataCheck(DataCheck):
             ...                   'code': 'TOO_UNIQUE'}],
             ...     'errors': [],
             ...     'actions': [{'code': 'DROP_COL',
+            ...                  'data_check_name': 'UniquenessDataCheck',
             ...                  'metadata': {'columns': ['regression_unique_enough'], 'rows': None}}]}
             ...
             >>> y = pd.Series([1, 1, 1, 2, 2, 3, 3, 3])

@@ -63,6 +63,7 @@ class SparsityDataCheck(DataCheck):
             ...                    "code": "TOO_SPARSE",
             ...                    "details": {"columns": ["sparse"], "sparsity_score": {"sparse": 0.0}, "rows": None}}],
             ...     "actions": [{"code": "DROP_COL",
+            ...                  "data_check_name": "SparsityDataCheck",
             ...                  "metadata": {"columns": ["sparse"], "rows": None}}]}
             ...
             ...
