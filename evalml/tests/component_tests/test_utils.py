@@ -66,7 +66,7 @@ minimum_dependencies_set = set(
         "Stacked Ensemble Regressor",
         "Standard Scaler",
         "Target Imputer",
-        "Natural Language Featurizer Component",
+        "Natural Language Featurization Component",
         "Time Series Baseline Estimator",
         "URL Featurizer",
         "Undersampler",

@@ -1254,7 +1254,7 @@ def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fra
     component_graph = [
         "Select Columns Transformer",
         "One Hot Encoder",
-        "Natural Language Featurizer Component",
+        "Natural Language Featurization Component",
         "DateTime Featurization Component",
         estimator,
     ]
@@ -1978,7 +1978,7 @@ def test_explain_predictions_report_shows_original_value_if_possible(
     component_graph = [
         "Imputer",
         "DateTime Featurization Component",
-        "Natural Language Featurizer Component",
+        "Natural Language Featurization Component",
         "One Hot Encoder",
         "Standard Scaler",
         estimator,
@@ -2043,7 +2043,7 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
     component_graph = [
         "Imputer",
         "DateTime Featurization Component",
-        "Natural Language Featurizer Component",
+        "Natural Language Featurization Component",
         "One Hot Encoder",
         "Standard Scaler",
         "Random Forest Classifier",

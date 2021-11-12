@@ -272,7 +272,7 @@ def test_describe_component():
         },
     }
     assert natural_language_featurizer.describe(return_dict=True) == {
-        "name": "Natural Language Featurizer Component",
+        "name": "Natural Language Featurization Component",
         "parameters": {},
     }
     assert lsa.describe(return_dict=True) == {
