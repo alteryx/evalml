@@ -1,7 +1,5 @@
 """A transformer that encodes target labels using values between 0 and num_classes - 1."""
-import pandas as pd
 import woodwork as ww
-from sklearn.preprocessing import LabelEncoder as SKLabelEncoder
 
 from ..transformer import Transformer
 
@@ -27,10 +25,9 @@ class LabelEncoder(Transformer):
         parameters = {"positive_label": positive_label}
         parameters.update(kwargs)
 
-        label_encoder_obj = SKLabelEncoder()
         super().__init__(
             parameters=parameters,
-            component_obj=label_encoder_obj,
+            component_obj=None,
             random_seed=random_seed,
         )
 
@@ -49,27 +46,22 @@ class LabelEncoder(Transformer):
         """
         if y is None:
             raise ValueError("y cannot be None!")
-        if self.parameters["positive_label"] is None:
-            self._component_obj.fit(y)
-        else:
-            classes_ = set(pd.Series(y).unique())
-            if len(classes_) != 2:
+
+        self.mapping = {val: i for i, val in enumerate(sorted(y.unique()))}
+        if self.parameters["positive_label"] is not None:
+            if len(self.mapping) != 2:
                 raise ValueError(
                     "positive_label should only be set for binary classification targets. Otherwise, positive_label should be None."
                 )
-            try:
-                classes_.remove(self.parameters["positive_label"])
-            except KeyError:
+            if self.parameters["positive_label"] not in self.mapping:
                 raise ValueError(
                     f"positive_label was set to `{self.parameters['positive_label']}` but was not found in the input target data."
                 )
-
-            negative_label = classes_.pop()
-            self.mapping = {negative_label: 0, self.parameters["positive_label"]: 1}
-            self.inverse_mapping = {
-                0: negative_label,
-                1: self.parameters["positive_label"],
+            self.mapping = {
+                val: int(val == self.parameters["positive_label"])
+                for val in self.mapping
             }
+        self.inverse_mapping = {i: val for val, i in self.mapping.items()}
         return self
 
     def transform(self, X, y=None):
@@ -88,16 +80,12 @@ class LabelEncoder(Transformer):
         if y is None:
             return X, y
         y_ww = infer_feature_types(y)
-        if self.parameters["positive_label"] is None:
-            y_t = self._component_obj.transform(y_ww)
-            y_t = pd.Series(y_t, index=y_ww.index)
-        else:
-            y_unique_values = set(pd.Series(y).unique())
-            if y_unique_values != self.mapping.keys():
-                raise ValueError(
-                    f"y contains previously unseen labels: {y_unique_values.difference(self.mapping.keys())}"
-                )
-            y_t = y.map(self.mapping)
+        y_unique_values = set(y_ww.unique())
+        if y_unique_values != self.mapping.keys():
+            raise ValueError(
+                f"y contains previously unseen labels: {y_unique_values.difference(self.mapping.keys())}"
+            )
+        y_t = y_ww.map(self.mapping)
         return X, ww.init_series(y_t)
 
     def fit_transform(self, X, y):
@@ -127,9 +115,5 @@ class LabelEncoder(Transformer):
         if y is None:
             raise ValueError("y cannot be None!")
         y_ww = infer_feature_types(y)
-        if self.parameters["positive_label"] is None:
-            y_it = self._component_obj.inverse_transform(y)
-            y_it = infer_feature_types(pd.Series(y_it, index=y_ww.index))
-        else:
-            y_it = infer_feature_types(y_ww.map(self.inverse_mapping))
+        y_it = infer_feature_types(y_ww.map(self.inverse_mapping))
         return y_it
