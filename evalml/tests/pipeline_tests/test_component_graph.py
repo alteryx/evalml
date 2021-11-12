@@ -2431,7 +2431,7 @@ def test_fit_predict_different_types(
     X = infer_feature_types(X)
     X.ww.set_types({0: "Double"})
     X2 = infer_feature_types(X.copy())
-    X2.ww.set_types({0: "Integer"})
+    X2.ww.set_types({0: "Categorical"})
     if is_classification(problem_type):
         component_dict = {
             "Imputer": ["Imputer", "X", "y"],
@@ -2463,7 +2463,7 @@ def test_fit_transform_different_types(X_y_binary):
     X = infer_feature_types(X)
     X.ww.set_types({0: "Double"})
     X2 = infer_feature_types(X.copy())
-    X2.ww.set_types({0: "Integer"})
+    X2.ww.set_types({0: "Categorical"})
     component_dict = {"Imputer": ["Imputer", "X", "y"]}
     component_graph = ComponentGraph(component_dict).instantiate({})
     component_graph.fit(X, y)
