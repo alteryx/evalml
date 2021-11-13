@@ -86,7 +86,7 @@ class LabelEncoder(Transformer):
                 f"y contains previously unseen labels: {y_unique_values.difference(self.mapping.keys())}"
             )
         y_t = y_ww.map(self.mapping)
-        return X, ww.init_series(y_t)
+        return X, ww.init_series(y_t, logical_type="integer")
 
     def fit_transform(self, X, y):
         """Fit and transform data using the label encoder.
