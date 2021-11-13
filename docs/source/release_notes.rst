@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``data_check_name`` attribute to the data check action class :pr:`3034`
     * Fixes
     * Changes
     * Documentation Changes
@@ -10,6 +11,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Added ``data_check_name`` attribute to the data check action class :pr:`3034`
 
 
 **v0.37.0 Nov. 9, 2021**
