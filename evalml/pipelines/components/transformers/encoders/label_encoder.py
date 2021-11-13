@@ -81,7 +81,7 @@ class LabelEncoder(Transformer):
             return X, y
         y_ww = infer_feature_types(y)
         y_unique_values = set(y_ww.unique())
-        if y_unique_values != self.mapping.keys():
+        if y_unique_values.difference(self.mapping.keys()):
             raise ValueError(
                 f"y contains previously unseen labels: {y_unique_values.difference(self.mapping.keys())}"
             )

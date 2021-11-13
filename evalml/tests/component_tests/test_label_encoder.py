@@ -206,6 +206,18 @@ def test_label_encoder_with_positive_label_fit_different_from_transform():
         encoder.transform(None, pd.Series(["x", "y", "x"]))
 
 
+@pytest.mark.parametrize("use_positive_label", [True, False])
+def test_label_encoder_transform_does_not_have_all_labels(use_positive_label):
+    encoder = LabelEncoder(positive_label="a" if use_positive_label else None)
+    y = pd.Series(["a", "b", "b", "a"])
+    encoder.fit(None, y)
+    expected = (
+        pd.Series([1, 1, 1, 1]) if use_positive_label else pd.Series([0, 0, 0, 0])
+    )
+    _, y_transformed = encoder.transform(None, pd.Series(["a", "a", "a", "a"]))
+    assert_series_equal(expected, y_transformed)
+
+
 def test_label_encoder_with_positive_label_with_custom_indices():
     encoder = LabelEncoder(positive_label="a")
     y = pd.Series(["a", "b", "a"])
