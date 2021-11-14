@@ -149,7 +149,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             y_predicted_proba = self.predict_proba_in_sample(X, y, X_train, y_train)
         if any(not o.score_needs_proba for o in objectives):
             y_predicted = self.predict_in_sample(X, y, X_train, y_train)
-            y_predicted = y_predicted.astype(int)
             y_predicted = self._encode_targets(y_predicted)
         return y_predicted, y_predicted_proba
 
@@ -261,6 +260,7 @@ class TimeSeriesBinaryClassificationPipeline(
             proba = proba.iloc[:, 1]
             if objective is None:
                 predictions = proba > self.threshold
+                predictions = predictions.astype(int)
             else:
                 predictions = objective.decision_function(
                     proba, threshold=self.threshold, X=X
