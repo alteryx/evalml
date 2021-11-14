@@ -3175,7 +3175,7 @@ def test_search_with_text(AutoMLTestEnv):
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
         automl.search()
-    assert automl.rankings["pipeline_name"][1:].str.contains("Text").all()
+    assert automl.rankings["pipeline_name"][1:].str.contains("Natural Language").all()
 
 
 @pytest.mark.parametrize(

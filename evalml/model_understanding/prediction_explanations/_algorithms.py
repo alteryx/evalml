@@ -208,10 +208,10 @@ def _compute_shap_values(pipeline, features, training_data=None):
 def _aggreggate_explainer_values_dict(values, provenance):
     """Aggregates explainer values across features created from a common feature.
 
-    For example, let's say the pipeline has a text featurizer that creates the columns: LSA_1, LSA_2, PolarityScore,
+    For example, let's say the pipeline has a natural language featurizer that creates the columns: LSA_1, LSA_2, PolarityScore,
     MeanCharacter, and DiversityScore from a column called "text_feature".
 
-    The values dictionary input to this function will have a key for each of the features created by the text featurizer,
+    The values dictionary input to this function will have a key for each of the features created by the natural language featurizer,
     but it will not have a key for the original "text_feature" column. It will look like this:
 
     {"LSA_1": [0.2], "LSA_0": [0.3], "PolarityScore": [0.1], "MeanCharacters": [0.05], "DiversityScore": [-0.1], ...}

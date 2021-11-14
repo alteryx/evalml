@@ -28,8 +28,8 @@ scipy==1.7.2
 seaborn==0.11.2
 shap==0.40.0
 sktime==0.8.0
-statsmodels==0.13.0
+statsmodels==0.13.1
 texttable==1.6.4
 vowpalwabbit==8.11.0
-woodwork==0.8.2
+woodwork==0.9.0
 xgboost==1.5.0

@@ -23,10 +23,10 @@ from evalml.pipelines.components import (
     Imputer,
     LinearRegressor,
     LogisticRegressionClassifier,
+    NaturalLanguageFeaturizer,
     OneHotEncoder,
     StandardScaler,
     TargetImputer,
-    TextFeaturizer,
     Transformer,
     URLFeaturizer,
 )
@@ -208,8 +208,8 @@ def test_make_pipeline(
                 else []
             )
             drop_null = [DropNullColumns] if "all_null" in column_names else []
-            text_featurizer = (
-                [TextFeaturizer]
+            natural_language_featurizer = (
+                [NaturalLanguageFeaturizer]
                 if "text" in column_names and input_type == "ww"
                 else []
             )
@@ -232,7 +232,7 @@ def test_make_pipeline(
                 + email_featurizer
                 + url_featurizer
                 + drop_null
-                + text_featurizer
+                + natural_language_featurizer
                 + drop_col
                 + datetime
                 + imputer
