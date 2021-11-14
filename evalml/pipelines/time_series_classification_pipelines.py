@@ -107,7 +107,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             raise ValueError(
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
             )
-
         features = self.transform_all_but_final(X, y, X_train, y_train)
         predictions = self._estimator_predict(features, y)
         predictions.index = y.index
@@ -150,6 +149,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             y_predicted_proba = self.predict_proba_in_sample(X, y, X_train, y_train)
         if any(not o.score_needs_proba for o in objectives):
             y_predicted = self.predict_in_sample(X, y, X_train, y_train)
+            y_predicted = y_predicted.astype(int)
             y_predicted = self._encode_targets(y_predicted)
         return y_predicted, y_predicted_proba
 
