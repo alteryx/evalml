@@ -54,7 +54,9 @@ labels_1_unique = DataCheckError(
     details={"columns": ["Y"]},
 ).to_dict()
 drop_feature_action = DataCheckAction(
-    DataCheckActionCode.DROP_COL, metadata={"columns": ["feature"]}
+    DataCheckActionCode.DROP_COL,
+    data_check_name=no_variance_data_check_name,
+    metadata={"columns": ["feature"]},
 ).to_dict()
 
 cases = [

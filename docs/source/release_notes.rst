@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``data_check_name`` attribute to the data check action class :pr:`3034`
         * Added ``NumWords`` and ``NumCharacters`` primitives to ``TextFeaturizer`` and renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
     * Fixes
     * Changes
@@ -11,6 +12,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Added ``data_check_name`` attribute to the data check action class :pr:`3034`
         * Renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
 
 
