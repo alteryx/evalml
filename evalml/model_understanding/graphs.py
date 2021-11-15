@@ -1394,7 +1394,7 @@ def visualize_decision_tree(
         path_and_name, graph_format = os.path.splitext(filepath)
         if graph_format:
             graph_format = graph_format[1:].lower()  # ignore the dot
-            supported_filetypes = graphviz.backend.FORMATS
+            supported_filetypes = graphviz.FORMATS
             if graph_format not in supported_filetypes:
                 raise ValueError(
                     (
