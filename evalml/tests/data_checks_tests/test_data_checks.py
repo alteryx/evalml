@@ -166,13 +166,17 @@ messages = [
 expected_actions = [
     DataCheckAction(
         DataCheckActionCode.DROP_COL,
+        data_check_name="HighlyNullDataCheck",
         metadata={"columns": ["all_null", "also_all_null"]},
     ).to_dict(),
     DataCheckAction(
-        DataCheckActionCode.DROP_COL, metadata={"columns": ["id"]}
+        DataCheckActionCode.DROP_COL,
+        data_check_name="IDColumnsDataCheck",
+        metadata={"columns": ["id"]},
     ).to_dict(),
     DataCheckAction(
         DataCheckActionCode.IMPUTE_COL,
+        data_check_name="InvalidTargetDataCheck",
         metadata={
             "is_target": True,
             "impute_strategy": "most_frequent",
@@ -180,6 +184,7 @@ expected_actions = [
     ).to_dict(),
     DataCheckAction(
         DataCheckActionCode.DROP_COL,
+        data_check_name="NoVarianceDataCheck",
         metadata={"columns": ["all_null", "also_all_null", "lots_of_null"]},
     ).to_dict(),
 ]
@@ -351,13 +356,18 @@ def test_default_data_checks_regression(input_type):
     ]
     impute_action = DataCheckAction(
         DataCheckActionCode.IMPUTE_COL,
+        data_check_name="InvalidTargetDataCheck",
         metadata={"is_target": True, "impute_strategy": "mean"},
     ).to_dict()
     leakage_drop_action = DataCheckAction(
-        DataCheckActionCode.DROP_COL, metadata={"columns": ["id", "nan_dt_col"]}
+        DataCheckActionCode.DROP_COL,
+        data_check_name="TargetLeakageDataCheck",
+        metadata={"columns": ["id", "nan_dt_col"]},
     ).to_dict()
     target_leakage_drop_action = DataCheckAction(
-        DataCheckActionCode.DROP_COL, metadata={"columns": ["lots_of_null"]}
+        DataCheckActionCode.DROP_COL,
+        data_check_name="TargetLeakageDataCheck",
+        metadata={"columns": ["lots_of_null"]},
     ).to_dict()
     expected_actions_with_drop_and_impute = (
         expected_actions[:2]
@@ -461,19 +471,28 @@ def test_default_data_checks_null_rows():
         ],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 1, 2, 3, 4]}
+                DataCheckActionCode.DROP_ROWS,
+                data_check_name="HighlyNullDataCheck",
+                metadata={"rows": [0, 1, 2, 3, 4]},
             ).to_dict(),
             DataCheckAction(
                 DataCheckActionCode.DROP_COL,
+                data_check_name="HighlyNullDataCheck",
                 metadata={"columns": ["all_null", "also_all_null"]},
             ).to_dict(),
             DataCheckAction(
                 DataCheckActionCode.IMPUTE_COL,
+                data_check_name="InvalidTargetDataCheck",
                 metadata={
                     "columns": None,
                     "is_target": True,
                     "impute_strategy": "mean",
                 },
+            ).to_dict(),
+            DataCheckAction(
+                DataCheckActionCode.DROP_COL,
+                data_check_name="NoVarianceDataCheck",
+                metadata={"columns": ["all_null", "also_all_null"]},
             ).to_dict(),
         ],
     }
@@ -656,13 +675,17 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
     X, y = X_y_binary
 
     class MockDataCheck(DataCheck):
+        name = "Mock Data Check"
+
         def validate(self, X, y):
             return {
                 "warnings": [],
                 "errors": [],
                 "actions": [
                     DataCheckAction(
-                        DataCheckActionCode.DROP_COL, metadata={"column": "col_to_drop"}
+                        DataCheckActionCode.DROP_COL,
+                        data_check_name=self.name,
+                        metadata={"column": "col_to_drop"},
                     ).to_dict()
                 ],
             }
@@ -680,7 +703,9 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"column": "col_to_drop"}
+                DataCheckActionCode.DROP_COL,
+                data_check_name=MockDataCheck.name,
+                metadata={"column": "col_to_drop"},
             ).to_dict()
         ],
     }
