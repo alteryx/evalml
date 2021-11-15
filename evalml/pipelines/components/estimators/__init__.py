@@ -15,6 +15,7 @@ from .classifiers import (
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
     RidgeClassifier,
+    LassoClassifier,
 )
 from .regressors import (
     LinearRegressor,
@@ -32,4 +33,5 @@ from .regressors import (
     ProphetRegressor,
     VowpalWabbitRegressor,
     RidgeRegressor,
+    LassoRegressor,
 )

@@ -1,6 +1,6 @@
 """Stacked Ensemble Regressor."""
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components import RidgeRegressor
+from evalml.pipelines.components import LassoRegressor
 from evalml.pipelines.components.ensemble import StackedEnsembleBase
 from evalml.problem_types import ProblemTypes
 
@@ -53,4 +53,4 @@ class StackedEnsembleRegressor(StackedEnsembleBase):
     ]"""
     hyperparameter_ranges = {}
     """{}"""
-    _default_final_estimator = RidgeRegressor
+    _default_final_estimator = LassoRegressor

@@ -217,6 +217,8 @@ _not_used_in_automl = {
     "VowpalWabbitRegressor",
     "RidgeClassifier",
     "RidgeRegressor",
+    "LassoClassifier",
+    "LassoRegressor",
 }
 
 

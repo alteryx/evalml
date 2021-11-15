@@ -15,3 +15,4 @@ from .vowpal_wabbit_classifiers import (
     VowpalWabbitMulticlassClassifier,
 )
 from .ridge_classifier import RidgeClassifier
+from .lasso_classifier import LassoClassifier

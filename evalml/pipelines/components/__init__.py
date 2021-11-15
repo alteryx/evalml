@@ -31,6 +31,8 @@ from .estimators import (
     VowpalWabbitRegressor,
     RidgeRegressor,
     RidgeClassifier,
+    LassoRegressor,
+    LassoClassifier,
 )
 from .transformers import (
     Transformer,

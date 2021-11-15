@@ -40,6 +40,8 @@ from .components import (
     VowpalWabbitRegressor,
     RidgeClassifier,
     RidgeRegressor,
+    LassoClassifier,
+    LassoRegressor,
 )
 
 from .component_graph import ComponentGraph

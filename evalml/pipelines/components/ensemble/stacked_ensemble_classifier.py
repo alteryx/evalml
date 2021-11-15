@@ -1,6 +1,6 @@
 """Stacked Ensemble Classifier."""
 from evalml.model_family import ModelFamily
-from evalml.pipelines.components import RidgeClassifier
+from evalml.pipelines.components import LassoClassifier
 from evalml.pipelines.components.ensemble import StackedEnsembleBase
 from evalml.problem_types import ProblemTypes
 
@@ -59,4 +59,4 @@ class StackedEnsembleClassifier(StackedEnsembleBase):
     ]"""
     hyperparameter_ranges = {}
     """{}"""
-    _default_final_estimator = RidgeClassifier
+    _default_final_estimator = LassoClassifier
