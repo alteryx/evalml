@@ -2475,3 +2475,20 @@ def test_fit_transform_different_types(X_y_binary):
         ValueError, match="Input X data types are different from the input types"
     ):
         component_graph.transform(X2)
+
+
+def test_fit_pred_different_types_fraud(fraud_100):
+    X, y = fraud_100
+    X2 = X.copy()
+    X2.ww.init()
+    component_dict = {
+        "Imputer": ["Imputer", "X", "y"],
+        "RF": [
+            "Random Forest Classifier",
+            "Imputer.x",
+            "y",
+        ],
+    }
+    component_graph = ComponentGraph(component_dict).instantiate({})
+    component_graph.fit(X, y)
+    component_graph.predict(X2)
