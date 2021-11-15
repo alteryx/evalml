@@ -180,7 +180,9 @@ class DelayedFeatureTransformer(Transformer):
         # Normalize the data into pandas objects
         X_ww = infer_feature_types(X)
         cols_to_delay = list(
-            X_ww.ww.select(["numeric", "category"], return_schema=True).columns
+            X_ww.ww.select(
+                ["numeric", "category", "boolean"], return_schema=True
+            ).columns
         )
         X_ww = X_ww.ww.copy()
         categorical_columns = self._get_categorical_columns(X_ww)

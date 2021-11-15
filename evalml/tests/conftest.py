@@ -314,14 +314,6 @@ def X_y_binary():
     return X, y
 
 
-@pytest.fixture
-def X_y_binary_ts(X_y_binary):
-    X, y = X_y_binary
-    X = pd.DataFrame(X)
-    X["date"] = pd.date_range("2021-01-01", periods=X.shape[0])
-    return X, y
-
-
 @pytest.fixture(scope="session")
 def X_y_binary_cls():
     X, y = datasets.make_classification(

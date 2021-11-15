@@ -1382,3 +1382,18 @@ def test_ts_pipeline_transform_with_final_estimator(
         ),
     ):
         pipeline.transform(X_validation, y_validation)
+
+
+def test_date_index_cannot_be_none(time_series_regression_pipeline_class):
+
+    with pytest.raises(ValueError, match="date_index cannot be None!"):
+        time_series_regression_pipeline_class(
+            {
+                "pipeline": {
+                    "gap": 1,
+                    "max_delay": 2,
+                    "forecast_horizon": 1,
+                    "date_index": None,
+                }
+            }
+        )

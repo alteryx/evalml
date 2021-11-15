@@ -57,6 +57,13 @@ def test_delayed_features_init_raises_if_conf_level_None():
         DelayedFeatureTransformer(conf_level=None)
 
 
+def test_delayed_features_raises_if_date_index_None(delayed_features_data):
+    X, y = delayed_features_data
+    with pytest.raises(ValueError, match=" cannot be None"):
+        dft = DelayedFeatureTransformer(date_index=None)
+        dft.fit_transform(X, y)
+
+
 def encode_y_as_string(y):
     y = y.astype("category")
     y_answer = y.astype(int) - 1
@@ -650,11 +657,11 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
     X_df, fit_transform
 ):
     y = pd.Series([1, 2, 1])
-    override_types = [Integer, Double, Categorical, Datetime, Boolean]
+    override_types = [Integer, Double, Categorical, Boolean]
     for logical_type in override_types:
         try:
             X = X_df.copy()
-            X["date"] = pd.date_range("2021-01-01", periods=3)
+            X["date"] = pd.date_range("2021-01-01", periods=X.shape[0])
             X.ww.init(logical_types={0: logical_type})
         except (ww.exceptions.TypeConversionError, ValueError):
             continue
