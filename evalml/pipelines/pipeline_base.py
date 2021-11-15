@@ -440,7 +440,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             dag_json (str): A serialized JSON representation of a DAG structure.
         """
         nodes = {
-            comp_: {"Attributes": att_.parameters, "Name": att_.name}
+            comp_: {"Parameters": att_.parameters, "Name": att_.name}
             for comp_, att_ in self.component_graph.component_instances.items()
         }
 

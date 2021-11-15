@@ -248,8 +248,54 @@ def test_component_as_json(
     for node_, params_ in pipeline_parameters.items():
         for key_, val_ in params_.items():
             assert (
-                dag_json["Nodes"][node_]["Attributes"][key_]
+                dag_json["Nodes"][node_]["Parameters"][key_]
                 == pipeline_parameters[node_][key_]
             )
     assert x_edges_set == set(tuple(edge_) for edge_ in dag_json["x_edges"])
     assert y_edges_set == set(tuple(edge_) for edge_ in dag_json["y_edges"])
+
+
+def test_ensemble_as_json():
+    component_graph = {
+        "Label Encoder": ["Label Encoder", "X", "y"],
+        "Random Forest Pipeline - Label Encoder": [
+            "Label Encoder",
+            "X",
+            "Label Encoder.y",
+        ],
+        "Random Forest Pipeline - Imputer": [
+            "Imputer",
+            "X",
+            "Random Forest Pipeline - Label Encoder.y",
+        ],
+        "Random Forest Pipeline - Random Forest Classifier": [
+            "Random Forest Classifier",
+            "Random Forest Pipeline - Imputer.x",
+            "Random Forest Pipeline - Label Encoder.y",
+        ],
+        "Decision Tree Pipeline - Label Encoder": [
+            "Label Encoder",
+            "X",
+            "Label Encoder.y",
+        ],
+        "Decision Tree Pipeline - Imputer": [
+            "Imputer",
+            "X",
+            "Decision Tree Pipeline - Label Encoder.y",
+        ],
+        "Decision Tree Pipeline - Decision Tree Classifier": [
+            "Decision Tree Classifier",
+            "Decision Tree Pipeline - Imputer.x",
+            "Decision Tree Pipeline - Label Encoder.y",
+        ],
+        "Stacked Ensemble Classifier": [
+            "Stacked Ensemble Classifier",
+            "Random Forest Pipeline - Random Forest Classifier.x",
+            "Decision Tree Pipeline - Decision Tree Classifier.x",
+            "Decision Tree Pipeline - Label Encoder.y",
+        ],
+    }
+    pipeline = BinaryClassificationPipeline(component_graph)
+    dag_json = pipeline.graph_json()
+
+    assert dag_json["Nodes"].keys() == component_graph.keys()
