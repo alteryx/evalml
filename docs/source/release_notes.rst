@@ -4,7 +4,10 @@ Release Notes
     * Enhancements
         * Added ``NumWords`` and ``NumCharacters`` primitives to ``TextFeaturizer`` and renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
     * Fixes
+        * Fixed bug where ensembling components could not get converted to JSON format :pr:`3049`
+        * Fixed bug where components with tuned integer hyperparameters could not get converted to JSON format :pr:`3049`
     * Changes
+        * Updated the ``Pipeline.graph_json`` function to return a dictionary of "from" and "to" edges instead of tuples :pr:`3049`
     * Documentation Changes
     * Testing Changes
 
