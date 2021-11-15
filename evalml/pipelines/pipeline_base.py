@@ -444,26 +444,30 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             for comp_, att_ in self.component_graph.component_instances.items()
         }
 
-        x_edges = self.component_graph._get_edges(
+        x_edges_list = self.component_graph._get_edges(
             self.component_graph.component_dict, "features"
         )
-        y_edges = self.component_graph._get_edges(
+        y_edges_list = self.component_graph._get_edges(
             self.component_graph.component_dict, "target"
         )
+        x_edges = [{"from": edge[0], "to": edge[1]} for edge in x_edges_list]
+        y_edges = [{"from": edge[0], "to": edge[1]} for edge in y_edges_list]
+
         for (
             component_name,
             component_info,
         ) in self.component_graph.component_dict.items():
             for parent in component_info[1:]:
                 if parent == "X":
-                    x_edges.append(("X", component_name))
+                    x_edges.append({"from": "X", "to": component_name})
                 elif parent == "y":
-                    y_edges.append(("y", component_name))
-        nodes.update({"X": "X", "y": "y"})
+                    y_edges.append({"from": "y", "to": component_name})
+        nodes["X"] = {"Parameters": {}, "Name": "X"}
+        nodes["y"] = {"Parameters": {}, "Name": "y"}
         graph_as_json = {"Nodes": nodes, "x_edges": x_edges, "y_edges": y_edges}
 
         for x_edge in graph_as_json["x_edges"]:
-            if x_edge[0] == "X":
+            if x_edge["from"] == "X":
                 graph_as_json["x_edges"].remove(x_edge)
                 graph_as_json["x_edges"].insert(0, x_edge)
 
