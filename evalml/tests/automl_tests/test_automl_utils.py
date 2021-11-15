@@ -112,7 +112,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.n_splits == 3
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
-        assert data_splitter.date_index is "foo"
+        assert data_splitter.date_index == "foo"
 
 
 @pytest.mark.parametrize(
@@ -160,7 +160,7 @@ def test_make_data_splitter_parameters_time_series():
         assert data_splitter.n_splits == 5
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
-        assert data_splitter.date_index is "foo"
+        assert data_splitter.date_index == "foo"
 
 
 def test_make_data_splitter_error():

@@ -171,14 +171,12 @@ class DelayedFeatureTransformer(Transformer):
         If y is not None, it will also compute the delayed values for the target variable.
 
         Args:
-            X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
+            X (pd.DataFrame): Data to transform. None is expected when only the target variable is being used.
             y (pd.Series, or None): Target.
 
         Returns:
             pd.DataFrame: Transformed X.
         """
-        if X is None:
-            X = pd.DataFrame()
         # Normalize the data into pandas objects
         X_ww = infer_feature_types(X)
         cols_to_delay = list(
@@ -213,7 +211,7 @@ class DelayedFeatureTransformer(Transformer):
         """Fit the component and transform the input data.
 
         Args:
-            X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
+            X (pd.DataFrame): Data to transform. None is expected when only the target variable is being used.
             y (pd.Series, or None): Target.
 
         Returns:
