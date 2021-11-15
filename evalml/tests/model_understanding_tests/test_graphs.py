@@ -1244,7 +1244,7 @@ def test_visualize_decision_trees_wrong_format(fitted_tree_estimators, tmpdir):
     with pytest.raises(
         ValueError,
         match=f"Unknown format 'xyz'. Make sure your format is one of the following: "
-        f"{graphviz.backend.FORMATS}",
+        f"{graphviz.FORMATS}",
     ):
         visualize_decision_tree(estimator=est_class, filepath=filepath)
 
