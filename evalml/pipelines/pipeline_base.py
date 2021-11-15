@@ -13,6 +13,7 @@ import cloudpickle
 import pandas as pd
 
 from .components import (
+    ComponentBase,
     PCA,
     DFSTransformer,
     Estimator,
@@ -439,10 +440,17 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         Returns:
             dag_json (str): A serialized JSON representation of a DAG structure.
         """
-        nodes = {
-            comp_: {"Parameters": att_.parameters, "Name": att_.name}
-            for comp_, att_ in self.component_graph.component_instances.items()
-        }
+        nodes = {}
+        for comp_, att_ in self.component_graph.component_instances.items():
+            param_dict = {}
+            for param, val in att_.parameters.items():
+                # Can't JSON serialize components directly, have to split them into name and parameters
+                if isinstance(val, ComponentBase):
+                    param_dict[f"{param}_name"] = val.name
+                    param_dict[f"{param}_parameters"] = val.parameters
+                else:
+                    param_dict[param] = val
+            nodes[comp_] = {"Parameters": param_dict, "Name": att_.name}
 
         x_edges_list = self.component_graph._get_edges(
             self.component_graph.component_dict, "features"

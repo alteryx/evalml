@@ -297,7 +297,9 @@ def test_ensemble_as_json():
             "Decision Tree Pipeline - Label Encoder.y",
         ],
     }
-    pipeline = BinaryClassificationPipeline(component_graph)
-    dag_json = pipeline.graph_json()
+    parameters = {'Random Forest Pipeline - Random Forest Classifier': {'max_depth': np.int64(7)}}
+    pipeline = BinaryClassificationPipeline(component_graph, parameters=parameters)
+    dag_str = pipeline.graph_json()
+    dag_json = json.loads(dag_str)
 
-    assert dag_json["Nodes"].keys() == component_graph.keys()
+    assert list(dag_json["Nodes"].keys()) == list(component_graph.keys()) + ["X", "y"]
