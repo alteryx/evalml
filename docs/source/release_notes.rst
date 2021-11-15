@@ -6,7 +6,7 @@ Release Notes
     * Fixes
     * Changes
     * Documentation Changes
-        * Updated docs to use data check action methods rather than manually cleaning data :pr`3050`
+        * Updated docs to use data check action methods rather than manually cleaning data :pr:`3050`
     * Testing Changes
 
 .. warning::
