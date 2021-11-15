@@ -434,7 +434,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         y_edges specifies from which component target data is being passed.
         This can be used to build graphs across a variety of visualization tools.
         Template:
-        {"Nodes": {"component_name": {"Name": class_name, "Attributes": parameters_attributes}, ...}},
+        {"Nodes": {"component_name": {"Name": class_name, "Parameters": parameters_attributes}, ...}},
         "x_edges": [[from_component_name, to_component_name], [from_component_name, to_component_name], ...],
         "y_edges": [[from_component_name, to_component_name], [from_component_name, to_component_name], ...]}
 
