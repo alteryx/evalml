@@ -26,6 +26,7 @@ Release Notes
         * Added an algorithm to ``DelayedFeatureTransformer`` to select better lags :pr:`3005`
         * Added test to ensure pickling pipelines preserves thresholds :pr:`3027`
         * Added AutoML function to access ensemble pipeline's input pipelines IDs :pr:`3011`
+        * Added ability to define which class is "positive" for label encoder in binary classification case :pr:`3033`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
         * Fixed permutation importance failing when target is categorical :pr:`3017`

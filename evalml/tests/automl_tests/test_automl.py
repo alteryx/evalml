@@ -1428,7 +1428,8 @@ def test_describe_pipeline(return_dict, verbose, caplog, X_y_binary, AutoMLTestE
         )
         assert automl_dict["pipeline_summary"] == "Baseline Classifier w/ Label Encoder"
         assert automl_dict["parameters"] == {
-            "Baseline Classifier": {"strategy": "mode"}
+            "Label Encoder": {"positive_label": None},
+            "Baseline Classifier": {"strategy": "mode"},
         }
         assert automl_dict["mean_cv_score"] == 1.0
         assert not automl_dict["high_variance_cv"]
