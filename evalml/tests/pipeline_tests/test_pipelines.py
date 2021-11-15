@@ -312,7 +312,10 @@ def test_describe_pipeline(
                         "numeric_fill_value": None,
                     },
                 },
-                "Label Encoder": {"name": "Label Encoder", "parameters": {}},
+                "Label Encoder": {
+                    "name": "Label Encoder",
+                    "parameters": {"positive_label": None},
+                },
                 "One Hot Encoder": {
                     "name": "One Hot Encoder",
                     "parameters": {
@@ -447,6 +450,7 @@ def test_parameters(logistic_regression_binary_pipeline_class):
     }
     lrp = logistic_regression_binary_pipeline_class(parameters=parameters)
     expected_parameters = {
+        "Label Encoder": {"positive_label": None},
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "median",
@@ -1245,6 +1249,7 @@ def test_component_not_found():
 
 def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     expected_defaults = {
+        "Label Encoder": {"positive_label": None},
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean",
