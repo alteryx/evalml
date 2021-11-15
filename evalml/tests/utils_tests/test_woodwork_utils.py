@@ -300,3 +300,10 @@ def test_schema_is_equal_column_names():
         semantic_tags={"first": [], "second": ["numeric"]},
     )
     assert not _schema_is_equal(schema, schema2)
+
+
+def test_schema_is_equal_fraud(fraud_100):
+    X, y = fraud_100
+    X2 = X.copy()
+    X2.ww.init()
+    assert _schema_is_equal(X.ww.schema, X2.ww.schema)
