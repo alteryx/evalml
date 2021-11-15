@@ -187,8 +187,8 @@ def find_confusion_matrix_per_thresholds(
     pos_preds.index = y.index.tolist()
     neg_class, pos_class = 0, 1
     if pipeline._encoder is not None:
-        pos_class = pipeline._encoder._component_obj.classes_[1]
-        neg_class = pipeline._encoder._component_obj.classes_[0]
+        pos_class = pipeline._encoder.inverse_mapping[1]
+        neg_class = pipeline._encoder.inverse_mapping[0]
     true_pos = y[y == pos_class]
     true_neg = y[y == neg_class]
 
