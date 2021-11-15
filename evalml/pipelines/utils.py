@@ -59,6 +59,142 @@ from evalml.utils import import_or_raise, infer_feature_types
 logger = logging.getLogger(__name__)
 
 
+def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):
+    component = []
+    if is_classification(problem_type):
+        component.append(LabelEncoder)
+    return component
+
+
+def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
+    component = []
+    all_null_cols = X.columns[X.isnull().all()]
+    if len(all_null_cols) > 0:
+        component.append(DropNullColumns)
+    return component
+
+
+def _get_drop_index_unknown(X, y, problem_type, estimator_class, sampler_name=None):
+    component = []
+    index_and_unknown_columns = list(
+        X.ww.select(["index", "unknown"], return_schema=True).columns
+    )
+    if len(index_and_unknown_columns) > 0:
+        component.append(DropColumns)
+    return component
+
+
+def _get_url_email(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    email_columns = list(X.ww.select("EmailAddress", return_schema=True).columns)
+    if len(email_columns) > 0:
+        components.append(EmailFeaturizer)
+
+    url_columns = list(X.ww.select("URL", return_schema=True).columns)
+    if len(url_columns) > 0:
+        components.append(URLFeaturizer)
+
+    return components
+
+
+def _get_datetime(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
+
+    add_datetime_featurizer = len(datetime_cols) > 0
+    if add_datetime_featurizer and estimator_class.model_family not in [
+        ModelFamily.ARIMA,
+        ModelFamily.PROPHET,
+    ]:
+        components.append(DateTimeFeaturizer)
+    return components
+
+
+def _get_natural_language(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
+    if len(text_columns) > 0:
+        components.append(NaturalLanguageFeaturizer)
+    return components
+
+
+def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+
+    input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
+    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
+
+    types_imputer_handles = {
+        logical_types.Boolean,
+        logical_types.Categorical,
+        logical_types.Double,
+        logical_types.Integer,
+        logical_types.URL,
+        logical_types.EmailAddress,
+        logical_types.Datetime,
+    }
+
+    if len(input_logical_types.intersection(types_imputer_handles)) or len(
+        text_columns
+    ):
+        components.append(Imputer)
+
+    return components
+
+
+def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+
+    # The URL and EmailAddress Featurizers will create categorical columns
+    categorical_cols = list(
+        X.ww.select(["category", "URL", "EmailAddress"], return_schema=True).columns
+    )
+    if len(categorical_cols) > 0 and estimator_class not in {
+        CatBoostClassifier,
+        CatBoostRegressor,
+    }:
+        components.append(OneHotEncoder)
+    return components
+
+
+def _get_sampler(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+
+    sampler_components = {
+        "Undersampler": Undersampler,
+        "Oversampler": Oversampler,
+    }
+    if sampler_name is not None:
+        try:
+            import_or_raise(
+                "imblearn.over_sampling", error_msg="imbalanced-learn is not installed"
+            )
+            components.append(sampler_components[sampler_name])
+        except ImportError:
+            logger.warning(
+                "Could not import imblearn.over_sampling, so defaulting to use Undersampler"
+            )
+            components.append(Undersampler)
+    return components
+
+
+def _get_standard_scaler(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    if estimator_class and estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+        components.append(StandardScaler)
+    return components
+
+
+def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    if (
+        is_time_series(problem_type)
+        and estimator_class.model_family != ModelFamily.ARIMA
+    ):
+        components.append(DelayedFeatureTransformer)
+    return components
+
+
 def _get_preprocessing_components(
     X, y, problem_type, estimator_class, sampler_name=None
 ):
@@ -74,94 +210,58 @@ def _get_preprocessing_components(
     Returns:
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
-    pp_components = []
+    if is_time_series(problem_type):
+        components_functions = [
+            _get_label_encoder,
+            _get_drop_all_null,
+            _get_drop_index_unknown,
+            _get_url_email,
+            _get_natural_language,
+            _get_imputer,
+            _get_time_series_featurizer,
+            _get_datetime,
+            _get_ohe,
+            _get_sampler,
+            _get_standard_scaler,
+        ]
+    else:
+        components_functions = [
+            _get_label_encoder,
+            _get_drop_all_null,
+            _get_drop_index_unknown,
+            _get_url_email,
+            _get_datetime,
+            _get_natural_language,
+            _get_imputer,
+            _get_ohe,
+            _get_sampler,
+            _get_standard_scaler,
+        ]
+    components = []
+    for function in components_functions:
+        components.extend(function(X, y, problem_type, estimator_class, sampler_name))
 
-    if is_classification(problem_type):
-        pp_components.append(LabelEncoder)
+    return components
 
-    all_null_cols = X.columns[X.isnull().all()]
-    if len(all_null_cols) > 0:
-        pp_components.append(DropNullColumns)
 
-    index_and_unknown_columns = list(
-        X.ww.select(["index", "unknown"], return_schema=True).columns
-    )
-    if len(index_and_unknown_columns) > 0:
-        pp_components.append(DropColumns)
+def _get_time_series_components(X, y, problem_type, estimator_class, sampler_name=None):
+    components_functions = [
+        _get_label_encoder,
+        _get_drop_all_null,
+        _get_drop_index_unknown,
+        _get_url_email,
+        _get_natural_language,
+        _get_imputer,
+        _get_time_series_featurizer,
+        _get_datetime,
+        _get_ohe,
+        _get_sampler,
+    ]
+    components = []
+    for function in components_functions:
+        components.extend(function(X, y, problem_type, estimator_class, sampler_name))
 
-    email_columns = list(X.ww.select("EmailAddress", return_schema=True).columns)
-    if len(email_columns) > 0:
-        pp_components.append(EmailFeaturizer)
-
-    url_columns = list(X.ww.select("URL", return_schema=True).columns)
-    if len(url_columns) > 0:
-        pp_components.append(URLFeaturizer)
-
-    if (
-        is_time_series(problem_type)
-        and estimator_class.model_family != ModelFamily.ARIMA
-    ):
-        pp_components.append(DelayedFeatureTransformer)
-
-    input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
-    types_imputer_handles = {
-        logical_types.Boolean,
-        logical_types.Categorical,
-        logical_types.Double,
-        logical_types.Integer,
-        logical_types.URL,
-        logical_types.EmailAddress,
-        logical_types.Datetime,
-    }
-
-    datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
-
-    add_datetime_featurizer = len(datetime_cols) > 0
-    if add_datetime_featurizer and estimator_class.model_family not in [
-        ModelFamily.ARIMA,
-        ModelFamily.PROPHET,
-    ]:
-        pp_components.append(DateTimeFeaturizer)
-
-    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
-    if len(text_columns) > 0:
-        pp_components.append(NaturalLanguageFeaturizer)
-
-    if len(input_logical_types.intersection(types_imputer_handles)) or len(
-        text_columns
-    ):
-        pp_components.append(Imputer)
-
-    # The URL and EmailAddress Featurizers will create categorical columns
-    categorical_cols = list(
-        X.ww.select(["category", "URL", "EmailAddress"], return_schema=True).columns
-    )
-    if len(categorical_cols) > 0 and estimator_class not in {
-        CatBoostClassifier,
-        CatBoostRegressor,
-    }:
-        pp_components.append(OneHotEncoder)
-
-    sampler_components = {
-        "Undersampler": Undersampler,
-        "Oversampler": Oversampler,
-    }
-    if sampler_name is not None:
-        try:
-            import_or_raise(
-                "imblearn.over_sampling", error_msg="imbalanced-learn is not installed"
-            )
-            pp_components.append(sampler_components[sampler_name])
-        except ImportError:
-            logger.warning(
-                "Could not import imblearn.over_sampling, so defaulting to use Undersampler"
-            )
-            pp_components.append(Undersampler)
-
-    if estimator_class and estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-        pp_components.append(StandardScaler)
-
-    return pp_components
+    return components
 
 
 def _get_pipeline_base_class(problem_type):

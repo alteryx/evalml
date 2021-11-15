@@ -227,20 +227,36 @@ def test_make_pipeline(
                 and input_type == "pd"
                 else []
             )
-            expected_components = (
-                label_encoder
-                + email_featurizer
-                + url_featurizer
-                + drop_null
-                + drop_col
-                + delayed_features
-                + natural_language_featurizer
-                + datetime
-                + imputer
-                + ohe
-                + standard_scaler
-                + [estimator_class]
-            )
+            if is_time_series(problem_type):
+                expected_components = (
+                    label_encoder
+                    + email_featurizer
+                    + url_featurizer
+                    + drop_null
+                    + drop_col
+                    + natural_language_featurizer
+                    + imputer
+                    + delayed_features
+                    + datetime
+                    + ohe
+                    + standard_scaler
+                    + [estimator_class]
+                )
+            else:
+                expected_components = (
+                    label_encoder
+                    + email_featurizer
+                    + url_featurizer
+                    + drop_null
+                    + drop_col
+                    + delayed_features
+                    + natural_language_featurizer
+                    + datetime
+                    + imputer
+                    + ohe
+                    + standard_scaler
+                    + [estimator_class]
+                )
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ], test_description
