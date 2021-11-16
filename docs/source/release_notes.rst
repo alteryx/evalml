@@ -8,6 +8,8 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
+        * Updated integration tests to use ``make_pipeline_from_actions`` instead of private method :pr:`3047`
+
 
 .. warning::
 
