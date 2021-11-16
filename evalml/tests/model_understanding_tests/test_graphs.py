@@ -1403,7 +1403,7 @@ def test_t_sne_errors_marker_size(marker_size, has_minimal_dependencies):
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize("perplexity", [0, 4.6, 100])
-@pytest.mark.parametrize("learning_rate", [100.0, -15, 0])
+@pytest.mark.parametrize("learning_rate", [100.0, 0.1])
 def test_graph_t_sne(data_type, perplexity, learning_rate):
     go = pytest.importorskip(
         "plotly.graph_objects",
