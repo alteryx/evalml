@@ -46,15 +46,12 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         self._classes_ = list(ww.init_series(np.unique(y)))
         return self
 
-    def _estimator_predict_proba(self, features, y):
+    def _estimator_predict_proba(self, features):
         """Get estimator predicted probabilities.
 
         This helper passes y as an argument if needed by the estimator.
         """
-        y_arg = None
-        if self.estimator.predict_uses_y:
-            y_arg = y
-        return self.estimator.predict_proba(features, y=y_arg)
+        return self.estimator.predict_proba(features)
 
     def predict_proba_in_sample(self, X_holdout, y_holdout, X_train, y_train):
         """Predict on future data where the target is known, e.g. cross validation.
@@ -76,7 +73,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
                 "Cannot call predict_proba_in_sample() on a component graph because the final component is not an Estimator."
             )
         features = self.transform_all_but_final(X_holdout, y_holdout, X_train, y_train)
-        proba = self._estimator_predict_proba(features, y_holdout)
+        proba = self._estimator_predict_proba(features)
         proba.index = y_holdout.index
         proba = proba.ww.rename(
             columns={col: new_col for col, new_col in zip(proba.columns, self.classes_)}
@@ -108,7 +105,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
             )
         features = self.transform_all_but_final(X, y, X_train, y_train)
-        predictions = self._estimator_predict(features, y)
+        predictions = self._estimator_predict(features)
         predictions.index = y.index
         predictions = self.inverse_transform(predictions.astype(int))
         predictions = pd.Series(predictions, name=self.input_target_name)
