@@ -40,6 +40,7 @@ class TargetDistributionDataCheck(DataCheck):
             ...                   "code": "TARGET_LOGNORMAL_DISTRIBUTION",
             ...                   "details": {"shapiro-statistic/pvalue": '0.8/0.045', "columns": None, "rows": None}}],
             ...     "actions": [{'code': 'TRANSFORM_TARGET',
+            ...                  "data_check_name": "TargetDistributionDataCheck",
             ...                  'metadata': {'transformation_strategy': 'lognormal',
             ...                               'is_target': True,
             ...                               "columns": None,
@@ -132,6 +133,7 @@ class TargetDistributionDataCheck(DataCheck):
             results["actions"].append(
                 DataCheckAction(
                     DataCheckActionCode.TRANSFORM_TARGET,
+                    data_check_name=self.name,
                     metadata={
                         "is_target": True,
                         "transformation_strategy": "lognormal",
