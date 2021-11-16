@@ -244,26 +244,6 @@ def _get_preprocessing_components(
     return components
 
 
-def _get_time_series_components(X, y, problem_type, estimator_class, sampler_name=None):
-    components_functions = [
-        _get_label_encoder,
-        _get_drop_all_null,
-        _get_drop_index_unknown,
-        _get_url_email,
-        _get_natural_language,
-        _get_imputer,
-        _get_time_series_featurizer,
-        _get_datetime,
-        _get_ohe,
-        _get_sampler,
-    ]
-    components = []
-    for function in components_functions:
-        components.extend(function(X, y, problem_type, estimator_class, sampler_name))
-
-    return components
-
-
 def _get_pipeline_base_class(problem_type):
     """Returns pipeline base class for problem_type."""
     problem_type = handle_problem_types(problem_type)
