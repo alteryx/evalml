@@ -32,13 +32,10 @@ class ARIMARegressor(Estimator):
 
     name = "ARIMA Regressor"
     hyperparameter_ranges = {
-        "start_p": Integer(1, 3),
-        "d": Integer(0, 2),
-        "start_q": Integer(1, 3),
-        "max_p": Integer(3, 10),
-        "max_d": Integer(2, 5),
-        "max_q": Integer(3, 10),
-        "seasonal": [True, False],
+        "max_P": Integer(1, 30),
+        "max_D": Integer(1, 30),
+        "max_Q": Integer(1, 30),
+        "sp": Integer(2, 5),
     }
     """{
         "start_p": Integer(1, 3),
@@ -64,7 +61,7 @@ class ARIMARegressor(Estimator):
         max_p=5,
         max_d=2,
         max_q=5,
-        seasonal=True,
+        sp=2,
         n_jobs=-1,
         random_seed=0,
         **kwargs,
@@ -77,7 +74,7 @@ class ARIMARegressor(Estimator):
             "max_p": max_p,
             "max_d": max_d,
             "max_q": max_q,
-            "seasonal": seasonal,
+            "sp": sp,
             "n_jobs": n_jobs,
             "date_index": date_index,
         }
