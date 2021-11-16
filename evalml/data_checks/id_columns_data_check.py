@@ -54,6 +54,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "code": "HAS_ID_COLUMN",
             ...                   "details": {"columns": ["customer_id"], "rows": None}}],
             ...     "actions": [{"code": "DROP_COL",
+            ...                  "data_check_name": "IDColumnsDataCheck",
             ...                  "metadata": {"columns": ["customer_id"], "rows": None}}]}
             ...
             ...
@@ -67,6 +68,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "code": "HAS_ID_COLUMN",
             ...                   "details": {"columns": ["ID"], "rows": None}}],
             ...     "actions": [{"code": "DROP_COL",
+            ...                  "data_check_name": "IDColumnsDataCheck",
             ...                  "metadata": {"columns": ["ID"], "rows": None}}]}
             ...
             ...
@@ -89,6 +91,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   'code': 'HAS_ID_COLUMN'}],
             ...     'errors': [],
             ...     'actions': [{'code': 'DROP_COL',
+            ...                  'data_check_name': 'IDColumnsDataCheck',
             ...                  'metadata': {'columns': ['Country_Rank'], 'rows': None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
@@ -145,6 +148,7 @@ class IDColumnsDataCheck(DataCheck):
             results["actions"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_COL,
+                    data_check_name=self.name,
                     metadata={"columns": list(id_cols_above_threshold)},
                 ).to_dict()
             )
