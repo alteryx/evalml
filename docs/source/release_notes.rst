@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added ``NumWords`` and ``NumCharacters`` primitives to ``TextFeaturizer`` and renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
+        * Added support for ``scikit-learn > 1.0.0`` :pr:`3051`
     * Fixes
     * Changes
     * Documentation Changes
