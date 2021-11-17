@@ -268,7 +268,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
 
         next_batch = []
         for pipeline in pipelines:
-            parameters = self._create_select_parameters()
+            # parameters = self._create_select_parameters()
+            parameters = {}
             pipeline = pipeline.new(
                 parameters=self._transform_parameters(pipeline, parameters),
                 random_seed=self.random_seed,
@@ -286,7 +287,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 if pipeline.name not in self._tuners:
                     self._create_tuner(pipeline)
 
-                select_parameters = self._create_select_parameters()
+                # select_parameters = self._create_select_parameters()
+                select_parameters = {}
                 proposed_parameters = self._tuners[pipeline.name].propose()
                 parameters = self._transform_parameters(pipeline, proposed_parameters)
                 parameters.update(select_parameters)
@@ -425,19 +427,27 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return parameters
 
     def _make_split_pipeline(self, estimator, pipeline_name=None):
-        numeric_pipeline_parameters = {
-            "Select Columns Transformer": {"columns": self._selected_cols}
-        }
+        # numeric_pipeline_parameters = {
+        #     "Select Columns Transformer": {"columns": self._selected_cols}
+        # }
+        # numeric_pipeline = make_pipeline(
+        #     self.X,
+        #     self.y,
+        #     estimator,
+        #     self.problem_type,
+        #     sampler_name=self.sampler_name,
+        #     parameters=numeric_pipeline_parameters,
+        #     extra_components=[SelectColumns],
+        #     extra_components_position="before_estimator",
+        #     use_estimator=False if self._selected_cat_cols else True,
+        # )
         numeric_pipeline = make_pipeline(
             self.X,
             self.y,
             estimator,
             self.problem_type,
             sampler_name=self.sampler_name,
-            parameters=numeric_pipeline_parameters,
-            extra_components=[SelectColumns],
-            extra_components_position="before_estimator",
-            use_estimator=False if self._selected_cat_cols else True,
+            use_estimator=True,
         )
 
         if self._selected_cat_cols:
