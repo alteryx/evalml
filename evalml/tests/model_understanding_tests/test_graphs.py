@@ -1001,13 +1001,13 @@ def test_get_prediction_vs_actual_over_time_data(ts_data):
     X_test, y_test = X.iloc[15:], y.iloc[15:]
 
     pipeline = TimeSeriesRegressionPipeline(
-        ["Elastic Net Regressor"],
+        ["DateTime Featurization Component", "Elastic Net Regressor"],
         parameters={
             "pipeline": {
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "date_index": None,
+                "date_index": "date",
             }
         },
     )
@@ -1031,13 +1031,13 @@ def test_graph_prediction_vs_actual_over_time(ts_data):
     X_test, y_test = X.iloc[15:], y.iloc[15:]
 
     pipeline = TimeSeriesRegressionPipeline(
-        ["Elastic Net Regressor"],
+        ["DateTime Featurization Component", "Elastic Net Regressor"],
         parameters={
             "pipeline": {
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "date_index": None,
+                "date_index": "date",
             }
         },
     )
