@@ -8,11 +8,13 @@ class DataCheckAction:
 
     Args:
         action_code (DataCheckActionCode): Action code associated with the action.
+        data_check_name (str): Name of data check.
         metadata (dict, optional): Additional useful information associated with the action. Defaults to None.
     """
 
-    def __init__(self, action_code, metadata=None):
+    def __init__(self, action_code, data_check_name, metadata=None):
         self.action_code = action_code
+        self.data_check_name = data_check_name
         self.metadata = {"columns": None, "rows": None}
         if metadata is not None:
             self.metadata.update(metadata)
@@ -32,7 +34,11 @@ class DataCheckAction:
 
     def to_dict(self):
         """Return a dictionary form of the data check action."""
-        action_dict = {"code": self.action_code.name, "metadata": self.metadata}
+        action_dict = {
+            "code": self.action_code.name,
+            "data_check_name": self.data_check_name,
+            "metadata": self.metadata,
+        }
         return action_dict
 
     @staticmethod
@@ -40,7 +46,7 @@ class DataCheckAction:
         """Convert a dictionary into a DataCheckAction.
 
         Args:
-            action_dict: Dictionary to convert into action. Should have keys "code" and "metadata".
+            action_dict: Dictionary to convert into action. Should have keys "code", "data_check_name", and "metadata".
 
         Raises:
             ValueError: If input dictionary does not have keys `code` and `metadata` and if the `metadata` dictionary does not have keys `columns` and `rows`.
@@ -63,4 +69,7 @@ class DataCheckAction:
         return DataCheckAction(
             action_code=DataCheckActionCode._all_values[action_dict["code"]],
             metadata=action_dict["metadata"],
+            data_check_name=action_dict["data_check_name"]
+            if "data_check_name" in action_dict
+            else None,
         )
