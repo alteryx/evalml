@@ -418,13 +418,12 @@ def test_automl_allowed_component_graphs_search(
 
 
 @pytest.mark.parametrize("freq", ["D", "MS"])
-def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, X_y_regression):
-    X, y = X_y_regression
-    X = pd.DataFrame(X, columns=[f"Column_{str(i)}" for i in range(20)])
-    X["Date"] = pd.date_range(start="1/1/2018", periods=X.shape[0], freq=freq)
+def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, ts_data):
+    X, y = ts_data
+    X["date"] = pd.date_range(start="1/1/2018", periods=X.shape[0], freq=freq)
 
     configuration = {
-        "date_index": "Date",
+        "date_index": "date",
         "gap": 0,
         "max_delay": 0,
         "forecast_horizon": 10,

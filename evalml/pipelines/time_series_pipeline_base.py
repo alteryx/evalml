@@ -37,7 +37,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 "Please specify them as a dictionary with the key 'pipeline'."
             )
         pipeline_params = parameters["pipeline"]
-        self.date_index = pipeline_params["date_index"]
+        date_index = pipeline_params["date_index"]
+        if date_index is None:
+            raise ValueError("Parameter date_index cannot be None!")
         self.gap = pipeline_params["gap"]
         self.max_delay = pipeline_params["max_delay"]
         self.forecast_horizon = pipeline_params["forecast_horizon"]
@@ -212,7 +214,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             )
         target = infer_feature_types(y)
         features = self.transform_all_but_final(X, target, X_train, y_train)
-        predictions = self._estimator_predict(features, target)
+        predictions = self._estimator_predict(features)
         predictions.index = y.index
         predictions = self.inverse_transform(predictions)
         predictions = predictions.rename(self.input_target_name)
@@ -265,12 +267,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
         self.input_feature_names = self.component_graph.input_feature_names
 
-    def _estimator_predict(self, features, y):
+    def _estimator_predict(self, features):
         """Get estimator predictions.
 
         This helper passes y as an argument if needed by the estimator.
         """
-        y_arg = None
-        if self.estimator.predict_uses_y:
-            y_arg = y
-        return self.estimator.predict(features, y=y_arg)
+        return self.estimator.predict(features)

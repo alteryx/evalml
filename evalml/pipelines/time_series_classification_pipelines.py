@@ -46,15 +46,12 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         self._classes_ = list(ww.init_series(np.unique(y)))
         return self
 
-    def _estimator_predict_proba(self, features, y):
+    def _estimator_predict_proba(self, features):
         """Get estimator predicted probabilities.
 
         This helper passes y as an argument if needed by the estimator.
         """
-        y_arg = None
-        if self.estimator.predict_uses_y:
-            y_arg = y
-        return self.estimator.predict_proba(features, y=y_arg)
+        return self.estimator.predict_proba(features)
 
     def predict_proba_in_sample(self, X_holdout, y_holdout, X_train, y_train):
         """Predict on future data where the target is known, e.g. cross validation.
@@ -76,7 +73,7 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
                 "Cannot call predict_proba_in_sample() on a component graph because the final component is not an Estimator."
             )
         features = self.transform_all_but_final(X_holdout, y_holdout, X_train, y_train)
-        proba = self._estimator_predict_proba(features, y_holdout)
+        proba = self._estimator_predict_proba(features)
         proba.index = y_holdout.index
         proba = proba.ww.rename(
             columns={col: new_col for col, new_col in zip(proba.columns, self.classes_)}
@@ -107,9 +104,8 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             raise ValueError(
                 "Cannot call predict_in_sample() on a component graph because the final component is not an Estimator."
             )
-
         features = self.transform_all_but_final(X, y, X_train, y_train)
-        predictions = self._estimator_predict(features, y)
+        predictions = self._estimator_predict(features)
         predictions.index = y.index
         predictions = self.inverse_transform(predictions.astype(int))
         predictions = pd.Series(predictions, name=self.input_target_name)
@@ -209,7 +205,7 @@ class TimeSeriesBinaryClassificationPipeline(
         >>> pipeline = TimeSeriesBinaryClassificationPipeline(component_graph=["Simple Imputer", "Logistic Regression Classifier"],
         ...                                                   parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
         ...                                                                                                  "solver": "liblinear"},
-        ...                                                               "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": None}},
+        ...                                                               "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "date"}},
         ...                                                   custom_name="My TimeSeriesBinary Pipeline")
         ...
         >>> assert pipeline.custom_name == "My TimeSeriesBinary Pipeline"
@@ -222,7 +218,7 @@ class TimeSeriesBinaryClassificationPipeline(
         ...                                         'n_jobs': -1,
         ...                                         'multi_class': 'auto',
         ...                                         'solver': 'liblinear'},
-        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': None}}
+        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': "date"}}
     """
 
     problem_type = ProblemTypes.TIME_SERIES_BINARY
@@ -261,6 +257,7 @@ class TimeSeriesBinaryClassificationPipeline(
             proba = proba.iloc[:, 1]
             if objective is None:
                 predictions = proba > self.threshold
+                predictions = predictions.astype(int)
             else:
                 predictions = objective.decision_function(
                     proba, threshold=self.threshold, X=X
@@ -302,7 +299,7 @@ class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipelin
         >>> pipeline = TimeSeriesMulticlassClassificationPipeline(component_graph=["Simple Imputer", "Logistic Regression Classifier"],
         ...                                                       parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
         ...                                                                                                      "solver": "liblinear"},
-        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": None}},
+        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "date"}},
         ...                                                       custom_name="My TimeSeriesMulticlass Pipeline")
         >>> assert pipeline.custom_name == "My TimeSeriesMulticlass Pipeline"
         >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Logistic Regression Classifier'}
@@ -313,7 +310,7 @@ class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipelin
         ...                                     'n_jobs': -1,
         ...                                     'multi_class': 'auto',
         ...                                     'solver': 'liblinear'},
-        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': None}}
+        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': "date"}}
     """
 
     problem_type = ProblemTypes.TIME_SERIES_MULTICLASS

@@ -74,7 +74,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]:
-        problem_configuration = {"gap": 1, "max_delay": 7, "date_index": None}
+        problem_configuration = {"gap": 1, "max_delay": 7, "date_index": "foo"}
 
     data_splitter = make_data_splitter(
         X, y, problem_type, problem_configuration=problem_configuration
@@ -112,7 +112,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.n_splits == 3
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
-        assert data_splitter.date_index is None
+        assert data_splitter.date_index == "foo"
 
 
 @pytest.mark.parametrize(
@@ -152,7 +152,7 @@ def test_make_data_splitter_parameters_time_series():
             X,
             y,
             problem_type,
-            problem_configuration={"gap": 1, "max_delay": 7, "date_index": None},
+            problem_configuration={"gap": 1, "max_delay": 7, "date_index": "foo"},
             n_splits=5,
             shuffle=False,
         )
@@ -160,7 +160,7 @@ def test_make_data_splitter_parameters_time_series():
         assert data_splitter.n_splits == 5
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
-        assert data_splitter.date_index is None
+        assert data_splitter.date_index == "foo"
 
 
 def test_make_data_splitter_error():
