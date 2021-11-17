@@ -358,7 +358,7 @@ def test_predict_and_predict_in_sample(
 
     component_graph = ["DateTime Featurization Component", estimator_name]
 
-    def predict_proba(X, y):
+    def predict_proba(X):
         X2 = X.iloc[: X.shape[0]]
         X2.ww.init()
         return X2
