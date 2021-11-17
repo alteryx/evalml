@@ -451,7 +451,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
                     param_dict[f"{param}_parameters"] = val.parameters
                 else:
                     if np.issubdtype(type(val), np.number):
-                        val = int(val)
+                        val = val.item()
                     param_dict[param] = val
             nodes[comp_] = {"Parameters": param_dict, "Name": att_.name}
 
