@@ -227,29 +227,81 @@ def test_component_as_json(
     assert isinstance(dag_str, str)
     dag_json = json.loads(dag_str)
     assert isinstance(dag_json, dict)
-    assert dag_json["x_edges"][0][0] == "X"
+    assert dag_json["x_edges"][0]["from"] == "X"
     assert len(expected_nodes.keys()) == len(dag_json["Nodes"].keys()) - 2
     assert dag_json["Nodes"].keys() - expected_nodes.keys() == {"X", "y"}
-    x_edges_set = set()
-    y_edges_set = set()
+    x_edges_expected = []
+    y_edges_expected = []
     for node_, graph_ in expected_nodes.items():
         assert node_ in dag_json["Nodes"]
         comp_name = graph_[0].name if graph_type == "list" else graph_[0]
         assert comp_name == dag_json["Nodes"][node_]["Name"]
         for comp_ in graph_[1:]:
             if comp_ == "X":
-                x_edges_set.add(("X", node_))
+                x_edges_expected.append({"from": "X", "to": node_})
             elif comp_.endswith(".x"):
-                x_edges_set.add((comp_[:-2], node_))
+                x_edges_expected.append({"from": comp_[:-2], "to": node_})
             elif comp_ == "y":
-                y_edges_set.add(("y", node_))
+                y_edges_expected.append({"from": "y", "to": node_})
             else:
-                y_edges_set.add((comp_[:-2], node_))
+                y_edges_expected.append({"from": comp_[:-2], "to": node_})
     for node_, params_ in pipeline_parameters.items():
         for key_, val_ in params_.items():
             assert (
-                dag_json["Nodes"][node_]["Attributes"][key_]
+                dag_json["Nodes"][node_]["Parameters"][key_]
                 == pipeline_parameters[node_][key_]
             )
-    assert x_edges_set == set(tuple(edge_) for edge_ in dag_json["x_edges"])
-    assert y_edges_set == set(tuple(edge_) for edge_ in dag_json["y_edges"])
+    assert len(x_edges_expected) == len(dag_json["x_edges"])
+    assert [edge in dag_json["x_edges"] for edge in x_edges_expected]
+    assert len(y_edges_expected) == len(dag_json["y_edges"])
+    assert [edge in dag_json["y_edges"] for edge in y_edges_expected]
+
+
+def test_ensemble_as_json():
+    component_graph = {
+        "Label Encoder": ["Label Encoder", "X", "y"],
+        "Random Forest Pipeline - Label Encoder": [
+            "Label Encoder",
+            "X",
+            "Label Encoder.y",
+        ],
+        "Random Forest Pipeline - Imputer": [
+            "Imputer",
+            "X",
+            "Random Forest Pipeline - Label Encoder.y",
+        ],
+        "Random Forest Pipeline - Random Forest Classifier": [
+            "Random Forest Classifier",
+            "Random Forest Pipeline - Imputer.x",
+            "Random Forest Pipeline - Label Encoder.y",
+        ],
+        "Decision Tree Pipeline - Label Encoder": [
+            "Label Encoder",
+            "X",
+            "Label Encoder.y",
+        ],
+        "Decision Tree Pipeline - Imputer": [
+            "Imputer",
+            "X",
+            "Decision Tree Pipeline - Label Encoder.y",
+        ],
+        "Decision Tree Pipeline - Decision Tree Classifier": [
+            "Decision Tree Classifier",
+            "Decision Tree Pipeline - Imputer.x",
+            "Decision Tree Pipeline - Label Encoder.y",
+        ],
+        "Stacked Ensemble Classifier": [
+            "Stacked Ensemble Classifier",
+            "Random Forest Pipeline - Random Forest Classifier.x",
+            "Decision Tree Pipeline - Decision Tree Classifier.x",
+            "Decision Tree Pipeline - Label Encoder.y",
+        ],
+    }
+    parameters = {
+        "Random Forest Pipeline - Random Forest Classifier": {"max_depth": np.int64(7)}
+    }
+    pipeline = BinaryClassificationPipeline(component_graph, parameters=parameters)
+    dag_str = pipeline.graph_json()
+    dag_json = json.loads(dag_str)
+
+    assert list(dag_json["Nodes"].keys()) == list(component_graph.keys()) + ["X", "y"]
