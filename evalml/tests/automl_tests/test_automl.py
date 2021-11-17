@@ -5226,7 +5226,7 @@ def test_graph_automl(X_y_multi):
     for node_, params_ in automl_parameters_.items():
         for key_, val_ in params_.items():
             assert (
-                dag_json["Nodes"][node_]["Attributes"][key_]
+                dag_json["Nodes"][node_]["Parameters"][key_]
                 == automl_parameters_[node_][key_]
             )
 
