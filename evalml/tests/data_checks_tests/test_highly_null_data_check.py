@@ -106,10 +106,13 @@ def test_highly_null_data_check_warnings():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 1, 2, 3, 4]}
+                DataCheckActionCode.DROP_ROWS,
+                data_check_name=highly_null_data_check_name,
+                metadata={"rows": [0, 1, 2, 3, 4]},
             ).to_dict(),
             DataCheckAction(
                 DataCheckActionCode.DROP_COL,
+                data_check_name=highly_null_data_check_name,
                 metadata={"columns": ["lots_of_null", "all_null"]},
             ).to_dict(),
         ],
@@ -148,10 +151,13 @@ def test_highly_null_data_check_warnings():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 1, 2, 3]}
+                DataCheckActionCode.DROP_ROWS,
+                data_check_name=highly_null_data_check_name,
+                metadata={"rows": [0, 1, 2, 3]},
             ).to_dict(),
             DataCheckAction(
                 DataCheckActionCode.DROP_COL,
+                data_check_name=highly_null_data_check_name,
                 metadata={"columns": ["lots_of_null", "all_null"]},
             ).to_dict(),
         ],
@@ -176,7 +182,9 @@ def test_highly_null_data_check_warnings():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"columns": ["all_null"]}
+                DataCheckActionCode.DROP_COL,
+                data_check_name=highly_null_data_check_name,
+                metadata={"columns": ["all_null"]},
             ).to_dict()
         ],
     }
@@ -220,10 +228,14 @@ def test_highly_null_data_check_separate_rows_cols():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0, 1, 2, 3, 4]}
+                DataCheckActionCode.DROP_ROWS,
+                data_check_name=highly_null_data_check_name,
+                metadata={"rows": [0, 1, 2, 3, 4]},
             ).to_dict(),
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"columns": ["all_null"]}
+                DataCheckActionCode.DROP_COL,
+                data_check_name=highly_null_data_check_name,
+                metadata={"columns": ["all_null"]},
             ).to_dict(),
         ],
     }
@@ -252,6 +264,7 @@ def test_highly_null_data_check_separate_rows_cols():
         "actions": [
             DataCheckAction(
                 DataCheckActionCode.DROP_COL,
+                data_check_name=highly_null_data_check_name,
                 metadata={"columns": ["lots_of_null", "all_null"]},
             ).to_dict(),
         ],
@@ -293,10 +306,14 @@ def test_highly_null_data_check_input_formats():
         "errors": [],
         "actions": [
             DataCheckAction(
-                DataCheckActionCode.DROP_ROWS, metadata={"rows": [0]}
+                DataCheckActionCode.DROP_ROWS,
+                data_check_name=highly_null_data_check_name,
+                metadata={"rows": [0]},
             ).to_dict(),
             DataCheckAction(
-                DataCheckActionCode.DROP_COL, metadata={"columns": [0, 1, 2]}
+                DataCheckActionCode.DROP_COL,
+                data_check_name=highly_null_data_check_name,
+                metadata={"columns": [0, 1, 2]},
             ).to_dict(),
         ],
     }

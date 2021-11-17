@@ -97,6 +97,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                             'pct_null_rows': 50.0},
             ...                 'code': 'TARGET_HAS_NULL'}],
             ...     'actions': [{'code': 'IMPUTE_COL',
+            ...                  'data_check_name': 'InvalidTargetDataCheck',
             ...                  'metadata': {'columns': None,
             ...                               'rows': None,
             ...                               'is_target': True,
@@ -201,6 +202,7 @@ class InvalidTargetDataCheck(DataCheck):
             results["actions"].append(
                 DataCheckAction(
                     DataCheckActionCode.IMPUTE_COL,
+                    data_check_name=self.name,
                     metadata={
                         "is_target": True,
                         "impute_strategy": impute_strategy,
