@@ -315,13 +315,13 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         """
         if self._batch_number == 0:
             next_batch = self._create_naive_pipelines()
+        # elif self._batch_number == 1:
+        #     next_batch = self._create_naive_pipelines(use_features=True)
         elif self._batch_number == 1:
-            next_batch = self._create_naive_pipelines(use_features=True)
-        elif self._batch_number == 2:
             next_batch = self._create_fast_final()
-        elif self.batch_number == 3:
+        elif self.batch_number == 2:
             next_batch = self._create_ensemble()
-        elif self.batch_number == 4:
+        elif self.batch_number == 3:
             next_batch = self._create_long_exploration(n=self.top_n)
         elif self.batch_number % 2 != 0:
             next_batch = self._create_ensemble()
@@ -348,27 +348,27 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     score_to_minimize, pipeline, trained_pipeline_results
                 )
 
-        if self.batch_number == 2 and self._selected_cols is None:
-            if is_regression(self.problem_type):
-                self._selected_cols = pipeline.get_component(
-                    "RF Regressor Select From Model"
-                ).get_names()
-            else:
-                self._selected_cols = pipeline.get_component(
-                    "RF Classifier Select From Model"
-                ).get_names()
+        # if self.batch_number == 2 and self._selected_cols is None:
+        #     if is_regression(self.problem_type):
+        #         self._selected_cols = pipeline.get_component(
+        #             "RF Regressor Select From Model"
+        #         ).get_names()
+        #     else:
+        #         self._selected_cols = pipeline.get_component(
+        #             "RF Classifier Select From Model"
+        #         ).get_names()
 
-            if list(self.X.ww.select("categorical").columns):
-                ohe = pipeline.get_component("One Hot Encoder")
-                feature_provenance = ohe._get_feature_provenance()
-                for original_col in feature_provenance:
-                    selected = False
-                    for encoded_col in feature_provenance[original_col]:
-                        if encoded_col in self._selected_cols:
-                            selected = True
-                            self._selected_cols.remove(encoded_col)
-                    if selected:
-                        self._selected_cat_cols.append(original_col)
+        #     if list(self.X.ww.select("categorical").columns):
+        #         ohe = pipeline.get_component("One Hot Encoder")
+        #         feature_provenance = ohe._get_feature_provenance()
+        #         for original_col in feature_provenance:
+        #             selected = False
+        #             for encoded_col in feature_provenance[original_col]:
+        #                 if encoded_col in self._selected_cols:
+        #                     selected = True
+        #                     self._selected_cols.remove(encoded_col)
+        #             if selected:
+        #                 self._selected_cat_cols.append(original_col)
 
         current_best_score = self._best_pipeline_info.get(
             pipeline.model_family, {}
