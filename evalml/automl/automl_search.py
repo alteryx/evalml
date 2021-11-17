@@ -796,9 +796,11 @@ class AutoMLSearch:
                 p in problem_configuration for p in required_parameters
             ):
                 raise ValueError(
-                    "user_parameters must be a dict containing values for at least the date_index, gap, max_delay, "
+                    "problem_configuration must be a dict containing values for at least the date_index, gap, max_delay, "
                     f"and forecast_horizon parameters. Received {problem_configuration}."
                 )
+            if problem_configuration["date_index"] is None:
+                raise ValueError("date_index cannot be None!")
         return problem_configuration or {}
 
     def _handle_keyboard_interrupt(self):
@@ -1093,8 +1095,9 @@ class AutoMLSearch:
         else:
             gap = self.problem_configuration["gap"]
             forecast_horizon = self.problem_configuration["forecast_horizon"]
+            date_index = self.problem_configuration["date_index"]
             baseline = make_timeseries_baseline_pipeline(
-                self.problem_type, gap, forecast_horizon
+                self.problem_type, gap, forecast_horizon, date_index
             )
         return baseline
 

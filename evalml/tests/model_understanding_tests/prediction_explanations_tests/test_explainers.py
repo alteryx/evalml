@@ -968,10 +968,20 @@ def test_explain_predictions_time_series(ts_data):
     X, y = ts_data
 
     ts_pipeline = TimeSeriesRegressionPipeline(
-        component_graph=["Delayed Feature Transformer", "Random Forest Regressor"],
+        component_graph=[
+            "Delayed Feature Transformer",
+            "DateTime Featurization Component",
+            "Random Forest Regressor",
+        ],
         parameters={
             "pipeline": {
-                "date_index": None,
+                "date_index": "date",
+                "gap": 0,
+                "max_delay": 2,
+                "forecast_horizon": 1,
+            },
+            "Delayed Feature Transformer": {
+                "date_index": "date",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
@@ -1009,22 +1019,32 @@ def test_explain_predictions_time_series(ts_data):
     ],
 )
 def test_explain_predictions_best_worst_time_series(
-    output_format, pipeline_class, estimator, ts_data
+    output_format, pipeline_class, estimator, ts_data, ts_data_binary
 ):
     X, y = ts_data
 
     if is_binary(pipeline_class.problem_type):
-        y = y % 2
+        X, y = ts_data_binary
 
     ts_pipeline = pipeline_class(
-        component_graph=["Delayed Feature Transformer", estimator],
+        component_graph=[
+            "Delayed Feature Transformer",
+            "DateTime Featurization Component",
+            estimator,
+        ],
         parameters={
             "pipeline": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-            }
+            },
+            "Delayed Feature Transformer": {
+                "gap": 0,
+                "max_delay": 2,
+                "forecast_horizon": 1,
+                "date_index": "date",
+            },
         },
     )
     X_train, y_train = X[:15], y[:15]
