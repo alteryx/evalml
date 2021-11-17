@@ -6,7 +6,7 @@ Release Notes
         * Added ``NumWords`` and ``NumCharacters`` primitives to ``TextFeaturizer`` and renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
         * Added support for ``scikit-learn > 1.0.0`` :pr:`3051`
         * Required the ``date_index`` parameter to be specified for time series problems  in ``AutoMLSearch`` :pr:`3041`
-        * Allowed time series pipelines to predict on test datasets whose length is less than or equal to the ``forecast_horizon``. Also allowed the test set index to start at 0. :pr:`3070`
+        * Allowed time series pipelines to predict on test datasets whose length is less than or equal to the ``forecast_horizon``. Also allowed the test set index to start at 0. :pr:`3071`
     * Fixes
         * Added in error message when fit and predict/predict_proba data types are different :pr:`3036`
         * Fixed bug where ensembling components could not get converted to JSON format :pr:`3049`
