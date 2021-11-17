@@ -6,14 +6,18 @@ Release Notes
         * Added ``NumWords`` and ``NumCharacters`` primitives to ``TextFeaturizer`` and renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
     * Fixes
     * Changes
+        * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
     * Documentation Changes
     * Testing Changes
+        * Updated integration tests to use ``make_pipeline_from_actions`` instead of private method :pr:`3047`
+
 
 .. warning::
 
     **Breaking Changes**
         * Added ``data_check_name`` attribute to the data check action class :pr:`3034`
         * Renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
+        * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
 
 
 **v0.37.0 Nov. 9, 2021**

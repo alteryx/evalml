@@ -36,6 +36,7 @@ class ARIMARegressor(Estimator):
         "max_D": Integer(1, 30),
         "max_Q": Integer(1, 30),
         "sp": Integer(2, 5),
+        "stationary": [True, False]
     }
     """{
         "start_p": Integer(1, 3),
@@ -65,6 +66,7 @@ class ARIMARegressor(Estimator):
         max_D=30,
         max_Q=30,
         sp=2,
+        stationary=True,
         n_jobs=-1,
         random_seed=0,
         **kwargs,
@@ -81,6 +83,7 @@ class ARIMARegressor(Estimator):
             "max_D": max_D,
             "max_Q": max_Q,
             "sp": sp,
+            "stationary": stationary,
             "n_jobs": n_jobs,
             "date_index": date_index,
         }
