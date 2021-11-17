@@ -312,7 +312,10 @@ def test_describe_pipeline(
                         "numeric_fill_value": None,
                     },
                 },
-                "Label Encoder": {"name": "Label Encoder", "parameters": {}},
+                "Label Encoder": {
+                    "name": "Label Encoder",
+                    "parameters": {"positive_label": None},
+                },
                 "One Hot Encoder": {
                     "name": "One Hot Encoder",
                     "parameters": {
@@ -447,6 +450,7 @@ def test_parameters(logistic_regression_binary_pipeline_class):
     }
     lrp = logistic_regression_binary_pipeline_class(parameters=parameters)
     expected_parameters = {
+        "Label Encoder": {"positive_label": None},
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "median",
@@ -1245,6 +1249,7 @@ def test_component_not_found():
 
 def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     expected_defaults = {
+        "Label Encoder": {"positive_label": None},
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean",
@@ -1984,6 +1989,8 @@ def test_predict_has_input_target_name(
     X_y_multi,
     X_y_regression,
     ts_data,
+    ts_data_binary,
+    ts_data_multi,
     logistic_regression_binary_pipeline_class,
     logistic_regression_multiclass_pipeline_class,
     linear_regression_pipeline_class,
@@ -2018,21 +2025,21 @@ def test_predict_has_input_target_name(
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": None,
+                    "date_index": "date",
                     "forecast_horizon": 2,
                 },
                 "Delayed Feature Transformer": {
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
+                    "date_index": "date",
                 },
             }
         )
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = X_y_binary
-        X, y = pd.DataFrame(X), pd.Series(y)
-        X_validation = X[50:52]
-        X, y = X[:50], y[:50]
+        X, y = ts_data_binary
+        X_validation = X[29:31]
+        X, y = X[:29], y[:29]
         clf = time_series_binary_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
@@ -2040,20 +2047,20 @@ def test_predict_has_input_target_name(
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
+                    "date_index": "date",
                 },
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": None,
+                    "date_index": "date",
                     "forecast_horizon": 2,
                 },
             }
         )
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = X_y_multi
-        X, y = pd.DataFrame(X), pd.Series(y)
-        X_validation = X[50:52]
-        X, y = X[:50], y[:50]
+        X, y = ts_data_multi
+        X_validation = X[29:31]
+        X, y = X[:29], y[:29]
         clf = time_series_multiclass_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
@@ -2061,11 +2068,12 @@ def test_predict_has_input_target_name(
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
+                    "date_index": "date",
                 },
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": None,
+                    "date_index": "date",
                     "forecast_horizon": 2,
                 },
             }
@@ -2257,14 +2265,14 @@ def test_binary_pipeline_string_target_thresholding(
     X, y = X_y_binary
     X = make_data_type("ww", X)
     y = ww.init_series(pd.Series([f"String value {i}" for i in y]), "Categorical")
+    pipeline_class = logistic_regression_binary_pipeline_class
+    if is_time_series:
+        pipeline_class = time_series_binary_classification_pipeline_class
+        X.ww["date"] = pd.Series(pd.date_range("2021-01-10", periods=X.shape[0]))
+
     X_train, y_train = X.ww.iloc[:80], y.ww.iloc[:80]
     X_validation, y_validation = X.ww.iloc[80:83], y.ww.iloc[80:83]
     objective = get_objective("F1", return_instance=True)
-    pipeline_class = (
-        time_series_binary_classification_pipeline_class
-        if is_time_series
-        else logistic_regression_binary_pipeline_class
-    )
 
     pipeline = pipeline_class(
         parameters={
@@ -2272,9 +2280,10 @@ def test_binary_pipeline_string_target_thresholding(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 1,
-                "date_index": None,
+                "date_index": "date",
                 "forecast_horizon": 3,
             },
+            "Delayed Feature Transformer": {"date_index": "date"},
         }
     )
     pipeline.fit(X_train, y_train)

@@ -2,16 +2,30 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``data_check_name`` attribute to the data check action class :pr:`3034`
         * Added ``NumWords`` and ``NumCharacters`` primitives to ``TextFeaturizer`` and renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
+        * Added support for ``scikit-learn > 1.0.0`` :pr:`3051`
+        * Required the ``date_index`` parameter to be specified for time series problems  in ``AutoMLSearch`` :pr:`3041`
     * Fixes
+        * Fixed bug where ensembling components could not get converted to JSON format :pr:`3049`
+        * Fixed bug where components with tuned integer hyperparameters could not get converted to JSON format :pr:`3049`
     * Changes
+        * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
     * Documentation Changes
     * Testing Changes
+        * Updated integration tests to use ``make_pipeline_from_actions`` instead of private method :pr:`3047`
+
 
 .. warning::
 
     **Breaking Changes**
+        * Added ``data_check_name`` attribute to the data check action class :pr:`3034`
         * Renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
+        * Updated the ``Pipeline.graph_json`` function to return a dictionary of "from" and "to" edges instead of tuples :pr:`3049`
+        * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
+        * Changed time series problems in ``AutoMLSearch`` to need a not-``None`` ``date_index`` :pr:`3041`
+        * Changed the ``DelayedFeatureTransformer`` to throw a ``ValueError`` during fit if the ``date_index`` is ``None`` :pr:`3041`
+        * Passing ``X=None`` to ``DelayedFeatureTransformer`` is deprecated :pr:`3041`
 
 
 **v0.37.0 Nov. 9, 2021**
@@ -24,6 +38,7 @@ Release Notes
         * Added an algorithm to ``DelayedFeatureTransformer`` to select better lags :pr:`3005`
         * Added test to ensure pickling pipelines preserves thresholds :pr:`3027`
         * Added AutoML function to access ensemble pipeline's input pipelines IDs :pr:`3011`
+        * Added ability to define which class is "positive" for label encoder in binary classification case :pr:`3033`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
         * Fixed permutation importance failing when target is categorical :pr:`3017`

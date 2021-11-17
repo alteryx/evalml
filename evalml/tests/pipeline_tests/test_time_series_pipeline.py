@@ -14,7 +14,11 @@ from evalml.pipelines import (
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline,
 )
-from evalml.pipelines.components import DelayedFeatureTransformer, Transformer
+from evalml.pipelines.components import (
+    DateTimeFeaturizer,
+    DelayedFeatureTransformer,
+    Transformer,
+)
 from evalml.pipelines.utils import _get_pipeline_base_class
 from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes
@@ -50,7 +54,7 @@ def test_time_series_pipeline_validates_holdout_data(
         component_graph=[estimator],
         parameters={
             "pipeline": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": gap,
                 "max_delay": 2,
                 "forecast_horizon": forecast_horizon,
@@ -102,7 +106,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
             component_graph=component_graph,
             parameters={
                 "pipeline": {
-                    "date_index": None,
+                    "date_index": "date",
                     "gap": 0,
                     "max_delay": 5,
                     "forecast_horizon": 3,
@@ -114,18 +118,18 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
             "forecast_horizon": 3,
             "gap": 0,
             "max_delay": 5,
-            "date_index": None,
+            "date_index": "date",
         }
     else:
         parameters = {
             "Delayed Feature Transformer": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": 0,
                 "max_delay": 5,
                 "forecast_horizon": 3,
             },
             "pipeline": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": 0,
                 "max_delay": 5,
                 "forecast_horizon": 3,
@@ -133,7 +137,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
         }
         pl = pipeline_class(component_graph=component_graph, parameters=parameters)
         assert pl.parameters["Delayed Feature Transformer"] == {
-            "date_index": None,
+            "date_index": "date",
             "gap": 0,
             "forecast_horizon": 3,
             "max_delay": 5,
@@ -145,7 +149,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
             "gap": 0,
             "forecast_horizon": 3,
             "max_delay": 5,
-            "date_index": None,
+            "date_index": "date",
         }
 
     assert (
@@ -159,7 +163,6 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
         pipeline_class(component_graph, {})
 
 
-@pytest.mark.parametrize("only_use_y", [True, False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize(
     "forecast_horizon,gap,max_delay",
@@ -189,12 +192,8 @@ def test_fit_drop_nans_before_estimator(
     gap,
     max_delay,
     include_delayed_features,
-    only_use_y,
     ts_data,
 ):
-
-    if only_use_y and (not include_delayed_features or (max_delay == 0 and gap == 0)):
-        pytest.skip("This would result in an empty feature dataframe.")
 
     X, y = ts_data
 
@@ -211,7 +210,7 @@ def test_fit_drop_nans_before_estimator(
         component_graph=["Delayed Feature Transformer", estimator_name],
         parameters={
             "Delayed Feature Transformer": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": gap,
                 "forecast_horizon": forecast_horizon,
                 "max_delay": max_delay,
@@ -220,7 +219,7 @@ def test_fit_drop_nans_before_estimator(
                 "conf_level": 1.0,
             },
             "pipeline": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": gap,
                 "max_delay": max_delay,
                 "forecast_horizon": forecast_horizon,
@@ -228,10 +227,7 @@ def test_fit_drop_nans_before_estimator(
         },
     )
 
-    if only_use_y:
-        pl.fit(None, y)
-    else:
-        pl.fit(X, y)
+    pl.fit(X, y)
 
     if isinstance(pl, TimeSeriesRegressionPipeline):
         (
@@ -270,13 +266,17 @@ def test_transform_all_but_final_for_time_series(
 ):
     X, y = ts_data
     pipeline = TimeSeriesRegressionPipeline(
-        ["Delayed Feature Transformer", "Random Forest Regressor"],
+        [
+            "Delayed Feature Transformer",
+            "DateTime Featurization Component",
+            "Random Forest Regressor",
+        ],
         parameters={
             "pipeline": {
                 "forecast_horizon": forecast_horizon,
                 "gap": gap,
                 "max_delay": max_delay,
-                "date_index": None,
+                "date_index": "date",
             },
             "Random Forest Regressor": {"n_jobs": 1},
             "Delayed Feature Transformer": {
@@ -284,6 +284,7 @@ def test_transform_all_but_final_for_time_series(
                 "gap": gap,
                 "forecast_horizon": forecast_horizon,
                 "conf_level": 1.0,
+                "date_index": "date",
             },
         },
     )
@@ -292,13 +293,21 @@ def test_transform_all_but_final_for_time_series(
     pipeline.fit(X_train, y_train)
     features = pipeline.transform_all_but_final(X_validation, y_validation)
     delayer = DelayedFeatureTransformer(
-        max_delay=max_delay, gap=gap, forecast_horizon=forecast_horizon, conf_level=1.0
+        max_delay=max_delay,
+        gap=gap,
+        forecast_horizon=forecast_horizon,
+        conf_level=1.0,
+        date_index="date",
     )
-    assert_frame_equal(features, delayer.fit_transform(X_validation, y_validation))
+    date_featurizer = DateTimeFeaturizer()
+    expected_features = date_featurizer.fit_transform(
+        delayer.fit_transform(X_validation, y_validation)
+    )
+    assert_frame_equal(features, expected_features)
     features_with_training = pipeline.transform_all_but_final(
         X_validation, y_validation, X_train, y_train
     )
-    delayed = delayer.fit_transform(X, y).iloc[15:]
+    delayed = date_featurizer.fit_transform(delayer.fit_transform(X, y)).iloc[15:]
     assert_frame_equal(features_with_training, delayed)
 
 
@@ -346,26 +355,25 @@ def test_predict_and_predict_in_sample(
         target = target % 3
     else:
         mock_to_check = mock_regressor_predict
-    mock_to_check.side_effect = lambda x, y: target.iloc[: x.shape[0]]
+    mock_to_check.side_effect = lambda x: x.iloc[: x.shape[0], 0]
 
-    component_graph = [estimator_name]
+    component_graph = ["DateTime Featurization Component", estimator_name]
     parameters = {
         "pipeline": {
-            "date_index": None,
+            "date_index": "date",
             "gap": gap,
             "max_delay": max_delay,
             "forecast_horizon": forecast_horizon,
         },
         estimator_name: {"n_jobs": 1},
     }
-    expected_features = X.copy()
-    expected_features.ww.init()
+    expected_features = DateTimeFeaturizer().fit_transform(X)
     expected_features_in_sample = expected_features.ww.iloc[20:]
     expected_features_pred = expected_features[20 + gap : 20 + gap + forecast_horizon]
     if include_delayed_features:
         component_graph = ["Delayed Feature Transformer"] + component_graph
         delayer_params = {
-            "date_index": None,
+            "date_index": "date",
             "gap": gap,
             "max_delay": max_delay,
             "forecast_horizon": forecast_horizon,
@@ -376,6 +384,9 @@ def test_predict_and_predict_in_sample(
         parameters.update({"Delayed Feature Transformer": delayer_params})
         expected_features = DelayedFeatureTransformer(**delayer_params).fit_transform(
             X, target
+        )
+        expected_features = DateTimeFeaturizer().fit_transform(
+            expected_features, target
         )
         expected_features_in_sample = expected_features.ww.iloc[20:]
         expected_features_pred = expected_features[
@@ -433,7 +444,7 @@ def test_predict_and_predict_in_sample_with_date_index(
         target = target % 3
     else:
         mock_to_check = mock_regressor_predict
-    mock_to_check.side_effect = lambda x, y: target.iloc[: x.shape[0]]
+    mock_to_check.side_effect = lambda x: x.iloc[: x.shape[0], 0]
 
     component_graph = [
         "DateTime Featurization Component",
@@ -555,7 +566,7 @@ def test_ts_score(
         component_graph=["Delayed Feature Transformer", estimator_name],
         parameters={
             "Delayed Feature Transformer": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": gap,
                 "max_delay": max_delay,
                 "delay_features": include_delayed_features,
@@ -563,7 +574,7 @@ def test_ts_score(
                 "forecast_horizon": forecast_horizon,
             },
             "pipeline": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": gap,
                 "max_delay": max_delay,
                 "forecast_horizon": forecast_horizon,
@@ -615,17 +626,14 @@ def test_classification_pipeline_encodes_targets(
     mock_predict_proba,
     mock_fit,
     pipeline_class,
-    X_y_binary,
+    ts_data_binary,
 ):
-    X, y = X_y_binary
+    X, y = ts_data_binary
     y_series = pd.Series(y)
     df = pd.DataFrame({"negative": y_series, "positive": y_series})
     df.ww.init()
-    mock_predict.side_effect = lambda data, y: ww.init_series(
-        y_series.iloc[: len(data)]
-    )
-    mock_predict_proba.side_effect = lambda data, y: df.ww.iloc[: len(data)]
-    X = pd.DataFrame({"feature": range(len(y))})
+    mock_predict.side_effect = lambda data: ww.init_series(y_series[: data.shape[0]])
+    mock_predict_proba.side_effect = lambda data: df.ww.iloc[: len(data)]
     y_encoded = y_series.map(
         lambda label: "positive" if label == 1 else "negative"
     ).astype("category")
@@ -639,22 +647,27 @@ def test_classification_pipeline_encodes_targets(
                 "Label Encoder.x",
                 "Label Encoder.y",
             ],
+            "DT": [
+                "DateTime Featurization Component",
+                "Delayed Feature Transformer.x",
+                "Label Encoder.y",
+            ],
             "Logistic Regression Classifier": [
                 "Logistic Regression Classifier",
-                "Delayed Feature Transformer.x",
+                "DT.x",
                 "Label Encoder.y",
             ],
         },
         parameters={
             "Delayed Feature Transformer": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": 0,
                 "max_delay": 1,
                 "forecast_horizon": 1,
                 "conf_level": 1.0,
             },
             "pipeline": {
-                "date_index": None,
+                "date_index": "date",
                 "gap": 0,
                 "max_delay": 1,
                 "forecast_horizon": 1,
@@ -712,9 +725,9 @@ def test_ts_score_works(
     pipeline_class,
     objectives,
     data_type,
-    X_y_binary,
-    X_y_multi,
-    X_y_regression,
+    ts_data_binary,
+    ts_data_multi,
+    ts_data,
     make_data_type,
     time_series_regression_pipeline_class,
     time_series_binary_classification_pipeline_class,
@@ -735,7 +748,14 @@ def test_ts_score_works(
     pl = pipeline(
         parameters={
             "pipeline": {
-                "date_index": None,
+                "date_index": "date",
+                "gap": 1,
+                "max_delay": 3,
+                "delay_features": False,
+                "forecast_horizon": 10,
+            },
+            "Delayed Feature Transformer": {
+                "date_index": "date",
                 "gap": 1,
                 "max_delay": 3,
                 "delay_features": False,
@@ -745,24 +765,24 @@ def test_ts_score_works(
         },
     )
     if pl.problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = X_y_binary
+        X, y = ts_data_binary
         y = pd.Series(y).map(lambda label: "good" if label == 1 else "bad")
         expected_unique_values = {"good", "bad"}
     elif pl.problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = X_y_multi
+        X, y = ts_data_multi
         label_map = {0: "good", 1: "bad", 2: "best"}
         y = pd.Series(y).map(lambda label: label_map[label])
         expected_unique_values = {"good", "bad", "best"}
     else:
-        X, y = X_y_regression
+        X, y = ts_data
         y = pd.Series(y)
         expected_unique_values = None
 
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
-    X_train, y_train = X.iloc[:80], y.iloc[:80]
-    X_valid, y_valid = X.iloc[81:], y.iloc[81:]
+    X_train, y_train = X.iloc[:20], y.iloc[:20]
+    X_valid, y_valid = X.iloc[21:], y.iloc[21:]
 
     pl.fit(X_train, y_train)
     if expected_unique_values:
@@ -802,7 +822,7 @@ def test_binary_classification_predictions_thresholded_properly(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 3,
-                "date_index": None,
+                "date_index": "date",
                 "forecast_horizon": 3,
             },
         }
@@ -858,7 +878,7 @@ def test_binary_predict_pipeline_objective_mismatch(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 0,
-                "date_index": None,
+                "date_index": "date",
                 "forecast_horizon": 2,
             },
         }
@@ -881,57 +901,75 @@ def test_binary_predict_pipeline_objective_mismatch(
 )
 def test_time_series_pipeline_not_fitted_error(
     problem_type,
-    X_y_binary,
-    X_y_multi,
-    X_y_regression,
+    ts_data_binary,
+    ts_data_multi,
+    ts_data,
     time_series_binary_classification_pipeline_class,
     time_series_multiclass_classification_pipeline_class,
     time_series_regression_pipeline_class,
 ):
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = X_y_binary
+        X, y = ts_data_binary
         clf = time_series_binary_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": None,
-                    "forecast_horizon": 20,
+                    "date_index": "date",
+                    "forecast_horizon": 10,
+                },
+                "Delayed Feature Transformer": {
+                    "gap": 0,
+                    "max_delay": 0,
+                    "date_index": "date",
+                    "forecast_horizon": 10,
                 },
             }
         )
 
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = X_y_multi
+        X, y = ts_data_multi
         clf = time_series_multiclass_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": None,
-                    "forecast_horizon": 20,
+                    "date_index": "date",
+                    "forecast_horizon": 10,
+                },
+                "Delayed Feature Transformer": {
+                    "gap": 0,
+                    "max_delay": 0,
+                    "date_index": "date",
+                    "forecast_horizon": 10,
                 },
             }
         )
     else:
-        X, y = X_y_regression
+        X, y = ts_data
         clf = time_series_regression_pipeline_class(
             parameters={
                 "Random Forest Regressor": {"n_jobs": 1},
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": None,
-                    "forecast_horizon": 20,
+                    "date_index": "date",
+                    "forecast_horizon": 10,
+                },
+                "Delayed Feature Transformer": {
+                    "gap": 0,
+                    "max_delay": 0,
+                    "date_index": "date",
+                    "forecast_horizon": 10,
                 },
             }
         )
 
     X, y = pd.DataFrame(X), pd.Series(y)
-    X_train, y_train = X.iloc[:80], y.iloc[:80]
-    X_holdout = X.iloc[80:]
+    X_train, y_train = X.iloc[:21], y.iloc[:21]
+    X_holdout = X.iloc[21:]
 
     with pytest.raises(PipelineNotYetFittedError):
         clf.predict(X_holdout, None, X_train, y_train)
@@ -975,9 +1013,9 @@ def test_time_series_pipeline_not_fitted_error(
 
 
 def test_ts_binary_pipeline_target_thresholding(
-    make_data_type, time_series_binary_classification_pipeline_class, X_y_binary
+    make_data_type, time_series_binary_classification_pipeline_class, ts_data_binary
 ):
-    X, y = X_y_binary
+    X, y = ts_data_binary
     X = make_data_type("ww", X)
     y = make_data_type("ww", y)
     objective = get_objective("F1", return_instance=True)
@@ -988,13 +1026,19 @@ def test_ts_binary_pipeline_target_thresholding(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 0,
-                "date_index": None,
+                "date_index": "date",
+                "forecast_horizon": 10,
+            },
+            "Delayed Feature Transformer": {
+                "date_index": "date",
+                "gap": 0,
+                "max_delay": 0,
                 "forecast_horizon": 10,
             },
         }
     )
-    X_train, y_train = X.ww.iloc[:90], y.ww.iloc[:90]
-    X_holdout, y_holdout = X.ww.iloc[90:], y.ww.iloc[90:]
+    X_train, y_train = X.ww.iloc[:21], y.ww.iloc[:21]
+    X_holdout, y_holdout = X.ww.iloc[21:], y.ww.iloc[21:]
     binary_pipeline.fit(X_train, y_train)
     assert binary_pipeline.threshold is None
     pred_proba = binary_pipeline.predict_proba(X_holdout, X_train, y_train).iloc[:, 1]
@@ -1013,7 +1057,13 @@ def test_binary_predict_pipeline_use_objective(
             "pipeline": {
                 "gap": 3,
                 "max_delay": 0,
-                "date_index": None,
+                "date_index": "date",
+                "forecast_horizon": 5,
+            },
+            "Delayed Feature Transformer": {
+                "gap": 3,
+                "max_delay": 0,
+                "date_index": "date",
                 "forecast_horizon": 5,
             },
         }
@@ -1081,7 +1131,7 @@ def test_time_series_pipeline_fit_with_transformed_target(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 2,
-                "date_index": None,
+                "date_index": "date",
                 "forecast_horizon": 3,
             },
         },
@@ -1099,9 +1149,10 @@ def test_time_series_pipeline_with_detrender(ts_data):
     component_graph = {
         "Polynomial Detrender": ["Polynomial Detrender", "X", "y"],
         "DelayedFeatures": ["Delayed Feature Transformer", "X", "y"],
+        "Dt": ["DateTime Featurization Component", "DelayedFeatures.x", "y"],
         "Regressor": [
             "Linear Regressor",
-            "DelayedFeatures.x",
+            "Dt.x",
             "Polynomial Detrender.y",
         ],
     }
@@ -1111,10 +1162,15 @@ def test_time_series_pipeline_with_detrender(ts_data):
             "pipeline": {
                 "gap": 1,
                 "max_delay": 10,
-                "date_index": None,
+                "date_index": "date",
                 "forecast_horizon": 7,
             },
-            "DelayedFeatures": {"max_delay": 2, "gap": 1, "forecast_horizon": 10},
+            "DelayedFeatures": {
+                "max_delay": 2,
+                "gap": 1,
+                "forecast_horizon": 10,
+                "date_index": "date",
+            },
         },
     )
     X_train, y_train = X[:23], y[:23]
@@ -1159,7 +1215,7 @@ def test_ts_pipeline_predict_without_final_estimator(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 2,
-                "date_index": None,
+                "date_index": "date",
                 "forecast_horizon": 3,
             },
         },
@@ -1219,7 +1275,7 @@ def test_ts_pipeline_transform(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 0,
-                "date_index": None,
+                "date_index": "date",
                 "forecast_horizon": 3,
             },
         },
@@ -1240,21 +1296,21 @@ def test_ts_pipeline_transform(
 )
 def test_ts_pipeline_transform_with_final_estimator(
     problem_type,
-    X_y_binary,
-    X_y_multi,
-    X_y_regression,
+    ts_data_binary,
+    ts_data_multi,
+    ts_data,
     time_series_binary_classification_pipeline_class,
     time_series_multiclass_classification_pipeline_class,
     time_series_regression_pipeline_class,
     make_data_type,
 ):
-    X, y = X_y_binary
+    X, y = ts_data_binary
 
     def make_data(X, y):
         X = make_data_type("ww", X)
         y = make_data_type("ww", y)
-        X_train, y_train = X.ww.iloc[:70], y.ww.iloc[:70]
-        X_validation, y_validation = X.ww.iloc[70:75], y.ww.iloc[70:75]
+        X_train, y_train = X.ww.iloc[:15], y.ww.iloc[:15]
+        X_validation, y_validation = X.ww.iloc[15:20], y.ww.iloc[15:20]
         return X_train, y_train, X_validation, y_validation
 
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
@@ -1265,14 +1321,20 @@ def test_ts_pipeline_transform_with_final_estimator(
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": None,
+                    "date_index": "date",
+                    "forecast_horizon": 5,
+                },
+                "Delayed Feature Transformer": {
+                    "gap": 0,
+                    "max_delay": 0,
+                    "date_index": "date",
                     "forecast_horizon": 5,
                 },
             }
         )
 
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = X_y_multi
+        X, y = ts_data_multi
         X_train, y_train, X_validation, y_validation = make_data(X, y)
         pipeline = time_series_multiclass_classification_pipeline_class(
             parameters={
@@ -1280,13 +1342,19 @@ def test_ts_pipeline_transform_with_final_estimator(
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": None,
+                    "date_index": "date",
+                    "forecast_horizon": 5,
+                },
+                "Delayed Feature Transformer": {
+                    "gap": 0,
+                    "max_delay": 0,
+                    "date_index": "date",
                     "forecast_horizon": 5,
                 },
             }
         )
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
-        X, y = X_y_regression
+        X, y = ts_data
         X_train, y_train, X_validation, y_validation = make_data(X, y)
         pipeline = time_series_regression_pipeline_class(
             parameters={
@@ -1294,7 +1362,13 @@ def test_ts_pipeline_transform_with_final_estimator(
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": None,
+                    "date_index": "date",
+                    "forecast_horizon": 5,
+                },
+                "Delayed Feature Transformer": {
+                    "gap": 0,
+                    "max_delay": 0,
+                    "date_index": "date",
                     "forecast_horizon": 5,
                 },
             }
@@ -1308,3 +1382,18 @@ def test_ts_pipeline_transform_with_final_estimator(
         ),
     ):
         pipeline.transform(X_validation, y_validation)
+
+
+def test_date_index_cannot_be_none(time_series_regression_pipeline_class):
+
+    with pytest.raises(ValueError, match="date_index cannot be None!"):
+        time_series_regression_pipeline_class(
+            {
+                "pipeline": {
+                    "gap": 1,
+                    "max_delay": 2,
+                    "forecast_horizon": 1,
+                    "date_index": None,
+                }
+            }
+        )
