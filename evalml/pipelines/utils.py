@@ -134,10 +134,10 @@ def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None):
         logical_types.Datetime,
     }
 
-    if len(input_logical_types.intersection(types_imputer_handles)) or len(
-        text_columns
-    ):
-        components.append(Imputer)
+    # if len(input_logical_types.intersection(types_imputer_handles)) or len(
+    #     text_columns
+    # ):
+    #     components.append(Imputer)
 
     return components
 
