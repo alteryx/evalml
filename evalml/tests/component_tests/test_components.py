@@ -20,6 +20,7 @@ from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import (
     LSA,
     PCA,
+    ARIMARegressor,
     BaselineClassifier,
     BaselineRegressor,
     CatBoostClassifier,
@@ -868,8 +869,10 @@ def test_transformer_transform_output_type(X_y_binary):
             component = component_class()
             # SMOTE will throw an error if we pass a ratio lower than the current class balance
             if "Oversampler" == component_class.name:
-                component = component_class(sampling_ratio=1)
                 # we cover this case in test_oversamplers
+                continue
+            elif component_class == DelayedFeatureTransformer:
+                # covered in test_delayed_feature_transformer.py
                 continue
 
             component.fit(X, y=y)
@@ -893,10 +896,6 @@ def test_transformer_transform_output_type(X_y_binary):
             elif isinstance(component, DFSTransformer):
                 assert transform_output.shape[0] == X.shape[0]
                 assert transform_output.shape[1] >= X.shape[1]
-            elif isinstance(component, DelayedFeatureTransformer):
-                # We just want to check that DelayedFeaturesTransformer outputs a DataFrame
-                # The dataframe shape and index are checked in test_delayed_features_transformer.py
-                continue
             elif component.modifies_target:
                 assert transform_output[0].shape == X.shape
                 assert transform_output[1].shape[0] == X.shape[0]
@@ -1096,9 +1095,9 @@ def test_all_transformers_needs_fitting():
             assert component_class.needs_fitting
 
 
-def test_all_transformers_check_fit(X_y_binary):
-    X, y = X_y_binary
+def test_all_transformers_check_fit(X_y_binary, ts_data_binary):
     for component_class in _all_transformers():
+        X, y = X_y_binary
         if not component_class.needs_fitting:
             continue
 
@@ -1106,6 +1105,9 @@ def test_all_transformers_check_fit(X_y_binary):
         # SMOTE will throw errors if we call it but cannot oversample
         if "Oversampler" == component_class.name:
             component = component_class(sampling_ratio=1)
+        elif component_class == DelayedFeatureTransformer:
+            X, y = ts_data_binary
+            component = component_class(date_index="date")
 
         with pytest.raises(
             ComponentNotYetFittedError, match=f"You must fit {component_class.__name__}"
@@ -1118,6 +1120,8 @@ def test_all_transformers_check_fit(X_y_binary):
         component = component_class()
         if "Oversampler" == component_class.name:
             component = component_class(sampling_ratio=1)
+        elif component_class == DelayedFeatureTransformer:
+            component = component_class(date_index="date")
         component.fit_transform(X, y)
         component.transform(X, y)
 
@@ -1197,16 +1201,23 @@ def test_all_estimators_check_fit(
 
 
 @pytest.mark.parametrize("data_type", ["li", "np", "pd", "ww"])
-def test_all_transformers_check_fit_input_type(data_type, X_y_binary, make_data_type):
-    X, y = X_y_binary
-    X = make_data_type(data_type, X)
-    y = make_data_type(data_type, y)
+def test_all_transformers_check_fit_input_type(
+    data_type, X_y_binary, make_data_type, ts_data_binary
+):
+
     for component_class in _all_transformers():
+        X, y = X_y_binary
+        X = make_data_type(data_type, X)
+        y = make_data_type(data_type, y)
+        kwargs = {}
         if not component_class.needs_fitting or "Oversampler" in component_class.name:
             # since SMOTE determines categorical columns through the logical type, it can only accept ww data
             continue
+        if component_class == DelayedFeatureTransformer:
+            X, y = ts_data_binary
+            kwargs = {"date_index": "date"}
 
-        component = component_class()
+        component = component_class(**kwargs)
         component.fit(X, y)
 
 
@@ -1227,13 +1238,12 @@ def test_no_fitting_required_components(
 
 def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), "component.pkl")
+    requires_date_index = [ARIMARegressor, ProphetRegressor, DelayedFeatureTransformer]
     for component_class in all_components():
         print("Testing serialization of component {}".format(component_class.name))
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
-        if (
-            isinstance(component, Estimator)
-            and ProblemTypes.TIME_SERIES_REGRESSION in component.supported_problem_types
-        ):
+        if component_class in requires_date_index:
+            component = component_class(date_index="date")
             X, y = ts_data
         else:
             X, y = X_y_binary
@@ -1527,7 +1537,7 @@ def test_generate_code_custom(test_classes):
 @pytest.mark.parametrize("transformer_class", _all_transformers())
 @pytest.mark.parametrize("use_custom_index", [True, False])
 def test_transformer_fit_and_transform_respect_custom_indices(
-    use_custom_index, transformer_class, X_y_binary
+    use_custom_index, transformer_class, X_y_binary, ts_data_binary
 ):
     check_names = True
     if transformer_class == DFSTransformer:
@@ -1542,6 +1552,11 @@ def test_transformer_fit_and_transform_respect_custom_indices(
 
     X, y = X_y_binary
 
+    kwargs = {}
+    if transformer_class == DelayedFeatureTransformer:
+        kwargs.update({"date_index": "date"})
+        X, y = ts_data_binary
+
     X = pd.DataFrame(X)
     y = pd.Series(y)
 
@@ -1553,7 +1568,7 @@ def test_transformer_fit_and_transform_respect_custom_indices(
     X_original_index = X.index.copy()
     y_original_index = y.index.copy()
 
-    transformer = transformer_class()
+    transformer = transformer_class(**kwargs)
 
     transformer.fit(X, y)
     pd.testing.assert_index_equal(X.index, X_original_index)

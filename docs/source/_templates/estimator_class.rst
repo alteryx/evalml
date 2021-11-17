@@ -4,7 +4,7 @@
 
 .. autoclass:: {{ objname }}
    {% set class_attributes = ['name', 'model_family', 'hyperparameter_ranges', 'supported_problem_types',
-                              'default_parameters', 'predict_uses_y'] %}
+                              'default_parameters'] %}
 
    {% block attributes %}
    .. Class attributes:
@@ -13,7 +13,6 @@
    .. autoattribute:: supported_problem_types
    .. autoattribute:: hyperparameter_ranges
    .. autoattribute:: default_parameters
-   .. autoattribute:: predict_uses_y
    {% endblock %}
 
    {% block instance_attributes %}

@@ -34,7 +34,6 @@ class TimeSeriesBaselineEstimator(Estimator):
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]"""
-    predict_uses_y = False
 
     def __init__(self, gap=1, forecast_horizon=1, random_seed=0, **kwargs):
         self._prediction_value = None
