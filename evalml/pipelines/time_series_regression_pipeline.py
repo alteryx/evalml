@@ -22,7 +22,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
     Example:
         >>> pipeline = TimeSeriesRegressionPipeline(component_graph=["Simple Imputer", "Linear Regressor"],
         ...                                                       parameters={"Linear Regressor": {"normalize": True},
-        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": None}},
+        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "date"}},
         ...                                                       custom_name="My TimeSeriesRegression Pipeline")
         ...
         >>> assert pipeline.custom_name == "My TimeSeriesRegression Pipeline"
@@ -31,7 +31,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         >>> assert pipeline.parameters == {
         ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
         ...     'Linear Regressor': {'fit_intercept': True, 'normalize': True, 'n_jobs': -1},
-        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': None}}
+        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': "date"}}
     """
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION

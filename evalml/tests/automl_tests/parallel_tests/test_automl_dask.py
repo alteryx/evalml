@@ -283,17 +283,35 @@ def test_automl_closes_engines(engine_str, X_y_binary_cls):
 )
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_score_pipelines_passes_X_train_y_train(
-    problem_type, engine_str, X_y_binary, X_y_regression, X_y_multi, AutoMLTestEnv
+    problem_type,
+    engine_str,
+    X_y_binary,
+    X_y_regression,
+    X_y_multi,
+    AutoMLTestEnv,
+    ts_data_binary,
+    ts_data_multi,
+    ts_data,
 ):
     if is_binary(problem_type):
-        X, y = X_y_binary
+        if is_time_series(problem_type):
+            X, y = ts_data_binary
+        else:
+            X, y = X_y_binary
     elif is_multiclass(problem_type):
-        X, y = X_y_multi
+        if is_time_series(problem_type):
+            X, y = ts_data_multi
+        else:
+            X, y = X_y_multi
     else:
-        X, y = X_y_regression
+        if is_time_series(problem_type):
+            X, y = ts_data
+        else:
+            X, y = X_y_regression
 
-    X_train, y_train = pd.DataFrame(X[:50]), pd.Series(y[:50])
-    X_test, y_test = pd.DataFrame(X[50:]), pd.Series(y[50:])
+    half = X.shape[0] // 2
+    X_train, y_train = pd.DataFrame(X[:half]), pd.Series(y[:half])
+    X_test, y_test = pd.DataFrame(X[half:]), pd.Series(y[half:])
 
     if is_multiclass(problem_type) or is_binary(problem_type):
         y_train = y_train.astype("int64")
@@ -306,7 +324,7 @@ def test_score_pipelines_passes_X_train_y_train(
         max_iterations=5,
         optimize_thresholds=False,
         problem_configuration={
-            "date_index": None,
+            "date_index": "date",
             "gap": 0,
             "forecast_horizon": 1,
             "max_delay": 2,

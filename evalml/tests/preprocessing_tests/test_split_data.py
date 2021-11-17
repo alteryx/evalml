@@ -24,7 +24,7 @@ def test_split_data(
         X, y = X_y_regression
     problem_configuration = None
     if is_time_series(problem_type):
-        problem_configuration = {"gap": 1, "max_delay": 7, "date_index": None}
+        problem_configuration = {"gap": 1, "max_delay": 7, "date_index": "ts_data"}
 
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
