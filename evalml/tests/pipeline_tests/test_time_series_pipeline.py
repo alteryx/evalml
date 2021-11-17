@@ -346,7 +346,7 @@ def test_predict_and_predict_in_sample(
         target = target % 3
     else:
         mock_to_check = mock_regressor_predict
-    mock_to_check.side_effect = lambda x, y: target.iloc[: x.shape[0]]
+    mock_to_check.side_effect = lambda x: x.iloc[: x.shape[0], 0]
 
     component_graph = [estimator_name]
     parameters = {
@@ -433,7 +433,7 @@ def test_predict_and_predict_in_sample_with_date_index(
         target = target % 3
     else:
         mock_to_check = mock_regressor_predict
-    mock_to_check.side_effect = lambda x, y: target.iloc[: x.shape[0]]
+    mock_to_check.side_effect = lambda x: x.iloc[: x.shape[0], 0]
 
     component_graph = [
         "DateTime Featurization Component",
@@ -621,10 +621,8 @@ def test_classification_pipeline_encodes_targets(
     y_series = pd.Series(y)
     df = pd.DataFrame({"negative": y_series, "positive": y_series})
     df.ww.init()
-    mock_predict.side_effect = lambda data, y: ww.init_series(
-        y_series.iloc[: len(data)]
-    )
-    mock_predict_proba.side_effect = lambda data, y: df.ww.iloc[: len(data)]
+    mock_predict.side_effect = lambda data: ww.init_series(y_series[: data.shape[0]])
+    mock_predict_proba.side_effect = lambda data: df.ww.iloc[: len(data)]
     X = pd.DataFrame({"feature": range(len(y))})
     y_encoded = y_series.map(
         lambda label: "positive" if label == 1 else "negative"

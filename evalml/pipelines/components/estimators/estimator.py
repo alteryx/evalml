@@ -26,8 +26,6 @@ class Estimator(ComponentBase):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    # We can't use the inspect module to dynamically determine this because of issue 1582
-    predict_uses_y = False
     model_family = ModelFamily.NONE
     """ModelFamily.NONE"""
 
