@@ -153,8 +153,5 @@ def _schema_is_equal(first, other):
         x if x != "Integer" else "Double"
         for x in other.types["Logical Type"].astype(str).tolist()
     ]
-    semantic = (
-        first.types["Semantic Tag(s)"].tolist()
-        == other.types["Semantic Tag(s)"].tolist()
-    )
+    semantic = first.semantic_tags == other.semantic_tags
     return logical and semantic

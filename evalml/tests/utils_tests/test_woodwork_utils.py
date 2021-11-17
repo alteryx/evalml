@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 import woodwork as ww
-from woodwork.logical_types import Categorical, Double, Integer, Unknown
+from woodwork.logical_types import URL, Categorical, Double, Integer, Unknown
 
 from evalml.utils import (
     _convert_numeric_dataset_pandas,
@@ -264,6 +264,8 @@ def test_infer_feature_types_NA_to_nan(null_col, already_inited):
         ({"first": Categorical(), "second": Integer(), "third": Double()}, True),
         ({"first": Categorical(), "second": Double(), "third": Double()}, True),
         ({"first": Categorical(), "second": Double(), "third": Categorical()}, False),
+        ({"first": Categorical(), "second": Double(), "third": Unknown()}, False),
+        ({"first": URL(), "second": Double(), "third": Categorical()}, False),
     ],
 )
 @pytest.mark.parametrize(
@@ -271,6 +273,7 @@ def test_infer_feature_types_NA_to_nan(null_col, already_inited):
     [
         ({"first": [], "second": ["numeric"], "third": ["numeric"]}, True),
         ({"first": [], "second": ["numeric"], "third": []}, False),
+        ({"first": [], "second": ["numeric"], "third": ["random tag here"]}, False),
     ],
 )
 def test_schema_is_equal(semantic_tags, s_equal, logical_types, l_equal):
