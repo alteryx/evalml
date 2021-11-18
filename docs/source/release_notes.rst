@@ -9,7 +9,7 @@ Release Notes
     * Fixes
         * Fixed bug where ensembling components could not get converted to JSON format :pr:`3049`
         * Fixed bug where components with tuned integer hyperparameters could not get converted to JSON format :pr:`3049`
-        * Fixed bug where force plots were not displaying correct feature values :`3044`
+        * Fixed bug where force plots were not displaying correct feature values :pr:`3044`
     * Changes
         * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
     * Documentation Changes
