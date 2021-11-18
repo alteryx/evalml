@@ -11,7 +11,7 @@ Release Notes
         * Added in error message when fit and predict/predict_proba data types are different :pr:`3036`
         * Fixed bug where ensembling components could not get converted to JSON format :pr:`3049`
         * Fixed bug where components with tuned integer hyperparameters could not get converted to JSON format :pr:`3049`
-        * Included confusion matrix at the pipeline threshold for ``find_confusion_matrix_per_threshold`` :pr:``
+        * Included confusion matrix at the pipeline threshold for ``find_confusion_matrix_per_threshold`` :pr:`3080`
     * Changes
         * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
     * Documentation Changes
