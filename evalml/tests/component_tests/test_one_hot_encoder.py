@@ -134,7 +134,7 @@ def test_null_values_in_dataframe():
     assert X_t.shape == (5, 6)
 
     # Test handle_missing='error' throws an error
-    encoder = OneHotEncoder(handle_missing="error")
+    encoder_error = OneHotEncoder(handle_missing="error")
 
     X = pd.DataFrame(
         {
@@ -144,9 +144,9 @@ def test_null_values_in_dataframe():
             "col_4": [2, 0, 1, 3, 0, 1, 2],
         }
     )
-
+    X.ww.init(logical_types={"col_1": "categorical"})
     with pytest.raises(ValueError, match="Input contains NaN"):
-        encoder.fit(X)
+        encoder_error.fit(X)
 
     # Test NaN values in transformed data
     X = pd.DataFrame(
@@ -165,8 +165,10 @@ def test_null_values_in_dataframe():
             "col_3": ["a", "a", "a", "a", "a"],
         }
     )
+    X_missing.ww.init(logical_types={"col_2": "categorical"})
+    encoder_error = OneHotEncoder(handle_missing="error")
     with pytest.raises(ValueError, match="Input contains NaN"):
-        encoder.transform(X_missing)
+        encoder_error.fit(X_missing)
 
 
 def test_drop_first():

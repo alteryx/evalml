@@ -201,7 +201,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
     def _handle_parameter_handle_missing(self, X):
         """Helper method to handle the `handle_missing` parameter."""
         cat_cols = self.features_to_encode
-        if self.parameters["handle_missing"] == "error" and X.isnull().any().any():
+        if self.parameters["handle_missing"] == "error" and X[self.features_to_encode].isnull().any().any():
             raise ValueError("Input contains NaN")
         if self.parameters["handle_missing"] == "as_category":
             for col in cat_cols:
