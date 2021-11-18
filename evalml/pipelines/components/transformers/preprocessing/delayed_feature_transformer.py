@@ -124,7 +124,7 @@ class DelayedFeatureTransformer(Transformer):
 
     @staticmethod
     def _get_categorical_columns(X):
-        return list(X.ww.select(["categorical"], return_schema=True).columns)
+        return list(X.ww.select(["categorical", "boolean"], return_schema=True).columns)
 
     @staticmethod
     def _encode_X_while_preserving_index(X_categorical):
@@ -207,6 +207,7 @@ class DelayedFeatureTransformer(Transformer):
                 X_ww.ww[
                     self.target_colname_prefix.format(t + self.start_delay)
                 ] = y.shift(self.start_delay + t)
+        X.ww.set_types({col: "Double" for col in categorical_columns})
         return X_ww.ww.drop(cols_to_delay)
 
     def fit_transform(self, X, y):
