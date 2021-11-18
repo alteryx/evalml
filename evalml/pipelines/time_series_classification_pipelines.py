@@ -133,8 +133,11 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             )
         X_train, y_train = self._convert_to_woodwork(X_train, y_train)
         X = infer_feature_types(X)
+        X.index = self._move_index_forward(
+            X_train.index[-X.shape[0] :], self.gap + X.shape[0]
+        )
         self._validate_holdout_datasets(X, X_train)
-        y_holdout = self._create_empty_series(y_train)
+        y_holdout = self._create_empty_series(y_train, X.shape[0])
         y_holdout = infer_feature_types(y_holdout)
         y_holdout.index = X.index
         return self.predict_proba_in_sample(X, y_holdout, X_train, y_train)
