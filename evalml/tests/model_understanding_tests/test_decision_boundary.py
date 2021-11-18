@@ -15,6 +15,7 @@ from evalml.model_understanding.decision_boundary import (
     _precision,
     _recall,
 )
+from evalml.objectives import AccuracyBinary, BalancedAccuracyBinary, Precision, F1
 
 
 @pytest.mark.parametrize(
@@ -403,3 +404,15 @@ def test_find_confusion_matrix_json(
     object_dict = result["objectives"]
     assert object_dict == obj_dict
     pd.testing.assert_frame_equal(res_df, df)
+
+
+@pytest.mark.parametrize("threshold,expected_len", [(0.5, 20), (None, 20), (0.6789012, 21)])
+def test_find_confusion_matrix_pipeline_threshold(threshold, expected_len, logistic_regression_binary_pipeline_class, X_y_binary):
+    bcp = logistic_regression_binary_pipeline_class({})
+    X, y = X_y_binary
+    bcp.fit(X, y)
+    bcp.threshold = threshold
+    res_df, _ = find_confusion_matrix_per_thresholds(bcp, X, y, n_bins=20)
+    assert len(res_df) == expected_len
+    if threshold is not None:
+        assert threshold in res_df.index
