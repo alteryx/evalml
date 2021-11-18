@@ -15,12 +15,6 @@ from evalml.model_understanding.decision_boundary import (
     _precision,
     _recall,
 )
-from evalml.objectives import (
-    F1,
-    AccuracyBinary,
-    BalancedAccuracyBinary,
-    Precision,
-)
 
 
 @pytest.mark.parametrize(
