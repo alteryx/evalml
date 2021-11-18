@@ -13,6 +13,7 @@ Release Notes
     * Changes
         * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
     * Documentation Changes
+        * Updated docs to use data check action methods rather than manually cleaning data :pr:`3050`
     * Testing Changes
         * Updated integration tests to use ``make_pipeline_from_actions`` instead of private method :pr:`3047`
 
