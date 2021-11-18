@@ -29,4 +29,5 @@ from .cli_utils import (
 from .woodwork_utils import (
     infer_feature_types,
     _convert_numeric_dataset_pandas,
+    _schema_is_equal,
 )

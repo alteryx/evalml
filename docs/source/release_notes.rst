@@ -7,6 +7,7 @@ Release Notes
         * Added support for ``scikit-learn > 1.0.0`` :pr:`3051`
         * Required the ``date_index`` parameter to be specified for time series problems  in ``AutoMLSearch`` :pr:`3041`
     * Fixes
+        * Added in error message when fit and predict/predict_proba data types are different :pr:`3036`
         * Fixed bug where ensembling components could not get converted to JSON format :pr:`3049`
         * Fixed bug where components with tuned integer hyperparameters could not get converted to JSON format :pr:`3049`
         * Fixed bug where force plots were not displaying correct feature values :pr:`3044`
