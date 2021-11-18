@@ -31,9 +31,10 @@ _int_to_month_mapping = {
 def _extract_month(col, encode_as_categories=False):
     month = Month()
     months = month(col) - 1
+    pd.set_option("display.max_rows", None)
     months_unique = pd.Series(months.unique())
     if encode_as_categories:
-        months = ww.init_series(months_unique, logical_type="Categorical")
+        months = ww.init_series(months, logical_type="Categorical")
     return months, {_int_to_month_mapping.get(m, np.nan): m for m in months_unique}
 
 
@@ -65,7 +66,7 @@ def _extract_day_of_week(col, encode_as_categories=False):
     days = days.replace(7, 0)
     days_unique = days.unique()
     if encode_as_categories:
-        days = ww.init_series(days_unique, logical_type="Categorical")
+        days = ww.init_series(days, logical_type="Categorical")
     return days, {_int_to_day_mapping.get(d, np.nan): d for d in days_unique}
 
 
