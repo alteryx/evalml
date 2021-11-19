@@ -121,7 +121,8 @@ def test_target_distribution_data_check_warning_action(
 
         details = {
             "normalization_method": name,
-            "pvalue": round(test_og.statistic, 1)}/{round(test_og.pvalue, 3)}
+            "statistic": round(test_og.statistic, 1),
+            "p-value": round(test_og.pvalue, 3),
         }
         assert target_dist_ == {
             "warnings": [
