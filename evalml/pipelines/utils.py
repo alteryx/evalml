@@ -238,8 +238,8 @@ def _get_preprocessing_components(
             _get_standard_scaler,
         ]
     components = []
-    for function in components_functions:
-        components.extend(function(X, y, problem_type, estimator_class, sampler_name))
+    # for function in components_functions:
+        # components.extend(function(X, y, problem_type, estimator_class, sampler_name))
 
     return components
 
