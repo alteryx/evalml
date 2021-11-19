@@ -95,32 +95,11 @@ class TargetDistributionDataCheck(DataCheck):
             )
             return results
 
-        normalization_test = shapiro if len(y) <= 5000 else jarque_bera
-        normalization_test_string = "shapiro" if len(y) <= 5000 else "jarque_bera"
-        # Check if a normal distribution is detected with p-value above 0.05
-        if normalization_test(y).pvalue >= 0.05:
-            return results
-
-        y_new = round(y, 6)
-        if any(y <= 0):
-            y_new = y + abs(y.min()) + 1
-
-        y_new = y_new[
-            y_new < (y_new.mean() + 3 * round(y.std(), 3))
-        ]  # Drop values greater than 3 standard deviations
-        norm_test_og = normalization_test(y_new)
-        norm_test_log = normalization_test(np.log(y_new))
-
-        log_detected = False
-
-        # If the p-value of the log transformed target is greater than or equal to the p-value of the original target
-        # with outliers dropped, then it would imply that the log transformed target has more of a normal distribution
-        if norm_test_log.pvalue >= norm_test_og.pvalue:
-            log_detected = True
-
-        if log_detected:
+        is_log_distribution, normalization_test_string, norm_test_og = _detect_log_distribution_helper(y)
+        if is_log_distribution:
             details = {
-                f"{normalization_test_string}-statistic/pvalue": f"{round(norm_test_og.statistic, 1)}/{round(norm_test_og.pvalue, 3)}"
+                "normalization_method": normalization_test_string,
+                "pvalue": round(norm_test_og.statistic, 1)/round(norm_test_og.pvalue, 3)
             }
             results["warnings"].append(
                 DataCheckWarning(
@@ -142,3 +121,26 @@ class TargetDistributionDataCheck(DataCheck):
             )
 
         return results
+
+
+def _detect_log_distribution_helper(y):
+    normalization_test = shapiro if len(y) <= 5000 else jarque_bera
+    normalization_test_string = "shapiro" if len(y) <= 5000 else "jarque_bera"
+    # Check if a normal distribution is detected with p-value above 0.05
+    if normalization_test(y).pvalue >= 0.05:
+        return False, normalization_test_string, None
+
+    y_new = round(y, 6)
+    if any(y <= 0):
+        y_new = y + abs(y.min()) + 1
+    y_new = y_new[
+        y_new < (y_new.mean() + 3 * round(y.std(), 3))
+    ]  # Drop values greater than 3 standard deviations
+    norm_test_og = normalization_test(y_new)
+    norm_test_log = normalization_test(np.log(y_new))
+
+   # If the p-value of the log transformed target is greater than or equal to the p-value of the original target
+    # with outliers dropped, then it would imply that the log transformed target has more of a normal distribution
+    if norm_test_log.pvalue >= norm_test_og.pvalue:
+            return True, normalization_test_string, norm_test_og
+    return False, normalization_test_string, norm_test_og
