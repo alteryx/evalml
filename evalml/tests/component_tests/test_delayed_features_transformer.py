@@ -691,16 +691,16 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
         elif logical_type == Boolean:
             assert transformed_logical_types == {
                 "date": Datetime,
-                "0_delay_1": Categorical,
-                "0_delay_2": Categorical,
+                "0_delay_1": Double,
+                "0_delay_2": Double,
                 "target_delay_1": Double,
                 "target_delay_2": Double,
             }
         else:
             assert transformed_logical_types == {
                 "date": Datetime,
-                "0_delay_1": logical_type,
-                "0_delay_2": logical_type,
+                "0_delay_1": Double,
+                "0_delay_2": Double,
                 "target_delay_1": Double,
                 "target_delay_2": Double,
             }
