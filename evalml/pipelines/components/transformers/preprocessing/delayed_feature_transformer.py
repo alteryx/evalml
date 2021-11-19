@@ -211,6 +211,7 @@ class DelayedFeatureTransformer(Transformer):
                 X_ww.ww[
                     self.target_colname_prefix.format(t + self.start_delay)
                 ] = y.shift(self.start_delay + t)
+        # Features created from categorical columns should no longer be categorical
         X_ww.ww.set_types({col: "Double" for col in cols_derived_from_categoricals})
         return X_ww.ww.drop(cols_to_delay)
 
