@@ -81,6 +81,21 @@ def test_invalid_inputs():
         encoder.fit(X)
 
 
+def test_ohe_is_no_op_for_not_categorical_features():
+
+    ohe = OneHotEncoder(handle_missing="error")
+    X = pd.DataFrame(
+        {
+            "col_1": [1.2, 3.2, None, 4.7],
+            "col_2": [4.5, 8.9, 11.2, 23.4],
+            "col_3": [True, False, True, True],
+        }
+    )
+    X.ww.init(logical_types={"col_1": "Double", "col_2": "Integer", "col_3": "Boolean"})
+    X_t = ohe.fit_transform(X)
+    pd.testing.assert_frame_equal(X_t, X)
+
+
 def test_null_values_in_dataframe():
     X = pd.DataFrame(
         {
