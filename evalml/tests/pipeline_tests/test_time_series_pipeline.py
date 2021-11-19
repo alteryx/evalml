@@ -283,8 +283,13 @@ def test_transform_all_but_final_for_time_series(
     X_validation, y_validation = X[15:], y[15:]
     pipeline.fit(X_train, y_train)
     features = pipeline.transform_all_but_final(X_validation, y_validation)
-    delayer = TimeSeriesFeaturizer(max_delay=max_delay, gap=gap, forecast_horizon=forecast_horizon,
-                                   conf_level=1.0, date_index="date")
+    delayer = TimeSeriesFeaturizer(
+        max_delay=max_delay,
+        gap=gap,
+        forecast_horizon=forecast_horizon,
+        conf_level=1.0,
+        date_index="date",
+    )
     date_featurizer = DateTimeFeaturizer()
     expected_features = date_featurizer.fit_transform(
         delayer.fit_transform(X_validation, y_validation)
@@ -681,7 +686,6 @@ def test_classification_pipeline_encodes_targets(
             "Logistic Regression Classifier": [
                 "Logistic Regression Classifier",
                 "DT.x",
-                "Time Series Featurizer.x",
                 "Label Encoder.y",
             ],
         },
@@ -1180,7 +1184,12 @@ def test_time_series_pipeline_with_detrender(ts_data):
                 "date_index": "date",
                 "forecast_horizon": 7,
             },
-            "Time Series Featurizer": {"max_delay": 2, "gap": 1, "forecast_horizon": 10, "date_index": "date"},
+            "Time Series Featurizer": {
+                "max_delay": 2,
+                "gap": 1,
+                "forecast_horizon": 10,
+                "date_index": "date",
+            },
         },
     )
     X_train, y_train = X[:23], y[:23]

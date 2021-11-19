@@ -270,11 +270,13 @@ class TimeSeriesFeaturizer(Transformer):
             y = infer_feature_types(y)
         # Normalize the data into pandas objects
         X_ww = infer_feature_types(X)
+        # import pdb;pdb.set_trace()
         X_ww = X_ww.ww.copy()
-        original_features = list(X_ww.columns)
+        original_features = [col for col in X_ww.columns if col != self.date_index]
         delayed_features = self._compute_delays(X_ww, y, original_features)
         rolling_means = self._compute_rolling_transforms(X_ww, y, original_features)
         features = ww.concat_columns([delayed_features, rolling_means])
+        # import pdb;pdb.set_trace()
         return features.ww.drop(original_features)
 
     def fit_transform(self, X, y=None):

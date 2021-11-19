@@ -144,11 +144,6 @@ def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None):
 
 def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
-    if (
-        is_time_series(problem_type)
-        and estimator_class.model_family != ModelFamily.ARIMA
-    ):
-        components.append(TimeSeriesFeaturizer)
 
     # The URL and EmailAddress Featurizers will create categorical columns
     categorical_cols = list(

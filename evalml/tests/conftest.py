@@ -828,7 +828,6 @@ def time_series_classification_component_graph():
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "DateTime Featurization Component.x",
-            "Time Series Featurizer.x",
             "Label Encoder.y",
         ],
     }

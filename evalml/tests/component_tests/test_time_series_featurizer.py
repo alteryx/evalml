@@ -96,7 +96,7 @@ def encode_X_y_as_strings(X, y, encode_X_as_str, encode_y_as_str):
 @pytest.mark.parametrize("encode_X_as_str", [True, False])
 @pytest.mark.parametrize("encode_y_as_str", [True, False])
 @patch(
-    f"evalml.pipelines.TimeSeriesFeaturizer.{ROLLING_TRANSFORM_METHOD_NAME}",
+    f"evalml.pipelines.components.transformers.TimeSeriesFeaturizer.{ROLLING_TRANSFORM_METHOD_NAME}",
     return_value=pd.DataFrame(),
 )
 def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
@@ -280,7 +280,6 @@ def test_delayed_feature_extractor_numpy(mock_roll, delayed_features_data):
     y_np = y.values
     answer = pd.DataFrame(
         {
-            0: pd.Series(X.values[:, 0], dtype="string"),
             1: X["date"],
             "target_delay_8": y_answer.shift(8),
             "target_delay_9": y_answer.shift(9),
@@ -291,7 +290,7 @@ def test_delayed_feature_extractor_numpy(mock_roll, delayed_features_data):
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
-            max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0, date_index="date"
+            max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0, date_index=1
         ).fit_transform(X_np, y_np),
     )
     answer_only_y = pd.DataFrame(
@@ -461,12 +460,7 @@ def test_delay_feature_transformer_supports_custom_index(
             },
             index=pd.RangeIndex(50, 81),
         )
-        rolling_features_target_only = pd.DataFrame(
-            {
-                "target_rolling_mean": y_answer.shift(7).rolling(4, 4).mean(),
-            },
-            index=pd.RangeIndex(50, 81),
-        )
+        rolling_features_target_only = rolling_features
     elif encode_y_as_str and not encode_X_as_str:
         rolling_features = pd.DataFrame(
             {
@@ -474,7 +468,7 @@ def test_delay_feature_transformer_supports_custom_index(
             },
             index=pd.RangeIndex(50, 81),
         )
-        rolling_features_target_only = pd.DataFrame()
+        rolling_features_target_only = rolling_features
     elif not encode_y_as_str and encode_X_as_str:
         rolling_features = pd.DataFrame(
             {
@@ -603,7 +597,10 @@ def test_time_series_featurizer_rolling_mean(
     X, y = delayed_features_data
     mock_delay.return_value = X
     output = TimeSeriesFeaturizer(
-        max_delay=max_delay, forecast_horizon=forecast_horizon, gap=gap
+        max_delay=max_delay,
+        forecast_horizon=forecast_horizon,
+        gap=gap,
+        date_index="date",
     ).fit_transform(X, y)
     rolling_means = (
         X.feature.shift(forecast_horizon + gap)
@@ -615,6 +612,7 @@ def test_time_series_featurizer_rolling_mean(
     )
     expected = pd.DataFrame(
         {
+            "date": X["date"],
             "feature_rolling_mean": rolling_means,
             "target_rolling_mean": rolling_means_target,
         }
@@ -635,6 +633,7 @@ def test_time_series_featurizer_does_not_need_to_delay_to_compute_means(
         gap=gap,
         delay_features=False,
         delay_target=False,
+        date_index="date",
     ).fit_transform(X, y)
     rolling_means = (
         X.feature.shift(forecast_horizon + gap)
@@ -646,6 +645,7 @@ def test_time_series_featurizer_does_not_need_to_delay_to_compute_means(
     )
     expected = pd.DataFrame(
         {
+            "date": X["date"],
             "feature_rolling_mean": rolling_means,
             "target_rolling_mean": rolling_means_target,
         }
