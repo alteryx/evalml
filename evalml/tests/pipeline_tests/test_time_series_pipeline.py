@@ -1081,7 +1081,8 @@ def test_binary_predict_pipeline_use_objective(
     X, y = X_y_binary
     X = pd.DataFrame(X)
     y = pd.Series(y)
-    X["date"] = pd.Series(pd.date_range("2010-01-01", periods=X.shape[0]))
+    X["date"] = pd.date_range("2021-01-01", periods=X.shape[0])
+    X.rename(columns=str, inplace=True)
     binary_pipeline = time_series_binary_classification_pipeline_class(
         parameters={
             "Logistic Regression Classifier": {"n_jobs": 1},
@@ -1104,7 +1105,7 @@ def test_binary_predict_pipeline_use_objective(
     mock_decision_function.return_value = pd.Series([0] * 5)
     binary_pipeline.threshold = 0.7
     binary_pipeline.fit(X_train, y_train)
-    fraud_cost = FraudCost(amount_col=0)
+    fraud_cost = FraudCost(amount_col="0")
     binary_pipeline.score(
         X_validation, y_validation, ["precision", "auc", fraud_cost], X_train, y_train
     )

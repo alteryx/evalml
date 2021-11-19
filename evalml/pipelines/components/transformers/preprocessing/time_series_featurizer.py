@@ -1,4 +1,5 @@
 """Transformer that delays input features and target variable for time series problems."""
+import featuretools as ft
 import numpy as np
 import pandas as pd
 import woodwork as ww
@@ -80,6 +81,7 @@ class TimeSeriesFeaturizer(Transformer):
         self.gap = gap
         self.rolling_window_size = rolling_window_size
         self.statistically_significant_lags = None
+        self._features = None
 
         if conf_level is None:
             raise ValueError("Parameter conf_level cannot be None.")
@@ -105,6 +107,26 @@ class TimeSeriesFeaturizer(Transformer):
         }
         parameters.update(kwargs)
         super().__init__(parameters=parameters, random_seed=random_seed)
+
+    def _make_entity_set(self, X, y):
+        X_to_transform = X.ww.select(["numeric"])
+        if y is not None:
+            X_to_transform.ww["target"] = y
+        X_to_transform = X_to_transform.ww.rename({col: str(col) for col in X_to_transform.columns})
+        self._original_features_dfs = list(X_to_transform.columns)
+        X_to_transform.ww[self.date_index] = X.ww[self.date_index]
+        es = ft.EntitySet()
+        logical_types = {col: X_to_transform.ww.logical_types[col] for col in X_to_transform.columns}
+        del X_to_transform.ww
+        es.add_dataframe(
+            dataframe_name="X",
+            dataframe=X_to_transform,
+            index="index",
+            make_index=True,
+            time_index=self.date_index,
+            logical_types=logical_types,
+        )
+        return es
 
     def fit(self, X, y=None):
         """Fits the DelayFeatureTransformer.
@@ -170,7 +192,7 @@ class TimeSeriesFeaturizer(Transformer):
             significant_lags = all_lags
         return significant_lags
 
-    def _compute_rolling_transforms(self, X, y, original_features):
+    def _compute_rolling_transforms(self, X, y):
         """Compute the rolling features from the original features.
 
         Args:
@@ -180,24 +202,15 @@ class TimeSeriesFeaturizer(Transformer):
         Returns:
             pd.DataFrame: Data with rolling features. All new features.
         """
-        size = int(self.rolling_window_size * self.max_delay)
-        rolling_mean = RollingMean(
-            window_length=size + 1,
-            gap=self.start_delay,
-            min_periods=size + 1,
-        )
-        rolling_mean = rolling_mean.get_function()
-        numerics = set(
-            X.ww.select(["numeric"], return_schema=True).columns
-        ).intersection(original_features)
-        data = pd.DataFrame(
-            {f"{col}_rolling_mean": rolling_mean(X.index, X[col]) for col in numerics}
-        )
-        if y is not None and "numeric" in y.ww.semantic_tags:
-            data[f"target_rolling_mean"] = rolling_mean(y.index, y)
-        data.index = X.index
-        data.ww.init()
-        return data
+        es = self._make_entity_set(X, y)
+        features = ft.dfs(entityset=es, target_dataframe_name="X", trans_primitives=[
+            RollingMean(window_length=self.max_delay + 1, gap=self.start_delay, min_periods=self.max_delay + 1)],
+                          max_depth=1, features_only=True, )
+        features = ft.calculate_feature_matrix(features, entityset=es)
+        features.set_index(X.index, inplace=True)
+        features.ww.init(logical_types={col_: "Double" for col_ in features})
+        features.ww.drop(self._original_features_dfs, inplace=True)
+        return features
 
     def _compute_delays(self, X_ww, y, original_features):
         """Computes the delayed features for all features in X and y.
@@ -218,21 +231,20 @@ class TimeSeriesFeaturizer(Transformer):
         )
         categorical_columns = self._get_categorical_columns(X_ww)
         cols_derived_from_categoricals = []
-        lagged_features = {}
+        features = {self.date_index: X_ww[self.date_index]}
         if self.delay_features and len(X_ww) > 0:
             X_categorical = self._encode_X_while_preserving_index(
                 X_ww[categorical_columns]
             )
             for col_name in cols_to_delay:
-
                 col = X_ww[col_name]
                 if col_name in categorical_columns:
                     col = X_categorical[col_name]
                 for t in self.statistically_significant_lags:
                     feature_name = f"{col_name}_delay_{self.start_delay + t}"
-                    lagged_features[
-                        f"{col_name}_delay_{self.start_delay + t}"
-                    ] = col.shift(self.start_delay + t)
+                    features[f"{col_name}_delay_{self.start_delay + t}"] = col.shift(
+                        self.start_delay + t
+                    )
                     if col_name in categorical_columns:
                         cols_derived_from_categoricals.append(feature_name)
         # Handle cases where the target was passed in
@@ -240,16 +252,15 @@ class TimeSeriesFeaturizer(Transformer):
             if type(y.ww.logical_type) == logical_types.Categorical:
                 y = self._encode_y_while_preserving_index(y)
             for t in self.statistically_significant_lags:
-                lagged_features[
+                features[
                     self.target_colname_prefix.format(t + self.start_delay)
                 ] = y.shift(self.start_delay + t)
         # Features created from categorical columns should no longer be categorical
-        lagged_features = pd.DataFrame(lagged_features)
-        lagged_features.ww.init(
-            logical_types={col: "Double" for col in cols_derived_from_categoricals}
-        )
-        lagged_features.index = X_ww.index
-        return ww.concat_columns([X_ww, lagged_features])
+        data = pd.DataFrame(features)
+        data.index = X_ww.index
+        data.ww.init()
+        data.ww.set_types({col: "Double" for col in cols_derived_from_categoricals})
+        return data
 
     def transform(self, X, y=None):
         """Computes the delayed values and rolling means for X and y.
@@ -274,9 +285,9 @@ class TimeSeriesFeaturizer(Transformer):
         X_ww = infer_feature_types(X)
         original_features = [col for col in X_ww.columns if col != self.date_index]
         delayed_features = self._compute_delays(X_ww, y, original_features)
-        rolling_means = self._compute_rolling_transforms(X_ww, y, original_features)
+        rolling_means = self._compute_rolling_transforms(X_ww, y)
         features = ww.concat_columns([delayed_features, rolling_means])
-        return features.ww.drop(original_features)
+        return features
 
     def fit_transform(self, X, y=None):
         """Fit the component and transform the input data.

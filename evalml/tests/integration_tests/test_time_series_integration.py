@@ -37,7 +37,6 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
         .sample(n=X.shape[0], replace=True)
         .reset_index(drop=True)
     )
-
     automl = AutoMLSearch(
         X,
         y,
