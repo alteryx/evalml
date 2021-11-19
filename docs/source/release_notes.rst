@@ -13,6 +13,7 @@ Release Notes
         * Fixed bug where components with tuned integer hyperparameters could not get converted to JSON format :pr:`3049`
     * Changes
         * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
+        * Change ``DateTimeFeaturizer`` to use corresponding Featuretools primitives :pr:`3081`
     * Documentation Changes
         * Updated docs to use data check action methods rather than manually cleaning data :pr:`3050`
     * Testing Changes
