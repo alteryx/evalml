@@ -31,7 +31,6 @@ _int_to_month_mapping = {
 def _extract_month(col, encode_as_categories=False):
     month = Month()
     months = month(col) - 1
-    pd.set_option("display.max_rows", None)
     months_unique = pd.Series(months.unique())
     if encode_as_categories:
         months = ww.init_series(months, logical_type="Categorical")
