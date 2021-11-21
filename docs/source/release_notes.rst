@@ -11,6 +11,8 @@ Release Notes
         * Added in error message when fit and predict/predict_proba data types are different :pr:`3036`
         * Fixed bug where ensembling components could not get converted to JSON format :pr:`3049`
         * Fixed bug where components with tuned integer hyperparameters could not get converted to JSON format :pr:`3049`
+        * Fixed bug where One Hot Encoder would error out if a non-categorical feature had a missing value :pr:`3083`
+        * Fixed bug where features created from categorical columns by ``Delayed Feature Transformer`` would be inferred as categorical :pr:`3083`
     * Changes
         * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
         * Change ``DateTimeFeaturizer`` to use corresponding Featuretools primitives :pr:`3081`
