@@ -124,7 +124,7 @@ class DelayedFeatureTransformer(Transformer):
 
     @staticmethod
     def _get_categorical_columns(X):
-        return list(X.ww.select(["categorical"], return_schema=True).columns)
+        return list(X.ww.select(["categorical", "boolean"], return_schema=True).columns)
 
     @staticmethod
     def _encode_X_while_preserving_index(X_categorical):
@@ -186,6 +186,7 @@ class DelayedFeatureTransformer(Transformer):
         )
         X_ww = X_ww.ww.copy()
         categorical_columns = self._get_categorical_columns(X_ww)
+        cols_derived_from_categoricals = []
         if self.delay_features and len(X) > 0:
             X_categorical = self._encode_X_while_preserving_index(
                 X_ww[categorical_columns]
@@ -195,9 +196,12 @@ class DelayedFeatureTransformer(Transformer):
                 if col_name in categorical_columns:
                     col = X_categorical[col_name]
                 for t in self.statistically_significant_lags:
+                    feature_name = f"{col_name}_delay_{self.start_delay + t}"
                     X_ww.ww[f"{col_name}_delay_{self.start_delay + t}"] = col.shift(
                         self.start_delay + t
                     )
+                    if col_name in categorical_columns:
+                        cols_derived_from_categoricals.append(feature_name)
         # Handle cases where the target was passed in
         if self.delay_target and y is not None:
             y = infer_feature_types(y)
@@ -207,6 +211,8 @@ class DelayedFeatureTransformer(Transformer):
                 X_ww.ww[
                     self.target_colname_prefix.format(t + self.start_delay)
                 ] = y.shift(self.start_delay + t)
+        # Features created from categorical columns should no longer be categorical
+        X_ww.ww.set_types({col: "Double" for col in cols_derived_from_categoricals})
         return X_ww.ww.drop(cols_to_delay)
 
     def fit_transform(self, X, y):

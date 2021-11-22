@@ -33,9 +33,6 @@ from evalml.utils import infer_feature_types
         (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier"),
     ],
 )
-@pytest.mark.parametrize(
-    "thing_thats_wrong", ["not-right-length", "not-separated-by-gap", "both"]
-)
 @pytest.mark.parametrize("gap", [0, 1, 5])
 @pytest.mark.parametrize("forecast_horizon", [1, 5, 10])
 @patch("evalml.pipelines.components.LinearRegressor.fit")
@@ -45,7 +42,6 @@ def test_time_series_pipeline_validates_holdout_data(
     mock_fit_linear,
     forecast_horizon,
     gap,
-    thing_thats_wrong,
     pipeline_class,
     estimator,
     ts_data,
@@ -64,14 +60,7 @@ def test_time_series_pipeline_validates_holdout_data(
     X, y = ts_data
     TRAIN_LENGTH = 15
     X_train, y_train = X.iloc[:TRAIN_LENGTH], y.iloc[:TRAIN_LENGTH]
-    if thing_thats_wrong == "not-right-length":
-        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon + 2]
-    elif thing_thats_wrong == "not-separated-by-gap":
-        X = X.iloc[TRAIN_LENGTH + gap + 2 : TRAIN_LENGTH + gap + 2 + forecast_horizon]
-    else:
-        X = X.iloc[
-            TRAIN_LENGTH + gap + 2 : TRAIN_LENGTH + gap + 2 + forecast_horizon + 1
-        ]
+    X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon + 2]
 
     pl.fit(X_train, y_train)
 
@@ -313,17 +302,23 @@ def test_transform_all_but_final_for_time_series(
 
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize(
-    "forecast_horizon,gap,max_delay,date_index",
+    "forecast_horizon,gap,max_delay,n_to_pred,date_index",
     [
-        (1, 0, 1, None),
-        (1, 0, 2, None),
-        (1, 1, 1, None),
-        (2, 1, 2, None),
-        (2, 2, 2, None),
-        (3, 7, 3, None),
-        (2, 2, 4, None),
+        (1, 0, 1, 1, None),
+        (1, 0, 2, 1, None),
+        (1, 1, 1, 1, None),
+        (2, 1, 2, 1, None),
+        (2, 1, 2, 2, None),
+        (2, 2, 2, 1, None),
+        (2, 2, 2, 2, None),
+        (3, 7, 3, 1, None),
+        (3, 7, 3, 2, None),
+        (3, 7, 3, 3, None),
+        (2, 2, 4, 1, None),
+        (2, 2, 4, 2, None),
     ],
 )
+@pytest.mark.parametrize("reset_index", [True, False])
 @pytest.mark.parametrize(
     "pipeline_class,estimator_name",
     [
@@ -332,16 +327,20 @@ def test_transform_all_but_final_for_time_series(
         (TimeSeriesMulticlassClassificationPipeline, "Random Forest Classifier"),
     ],
 )
+@patch("evalml.pipelines.components.RandomForestClassifier.predict_proba")
 @patch("evalml.pipelines.components.RandomForestClassifier.predict")
 @patch("evalml.pipelines.components.RandomForestRegressor.predict")
 def test_predict_and_predict_in_sample(
     mock_regressor_predict,
     mock_classifier_predict,
+    mock_classifier_predict_proba,
     pipeline_class,
     estimator_name,
+    reset_index,
     forecast_horizon,
     gap,
     max_delay,
+    n_to_pred,
     date_index,
     include_delayed_features,
     ts_data,
@@ -358,6 +357,14 @@ def test_predict_and_predict_in_sample(
     mock_to_check.side_effect = lambda x: x.iloc[: x.shape[0], 0]
 
     component_graph = ["DateTime Featurization Component", estimator_name]
+
+    def predict_proba(X):
+        X2 = X.iloc[: X.shape[0]]
+        X2.ww.init()
+        return X2
+
+    mock_classifier_predict_proba.side_effect = predict_proba
+
     parameters = {
         "pipeline": {
             "date_index": "date",
@@ -369,7 +376,13 @@ def test_predict_and_predict_in_sample(
     }
     expected_features = DateTimeFeaturizer().fit_transform(X)
     expected_features_in_sample = expected_features.ww.iloc[20:]
-    expected_features_pred = expected_features[20 + gap : 20 + gap + forecast_horizon]
+    expected_features_pred = expected_features[20 + gap : 20 + gap + n_to_pred]
+
+    X_predict_in_sample, target_predict_in_sample = X.iloc[20:], target.iloc[20:]
+    X_predict = X.iloc[20 + gap : 20 + gap + n_to_pred]
+    if reset_index:
+        X_predict = X_predict.reset_index(drop=True)
+
     if include_delayed_features:
         component_graph = ["Delayed Feature Transformer"] + component_graph
         delayer_params = {
@@ -389,30 +402,36 @@ def test_predict_and_predict_in_sample(
             expected_features, target
         )
         expected_features_in_sample = expected_features.ww.iloc[20:]
-        expected_features_pred = expected_features[
-            20 + gap : 20 + gap + forecast_horizon
-        ]
+        expected_features_pred = expected_features[20 + gap : 20 + gap + n_to_pred]
 
     pl = pipeline_class(component_graph=component_graph, parameters=parameters)
 
     pl.fit(X.iloc[:20], target.iloc[:20])
     preds_in_sample = pl.predict_in_sample(
-        X.iloc[20:], target.iloc[20:], X.iloc[:20], target.iloc[:20]
+        X_predict_in_sample, target_predict_in_sample, X.iloc[:20], target.iloc[:20]
     )
     assert_frame_equal(mock_to_check.call_args[0][0], expected_features_in_sample)
     mock_to_check.reset_mock()
     preds = pl.predict(
-        X.iloc[20 + gap : 20 + gap + forecast_horizon],
+        X_predict,
         None,
         X_train=X.iloc[:20],
         y_train=target.iloc[:20],
     )
     assert_frame_equal(mock_to_check.call_args[0][0], expected_features_pred)
+    if is_classification(pl.problem_type):
+        pred_proba = pl.predict_proba(
+            X_predict,
+            X_train=X.iloc[:20],
+            y_train=target.iloc[:20],
+        )
+        assert_frame_equal(
+            mock_classifier_predict_proba.call_args[0][0], expected_features_pred
+        )
+        assert len(pred_proba) == n_to_pred
 
-    assert len(preds) == forecast_horizon
-    assert (
-        preds.index == target.iloc[20 + gap : 20 + forecast_horizon + gap].index
-    ).all()
+    assert len(preds) == n_to_pred
+    assert (preds.index == target.iloc[20 + gap : 20 + n_to_pred + gap].index).all()
     assert len(preds_in_sample) == len(target.iloc[20:])
     assert (preds_in_sample.index == target.iloc[20:].index).all()
 
