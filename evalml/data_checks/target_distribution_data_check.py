@@ -129,6 +129,7 @@ class TargetDistributionDataCheck(DataCheck):
 
 
 def _detect_log_distribution_helper(y):
+    """Helper method to detect log distribution. Returns boolean, the normalization test used, and test statistics."""
     normalization_test = shapiro if len(y) <= 5000 else jarque_bera
     normalization_test_string = "shapiro" if len(y) <= 5000 else "jarque_bera"
     # Check if a normal distribution is detected with p-value above 0.05
