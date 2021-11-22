@@ -178,7 +178,6 @@ class TimeSeriesFeaturizer(Transformer):
             min_periods=self.max_delay + 1,
         )
         rolling_mean = rolling_mean.get_function()
-        index_to_set = X.index
         numerics = set(
             X.ww.select(["numeric"], return_schema=True).columns
         ).intersection(original_features)
@@ -187,7 +186,7 @@ class TimeSeriesFeaturizer(Transformer):
         )
         if y is not None and "numeric" in y.ww.semantic_tags:
             data[f"target_rolling_mean"] = rolling_mean(y.index, y)
-        data.index = index_to_set
+        data.index = X.index
         data.ww.init()
         return data
 
