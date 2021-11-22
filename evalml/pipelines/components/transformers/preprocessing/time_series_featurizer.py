@@ -178,21 +178,13 @@ class TimeSeriesFeaturizer(Transformer):
             min_periods=self.max_delay + 1,
         )
         rolling_mean = rolling_mean.get_function()
-        data = pd.DataFrame()
-        if len(X):
-            index_to_set = X.index
-        else:
-            index_to_set = y.index
-        if len(X):
-            numerics = set(
-                X.ww.select(["numeric"], return_schema=True).columns
-            ).intersection(original_features)
-            data = pd.DataFrame(
-                {
-                    f"{col}_rolling_mean": rolling_mean(X.index, X[col])
-                    for col in numerics
-                }
-            )
+        index_to_set = X.index
+        numerics = set(
+            X.ww.select(["numeric"], return_schema=True).columns
+        ).intersection(original_features)
+        data = pd.DataFrame(
+            {f"{col}_rolling_mean": rolling_mean(X.index, X[col]) for col in numerics}
+        )
         if y is not None and "numeric" in y.ww.semantic_tags:
             data[f"target_rolling_mean"] = rolling_mean(y.index, y)
         data.index = index_to_set
@@ -216,9 +208,9 @@ class TimeSeriesFeaturizer(Transformer):
                 ["numeric", "category", "boolean"], return_schema=True
             ).columns
         )
-        X_ww = X_ww.ww.copy()
         categorical_columns = self._get_categorical_columns(X_ww)
         cols_derived_from_categoricals = []
+        lagged_features = {}
         if self.delay_features and len(X_ww) > 0:
             X_categorical = self._encode_X_while_preserving_index(
                 X_ww[categorical_columns]
@@ -230,9 +222,9 @@ class TimeSeriesFeaturizer(Transformer):
                     col = X_categorical[col_name]
                 for t in self.statistically_significant_lags:
                     feature_name = f"{col_name}_delay_{self.start_delay + t}"
-                    X_ww.ww[f"{col_name}_delay_{self.start_delay + t}"] = col.shift(
-                        self.start_delay + t
-                    )
+                    lagged_features[
+                        f"{col_name}_delay_{self.start_delay + t}"
+                    ] = col.shift(self.start_delay + t)
                     if col_name in categorical_columns:
                         cols_derived_from_categoricals.append(feature_name)
         # Handle cases where the target was passed in
@@ -240,12 +232,16 @@ class TimeSeriesFeaturizer(Transformer):
             if type(y.ww.logical_type) == logical_types.Categorical:
                 y = self._encode_y_while_preserving_index(y)
             for t in self.statistically_significant_lags:
-                X_ww.ww[
+                lagged_features[
                     self.target_colname_prefix.format(t + self.start_delay)
                 ] = y.shift(self.start_delay + t)
         # Features created from categorical columns should no longer be categorical
-        X_ww.ww.set_types({col: "Double" for col in cols_derived_from_categoricals})
-        return X_ww
+        lagged_features = pd.DataFrame(lagged_features)
+        lagged_features.ww.init(
+            logical_types={col: "Double" for col in cols_derived_from_categoricals}
+        )
+        lagged_features.index = X_ww.index
+        return ww.concat_columns([X_ww, lagged_features])
 
     def transform(self, X, y=None):
         """Computes the delayed values and rolling means for X and y.
@@ -264,19 +260,14 @@ class TimeSeriesFeaturizer(Transformer):
         Returns:
             pd.DataFrame: Transformed X. No original features are returned.
         """
-        if X is None:
-            X = pd.DataFrame()
         if y is not None:
             y = infer_feature_types(y)
         # Normalize the data into pandas objects
         X_ww = infer_feature_types(X)
-        # import pdb;pdb.set_trace()
-        X_ww = X_ww.ww.copy()
         original_features = [col for col in X_ww.columns if col != self.date_index]
         delayed_features = self._compute_delays(X_ww, y, original_features)
         rolling_means = self._compute_rolling_transforms(X_ww, y, original_features)
         features = ww.concat_columns([delayed_features, rolling_means])
-        # import pdb;pdb.set_trace()
         return features.ww.drop(original_features)
 
     def fit_transform(self, X, y=None):

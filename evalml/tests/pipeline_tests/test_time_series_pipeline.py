@@ -478,8 +478,8 @@ def test_predict_and_predict_in_sample_with_date_index(
     mock_to_check.side_effect = lambda x: x.iloc[: x.shape[0], 0]
 
     component_graph = [
-        "DateTime Featurization Component",
         "Time Series Featurizer",
+        "DateTime Featurization Component",
         estimator_name,
     ]
     delayer_params = {
@@ -503,7 +503,7 @@ def test_predict_and_predict_in_sample_with_date_index(
     }
 
     feature_pipeline = pipeline_class(
-        ["DateTime Featurization Component", "Time Series Featurizer"],
+        ["Time Series Featurizer", "DateTime Featurization Component"],
         parameters=parameters,
     )
     feature_pipeline.fit(X, target)
@@ -834,6 +834,7 @@ def test_binary_classification_predictions_thresholded_properly(
     mock_predict_proba.return_value = proba
     X, y = X_y_binary
     X, y = pd.DataFrame(X), pd.Series(y)
+    X["date"] = pd.Series(pd.date_range("2010-01-01", periods=X.shape[0]))
     X_train, y_train = X.iloc[:60], y.iloc[:60]
     X_validation = X.iloc[60:63]
     binary_pipeline = dummy_ts_binary_pipeline_class(
@@ -891,6 +892,7 @@ def test_binary_predict_pipeline_objective_mismatch(
 ):
     X, y = X_y_binary
     X, y = pd.DataFrame(X), pd.Series(y)
+    X["date"] = pd.Series(pd.date_range("2010-01-01", periods=X.shape[0]))
     binary_pipeline = dummy_ts_binary_pipeline_class(
         parameters={
             "Logistic Regression Classifier": {"n_jobs": 1},
@@ -1070,6 +1072,9 @@ def test_binary_predict_pipeline_use_objective(
     mock_decision_function, X_y_binary, time_series_binary_classification_pipeline_class
 ):
     X, y = X_y_binary
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+    X["date"] = pd.Series(pd.date_range("2010-01-01", periods=X.shape[0]))
     binary_pipeline = time_series_binary_classification_pipeline_class(
         parameters={
             "Logistic Regression Classifier": {"n_jobs": 1},
@@ -1221,6 +1226,7 @@ def test_ts_pipeline_predict_without_final_estimator(
     X, y = X_y_binary
     X = make_data_type("ww", X)
     y = make_data_type("ww", y)
+    X.ww["date"] = pd.Series(pd.date_range("2010-01-01", periods=X.shape[0]))
     X_train, y_train = X.ww.iloc[:70], y.ww.iloc[:70]
     X_validation = X.ww.iloc[70:73]
 
@@ -1279,6 +1285,7 @@ def test_ts_pipeline_transform(
 ):
     X, y = X_y_binary
     X = make_data_type("ww", X)
+    X.ww["date"] = pd.Series(pd.date_range("2010-01-01", periods=X.shape[0]))
     y = make_data_type("ww", y)
     X_train, y_train = X.ww.iloc[:70], y.ww.iloc[:70]
     X_validation, y_validation = X.ww.iloc[70:73], y.ww.iloc[70:73]

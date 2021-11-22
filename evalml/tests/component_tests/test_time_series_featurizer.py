@@ -797,7 +797,7 @@ def test_delayed_feature_transformer_selects_first_lag_if_none_significant(
 def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_components(
     mock_roll, X_df, fit_transform
 ):
-    y = pd.Series([1, 2, 3] * X_df.shape[0])
+    y = pd.Series(range(X_df.shape[0]))
     override_types = [Integer, Double, Categorical, Boolean]
 
     for logical_type in override_types:
