@@ -30,4 +30,5 @@ from .preprocessing import (
     EmailFeaturizer,
     URLFeaturizer,
     DropRowsTransformer,
+    ReplaceNullableTypes,
 )
