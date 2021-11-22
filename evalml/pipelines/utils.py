@@ -234,7 +234,7 @@ def _get_preprocessing_components(
             # _get_natural_language,
             # _get_imputer,
             # _get_ohe,
-            # _get_sampler,
+            _get_sampler,
             # _get_standard_scaler,
         ]
     components = []
