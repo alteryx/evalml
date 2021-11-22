@@ -388,9 +388,25 @@ def text_df():
 
 @pytest.fixture
 def ts_data():
-    X, y = pd.DataFrame({"features": range(101, 132)}), pd.Series(range(1, 32))
+    X, y = pd.DataFrame(
+        {"features": range(101, 132), "date": pd.date_range("2020-10-01", "2020-10-31")}
+    ), pd.Series(range(1, 32))
     y.index = pd.date_range("2020-10-01", "2020-10-31")
     X.index = pd.date_range("2020-10-01", "2020-10-31")
+    return X, y
+
+
+@pytest.fixture
+def ts_data_binary(ts_data):
+    X, y = ts_data
+    y = y % 2
+    return X, y
+
+
+@pytest.fixture
+def ts_data_multi(ts_data):
+    X, y = ts_data
+    y = y % 3
     return X, y
 
 
@@ -781,7 +797,11 @@ def time_series_regression_pipeline_class():
     class TSRegressionPipeline(TimeSeriesRegressionPipeline):
         """Random Forest Regression Pipeline for time series regression problems."""
 
-        component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
+        component_graph = [
+            "Delayed Feature Transformer",
+            "DateTime Featurization Component",
+            "Random Forest Regressor",
+        ]
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
@@ -800,9 +820,14 @@ def time_series_classification_component_graph():
             "Label Encoder.x",
             "Label Encoder.y",
         ],
+        "DateTime Featurization Component": [
+            "DateTime Featurization Component",
+            "Delayed Feature Transformer.x",
+            "Label Encoder.y",
+        ],
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
-            "Delayed Feature Transformer.x",
+            "DateTime Featurization Component.x",
             "Label Encoder.y",
         ],
     }

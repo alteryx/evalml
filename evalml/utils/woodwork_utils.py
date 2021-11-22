@@ -132,3 +132,26 @@ def _convert_numeric_dataset_pandas(X, y):
         )
     y_ww = infer_feature_types(y)
     return X_ww, y_ww
+
+
+def _schema_is_equal(first, other):
+    """Loosely check whether or not the Woodwork schemas are equivalent. This only checks that the string values for the schemas are equal and doesn't take the actual type objects into account.
+
+    Args:
+        first (ww.Schema): The schema of the first woodwork datatable
+        other (ww.Schema): The schema of the second woodwork datatable
+
+    Returns:
+        bool: Whether or not the two schemas are equal
+    """
+    if first.types.index.tolist() != other.types.index.tolist():
+        return False
+    logical = [
+        x if x != "Integer" else "Double"
+        for x in first.types["Logical Type"].astype(str).tolist()
+    ] == [
+        x if x != "Integer" else "Double"
+        for x in other.types["Logical Type"].astype(str).tolist()
+    ]
+    semantic = first.semantic_tags == other.semantic_tags
+    return logical and semantic

@@ -37,7 +37,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 "Please specify them as a dictionary with the key 'pipeline'."
             )
         pipeline_params = parameters["pipeline"]
-        self.date_index = pipeline_params["date_index"]
+        date_index = pipeline_params["date_index"]
+        if date_index is None:
+            raise ValueError("Parameter date_index cannot be None!")
         self.gap = pipeline_params["gap"]
         self.max_delay = pipeline_params["max_delay"]
         self.forecast_horizon = pipeline_params["forecast_horizon"]
@@ -104,7 +106,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             ValueError: If holdout data does not have forecast_horizon entries or if datasets
                 are not separated by gap.
         """
-        right_length = len(X) == self.forecast_horizon
+        right_length = len(X) <= self.forecast_horizon
         X_separated_by_gap = self._are_datasets_separated_by_gap(
             X_train.index, X.index, self.gap
         )
@@ -114,7 +116,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 "and its index needs to "
                 f"start {self.gap + 1} values ahead of the training index. "
                 f"Data received - Length X: {len(X)}, "
-                f"X index start: {X.index[0]}, X_train index end {X.index[-1]}."
+                f"X index start: {X.index[0]}, X_train index end {X_train.index[-1]}."
             )
 
     def _add_training_data_to_X_Y(self, X, y, X_train, y_train):
@@ -218,9 +220,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         predictions = predictions.rename(self.input_target_name)
         return infer_feature_types(predictions)
 
-    def _create_empty_series(self, y_train):
+    def _create_empty_series(self, y_train, size):
         return ww.init_series(
-            pd.Series([y_train.iloc[0]] * self.forecast_horizon),
+            pd.Series([y_train.iloc[0]] * size),
             logical_type=y_train.ww.logical_type,
         )
 
@@ -245,8 +247,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 "Cannot call predict() on a component graph because the final component is not an Estimator."
             )
         X = infer_feature_types(X)
+        X.index = self._move_index_forward(
+            X_train.index[-X.shape[0] :], self.gap + X.shape[0]
+        )
         self._validate_holdout_datasets(X, X_train)
-        y_holdout = self._create_empty_series(y_train)
+        y_holdout = self._create_empty_series(y_train, X.shape[0])
         y_holdout = infer_feature_types(y_holdout)
         y_holdout.index = X.index
         return self.predict_in_sample(

@@ -1001,13 +1001,13 @@ def test_get_prediction_vs_actual_over_time_data(ts_data):
     X_test, y_test = X.iloc[15:], y.iloc[15:]
 
     pipeline = TimeSeriesRegressionPipeline(
-        ["Elastic Net Regressor"],
+        ["DateTime Featurization Component", "Elastic Net Regressor"],
         parameters={
             "pipeline": {
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "date_index": None,
+                "date_index": "date",
             }
         },
     )
@@ -1031,13 +1031,13 @@ def test_graph_prediction_vs_actual_over_time(ts_data):
     X_test, y_test = X.iloc[15:], y.iloc[15:]
 
     pipeline = TimeSeriesRegressionPipeline(
-        ["Elastic Net Regressor"],
+        ["DateTime Featurization Component", "Elastic Net Regressor"],
         parameters={
             "pipeline": {
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "date_index": None,
+                "date_index": "date",
             }
         },
     )
@@ -1403,7 +1403,7 @@ def test_t_sne_errors_marker_size(marker_size, has_minimal_dependencies):
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize("perplexity", [0, 4.6, 100])
-@pytest.mark.parametrize("learning_rate", [100.0, -15, 0])
+@pytest.mark.parametrize("learning_rate", [100.0, 0.1])
 def test_graph_t_sne(data_type, perplexity, learning_rate):
     go = pytest.importorskip(
         "plotly.graph_objects",

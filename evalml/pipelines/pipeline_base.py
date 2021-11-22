@@ -10,10 +10,12 @@ from abc import ABC, abstractmethod
 from collections import OrderedDict
 
 import cloudpickle
+import numpy as np
 import pandas as pd
 
 from .components import (
     PCA,
+    ComponentBase,
     DFSTransformer,
     Estimator,
     LinearDiscriminantAnalysis,
@@ -432,38 +434,51 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         y_edges specifies from which component target data is being passed.
         This can be used to build graphs across a variety of visualization tools.
         Template:
-        {"Nodes": {"component_name": {"Name": class_name, "Attributes": parameters_attributes}, ...}},
+        {"Nodes": {"component_name": {"Name": class_name, "Parameters": parameters_attributes}, ...}},
         "x_edges": [[from_component_name, to_component_name], [from_component_name, to_component_name], ...],
         "y_edges": [[from_component_name, to_component_name], [from_component_name, to_component_name], ...]}
 
         Returns:
             dag_json (str): A serialized JSON representation of a DAG structure.
         """
-        nodes = {
-            comp_: {"Attributes": att_.parameters, "Name": att_.name}
-            for comp_, att_ in self.component_graph.component_instances.items()
-        }
+        nodes = {}
+        for comp_, att_ in self.component_graph.component_instances.items():
+            param_dict = {}
+            for param, val in att_.parameters.items():
+                # Can't JSON serialize components directly, have to split them into name and parameters
+                if isinstance(val, ComponentBase):
+                    param_dict[f"{param}_name"] = val.name
+                    param_dict[f"{param}_parameters"] = val.parameters
+                else:
+                    if isinstance(val, np.int64):
+                        val = int(val)
+                    param_dict[param] = val
+            nodes[comp_] = {"Parameters": param_dict, "Name": att_.name}
 
-        x_edges = self.component_graph._get_edges(
+        x_edges_list = self.component_graph._get_edges(
             self.component_graph.component_dict, "features"
         )
-        y_edges = self.component_graph._get_edges(
+        y_edges_list = self.component_graph._get_edges(
             self.component_graph.component_dict, "target"
         )
+        x_edges = [{"from": edge[0], "to": edge[1]} for edge in x_edges_list]
+        y_edges = [{"from": edge[0], "to": edge[1]} for edge in y_edges_list]
+
         for (
             component_name,
             component_info,
         ) in self.component_graph.component_dict.items():
             for parent in component_info[1:]:
                 if parent == "X":
-                    x_edges.append(("X", component_name))
+                    x_edges.append({"from": "X", "to": component_name})
                 elif parent == "y":
-                    y_edges.append(("y", component_name))
-        nodes.update({"X": "X", "y": "y"})
+                    y_edges.append({"from": "y", "to": component_name})
+        nodes["X"] = {"Parameters": {}, "Name": "X"}
+        nodes["y"] = {"Parameters": {}, "Name": "y"}
         graph_as_json = {"Nodes": nodes, "x_edges": x_edges, "y_edges": y_edges}
 
         for x_edge in graph_as_json["x_edges"]:
-            if x_edge[0] == "X":
+            if x_edge["from"] == "X":
                 graph_as_json["x_edges"].remove(x_edge)
                 graph_as_json["x_edges"].insert(0, x_edge)
 
