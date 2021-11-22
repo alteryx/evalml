@@ -112,11 +112,15 @@ class TimeSeriesFeaturizer(Transformer):
         X_to_transform = X.ww.select(["numeric"])
         if y is not None:
             X_to_transform.ww["target"] = y
-        X_to_transform = X_to_transform.ww.rename({col: str(col) for col in X_to_transform.columns})
+        X_to_transform = X_to_transform.ww.rename(
+            {col: str(col) for col in X_to_transform.columns}
+        )
         self._original_features_dfs = list(X_to_transform.columns)
         X_to_transform.ww[self.date_index] = X.ww[self.date_index]
         es = ft.EntitySet()
-        logical_types = {col: X_to_transform.ww.logical_types[col] for col in X_to_transform.columns}
+        logical_types = {
+            col: X_to_transform.ww.logical_types[col] for col in X_to_transform.columns
+        }
         del X_to_transform.ww
         es.add_dataframe(
             dataframe_name="X",
@@ -203,9 +207,19 @@ class TimeSeriesFeaturizer(Transformer):
             pd.DataFrame: Data with rolling features. All new features.
         """
         es = self._make_entity_set(X, y)
-        features = ft.dfs(entityset=es, target_dataframe_name="X", trans_primitives=[
-            RollingMean(window_length=self.max_delay + 1, gap=self.start_delay, min_periods=self.max_delay + 1)],
-                          max_depth=1, features_only=True, )
+        features = ft.dfs(
+            entityset=es,
+            target_dataframe_name="X",
+            trans_primitives=[
+                RollingMean(
+                    window_length=self.max_delay + 1,
+                    gap=self.start_delay,
+                    min_periods=self.max_delay + 1,
+                )
+            ],
+            max_depth=1,
+            features_only=True,
+        )
         features = ft.calculate_feature_matrix(features, entityset=es)
         features.set_index(X.index, inplace=True)
         features.ww.init(logical_types={col_: "Double" for col_ in features})
