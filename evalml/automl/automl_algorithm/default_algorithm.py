@@ -67,6 +67,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         top_n (int): top n number of pipelines to use for long mode.
         num_long_explore_pipelines (int): number of pipelines to explore for each top n pipeline at the start of long mode.
         num_long_pipelines_per_batch (int): number of pipelines per batch for each top n pipeline through long mode.
+        apply_feature_selection (bool): whether to add feature selection steps. Defaults to false.
     """
 
     def __init__(
@@ -84,6 +85,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         top_n=3,
         num_long_explore_pipelines=50,
         num_long_pipelines_per_batch=10,
+        apply_feature_selection=False,
         verbose=False,
     ):
         super().__init__(
@@ -107,6 +109,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.num_long_explore_pipelines = num_long_explore_pipelines
         self.num_long_pipelines_per_batch = num_long_pipelines_per_batch
         self.top_n = top_n
+        self.apply_feature_selection = apply_feature_selection
         self.verbose = verbose
         self._selected_cat_cols = []
         self._split = False
@@ -268,8 +271,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
 
         next_batch = []
         for pipeline in pipelines:
-            # parameters = self._create_select_parameters()
-            parameters = {}
+            parameters = self._create_select_parameters()
             pipeline = pipeline.new(
                 parameters=self._transform_parameters(pipeline, parameters),
                 random_seed=self.random_seed,
@@ -287,8 +289,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 if pipeline.name not in self._tuners:
                     self._create_tuner(pipeline)
 
-                # select_parameters = self._create_select_parameters()
-                select_parameters = {}
+                select_parameters = self._create_select_parameters()
                 proposed_parameters = self._tuners[pipeline.name].propose()
                 parameters = self._transform_parameters(pipeline, proposed_parameters)
                 parameters.update(select_parameters)
@@ -315,22 +316,38 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
-        if self._batch_number == 0:
-            next_batch = self._create_naive_pipelines()
-        # elif self._batch_number == 1:
-        #     next_batch = self._create_naive_pipelines(use_features=True)
-        elif self._batch_number == 1:
-            next_batch = self._create_fast_final()
-        elif self.batch_number == 2:
-            next_batch = self._create_ensemble()
-        elif self.batch_number == 3:
-            next_batch = self._create_long_exploration(n=self.top_n)
-        elif self.batch_number % 2 != 0:
-            next_batch = self._create_ensemble()
+        if self.apply_feature_selection:
+            if self._batch_number == 0:
+                next_batch = self._create_naive_pipelines()
+            elif self._batch_number == 1:
+                next_batch = self._create_naive_pipelines(use_features=True)
+            elif self._batch_number == 2:
+                next_batch = self._create_fast_final()
+            elif self.batch_number == 3:
+                next_batch = self._create_ensemble()
+            elif self.batch_number == 4:
+                next_batch = self._create_long_exploration(n=self.top_n)
+            elif self.batch_number % 2 != 0:
+                next_batch = self._create_ensemble()
+            else:
+                next_batch = self._create_n_pipelines(
+                    self._top_n_pipelines, self.num_long_pipelines_per_batch
+                )
         else:
-            next_batch = self._create_n_pipelines(
-                self._top_n_pipelines, self.num_long_pipelines_per_batch
-            )
+            if self._batch_number == 0:
+                next_batch = self._create_naive_pipelines()
+            elif self._batch_number == 1:
+                next_batch = self._create_fast_final()
+            elif self.batch_number == 2:
+                next_batch = self._create_ensemble()
+            elif self.batch_number == 3:
+                next_batch = self._create_long_exploration(n=self.top_n)
+            elif self.batch_number % 2 != 0:
+                next_batch = self._create_ensemble()
+            else:
+                next_batch = self._create_n_pipelines(
+                    self._top_n_pipelines, self.num_long_pipelines_per_batch
+                )
 
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
@@ -350,27 +367,28 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     score_to_minimize, pipeline, trained_pipeline_results
                 )
 
-        # if self.batch_number == 2 and self._selected_cols is None:
-        #     if is_regression(self.problem_type):
-        #         self._selected_cols = pipeline.get_component(
-        #             "RF Regressor Select From Model"
-        #         ).get_names()
-        #     else:
-        #         self._selected_cols = pipeline.get_component(
-        #             "RF Classifier Select From Model"
-        #         ).get_names()
+        if self.apply_feature_selection:
+            if self.batch_number == 2 and self._selected_cols is None:
+                if is_regression(self.problem_type):
+                    self._selected_cols = pipeline.get_component(
+                        "RF Regressor Select From Model"
+                    ).get_names()
+                else:
+                    self._selected_cols = pipeline.get_component(
+                        "RF Classifier Select From Model"
+                    ).get_names()
 
-        #     if list(self.X.ww.select("categorical").columns):
-        #         ohe = pipeline.get_component("One Hot Encoder")
-        #         feature_provenance = ohe._get_feature_provenance()
-        #         for original_col in feature_provenance:
-        #             selected = False
-        #             for encoded_col in feature_provenance[original_col]:
-        #                 if encoded_col in self._selected_cols:
-        #                     selected = True
-        #                     self._selected_cols.remove(encoded_col)
-        #             if selected:
-        #                 self._selected_cat_cols.append(original_col)
+                if list(self.X.ww.select("categorical").columns):
+                    ohe = pipeline.get_component("One Hot Encoder")
+                    feature_provenance = ohe._get_feature_provenance()
+                    for original_col in feature_provenance:
+                        selected = False
+                        for encoded_col in feature_provenance[original_col]:
+                            if encoded_col in self._selected_cols:
+                                selected = True
+                                self._selected_cols.remove(encoded_col)
+                        if selected:
+                            self._selected_cat_cols.append(original_col)
 
         current_best_score = self._best_pipeline_info.get(
             pipeline.model_family, {}
@@ -427,30 +445,28 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return parameters
 
     def _make_split_pipeline(self, estimator, pipeline_name=None):
-        # numeric_pipeline_parameters = {
-        #     "Select Columns Transformer": {"columns": self._selected_cols}
-        # }
-        # numeric_pipeline = make_pipeline(
-        #     self.X,
-        #     self.y,
-        #     estimator,
-        #     self.problem_type,
-        #     sampler_name=self.sampler_name,
-        #     parameters=numeric_pipeline_parameters,
-        #     extra_components=[SelectColumns],
-        #     extra_components_position="before_estimator",
-        #     use_estimator=False if self._selected_cat_cols else True,
-        # )
+        numeric_pipeline_parameters = {
+            "Select Columns Transformer": {"columns": self._selected_cols}
+        }
         numeric_pipeline = make_pipeline(
             self.X,
             self.y,
             estimator,
             self.problem_type,
             sampler_name=self.sampler_name,
-            use_estimator=True,
+            parameters=numeric_pipeline_parameters
+            if self.apply_feature_selection
+            else None,
+            extra_components=[SelectColumns] if self.apply_feature_selection else None,
+            extra_components_position="before_estimator"
+            if self.apply_feature_selection
+            else None,
+            use_estimator=False
+            if self._selected_cat_cols and self.apply_feature_selection
+            else True,
         )
 
-        if self._selected_cat_cols:
+        if self._selected_cat_cols and self.apply_feature_selection:
             self._split = True
             categorical_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cat_cols}

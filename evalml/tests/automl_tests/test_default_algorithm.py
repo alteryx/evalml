@@ -23,7 +23,9 @@ def test_default_algorithm_init(X_y_binary):
     problem_type = ProblemTypes.BINARY
     sampler_name = "Undersampler"
 
-    algo = DefaultAlgorithm(X, y, problem_type, sampler_name, verbose=True)
+    algo = DefaultAlgorithm(
+        X, y, problem_type, sampler_name, apply_feature_selection=True, verbose=True
+    )
 
     assert algo.problem_type == problem_type
     assert algo.sampler_name == sampler_name
@@ -114,7 +116,9 @@ def test_default_algorithm(
     mock_get_names.return_value = ["0", "1", "2"]
     problem_type = automl_type
     sampler_name = None
-    algo = DefaultAlgorithm(X, y, problem_type, sampler_name)
+    algo = DefaultAlgorithm(
+        X, y, problem_type, sampler_name, apply_feature_selection=True
+    )
     naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
 
     first_batch = algo.next_batch()
@@ -206,6 +210,7 @@ def test_evalml_algo_pipeline_params(mock_get_names, X_y_binary):
         pipeline_params=pipeline_params,
         num_long_explore_pipelines=1,
         num_long_pipelines_per_batch=1,
+        apply_feature_selection=True,
     )
 
     for _ in range(6):
@@ -251,6 +256,7 @@ def test_evalml_algo_custom_hyperparameters(
         custom_hyperparameters=custom_hyperparameters,
         num_long_explore_pipelines=3,
         num_long_pipelines_per_batch=3,
+        apply_feature_selection=True,
     )
 
     for _ in range(2):
@@ -295,7 +301,9 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
     X.ww.init()
     X.ww.set_types({col: "Unknown" for col in columns})
 
-    algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
+    algo = DefaultAlgorithm(
+        X, y, ProblemTypes.BINARY, sampler_name=None, apply_feature_selection=True
+    )
 
     assert algo._pipeline_params["Drop Columns Transformer"]["columns"] == columns
 
@@ -321,7 +329,9 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
 
 def test_make_split_pipeline(X_y_binary):
     X, y = X_y_binary
-    algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
+    algo = DefaultAlgorithm(
+        X, y, ProblemTypes.BINARY, sampler_name=None, apply_feature_selection=True
+    )
     algo._selected_cols = ["1", "2", "3"]
     algo._selected_cat_cols = ["A", "B", "C"]
     pipeline = algo._make_split_pipeline(RandomForestClassifier, "test_pipeline")
@@ -360,7 +370,9 @@ def test_select_cat_cols(
         "Embarked": ["Embarked_S"],
     }
 
-    algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, None)
+    algo = DefaultAlgorithm(
+        X, y, ProblemTypes.BINARY, None, apply_feature_selection=True
+    )
 
     batch = algo.next_batch()
     add_result(algo, batch)
