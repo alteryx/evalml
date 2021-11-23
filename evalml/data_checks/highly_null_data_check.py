@@ -148,7 +148,6 @@ class HighlyNullDataCheck(DataCheck):
                     details={
                         "columns": list(highly_null_cols),
                         "pct_null_rows": highly_null_cols,
-                        "null_row_indices": highly_null_cols_indices,
                     },
                 ).to_dict()
             )
