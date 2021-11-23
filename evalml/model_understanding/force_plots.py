@@ -29,10 +29,7 @@ def graph_force_plot(pipeline, rows_to_explain, training_data, y, matplotlib=Fal
     def gen_force_plot(shap_values, training_data, expected_value, matplotlib):
         """Helper function to generate a single force plot."""
         shap_plot = shap.force_plot(
-            expected_value,
-            np.array(shap_values),
-            training_data,
-            matplotlib=matplotlib,
+            expected_value, np.array(shap_values), training_data, matplotlib=matplotlib
         )
         return shap_plot
 
