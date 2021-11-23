@@ -135,7 +135,7 @@ class HighlyNullDataCheck(DataCheck):
                 ).to_dict()
             )
 
-        highly_null_cols, highly_null_cols_indices = HighlyNullDataCheck.get_null_column_information(X)
+        highly_null_cols, highly_null_cols_indices = HighlyNullDataCheck.get_null_column_information(X, pct_null_col_threshold=self.pct_null_col_threshold)
         warning_msg = "Columns {} are {}% or more null"
         if highly_null_cols:
             results["warnings"].append(
