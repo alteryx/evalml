@@ -7,29 +7,63 @@ from evalml.utils import infer_feature_types
 
 
 def is_nullable_int(df, col):
+    """Function to determine whether a column in a dataframe is a pandas NullableInteger type.
+
+    Args:
+        df: Input dataframe to check.
+        col: Column of the input dataframe to check.
+
+    Returns:
+        boolean: Whether the column was of NullableInteger type.
+    """
     is_pandas_nullable = isinstance(df.dtypes[col], pca.integer.Int64Dtype)
     is_ww_nullable = isinstance(df.ww.logical_types[col], IntegerNullable)
     return is_ww_nullable or is_pandas_nullable
 
 
 def replace_nullable_int(series):
+    """Function to replace the pandas NullableInteger column with a column of a compatible type.
+
+    Args:
+        series: The column to change the type of.
+
+    Returns:
+        pandas.Series: The Dataframe column with the type changed to float64.
+
+    """
     return series.astype("float64")
 
 
 def is_nullable_bool(df, col):
+    """Function to determine whether a column in a dataframe is a pandas NullableBoolean type.
+
+    Args:
+        df: Input dataframe to check.
+        col: Column of the input dataframe to check.
+
+    Returns:
+        boolean: Whether the column was of NullableBoolean type.
+    """
     is_pandas_nullable = isinstance(df.dtypes[col], pca.boolean.BooleanDtype)
     is_ww_nullable = isinstance(df.ww.logical_types[col], BooleanNullable)
     return is_ww_nullable or is_pandas_nullable
 
 
 def replace_nullable_bool(series):
+    """Function to replace the pandas NullableBoolean column with a column of a compatible type.
+
+    Args:
+        series: The column to change the type of.
+
+    Returns:
+        pandas.Series: The Dataframe column with the type changed to category.
+
+    """
     return series.astype("category")
 
 
 class ReplaceNullableTypes(Transformer):
-    """
-    Transformer to replace features with the new nullable dtypes with a dtype that is compatible in EvalML.
-    """
+    """Transformer to replace features with the new nullable dtypes with a dtype that is compatible in EvalML."""
 
     name = "Replace Nullable Types Transformer"
     hyperparameter_ranges = {}
