@@ -112,4 +112,7 @@ class ReplaceNullableTypes(Transformer):
             X_t[col] = replace_nullable_int(X_t[col])
         for col in self._nullable_bool_cols:
             X_t[col] = replace_nullable_bool(X_t[col])
-        return X_t
+        if len(self._nullable_bool_cols) == 0 and len(self._nullable_int_cols) == 0:
+            return X
+        else:
+            return X_t
