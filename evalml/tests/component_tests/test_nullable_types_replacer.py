@@ -20,12 +20,12 @@ def test_replace_nullable_types(input_type):
     # Check that the underlying pandas data types are set properly
     assert str(X.dtypes.loc["non_nullable_integer"]) == "int64"
     assert (
-        str(X.dtypes.loc["nullable_integer"]) == "Int64"
-    )  # <- the new nullable integer
+        str(X.dtypes.loc["nullable_integer"]) == "Int64" # <- the new nullable integer
+    )
     assert str(X.dtypes.loc["non_nullable_boolean"]) == "bool"
     assert (
-        str(X.dtypes.loc["nullable_boolean"]) == "boolean"
-    )  # <- the new nullable boolean
+        str(X.dtypes.loc["nullable_boolean"]) == "boolean" # <- the new nullable boolean
+    )
 
     if input_type == "ww":
         X.ww.init()

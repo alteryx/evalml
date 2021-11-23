@@ -47,7 +47,7 @@ class DropNullColumns(Transformer):
             null_cols = percent_null[percent_null > 0]
         else:
             null_cols = percent_null[percent_null >= pct_null_threshold]
-        self._cols_to_replace = list(null_cols.index)
+        self._cols_to_drop = list(null_cols.index)
         return self
 
     def transform(self, X, y=None):
