@@ -109,11 +109,8 @@ class HighlyNullDataCheck(DataCheck):
         results = {"warnings": [], "errors": [], "actions": []}
 
         X = infer_feature_types(X, ignore_nullable_types=True)
-
-        percent_null_rows = X.isnull().mean(axis=1)
-        highly_null_rows = percent_null_rows[
-            percent_null_rows >= self.pct_null_row_threshold
-        ]
+        
+        highly_null_rows = HighlyNullDataCheck.get_null_row_information(X, pct_null_row_threshold=self.pct_null_row_threshold)
         if len(highly_null_rows) > 0:
             warning_msg = f"{len(highly_null_rows)} out of {len(X)} rows are {self.pct_null_row_threshold*100}% or more null"
             results["warnings"].append(
@@ -167,6 +164,7 @@ class HighlyNullDataCheck(DataCheck):
 
     @staticmethod
     def get_null_column_information(X, pct_null_col_threshold=0.):
+        """Finds columns that are considered highly null (percentage null is greater than threshold) and returns dictionary mapping column name to percentage null and dictionary mapping column name to null indices."""
         percent_null_cols = (X.isnull().mean()).to_dict()
         highly_null_cols = {
             key: value
@@ -177,3 +175,13 @@ class HighlyNullDataCheck(DataCheck):
             col_: X[col_][X[col_].isnull()].index.tolist() for col_ in highly_null_cols
         }
         return highly_null_cols, highly_null_cols_indices
+
+
+    @staticmethod
+    def get_null_row_information(X, pct_null_row_threshold=0.):
+        """Finds rows that are considered highly null (percentage null is greater than threshold)."""
+        percent_null_rows = X.isnull().mean(axis=1)
+        highly_null_rows = percent_null_rows[
+            percent_null_rows >= pct_null_row_threshold
+        ]
+        return highly_null_rows
