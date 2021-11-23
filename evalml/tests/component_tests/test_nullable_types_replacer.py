@@ -7,7 +7,7 @@ from evalml.pipelines.components import ReplaceNullableTypes
 @pytest.mark.parametrize("nullable_types_properly_set", [True, False])
 @pytest.mark.parametrize("input_type", ["ww", "pandas"])
 def test_replace_nullable_types(nullable_types_properly_set, input_type):
-    replace_nullable_types_transformer = ReplaceNullableTypes()
+    nullable_types_replacer = ReplaceNullableTypes()
     X = pd.DataFrame(
         {
             "non_nullable_integer": [0, 1, 2, 3, 4],
@@ -33,31 +33,29 @@ def test_replace_nullable_types(nullable_types_properly_set, input_type):
     if input_type == "ww":
         X.ww.init()
 
-    replace_nullable_types_transformer.fit(X)
+    nullable_types_replacer.fit(X)
 
     # Check that the transformer found the right columns with the nullable types
     if nullable_types_properly_set:
-        assert replace_nullable_types_transformer._nullable_int_cols == [
-            "nullable_integer"
-        ]
-        assert replace_nullable_types_transformer._nullable_bool_cols == [
-            "nullable_boolean"
-        ]
+        assert nullable_types_replacer._nullable_int_cols == ["nullable_integer"]
+        assert nullable_types_replacer._nullable_bool_cols == ["nullable_boolean"]
     else:
-        assert replace_nullable_types_transformer._nullable_int_cols == []
-        assert replace_nullable_types_transformer._nullable_bool_cols == []
+        assert nullable_types_replacer._nullable_int_cols == []
+        assert nullable_types_replacer._nullable_bool_cols == []
 
-    X_t = replace_nullable_types_transformer.transform(X)
+    X_t = nullable_types_replacer.transform(X)
     assert set(X_t.columns) == set(X.columns)
     assert X_t.shape == X.shape
 
-    # Check that the underlying pandas data types have changed, or not changed, properly
     if nullable_types_properly_set:
+        # The ReplaceNullableTypes transformer swaps 'float64' for NullableInt and
+        # 'category' for NullableBool.
         assert str(X_t.dtypes.loc["non_nullable_integer"]) == "int64"
         assert str(X_t.dtypes.loc["nullable_integer"]) == "float64"
         assert str(X_t.dtypes.loc["non_nullable_boolean"]) == "bool"
         assert str(X_t.dtypes.loc["nullable_boolean"]) == "category"
     else:
+        # The ReplaceNullableTypes transformer leaves the types unchanged.
         assert str(X_t.dtypes.loc["non_nullable_integer"]) == "int64"
         assert str(X_t.dtypes.loc["nullable_integer"]) == "float64"
         assert str(X_t.dtypes.loc["non_nullable_boolean"]) == "bool"
