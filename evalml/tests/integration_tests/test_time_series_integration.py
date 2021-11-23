@@ -48,6 +48,7 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
             "forecast_horizon": 2,
             "date_index": "date",
         },
+        optimize_thresholds=False,
     )
     automl.search()
     automl.best_pipeline.fit(X, y)
