@@ -1,5 +1,11 @@
 import pandas as pd
 import pytest
+from woodwork.logical_types import (
+    BooleanNullable,
+    Double,
+    IntegerNullable,
+    Unknown,
+)
 
 from evalml.pipelines.components import ReplaceNullableTypes
 
@@ -32,14 +38,21 @@ def test_replace_nullable_types(nullable_types_properly_set, input_type):
 
     if input_type == "ww":
         X.ww.init()
+        if nullable_types_properly_set:
+            assert isinstance(X.ww.logical_types["nullable_integer"], IntegerNullable)
+            assert isinstance(X.ww.logical_types["nullable_boolean"], BooleanNullable)
+        else:
+            assert isinstance(X.ww.logical_types["nullable_integer"], Double)
+            assert isinstance(X.ww.logical_types["nullable_boolean"], Unknown)
 
     nullable_types_replacer.fit(X)
 
-    # Check that the transformer found the right columns with the nullable types
     if nullable_types_properly_set:
+        # The transformer finds the columns if the datatypes are set properly.
         assert nullable_types_replacer._nullable_int_cols == ["nullable_integer"]
         assert nullable_types_replacer._nullable_bool_cols == ["nullable_boolean"]
     else:
+        # If the datatypes are not set properly, it does nothing.
         assert nullable_types_replacer._nullable_int_cols == []
         assert nullable_types_replacer._nullable_bool_cols == []
 
