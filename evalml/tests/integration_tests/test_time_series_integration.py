@@ -18,7 +18,7 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
 ):
 
     X = pd.DataFrame(
-        {"features": range(101, 601), "date": pd.date_range("2020-10-01", periods=500)}
+        {"features": range(101, 601), "date": pd.date_range("2010-10-01", periods=500)}
     )
     y = pd.Series(range(500))
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
@@ -41,7 +41,7 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
     automl = AutoMLSearch(
         X,
         y,
-        problem_type="time series regression",
+        problem_type=problem_type,
         problem_configuration={
             "max_delay": 5,
             "gap": 3,
@@ -50,3 +50,13 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
         },
     )
     automl.search()
+    automl.best_pipeline.fit(X, y)
+    X_valid = pd.DataFrame(
+        {
+            "date": pd.date_range(
+                pd.Timestamp(X.date.iloc[-1]) + pd.Timedelta("4d"), periods=2
+            )
+        }
+    )
+    # Treat all features as not known-in-advanced
+    automl.best_pipeline.predict(X_valid, X_train=X, y_train=y)

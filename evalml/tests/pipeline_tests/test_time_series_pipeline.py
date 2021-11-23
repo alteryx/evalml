@@ -300,6 +300,7 @@ def test_transform_all_but_final_for_time_series(
     assert_frame_equal(features_with_training, delayed)
 
 
+@pytest.mark.parametrize("include_feature_not_known_in_advance", [False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize(
     "forecast_horizon,gap,max_delay,n_to_pred,date_index",
@@ -343,10 +344,15 @@ def test_predict_and_predict_in_sample(
     n_to_pred,
     date_index,
     include_delayed_features,
+    include_feature_not_known_in_advance,
     ts_data,
 ):
 
     X, target = ts_data
+    if include_feature_not_known_in_advance:
+        X.ww["not_known_in_advance_1"] = pd.Series(range(X.shape[0])) + 200
+        X.ww["not_known_in_advance_2"] = pd.Series(range(X.shape[0])) + 100
+
     mock_to_check = mock_classifier_predict
     if pipeline_class == TimeSeriesBinaryClassificationPipeline:
         target = target % 2
@@ -380,6 +386,10 @@ def test_predict_and_predict_in_sample(
 
     X_predict_in_sample, target_predict_in_sample = X.iloc[20:], target.iloc[20:]
     X_predict = X.iloc[20 + gap : 20 + gap + n_to_pred]
+
+    if include_feature_not_known_in_advance:
+        X_predict.ww.drop(["not_known_in_advance_1", "not_known_in_advance_2"])
+
     if reset_index:
         X_predict = X_predict.reset_index(drop=True)
 
