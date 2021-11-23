@@ -135,15 +135,7 @@ class HighlyNullDataCheck(DataCheck):
                 ).to_dict()
             )
 
-        percent_null_cols = (X.isnull().mean()).to_dict()
-        highly_null_cols = {
-            key: value
-            for key, value in percent_null_cols.items()
-            if value >= self.pct_null_col_threshold and value != 0
-        }
-        highly_null_cols_indices = {
-            col_: X[col_][X[col_].isnull()].index.tolist() for col_ in highly_null_cols
-        }
+        highly_null_cols, highly_null_cols_indices = HighlyNullDataCheck.get_null_column_information(X)
         warning_msg = "Columns {} are {}% or more null"
         if highly_null_cols:
             results["warnings"].append(
@@ -171,3 +163,17 @@ class HighlyNullDataCheck(DataCheck):
                 ).to_dict()
             )
         return results
+
+
+    @staticmethod
+    def get_null_column_information(X, pct_null_col_threshold=0.):
+        percent_null_cols = (X.isnull().mean()).to_dict()
+        highly_null_cols = {
+            key: value
+            for key, value in percent_null_cols.items()
+            if value >= pct_null_col_threshold and value != 0
+        }
+        highly_null_cols_indices = {
+            col_: X[col_][X[col_].isnull()].index.tolist() for col_ in highly_null_cols
+        }
+        return highly_null_cols, highly_null_cols_indices
