@@ -18,6 +18,7 @@ Release Notes
         * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
         * Change ``DateTimeFeaturizer`` to use corresponding Featuretools primitives :pr:`3081`
         * Updated ``TargetDistributionDataCheck`` to return metadata details as floats rather strings :pr:`3085`
+        * Removed dependency on ``psutil`` package :pr:`3093`
     * Documentation Changes
         * Updated docs to use data check action methods rather than manually cleaning data :pr:`3050`
     * Testing Changes
