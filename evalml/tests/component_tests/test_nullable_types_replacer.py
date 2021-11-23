@@ -72,7 +72,4 @@ def test_replace_nullable_types(nullable_types_properly_set, input_type):
         assert str(X_t.dtypes.loc["non_nullable_integer"]) == "int64"
         assert str(X_t.dtypes.loc["nullable_integer"]) == "float64"
         assert str(X_t.dtypes.loc["non_nullable_boolean"]) == "bool"
-        if input_type == "ww":
-            assert str(X_t.dtypes.loc["nullable_boolean"]) == "string"
-        else:
-            assert str(X_t.dtypes.loc["nullable_boolean"]) == "object"
+        assert str(X_t.dtypes.loc["nullable_boolean"]) == "string"
