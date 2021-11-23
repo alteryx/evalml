@@ -95,10 +95,12 @@ class ReplaceNullableTypes(Transformer):
                 self._nullable_int_cols.append(col)
             elif is_nullable_bool(X_t, col):
                 self._nullable_bool_cols.append(col)
+                
         return self
 
     def transform(self, X, y=None):
-        """Transforms data X by dropping columns that contain either the nullable integer or nullable boolean types.
+        """Transforms data X by replacing columns that contain either the nullable integer or nullable boolean types
+        with the appropriate replacement type.  "float64" for nullable integers and "category" for nullable booleans.
 
         Args:
             X (pd.DataFrame): Data to transform
