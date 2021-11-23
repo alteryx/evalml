@@ -415,13 +415,8 @@ def test_predict_and_predict_in_sample(
         expected_features_pred = expected_features[20 + gap : 20 + gap + n_to_pred]
 
     pl = pipeline_class(component_graph=component_graph, parameters=parameters)
-    try:
-        pl.fit(X.iloc[:20], target.iloc[:20])
-    except:
-        import pdb
+    pl.fit(X.iloc[:20], target.iloc[:20])
 
-        pdb.set_trace()
-        2 + 2
     preds_in_sample = pl.predict_in_sample(
         X_predict_in_sample, target_predict_in_sample, X.iloc[:20], target.iloc[:20]
     )
