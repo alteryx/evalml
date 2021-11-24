@@ -227,15 +227,15 @@ def _get_preprocessing_components(
     else:
         components_functions = [
             _get_label_encoder,
-            # _get_drop_all_null,
-            # _get_drop_index_unknown,
-            # _get_url_email,
-            # _get_datetime,
-            # _get_natural_language,
-            # _get_imputer,
-            # _get_ohe,
-            # _get_sampler,
-            # _get_standard_scaler,
+            _get_drop_all_null,
+            _get_drop_index_unknown,
+            _get_url_email,
+            _get_datetime,
+            _get_natural_language,
+            _get_imputer,
+            _get_ohe,
+            _get_sampler,
+            _get_standard_scaler,
         ]
     components = []
     for function in components_functions:
