@@ -1658,3 +1658,48 @@ def test_automl_passes_allow_long_running_models_iterative(
         estimators.extend(["CatBoost Classifier", "XGBoost Classifier"])
 
     assert "Dropping estimators {}".format(", ".join(sorted(estimators))) in caplog.text
+
+
+@patch(
+    "evalml.automl.automl_algorithm.default_algorithm.DefaultAlgorithm._create_ensemble",
+    return_value=[],
+)
+@patch("evalml.pipelines.components.estimators.Estimator.fit")
+@patch(
+    "evalml.pipelines.MulticlassClassificationPipeline.score",
+    return_value={"Log Loss Multiclass": 0.5},
+)
+@pytest.mark.parametrize("allow_long_running_models", [True, False])
+@pytest.mark.parametrize("unique", [10, 200])
+def test_automl_passes_allow_long_running_models_default(
+    mock_s_fit,
+    mock_fit,
+    mock_score,
+    unique,
+    allow_long_running_models,
+    caplog,
+    has_minimal_dependencies,
+):
+    X = pd.DataFrame([i for i in range(unique)] * 5)
+    y = pd.Series([i for i in range(unique)] * 5)
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="multiclass",
+        allow_long_running_models=allow_long_running_models,
+        _automl_algorithm="default",
+        max_batches=2,
+        verbose=True,
+    )
+    assert (
+        automl._automl_algorithm.allow_long_running_models == allow_long_running_models
+    )
+    automl.search()
+    if allow_long_running_models or unique == 10:
+        assert "Dropping estimators" not in caplog.text
+        return
+    estimators = ["Elastic Net Classifier"]
+    if not has_minimal_dependencies:
+        estimators.extend(["CatBoost Classifier", "XGBoost Classifier"])
+
+    assert "Dropping estimators {}".format(", ".join(sorted(estimators))) in caplog.text

@@ -15,7 +15,7 @@ from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types import is_multiclass, is_time_series
+from evalml.problem_types import is_time_series
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
@@ -150,32 +150,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         " and Real!"
                     )
 
-    def _filter_estimators(self, estimators):
-        """Function to remove computationally expensive and long-running estimators from datasets with large numbers of unique classes. Thresholds were determined empirically."""
-        estimators_to_drop = []
-        if (
-            not is_multiclass(self.problem_type)
-            or self.allow_long_running_models
-            or self.allowed_model_families is not None
-        ):
-            return estimators
-        unique = self.y.nunique()
-        if unique > 75:
-            estimators_to_drop.extend(["Elastic Net Classifier", "XGBoost Classifier"])
-        if unique > 150:
-            estimators_to_drop.append("CatBoost Classifier")
-        dropped_estimators = [e for e in estimators if e.name in estimators_to_drop]
-        if len(dropped_estimators):
-            self.logger.info(
-                "Dropping estimators {} because the number of unique targets is {} and `allow_long_running_models` is set to {}".format(
-                    ", ".join(sorted([e.name for e in dropped_estimators])),
-                    unique,
-                    self.allow_long_running_models,
-                )
-            )
-        estimators = [e for e in estimators if e not in dropped_estimators]
-        return estimators
-
     def _create_pipelines(self):
         indices = []
         pipelines_to_sort = []
@@ -186,7 +160,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             allowed_estimators = get_estimators(
                 self.problem_type, self.allowed_model_families
             )
-            allowed_estimators = self._filter_estimators(allowed_estimators)
+            allowed_estimators = self._filter_estimators(
+                allowed_estimators,
+                self.problem_type,
+                self.allow_long_running_models,
+                self.allowed_model_families,
+                self.y.nunique(),
+                self.logger,
+            )
             if (
                 is_time_series(self.problem_type)
                 and self._pipeline_params["pipeline"]["date_index"]

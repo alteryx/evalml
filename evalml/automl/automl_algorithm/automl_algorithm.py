@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 from evalml.exceptions import PipelineNotFoundError
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
+from evalml.problem_types import is_multiclass
 from evalml.tuners import SKOptTuner
 
 
@@ -152,3 +153,36 @@ class AutoMLAlgorithm(ABC):
                 self.logger.info(
                     f"Removing columns {unknown_columns} because they are of 'Unknown' type"
                 )
+
+    def _filter_estimators(
+        self,
+        estimators,
+        problem_type,
+        allow_long_running_models,
+        allowed_model_families,
+        y_unique,
+        logger,
+    ):
+        """Function to remove computationally expensive and long-running estimators from datasets with large numbers of unique classes. Thresholds were determined empirically."""
+        estimators_to_drop = []
+        if (
+            not is_multiclass(problem_type)
+            or allow_long_running_models
+            or allowed_model_families is not None
+        ):
+            return estimators
+        if y_unique > 75:
+            estimators_to_drop.extend(["Elastic Net Classifier", "XGBoost Classifier"])
+        if y_unique > 150:
+            estimators_to_drop.append("CatBoost Classifier")
+        dropped_estimators = [e for e in estimators if e.name in estimators_to_drop]
+        if len(dropped_estimators):
+            logger.info(
+                "Dropping estimators {} because the number of unique targets is {} and `allow_long_running_models` is set to {}".format(
+                    ", ".join(sorted([e.name for e in dropped_estimators])),
+                    y_unique,
+                    allow_long_running_models,
+                )
+            )
+        estimators = [e for e in estimators if e not in dropped_estimators]
+        return estimators

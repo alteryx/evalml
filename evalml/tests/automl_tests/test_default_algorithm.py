@@ -381,3 +381,74 @@ def test_select_cat_cols(
             assert value["columns"] == algo._selected_cols
         elif "Categorical Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cat_cols
+
+
+@pytest.mark.parametrize(
+    "problem_type,n_unique",
+    [
+        ("binary", 2),
+        ("multiclass", 10),
+        ("multiclass", 200),
+        ("regression", 80),
+        ("regression", 200),
+    ],
+)
+@pytest.mark.parametrize("allow_long_running_models", [True, False])
+def test_default_algorithm_allow_long_running_models_next_batch(
+    allow_long_running_models,
+    problem_type,
+    n_unique,
+    has_minimal_dependencies,
+):
+    if allow_long_running_models and problem_type != "multiclass":
+        pytest.skip("Skipping to shorten tests")
+
+    models_to_check = [
+        "Elastic Net",
+        "XGBoost",
+        "CatBoost",
+    ]
+    if has_minimal_dependencies:
+        models_to_check = ["Elastic Net"]
+
+    X = pd.DataFrame()
+    y = pd.Series([i for i in range(n_unique)] * 5)
+
+    algo = DefaultAlgorithm(
+        X=X,
+        y=y,
+        sampler_name=None,
+        problem_type=problem_type,
+        random_seed=0,
+        allow_long_running_models=allow_long_running_models,
+    )
+    algo._selected_cols = []
+    next_batch = algo.next_batch()
+    found_models = False
+    for pipeline in next_batch:
+        found_models |= any([m in pipeline.name for m in models_to_check])
+
+    # the "best" score will be the 1st dummy pipeline
+    scores = np.arange(0, len(next_batch))
+    for score, pipeline in zip(scores, next_batch):
+        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
+    for i in range(1, 6):
+        next_batch = algo.next_batch()
+        for pipeline in next_batch:
+            found_models |= any([m in pipeline.name for m in models_to_check])
+        # if found_models becomes true, we already have our needed results
+        if found_models:
+            break
+        scores = -np.arange(0, len(next_batch))
+        for score, pipeline in zip(scores, next_batch):
+            algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
+    if (
+        problem_type == "multiclass"
+        and not allow_long_running_models
+        and n_unique == 200
+    ):
+        assert not found_models
+    else:
+        assert found_models
