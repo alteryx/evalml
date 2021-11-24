@@ -44,6 +44,7 @@ def test_delayed_features_transformer_init():
         "forecast_horizon": 1,
         "date_index": "date",
         "conf_level": 0.05,
+        "rolling_window_size": 0.25,
     }
 
 
@@ -496,6 +497,7 @@ def test_delay_feature_transformer_supports_custom_index(
             max_delay=3,
             forecast_horizon=7,
             conf_level=1.0,
+            rolling_window_size=1.0,
             date_index="date",
         ).fit_transform(X, y),
     )
@@ -518,6 +520,7 @@ def test_delay_feature_transformer_supports_custom_index(
             forecast_horizon=7,
             conf_level=1.0,
             date_index="date",
+            rolling_window_size=1.0,
             delay_features=False,
         ).fit_transform(X=X, y=y),
     )
@@ -567,6 +570,7 @@ def test_delay_feature_transformer_y_is_none(delayed_features_data):
             max_delay=1,
             forecast_horizon=11,
             conf_level=1.0,
+            rolling_window_size=1.0,
             date_index="date",
         ).fit_transform(X, y=None),
     )
@@ -585,6 +589,7 @@ def test_delayed_feature_transformer_does_not_modify_input_data(delayed_features
     assert_frame_equal(X, expected)
 
 
+@pytest.mark.parametrize("rolling_window_size", [0.1, 0.2, 0.5, 0.75, 1.0])
 @pytest.mark.parametrize("gap", [0, 1, 2])
 @pytest.mark.parametrize("forecast_horizon", [1, 5, 10])
 @pytest.mark.parametrize("max_delay", [1, 3, 9])
@@ -592,7 +597,12 @@ def test_delayed_feature_transformer_does_not_modify_input_data(delayed_features
     f"evalml.pipelines.TimeSeriesFeaturizer.{DELAYED_FEATURES_METHOD_NAME}",
 )
 def test_time_series_featurizer_rolling_mean(
-    mock_delay, max_delay, forecast_horizon, gap, delayed_features_data
+    mock_delay,
+    max_delay,
+    forecast_horizon,
+    rolling_window_size,
+    gap,
+    delayed_features_data,
 ):
     X, y = delayed_features_data
     mock_delay.return_value = X
@@ -600,15 +610,16 @@ def test_time_series_featurizer_rolling_mean(
         max_delay=max_delay,
         forecast_horizon=forecast_horizon,
         gap=gap,
+        rolling_window_size=rolling_window_size,
         date_index="date",
     ).fit_transform(X, y)
+
+    size = int(rolling_window_size * max_delay)
     rolling_means = (
-        X.feature.shift(forecast_horizon + gap)
-        .rolling(max_delay + 1, max_delay + 1)
-        .mean()
+        X.feature.shift(forecast_horizon + gap).rolling(size + 1, size + 1).mean()
     )
     rolling_means_target = (
-        y.shift(forecast_horizon + gap).rolling(max_delay + 1, max_delay + 1).mean()
+        y.shift(forecast_horizon + gap).rolling(size + 1, size + 1).mean()
     )
     expected = pd.DataFrame(
         {
@@ -620,11 +631,12 @@ def test_time_series_featurizer_rolling_mean(
     assert_frame_equal(output, expected)
 
 
+@pytest.mark.parametrize("rolling_window_size", [0.1, 0.2, 0.5, 0.75, 1.0])
 @pytest.mark.parametrize("gap", [0, 1, 2])
 @pytest.mark.parametrize("forecast_horizon", [1, 5, 10])
 @pytest.mark.parametrize("max_delay", [1, 3, 9])
 def test_time_series_featurizer_does_not_need_to_delay_to_compute_means(
-    max_delay, forecast_horizon, gap, delayed_features_data
+    max_delay, forecast_horizon, gap, rolling_window_size, delayed_features_data
 ):
     X, y = delayed_features_data
     output = TimeSeriesFeaturizer(
@@ -634,14 +646,15 @@ def test_time_series_featurizer_does_not_need_to_delay_to_compute_means(
         delay_features=False,
         delay_target=False,
         date_index="date",
+        rolling_window_size=rolling_window_size,
     ).fit_transform(X, y)
+
+    size = int(rolling_window_size * max_delay)
     rolling_means = (
-        X.feature.shift(forecast_horizon + gap)
-        .rolling(max_delay + 1, max_delay + 1)
-        .mean()
+        X.feature.shift(forecast_horizon + gap).rolling(size + 1, size + 1).mean()
     )
     rolling_means_target = (
-        y.shift(forecast_horizon + gap).rolling(max_delay + 1, max_delay + 1).mean()
+        y.shift(forecast_horizon + gap).rolling(size + 1, size + 1).mean()
     )
     expected = pd.DataFrame(
         {

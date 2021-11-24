@@ -48,8 +48,13 @@ class TimeSeriesFeaturizer(Transformer):
     """
 
     name = "Time Series Featurizer"
-    hyperparameter_ranges = {"conf_level": Real(0.001, 1.0)}
-    """{}"""
+    hyperparameter_ranges = {
+        "conf_level": Real(0.001, 1.0),
+        "rolling_window_size": Real(0.001, 1.0),
+    }
+    """{"conf_level": Real(0.001, 1.0),
+        "rolling_window_size": Real(0.001, 1.0)
+    }"""
     needs_fitting = True
     target_colname_prefix = "target_delay_{}"
     """target_delay_{}"""
@@ -61,6 +66,7 @@ class TimeSeriesFeaturizer(Transformer):
         gap=0,
         forecast_horizon=1,
         conf_level=0.05,
+        rolling_window_size=0.25,
         delay_features=True,
         delay_target=True,
         random_seed=0,
@@ -72,6 +78,7 @@ class TimeSeriesFeaturizer(Transformer):
         self.delay_target = delay_target
         self.forecast_horizon = forecast_horizon
         self.gap = gap
+        self.rolling_window_size = rolling_window_size
         self.statistically_significant_lags = None
 
         if conf_level is None:
@@ -94,6 +101,7 @@ class TimeSeriesFeaturizer(Transformer):
             "forecast_horizon": forecast_horizon,
             "conf_level": conf_level,
             "gap": gap,
+            "rolling_window_size": rolling_window_size,
         }
         parameters.update(kwargs)
         super().__init__(parameters=parameters, random_seed=random_seed)
@@ -172,10 +180,11 @@ class TimeSeriesFeaturizer(Transformer):
         Returns:
             pd.DataFrame: Data with rolling features. All new features.
         """
+        size = int(self.rolling_window_size * self.max_delay)
         rolling_mean = RollingMean(
-            window_length=self.max_delay + 1,
+            window_length=size + 1,
             gap=self.start_delay,
-            min_periods=self.max_delay + 1,
+            min_periods=size + 1,
         )
         rolling_mean = rolling_mean.get_function()
         numerics = set(

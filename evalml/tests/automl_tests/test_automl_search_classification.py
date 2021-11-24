@@ -1156,6 +1156,7 @@ def test_automl_supports_time_series_classification(
         "delay_target": False,
         "delay_features": True,
         "conf_level": 0.05,
+        "rolling_window_size": 0.25,
     }
 
     automl = AutoMLSearch(

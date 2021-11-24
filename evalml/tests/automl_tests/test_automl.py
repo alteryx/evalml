@@ -3729,6 +3729,7 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(AutoMLTestEnv, ts_d
             "gap": 6,
             "forecast_horizon": 7,
             "conf_level": 0.05,
+            "rolling_window_size": 0.25,
         },
         "Time Series Baseline Estimator": {"forecast_horizon": 7, "gap": 6},
     }

@@ -133,6 +133,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
             "delay_features": True,
             "delay_target": True,
             "conf_level": 0.05,
+            "rolling_window_size": 0.25,
         }
         assert pl.parameters["pipeline"] == {
             "gap": 0,
@@ -208,6 +209,7 @@ def test_fit_drop_nans_before_estimator(
                 "delay_features": include_delayed_features,
                 "delay_target": include_delayed_features,
                 "conf_level": 1.0,
+                "rolling_window_size": 1.0,
             },
             "pipeline": {
                 "date_index": "date",
@@ -275,6 +277,7 @@ def test_transform_all_but_final_for_time_series(
                 "gap": gap,
                 "forecast_horizon": forecast_horizon,
                 "conf_level": 1.0,
+                "rolling_window_size": 1.0,
                 "date_index": "date",
             },
         },
@@ -288,6 +291,7 @@ def test_transform_all_but_final_for_time_series(
         gap=gap,
         forecast_horizon=forecast_horizon,
         conf_level=1.0,
+        rolling_window_size=1.0,
         date_index="date",
     )
     date_featurizer = DateTimeFeaturizer()
@@ -405,6 +409,7 @@ def test_predict_and_predict_in_sample(
             "delay_features": True,
             "delay_target": True,
             "conf_level": 1.0,
+            "rolling_window_size": 1.0,
         }
         parameters.update({"Time Series Featurizer": delayer_params})
         expected_features = TimeSeriesFeaturizer(**delayer_params).fit_transform(
@@ -490,6 +495,7 @@ def test_predict_and_predict_in_sample_with_date_index(
         "delay_features": True,
         "delay_target": True,
         "conf_level": 1.0,
+        "rolling_window_size": 1.0,
     }
     parameters = {
         "pipeline": {
@@ -696,6 +702,7 @@ def test_classification_pipeline_encodes_targets(
                 "max_delay": 1,
                 "forecast_horizon": 1,
                 "conf_level": 1.0,
+                "rolling_window_size": 1.0,
             },
             "pipeline": {
                 "date_index": "date",
