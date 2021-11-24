@@ -155,9 +155,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             gap_target,
             y,
         ]
-        padded_features = pd.concat(features_to_concat, axis=0)
-        padded_target = pd.concat(targets_to_concat, axis=0)
-
+        padded_features = pd.concat(features_to_concat, axis=0).fillna(method="ffill")
+        padded_target = pd.concat(targets_to_concat, axis=0).fillna(method="ffill")
         padded_features.ww.init(schema=X_train.ww.schema)
         padded_target = ww.init_series(
             padded_target, logical_type=y_train.ww.logical_type

@@ -24,7 +24,7 @@ pyzmq==22.3.0
 requirements-parser==0.2.0
 scikit-learn==1.0.1
 scikit-optimize==0.9.0
-scipy==1.7.2
+scipy==1.7.3
 seaborn==0.11.2
 shap==0.40.0
 sktime==0.8.0
