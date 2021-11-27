@@ -106,7 +106,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
             ValueError: If encoding a column failed.
         """
         top_n = self.parameters["top_n"]
-        X = infer_feature_types(X)
+        X = infer_feature_types(X, ignore_nullable_types=True)
         if self.features_to_encode is None:
             self.features_to_encode = self._get_cat_cols(X)
 
@@ -178,7 +178,7 @@ class OneHotEncoder(Transformer, metaclass=OneHotEncoderMeta):
         Returns:
             pd.DataFrame: Transformed data, where each categorical feature has been encoded into numerical columns using one-hot encoding.
         """
-        X = infer_feature_types(X)
+        X = infer_feature_types(X, ignore_nullable_types=True)
         X_copy = self._handle_parameter_handle_missing(X)
 
         X = X.ww.drop(columns=self.features_to_encode)
