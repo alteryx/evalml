@@ -4,7 +4,7 @@ cloudpickle==2.0.0
 colorama==0.4.4
 dask==2021.11.2
 featuretools==1.2.0
-graphviz==0.18.2
+graphviz==0.19
 imbalanced-learn==0.8.1
 ipywidgets==7.6.5
 kaleido==0.2.1
