@@ -29,11 +29,11 @@ class RFRegressorSelectFromModel(FeatureSelector):
     name = "RF Regressor Select From Model"
     hyperparameter_ranges = {
         "percent_features": Real(0.01, 1),
-        "threshold": ["mean"],
+        "threshold": ["median"],
     }
     """{
         "percent_features": Real(0.01, 1),
-        "threshold": ["mean"],
+        "threshold": ["median"],
     }"""
 
     def __init__(
@@ -42,7 +42,7 @@ class RFRegressorSelectFromModel(FeatureSelector):
         n_estimators=10,
         max_depth=None,
         percent_features=0.5,
-        threshold="mean",
+        threshold="median",
         n_jobs=-1,
         random_seed=0,
         **kwargs,
