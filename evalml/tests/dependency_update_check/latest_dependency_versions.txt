@@ -19,12 +19,11 @@ numpy==1.21.4
 pandas==1.3.4
 plotly==5.4.0
 pmdarima==1.8.0
-psutil==5.8.0
 pyzmq==22.3.0
 requirements-parser==0.2.0
 scikit-learn==1.0.1
 scikit-optimize==0.9.0
-scipy==1.7.2
+scipy==1.7.3
 seaborn==0.11.2
 shap==0.40.0
 sktime==0.8.0
@@ -32,4 +31,4 @@ statsmodels==0.13.1
 texttable==1.6.4
 vowpalwabbit==8.11.0
 woodwork==0.9.1
-xgboost==1.5.0
+xgboost==1.5.1
