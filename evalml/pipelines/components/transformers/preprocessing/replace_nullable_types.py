@@ -2,7 +2,12 @@
 from pandas.core import arrays as pca
 from woodwork import init_series
 from woodwork.exceptions import WoodworkNotInitError
-from woodwork.logical_types import BooleanNullable, IntegerNullable, Categorical, Double
+from woodwork.logical_types import (
+    BooleanNullable,
+    Categorical,
+    Double,
+    IntegerNullable,
+)
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
@@ -139,6 +144,8 @@ class ReplaceNullableTypes(Transformer):
                 if self._nullable_target == "nullable_int":
                     y_t = init_series(replace_nullable_int(y_t), logical_type=Double)
                 elif self._nullable_target == "nullable_bool":
-                    y_t = init_series(replace_nullable_bool(y_t), logical_type=Categorical)
+                    y_t = init_series(
+                        replace_nullable_bool(y_t), logical_type=Categorical
+                    )
 
         return X_t, y_t
