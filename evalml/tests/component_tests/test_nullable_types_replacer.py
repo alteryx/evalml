@@ -4,7 +4,6 @@ from woodwork import init_series
 from woodwork.logical_types import (
     BooleanNullable,
     Double,
-    Integer,
     IntegerNullable,
     Unknown,
 )
