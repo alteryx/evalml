@@ -117,8 +117,9 @@ class ReplaceNullableTypes(Transformer):
         return self
 
     def transform(self, X, y=None):
-        """Transforms data X by replacing columns that contain either the nullable integer or nullable boolean types
-        with the appropriate replacement type.  "float64" for nullable integers and "category" for nullable booleans.
+        """Transforms data X by replacing columns that contain nullable types with the appropriate replacement type.
+
+        "float64" for nullable integers and "category" for nullable booleans.
 
         Args:
             X (pd.DataFrame): Data to transform
