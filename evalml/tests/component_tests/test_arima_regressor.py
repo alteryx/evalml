@@ -34,6 +34,14 @@ def test_model_instance(ts_data):
     assert isinstance(fitted, ARIMARegressor)
 
 
+def test_fit_ts_without_y(ts_data):
+    X, y = ts_data
+
+    clf = ARIMARegressor()
+    with pytest.raises(ValueError, match="ARIMA Regressor requires y as input."):
+        clf.fit(X=X)
+
+
 @pytest.fixture
 def get_X_y():
     def _get_X_y(
@@ -114,7 +122,7 @@ def test_remove_datetime(
         assert not isinstance(y_train.index, pd.DatetimeIndex)
 
     clf = ARIMARegressor()
-    X_train_no_dt = clf._remove_datetime(X_train, training=True)
+    X_train_no_dt = clf._remove_datetime(X_train, features=True)
     y_train_no_dt = clf._remove_datetime(y_train)
 
     if train_none:
@@ -211,6 +219,7 @@ def test_fit_predict(
     y_pred = m_clf.predict(X=X_test)
 
     assert (y_pred_sk.values == y_pred.values).all()
+    assert y_pred.index.equals(X_test.index)
 
 
 @pytest.mark.parametrize(
@@ -253,14 +262,19 @@ def test_fit_predict_sk_failure(
     y_pred = m_clf.predict(X=X_test)
     assert isinstance(y_pred, pd.Series)
     assert len(y_pred) == 10
+    assert y_pred.index.equals(X_test.index)
 
 
-def test_fit_ts_without_y(ts_data):
+def test_target_leakage_features(ts_data):
     X, y = ts_data
+    X["not_leaking"] = [1, 5, 2] * 10 + [3]
 
-    clf = ARIMARegressor()
-    with pytest.raises(ValueError, match="ARIMA Regressor requires y as input."):
-        clf.fit(X=X)
+    m_clf = ARIMARegressor(date_index="date", d=None)
+    m_clf.fit(X=X, y=y)
+    y_pred = m_clf.predict(X=X)
+
+    assert m_clf.cols_to_keep == ["not_leaking"]
+    assert y_pred.index.equals(X.index)
 
 
 @pytest.mark.parametrize("freq_num", ["1", "2"])
@@ -284,3 +298,4 @@ def test_different_time_units_out_of_sample(freq_str, freq_num):
     y_pred = m_clf.predict(X=X[15:])
 
     assert (y_pred_sk.values == y_pred.values).all()
+    assert y_pred.index.equals(X[15:].index)

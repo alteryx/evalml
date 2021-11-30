@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 from skopt.space import Integer
 
+from evalml.data_checks import TargetLeakageDataCheck
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.problem_types import ProblemTypes
@@ -90,13 +91,14 @@ class ARIMARegressor(Estimator):
             "sktime.forecasting.arima", error_msg=arima_model_msg
         )
         arima_model = sktime_arima.AutoARIMA(**parameters)
-        parameters["date_index"] = date_index
+        self.date_index = date_index
+        self.cols_to_keep = []
 
         super().__init__(
             parameters=parameters, component_obj=arima_model, random_seed=random_seed
         )
 
-    def _remove_datetime(self, data, training=False):
+    def _remove_datetime(self, data, features=False):
         if data is None:
             return None
         data_no_dt = data.copy()
@@ -104,15 +106,13 @@ class ARIMARegressor(Estimator):
             data_no_dt.index, (pd.DatetimeIndex, pd.PeriodIndex, pd.IntervalIndex)
         ):
             data_no_dt = data_no_dt.reset_index(drop=True)
-        if training:
+        if features:
             data_no_dt = data_no_dt.select_dtypes(exclude=["datetime64"])
 
         return data_no_dt
 
     def _match_indices(self, X, y):
         if X is not None:
-            X = X.copy()
-            y = y.copy()
             if X.index.equals(y.index):
                 return X, y
             else:
@@ -148,9 +148,14 @@ class ARIMARegressor(Estimator):
         if y is None:
             raise ValueError("ARIMA Regressor requires y as input.")
         if X is not None:
-            X = X.select_dtypes(exclude=["datetime64"])
+            target_leakage = TargetLeakageDataCheck().validate(X, y)["actions"]
+            leaked_columns = (
+                target_leakage[0]["metadata"]["columns"] if target_leakage else []
+            )
+            self.cols_to_keep = list(set(X.columns) - set(leaked_columns))
+            X = X[self.cols_to_keep]
 
-        X = self._remove_datetime(X, training=True)
+        X = self._remove_datetime(X, features=True)
         y = self._remove_datetime(y)
         X, y = self._match_indices(X, y)
 
@@ -175,13 +180,14 @@ class ARIMARegressor(Estimator):
         """
         X, y = self._manage_woodwork(X, y)
         fh_ = self._set_forecast(X)
+        X = X[self.cols_to_keep]
         X = X.select_dtypes(exclude=["datetime64"])
 
         if not X.empty:
             y_pred = self._component_obj.predict(fh=fh_, X=X)
         else:
             y_pred = self._component_obj.predict(fh=fh_)
-            y_pred.index = X.index
+        y_pred.index = X.index
 
         return infer_feature_types(y_pred)
 
