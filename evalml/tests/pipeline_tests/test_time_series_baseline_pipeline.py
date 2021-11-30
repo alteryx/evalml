@@ -32,7 +32,7 @@ def test_time_series_baseline_outside_of_pipeline(X_y_regression):
 
     estimator = TimeSeriesBaselineEstimator(gap=0, forecast_horizon=2)
     estimator.fit(X, y)
-    with pytest.raises(ValueError, match="with a DelayedFeaturesTransformer"):
+    with pytest.raises(ValueError, match="with a Time Series Featurizer"):
         estimator.predict(X)
 
 

@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
     * Fixes
     * Changes
         * Removed reliance on a datetime index for ``ARIMARegressor`` :pr:`3104`
@@ -11,6 +12,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` :pr:`3028`
 
 
 **v0.38.0 Nov. 27, 2021**
