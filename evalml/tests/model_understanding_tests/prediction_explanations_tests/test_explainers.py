@@ -969,7 +969,7 @@ def test_explain_predictions_time_series(ts_data):
 
     ts_pipeline = TimeSeriesRegressionPipeline(
         component_graph=[
-            "Delayed Feature Transformer",
+            "Time Series Featurizer",
             "DateTime Featurization Component",
             "Random Forest Regressor",
         ],
@@ -980,7 +980,7 @@ def test_explain_predictions_time_series(ts_data):
                 "max_delay": 2,
                 "forecast_horizon": 1,
             },
-            "Delayed Feature Transformer": {
+            "Time Series Featurizer": {
                 "date_index": "date",
                 "gap": 0,
                 "max_delay": 2,
@@ -1028,7 +1028,7 @@ def test_explain_predictions_best_worst_time_series(
 
     ts_pipeline = pipeline_class(
         component_graph=[
-            "Delayed Feature Transformer",
+            "Time Series Featurizer",
             "DateTime Featurization Component",
             estimator,
         ],
@@ -1039,7 +1039,7 @@ def test_explain_predictions_best_worst_time_series(
                 "max_delay": 2,
                 "forecast_horizon": 1,
             },
-            "Delayed Feature Transformer": {
+            "Time Series Featurizer": {
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,

@@ -2,6 +2,20 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` :pr:`3028`
+
+
+**v0.38.0 Nov. 27, 2021**
+    * Enhancements
         * Added ``data_check_name`` attribute to the data check action class :pr:`3034`
         * Added ``NumWords`` and ``NumCharacters`` primitives to ``TextFeaturizer`` and renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
         * Added support for ``scikit-learn > 1.0.0`` :pr:`3051`
