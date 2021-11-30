@@ -38,6 +38,8 @@ class TimeSeriesFeaturizer(Transformer):
         conf_level (float): Float in range (0, 1] that determines the confidence interval size used to select
             which lags to compute from the set of [1, max_delay]. A delay of 1 will always be computed. If 1,
             selects all possible lags in the set of [1, max_delay], inclusive.
+        rolling_window_size (float): Float in range (0, 1] that determines the size of the window used for rolling
+            features. Size is computed as rolling_window_size * max_delay.
         delay_features (bool): Whether to delay the input features. Defaults to True.
         delay_target (bool): Whether to delay the target. Defaults to True.
         gap (int): The number of time units between when the features are collected and
@@ -199,8 +201,8 @@ class TimeSeriesFeaturizer(Transformer):
         data.ww.init()
         return data
 
-    def _compute_delays(self, X_ww, y, original_features):
-        """Computes the delayed features for all features in X and y.
+    def _compute_delays(self, X_ww, y):
+        """Computes the delayed features for numeric/categorical features in X and y.
 
         Use the autocorrelation to determine delays.
 
