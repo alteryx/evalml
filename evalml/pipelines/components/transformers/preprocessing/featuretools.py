@@ -12,19 +12,20 @@ class DFSTransformer(Transformer):
         index (string): The name of the column that contains the indices. If no column with this name exists,
             then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'.
         random_seed (int): Seed for the random number generator. Defaults to 0.
+        features (list)[FeatureBase]: list of features to run DFS on.
     """
 
     name = "DFS Transformer"
     hyperparameter_ranges = {}
     """{}"""
 
-    def __init__(self, index="index", random_seed=0, **kwargs):
+    def __init__(self, index="index", features=None, random_seed=0, **kwargs):
         parameters = {"index": index}
         if not isinstance(index, str):
             raise TypeError(f"Index provided must be string, got {type(index)}")
 
         self.index = index
-        self.features = None
+        self.features = features
         parameters.update(kwargs)
         super().__init__(parameters=parameters, random_seed=random_seed)
 
@@ -42,6 +43,15 @@ class DFSTransformer(Transformer):
             es = ft_es.add_dataframe(dataframe=X, dataframe_name="X", index=self.index)
         return es
 
+    def _should_skip_fit_transform(self, X):
+        # check if column names matches Feature.get_feature_names
+        # https://github.com/alteryx/featuretools/issues/1696 could make this logic easier
+        for feature in self.features:
+            feature_names = feature.get_feature_names()
+            if feature_names not in X.columns:
+                return False
+        return True
+
     def fit(self, X, y=None):
         """Fits the DFSTransformer Transformer component.
 
@@ -52,12 +62,13 @@ class DFSTransformer(Transformer):
         Returns:
             self
         """
-        X_ww = infer_feature_types(X)
-        X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
-        es = self._make_entity_set(X_ww)
-        self.features = dfs(
-            entityset=es, target_dataframe_name="X", features_only=True, max_depth=1
-        )
+        if not self.features:
+            X_ww = infer_feature_types(X)
+            X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
+            es = self._make_entity_set(X_ww)
+            self.features = dfs(
+                entityset=es, target_dataframe_name="X", features_only=True, max_depth=1
+            )
         return self
 
     def transform(self, X, y=None):

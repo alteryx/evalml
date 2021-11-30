@@ -56,6 +56,7 @@ def test_featuretools_index(mock_calculate_feature_matrix, mock_dfs, X_y_multi):
     assert arg_tr.to_list() == new_index
 
     # check if _make_entity_set fills in the proper index values
+    feature = DFSTransformer()
     feature.fit(X_pd)
     feature.transform(X_pd)
     arg_es = mock_dfs.call_args[1]["entityset"].dataframes[0].index
@@ -163,3 +164,26 @@ def test_dfs_sets_max_depth_1(mock_dfs, X_y_multi):
     feature.fit(X_pd, y)
     _, kwargs = mock_dfs.call_args
     assert kwargs["max_depth"] == 1
+
+
+def test_dfs_with_serialized_features(X_y_binary, X_y_multi, X_y_regression):
+    datasets = locals()
+    for dataset in datasets.values():
+        X, y = dataset
+        X_pd = pd.DataFrame(X)
+        X_pd.columns = X_pd.columns.astype(str)
+        X_fit = X_pd.iloc[: len(X) // 3]
+        X_transform = X_pd.iloc[len(X) // 3 :]
+
+        es = ft.EntitySet()
+        es = es.add_dataframe(
+            dataframe_name="X", dataframe=X_transform, index="index", make_index=True
+        )
+        feature_matrix, features = ft.dfs(entityset=es, target_dataframe_name="X")
+
+        feature = DFSTransformer(features=features)
+        feature.fit(X_fit)  # no-op
+        X_t = feature.transform(X_transform)
+
+        assert_frame_equal(feature_matrix, X_t)
+        assert features == feature.features
