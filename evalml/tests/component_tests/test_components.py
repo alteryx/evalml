@@ -27,7 +27,6 @@ from evalml.pipelines.components import (
     CatBoostRegressor,
     ComponentBase,
     DateTimeFeaturizer,
-    DelayedFeatureTransformer,
     DFSTransformer,
     DropColumns,
     DropNullColumns,
@@ -61,6 +60,7 @@ from evalml.pipelines.components import (
     SVMRegressor,
     TargetImputer,
     TimeSeriesBaselineEstimator,
+    TimeSeriesFeaturizer,
     Transformer,
     Undersampler,
     XGBoostClassifier,
@@ -871,7 +871,7 @@ def test_transformer_transform_output_type(X_y_binary):
             if "Oversampler" == component_class.name:
                 # we cover this case in test_oversamplers
                 continue
-            elif component_class == DelayedFeatureTransformer:
+            elif component_class == TimeSeriesFeaturizer:
                 # covered in test_delayed_feature_transformer.py
                 continue
 
@@ -1105,7 +1105,7 @@ def test_all_transformers_check_fit(X_y_binary, ts_data_binary):
         # SMOTE will throw errors if we call it but cannot oversample
         if "Oversampler" == component_class.name:
             component = component_class(sampling_ratio=1)
-        elif component_class == DelayedFeatureTransformer:
+        elif component_class == TimeSeriesFeaturizer:
             X, y = ts_data_binary
             component = component_class(date_index="date")
 
@@ -1120,7 +1120,7 @@ def test_all_transformers_check_fit(X_y_binary, ts_data_binary):
         component = component_class()
         if "Oversampler" == component_class.name:
             component = component_class(sampling_ratio=1)
-        elif component_class == DelayedFeatureTransformer:
+        elif component_class == TimeSeriesFeaturizer:
             component = component_class(date_index="date")
         component.fit_transform(X, y)
         component.transform(X, y)
@@ -1213,7 +1213,7 @@ def test_all_transformers_check_fit_input_type(
         if not component_class.needs_fitting or "Oversampler" in component_class.name:
             # since SMOTE determines categorical columns through the logical type, it can only accept ww data
             continue
-        if component_class == DelayedFeatureTransformer:
+        if component_class == TimeSeriesFeaturizer:
             X, y = ts_data_binary
             kwargs = {"date_index": "date"}
 
@@ -1238,7 +1238,7 @@ def test_no_fitting_required_components(
 
 def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), "component.pkl")
-    requires_date_index = [ARIMARegressor, ProphetRegressor, DelayedFeatureTransformer]
+    requires_date_index = [ARIMARegressor, ProphetRegressor, TimeSeriesFeaturizer]
     for component_class in all_components():
         print("Testing serialization of component {}".format(component_class.name))
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
@@ -1553,7 +1553,7 @@ def test_transformer_fit_and_transform_respect_custom_indices(
     X, y = X_y_binary
 
     kwargs = {}
-    if transformer_class == DelayedFeatureTransformer:
+    if transformer_class == TimeSeriesFeaturizer:
         kwargs.update({"date_index": "date"})
         X, y = ts_data_binary
 
