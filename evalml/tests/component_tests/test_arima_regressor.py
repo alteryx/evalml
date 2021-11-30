@@ -36,9 +36,14 @@ def test_model_instance(ts_data):
 
 @pytest.fixture
 def get_X_y():
-
-    def _get_X_y(train_features_index_dt, train_target_index_dt, train_none,
-                 datetime_feature, no_features, test_features_index_dt):
+    def _get_X_y(
+        train_features_index_dt,
+        train_target_index_dt,
+        train_none,
+        datetime_feature,
+        no_features,
+        test_features_index_dt,
+    ):
         X = pd.DataFrame(index=[i + 1 for i in range(50)])
         dates = pd.date_range("1/1/21", periods=50)
         feature = [i for i in range(50)]
@@ -70,18 +75,31 @@ def get_X_y():
 
 @pytest.mark.parametrize("train_features_index_dt", [True, False])
 @pytest.mark.parametrize("train_target_index_dt", [True, False])
-@pytest.mark.parametrize("train_none, no_features, datetime_feature", [(True, False, False),
-                                                                       (False, True, False),
-                                                                       (False, False, True),
-                                                                       (False, False, False)])
-def test_remove_datetime(train_features_index_dt, train_target_index_dt, train_none,
-                         datetime_feature, no_features, get_X_y):
-    X_train, _, y_train = get_X_y(train_features_index_dt,
-                                  train_target_index_dt,
-                                  train_none,
-                                  datetime_feature,
-                                  no_features,
-                                  test_features_index_dt=False)
+@pytest.mark.parametrize(
+    "train_none, no_features, datetime_feature",
+    [
+        (True, False, False),
+        (False, True, False),
+        (False, False, True),
+        (False, False, False),
+    ],
+)
+def test_remove_datetime(
+    train_features_index_dt,
+    train_target_index_dt,
+    train_none,
+    datetime_feature,
+    no_features,
+    get_X_y,
+):
+    X_train, _, y_train = get_X_y(
+        train_features_index_dt,
+        train_target_index_dt,
+        train_none,
+        datetime_feature,
+        no_features,
+        test_features_index_dt=False,
+    )
 
     if not train_none:
         if train_features_index_dt:
@@ -112,12 +130,14 @@ def test_remove_datetime(train_features_index_dt, train_target_index_dt, train_n
 
 
 def test_match_indices(get_X_y):
-    X_train, _, y_train = get_X_y(train_features_index_dt=False,
-                                  train_target_index_dt=False,
-                                  train_none=False,
-                                  datetime_feature=False,
-                                  no_features=False,
-                                  test_features_index_dt=False)
+    X_train, _, y_train = get_X_y(
+        train_features_index_dt=False,
+        train_target_index_dt=False,
+        train_none=False,
+        datetime_feature=False,
+        no_features=False,
+        test_features_index_dt=False,
+    )
 
     assert not X_train.index.equals(y_train.index)
 
@@ -127,12 +147,14 @@ def test_match_indices(get_X_y):
 
 
 def test_set_forecast(get_X_y):
-    _, X_test, _ = get_X_y(train_features_index_dt=False,
-                           train_target_index_dt=False,
-                           train_none=False,
-                           datetime_feature=False,
-                           no_features=False,
-                           test_features_index_dt=False)
+    _, X_test, _ = get_X_y(
+        train_features_index_dt=False,
+        train_target_index_dt=False,
+        train_none=False,
+        datetime_feature=False,
+        no_features=False,
+        test_features_index_dt=False,
+    )
 
     clf = ARIMARegressor()
     fh_ = clf._set_forecast(X_test)
@@ -148,20 +170,33 @@ def test_feature_importance(ts_data):
         assert clf.feature_importance == np.zeros(1)
 
 
-@pytest.mark.parametrize("train_none, train_features_index_dt, "
-                         "train_target_index_dt, no_features, "
-                         "datetime_feature, test_features_index_dt",
-                         [(True, False, False, False, False, False),
-                          (False, True, True, False, False, True),
-                          (False, True, True, False, False, False)])
-def test_fit_predict(train_features_index_dt, train_target_index_dt, train_none,
-                     no_features, datetime_feature, test_features_index_dt, get_X_y):
-    X_train, X_test, y_train = get_X_y(train_features_index_dt,
-                                       train_target_index_dt,
-                                       train_none,
-                                       datetime_feature,
-                                       no_features,
-                                       test_features_index_dt)
+@pytest.mark.parametrize(
+    "train_none, train_features_index_dt, "
+    "train_target_index_dt, no_features, "
+    "datetime_feature, test_features_index_dt",
+    [
+        (True, False, False, False, False, False),
+        (False, True, True, False, False, True),
+        (False, True, True, False, False, False),
+    ],
+)
+def test_fit_predict(
+    train_features_index_dt,
+    train_target_index_dt,
+    train_none,
+    no_features,
+    datetime_feature,
+    test_features_index_dt,
+    get_X_y,
+):
+    X_train, X_test, y_train = get_X_y(
+        train_features_index_dt,
+        train_target_index_dt,
+        train_none,
+        datetime_feature,
+        no_features,
+        test_features_index_dt,
+    )
 
     fh_ = forecasting.ForecastingHorizon(
         [i + 1 for i in range(len(X_test))], is_relative=True
@@ -178,23 +213,36 @@ def test_fit_predict(train_features_index_dt, train_target_index_dt, train_none,
     assert (y_pred_sk.values == y_pred.values).all()
 
 
-@pytest.mark.parametrize("train_none, train_features_index_dt, "
-                         "train_target_index_dt, no_features, "
-                         "datetime_feature, test_features_index_dt",
-                         [(False, False, False, False, False, False),
-                          (False, True, False, False, False, True),
-                          (False, False, True, False, True, False),
-                          (False, False, True, True, False, False),
-                          (False, True, True, True, False, False),
-                          (False, True, True, False, True, False)])
-def test_fit_predict_sk_failure(train_features_index_dt, train_target_index_dt, train_none,
-                     no_features, datetime_feature, test_features_index_dt, get_X_y):
-    X_train, X_test, y_train = get_X_y(train_features_index_dt,
-                                       train_target_index_dt,
-                                       train_none,
-                                       datetime_feature,
-                                       no_features,
-                                       test_features_index_dt)
+@pytest.mark.parametrize(
+    "train_none, train_features_index_dt, "
+    "train_target_index_dt, no_features, "
+    "datetime_feature, test_features_index_dt",
+    [
+        (False, False, False, False, False, False),
+        (False, True, False, False, False, True),
+        (False, False, True, False, True, False),
+        (False, False, True, True, False, False),
+        (False, True, True, True, False, False),
+        (False, True, True, False, True, False),
+    ],
+)
+def test_fit_predict_sk_failure(
+    train_features_index_dt,
+    train_target_index_dt,
+    train_none,
+    no_features,
+    datetime_feature,
+    test_features_index_dt,
+    get_X_y,
+):
+    X_train, X_test, y_train = get_X_y(
+        train_features_index_dt,
+        train_target_index_dt,
+        train_none,
+        datetime_feature,
+        no_features,
+        test_features_index_dt,
+    )
 
     a_clf = sktime_arima.AutoARIMA()
     with pytest.raises(Exception):

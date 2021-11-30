@@ -98,7 +98,9 @@ class ARIMARegressor(Estimator):
         if data is None:
             return None
         data_no_dt = data.copy()
-        if isinstance(data_no_dt.index, (pd.DatetimeIndex, pd.PeriodIndex, pd.IntervalIndex)):
+        if isinstance(
+            data_no_dt.index, (pd.DatetimeIndex, pd.PeriodIndex, pd.IntervalIndex)
+        ):
             data_no_dt = data_no_dt.reset_index(drop=True)
         if training:
             data_no_dt = data_no_dt.select_dtypes(exclude=["datetime64"])
@@ -176,18 +178,9 @@ class ARIMARegressor(Estimator):
         if not X.empty:
             y_pred = self._component_obj.predict(fh=fh_, X=X)
         else:
-            try:
-                y_pred = self._component_obj.predict(fh=fh_)
-                y_pred.index = X.index
-            except ValueError as ve:
-                error = str(ve)
-                if "When an ARIMA is fit with an X array" in error:
-                    raise ValueError(
-                        "If X was passed to the fit method of the ARIMARegressor, "
-                        "then it must be passed to the predict method as well."
-                    )
-                else:
-                    raise ve
+            y_pred = self._component_obj.predict(fh=fh_)
+            y_pred.index = X.index
+
         return infer_feature_types(y_pred)
 
     @property
