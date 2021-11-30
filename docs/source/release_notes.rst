@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
+        * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
     * Fixes
     * Changes
     * Documentation Changes
