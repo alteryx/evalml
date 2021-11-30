@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
     * Fixes
     * Changes
     * Documentation Changes
@@ -10,6 +11,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` :pr:`3028`
 
 
 **v0.38.0 Nov. 27, 2021**

@@ -33,7 +33,7 @@ minimum_dependencies_set = set(
         "DateTime Featurization Component",
         "Decision Tree Classifier",
         "Decision Tree Regressor",
-        "Delayed Feature Transformer",
+        "Time Series Featurizer",
         "Drop Columns Transformer",
         "Drop Null Columns Transformer",
         "Drop Rows Transformer",
