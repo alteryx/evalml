@@ -80,6 +80,7 @@ class ARIMARegressor(Estimator):
             "max_q": max_q,
             "seasonal": seasonal,
             "n_jobs": n_jobs,
+            "date_index": date_index,
         }
 
         parameters.update(kwargs)
@@ -91,7 +92,6 @@ class ARIMARegressor(Estimator):
             "sktime.forecasting.arima", error_msg=arima_model_msg
         )
         arima_model = sktime_arima.AutoARIMA(**parameters)
-        self.date_index = date_index
         self.cols_to_keep = []
 
         super().__init__(
