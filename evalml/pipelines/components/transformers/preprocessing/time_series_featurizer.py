@@ -275,7 +275,7 @@ class TimeSeriesFeaturizer(Transformer):
         # Normalize the data into pandas objects
         X_ww = infer_feature_types(X)
         original_features = [col for col in X_ww.columns if col != self.date_index]
-        delayed_features = self._compute_delays(X_ww, y, original_features)
+        delayed_features = self._compute_delays(X_ww, y)
         rolling_means = self._compute_rolling_transforms(X_ww, y, original_features)
         features = ww.concat_columns([delayed_features, rolling_means])
         return features.ww.drop(original_features)
