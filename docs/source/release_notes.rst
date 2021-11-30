@@ -4,7 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-        * Removed the usage of a datetime index for ``ARIMARegressor`` :pr:`3034`
+        * Removed the usage of a datetime index for ``ARIMARegressor`` :pr:`3104`
     * Documentation Changes
     * Testing Changes
 

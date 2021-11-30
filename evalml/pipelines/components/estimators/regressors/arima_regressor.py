@@ -56,6 +56,7 @@ class ARIMARegressor(Estimator):
 
     def __init__(
         self,
+        date_index=None,
         trend=None,
         start_p=2,
         d=0,
@@ -89,6 +90,7 @@ class ARIMARegressor(Estimator):
             "sktime.forecasting.arima", error_msg=arima_model_msg
         )
         arima_model = sktime_arima.AutoARIMA(**parameters)
+        parameters["date_index"] = date_index
 
         super().__init__(
             parameters=parameters, component_obj=arima_model, random_seed=random_seed
