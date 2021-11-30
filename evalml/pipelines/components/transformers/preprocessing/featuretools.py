@@ -26,6 +26,7 @@ class DFSTransformer(Transformer):
 
         self.index = index
         self.features = features
+        self._passed_in_features = True if features else None
         parameters.update(kwargs)
         super().__init__(parameters=parameters, random_seed=random_seed)
 
@@ -43,12 +44,12 @@ class DFSTransformer(Transformer):
             es = ft_es.add_dataframe(dataframe=X, dataframe_name="X", index=self.index)
         return es
 
-    def _should_skip_fit_transform(self, X):
+    def _should_skip_transform(self, X):
         # check if column names matches Feature.get_feature_names
         # https://github.com/alteryx/featuretools/issues/1696 could make this logic easier
         for feature in self.features:
             feature_names = feature.get_feature_names()
-            if feature_names not in X.columns:
+            if not set(feature_names).issubset(set(X.columns)):
                 return False
         return True
 
@@ -81,6 +82,9 @@ class DFSTransformer(Transformer):
         Returns:
             pd.DataFrame: Feature matrix
         """
+        if self._passed_in_features and self._should_skip_transform(X):
+            return X
+
         X_ww = infer_feature_types(X)
         X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
         es = self._make_entity_set(X_ww)
