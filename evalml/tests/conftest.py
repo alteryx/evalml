@@ -798,7 +798,7 @@ def time_series_regression_pipeline_class():
         """Random Forest Regression Pipeline for time series regression problems."""
 
         component_graph = [
-            "Delayed Feature Transformer",
+            "Time Series Featurizer",
             "DateTime Featurization Component",
             "Random Forest Regressor",
         ]
@@ -815,14 +815,14 @@ def time_series_regression_pipeline_class():
 def time_series_classification_component_graph():
     component_graph = {
         "Label Encoder": ["Label Encoder", "X", "y"],
-        "Delayed Feature Transformer": [
-            "Delayed Feature Transformer",
+        "Time Series Featurizer": [
+            "Time Series Featurizer",
             "Label Encoder.x",
             "Label Encoder.y",
         ],
         "DateTime Featurization Component": [
             "DateTime Featurization Component",
-            "Delayed Feature Transformer.x",
+            "Time Series Featurizer.x",
             "Label Encoder.y",
         ],
         "Logistic Regression Classifier": [

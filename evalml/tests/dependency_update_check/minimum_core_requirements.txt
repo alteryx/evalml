@@ -15,5 +15,5 @@ texttable==1.6.2
 woodwork==0.8.2
 dask==2021.10.0
 nlp-primitives==2.0.0
-featuretools==1.0.0
+featuretools==1.2.0
 networkx==2.5

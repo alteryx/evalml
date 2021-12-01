@@ -17,6 +17,25 @@ from evalml.tests.model_understanding_tests.prediction_explanations_tests.test_e
 )
 
 
+def validate_plot_feature_values(results, X):
+    """Helper to validate feature values returned from force plots"""
+    for row, result in enumerate(results):
+        for result_label in result:
+            # Check feature values in generated force plot correspond to input rows
+            row_force_plot = result[result_label]["plot"]
+            assert "features" in row_force_plot.data
+            plot_features = row_force_plot.data["features"]
+            feature_vals = [plot_features[k]["value"] for k in plot_features]
+
+            # Features in results depend on effect size; filter feature names
+            effect_features_ix = plot_features.keys()
+            effect_features = [
+                row_force_plot.data["featureNames"][i] for i in effect_features_ix
+            ]
+
+            assert all(feature_vals == X[effect_features].iloc[row].values)
+
+
 def test_exceptions():
     with pytest.raises(
         TypeError,
@@ -113,6 +132,8 @@ def test_force_plot_binary(
                     shap.plots._force.AdditiveForceVisualizer,
                 )
 
+        validate_plot_feature_values(results, X)
+
 
 @pytest.mark.parametrize(
     "rows_to_explain, just_data", product([[0], [0, 1, 2, 3, 4]], [False, True])
@@ -164,6 +185,8 @@ def test_force_plot_multiclass(
                     shap.plots._force.AdditiveForceVisualizer,
                 )
 
+        validate_plot_feature_values(results, X)
+
 
 @pytest.mark.parametrize(
     "rows_to_explain, just_data", product([[0], [0, 1, 2, 3, 4]], [False, True])
@@ -211,6 +234,7 @@ def test_force_plot_regression(
             assert isinstance(
                 result["regression"]["plot"], shap.plots._force.AdditiveForceVisualizer
             )
+        validate_plot_feature_values(results, X)
 
 
 @pytest.mark.parametrize("pipeline_class,estimator", pipeline_test_cases)
