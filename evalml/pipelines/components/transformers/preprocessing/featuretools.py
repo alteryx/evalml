@@ -45,8 +45,6 @@ class DFSTransformer(Transformer):
         return es
 
     def _should_skip_transform(self, X):
-        # check if column names matches Feature.get_feature_names
-        # https://github.com/alteryx/featuretools/issues/1696 could make this logic easier
         for feature in self.features:
             feature_names = feature.get_feature_names()
             if not set(feature_names).issubset(set(X.columns)):
