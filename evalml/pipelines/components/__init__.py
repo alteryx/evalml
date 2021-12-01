@@ -37,7 +37,7 @@ from .transformers import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     PerColumnImputer,
-    DelayedFeatureTransformer,
+    TimeSeriesFeaturizer,
     SimpleImputer,
     Imputer,
     StandardScaler,

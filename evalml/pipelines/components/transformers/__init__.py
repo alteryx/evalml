@@ -23,7 +23,7 @@ from .preprocessing import (
     DropNullColumns,
     LSA,
     NaturalLanguageFeaturizer,
-    DelayedFeatureTransformer,
+    TimeSeriesFeaturizer,
     DFSTransformer,
     PolynomialDetrender,
     LogTransformer,
