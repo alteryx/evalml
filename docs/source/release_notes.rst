@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
+        * Limited estimator usage for long-running multiclass problems on ``DefaultAlgorithm`` :pr:`3099`
     * Fixes
     * Changes
     * Documentation Changes
@@ -30,7 +31,6 @@ Release Notes
         * Included confusion matrix at the pipeline threshold for ``find_confusion_matrix_per_threshold`` :pr:`3080`
         * Fixed bug where One Hot Encoder would error out if a non-categorical feature had a missing value :pr:`3083`
         * Fixed bug where features created from categorical columns by ``Delayed Feature Transformer`` would be inferred as categorical :pr:`3083`
-        * Limited estimator usage for long-running multiclass problems on ``DefaultAlgorithm`` :pr:`3099`
     * Changes
         * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
         * Change ``DateTimeFeaturizer`` to use corresponding Featuretools primitives :pr:`3081`
