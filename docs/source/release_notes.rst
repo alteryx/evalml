@@ -6,7 +6,7 @@ Release Notes
     * Fixes
     * Changes
         * Removed reliance on a datetime index for ``ARIMARegressor`` :pr:`3104`
-        * Included target leakage check when fitting ``ARIMARegressor`` to account for the lack of ``DelayedFeatureTransformer`` in ``AutoMLSearch`` :pr:`3104`
+        * Included target leakage check when fitting ``ARIMARegressor`` to account for the lack of ``TimeSeriesFeaturizer`` in ``AutoMLSearch`` :pr:`3104`
     * Documentation Changes
     * Testing Changes
 
