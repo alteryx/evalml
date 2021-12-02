@@ -22,7 +22,7 @@ class TimeSeriesParametersDataCheck(DataCheck):
     def __init__(self, problem_configuration, n_splits):
         is_valid, msg = contains_all_ts_parameters(problem_configuration)
         if not is_valid:
-            raise ValueError(problem_configuration)
+            raise ValueError(msg)
 
         self.gap = problem_configuration["gap"]
         self.forecast_horizon = problem_configuration["forecast_horizon"]

@@ -7,6 +7,14 @@ from evalml.data_checks import (
 )
 
 
+def test_time_series_param_data_check_raises_value_error():
+    with pytest.raises(
+        ValueError,
+        match="containing values for at least the date_index, gap, max_delay",
+    ):
+        TimeSeriesParametersDataCheck({}, n_splits=3)
+
+
 @pytest.mark.parametrize(
     "gap,max_delay,forecast_horizon,n_obs,n_splits,is_valid",
     [
