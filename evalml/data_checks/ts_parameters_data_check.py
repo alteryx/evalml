@@ -34,7 +34,7 @@ class TimeSeriesParametersDataCheck(DataCheck):
 
         Args:
             X (pd.DataFrame, np.ndarray): Features.
-            y (pd.Series, np.ndarray): Ignored.  Defaults to None.
+            y (pd.Series, np.ndarray): Ignored. Defaults to None.
 
         Returns:
             dict: dict with a DataCheckError if parameters are too big for the split sizes.

@@ -18,7 +18,7 @@ class TimeSeriesSplit(BaseCrossValidator):
             of rows of the current split to avoid "throwing out" more data than in necessary. Defaults to 0.
         gap (int): Number of time units separating the data used to generate features and the data to forecast on.
             Defaults to 0.
-        forecast_horizon (int): Number of time units to forecast. Defaults to 0.
+        forecast_horizon (int): Number of time units to forecast. Defaults to 1.
         date_index (str): Name of the column containing the datetime information used to order the data. Defaults to None.
         n_splits (int): number of data splits to make. Defaults to 3.
 

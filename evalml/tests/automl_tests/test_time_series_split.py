@@ -34,8 +34,6 @@ def test_time_series_split_n_splits_too_big(gap, max_delay, forecast_horizon, n_
         date_index="date",
     )
     X = pd.DataFrame({"features": range(15)})
-    # Each split would have 15 // 5 = 3 data points. However, this is smaller than the number of data_points required
-    # for max_delay and gap
     with pytest.raises(
         ValueError, match="Please use a smaller number of splits or collect more data."
     ):

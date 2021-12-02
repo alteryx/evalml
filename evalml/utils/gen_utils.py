@@ -566,8 +566,8 @@ def are_ts_parameters_valid_for_split(
         TsParameterValidationResult - named tuple with four fields
             is_valid (bool): True if parameters are valid.
             msg (str): Contains error message to display. Empty if is_valid.
-            smallest_split_size (int): smallest split size given n_obs and n_splits.
-            max_window_size (int): max window size given gap, max_delay, forecast_horizon.
+            smallest_split_size (int): Smallest split size given n_obs and n_splits.
+            max_window_size (int): Max window size given gap, max_delay, forecast_horizon.
     """
     split_size = n_obs // (n_splits + 1)
     window_size = gap + max_delay + forecast_horizon
