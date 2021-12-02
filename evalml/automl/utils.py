@@ -90,6 +90,7 @@ def make_data_splitter(
             gap=problem_configuration.get("gap"),
             max_delay=problem_configuration.get("max_delay"),
             date_index=problem_configuration.get("date_index"),
+            forecast_horizon=problem_configuration.get("forecast_horizon"),
         )
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
         return TrainingValidationSplit(

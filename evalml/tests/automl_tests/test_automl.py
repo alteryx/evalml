@@ -3703,9 +3703,9 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(AutoMLTestEnv, ts_d
         problem_type="time series regression",
         problem_configuration={
             "date_index": "date",
-            "gap": 6,
+            "gap": 2,
             "max_delay": 3,
-            "forecast_horizon": 7,
+            "forecast_horizon": 1,
         },
         max_iterations=1,
     )
@@ -3717,21 +3717,21 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(AutoMLTestEnv, ts_d
     assert automl.best_pipeline.parameters == {
         "pipeline": {
             "date_index": "date",
-            "gap": 6,
+            "gap": 2,
             "max_delay": 0,
-            "forecast_horizon": 7,
+            "forecast_horizon": 1,
         },
         "Time Series Featurizer": {
             "date_index": "date",
             "delay_features": False,
             "delay_target": True,
             "max_delay": 0,
-            "gap": 6,
-            "forecast_horizon": 7,
+            "gap": 2,
+            "forecast_horizon": 1,
             "conf_level": 0.05,
             "rolling_window_size": 0.25,
         },
-        "Time Series Baseline Estimator": {"forecast_horizon": 7, "gap": 6},
+        "Time Series Baseline Estimator": {"forecast_horizon": 1, "gap": 2},
     }
 
 

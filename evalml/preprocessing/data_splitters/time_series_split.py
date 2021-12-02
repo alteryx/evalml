@@ -2,21 +2,23 @@
 from sklearn.model_selection import TimeSeriesSplit as SkTimeSeriesSplit
 from sklearn.model_selection._split import BaseCrossValidator
 
+from evalml.utils.gen_utils import are_ts_parameters_valid_for_split
+
 
 class TimeSeriesSplit(BaseCrossValidator):
     """Rolling Origin Cross Validation for time series problems.
 
-    This class uses max_delay and gap values to take into account that evalml time series pipelines perform
-    some feature and target engineering, e.g delaying input features and shifting the target variable by the
-    desired amount. If the data that will be split already has all the features and appropriate target values, and
-    then set max_delay and gap to 0.
+    The max_delay, gap, and forecast_horizon parameters are just used to validate that the requested split size
+    is not too small given these parameters.
 
     Args:
         max_delay (int): Max delay value for feature engineering. Time series pipelines create delayed features
             from existing features. This process will introduce NaNs into the first max_delay number of rows. The
             splitter uses the last max_delay number of rows from the previous split as the first max_delay number
             of rows of the current split to avoid "throwing out" more data than in necessary. Defaults to 0.
-        gap (int): Gap used in time series problem. Time series pipelines shift the target variable by gap rows. Defaults to 0.
+        gap (int): Number of time units separating the data used to generate features and the data to forecast on.
+            Defaults to 0.
+        forecast_horizon (int): Number of time units to forecast. Defaults to 0.
         date_index (str): Name of the column containing the datetime information used to order the data. Defaults to None.
         n_splits (int): number of data splits to make. Defaults to 3.
 
@@ -50,9 +52,12 @@ class TimeSeriesSplit(BaseCrossValidator):
         >>> assert (fourth_split[1] == np.array([8, 9])).all()
     """
 
-    def __init__(self, max_delay=0, gap=0, date_index=None, n_splits=3):
+    def __init__(
+        self, max_delay=0, gap=0, forecast_horizon=1, date_index=None, n_splits=3
+    ):
         self.max_delay = max_delay
         self.gap = gap
+        self.forecast_horizon = forecast_horizon
         self.date_index = date_index
         self.n_splits = n_splits
         self._splitter = SkTimeSeriesSplit(n_splits=n_splits)
@@ -101,20 +106,14 @@ class TimeSeriesSplit(BaseCrossValidator):
             )
         elif self._check_if_empty(X) and not self._check_if_empty(y):
             split_kwargs = dict(X=y, groups=groups)
-            max_index = y.shape[0]
         else:
             split_kwargs = dict(X=X, y=y, groups=groups)
-            max_index = X.shape[0]
 
-        split_size = max_index // self.n_splits
-        if split_size < self.gap + self.max_delay:
-            raise ValueError(
-                f"Since the data has {max_index} observations and n_splits={self.n_splits}, "
-                f"the smallest split would have {split_size} observations. "
-                f"Since {self.gap + self.max_delay} (gap + max_delay)  > {split_size}, "
-                "then at least one of the splits would be empty by the time it reaches the pipeline. "
-                "Please use a smaller number of splits or collect more data."
-            )
+        result = are_ts_parameters_valid_for_split(
+            self.gap, self.max_delay, self.forecast_horizon, X.shape[0], self.n_splits
+        )
+        if not result.is_valid:
+            raise ValueError(result.msg)
 
         for train, test in self._splitter.split(**split_kwargs):
             yield train, test
