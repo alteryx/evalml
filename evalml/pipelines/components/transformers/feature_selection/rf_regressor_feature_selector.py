@@ -1,5 +1,4 @@
 """Component that selects top features based on importance weights using a Random Forest regresor."""
-import numpy as np
 from sklearn.ensemble import RandomForestRegressor as SKRandomForestRegressor
 from sklearn.feature_selection import SelectFromModel as SkSelect
 from skopt.space import Real
@@ -29,11 +28,11 @@ class RFRegressorSelectFromModel(FeatureSelector):
     name = "RF Regressor Select From Model"
     hyperparameter_ranges = {
         "percent_features": Real(0.01, 1),
-        "threshold": ["mean", -np.inf],
+        "threshold": ["mean", "median"],
     }
     """{
         "percent_features": Real(0.01, 1),
-        "threshold": ["mean", -np.inf],
+        "threshold": ["mean", "median"],
     }"""
 
     def __init__(
@@ -42,7 +41,7 @@ class RFRegressorSelectFromModel(FeatureSelector):
         n_estimators=10,
         max_depth=None,
         percent_features=0.5,
-        threshold=-np.inf,
+        threshold="median",
         n_jobs=-1,
         random_seed=0,
         **kwargs,
