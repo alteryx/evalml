@@ -65,6 +65,25 @@ def test_get_params(ts_data):
     }
 
 
+@pytest.mark.parametrize("index_status", [None, "wrong_column"])
+def test_build_prophet_df_date_index_errors(index_status, ts_data):
+    X, y = ts_data
+
+    if index_status is None:
+        with pytest.raises(ValueError, match="date_index cannot be None!"):
+            ProphetRegressor.build_prophet_df(X, y, index_status)
+    elif index_status == "wrong_column":
+        with pytest.raises(ValueError, match=f"Column {index_status} was not found in X!"):
+            ProphetRegressor.build_prophet_df(X, y, index_status)
+
+
+def test_build_prophet_df_date_index_errors(ts_data):
+    X, y = ts_data
+
+    prophet_df = ProphetRegressor.build_prophet_df(X, y, "date")
+    print(prophet_df)
+
+
 def test_fit_predict_ts_with_X_index(ts_data):
     X, y = ts_data
     assert isinstance(X.index, pd.DatetimeIndex)

@@ -69,6 +69,8 @@ class ProphetRegressor(Estimator):
 
         prophet_regressor = prophet.Prophet(**parameters)
         parameters["date_index"] = date_index
+        self.date_index = date_index
+
         super().__init__(
             parameters=parameters,
             component_obj=prophet_regressor,
@@ -78,30 +80,19 @@ class ProphetRegressor(Estimator):
     @staticmethod
     def build_prophet_df(X, y=None, date_column="ds"):
         """Build the Prophet data to pass fit and predict on."""
-        if X is not None:
-            X = copy.deepcopy(X)
-        if y is not None:
-            y = copy.deepcopy(y)
+        X = copy.deepcopy(X)
+        y = copy.deepcopy(y)
+        if date_column is None:
+            raise ValueError("date_index cannot be None!")
 
         if date_column in X.columns:
             date_column = X.pop(date_column)
         else:
-            if isinstance(X.index, pd.DatetimeIndex):
-                X = X.reset_index()
-                date_column = X.pop("index")
-            elif isinstance(y.index, pd.DatetimeIndex):
-                y = y.reset_index()
-                date_column = y.pop("index")
-                y = pd.Series(y.values.flatten())
-            else:
-                msg = "Prophet estimator requires input data X to have a datetime column specified by the 'date_index' parameter. If it doesn't find one, it will look for the datetime column in the index of X or y."
-                raise ValueError(msg)
+            raise ValueError(f"Column {date_column} was not found in X!")
 
         prophet_df = X
-
         if y is not None:
-            if not prophet_df.empty:
-                y.index = prophet_df.index
+            y.index = prophet_df.index
             prophet_df["y"] = y
         prophet_df["ds"] = date_column
 
@@ -117,12 +108,10 @@ class ProphetRegressor(Estimator):
         Returns:
             self
         """
-        if X is None:
-            X = pd.DataFrame()
         X, y = super()._manage_woodwork(X, y)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, date_column=self.parameters["date_index"]
+            X=X, y=y, date_column=self.date_index
         )
 
         self._component_obj.fit(prophet_df)
@@ -133,26 +122,23 @@ class ProphetRegressor(Estimator):
 
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
-            y (pd.Series): Target data.
+            y (pd.Series): Target data. Ignored.
 
         Returns:
             pd.Series: Predicted values.
         """
-        if X is None:
-            X = pd.DataFrame()
         X = infer_feature_types(X)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, date_column=self.parameters["date_index"]
+            X=X, y=y, date_column=self.date_index
         )
 
         prophet_output = self._component_obj.predict(prophet_df)
         predictions = prophet_output["yhat"]
         predictions = infer_feature_types(predictions)
         predictions = predictions.rename(None)
+        predictions.index = X.index
 
-        if not X.empty:
-            predictions.index = X.index
         return predictions
 
     def get_params(self):
