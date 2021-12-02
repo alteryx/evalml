@@ -82,7 +82,7 @@ def test_build_prophet_df_date_index_errors(index_status, ts_data):
 
 
 @pytest.mark.parametrize("drop_index", [None, "X", "y", "both"])
-def test_fit_predict_ts_with_X_index(ts_data, drop_index):
+def test_fit_predict_ts(ts_data, drop_index):
     X, y = ts_data
     if drop_index is None:
         assert isinstance(X.index, pd.DatetimeIndex)
@@ -93,7 +93,7 @@ def test_fit_predict_ts_with_X_index(ts_data, drop_index):
     elif drop_index == "y":
         y = y.reset_index(drop=True)
         assert not isinstance(y.index, pd.DatetimeIndex)
-    elif drop_index == "X":
+    elif drop_index == "both":
         X = X.reset_index(drop=True)
         y = y.reset_index(drop=True)
         assert not isinstance(X.index, pd.DatetimeIndex)
