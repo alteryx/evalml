@@ -155,7 +155,6 @@ class ReplaceNullableTypes(Transformer):
             X_t.ww.pop(col)
             X_t.ww[col] = new_col
 
-
         if y is not None:
             y_t = infer_feature_types(y, ignore_nullable_types=True)
             y_t = init_series(y_t)
