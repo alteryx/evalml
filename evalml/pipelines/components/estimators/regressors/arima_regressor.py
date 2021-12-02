@@ -16,6 +16,7 @@ class ARIMARegressor(Estimator):
     Currently ARIMARegressor isn't supported via conda install. It's recommended that it be installed via PyPI.
 
     Args:
+        date_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
         trend (str): Controls the deterministic trend. Options are ['n', 'c', 't', 'ct'] where 'c' is a constant term,
             't' indicates a linear trend, and 'ct' is both. Can also be an iterable when defining a polynomial, such
             as [1, 1, 0, 1].
@@ -32,10 +33,16 @@ class ARIMARegressor(Estimator):
 
     name = "ARIMA Regressor"
     hyperparameter_ranges = {
-        "max_P": Integer(1, 30),
-        "max_D": Integer(1, 30),
-        "max_Q": Integer(1, 30),
-        "sp": Integer(2, 5),
+        "start_p": Integer(1, 3),
+        "d": Integer(0, 2),
+        "start_q": Integer(1, 3),
+        "max_p": Integer(3, 10),
+        "max_d": Integer(2, 5),
+        "max_q": Integer(3, 10),
+        "max_P": Integer(1, 20),
+        "max_D": Integer(1, 20),
+        "max_Q": Integer(1, 20),
+        "sp": Integer(1, 5),
     }
     """{
         "start_p": Integer(1, 3),
@@ -44,7 +51,10 @@ class ARIMARegressor(Estimator):
         "max_p": Integer(3, 10),
         "max_d": Integer(2, 5),
         "max_q": Integer(3, 10),
-        "seasonal": [True, False],
+        "max_P": Integer(1, 20),
+        "max_D": Integer(1, 20),
+        "max_Q": Integer(1, 20),
+        "sp": Integer(2, 5),
     }"""
     model_family = ModelFamily.ARIMA
     """ModelFamily.ARIMA"""
@@ -61,10 +71,10 @@ class ARIMARegressor(Estimator):
         max_p=5,
         max_d=2,
         max_q=5,
-        max_P=30,
-        max_D=30,
-        max_Q=30,
-        sp=2,
+        max_P=10,
+        max_D=10,
+        max_Q=10,
+        sp=1,
         n_jobs=-1,
         random_seed=0,
         **kwargs,

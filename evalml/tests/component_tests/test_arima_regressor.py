@@ -289,11 +289,11 @@ def test_different_time_units_out_of_sample(freq_str, freq_num):
         [i + 1 for i in range(len(y[15:]))], is_relative=True
     )
 
-    a_clf = sktime_arima.AutoARIMA(start_p=2, start_q=2, max_p=2, max_q=2)
+    a_clf = sktime_arima.AutoARIMA()
     clf = a_clf.fit(X=X[:15], y=y[:15])
     y_pred_sk = clf.predict(fh=fh_, X=X[15:])
 
-    m_clf = ARIMARegressor(start_p=2, start_q=2, max_p=2, max_q=2, d=None)
+    m_clf = ARIMARegressor(d=None)
     m_clf.fit(X=X[:15], y=y[:15])
     y_pred = m_clf.predict(X=X[15:])
 

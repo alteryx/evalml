@@ -2,7 +2,6 @@
 import copy
 
 import numpy as np
-import pandas as pd
 from skopt.space import Real
 
 from evalml.model_family import ModelFamily

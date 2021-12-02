@@ -5,7 +5,6 @@ import warnings
 from operator import itemgetter
 
 import numpy as np
-import pandas as pd
 from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
@@ -15,7 +14,7 @@ from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types import is_multiclass, is_time_series
+from evalml.problem_types import is_multiclass
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
