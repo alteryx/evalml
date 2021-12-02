@@ -21,12 +21,22 @@ def is_nullable_int(series):
 
     Returns:
         boolean: Whether the column was of NullableInteger type.
+
+    Raises:
+        AttributeError: If s
     """
-    is_pandas_nullable = isinstance(series.dtype, pca.integer.Int64Dtype)
+    try:
+        is_pandas_nullable = isinstance(series.dtype, pca.integer.Int64Dtype)
+    except AttributeError:
+        is_pandas_nullable = False
+
     try:
         is_ww_nullable = isinstance(series.ww.logical_type, IntegerNullable)
     except WoodworkNotInitError:
         is_ww_nullable = False
+    except AttributeError:
+        is_ww_nullable = False
+
     return is_ww_nullable or is_pandas_nullable
 
 
@@ -52,10 +62,16 @@ def is_nullable_bool(series):
     Returns:
         boolean: Whether the column was of NullableBoolean type.
     """
-    is_pandas_nullable = isinstance(series.dtype, pca.boolean.BooleanDtype)
+    try:
+        is_pandas_nullable = isinstance(series.dtype, pca.boolean.BooleanDtype)
+    except AttributeError:
+        is_pandas_nullable = False
+
     try:
         is_ww_nullable = isinstance(series.ww.logical_type, BooleanNullable)
     except WoodworkNotInitError:
+        is_ww_nullable = False
+    except AttributeError:
         is_ww_nullable = False
     return is_ww_nullable or is_pandas_nullable
 
@@ -78,6 +94,7 @@ class ReplaceNullableTypes(Transformer):
 
     name = "Replace Nullable Types Transformer"
     hyperparameter_ranges = {}
+    modifies_target = True
     """{}"""
 
     def __init__(self, random_seed=0, **kwargs):
@@ -138,9 +155,9 @@ class ReplaceNullableTypes(Transformer):
             X_t.ww.pop(col)
             X_t.ww[col] = new_col
 
-        y_t = y
+        y_t = infer_feature_types(y)
         if y is not None:
-            y_t = init_series(y)
+            y_t = init_series(y_t)
             if self._nullable_target is not None:
                 if self._nullable_target == "nullable_int":
                     y_t = init_series(replace_nullable_int(y_t), logical_type=Double)
