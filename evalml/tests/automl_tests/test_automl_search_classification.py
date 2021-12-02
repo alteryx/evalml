@@ -1156,6 +1156,7 @@ def test_automl_supports_time_series_classification(
         "delay_target": False,
         "delay_features": True,
         "conf_level": 0.05,
+        "rolling_window_size": 0.25,
     }
 
     automl = AutoMLSearch(
@@ -1175,7 +1176,7 @@ def test_automl_supports_time_series_classification(
             assert result["pipeline_class"] == baseline.__class__
             continue
 
-        assert result["parameters"]["Delayed Feature Transformer"] == configuration
+        assert result["parameters"]["Time Series Featurizer"] == configuration
         assert result["parameters"]["pipeline"] == configuration
 
 

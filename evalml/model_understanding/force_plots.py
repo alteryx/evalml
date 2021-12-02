@@ -28,16 +28,8 @@ def graph_force_plot(pipeline, rows_to_explain, training_data, y, matplotlib=Fal
 
     def gen_force_plot(shap_values, training_data, expected_value, matplotlib):
         """Helper function to generate a single force plot."""
-        # Ensure there are as many features as shap values.
-        assert training_data.shape[1] == len(shap_values)
-
-        # TODO: Update this to make the force plot display multi-row array visualizer.
-        training_data_sample = training_data.iloc[0]
         shap_plot = shap.force_plot(
-            expected_value,
-            np.array(shap_values),
-            training_data_sample,
-            matplotlib=matplotlib,
+            expected_value, np.array(shap_values), training_data, matplotlib=matplotlib
         )
         return shap_plot
 
@@ -45,12 +37,13 @@ def graph_force_plot(pipeline, rows_to_explain, training_data, y, matplotlib=Fal
         initjs()
 
     shap_plots = force_plot(pipeline, rows_to_explain, training_data, y)
-    for row in shap_plots:
+    for ix, row in enumerate(shap_plots):
+        row_id = rows_to_explain[ix]
         for cls in row:
             cls_dict = row[cls]
             cls_dict["plot"] = gen_force_plot(
                 cls_dict["shap_values"],
-                training_data[cls_dict["feature_names"]],
+                training_data[cls_dict["feature_names"]].iloc[row_id],
                 cls_dict["expected_value"],
                 matplotlib=matplotlib,
             )

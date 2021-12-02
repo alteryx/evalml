@@ -2,15 +2,31 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` :pr:`3028`
+
+
+**v0.38.0 Nov. 27, 2021**
+    * Enhancements
         * Added ``data_check_name`` attribute to the data check action class :pr:`3034`
         * Added ``NumWords`` and ``NumCharacters`` primitives to ``TextFeaturizer`` and renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
         * Added support for ``scikit-learn > 1.0.0`` :pr:`3051`
         * Required the ``date_index`` parameter to be specified for time series problems  in ``AutoMLSearch`` :pr:`3041`
         * Allowed time series pipelines to predict on test datasets whose length is less than or equal to the ``forecast_horizon``. Also allowed the test set index to start at 0. :pr:`3071`
+        * Enabled time series pipeline to predict on data with features that are not known-in-advanced :pr:`3094`
     * Fixes
         * Added in error message when fit and predict/predict_proba data types are different :pr:`3036`
         * Fixed bug where ensembling components could not get converted to JSON format :pr:`3049`
         * Fixed bug where components with tuned integer hyperparameters could not get converted to JSON format :pr:`3049`
+        * Fixed bug where force plots were not displaying correct feature values :pr:`3044`
         * Included confusion matrix at the pipeline threshold for ``find_confusion_matrix_per_threshold`` :pr:`3080`
         * Fixed bug where One Hot Encoder would error out if a non-categorical feature had a missing value :pr:`3083`
         * Fixed bug where features created from categorical columns by ``Delayed Feature Transformer`` would be inferred as categorical :pr:`3083`
@@ -18,6 +34,7 @@ Release Notes
         * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
         * Change ``DateTimeFeaturizer`` to use corresponding Featuretools primitives :pr:`3081`
         * Updated ``TargetDistributionDataCheck`` to return metadata details as floats rather strings :pr:`3085`
+        * Removed dependency on ``psutil`` package :pr:`3093`
     * Documentation Changes
         * Updated docs to use data check action methods rather than manually cleaning data :pr:`3050`
     * Testing Changes
