@@ -889,9 +889,9 @@ def test_transformer_transform_output_type(X_y_binary):
             ):
                 assert transform_output.shape == (X.shape[0], 0)
             elif isinstance(component, RFRegressorSelectFromModel):
-                assert transform_output.shape == (X.shape[0], 2)
+                assert transform_output.shape == (X.shape[0], 10)
             elif isinstance(component, RFClassifierSelectFromModel):
-                assert transform_output.shape == (X.shape[0], 5)
+                assert transform_output.shape == (X.shape[0], 10)
             elif isinstance(component, PCA) or isinstance(
                 component, LinearDiscriminantAnalysis
             ):
@@ -920,9 +920,9 @@ def test_transformer_transform_output_type(X_y_binary):
             ):
                 assert transform_output.shape == (X.shape[0], 0)
             elif isinstance(component, RFRegressorSelectFromModel):
-                assert transform_output.shape == (X.shape[0], 2)
+                assert transform_output.shape == (X.shape[0], 10)
             elif isinstance(component, RFClassifierSelectFromModel):
-                assert transform_output.shape == (X.shape[0], 5)
+                assert transform_output.shape == (X.shape[0], 10)
             elif isinstance(component, PCA) or isinstance(
                 component, LinearDiscriminantAnalysis
             ):
