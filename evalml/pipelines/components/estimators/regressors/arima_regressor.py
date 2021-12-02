@@ -39,10 +39,7 @@ class ARIMARegressor(Estimator):
         "max_p": Integer(3, 10),
         "max_d": Integer(2, 5),
         "max_q": Integer(3, 10),
-        "max_P": Integer(1, 20),
-        "max_D": Integer(1, 20),
-        "max_Q": Integer(1, 20),
-        "sp": Integer(1, 5),
+        "seasonal": [True, False],
     }
     """{
         "start_p": Integer(1, 3),
@@ -51,10 +48,7 @@ class ARIMARegressor(Estimator):
         "max_p": Integer(3, 10),
         "max_d": Integer(2, 5),
         "max_q": Integer(3, 10),
-        "max_P": Integer(1, 20),
-        "max_D": Integer(1, 20),
-        "max_Q": Integer(1, 20),
-        "sp": Integer(2, 5),
+        "seasonal": [True, False],
     }"""
     model_family = ModelFamily.ARIMA
     """ModelFamily.ARIMA"""
@@ -71,10 +65,7 @@ class ARIMARegressor(Estimator):
         max_p=5,
         max_d=2,
         max_q=5,
-        max_P=20,
-        max_D=20,
-        max_Q=20,
-        sp=2,
+        seasonal=True,
         n_jobs=-1,
         random_seed=0,
         **kwargs,
@@ -87,10 +78,7 @@ class ARIMARegressor(Estimator):
             "max_p": max_p,
             "max_d": max_d,
             "max_q": max_q,
-            "max_P": max_P,
-            "max_D": max_D,
-            "max_Q": max_Q,
-            "sp": sp,
+            "seasonal": seasonal,
             "n_jobs": n_jobs,
             "date_index": date_index,
         }
