@@ -12,7 +12,7 @@ class DFSTransformer(Transformer):
         index (string): The name of the column that contains the indices. If no column with this name exists,
             then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'.
         random_seed (int): Seed for the random number generator. Defaults to 0.
-        features (list)[FeatureBase]: list of features to run DFS on.
+        features (list)[FeatureBase]: List of features to run DFS on. Defaults to None.
     """
 
     name = "DFS Transformer"
@@ -61,7 +61,7 @@ class DFSTransformer(Transformer):
         Returns:
             self
         """
-        if not self.features:
+        if not self._passed_in_features:
             X_ww = infer_feature_types(X)
             X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
             es = self._make_entity_set(X_ww)
