@@ -90,8 +90,10 @@ def test_fit_predict_ts(ts_data, drop_index):
     elif drop_index == "X":
         X = X.reset_index(drop=True)
         assert not isinstance(X.index, pd.DatetimeIndex)
+        assert isinstance(y.index, pd.DatetimeIndex)
     elif drop_index == "y":
         y = y.reset_index(drop=True)
+        assert isinstance(X.index, pd.DatetimeIndex)
         assert not isinstance(y.index, pd.DatetimeIndex)
     elif drop_index == "both":
         X = X.reset_index(drop=True)

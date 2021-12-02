@@ -74,7 +74,7 @@ class ARIMARegressor(Estimator):
         max_P=10,
         max_D=10,
         max_Q=10,
-        sp=1,
+        sp=2,
         n_jobs=-1,
         random_seed=0,
         **kwargs,
