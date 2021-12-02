@@ -155,8 +155,9 @@ class ReplaceNullableTypes(Transformer):
             X_t.ww.pop(col)
             X_t.ww[col] = new_col
 
-        y_t = infer_feature_types(y)
+
         if y is not None:
+            y_t = infer_feature_types(y, ignore_nullable_types=True)
             y_t = init_series(y_t)
             if self._nullable_target is not None:
                 if self._nullable_target == "nullable_int":
@@ -165,5 +166,7 @@ class ReplaceNullableTypes(Transformer):
                     y_t = init_series(
                         replace_nullable_bool(y_t), logical_type=Categorical
                     )
+        elif y is None:
+            y_t = None
 
         return X_t, y_t
