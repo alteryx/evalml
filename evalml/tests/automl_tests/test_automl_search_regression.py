@@ -449,8 +449,6 @@ def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, ts_data):
 
         if result["id"] == 0:
             continue
-        if freq == "MS":
-            assert "ARIMA Regressor" not in result["parameters"]
         if "ARIMA Regressor" in result["parameters"]:
             dt_ = result["parameters"]["ARIMA Regressor"].pop("date_index")
             assert "DateTime Featurization Component" not in result["parameters"].keys()

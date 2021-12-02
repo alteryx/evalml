@@ -5,8 +5,8 @@ Release Notes
         * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
     * Fixes
     * Changes
-        * Removed reliance on a datetime index for ``ARIMARegressor`` :pr:`3104`
-        * Included target leakage check when fitting ``ARIMARegressor`` to account for the lack of ``TimeSeriesFeaturizer`` in ``AutoMLSearch`` :pr:`3104`
+        * Removed reliance on a datetime index for ``ARIMARegressor`` and ``ProphetRegressor`` :pr:`3104`
+        * Included target leakage check when fitting ``ARIMARegressor`` to account for the lack of ``TimeSeriesFeaturizer`` in ``ARIMARegressor`` based pipelines :pr:`3104`
     * Documentation Changes
     * Testing Changes
 
@@ -14,6 +14,7 @@ Release Notes
 
     **Breaking Changes**
         * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` :pr:`3028`
+        * ``ProphetRegressor`` now requires a datetime column in ``X`` represented by the ``date_index`` parameter :pr:`3104`
 
 
 **v0.38.0 Nov. 27, 2021**
