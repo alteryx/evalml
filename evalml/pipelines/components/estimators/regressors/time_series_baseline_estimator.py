@@ -3,7 +3,7 @@ import numpy as np
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
-from evalml.pipelines.components.transformers import DelayedFeatureTransformer
+from evalml.pipelines.components.transformers import TimeSeriesFeaturizer
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
@@ -83,13 +83,13 @@ class TimeSeriesBaselineEstimator(Estimator):
             ValueError: If input y is None.
         """
         X = infer_feature_types(X)
-        feature_name = DelayedFeatureTransformer.target_colname_prefix.format(
+        feature_name = TimeSeriesFeaturizer.target_colname_prefix.format(
             self.start_delay
         )
         if feature_name not in X.columns:
             raise ValueError(
                 "Time Series Baseline Estimator is meant to be used in a pipeline with "
-                "a DelayedFeaturesTransformer"
+                "a Time Series Featurizer"
             )
         return X.ww[feature_name]
 
