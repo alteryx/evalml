@@ -28,6 +28,7 @@ Release Notes
         * Added in error message when fit and predict/predict_proba data types are different :pr:`3036`
         * Fixed bug where ensembling components could not get converted to JSON format :pr:`3049`
         * Fixed bug where components with tuned integer hyperparameters could not get converted to JSON format :pr:`3049`
+        * Fixed bug where force plots were not displaying correct feature values :pr:`3044`
         * Included confusion matrix at the pipeline threshold for ``find_confusion_matrix_per_threshold`` :pr:`3080`
         * Fixed bug where One Hot Encoder would error out if a non-categorical feature had a missing value :pr:`3083`
         * Fixed bug where features created from categorical columns by ``Delayed Feature Transformer`` would be inferred as categorical :pr:`3083`
