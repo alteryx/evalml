@@ -1,12 +1,7 @@
 import pandas as pd
 import pytest
 from woodwork import init_series
-from woodwork.logical_types import (
-    BooleanNullable,
-    Double,
-    IntegerNullable,
-    Unknown,
-)
+from woodwork.logical_types import BooleanNullable, IntegerNullable
 
 from evalml.pipelines.components import ReplaceNullableTypes
 
