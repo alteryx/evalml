@@ -42,7 +42,9 @@ class ReplaceNullableTypes(Transformer):
         """
         X_t = infer_feature_types(X, ignore_nullable_types=True)
         self._nullable_int_cols = list(
-            X_t.ww.select(["IntegerNullable"], return_schema=True).columns
+            X_t.ww.select(
+                ["IntegerNullable", "AgeNullable"], return_schema=True
+            ).columns
         )
         self._nullable_bool_cols = list(
             X_t.ww.select(["BooleanNullable"], return_schema=True).columns
@@ -72,13 +74,9 @@ class ReplaceNullableTypes(Transformer):
         """
         X_t = infer_feature_types(X, ignore_nullable_types=True)
         for col in self._nullable_int_cols:
-            new_col = X_t[col].astype("float64")
-            X_t.ww.pop(col)
-            X_t.ww[col] = new_col
+            X_t.ww[col] = X_t[col].astype("float64")
         for col in self._nullable_bool_cols:
-            new_col = X_t[col].astype("category")
-            X_t.ww.pop(col)
-            X_t.ww[col] = new_col
+            X_t.ww[col] = X_t[col].astype("category")
 
         if y is not None:
             y_t = infer_feature_types(y, ignore_nullable_types=True)
