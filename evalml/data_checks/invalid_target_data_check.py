@@ -24,7 +24,7 @@ from evalml.utils.woodwork_utils import (
 
 
 class InvalidTargetDataCheck(DataCheck):
-    """Check if the target data is considered invalid. Some examples of invalid target data include:
+    """Check if the target data is considered invalid. Target data is considered invalid if:
         - Target is None.
         - Target has NaN or None values.
         - Target is of an unsupported Woodwork logical type.
@@ -50,10 +50,16 @@ class InvalidTargetDataCheck(DataCheck):
         self.n_unique = n_unique
 
     def validate(self, X, y):
-        """Check if the target data contains missing or invalid values.
+        """Check if the target data is considered invalid. Target data is considered invalid if:
+            - Target is None.
+            - Target has NaN or None values.
+            - Target is of an unsupported Woodwork logical type.
+            - Target and features have different lengths or indices.
+            - Target does not have enough instances of a class in a classification problem.
+            - Target does not contain numeric data for regression problems.
 
         Args:
-            X (pd.DataFrame, np.ndarray): Features. Ignored.
+            X (pd.DataFrame, np.ndarray): Features. If not None, will be used to check that the target and features have the same dimensions and indices.
             y (pd.Series, np.ndarray): Target data to check for invalid values.
 
         Returns:
