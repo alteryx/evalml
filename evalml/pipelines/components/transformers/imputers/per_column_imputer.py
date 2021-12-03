@@ -40,7 +40,7 @@ class PerColumnImputer(Transformer):
         parameters = {
             "impute_strategies": impute_strategies,
             "default_impute_strategy": default_impute_strategy,
-            "impute_all": impute_all
+            "impute_all": impute_all,
         }
         self.imputers = None
         self.impute_strategies = impute_strategies or dict()

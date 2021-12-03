@@ -303,3 +303,39 @@ def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             0: logical_type
         }
+
+
+def test_per_column_imputer_impute_all_is_false():
+    X = pd.DataFrame(
+        {
+            "all_nan_not_included": [np.nan, np.nan, np.nan],
+            "all_nan_included": [np.nan, np.nan, np.nan],
+            "column_with_nan_not_included": [np.nan, 1, 0],
+            "column_with_nan_included": [0, 1, np.nan],
+        }
+    )
+    strategies = {
+        "all_nan_included": {"impute_strategy": "most_frequent"},
+        "column_with_nan_included": {"impute_strategy": "most_frequent"},
+    }
+    transformer = PerColumnImputer(impute_strategies=strategies, impute_all=False)
+    X_expected = pd.DataFrame(
+        {
+            "all_nan_not_included": [np.nan, np.nan, np.nan],
+            "column_with_nan_not_included": [np.nan, 1, 0],
+            "column_with_nan_included": [0, 1, 0],
+        }
+    )
+    X_t = transformer.fit_transform(X)
+    assert_frame_equal(X_expected, X_t, check_dtype=False)
+    assert_frame_equal(
+        X,
+        pd.DataFrame(
+            {
+                "all_nan_not_included": [np.nan, np.nan, np.nan],
+                "all_nan_included": [np.nan, np.nan, np.nan],
+                "column_with_nan_not_included": [np.nan, 1, 0],
+                "column_with_nan_included": [0, 1, np.nan],
+            }
+        ),
+    )
