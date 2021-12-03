@@ -24,7 +24,9 @@ from evalml.utils.woodwork_utils import (
 
 
 class InvalidTargetDataCheck(DataCheck):
-    """Check if the target data is considered invalid. Target data is considered invalid if:
+    """Check if the target data is considered invalid.
+
+    Target data is considered invalid if:
         - Target is None.
         - Target has NaN or None values.
         - Target is of an unsupported Woodwork logical type.
@@ -50,7 +52,9 @@ class InvalidTargetDataCheck(DataCheck):
         self.n_unique = n_unique
 
     def validate(self, X, y):
-        """Check if the target data is considered invalid. Target data is considered invalid if:
+        """Check if the target data is considered invalid.
+
+        Target data is considered invalid if:
             - Target is None.
             - Target has NaN or None values.
             - Target is of an unsupported Woodwork logical type.

@@ -6,6 +6,7 @@ Release Notes
     * Fixes
         * Default parameters for ``RFRegressorSelectFromModel`` and ``RFClassifierSelectFromModel`` has been fixed to avoid selecting all features :pr:`3110`
     * Changes
+        * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
     * Documentation Changes
     * Testing Changes
 
