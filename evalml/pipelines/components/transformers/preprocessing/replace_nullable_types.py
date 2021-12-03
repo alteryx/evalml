@@ -1,7 +1,5 @@
 """Transformer to replace features with the new nullable dtypes with a dtype that is compatible in EvalML."""
-from pandas.core import arrays as pca
 from woodwork import init_series
-from woodwork.exceptions import WoodworkNotInitError
 from woodwork.logical_types import (
     BooleanNullable,
     Categorical,
@@ -11,82 +9,6 @@ from woodwork.logical_types import (
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
-
-
-def is_nullable_int(series):
-    """Function to determine whether a column in a dataframe is a pandas NullableInteger type.
-
-    Args:
-        series: The series to detect NullableIntegers in.
-
-    Returns:
-        boolean: Whether the column was of NullableInteger type.
-
-    Raises:
-        AttributeError: If s
-    """
-    try:
-        is_pandas_nullable = isinstance(series.dtype, pca.integer.Int64Dtype)
-    except AttributeError:
-        is_pandas_nullable = False
-
-    try:
-        is_ww_nullable = isinstance(series.ww.logical_type, IntegerNullable)
-    except WoodworkNotInitError:
-        is_ww_nullable = False
-    except AttributeError:
-        is_ww_nullable = False
-
-    return is_ww_nullable or is_pandas_nullable
-
-
-def replace_nullable_int(series):
-    """Function to replace the pandas NullableInteger column with a column of a compatible type.
-
-    Args:
-        series: The column to change the type of.
-
-    Returns:
-        pandas.Series: The Dataframe column with the type changed to float64.
-
-    """
-    return series.astype("float64")
-
-
-def is_nullable_bool(series):
-    """Function to determine whether a column in a dataframe is a pandas NullableBoolean type.
-
-    Args:
-        series: The series to detect NullableBooleans in.
-
-    Returns:
-        boolean: Whether the column was of NullableBoolean type.
-    """
-    try:
-        is_pandas_nullable = isinstance(series.dtype, pca.boolean.BooleanDtype)
-    except AttributeError:
-        is_pandas_nullable = False
-
-    try:
-        is_ww_nullable = isinstance(series.ww.logical_type, BooleanNullable)
-    except WoodworkNotInitError:
-        is_ww_nullable = False
-    except AttributeError:
-        is_ww_nullable = False
-    return is_ww_nullable or is_pandas_nullable
-
-
-def replace_nullable_bool(series):
-    """Function to replace the pandas NullableBoolean column with a column of a compatible type.
-
-    Args:
-        series: The column to change the type of.
-
-    Returns:
-        pandas.Series: The Dataframe column with the type changed to category.
-
-    """
-    return series.astype("category")
 
 
 class ReplaceNullableTypes(Transformer):
@@ -150,11 +72,11 @@ class ReplaceNullableTypes(Transformer):
         """
         X_t = infer_feature_types(X, ignore_nullable_types=True)
         for col in self._nullable_int_cols:
-            new_col = replace_nullable_int(X_t[col])
+            new_col = X_t[col].astype("float64")
             X_t.ww.pop(col)
             X_t.ww[col] = new_col
         for col in self._nullable_bool_cols:
-            new_col = replace_nullable_bool(X_t[col])
+            new_col = X_t[col].astype("category")
             X_t.ww.pop(col)
             X_t.ww[col] = new_col
 
@@ -163,11 +85,9 @@ class ReplaceNullableTypes(Transformer):
             y_t = init_series(y_t)
             if self._nullable_target is not None:
                 if self._nullable_target == "nullable_int":
-                    y_t = init_series(replace_nullable_int(y_t), logical_type=Double)
+                    y_t = init_series(y_t.astype("float64"), logical_type=Double)
                 elif self._nullable_target == "nullable_bool":
-                    y_t = init_series(
-                        replace_nullable_bool(y_t), logical_type=Categorical
-                    )
+                    y_t = init_series(y_t.astype("category"), logical_type=Categorical)
         elif y is None:
             y_t = None
 
