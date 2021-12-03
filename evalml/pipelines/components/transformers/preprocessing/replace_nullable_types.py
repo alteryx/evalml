@@ -119,18 +119,21 @@ class ReplaceNullableTypes(Transformer):
             self
         """
         X_t = infer_feature_types(X, ignore_nullable_types=True)
-        for col in X_t.columns:
-            if is_nullable_int(X_t[col]):
-                self._nullable_int_cols.append(col)
-            elif is_nullable_bool(X_t[col]):
-                self._nullable_bool_cols.append(col)
+        self._nullable_int_cols = list(
+            X_t.ww.select(["IntegerNullable"], return_schema=True).columns
+        )
+        self._nullable_bool_cols = list(
+            X_t.ww.select(["BooleanNullable"], return_schema=True).columns
+        )
 
         if y is None:
             self._nullable_target = None
-        elif is_nullable_int(y):
-            self._nullable_target = "nullable_int"
-        elif is_nullable_bool(y):
-            self._nullable_target = "nullable_bool"
+        else:
+            y = infer_feature_types(y, ignore_nullable_types=True)
+            if isinstance(y.ww.logical_type, IntegerNullable):
+                self._nullable_target = "nullable_int"
+            elif isinstance(y.ww.logical_type, BooleanNullable):
+                self._nullable_target = "nullable_bool"
         return self
 
     def transform(self, X, y=None):

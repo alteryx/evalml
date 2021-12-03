@@ -889,10 +889,10 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
         if isinstance(component, SelectColumns) or isinstance(component, SelectByType):
             assert transform_output.shape == (X.shape[0], 0)
         elif isinstance(component, RFRegressorSelectFromModel):
-                assert transform_output.shape == (X.shape[0], 10)
-            elif isinstance(component, RFClassifierSelectFromModel):
-                assert transform_output.shape == (X.shape[0], 10)
-            elif isinstance(component, PCA) or isinstance(
+            assert transform_output.shape == (X.shape[0], 10)
+        elif isinstance(component, RFClassifierSelectFromModel):
+            assert transform_output.shape == (X.shape[0], 10)
+        elif isinstance(component, PCA) or isinstance(
             component, LinearDiscriminantAnalysis
         ):
             assert transform_output.shape[0] == X.shape[0]
@@ -918,10 +918,10 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
         if isinstance(component, SelectColumns) or isinstance(component, SelectByType):
             assert transform_output.shape == (X.shape[0], 0)
         elif isinstance(component, RFRegressorSelectFromModel):
-                assert transform_output.shape == (X.shape[0], 10)
-            elif isinstance(component, RFClassifierSelectFromModel):
-                assert transform_output.shape == (X.shape[0], 10)
-            elif isinstance(component, PCA) or isinstance(
+            assert transform_output.shape == (X.shape[0], 10)
+        elif isinstance(component, RFClassifierSelectFromModel):
+            assert transform_output.shape == (X.shape[0], 10)
+        elif isinstance(component, PCA) or isinstance(
             component, LinearDiscriminantAnalysis
         ):
             assert transform_output.shape[0] == X.shape[0]
