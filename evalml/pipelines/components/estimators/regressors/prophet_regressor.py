@@ -77,17 +77,17 @@ class ProphetRegressor(Estimator):
         )
 
     @staticmethod
-    def build_prophet_df(X, y=None, date_column="ds"):
+    def build_prophet_df(X, y=None, date_index="ds"):
         """Build the Prophet data to pass fit and predict on."""
         X = copy.deepcopy(X)
         y = copy.deepcopy(y)
-        if date_column is None:
+        if date_index is None:
             raise ValueError("date_index cannot be None!")
 
-        if date_column in X.columns:
-            date_column = X.pop(date_column)
+        if date_index in X.columns:
+            date_column = X.pop(date_index)
         else:
-            raise ValueError(f"Column {date_column} was not found in X!")
+            raise ValueError(f"Column {date_index} was not found in X!")
 
         prophet_df = X
         if y is not None:
@@ -110,7 +110,7 @@ class ProphetRegressor(Estimator):
         X, y = super()._manage_woodwork(X, y)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, date_column=self.date_index
+            X=X, y=y, date_index=self.date_index
         )
 
         self._component_obj.fit(prophet_df)
@@ -129,7 +129,7 @@ class ProphetRegressor(Estimator):
         X = infer_feature_types(X)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, date_column=self.date_index
+            X=X, y=y, date_index=self.date_index
         )
 
         prophet_output = self._component_obj.predict(prophet_df)
