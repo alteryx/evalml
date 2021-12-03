@@ -8,7 +8,7 @@ from evalml.utils.gen_utils import are_ts_parameters_valid_for_split
 class TimeSeriesSplit(BaseCrossValidator):
     """Rolling Origin Cross Validation for time series problems.
 
-    The max_delay, gap, and forecast_horizon parameters are just used to validate that the requested split size
+    The max_delay, gap, and forecast_horizon parameters are only used to validate that the requested split size
     is not too small given these parameters.
 
     Args:

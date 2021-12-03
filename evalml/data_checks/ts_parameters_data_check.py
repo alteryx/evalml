@@ -9,14 +9,14 @@ from evalml.utils.gen_utils import (
 class TimeSeriesParametersDataCheck(DataCheck):
     """Checks whether the time series parameters are compatible with data splitting.
 
-    If gap + max_delay + forecast_horizon > X.shape[0] // (n_splits + 1)
+    If `gap + max_delay + forecast_horizon > X.shape[0] // (n_splits + 1)`
 
     then the feature engineering window is larger than the smallest split. This will cause the
     pipeline to create features from data that does not exist, which will cause errors.
 
     Args:
         problem_configuration (dict): Dict containing problem_configuration parameters.
-        n_splits (int): Number of time series split.
+        n_splits (int): Number of time series splits.
     """
 
     def __init__(self, problem_configuration, n_splits):
