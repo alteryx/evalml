@@ -61,16 +61,17 @@ class ReplaceNullableTypes(Transformer):
         return self
 
     def transform(self, X, y=None):
-        """Transforms data X by replacing columns that contain nullable types with the appropriate replacement type.
+        """Transforms data by replacing columns that contain nullable types with the appropriate replacement type.
 
         "float64" for nullable integers and "category" for nullable booleans.
 
         Args:
             X (pd.DataFrame): Data to transform
-            y (pd.Series, optional): Ignored.
+            y (pd.Series, optional): Target data to transform
 
         Returns:
             pd.DataFrame: Transformed X
+            pd.Series: Transformed y
         """
         X_t = infer_feature_types(X, ignore_nullable_types=True)
         for col in self._nullable_int_cols:
@@ -80,7 +81,6 @@ class ReplaceNullableTypes(Transformer):
 
         if y is not None:
             y_t = infer_feature_types(y, ignore_nullable_types=True)
-            y_t = init_series(y_t)
             if self._nullable_target is not None:
                 if self._nullable_target == "nullable_int":
                     y_t = init_series(y_t.astype("float64"), logical_type=Double)
