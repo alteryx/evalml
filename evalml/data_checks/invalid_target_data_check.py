@@ -52,7 +52,7 @@ class InvalidTargetDataCheck(DataCheck):
         self.n_unique = n_unique
 
     def validate(self, X, y):
-        """Check if the target data is considered invalid.
+        """Check if the target data is considered invalid. If the input features argument is not None, it will be used to check that the target and features have the same dimensions and indices.
 
         Target data is considered invalid if:
             - Target is None.
@@ -273,7 +273,7 @@ class InvalidTargetDataCheck(DataCheck):
                 if set(X_index) == set(y_index):
                     DataCheck._add_message(
                         DataCheckWarning(
-                            message="Input target and features have mismatched indices order",
+                            message="Input target and features have mismatched indices order.",
                             data_check_name=self.name,
                             message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
                             details={},
@@ -285,7 +285,7 @@ class InvalidTargetDataCheck(DataCheck):
                     index_diff_not_in_y = list(set(X_index) - set(y_index))[:10]
                     DataCheck._add_message(
                         DataCheckWarning(
-                            message="Input target and features have mismatched indices",
+                            message="Input target and features have mismatched indices. Details will include the first 10 mismatched indices.",
                             data_check_name=self.name,
                             message_code=DataCheckMessageCode.MISMATCHED_INDICES,
                             details={
