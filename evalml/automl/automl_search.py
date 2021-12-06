@@ -57,6 +57,7 @@ from evalml.problem_types import (
 )
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, infer_feature_types
+from evalml.utils.gen_utils import contains_all_ts_parameters
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -791,14 +792,9 @@ class AutoMLSearch:
 
     def _validate_problem_configuration(self, problem_configuration=None):
         if is_time_series(self.problem_type):
-            required_parameters = {"date_index", "gap", "max_delay", "forecast_horizon"}
-            if not problem_configuration or not all(
-                p in problem_configuration for p in required_parameters
-            ):
-                raise ValueError(
-                    "problem_configuration must be a dict containing values for at least the date_index, gap, max_delay, "
-                    f"and forecast_horizon parameters. Received {problem_configuration}."
-                )
+            is_valid, msg = contains_all_ts_parameters(problem_configuration)
+            if not is_valid:
+                raise ValueError(msg)
             if problem_configuration["date_index"] is None:
                 raise ValueError("date_index cannot be None!")
         return problem_configuration or {}

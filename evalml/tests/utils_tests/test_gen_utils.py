@@ -12,7 +12,9 @@ from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
     _rename_column_names_to_numeric,
+    are_ts_parameters_valid_for_split,
     classproperty,
+    contains_all_ts_parameters,
     convert_to_seconds,
     deprecate_arg,
     get_importable_subclasses,
@@ -715,3 +717,26 @@ def test_deprecate_arg():
         assert str(warn[0].message).startswith(
             "Argument 'foo' has been deprecated in favor of 'bar'"
         )
+
+
+def test_contains_all_ts_parameters():
+    is_valid, msg = contains_all_ts_parameters(
+        {"date_index": "date", "max_delay": 1, "forecast_horizon": 3, "gap": 7}
+    )
+    assert is_valid and not msg
+
+    is_valid, msg = contains_all_ts_parameters({"date_index": "date"})
+
+    assert not is_valid and msg
+
+
+def test_are_ts_parameters_valid():
+    result = are_ts_parameters_valid_for_split(
+        gap=1, max_delay=4, forecast_horizon=2, n_obs=20, n_splits=3
+    )
+    assert not result.is_valid and result.msg
+
+    result = are_ts_parameters_valid_for_split(
+        gap=1, max_delay=4, forecast_horizon=2, n_obs=200, n_splits=3
+    )
+    assert result.is_valid and not result.msg
