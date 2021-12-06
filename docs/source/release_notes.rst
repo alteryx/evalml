@@ -11,6 +11,7 @@ Release Notes
         * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
     * Documentation Changes
     * Testing Changes
+        * Refactored tests to avoid using ``importorskip`` :pr:`3126`
 
 .. warning::
 
