@@ -1,13 +1,12 @@
 import numpy as np
 import pandas as pd
 import pytest
-from pytest import importorskip
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ProphetRegressor
 from evalml.problem_types import ProblemTypes
 
-prophet = importorskip("prophet", reason="Skipping test because prophet not installed")
+pytestmark = pytest.mark.noncore_dependency
 
 
 def test_model_family():
@@ -15,6 +14,8 @@ def test_model_family():
 
 
 def test_cmdstanpy_backend():
+    import prophet
+
     m = prophet.Prophet(stan_backend="CMDSTANPY")
     assert m.stan_backend.get_type() == "CMDSTANPY"
 
@@ -66,6 +67,8 @@ def test_get_params(ts_data):
 
 
 def test_fit_predict_ts_with_X_index(ts_data):
+    import prophet
+
     X, y = ts_data
     assert isinstance(X.index, pd.DatetimeIndex)
 
@@ -82,6 +85,8 @@ def test_fit_predict_ts_with_X_index(ts_data):
 
 
 def test_fit_predict_ts_with_y_index(ts_data):
+    import prophet
+
     X, y = ts_data
     X = X.reset_index(drop=True)
     assert isinstance(y.index, pd.DatetimeIndex)
@@ -100,6 +105,8 @@ def test_fit_predict_ts_with_y_index(ts_data):
 
 
 def test_fit_predict_ts_no_X(ts_data):
+    import prophet
+
     y = pd.Series(
         range(1, 32), name="dates", index=pd.date_range("2020-10-01", "2020-10-31")
     )
@@ -119,6 +126,8 @@ def test_fit_predict_ts_no_X(ts_data):
 
 
 def test_fit_predict_date_col(ts_data):
+    import prophet
+
     X = pd.DataFrame(
         {
             "features": range(100),

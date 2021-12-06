@@ -41,10 +41,10 @@ def test_component_graph(example_graph):
     return component_graph
 
 
+@pytest.mark.noncore_dependency
 def test_backend(test_pipeline):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
+    import graphviz
+
     with patch("graphviz.Digraph.pipe") as mock_func:
         mock_func.side_effect = graphviz.backend.ExecutableNotFound("Not Found")
         clf = test_pipeline
@@ -52,19 +52,19 @@ def test_backend(test_pipeline):
             clf.graph()
 
 
+@pytest.mark.noncore_dependency
 def test_returns_digraph_object(test_pipeline):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
+    import graphviz
+
     clf = test_pipeline
     graph = clf.graph()
     assert isinstance(graph, graphviz.Digraph)
 
 
+@pytest.mark.noncore_dependency
 def test_backend_comp_graph(test_component_graph):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
+    import graphviz
+
     with patch("graphviz.Digraph.pipe") as mock_func:
         mock_func.side_effect = graphviz.backend.ExecutableNotFound("Not Found")
         comp = test_component_graph
@@ -72,29 +72,27 @@ def test_backend_comp_graph(test_component_graph):
             comp.graph()
 
 
+@pytest.mark.noncore_dependency
 def test_saving_png_file(tmpdir, test_pipeline):
-    pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
     filepath = os.path.join(str(tmpdir), "pipeline.png")
     pipeline = test_pipeline
     pipeline.graph(filepath=filepath)
     assert os.path.isfile(filepath)
 
 
+@pytest.mark.noncore_dependency
 def test_returns_digraph_object_comp_graph(test_component_graph):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
+    import graphviz
+
     comp = test_component_graph
     graph = comp.graph("test", "png")
     assert isinstance(graph, graphviz.Digraph)
 
 
+@pytest.mark.noncore_dependency
 def test_returns_digraph_object_comp_graph_with_params(test_component_graph):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
+    import graphviz
+
     comp = test_component_graph
     parameters = {
         "OneHot_RandomForest": {"top_n": 3},
@@ -109,30 +107,24 @@ def test_returns_digraph_object_comp_graph_with_params(test_component_graph):
     assert "max_iter : 100" in graph.source
 
 
+@pytest.mark.noncore_dependency
 def test_missing_file_extension(tmpdir, test_pipeline):
-    pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
     filepath = os.path.join(str(tmpdir), "test1")
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
 
 
+@pytest.mark.noncore_dependency
 def test_invalid_format(tmpdir, test_pipeline):
-    pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
     filepath = os.path.join(str(tmpdir), "test1.xyz")
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
 
 
+@pytest.mark.noncore_dependency
 def test_invalid_path(tmpdir, test_pipeline):
-    pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
     filepath = os.path.join(str(tmpdir), "invalid", "path", "pipeline.png")
     assert not os.path.exists(filepath)
     pipeline = test_pipeline
@@ -141,22 +133,20 @@ def test_invalid_path(tmpdir, test_pipeline):
     assert not os.path.exists(filepath)
 
 
+@pytest.mark.noncore_dependency
 def test_graph_feature_importance(X_y_binary, test_pipeline):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+    from plotly import graph_objects as go
+
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
     assert isinstance(clf.graph_feature_importance(), go.Figure)
 
 
+@pytest.mark.noncore_dependency
 def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+    from plotly import graph_objects as go
+
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
@@ -168,11 +158,10 @@ def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline):
     assert np.any(data["x"] == 0.0)
 
 
+@pytest.mark.noncore_dependency
 def test_graph_feature_importance_threshold(X_y_binary, test_pipeline):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+    from plotly import graph_objects as go
+
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
@@ -189,13 +178,10 @@ def test_graph_feature_importance_threshold(X_y_binary, test_pipeline):
     assert np.all(data["x"] >= 0.5)
 
 
+@pytest.mark.noncore_dependency
 @patch("evalml.pipelines.pipeline_base.jupyter_check")
 @patch("evalml.pipelines.pipeline_base.import_or_raise")
 def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipeline):
-    pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)

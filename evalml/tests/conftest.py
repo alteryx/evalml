@@ -48,6 +48,7 @@ def pytest_configure(config):
         "markers",
         "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)",
     )
+    config.addinivalue_line("markers", "noncore_dependency: mark test as slow to run")
 
 
 def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
@@ -257,6 +258,14 @@ def pytest_addoption(parser):
         help="If true, tests will assume that they are being run as part of"
         "the build_conda_pkg workflow with the feedstock.",
     )
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--has-minimal-dependencies"):
+        skip_noncore = pytest.mark.skip(reason="needs noncore dependency")
+        for item in items:
+            if "noncore_dependency" in item.keywords:
+                item.add_marker(skip_noncore)
 
 
 @pytest.fixture

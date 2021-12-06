@@ -4,14 +4,13 @@ import numpy as np
 import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
-from pytest import importorskip
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines import LightGBMRegressor
 from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS
 
-lgbm = importorskip("lightgbm", reason="Skipping test because lightgbm not installed")
+pytestmark = pytest.mark.noncore_dependency
 
 
 def test_model_family():
@@ -43,6 +42,8 @@ def test_lightgbm_regressor_random_seed_bounds_seed(X_y_regression):
 
 
 def test_fit_predict_regression(X_y_regression):
+    import lightgbm as lgbm
+
     X, y = X_y_regression
 
     sk_clf = lgbm.sklearn.LGBMRegressor(n_estimators=20, random_state=0)
@@ -57,6 +58,8 @@ def test_fit_predict_regression(X_y_regression):
 
 
 def test_feature_importance(X_y_regression):
+    import lightgbm as lgbm
+
     X, y = X_y_regression
 
     clf = LightGBMRegressor()
@@ -71,6 +74,8 @@ def test_feature_importance(X_y_regression):
 
 
 def test_fit_string_features(X_y_regression):
+    import lightgbm as lgbm
+
     X, y = X_y_regression
     X = pd.DataFrame(X)
     X["string_col"] = "abc"
@@ -175,6 +180,8 @@ def test_multiple_fit(mock_predict):
 
 
 def test_regression_rf(X_y_regression):
+    import lightgbm as lgbm
+
     X, y = X_y_regression
 
     with pytest.raises(lgbm.basic.LightGBMError, match="bagging_fraction"):

@@ -163,11 +163,10 @@ def test_plot_disabled_missing_dependency(X_y_regression, has_minimal_dependenci
         automl.plot.search_iteration_plot
 
 
+@pytest.mark.noncore_dependency
 def test_plot_iterations_max_iterations(X_y_regression):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+    from plotly import graph_objects as go
+
     X, y = X_y_regression
 
     automl = AutoMLSearch(
@@ -186,11 +185,10 @@ def test_plot_iterations_max_iterations(X_y_regression):
     assert len(y) == 3
 
 
+@pytest.mark.noncore_dependency
 def test_plot_iterations_max_time(AutoMLTestEnv, X_y_regression):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+    from plotly import graph_objects as go
+
     X, y = X_y_regression
 
     automl = AutoMLSearch(
