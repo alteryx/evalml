@@ -24,6 +24,7 @@ from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     NaturalLanguageFeaturizer,
     OneHotEncoder,
+    ReplaceNullableTypes,
     StandardScaler,
     TargetImputer,
     TimeSeriesFeaturizer,
@@ -53,6 +54,10 @@ def get_test_data_from_configuration():
         X_all = pd.DataFrame(
             {
                 "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+                * 2,
+                "int_null": [0, 1, 2, np.nan, 4, np.nan, 6]
+                * 2,
+                "bool_null": [True, None, False, True, False, None, True]
                 * 2,
                 "numerical": range(14),
                 "categorical": ["a", "b", "a", "b", "b", "a", "b"] * 2,
@@ -116,6 +121,10 @@ def get_test_data_from_configuration():
                 logical_types.update({"url": "URL"})
             if "email" in column_names:
                 logical_types.update({"email": "EmailAddress"})
+            if "int_null" in column_names:
+                logical_types.update({"int_null": "integer_nullable"})
+            if "bool_null" in column_names:
+                logical_types.update({"bool_null": "boolean_nullable"})
 
             X.ww.init(logical_types=logical_types)
 
@@ -145,6 +154,7 @@ def get_test_data_from_configuration():
         ("url with other features", ["url", "numerical", "categorical"]),
         ("ip with other features", ["ip", "numerical", "categorical"]),
         ("email with other features", ["email", "numerical", "categorical"]),
+        ("nullable_types", ["numerical", "int_null", "bool_null"]),
     ],
 )
 def test_make_pipeline(
@@ -195,6 +205,8 @@ def test_make_pipeline(
                 )
                 else []
             )
+            if "bool_null" in column_names and len(ohe) == 0 and input_type=="pd" and estimator_class.model_family != ModelFamily.CATBOOST :
+                ohe.append(OneHotEncoder)
             datetime = (
                 [DateTimeFeaturizer]
                 if estimator_class.model_family
@@ -208,6 +220,7 @@ def test_make_pipeline(
                 else []
             )
             drop_null = [DropNullColumns] if "all_null" in column_names else []
+            replace_null = [ReplaceNullableTypes] if (any(x in column_names for x in ['bool_null', 'int_null']) and input_type=="ww") else []
             natural_language_featurizer = (
                 [NaturalLanguageFeaturizer]
                 if "text" in column_names and input_type == "ww"
@@ -232,6 +245,7 @@ def test_make_pipeline(
                     label_encoder
                     + email_featurizer
                     + url_featurizer
+                    + replace_null
                     + drop_null
                     + drop_col
                     + natural_language_featurizer
@@ -247,6 +261,7 @@ def test_make_pipeline(
                     label_encoder
                     + email_featurizer
                     + url_featurizer
+                    + replace_null
                     + drop_null
                     + drop_col
                     + delayed_features
