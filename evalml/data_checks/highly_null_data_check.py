@@ -67,9 +67,7 @@ class HighlyNullDataCheck(DataCheck):
             ...                   'level': 'warning',
             ...                   'details': {'columns': ['all_null', 'lots_of_null'],
             ...                               'rows': None,
-            ...                               'pct_null_rows': {'all_null': 1.0, 'lots_of_null': 0.8},
-            ...                               'null_row_indices': {'all_null': [0, 1, 2, 3, 4],
-            ...                                                    'lots_of_null': [0, 1, 2, 3]}},
+            ...                               'pct_null_rows': {'all_null': 1.0, 'lots_of_null': 0.8}},
             ...                   'code': 'HIGHLY_NULL_COLS'}],
             ...     'errors': [],
             ...     'actions': [{'code': 'DROP_COL',
@@ -94,8 +92,7 @@ class HighlyNullDataCheck(DataCheck):
             ...                   'level': 'warning',
             ...                   'details': {'columns': ['all_null'],
             ...                               'rows': None,
-            ...                               'pct_null_rows': {'all_null': 1.0},
-            ...                               'null_row_indices': {'all_null': [0, 1, 2, 3, 4]}},
+            ...                               'pct_null_rows': {'all_null': 1.0}},
             ...                   'code': 'HIGHLY_NULL_COLS'}],
             ...     'errors': [],
             ...     'actions': [{'code': 'DROP_ROWS',
@@ -110,10 +107,9 @@ class HighlyNullDataCheck(DataCheck):
 
         X = infer_feature_types(X, ignore_nullable_types=True)
 
-        percent_null_rows = X.isnull().mean(axis=1)
-        highly_null_rows = percent_null_rows[
-            percent_null_rows >= self.pct_null_row_threshold
-        ]
+        highly_null_rows = HighlyNullDataCheck.get_null_row_information(
+            X, pct_null_row_threshold=self.pct_null_row_threshold
+        )
         if len(highly_null_rows) > 0:
             warning_msg = f"{len(highly_null_rows)} out of {len(X)} rows are {self.pct_null_row_threshold*100}% or more null"
             results["warnings"].append(
@@ -135,15 +131,9 @@ class HighlyNullDataCheck(DataCheck):
                 ).to_dict()
             )
 
-        percent_null_cols = (X.isnull().mean()).to_dict()
-        highly_null_cols = {
-            key: value
-            for key, value in percent_null_cols.items()
-            if value >= self.pct_null_col_threshold and value != 0
-        }
-        highly_null_cols_indices = {
-            col_: X[col_][X[col_].isnull()].index.tolist() for col_ in highly_null_cols
-        }
+        highly_null_cols, _ = HighlyNullDataCheck.get_null_column_information(
+            X, pct_null_col_threshold=self.pct_null_col_threshold
+        )
         warning_msg = "Columns {} are {}% or more null"
         if highly_null_cols:
             results["warnings"].append(
@@ -159,7 +149,6 @@ class HighlyNullDataCheck(DataCheck):
                     details={
                         "columns": list(highly_null_cols),
                         "pct_null_rows": highly_null_cols,
-                        "null_row_indices": highly_null_cols_indices,
                     },
                 ).to_dict()
             )
@@ -171,3 +160,42 @@ class HighlyNullDataCheck(DataCheck):
                 ).to_dict()
             )
         return results
+
+    @staticmethod
+    def get_null_column_information(X, pct_null_col_threshold=0.0):
+        """Finds columns that are considered highly null (percentage null is greater than threshold) and returns dictionary mapping column name to percentage null and dictionary mapping column name to null indices.
+
+        Args:
+            X (pd.DataFrame): DataFrame to check for highly null columns.
+            pct_null_col_threshold (float): Percentage threshold for a column to be considered null. Defaults to 0.0.
+
+        Returns:
+            tuple: Tuple containing: dictionary mapping column name to its null percentage and dictionary mapping column name to null indices in that column.
+        """
+        percent_null_cols = (X.isnull().mean()).to_dict()
+        highly_null_cols = {
+            key: value
+            for key, value in percent_null_cols.items()
+            if value >= pct_null_col_threshold and value != 0
+        }
+        highly_null_cols_indices = {
+            col_: X[col_][X[col_].isnull()].index.tolist() for col_ in highly_null_cols
+        }
+        return highly_null_cols, highly_null_cols_indices
+
+    @staticmethod
+    def get_null_row_information(X, pct_null_row_threshold=0.0):
+        """Finds rows that are considered highly null (percentage null is greater than threshold).
+
+        Args:
+            X (pd.DataFrame): DataFrame to check for highly null rows.
+            pct_null_row_threshold (float): Percentage threshold for a row to be considered null. Defaults to 0.0.
+
+        Returns:
+            pd.Series: Series containing the percentage null for each row.
+        """
+        percent_null_rows = X.isnull().mean(axis=1)
+        highly_null_rows = percent_null_rows[
+            percent_null_rows >= pct_null_row_threshold
+        ]
+        return highly_null_rows
