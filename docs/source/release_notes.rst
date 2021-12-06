@@ -6,7 +6,7 @@ Release Notes
     * Fixes
         * Default parameters for ``RFRegressorSelectFromModel`` and ``RFClassifierSelectFromModel`` has been fixed to avoid selecting all features :pr:`3110`
     * Changes
-        * Removed indices information from of the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
+        * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
     * Documentation Changes
     * Testing Changes
 
