@@ -578,6 +578,6 @@ def are_ts_parameters_valid_for_split(
             f"the smallest split would have {split_size} observations. "
             f"Since {gap + max_delay + forecast_horizon} (gap + max_delay + forecast_horizon)  > {split_size}, "
             "then at least one of the splits would be empty by the time it reaches the pipeline. "
-            "Please use a smaller number of splits or collect more data."
+            "Please use a smaller number of splits, reduce one or more these parameters, or collect more data."
         )
     return _validation_result(not msg, msg, split_size, window_size)
