@@ -16,6 +16,7 @@ Release Notes
 
     **Breaking Changes**
         * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` :pr:`3028`
+        * Renamed module ``evalml.data_checks.invalid_target_data_check`` to ``evalml.data_checks.invalid_targets_data_check`` :pr:`3122`
 
 
 **v0.38.0 Nov. 27, 2021**
