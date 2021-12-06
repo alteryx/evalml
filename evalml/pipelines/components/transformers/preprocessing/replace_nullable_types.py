@@ -75,9 +75,9 @@ class ReplaceNullableTypes(Transformer):
         """
         X_t = infer_feature_types(X, ignore_nullable_types=True)
         for col in self._nullable_int_cols:
-            X_t.ww[col] = X_t[col].astype("float64")
+            X_t.ww[col] = init_series(X_t[col], logical_type="double")
         for col in self._nullable_bool_cols:
-            X_t.ww[col] = X_t[col].astype("category")
+            X_t.ww[col] = init_series(X_t[col], logical_type="categorical")
 
         if y is not None:
             y_t = infer_feature_types(y, ignore_nullable_types=True)
