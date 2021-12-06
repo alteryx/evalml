@@ -12,6 +12,7 @@ from woodwork.logical_types import (
 )
 
 from evalml.pipelines.components import PerColumnImputer
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 @pytest.fixture
@@ -326,8 +327,14 @@ def test_per_column_imputer_impute_all_is_false():
             "column_with_nan_included": [0, 1, 0],
         }
     )
+    X_expected.ww.init(
+        logical_types={
+            "all_nan_not_included": "double",
+            "column_with_nan_included": "double",
+        }
+    )
     X_t = transformer.fit_transform(X)
-    assert_frame_equal(X_expected, X_t, check_dtype=False)
+    assert_frame_equal(X_expected, X_t)
     assert_frame_equal(
         X,
         pd.DataFrame(
@@ -339,3 +346,18 @@ def test_per_column_imputer_impute_all_is_false():
             }
         ),
     )
+
+
+def test_per_column_imputer_impute_all_is_false_and_impute_strategies_is_None():
+    X = pd.DataFrame(
+        {
+            "all_nan_not_included": [np.nan, np.nan, np.nan],
+            "all_nan_included": [np.nan, np.nan, np.nan],
+            "column_with_nan_not_included": [np.nan, 1, 0],
+            "column_with_nan_included": [0, 1, np.nan],
+        }
+    )
+    X_expected = infer_feature_types(X)
+    transformer = PerColumnImputer(impute_strategies=None, impute_all=False)
+    X_t = transformer.fit_transform(X)
+    assert_frame_equal(X_expected, X_t)

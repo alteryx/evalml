@@ -20,7 +20,7 @@ class PerColumnImputer(Transformer):
             and "most_frequent", "constant" for object data types. Defaults to "most_frequent".
         impute_all (bool): Whether or not to impute all columns or just the columns that are specified in `impute_strategies`. If True,
             all columns will be imputed either using the strategy specified in `impute_strategies` or using the `default_impute_strategy`.
-            If False, only columns specified as keys in `default_impute_strategy` are imputed. If False and `impute_strategies` is None,
+            If False, only columns specified as keys in the `impute_strategies` dictionary are imputed. If False and `impute_strategies` is None,
             no columns will be imputed. Defaults to True.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
