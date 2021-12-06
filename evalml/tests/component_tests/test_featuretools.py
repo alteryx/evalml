@@ -205,7 +205,9 @@ def test_dfs_skip_transform(mock_calculate_feature_matrix, mock_dfs, X_y_binary)
     es = es.add_dataframe(
         dataframe_name="X", dataframe=X_transform, index="index", make_index=True
     )
-    feature_matrix, features = ft.dfs(entityset=es, target_dataframe_name="X", trans_primitives=["absolute"])
+    feature_matrix, features = ft.dfs(
+        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
+    )
 
     dfs = DFSTransformer(features=features)
     dfs.fit(X_fit)  # no-op
@@ -229,12 +231,16 @@ def test_dfs_does_not_skip_transform_with_non_identity_feature(mock_dfs, X_y_bin
     es = es.add_dataframe(
         dataframe_name="X", dataframe=X_transform, index="index", make_index=True
     )
-    feature_matrix, features = ft.dfs(entityset=es, target_dataframe_name="X", trans_primitives=["absolute"])
+    feature_matrix, features = ft.dfs(
+        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
+    )
 
-    non_identity_features = list(filter(lambda feature: not isinstance(feature, IdentityFeature), features))
+    non_identity_features = list(
+        filter(lambda feature: not isinstance(feature, IdentityFeature), features)
+    )
     dfs = DFSTransformer(features=non_identity_features)
     dfs.fit(X_fit)  # no-op
-    X_t = dfs.transform(X_pd) # calculate_feature matrix is called
+    X_t = dfs.transform(X_pd)  # calculate_feature matrix is called
     assert not mock_dfs.called
 
     # assert that all non-identity features are calculated
