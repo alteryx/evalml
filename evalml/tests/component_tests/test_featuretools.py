@@ -208,10 +208,12 @@ def test_dfs_skip_transform(mock_calculate_feature_matrix, mock_dfs, X_y_binary)
     feature_matrix, features = ft.dfs(
         entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
     )
-
+    features = list(filter(lambda f: not isinstance(f, IdentityFeature), features))
     dfs = DFSTransformer(features=features)
     dfs.fit(X_fit)  # no-op
-    X_t = dfs.transform(feature_matrix)  # no-op as well
+    X_t = dfs.transform(
+        feature_matrix
+    )  # no-op as well, feature_matrix contains features already
     assert not mock_dfs.called
     assert not mock_calculate_feature_matrix.called
 

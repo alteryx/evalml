@@ -45,10 +45,11 @@ class DFSTransformer(Transformer):
             es = ft_es.add_dataframe(dataframe=X, dataframe_name="X", index=self.index)
         return es
 
-    def _filter_features(self, X, es):
+    def _filter_features(self, X):
         features_to_use = []
         for feature in self.features:
-            if not feature.entityset == es:
+            input_cols = [f.column_name for f in feature.base_features]
+            if not set(input_cols).issubset(set(X.columns)):
                 continue
             if not isinstance(feature, IdentityFeature) and set(
                 feature.get_feature_names()
@@ -88,13 +89,14 @@ class DFSTransformer(Transformer):
         """
         X_ww = infer_feature_types(X)
         X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
-        es = self._make_entity_set(X_ww)
+
         features_to_use = (
-            self._filter_features(X, es) if self._passed_in_features else self.features
+            self._filter_features(X) if self._passed_in_features else self.features
         )
         if not features_to_use:
-            return X
+            return X_ww
 
+        es = self._make_entity_set(X_ww)
         feature_matrix = calculate_feature_matrix(
             features=features_to_use, entityset=es
         )
