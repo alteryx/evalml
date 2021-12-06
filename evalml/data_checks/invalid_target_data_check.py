@@ -145,7 +145,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                               'features_length': 5,
             ...                               'target_length': 4},
             ...                   'code': 'MISMATCHED_LENGTHS'},
-            ...                  {'message': 'Input target and features have mismatched indices',
+            ...                  {'message': 'Input target and features have mismatched indices. Details will include the first 10 mismatched indices.',
             ...                   'data_check_name': 'InvalidTargetDataCheck',
             ...                   'level': 'warning',
             ...                   'details': {'columns': None,
