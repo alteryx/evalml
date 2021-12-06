@@ -4,6 +4,7 @@ import featuretools as ft
 import pandas as pd
 import pytest
 import woodwork as ww
+from featuretools.feature_base import IdentityFeature
 from pandas.testing import assert_frame_equal
 from woodwork.logical_types import (
     Boolean,
@@ -171,24 +172,22 @@ def test_dfs_with_serialized_features(mock_dfs, X_y_binary):
     X, y = X_y_binary
     X_pd = pd.DataFrame(X)
     X_pd.columns = X_pd.columns.astype(str)
-    X_fit = X_pd.iloc[: len(X) // 3]
-    X_transform = X_pd.iloc[len(X) // 3 :]
 
     es = ft.EntitySet()
     es = es.add_dataframe(
-        dataframe_name="X", dataframe=X_transform, index="index", make_index=True
+        dataframe_name="X", dataframe=X_pd, index="index", make_index=True
     )
     feature_matrix, features = ft.dfs(
         entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
     )
 
-    feature = DFSTransformer(features=features)
-    feature.fit(X_fit)  # no-op
+    dfs = DFSTransformer(features=features)
+    dfs.fit(X_pd)  # no-op
     assert not mock_dfs.called
 
-    X_t = feature.transform(X_transform)
+    X_t = dfs.transform(X_pd)
     assert_frame_equal(feature_matrix, X_t)
-    assert features == feature.features
+    assert features == dfs.features
 
 
 @patch("evalml.pipelines.components.transformers.preprocessing.featuretools.dfs")
@@ -206,13 +205,38 @@ def test_dfs_skip_transform(mock_calculate_feature_matrix, mock_dfs, X_y_binary)
     es = es.add_dataframe(
         dataframe_name="X", dataframe=X_transform, index="index", make_index=True
     )
-    feature_matrix, features = ft.dfs(entityset=es, target_dataframe_name="X")
+    feature_matrix, features = ft.dfs(entityset=es, target_dataframe_name="X", trans_primitives=["absolute"])
 
-    feature = DFSTransformer(features=features)
-    feature.fit(X_fit)  # no-op
-    X_t = feature.transform(feature_matrix)  # no-op as well
+    dfs = DFSTransformer(features=features)
+    dfs.fit(X_fit)  # no-op
+    X_t = dfs.transform(feature_matrix)  # no-op as well
     assert not mock_dfs.called
     assert not mock_calculate_feature_matrix.called
 
     assert_frame_equal(feature_matrix, X_t)
-    assert features == feature.features
+    assert features == dfs.features
+
+
+@patch("evalml.pipelines.components.transformers.preprocessing.featuretools.dfs")
+def test_dfs_does_not_skip_transform_with_non_identity_feature(mock_dfs, X_y_binary):
+    X, y = X_y_binary
+    X_pd = pd.DataFrame(X)
+    X_pd.columns = X_pd.columns.astype(str)
+    X_fit = X_pd.iloc[: len(X) // 3]
+    X_transform = X_pd.iloc[len(X) // 3 :]
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X", dataframe=X_transform, index="index", make_index=True
+    )
+    feature_matrix, features = ft.dfs(entityset=es, target_dataframe_name="X", trans_primitives=["absolute"])
+
+    non_identity_features = list(filter(lambda feature: not isinstance(feature, IdentityFeature), features))
+    dfs = DFSTransformer(features=non_identity_features)
+    dfs.fit(X_fit)  # no-op
+    X_t = dfs.transform(X_pd) # calculate_feature matrix is called
+    assert not mock_dfs.called
+
+    # assert that all non-identity features are calculated
+    for col in X_t.columns:
+        assert "ABSOLUTE" in col

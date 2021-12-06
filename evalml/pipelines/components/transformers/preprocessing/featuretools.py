@@ -1,5 +1,6 @@
 """Featuretools DFS component that generates features for the input features."""
 from featuretools import EntitySet, calculate_feature_matrix, dfs
+from featuretools.feature_base import IdentityFeature
 
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
@@ -44,12 +45,17 @@ class DFSTransformer(Transformer):
             es = ft_es.add_dataframe(dataframe=X, dataframe_name="X", index=self.index)
         return es
 
-    def _should_skip_transform(self, X):
+    def _filter_features(self, X, es):
+        features_to_use = []
         for feature in self.features:
-            feature_names = feature.get_feature_names()
-            if not set(feature_names).issubset(set(X.columns)):
-                return False
-        return True
+            if not feature.entityset == es:
+                continue
+            if not isinstance(feature, IdentityFeature) and set(
+                feature.get_feature_names()
+            ).intersection(set(X.columns)):
+                continue
+            features_to_use.append(feature)
+        return features_to_use
 
     def fit(self, X, y=None):
         """Fits the DFSTransformer Transformer component.
@@ -80,14 +86,18 @@ class DFSTransformer(Transformer):
         Returns:
             pd.DataFrame: Feature matrix
         """
-        if self._passed_in_features and self._should_skip_transform(X):
-            return X
-
         X_ww = infer_feature_types(X)
         X_ww = X_ww.ww.rename({col: str(col) for col in X_ww.columns})
         es = self._make_entity_set(X_ww)
+        features_to_use = (
+            self._filter_features(X, es) if self._passed_in_features else self.features
+        )
+        if not features_to_use:
+            return X
 
-        feature_matrix = calculate_feature_matrix(features=self.features, entityset=es)
+        feature_matrix = calculate_feature_matrix(
+            features=features_to_use, entityset=es
+        )
         typed_columns = set(X_ww.columns).intersection(set(feature_matrix.columns))
         feature_matrix.ww.init(schema=X_ww.ww.schema._get_subset_schema(typed_columns))
         return feature_matrix
