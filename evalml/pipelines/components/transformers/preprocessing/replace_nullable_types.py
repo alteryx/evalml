@@ -83,9 +83,9 @@ class ReplaceNullableTypes(Transformer):
             y_t = infer_feature_types(y, ignore_nullable_types=True)
             if self._nullable_target is not None:
                 if self._nullable_target == "nullable_int":
-                    y_t = init_series(y_t.astype("float64"), logical_type=Double)
+                    y_t = init_series(y_t, logical_type="double")
                 elif self._nullable_target == "nullable_bool":
-                    y_t = init_series(y_t.astype("category"), logical_type=Categorical)
+                    y_t = init_series(y_t, logical_type="categorical")
         elif y is None:
             y_t = None
 
