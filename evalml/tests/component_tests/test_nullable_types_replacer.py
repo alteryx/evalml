@@ -29,8 +29,9 @@ def nullable_data():
     )
 
 
+@pytest.mark.parametrize("methods_to_test", ["fit and transform", "fit_transform"])
 @pytest.mark.parametrize("input_type", ["ww", "pandas"])
-def test_replace_nullable_types(nullable_data, input_type):
+def test_replace_nullable_types(nullable_data, input_type, methods_to_test):
     X = nullable_data
 
     nullable_types_replacer = ReplaceNullableTypes()
@@ -56,17 +57,29 @@ def test_replace_nullable_types(nullable_data, input_type):
         assert isinstance(X.ww.logical_types["nullable_age"], AgeNullable)
         assert isinstance(X.ww.logical_types["nullable_boolean"], BooleanNullable)
 
-    nullable_types_replacer.fit(X)
+    if methods_to_test == "fit and transform":
+        nullable_types_replacer.fit(X)
 
-    assert set(nullable_types_replacer._nullable_int_cols) == {
-        "nullable_integer",
-        "nullable_age",
-    }
-    assert nullable_types_replacer._nullable_bool_cols == ["nullable_boolean"]
+        assert set(nullable_types_replacer._nullable_int_cols) == {
+            "nullable_integer",
+            "nullable_age",
+        }
+        assert nullable_types_replacer._nullable_bool_cols == ["nullable_boolean"]
 
-    X_t, y_t = nullable_types_replacer.transform(X)
-    assert set(X_t.columns) == set(X.columns)
-    assert X_t.shape == X.shape
+        X_t, y_t = nullable_types_replacer.transform(X)
+        assert set(X_t.columns) == set(X.columns)
+        assert X_t.shape == X.shape
+    elif methods_to_test == "fit_transform":
+        X_t, y_t = nullable_types_replacer.fit_transform(X)
+
+        assert set(nullable_types_replacer._nullable_int_cols) == {
+            "nullable_integer",
+            "nullable_age",
+        }
+        assert nullable_types_replacer._nullable_bool_cols == ["nullable_boolean"]
+        assert set(X_t.columns) == set(X.columns)
+        assert X_t.shape == X.shape
+
 
     # Check the pandas dtypes
     assert str(X_t.dtypes.loc["non_nullable_integer"]) == "int64"

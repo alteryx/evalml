@@ -55,9 +55,9 @@ class Transformer(ComponentBase):
         Raises:
             MethodPropertyNotFoundError: If transformer does not have a transform method or a component_obj that implements transform.
         """
-        X_ww = infer_feature_types(X, ignore_nullable_types=True)
+        X_ww = infer_feature_types(X)
         if y is not None:
-            y_ww = infer_feature_types(y, ignore_nullable_types=True)
+            y_ww = infer_feature_types(y)
         else:
             y_ww = y
 

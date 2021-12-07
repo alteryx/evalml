@@ -90,3 +90,20 @@ class ReplaceNullableTypes(Transformer):
             y_t = None
 
         return X_t, y_t
+
+    def fit_transform(self, X, y=None):
+        """Substitutes non-nullable types for the new pandas nullable types in the data and target data.
+
+        Args:
+            X (pd.DataFrame, optional): Input features.
+            y (pd.Series): Target data.
+
+        Returns:
+            tuple of pd.DataFrame, pd.Series: The input features and target data with the non-nullable types set.
+        """
+        X_ww = infer_feature_types(X, ignore_nullable_types=True)
+        if y is not None:
+            y_ww = infer_feature_types(y, ignore_nullable_types=True)
+        else:
+            y_ww = y
+        return self.fit(X_ww, y_ww).transform(X_ww, y_ww)
