@@ -13,7 +13,7 @@ class DFSTransformer(Transformer):
         index (string): The name of the column that contains the indices. If no column with this name exists,
             then featuretools.EntitySet() creates a column with this name to serve as the index column. Defaults to 'index'.
         random_seed (int): Seed for the random number generator. Defaults to 0.
-        features (list)[FeatureBase]: List of features to run DFS on. Defaults to None. Features will only be computed if the the entity set of the feature matches the component input and if the feature doesn't exist in the component input.
+        features (list)[FeatureBase]: List of features to run DFS on. Defaults to None. Features will only be computed if the columns used by the feature exist in the input and if the feature itself is not in input.
     """
 
     name = "DFS Transformer"
