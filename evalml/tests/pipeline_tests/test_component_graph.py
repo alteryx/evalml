@@ -1494,11 +1494,9 @@ def test_component_graph_dataset_with_target_imputer():
     assert not pd.isnull(predictions).any()
 
 
+@pytest.mark.noncore_dependency
 @patch("evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit")
 def test_component_graph_sampler_y_passes(mock_estimator_fit):
-    pytest.importorskip(
-        "imblearn.over_sampling", reason="Cannot import imblearn, skipping tests"
-    )
     # makes sure the y value from oversampler gets passed to the estimator
     X = pd.DataFrame({"a": [i for i in range(100)], "b": [i % 3 for i in range(100)]})
     y = pd.Series([0] * 90 + [1] * 10)
@@ -2233,9 +2231,7 @@ def test_component_graph_transform_all_but_final_with_sampler(
     mock_estimator_fit, sampler, has_minimal_dependencies
 ):
     if sampler == "Oversampler" and has_minimal_dependencies:
-        pytest.importorskip(
-            "imblearn.over_sampling", reason="Cannot import imblearn, skipping tests"
-        )
+        pytest.skip("Skipping because imblearn is a non-core dependency.")
     expected_length = 750 if sampler == "Undersampler" else int(1.25 * 850)
     X = pd.DataFrame([[i] for i in range(1000)])
     y = pd.Series([0] * 150 + [1] * 850)

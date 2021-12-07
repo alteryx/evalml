@@ -614,11 +614,8 @@ def test_get_permutation_importance_correlated_features(
     assert correlated_importance_val > not_correlated_importance_val
 
 
+@pytest.mark.noncore_dependency
 def test_permutation_importance_oversampler(fraud_100):
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping test because imbalanced-learn not installed",
-    )
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(
         component_graph={

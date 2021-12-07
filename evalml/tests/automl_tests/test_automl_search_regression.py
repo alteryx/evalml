@@ -163,11 +163,9 @@ def test_plot_disabled_missing_dependency(X_y_regression, has_minimal_dependenci
         automl.plot.search_iteration_plot
 
 
-def test_plot_iterations_max_iterations(X_y_regression):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_plot_iterations_max_iterations(X_y_regression, go):
+
     X, y = X_y_regression
 
     automl = AutoMLSearch(
@@ -186,11 +184,9 @@ def test_plot_iterations_max_iterations(X_y_regression):
     assert len(y) == 3
 
 
-def test_plot_iterations_max_time(AutoMLTestEnv, X_y_regression):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_plot_iterations_max_time(AutoMLTestEnv, X_y_regression, go):
+
     X, y = X_y_regression
 
     automl = AutoMLSearch(
@@ -449,8 +445,6 @@ def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, ts_data):
 
         if result["id"] == 0:
             continue
-        if freq == "MS":
-            assert "ARIMA Regressor" not in result["parameters"]
         if "ARIMA Regressor" in result["parameters"]:
             dt_ = result["parameters"]["ARIMA Regressor"].pop("date_index")
             assert "DateTime Featurization Component" not in result["parameters"].keys()

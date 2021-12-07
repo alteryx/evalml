@@ -217,11 +217,8 @@ def test_ensembler_str_and_classes():
     check_for_components(ensemble_pipeline)
 
 
+@pytest.mark.noncore_dependency
 def test_stacked_ensemble_nondefault_y():
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping nondefault y test because imblearn not installed",
-    )
     X, y = datasets.make_classification(
         n_samples=100, n_features=20, weights={0: 0.1, 1: 0.9}, random_state=0
     )
