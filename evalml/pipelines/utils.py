@@ -33,6 +33,7 @@ from evalml.pipelines.components import (  # noqa: F401
     OneHotEncoder,
     Oversampler,
     RandomForestClassifier,
+    ReplaceNullableTypes,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
@@ -71,6 +72,16 @@ def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         component.append(DropNullColumns)
+    return component
+
+
+def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
+    component = []
+    all_nullable_cols = X.ww.select(
+        ["IntegerNullable", "AgeNullable", "BooleanNullable"], return_schema=True
+    ).columns
+    if len(all_nullable_cols) > 0:
+        component.append(ReplaceNullableTypes)
     return component
 
 
@@ -214,6 +225,7 @@ def _get_preprocessing_components(
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
+            _get_replace_null,
             _get_drop_index_unknown,
             _get_url_email,
             _get_natural_language,
@@ -228,6 +240,7 @@ def _get_preprocessing_components(
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
+            _get_replace_null,
             _get_drop_index_unknown,
             _get_url_email,
             _get_datetime,
@@ -293,7 +306,7 @@ def make_pipeline(
     Raises:
         ValueError: If estimator is not valid for the given problem type, or sampling is not supported for the given problem type.
     """
-    X = infer_feature_types(X)
+    X = infer_feature_types(X, ignore_nullable_types=True)
     y = infer_feature_types(y)
 
     if estimator:

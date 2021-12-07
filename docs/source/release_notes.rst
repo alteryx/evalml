@@ -25,6 +25,7 @@ Release Notes
         * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
         * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
         * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
+        * Updated ``make_pipeline`` for handling pandas nullable types in preprocessing pipeline. :pr:`3124`
         * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
     * Documentation Changes
     * Testing Changes
