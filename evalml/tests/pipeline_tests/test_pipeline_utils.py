@@ -194,19 +194,17 @@ def test_make_pipeline(
                 and estimator_class.model_family != ModelFamily.ARIMA
                 else []
             )
-            ohe = (
-                [OneHotEncoder]
-                if estimator_class.model_family != ModelFamily.CATBOOST
-                and (
-                    any(
-                        ltype in column_names
-                        for ltype in ["url", "email", "categorical"]
-                    )
-                )
-                else []
-            )
-            if "bool_null" in column_names and len(ohe) == 0 and input_type=="pd" and estimator_class.model_family != ModelFamily.CATBOOST :
-                ohe.append(OneHotEncoder)
+
+            if estimator_class.model_family != ModelFamily.CATBOOST:
+                if any(column_name in ["url", "email", "categorical"] for column_name in column_names):
+                    ohe = [OneHotEncoder]
+                elif "bool_null" in column_names and input_type=="pd":
+                    ohe = [OneHotEncoder]
+                else:
+                    ohe = []
+            else:
+                ohe = []
+
             datetime = (
                 [DateTimeFeaturizer]
                 if estimator_class.model_family
