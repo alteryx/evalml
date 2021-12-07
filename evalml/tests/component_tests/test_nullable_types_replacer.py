@@ -80,7 +80,6 @@ def test_replace_nullable_types(nullable_data, input_type, methods_to_test):
         assert set(X_t.columns) == set(X.columns)
         assert X_t.shape == X.shape
 
-
     # Check the pandas dtypes
     assert str(X_t.dtypes.loc["non_nullable_integer"]) == "int64"
     assert str(X_t.dtypes.loc["nullable_integer"]) == "float64"
