@@ -1162,7 +1162,12 @@ def test_all_estimators_check_fit(
         else:
             X, y = X_y_binary
 
-        component = helper_functions.safe_init_component_with_njobs_1(component_class)
+        if component_class.__name__ == "ProphetRegressor":
+            component = component_class(date_index="date")
+        else:
+            component = helper_functions.safe_init_component_with_njobs_1(
+                component_class
+            )
 
         with patch.object(component, "_component_obj") as mock_component_obj:
             with patch.object(
@@ -1614,7 +1619,6 @@ def test_estimator_fit_respects_custom_indices(
     helper_functions,
 ):
 
-    input_pipelines = []
     supported_problem_types = estimator_class.supported_problem_types
 
     ts_problem = False
@@ -1640,9 +1644,12 @@ def test_estimator_fit_respects_custom_indices(
     X_original_index = X.index.copy()
     y_original_index = y.index.copy()
 
-    if input_pipelines:
-        estimator = estimator_class(n_jobs=1, input_pipelines=input_pipelines)
-    else:
+    try:
+        if estimator_class.__name__ == "ProphetRegressor":
+            estimator = estimator_class(date_index="date")
+        else:
+            estimator = estimator_class(n_jobs=1)
+    except TypeError:
         estimator = helper_functions.safe_init_component_with_njobs_1(estimator_class)
 
     estimator.fit(X, y)

@@ -5,7 +5,6 @@ import warnings
 from operator import itemgetter
 
 import numpy as np
-import pandas as pd
 from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm, AutoMLAlgorithmException
@@ -15,7 +14,7 @@ from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
-from evalml.problem_types import is_multiclass, is_time_series
+from evalml.problem_types import is_multiclass
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
@@ -187,21 +186,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 self.problem_type, self.allowed_model_families
             )
             allowed_estimators = self._filter_estimators(allowed_estimators)
-            if (
-                is_time_series(self.problem_type)
-                and self._pipeline_params["pipeline"]["date_index"]
-            ):
-                if (
-                    pd.infer_freq(
-                        self.X[self._pipeline_params["pipeline"]["date_index"]]
-                    )
-                    == "MS"
-                ):
-                    allowed_estimators = [
-                        estimator
-                        for estimator in allowed_estimators
-                        if estimator.name != "ARIMA Regressor"
-                    ]
             self.logger.debug(
                 f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}"
             )
