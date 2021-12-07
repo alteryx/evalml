@@ -74,7 +74,12 @@ def test_make_data_splitter_default(problem_type, large_data):
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]:
-        problem_configuration = {"gap": 1, "max_delay": 7, "date_index": "foo"}
+        problem_configuration = {
+            "gap": 1,
+            "max_delay": 7,
+            "date_index": "foo",
+            "forecast_horizon": 4,
+        }
 
     data_splitter = make_data_splitter(
         X, y, problem_type, problem_configuration=problem_configuration
@@ -112,6 +117,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.n_splits == 3
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
+        assert data_splitter.forecast_horizon == 4
         assert data_splitter.date_index == "foo"
 
 
@@ -274,11 +280,8 @@ def test_get_best_sampler_for_data_sampler_method(
         assert name_output == "Oversampler"
 
 
+@pytest.mark.noncore_dependency
 def test_get_best_sampler_for_data_nonnumeric_noncategorical_columns(X_y_binary):
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping oversampling test because imbalanced-learn is not installed",
-    )
     X, y = X_y_binary
     X = pd.DataFrame(X)
     y = pd.Series([i % 5 == 0 for i in range(100)])

@@ -7,7 +7,7 @@ from .data_checks import DataChecks
 from .data_check_message import DataCheckMessage, DataCheckWarning, DataCheckError
 from .data_check_message_type import DataCheckMessageType
 from .default_data_checks import DefaultDataChecks
-from .invalid_targets_data_check import InvalidTargetDataCheck
+from .invalid_target_data_check import InvalidTargetDataCheck
 from .highly_null_data_check import HighlyNullDataCheck
 from .id_columns_data_check import IDColumnsDataCheck
 from .target_leakage_data_check import TargetLeakageDataCheck
@@ -21,3 +21,4 @@ from .datetime_nan_data_check import DateTimeNaNDataCheck
 from .natural_language_nan_data_check import NaturalLanguageNaNDataCheck
 from .target_distribution_data_check import TargetDistributionDataCheck
 from .datetime_format_data_check import DateTimeFormatDataCheck
+from .ts_parameters_data_check import TimeSeriesParametersDataCheck

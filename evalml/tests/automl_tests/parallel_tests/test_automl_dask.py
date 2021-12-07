@@ -327,7 +327,7 @@ def test_score_pipelines_passes_X_train_y_train(
             "date_index": "date",
             "gap": 0,
             "forecast_horizon": 1,
-            "max_delay": 2,
+            "max_delay": 1,
         },
         engine=engine_str,
     )

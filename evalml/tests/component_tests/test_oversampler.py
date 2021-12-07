@@ -9,10 +9,7 @@ from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import Oversampler
 from evalml.utils.woodwork_utils import infer_feature_types
 
-im = pytest.importorskip(
-    "imblearn.over_sampling",
-    reason="Skipping test because imbalanced-learn not installed",
-)
+pytestmark = pytest.mark.noncore_dependency
 
 
 def test_init():
@@ -46,6 +43,8 @@ def test_sampler_selection(
     categorical_columns,
     mock_imbalanced_data_X_y,
 ):
+    from imblearn import over_sampling as im
+
     X, y = mock_imbalanced_data_X_y(problem_type, categorical_columns, "small")
 
     oversampler = Oversampler(sampling_ratio=1)
@@ -195,17 +194,20 @@ def test_oversample_seed_same_outputs(sampler, X_y_binary):
 
 
 @pytest.mark.parametrize(
-    "component_sampler,imblearn_sampler",
+    "component_sampler",
     [
-        ("SMOTE", im.SMOTE),
-        ("SMOTENC", im.SMOTENC),
-        ("SMOTEN", im.SMOTEN),
+        "SMOTE",
+        "SMOTENC",
+        "SMOTEN",
     ],
 )
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
 def test_samplers_perform_equally(
-    problem_type, component_sampler, imblearn_sampler, X_y_binary, X_y_multi
+    problem_type, component_sampler, X_y_binary, X_y_multi
 ):
+    from imblearn import over_sampling as im
+
+    imblearn_sampler = getattr(im, component_sampler)
     if problem_type == "binary":
         X, _ = X_y_binary
         y = np.array([0] * 90 + [1] * 10)
@@ -251,16 +253,18 @@ def test_samplers_perform_equally(
     np.testing.assert_equal(sorted(y_im), expected_y)
 
 
-def test_smoten_categorical_boolean(X_y_binary):
+def test_smoten_categorical_boolean(X_y_binary, im):
+
     X, y = X_y_binary
     X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Boolean"})
     X_ww = X_ww.drop(range(2, len(X_ww.columns)), axis=1)
     sn = Oversampler()
-    X_out, y_out = sn.fit_transform(X_ww, y)
+    _ = sn.fit_transform(X_ww, y)
     assert sn.sampler == im.SMOTEN
 
 
-def test_smotenc_boolean_numeric(X_y_binary):
+def test_smotenc_boolean_numeric(X_y_binary, im):
+
     X, y = X_y_binary
     X_ww = infer_feature_types(X, feature_types={5: "Boolean", 12: "Boolean"})
     snc = Oversampler()
@@ -272,7 +276,7 @@ def test_smotenc_categorical_features(X_y_binary):
     X, y = X_y_binary
     X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Categorical"})
     snc = Oversampler()
-    X_out, y_out = snc.fit_transform(X_ww, y)
+    _ = snc.fit_transform(X_ww, y)
     assert snc.categorical_features == [0, 1]
 
 
@@ -285,8 +289,7 @@ def test_smotenc_category_features(X_y_binary):
         feature_types={"postal": "PostalCode", "country": "CountryCode", 2: "Boolean"},
     )
     snc = Oversampler()
-    X_out, y_out = snc.fit_transform(X_ww, y)
-    assert snc.sampler == im.SMOTENC
+    _ = snc.fit_transform(X_ww, y)
     assert snc.categorical_features == [0, 1, 2]
 
 
