@@ -10,6 +10,7 @@ on:
       - 'requirements.txt'
       - 'core-requirements.txt'
       - 'evalml/tests/dependency_update_check/*.txt'
+      - 'evalml/'
 
 jobs:
   build_conda_pkg:
