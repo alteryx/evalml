@@ -42,8 +42,7 @@ def test_component_graph(example_graph):
 
 
 @pytest.mark.noncore_dependency
-def test_backend(test_pipeline):
-    import graphviz
+def test_backend(test_pipeline, graphviz):
 
     with patch("graphviz.Digraph.pipe") as mock_func:
         mock_func.side_effect = graphviz.backend.ExecutableNotFound("Not Found")
@@ -53,8 +52,7 @@ def test_backend(test_pipeline):
 
 
 @pytest.mark.noncore_dependency
-def test_returns_digraph_object(test_pipeline):
-    import graphviz
+def test_returns_digraph_object(test_pipeline, graphviz):
 
     clf = test_pipeline
     graph = clf.graph()
@@ -62,8 +60,7 @@ def test_returns_digraph_object(test_pipeline):
 
 
 @pytest.mark.noncore_dependency
-def test_backend_comp_graph(test_component_graph):
-    import graphviz
+def test_backend_comp_graph(test_component_graph, graphviz):
 
     with patch("graphviz.Digraph.pipe") as mock_func:
         mock_func.side_effect = graphviz.backend.ExecutableNotFound("Not Found")
@@ -81,8 +78,7 @@ def test_saving_png_file(tmpdir, test_pipeline):
 
 
 @pytest.mark.noncore_dependency
-def test_returns_digraph_object_comp_graph(test_component_graph):
-    import graphviz
+def test_returns_digraph_object_comp_graph(test_component_graph, graphviz):
 
     comp = test_component_graph
     graph = comp.graph("test", "png")
@@ -90,8 +86,7 @@ def test_returns_digraph_object_comp_graph(test_component_graph):
 
 
 @pytest.mark.noncore_dependency
-def test_returns_digraph_object_comp_graph_with_params(test_component_graph):
-    import graphviz
+def test_returns_digraph_object_comp_graph_with_params(test_component_graph, graphviz):
 
     comp = test_component_graph
     parameters = {
@@ -134,8 +129,7 @@ def test_invalid_path(tmpdir, test_pipeline):
 
 
 @pytest.mark.noncore_dependency
-def test_graph_feature_importance(X_y_binary, test_pipeline):
-    from plotly import graph_objects as go
+def test_graph_feature_importance(X_y_binary, test_pipeline, go):
 
     X, y = X_y_binary
     clf = test_pipeline
@@ -144,8 +138,7 @@ def test_graph_feature_importance(X_y_binary, test_pipeline):
 
 
 @pytest.mark.noncore_dependency
-def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline):
-    from plotly import graph_objects as go
+def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline, go):
 
     X, y = X_y_binary
     clf = test_pipeline
@@ -159,8 +152,7 @@ def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline):
 
 
 @pytest.mark.noncore_dependency
-def test_graph_feature_importance_threshold(X_y_binary, test_pipeline):
-    from plotly import graph_objects as go
+def test_graph_feature_importance_threshold(X_y_binary, test_pipeline, go):
 
     X, y = X_y_binary
     clf = test_pipeline

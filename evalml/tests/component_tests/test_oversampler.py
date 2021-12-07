@@ -253,19 +253,17 @@ def test_samplers_perform_equally(
     np.testing.assert_equal(sorted(y_im), expected_y)
 
 
-def test_smoten_categorical_boolean(X_y_binary):
-    from imblearn import over_sampling as im
+def test_smoten_categorical_boolean(X_y_binary, im):
 
     X, y = X_y_binary
     X_ww = infer_feature_types(X, feature_types={0: "Categorical", 1: "Boolean"})
     X_ww = X_ww.drop(range(2, len(X_ww.columns)), axis=1)
     sn = Oversampler()
-    X_out, y_out = sn.fit_transform(X_ww, y)
+    _ = sn.fit_transform(X_ww, y)
     assert sn.sampler == im.SMOTEN
 
 
-def test_smotenc_boolean_numeric(X_y_binary):
-    from imblearn import over_sampling as im
+def test_smotenc_boolean_numeric(X_y_binary, im):
 
     X, y = X_y_binary
     X_ww = infer_feature_types(X, feature_types={5: "Boolean", 12: "Boolean"})

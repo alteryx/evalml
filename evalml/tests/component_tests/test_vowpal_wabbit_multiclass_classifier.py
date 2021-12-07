@@ -49,8 +49,7 @@ def test_vw_parameters():
     assert vw.parameters == expected_parameters
 
 
-def test_vw_fit_predict(X_y_multi):
-    from vowpalwabbit import sklearn_vw as vw
+def test_vw_fit_predict(X_y_multi, vw):
 
     X, y = X_y_multi
     vw_classifier = VowpalWabbitMulticlassClassifier()

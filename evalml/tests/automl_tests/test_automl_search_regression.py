@@ -164,8 +164,7 @@ def test_plot_disabled_missing_dependency(X_y_regression, has_minimal_dependenci
 
 
 @pytest.mark.noncore_dependency
-def test_plot_iterations_max_iterations(X_y_regression):
-    from plotly import graph_objects as go
+def test_plot_iterations_max_iterations(X_y_regression, go):
 
     X, y = X_y_regression
 
@@ -186,8 +185,7 @@ def test_plot_iterations_max_iterations(X_y_regression):
 
 
 @pytest.mark.noncore_dependency
-def test_plot_iterations_max_time(AutoMLTestEnv, X_y_regression):
-    from plotly import graph_objects as go
+def test_plot_iterations_max_time(AutoMLTestEnv, X_y_regression, go):
 
     X, y = X_y_regression
 

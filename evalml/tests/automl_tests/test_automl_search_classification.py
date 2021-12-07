@@ -596,8 +596,7 @@ def test_plot_disabled_missing_dependency(X_y_binary, has_minimal_dependencies):
 
 
 @pytest.mark.noncore_dependency
-def test_plot_iterations_max_iterations(X_y_binary):
-    from plotly import graph_objects as go
+def test_plot_iterations_max_iterations(X_y_binary, go):
 
     X, y = X_y_binary
 
@@ -623,9 +622,7 @@ def test_plot_iterations_max_iterations(X_y_binary):
 
 
 @pytest.mark.noncore_dependency
-def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary):
-    from plotly import graph_objects as go
-
+def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary, go):
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -673,9 +670,9 @@ def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
 
 @pytest.mark.noncore_dependency
 @patch("IPython.display.display")
-def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y_binary):
-    from plotly import graph_objects as go
-
+def test_plot_iterations_ipython_mock_import_failure(
+    mock_ipython_display, X_y_binary, go
+):
     X, y = X_y_binary
 
     automl = AutoMLSearch(

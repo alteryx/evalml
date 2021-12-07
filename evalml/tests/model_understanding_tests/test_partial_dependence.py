@@ -647,10 +647,8 @@ def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regr
 
 
 @pytest.mark.noncore_dependency
-def test_graph_partial_dependence(breast_cancer_local, test_pipeline):
+def test_graph_partial_dependence(breast_cancer_local, test_pipeline, go):
     X, y = breast_cancer_local
-
-    from plotly import graph_objects as go
 
     clf = test_pipeline
     clf.fit(X, y)
@@ -676,9 +674,8 @@ def test_graph_partial_dependence(breast_cancer_local, test_pipeline):
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_graph_partial_dependence_ww_categories(
-    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class
+    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class, go
 ):
-    from plotly import graph_objects as go
 
     X, y = fraud_100
     X.ww.set_types(
@@ -710,8 +707,7 @@ def test_graph_partial_dependence_ww_categories(
 
 
 @pytest.mark.noncore_dependency
-def test_graph_two_way_partial_dependence(breast_cancer_local, test_pipeline):
-    from plotly import graph_objects as go
+def test_graph_two_way_partial_dependence(breast_cancer_local, test_pipeline, go):
 
     X, y = breast_cancer_local
 
@@ -744,9 +740,8 @@ def test_graph_two_way_partial_dependence(breast_cancer_local, test_pipeline):
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_graph_two_way_partial_dependence_ww_categories(
-    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class
+    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class, go
 ):
-    from plotly import graph_objects as go
 
     X, y = fraud_100
     X.ww.set_types(
@@ -809,10 +804,8 @@ def test_graph_two_way_partial_dependence_ww_categories(
 
 @pytest.mark.noncore_dependency
 def test_graph_partial_dependence_multiclass(
-    wine_local,
-    logistic_regression_multiclass_pipeline_class,
+    wine_local, logistic_regression_multiclass_pipeline_class, go
 ):
-    from plotly import graph_objects as go
 
     X, y = wine_local
     pipeline = logistic_regression_multiclass_pipeline_class(

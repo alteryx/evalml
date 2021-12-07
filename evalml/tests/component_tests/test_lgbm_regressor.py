@@ -41,8 +41,7 @@ def test_lightgbm_regressor_random_seed_bounds_seed(X_y_regression):
     clf.fit(X, y)
 
 
-def test_fit_predict_regression(X_y_regression):
-    import lightgbm as lgbm
+def test_fit_predict_regression(X_y_regression, lgbm):
 
     X, y = X_y_regression
 
@@ -57,8 +56,7 @@ def test_fit_predict_regression(X_y_regression):
     np.testing.assert_almost_equal(y_pred_sk, y_pred.values, decimal=5)
 
 
-def test_feature_importance(X_y_regression):
-    import lightgbm as lgbm
+def test_feature_importance(X_y_regression, lgbm):
 
     X, y = X_y_regression
 
@@ -73,8 +71,7 @@ def test_feature_importance(X_y_regression):
     np.testing.assert_almost_equal(sk_feature_importance, feature_importance, decimal=3)
 
 
-def test_fit_string_features(X_y_regression):
-    import lightgbm as lgbm
+def test_fit_string_features(X_y_regression, lgbm):
 
     X, y = X_y_regression
     X = pd.DataFrame(X)
@@ -179,8 +176,7 @@ def test_multiple_fit(mock_predict):
     assert_frame_equal(X2_predict_expected, mock_predict.call_args[0][0])
 
 
-def test_regression_rf(X_y_regression):
-    import lightgbm as lgbm
+def test_regression_rf(X_y_regression, lgbm):
 
     X, y = X_y_regression
 

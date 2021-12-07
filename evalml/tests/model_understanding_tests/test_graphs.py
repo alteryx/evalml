@@ -294,8 +294,7 @@ def test_precision_recall_curve_pos_label_idx_error(make_data_type):
 
 @pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type):
-    from plotly import graph_objects as go
+def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type, go):
 
     X, y_true = X_y_binary
     rs = get_random_state(42)
@@ -322,8 +321,7 @@ def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type):
 
 
 @pytest.mark.noncore_dependency
-def test_graph_precision_recall_curve_title_addition(X_y_binary):
-    from plotly import graph_objects as go
+def test_graph_precision_recall_curve_title_addition(X_y_binary, go):
 
     X, y_true = X_y_binary
     rs = get_random_state(42)
@@ -429,8 +427,7 @@ def test_roc_curve_multiclass(data_type, make_data_type):
 
 @pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type):
-    from plotly import graph_objects as go
+def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type, go):
 
     X, y_true = X_y_binary
     rs = get_random_state(42)
@@ -459,8 +456,7 @@ def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type):
 
 
 @pytest.mark.noncore_dependency
-def test_graph_roc_curve_nans():
-    from plotly import graph_objects as go
+def test_graph_roc_curve_nans(go):
 
     one_val_y_zero = np.array([0])
     with pytest.warns(UndefinedMetricWarning):
@@ -481,8 +477,7 @@ def test_graph_roc_curve_nans():
 
 
 @pytest.mark.noncore_dependency
-def test_graph_roc_curve_multiclass(binarized_ys):
-    from plotly import graph_objects as go
+def test_graph_roc_curve_multiclass(binarized_ys, go):
 
     y_true, y_tr, y_pred_proba = binarized_ys
     fig = graph_roc_curve(y_true, y_pred_proba)
@@ -513,8 +508,7 @@ def test_graph_roc_curve_multiclass(binarized_ys):
 
 
 @pytest.mark.noncore_dependency
-def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys):
-    from plotly import graph_objects as go
+def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys, go):
 
     y_true, y_tr, y_pred_proba = binarized_ys
     custom_class_names = ["one", "two", "three"]
@@ -535,8 +529,7 @@ def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys):
 
 
 @pytest.mark.noncore_dependency
-def test_graph_roc_curve_title_addition(X_y_binary):
-    from plotly import graph_objects as go
+def test_graph_roc_curve_title_addition(X_y_binary, go):
 
     X, y_true = X_y_binary
     rs = get_random_state(42)
@@ -552,8 +545,7 @@ def test_graph_roc_curve_title_addition(X_y_binary):
 
 @pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type):
-    from plotly import graph_objects as go
+def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type, go):
 
     X, y_true = X_y_binary
     rs = get_random_state(42)
@@ -591,8 +583,7 @@ def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type):
 
 
 @pytest.mark.noncore_dependency
-def test_graph_confusion_matrix_norm_disabled(X_y_binary):
-    from plotly import graph_objects as go
+def test_graph_confusion_matrix_norm_disabled(X_y_binary, go):
 
     X, y_true = X_y_binary
     rs = get_random_state(42)
@@ -620,8 +611,7 @@ def test_graph_confusion_matrix_norm_disabled(X_y_binary):
 
 
 @pytest.mark.noncore_dependency
-def test_graph_confusion_matrix_title_addition(X_y_binary):
-    from plotly import graph_objects as go
+def test_graph_confusion_matrix_title_addition(X_y_binary, go):
 
     X, y_true = X_y_binary
     rs = get_random_state(42)
@@ -636,8 +626,7 @@ def test_graph_confusion_matrix_title_addition(X_y_binary):
 
 
 @pytest.mark.noncore_dependency
-def test_graph_permutation_importance(X_y_binary, test_pipeline):
-    from plotly import graph_objects as go
+def test_graph_permutation_importance(X_y_binary, test_pipeline, go):
 
     X, y = X_y_binary
     clf = test_pipeline
@@ -666,8 +655,7 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
 
 @pytest.mark.noncore_dependency
 @patch("evalml.model_understanding.graphs.calculate_permutation_importance")
-def test_graph_permutation_importance_show_all_features(mock_perm_importance):
-    from plotly import graph_objects as go
+def test_graph_permutation_importance_show_all_features(mock_perm_importance, go):
 
     mock_perm_importance.return_value = pd.DataFrame(
         {"feature": ["f1", "f2"], "importance": [0.0, 0.6]}
@@ -684,8 +672,7 @@ def test_graph_permutation_importance_show_all_features(mock_perm_importance):
 
 @pytest.mark.noncore_dependency
 @patch("evalml.model_understanding.graphs.calculate_permutation_importance")
-def test_graph_permutation_importance_threshold(mock_perm_importance):
-    from plotly import graph_objects as go
+def test_graph_permutation_importance_threshold(mock_perm_importance, go):
 
     mock_perm_importance.return_value = pd.DataFrame(
         {"feature": ["f1", "f2"], "importance": [0.0, 0.6]}
@@ -790,8 +777,8 @@ def test_graph_binary_objective_vs_threshold(
     X_y_binary,
     logistic_regression_binary_pipeline_class,
     make_data_type,
+    go,
 ):
-    from plotly import graph_objects as go
 
     X, y = X_y_binary
     X = make_data_type(data_type, X)
@@ -908,8 +895,7 @@ def test_get_prediction_vs_actual_data(data_type, make_data_type):
 
 
 @pytest.mark.noncore_dependency
-def test_graph_prediction_vs_actual_default():
-    from plotly import graph_objects as go
+def test_graph_prediction_vs_actual_default(go):
 
     y_true = [1, 2, 3000, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     y_pred = [5, 4, 2, 8, 6, 6, 5, 1, 7, 2, 1, 3000]
@@ -932,8 +918,7 @@ def test_graph_prediction_vs_actual_default():
 
 @pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
-def test_graph_prediction_vs_actual(data_type):
-    from plotly import graph_objects as go
+def test_graph_prediction_vs_actual(data_type, go):
 
     y_true = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     y_pred = [5, 4, 3, 8, 6, 3, 5, 9, 7, 12, 1, 2]
@@ -1002,8 +987,7 @@ def test_get_prediction_vs_actual_over_time_data(ts_data):
 
 
 @pytest.mark.noncore_dependency
-def test_graph_prediction_vs_actual_over_time(ts_data):
-    from plotly import graph_objects as go
+def test_graph_prediction_vs_actual_over_time(ts_data, go):
 
     X, y = ts_data
     X_train, y_train = X.iloc[:15], y.iloc[:15]
@@ -1378,8 +1362,7 @@ def test_t_sne_errors_marker_size(marker_size, has_minimal_dependencies):
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize("perplexity", [0, 4.6, 100])
 @pytest.mark.parametrize("learning_rate", [100.0, 0.1])
-def test_graph_t_sne(data_type, perplexity, learning_rate):
-    from plotly import graph_objects as go
+def test_graph_t_sne(data_type, perplexity, learning_rate, go):
 
     if data_type == "np":
         X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])

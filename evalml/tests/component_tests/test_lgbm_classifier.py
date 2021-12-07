@@ -43,8 +43,7 @@ def test_lightgbm_classifier_random_seed_bounds_seed(X_y_binary):
     clf.fit(X, y)
 
 
-def test_fit_predict_binary(X_y_binary):
-    import lightgbm as lgbm
+def test_fit_predict_binary(X_y_binary, lgbm):
 
     X, y = X_y_binary
 
@@ -62,8 +61,7 @@ def test_fit_predict_binary(X_y_binary):
     np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.values, decimal=5)
 
 
-def test_fit_predict_multi(X_y_multi):
-    import lightgbm as lgbm
+def test_fit_predict_multi(X_y_multi, lgbm):
 
     X, y = X_y_multi
 
@@ -81,8 +79,7 @@ def test_fit_predict_multi(X_y_multi):
     np.testing.assert_almost_equal(y_pred_proba_sk, y_pred_proba.values, decimal=5)
 
 
-def test_feature_importance(X_y_binary):
-    import lightgbm as lgbm
+def test_feature_importance(X_y_binary, lgbm):
 
     X, y = X_y_binary
 
@@ -97,8 +94,7 @@ def test_feature_importance(X_y_binary):
     np.testing.assert_almost_equal(sk_feature_importance, feature_importance, decimal=5)
 
 
-def test_fit_string_features(X_y_binary):
-    import lightgbm as lgbm
+def test_fit_string_features(X_y_binary, lgbm):
 
     X, y = X_y_binary
     X = pd.DataFrame(X)
@@ -269,8 +265,7 @@ def test_binary_label_encoding(mock_predict, X_y_binary):
     clf.predict(X)
 
 
-def test_binary_rf(X_y_binary):
-    import lightgbm as lgbm
+def test_binary_rf(X_y_binary, lgbm):
 
     X, y = X_y_binary
 
