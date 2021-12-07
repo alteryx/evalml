@@ -2,8 +2,6 @@
 from woodwork import init_series
 from woodwork.logical_types import (
     BooleanNullable,
-    Categorical,
-    Double,
     IntegerNullable,
 )
 
