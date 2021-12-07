@@ -1,4 +1,6 @@
 """Component that imputes missing data according to a specified imputation strategy per column."""
+import warnings
+
 from evalml.pipelines.components.transformers import Transformer
 from evalml.pipelines.components.transformers.imputers.simple_imputer import (
     SimpleImputer,
@@ -19,7 +21,7 @@ class PerColumnImputer(Transformer):
             Valid values include "mean", "median", "most_frequent", "constant" for numerical data,
             and "most_frequent", "constant" for object data types. Defaults to "most_frequent".
         impute_all (bool): Whether or not to impute all columns or just the columns that are specified in `impute_strategies`. If True,
-            all columns will be imputed either using the strategy specified in `impute_strategies` or using the `default_impute_strategy`.
+            columns will be imputed using the strategy in the `impute_strategies` dictionary if specified or using the `default_impute_strategy`.
             If False, only columns specified as keys in the `impute_strategies` dictionary are imputed. If False and `impute_strategies` is None,
             no columns will be imputed. Defaults to True.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -67,7 +69,14 @@ class PerColumnImputer(Transformer):
         X = infer_feature_types(X)
         self.imputers = dict()
 
-        columns_to_impute = X.columns if self.impute_all else self.impute_strategies
+        columns_to_impute = (
+            X.columns if self.impute_all else self.impute_strategies.keys()
+        )
+        if len(columns_to_impute) == 0:
+            warnings.warn(
+                "No columns to impute. Please check `impute_strategies` and `impute_all` parameters."
+            )
+
         for column in columns_to_impute:
             strategy_dict = self.impute_strategies.get(column, dict())
             strategy = strategy_dict.get(
