@@ -11,6 +11,7 @@ Release Notes
         * Included target leakage check when fitting ``ARIMARegressor`` to account for the lack of ``TimeSeriesFeaturizer`` in ``ARIMARegressor`` based pipelines :pr:`3104`
         * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
         * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
+        * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
     * Documentation Changes
     * Testing Changes
         * Refactored tests to avoid using ``importorskip`` :pr:`3126`

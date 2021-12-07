@@ -57,6 +57,7 @@ minimum_dependencies_set = set(
         "RF Regressor Select From Model",
         "Random Forest Classifier",
         "Random Forest Regressor",
+        "Replace Nullable Types Transformer",
         "SVM Classifier",
         "SVM Regressor",
         "Select Columns By Type Transformer",

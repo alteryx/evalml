@@ -61,6 +61,7 @@ from .transformers import (
     URLFeaturizer,
     DropRowsTransformer,
     LabelEncoder,
+    ReplaceNullableTypes,
 )
 from .ensemble import (
     StackedEnsembleClassifier,
