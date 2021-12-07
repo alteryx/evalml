@@ -8,6 +8,7 @@ Release Notes
     * Fixes
         * Default parameters for ``RFRegressorSelectFromModel`` and ``RFClassifierSelectFromModel`` has been fixed to avoid selecting all features :pr:`3110`
     * Changes
+        * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
         * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
     * Documentation Changes
     * Testing Changes
@@ -16,6 +17,7 @@ Release Notes
 
     **Breaking Changes**
         * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` :pr:`3028`
+        * Renamed module ``evalml.data_checks.invalid_target_data_check`` to ``evalml.data_checks.invalid_targets_data_check`` :pr:`3122`
 
 
 **v0.38.0 Nov. 27, 2021**
