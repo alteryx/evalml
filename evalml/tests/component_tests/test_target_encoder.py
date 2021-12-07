@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal
-from pytest import importorskip
 from woodwork.logical_types import (
     Boolean,
     Categorical,
@@ -18,9 +17,7 @@ from woodwork.logical_types import (
 from evalml.exceptions import ComponentNotYetFittedError
 from evalml.pipelines.components import TargetEncoder
 
-importorskip(
-    "category_encoders", reason="Skipping test because category_encoders not installed"
-)
+pytestmark = pytest.mark.noncore_dependency
 
 
 def test_init():

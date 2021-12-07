@@ -9,6 +9,7 @@ clean:
 .PHONY: lint
 lint:
 	isort --check-only evalml
+	sh ./import_or_skip.sh
 	python docs/notebook_version_standardizer.py check-versions
 	python docs/notebook_version_standardizer.py check-execution
 	black evalml -t py39 --check

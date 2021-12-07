@@ -1,20 +1,27 @@
 import numpy as np
 import pandas as pd
 import pytest
-from pytest import importorskip
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ProphetRegressor
 from evalml.problem_types import ProblemTypes
 
-prophet = importorskip("prophet", reason="Skipping test because prophet not installed")
+pytestmark = pytest.mark.noncore_dependency
 
 
 def test_model_family():
     assert ProphetRegressor.model_family == ModelFamily.PROPHET
 
 
-def test_cmdstanpy_backend():
+@pytest.fixture(scope="module")
+def prophet():
+    import prophet
+
+    return prophet
+
+
+def test_cmdstanpy_backend(prophet):
+
     m = prophet.Prophet(stan_backend="CMDSTANPY")
     assert m.stan_backend.get_type() == "CMDSTANPY"
 
@@ -82,7 +89,7 @@ def test_build_prophet_df_date_index_errors(index_status, ts_data):
 
 
 @pytest.mark.parametrize("drop_index", [None, "X", "y", "both"])
-def test_fit_predict_ts(ts_data, drop_index):
+def test_fit_predict_ts(ts_data, drop_index, prophet):
     X, y = ts_data
     if drop_index is None:
         assert isinstance(X.index, pd.DatetimeIndex)

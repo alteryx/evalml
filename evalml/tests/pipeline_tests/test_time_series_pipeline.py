@@ -1171,11 +1171,8 @@ def test_time_series_pipeline_fit_with_transformed_target(
     pd.testing.assert_series_equal(mock_to_check.call_args[0][1], y + 2)
 
 
+@pytest.mark.noncore_dependency
 def test_time_series_pipeline_with_detrender(ts_data):
-    pytest.importorskip(
-        "sktime",
-        reason="Skipping polynomial detrending tests because sktime not installed",
-    )
     X, y = ts_data
     component_graph = {
         "Polynomial Detrender": ["Polynomial Detrender", "X", "y"],

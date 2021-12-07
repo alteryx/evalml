@@ -615,6 +615,7 @@ def test_save_graphviz_different_filename_output(
         assert os.path.basename(output_) == "example_plot.png"
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "file_name,format,interactive",
     [
@@ -627,7 +628,7 @@ def test_save_graphviz_different_filename_output(
 def test_save_matplotlib_default_format(
     file_name, format, interactive, fitted_tree_estimators, tmpdir
 ):
-    plt = pytest.importorskip("matplotlib.pyplot")
+    from matplotlib import pyplot as plt
 
     def setup_plt():
         fig_ = plt.figure(figsize=(4.5, 4.5))
@@ -657,6 +658,7 @@ def test_save_matplotlib_default_format(
     assert os.path.basename(output_) == "test_plot.png"
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "file_name,format,interactive",
     [
@@ -672,9 +674,8 @@ def test_save_seaborn_default_format(
     interactive,
     fitted_tree_estimators,
     tmpdir,
-    has_minimal_dependencies,
 ):
-    sns = pytest.importorskip("seaborn")
+    import seaborn as sns
 
     def setup_plt():
         data_ = [0, 1, 2, 3, 4]

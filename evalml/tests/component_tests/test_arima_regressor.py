@@ -3,18 +3,26 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-from pytest import importorskip
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ARIMARegressor
 from evalml.problem_types import ProblemTypes
 
-sktime_arima = importorskip(
-    "sktime.forecasting.arima", reason="Skipping test because sktime not installed"
-)
-forecasting = importorskip(
-    "sktime.forecasting.base", reason="Skipping test because sktime not installed"
-)
+pytestmark = pytest.mark.noncore_dependency
+
+
+@pytest.fixture(scope="module")
+def sktime_arima():
+    from sktime.forecasting import arima as sktime_arima
+
+    return sktime_arima
+
+
+@pytest.fixture(scope="module")
+def forecasting():
+    from sktime.forecasting import base as forecasting
+
+    return forecasting
 
 
 def test_model_family():
@@ -155,6 +163,8 @@ def test_match_indices(get_X_y):
 
 
 def test_set_forecast(get_X_y):
+    from sktime.forecasting.base import ForecastingHorizon
+
     _, X_test, _ = get_X_y(
         train_features_index_dt=False,
         train_target_index_dt=False,
@@ -166,7 +176,7 @@ def test_set_forecast(get_X_y):
 
     clf = ARIMARegressor()
     fh_ = clf._set_forecast(X_test)
-    assert isinstance(fh_, forecasting.ForecastingHorizon)
+    assert isinstance(fh_, ForecastingHorizon)
     assert len(fh_) == len(X_test)
     assert fh_.is_relative
 
@@ -198,6 +208,9 @@ def test_fit_predict(
     test_features_index_dt,
     get_X_y,
 ):
+    from sktime.forecasting.arima import AutoARIMA
+    from sktime.forecasting.base import ForecastingHorizon
+
     X_train, X_test, y_train = get_X_y(
         train_features_index_dt,
         train_target_index_dt,
@@ -207,11 +220,9 @@ def test_fit_predict(
         test_features_index_dt,
     )
 
-    fh_ = forecasting.ForecastingHorizon(
-        [i + 1 for i in range(len(X_test))], is_relative=True
-    )
+    fh_ = ForecastingHorizon([i + 1 for i in range(len(X_test))], is_relative=True)
 
-    a_clf = sktime_arima.AutoARIMA()
+    a_clf = AutoARIMA()
     clf = a_clf.fit(X=X_train, y=y_train)
     y_pred_sk = clf.predict(fh=fh_, X=X_test)
 
@@ -245,6 +256,8 @@ def test_fit_predict_sk_failure(
     test_features_index_dt,
     get_X_y,
 ):
+    from sktime.forecasting.arima import AutoARIMA
+
     X_train, X_test, y_train = get_X_y(
         train_features_index_dt,
         train_target_index_dt,
@@ -254,7 +267,7 @@ def test_fit_predict_sk_failure(
         test_features_index_dt,
     )
 
-    a_clf = sktime_arima.AutoARIMA()
+    a_clf = AutoARIMA()
     with pytest.raises(Exception):
         a_clf.fit(X=X_train, y=y_train)
 
@@ -268,17 +281,20 @@ def test_fit_predict_sk_failure(
 
 @pytest.mark.parametrize("freq_num", ["1", "2"])
 @pytest.mark.parametrize("freq_str", ["T", "M", "Y"])
-def test_different_time_units_out_of_sample(freq_str, freq_num):
+def test_different_time_units_out_of_sample(
+    freq_str, freq_num, sktime_arima, forecasting
+):
+    from sktime.forecasting.arima import AutoARIMA
+    from sktime.forecasting.base import ForecastingHorizon
+
     datetime_ = pd.date_range("1/1/1870", periods=20, freq=freq_num + freq_str)
 
     X = pd.DataFrame(range(20), index=datetime_)
     y = pd.Series(np.sin(np.linspace(-8 * np.pi, 8 * np.pi, 20)), index=datetime_)
 
-    fh_ = forecasting.ForecastingHorizon(
-        [i + 1 for i in range(len(y[15:]))], is_relative=True
-    )
+    fh_ = ForecastingHorizon([i + 1 for i in range(len(y[15:]))], is_relative=True)
 
-    a_clf = sktime_arima.AutoARIMA()
+    a_clf = AutoARIMA()
     clf = a_clf.fit(X=X[:15], y=y[:15])
     y_pred_sk = clf.predict(fh=fh_, X=X[15:])
 
