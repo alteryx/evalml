@@ -15,6 +15,7 @@ Release Notes
     * Documentation Changes
     * Testing Changes
         * Refactored tests to avoid using ``importorskip`` :pr:`3126`
+        * Added ``skip_during_conda`` test marker to skip tests that are not supposed to run during conda build :pr:`3127`
 
 .. warning::
 

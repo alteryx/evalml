@@ -51,6 +51,10 @@ def pytest_configure(config):
     config.addinivalue_line(
         "markers", "noncore_dependency: mark test as needing non-core dependencies"
     )
+    config.addinivalue_line(
+        "markers",
+        "skip_during_conda: mark test to be skipped if running during conda build",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -303,6 +307,11 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "noncore_dependency" in item.keywords:
                 item.add_marker(skip_noncore)
+    if config.getoption("--is-using-conda"):
+        skip_conda = pytest.mark.skip(reason="Test does not run during conda")
+        for item in items:
+            if "skip_during_conda" in item.keywords:
+                item.add_marker(skip_conda)
 
 
 @pytest.fixture
