@@ -48,6 +48,44 @@ def pytest_configure(config):
         "markers",
         "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)",
     )
+    config.addinivalue_line(
+        "markers", "noncore_dependency: mark test as needing non-core dependencies"
+    )
+
+
+@pytest.fixture(scope="session")
+def go():
+    from plotly import graph_objects as go
+
+    return go
+
+
+@pytest.fixture(scope="session")
+def im():
+    from imblearn import over_sampling as im
+
+    return im
+
+
+@pytest.fixture(scope="session")
+def lgbm():
+    import lightgbm as lgbm
+
+    return lgbm
+
+
+@pytest.fixture(scope="session")
+def vw():
+    from vowpalwabbit import sklearn_vw as vw
+
+    return vw
+
+
+@pytest.fixture(scope="session")
+def graphviz():
+    import graphviz
+
+    return graphviz
 
 
 def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
@@ -257,6 +295,14 @@ def pytest_addoption(parser):
         help="If true, tests will assume that they are being run as part of"
         "the build_conda_pkg workflow with the feedstock.",
     )
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--has-minimal-dependencies"):
+        skip_noncore = pytest.mark.skip(reason="needs noncore dependency")
+        for item in items:
+            if "noncore_dependency" in item.keywords:
+                item.add_marker(skip_noncore)
 
 
 @pytest.fixture

@@ -4,13 +4,12 @@ import warnings
 import numpy as np
 import pandas as pd
 import pytest
-from pytest import importorskip
 
 from evalml.pipelines.components import XGBoostClassifier
 from evalml.problem_types import ProblemTypes
 from evalml.utils import SEED_BOUNDS, get_random_state
 
-xgb = importorskip("xgboost", reason="Skipping test because xgboost not installed")
+pytestmark = pytest.mark.noncore_dependency
 
 
 @pytest.mark.parametrize("metric", ["error", "logloss"])

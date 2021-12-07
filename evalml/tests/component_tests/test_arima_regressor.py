@@ -3,18 +3,26 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-from pytest import importorskip
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ARIMARegressor
 from evalml.problem_types import ProblemTypes
 
-sktime_arima = importorskip(
-    "sktime.forecasting.arima", reason="Skipping test because sktime not installed"
-)
-forecasting = importorskip(
-    "sktime.forecasting.base", reason="Skipping test because sktime not installed"
-)
+pytestmark = pytest.mark.noncore_dependency
+
+
+@pytest.fixture(scope="module")
+def sktime_arima():
+    from sktime.forecasting import arima as sktime_arima
+
+    return sktime_arima
+
+
+@pytest.fixture(scope="module")
+def forecasting():
+    from sktime.forecasting import base as forecasting
+
+    return forecasting
 
 
 def test_model_family():
@@ -55,7 +63,8 @@ def test_match_indices(ts_data):
 
 @pytest.mark.parametrize("predict", [True, False])
 @pytest.mark.parametrize("dates_shape", [0, 1, 2])
-def test_format_dates(predict, dates_shape, ts_data):
+def test_format_dates(predict, dates_shape, ts_data, forecasting):
+
     X, y = ts_data
     date_index = pd.date_range("2020-10-02", "2020-11-01")
     if dates_shape == 1:
@@ -114,8 +123,9 @@ def test_fit_predict_ts_with_datetime_in_X_column(
 
 
 def test_fit_predict_ts_with_only_datetime_column_in_X(
-    ts_data_seasonal_train, ts_data_seasonal_test
+    ts_data_seasonal_train, ts_data_seasonal_test, sktime_arima, forecasting
 ):
+
     X, y = ts_data_seasonal_train
     X_test, y_test = ts_data_seasonal_test
     assert isinstance(X.index, pd.DatetimeIndex)
@@ -139,8 +149,9 @@ def test_fit_predict_ts_with_only_datetime_column_in_X(
 
 
 def test_fit_predict_ts_with_X_and_y_index_out_of_sample(
-    ts_data_seasonal_train, ts_data_seasonal_test
+    ts_data_seasonal_train, ts_data_seasonal_test, sktime_arima, forecasting
 ):
+
     X, y = ts_data_seasonal_train
     X_test, y_test = ts_data_seasonal_test
     assert isinstance(X.index, pd.DatetimeIndex)
@@ -168,10 +179,9 @@ def test_fit_predict_ts_with_X_and_y_index_out_of_sample(
     "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates"
 )
 def test_fit_predict_ts_with_X_and_y_index(
-    mock_get_dates,
-    mock_format_dates,
-    ts_data_seasonal_train,
+    mock_get_dates, mock_format_dates, ts_data_seasonal_train, sktime_arima, forecasting
 ):
+
     X, y = ts_data_seasonal_train
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
@@ -202,8 +212,9 @@ def test_fit_predict_ts_with_X_and_y_index(
     "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates"
 )
 def test_fit_predict_ts_with_X_not_y_index(
-    mock_get_dates, mock_format_dates, ts_data_seasonal_train
+    mock_get_dates, mock_format_dates, ts_data_seasonal_train, sktime_arima, forecasting
 ):
+
     X, y = ts_data_seasonal_train
     assert isinstance(X.index, pd.DatetimeIndex)
     assert isinstance(y.index, pd.DatetimeIndex)
@@ -237,8 +248,9 @@ def test_fit_predict_ts_with_X_not_y_index(
     "evalml.pipelines.components.estimators.regressors.arima_regressor.ARIMARegressor._get_dates"
 )
 def test_fit_predict_ts_with_y_not_X_index(
-    mock_get_dates, mock_format_dates, ts_data_seasonal_train
+    mock_get_dates, mock_format_dates, ts_data_seasonal_train, sktime_arima, forecasting
 ):
+
     X, y = ts_data_seasonal_train
 
     mock_get_dates.return_value = (y.index, X)
@@ -326,8 +338,9 @@ def test_fit_ts_without_y(ts_data):
 
 
 def test_fit_predict_ts_no_X_out_of_sample(
-    ts_data_seasonal_train, ts_data_seasonal_test
+    ts_data_seasonal_train, ts_data_seasonal_test, sktime_arima, forecasting
 ):
+
     X, y = ts_data_seasonal_train
     X_test, y_test = ts_data_seasonal_test
 
@@ -348,8 +361,9 @@ def test_fit_predict_ts_no_X_out_of_sample(
 
 @pytest.mark.parametrize("X_none", [True, False])
 def test_fit_predict_date_index_named_out_of_sample(
-    X_none, ts_data_seasonal_train, ts_data_seasonal_test
+    X_none, ts_data_seasonal_train, ts_data_seasonal_test, sktime_arima, forecasting
 ):
+
     X, y = ts_data_seasonal_train
     X_test, y_test = ts_data_seasonal_test
 
@@ -380,7 +394,10 @@ def test_fit_predict_date_index_named_out_of_sample(
 
 @pytest.mark.parametrize("freq_num", ["1", "2"])
 @pytest.mark.parametrize("freq_str", ["T", "M", "Y"])
-def test_different_time_units_out_of_sample(freq_str, freq_num):
+def test_different_time_units_out_of_sample(
+    freq_str, freq_num, sktime_arima, forecasting
+):
+
     datetime_ = pd.date_range("1/1/1870", periods=20, freq=freq_num + freq_str)
 
     X = pd.DataFrame(range(20), index=datetime_)
