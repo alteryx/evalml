@@ -276,11 +276,12 @@ def test_dfs_missing_feature_column(mock_dfs, X_y_binary):
 
 
 def test_transform_identity_and_non_identity():
-    from evalml.demos import load_diabetes
     import featuretools as ft
-    from evalml.pipelines.components import DFSTransformer
     import pandas as pd
     import pytest
+
+    from evalml.demos import load_diabetes
+    from evalml.pipelines.components import DFSTransformer
 
     X, y = load_diabetes()
     del X.ww
