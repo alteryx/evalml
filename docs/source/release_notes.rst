@@ -9,6 +9,7 @@ Release Notes
     * Changes
         * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
         * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
+        * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
     * Documentation Changes
     * Testing Changes
         * Refactored tests to avoid using ``importorskip`` :pr:`3126`
@@ -27,7 +28,6 @@ Release Notes
         * Added support for ``scikit-learn > 1.0.0`` :pr:`3051`
         * Required the ``date_index`` parameter to be specified for time series problems  in ``AutoMLSearch`` :pr:`3041`
         * Allowed time series pipelines to predict on test datasets whose length is less than or equal to the ``forecast_horizon``. Also allowed the test set index to start at 0. :pr:`3071`
-        * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
         * Enabled time series pipeline to predict on data with features that are not known-in-advanced :pr:`3094`
     * Fixes
         * Added in error message when fit and predict/predict_proba data types are different :pr:`3036`
