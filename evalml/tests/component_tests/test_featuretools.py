@@ -248,3 +248,29 @@ def test_dfs_does_not_skip_transform_with_non_identity_feature(mock_dfs, X_y_bin
     # assert that all non-identity features are calculated
     for col in X_t.columns:
         assert "ABSOLUTE" in col
+
+
+@patch("evalml.pipelines.components.transformers.preprocessing.featuretools.dfs")
+def test_dfs_missing_feature_column(mock_dfs, X_y_binary):
+    X, y = X_y_binary
+    X_pd = pd.DataFrame(X)
+    X_pd.columns = X_pd.columns.astype(str)
+    X_fit = X_pd.iloc[: len(X) // 3]
+    X_transform = X_pd.iloc[len(X) // 3 :]
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X", dataframe=X_transform, index="index", make_index=True
+    )
+    feature_matrix, features = ft.dfs(
+        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
+    )
+
+    dfs = DFSTransformer(features=features)
+    dfs.fit(X_fit)  # no-op
+    X_pd = X_pd.drop("1", axis=1)
+    X_t = dfs.transform(X_pd)  # calculate_feature matrix is called
+    assert not mock_dfs.called
+
+    assert "1" not in list(X_t.columns)
+    assert "ABSOLUTE(1)" not in list(X_t.columns)

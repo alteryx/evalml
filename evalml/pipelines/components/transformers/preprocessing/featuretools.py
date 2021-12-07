@@ -49,6 +49,11 @@ class DFSTransformer(Transformer):
         features_to_use = []
         for feature in self.features:
             input_cols = [f.column_name for f in feature.base_features]
+            if (
+                isinstance(feature, IdentityFeature)
+                and feature.column_name not in X.columns
+            ):
+                continue
             if not set(input_cols).issubset(set(X.columns)):
                 continue
             if not isinstance(feature, IdentityFeature) and set(
