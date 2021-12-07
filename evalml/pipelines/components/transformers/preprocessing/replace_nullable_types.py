@@ -1,9 +1,6 @@
 """Transformer to replace features with the new nullable dtypes with a dtype that is compatible in EvalML."""
 from woodwork import init_series
-from woodwork.logical_types import (
-    BooleanNullable,
-    IntegerNullable,
-)
+from woodwork.logical_types import BooleanNullable, IntegerNullable
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
