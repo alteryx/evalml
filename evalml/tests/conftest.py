@@ -49,6 +49,7 @@ def pytest_configure(config):
         "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)",
     )
 
+
 @pytest.fixture
 def get_test_data_from_configuration():
     def _get_test_data_from_configuration(input_type, problem_type, column_names=None):
@@ -132,6 +133,7 @@ def get_test_data_from_configuration():
         return X, y
 
     return _get_test_data_from_configuration
+
 
 def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
     est_parameters = (

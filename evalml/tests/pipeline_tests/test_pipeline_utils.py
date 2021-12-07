@@ -3,7 +3,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 
 from evalml.data_checks import DataCheckAction, DataCheckActionCode
 from evalml.model_family import ModelFamily
