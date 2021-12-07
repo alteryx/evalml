@@ -74,14 +74,16 @@ def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
         component.append(DropNullColumns)
     return component
 
+
 def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
     component = []
     all_nullable_cols = X.ww.select(
-                ["IntegerNullable", "AgeNullable", "BooleanNullable"], return_schema=True
-            ).columns
+        ["IntegerNullable", "AgeNullable", "BooleanNullable"], return_schema=True
+    ).columns
     if len(all_nullable_cols) > 0:
         component.append(ReplaceNullableTypes)
     return component
+
 
 def _get_drop_index_unknown(X, y, problem_type, estimator_class, sampler_name=None):
     component = []

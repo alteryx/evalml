@@ -55,10 +55,8 @@ def get_test_data_from_configuration():
             {
                 "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
                 * 2,
-                "int_null": [0, 1, 2, np.nan, 4, np.nan, 6]
-                * 2,
-                "bool_null": [True, None, False, True, False, None, True]
-                * 2,
+                "int_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
+                "bool_null": [True, None, False, True, False, None, True] * 2,
                 "numerical": range(14),
                 "categorical": ["a", "b", "a", "b", "b", "a", "b"] * 2,
                 "dates": pd.date_range("2000-02-03", periods=14, freq="W"),
@@ -196,9 +194,12 @@ def test_make_pipeline(
             )
 
             if estimator_class.model_family != ModelFamily.CATBOOST:
-                if any(column_name in ["url", "email", "categorical"] for column_name in column_names):
+                if any(
+                    column_name in ["url", "email", "categorical"]
+                    for column_name in column_names
+                ):
                     ohe = [OneHotEncoder]
-                elif "bool_null" in column_names and input_type=="pd":
+                elif "bool_null" in column_names and input_type == "pd":
                     ohe = [OneHotEncoder]
                 else:
                     ohe = []
@@ -218,7 +219,14 @@ def test_make_pipeline(
                 else []
             )
             drop_null = [DropNullColumns] if "all_null" in column_names else []
-            replace_null = [ReplaceNullableTypes] if (any(x in column_names for x in ['bool_null', 'int_null']) and input_type=="ww") else []
+            replace_null = (
+                [ReplaceNullableTypes]
+                if (
+                    any(x in column_names for x in ["bool_null", "int_null"])
+                    and input_type == "ww"
+                )
+                else []
+            )
             natural_language_featurizer = (
                 [NaturalLanguageFeaturizer]
                 if "text" in column_names and input_type == "ww"
