@@ -273,3 +273,31 @@ def test_dfs_missing_feature_column(mock_dfs, X_y_binary):
 
     assert "1" not in list(X_t.columns)
     assert "ABSOLUTE(1)" not in list(X_t.columns)
+
+
+def test_transform_identity_and_non_identity():
+    from evalml.demos import load_diabetes
+    import featuretools as ft
+    from evalml.pipelines.components import DFSTransformer
+    import pandas as pd
+    import pytest
+
+    X, y = load_diabetes()
+    del X.ww
+
+    X_fit = X.iloc[: X.shape[0] // 2]
+    X_transform = X.iloc[X.shape[0] // 2 :]
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X", dataframe=X_fit, index="index", make_index=True
+    )
+    feature_matrix, features = ft.dfs(
+        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
+    )
+
+    dfs = DFSTransformer(features=features)
+    dfs.fit(X_fit)
+    X_t = dfs.transform(feature_matrix)
+
+    pd.testing.assert_frame_equal(X_t, feature_matrix)
