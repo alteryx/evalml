@@ -119,10 +119,6 @@ messages = [
         details={
             "columns": ["all_null", "also_all_null"],
             "pct_null_rows": {"all_null": 1.0, "also_all_null": 1.0},
-            "null_row_indices": {
-                "all_null": [0, 1, 2, 3, 4],
-                "also_all_null": [0, 1, 2, 3, 4],
-            },
         },
     ).to_dict(),
     DataCheckWarning(
@@ -448,10 +444,6 @@ def test_default_data_checks_null_rows():
                 details={
                     "columns": ["all_null", "also_all_null"],
                     "pct_null_rows": {"all_null": 1.0, "also_all_null": 1.0},
-                    "null_row_indices": {
-                        "all_null": [0, 1, 2, 3, 4],
-                        "also_all_null": [0, 1, 2, 3, 4],
-                    },
                 },
             ).to_dict(),
         ],

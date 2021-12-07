@@ -54,7 +54,7 @@ def get_X_y():
     ):
         X = pd.DataFrame(index=[i + 1 for i in range(50)])
         dates = pd.date_range("1/1/21", periods=50)
-        feature = [i for i in range(50)]
+        feature = [1, 5, 2] * 10 + [3, 1] * 10
         y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
 
         X_train = X[:40]
@@ -168,6 +168,7 @@ def test_set_forecast(get_X_y):
     fh_ = clf._set_forecast(X_test)
     assert isinstance(fh_, forecasting.ForecastingHorizon)
     assert len(fh_) == len(X_test)
+    assert fh_.is_relative
 
 
 def test_feature_importance(ts_data):
@@ -263,18 +264,6 @@ def test_fit_predict_sk_failure(
     assert isinstance(y_pred, pd.Series)
     assert len(y_pred) == 10
     assert y_pred.index.equals(X_test.index)
-
-
-def test_target_leakage_features(ts_data):
-    X, y = ts_data
-    X["not_leaking"] = [1, 5, 2] * 10 + [3]
-
-    m_clf = ARIMARegressor(date_index="date", d=None)
-    m_clf.fit(X=X, y=y)
-    y_pred = m_clf.predict(X=X)
-
-    assert m_clf.cols_to_keep == ["not_leaking"]
-    assert y_pred.index.equals(X.index)
 
 
 @pytest.mark.parametrize("freq_num", ["1", "2"])

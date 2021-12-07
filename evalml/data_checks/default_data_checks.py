@@ -5,7 +5,7 @@ from .datetime_format_data_check import DateTimeFormatDataCheck
 from .datetime_nan_data_check import DateTimeNaNDataCheck
 from .highly_null_data_check import HighlyNullDataCheck
 from .id_columns_data_check import IDColumnsDataCheck
-from .invalid_targets_data_check import InvalidTargetDataCheck
+from .invalid_target_data_check import InvalidTargetDataCheck
 from .natural_language_nan_data_check import NaturalLanguageNaNDataCheck
 from .no_variance_data_check import NoVarianceDataCheck
 from .target_distribution_data_check import TargetDistributionDataCheck
