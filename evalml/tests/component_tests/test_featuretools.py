@@ -14,6 +14,7 @@ from woodwork.logical_types import (
     Integer,
 )
 
+from evalml.demos import load_diabetes
 from evalml.pipelines.components import DFSTransformer
 
 
@@ -276,18 +277,10 @@ def test_dfs_missing_feature_column(mock_dfs, X_y_binary):
 
 
 def test_transform_identity_and_non_identity():
-    import featuretools as ft
-    import pandas as pd
-    import pytest
-
-    from evalml.demos import load_diabetes
-    from evalml.pipelines.components import DFSTransformer
-
     X, y = load_diabetes()
     del X.ww
 
     X_fit = X.iloc[: X.shape[0] // 2]
-    X_transform = X.iloc[X.shape[0] // 2 :]
 
     es = ft.EntitySet()
     es = es.add_dataframe(
