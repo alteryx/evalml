@@ -122,6 +122,7 @@ def test_replace_nullable_types_boolean_target(nullable_data, input_type):
     X_t, y_t = nullable_types_replacer.transform(X, y)
 
     assert str(y_t.dtypes) == "category"
+    assert isinstance(y_t.ww.logical_type, Categorical)
 
 
 @pytest.mark.parametrize("input_type", ["ww", "pandas"])
@@ -146,3 +147,4 @@ def test_replace_nullable_types_integer_target(nullable_data, input_type):
     X_t, y_t = nullable_types_replacer.transform(X, y)
 
     assert str(y_t.dtypes) == "float64"
+    assert isinstance(y_t.ww.logical_type, Double)
