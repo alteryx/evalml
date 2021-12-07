@@ -57,7 +57,6 @@ def test_featuretools_index(mock_calculate_feature_matrix, mock_dfs, X_y_multi):
     assert arg_tr.to_list() == new_index
 
     # check if _make_entity_set fills in the proper index values
-    feature = DFSTransformer()
     feature.fit(X_pd)
     feature.transform(X_pd)
     arg_es = mock_dfs.call_args[1]["entityset"].dataframes[0].index
