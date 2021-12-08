@@ -107,7 +107,7 @@ class CatBoostRegressor(Estimator):
         X, y = super()._manage_woodwork(X, y)
         for col in cat_cols:
             X[col] = X[col].apply(str)
-            X[col].cat.add_categories("")
+            X[col] = X[col].cat.add_categories("")
         X[cat_cols].fillna("", inplace=True)
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return self
