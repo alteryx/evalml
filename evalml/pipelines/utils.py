@@ -149,11 +149,11 @@ def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
     categorical_cols = list(
         X.ww.select(["category", "URL", "EmailAddress"], return_schema=True).columns
     )
-    # if len(categorical_cols) > 0 and estimator_class not in {
-    #     CatBoostClassifier,
-    #     CatBoostRegressor,
-    # }:
-    #     components.append(OneHotEncoder)
+    if len(categorical_cols) > 0 and estimator_class not in {
+        CatBoostClassifier,
+        CatBoostRegressor,
+    }:
+        components.append(OneHotEncoder)
     return components
 
 
