@@ -140,7 +140,7 @@ def test_explainer_value_errors_raised(
     pipeline = pipeline(
         {
             "pipeline": {
-                "date_index": "foo",
+                "time_index": "foo",
                 "gap": 1,
                 "max_delay": 1,
                 "forecast_horizon": 1,

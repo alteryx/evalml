@@ -2027,7 +2027,7 @@ def test_percent_better_than_baseline_in_rankings(
     pipeline_parameters = (
         {
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 2,
@@ -2058,7 +2058,7 @@ def test_percent_better_than_baseline_in_rankings(
             objective=objective,
             additional_objectives=[],
             problem_configuration={
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 2,
@@ -2229,7 +2229,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     if problem_type_enum == ProblemTypes.TIME_SERIES_REGRESSION:
         parameters = {
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 6,
                 "max_delay": 3,
                 "forecast_horizon": 3,
@@ -2243,7 +2243,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         max_iterations=2,
         objective="auto",
         problem_configuration={
-            "date_index": "date",
+            "time_index": "date",
             "gap": 1,
             "max_delay": 1,
             "forecast_horizon": 3,
@@ -2264,7 +2264,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         text_in_ensembling=False,
         pipeline_params={
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 1,
                 "max_delay": 1,
                 "forecast_horizon": 2,
@@ -2299,7 +2299,7 @@ def test_time_series_regression_with_parameters(ts_data):
     X, y = ts_data
     X.index.name = "date"
     problem_configuration = {
-        "date_index": "date",
+        "time_index": "date",
         "gap": 1,
         "max_delay": 0,
         "forecast_horizon": 2,
@@ -3521,7 +3521,7 @@ def test_automl_validates_problem_configuration(ts_data):
         ).problem_configuration
         == {}
     )
-    msg = "problem_configuration must be a dict containing values for at least the date_index, gap, max_delay, and forecast_horizon parameters"
+    msg = "problem_configuration must be a dict containing values for at least the time_index, gap, max_delay, and forecast_horizon parameters"
     with pytest.raises(ValueError, match=msg):
         AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression")
     with pytest.raises(ValueError, match=msg):
@@ -3539,13 +3539,13 @@ def test_automl_validates_problem_configuration(ts_data):
             problem_configuration={"max_delay": 2, "gap": 3},
         )
 
-    with pytest.raises(ValueError, match="date_index cannot be None!"):
+    with pytest.raises(ValueError, match="time_index cannot be None!"):
         AutoMLSearch(
             X_train=X,
             y_train=y,
             problem_type="time series regression",
             problem_configuration={
-                "date_index": None,
+                "time_index": None,
                 "max_delay": 2,
                 "gap": 3,
                 "forecast_horizon": 2,
@@ -3557,14 +3557,14 @@ def test_automl_validates_problem_configuration(ts_data):
         y_train=y,
         problem_type="time series regression",
         problem_configuration={
-            "date_index": "Date",
+            "time_index": "Date",
             "max_delay": 2,
             "gap": 3,
             "forecast_horizon": 2,
         },
     ).problem_configuration
     assert problem_config == {
-        "date_index": "Date",
+        "time_index": "Date",
         "max_delay": 2,
         "gap": 3,
         "forecast_horizon": 2,
@@ -3702,7 +3702,7 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(AutoMLTestEnv, ts_d
         y_train=y,
         problem_type="time series regression",
         problem_configuration={
-            "date_index": "date",
+            "time_index": "date",
             "gap": 2,
             "max_delay": 3,
             "forecast_horizon": 1,
@@ -3716,13 +3716,13 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(AutoMLTestEnv, ts_d
     # Best pipeline is baseline pipeline because we only run one iteration
     assert automl.best_pipeline.parameters == {
         "pipeline": {
-            "date_index": "date",
+            "time_index": "date",
             "gap": 2,
             "max_delay": 0,
             "forecast_horizon": 1,
         },
         "Time Series Featurizer": {
-            "date_index": "date",
+            "time_index": "date",
             "delay_features": False,
             "delay_target": True,
             "max_delay": 0,
@@ -3761,7 +3761,7 @@ def test_automl_does_not_include_positive_only_objectives_by_default(
         y_train=y,
         problem_type=problem_type,
         problem_configuration={
-            "date_index": 0,
+            "time_index": 0,
             "gap": 0,
             "max_delay": 0,
             "forecast_horizon": 2,
@@ -4636,7 +4636,7 @@ def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
             y,
             problem_type=problem_type,
             problem_configuration={
-                "date_index": 0,
+                "time_index": 0,
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 9,
@@ -4794,7 +4794,7 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
         y,
         problem_type=problem_type,
         problem_configuration={
-            "date_index": "b",
+            "time_index": "b",
             "gap": 0,
             "max_delay": 1,
             "forecast_horizon": 1,
@@ -4963,7 +4963,7 @@ def test_data_splitter_gives_pipelines_same_data(
         problem_configuration = {
             "gap": 1,
             "max_delay": 1,
-            "date_index": 0,
+            "time_index": 0,
             "forecast_horizon": 10,
         }
         X, y = X_y_regression
@@ -4971,7 +4971,7 @@ def test_data_splitter_gives_pipelines_same_data(
         problem_configuration = {
             "gap": 1,
             "max_delay": 1,
-            "date_index": 0,
+            "time_index": 0,
             "forecast_horizon": 10,
         }
         X, y = X_y_binary

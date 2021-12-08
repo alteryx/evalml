@@ -15,14 +15,14 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
              An empty dictionary {} implies using all default values for component parameters. Pipeline-level
-             parameters such as date_index, gap, and max_delay must be specified with the "pipeline" key. For example:
-             Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
+             parameters such as time_index, gap, and max_delay must be specified with the "pipeline" key. For example:
+             Pipeline(parameters={"pipeline": {"time_index": "Date", "max_delay": 4, "gap": 2}}).
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Example:
         >>> pipeline = TimeSeriesRegressionPipeline(component_graph=["Simple Imputer", "Linear Regressor"],
         ...                                                       parameters={"Linear Regressor": {"normalize": True},
-        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "date"}},
+        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "time_index": "date"}},
         ...                                                       custom_name="My TimeSeriesRegression Pipeline")
         ...
         >>> assert pipeline.custom_name == "My TimeSeriesRegression Pipeline"
@@ -31,7 +31,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         >>> assert pipeline.parameters == {
         ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
         ...     'Linear Regressor': {'fit_intercept': True, 'normalize': True, 'n_jobs': -1},
-        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': "date"}}
+        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'time_index': "date"}}
     """
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION

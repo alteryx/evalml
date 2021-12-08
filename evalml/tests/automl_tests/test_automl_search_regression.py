@@ -419,7 +419,7 @@ def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, ts_data):
     X["date"] = pd.date_range(start="1/1/2018", periods=31, freq=freq)
 
     configuration = {
-        "date_index": "date",
+        "time_index": "date",
         "gap": 0,
         "max_delay": 0,
         "forecast_horizon": 6,
@@ -439,22 +439,22 @@ def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, ts_data):
         automl.search()
     assert isinstance(automl.data_splitter, TimeSeriesSplit)
 
-    dt = configuration.pop("date_index")
+    dt = configuration.pop("time_index")
     for result in automl.results["pipeline_results"].values():
         assert result["pipeline_class"] == TimeSeriesRegressionPipeline
 
         if result["id"] == 0:
             continue
         if "ARIMA Regressor" in result["parameters"]:
-            dt_ = result["parameters"]["ARIMA Regressor"].pop("date_index")
+            dt_ = result["parameters"]["ARIMA Regressor"].pop("time_index")
             assert "DateTime Featurization Component" not in result["parameters"].keys()
             assert "Time Series Featurizer" not in result["parameters"].keys()
         elif "Prophet Regressor" in result["parameters"]:
-            dt_ = result["parameters"]["Prophet Regressor"].pop("date_index")
+            dt_ = result["parameters"]["Prophet Regressor"].pop("time_index")
             assert "DateTime Featurization Component" not in result["parameters"].keys()
             assert "Time Series Featurizer" in result["parameters"].keys()
         else:
-            dt_ = result["parameters"]["Time Series Featurizer"].pop("date_index")
+            dt_ = result["parameters"]["Time Series Featurizer"].pop("time_index")
         assert dt == dt_
         for param_key, param_val in configuration.items():
             if "ARIMA Regressor" not in result["parameters"]:

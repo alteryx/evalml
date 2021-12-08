@@ -46,7 +46,7 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
             "max_delay": 5,
             "gap": 3,
             "forecast_horizon": 2,
-            "date_index": "date",
+            "time_index": "date",
         },
         optimize_thresholds=False,
     )

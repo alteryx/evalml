@@ -46,7 +46,7 @@ def test_init_with_other_params():
     assert clf.parameters == {
         "changepoint_prior_scale": 0.05,
         "daily_seasonality": True,
-        "date_index": None,
+        "time_index": None,
         "holidays_prior_scale": 10,
         "interval_width": 0.8,
         "mcmc_samples": 5,
@@ -60,7 +60,7 @@ def test_init_with_other_params():
 def test_feature_importance(ts_data):
     X, y = ts_data
     clf = ProphetRegressor(
-        date_index="date", uncertainty_samples=False, changepoint_prior_scale=2.0
+        time_index="date", uncertainty_samples=False, changepoint_prior_scale=2.0
     )
     clf.fit(X, y)
     assert clf.feature_importance == np.zeros(1)
@@ -70,7 +70,7 @@ def test_get_params(ts_data):
     clf = ProphetRegressor()
     assert clf.get_params() == {
         "changepoint_prior_scale": 0.05,
-        "date_index": None,
+        "time_index": None,
         "seasonality_prior_scale": 10,
         "holidays_prior_scale": 10,
         "seasonality_mode": "additive",
@@ -79,11 +79,11 @@ def test_get_params(ts_data):
 
 
 @pytest.mark.parametrize("index_status", [None, "wrong_column"])
-def test_build_prophet_df_date_index_errors(index_status, ts_data):
+def test_build_prophet_df_time_index_errors(index_status, ts_data):
     X, y = ts_data
 
     if index_status is None:
-        with pytest.raises(ValueError, match="date_index cannot be None!"):
+        with pytest.raises(ValueError, match="time_index cannot be None!"):
             ProphetRegressor.build_prophet_df(X, y, index_status)
     elif index_status == "wrong_column":
         with pytest.raises(
@@ -112,13 +112,13 @@ def test_fit_predict_ts(ts_data, drop_index, prophet):
         assert not isinstance(X.index, pd.DatetimeIndex)
         assert not isinstance(y.index, pd.DatetimeIndex)
 
-    prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, date_index="date")
+    prophet_df = ProphetRegressor.build_prophet_df(X=X, y=y, time_index="date")
     p_clf = prophet.Prophet(uncertainty_samples=False, changepoint_prior_scale=2.0)
     p_clf.fit(prophet_df)
     y_pred_p = p_clf.predict(prophet_df)["yhat"]
 
     clf = ProphetRegressor(
-        date_index="date", uncertainty_samples=False, changepoint_prior_scale=2.0
+        time_index="date", uncertainty_samples=False, changepoint_prior_scale=2.0
     )
     clf.fit(X, y)
     y_pred = clf.predict(X)
