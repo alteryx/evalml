@@ -103,7 +103,7 @@ class CatBoostRegressor(Estimator):
             self
         """
         X = infer_feature_types(X)
-        cat_cols = list(X.ww.select("category", return_schema=True).columns)
+        cat_cols = list(X.ww.select(["category", "NaturalLanguage", "EmailAddress", "URL"], return_schema=True).columns)
         self.input_feature_names = list(X.columns)
         X, y = super()._manage_woodwork(X, y)
         for col in cat_cols:
@@ -128,7 +128,7 @@ class CatBoostRegressor(Estimator):
         X = infer_feature_types(X)
         if isinstance(X.columns, range.RangeIndex):
             X.columns = [x for x in X.columns]
-        cat_cols = list(X.ww.select("category", return_schema=True).columns)
+        cat_cols = list(X.ww.select(["category", "NaturalLanguage", "EmailAddress", "URL"], return_schema=True).columns)
         for col in cat_cols:
             X[col] = X[col].apply(str)
             X[col] = X[col].cat.add_categories("")

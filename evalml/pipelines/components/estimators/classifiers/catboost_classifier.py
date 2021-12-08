@@ -110,7 +110,7 @@ class CatBoostClassifier(Estimator):
             self
         """
         X = infer_feature_types(X)
-        cat_cols = list(X.ww.select("category", return_schema=True).columns)
+        cat_cols = list(X.ww.select(["category", "NaturalLanguage", "EmailAddress", "URL"], return_schema=True).columns)
         self.input_feature_names = list(X.columns)
         X, y = super()._manage_woodwork(X, y)
         # For binary classification, catboost expects numeric values, so encoding before.
@@ -134,7 +134,7 @@ class CatBoostClassifier(Estimator):
             pd.DataFrame: Predicted values.
         """
         X = infer_feature_types(X)
-        cat_cols = list(X.ww.select("category", return_schema=True).columns)
+        cat_cols = list(X.ww.select(["category", "NaturalLanguage", "EmailAddress", "URL"], return_schema=True).columns)
         for col in cat_cols:
             X[col] = X[col].apply(str)
             X[col] = X[col].cat.add_categories("")
