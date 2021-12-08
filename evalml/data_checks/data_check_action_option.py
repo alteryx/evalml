@@ -5,6 +5,7 @@ from evalml.data_checks.data_check_action_code import DataCheckActionCode
 
 class DataCheckActionOption:
     # TODO: make child class of DataCheckAction??
+    # How to make parameters a more established structure..? Have checks for each parameter in parameters?
     """A recommended action option returned by a DataCheck. It contains an action code that indicates what the
         action should be, a data check name that indicates what data check was used to generate the action, and
         parameters which can be used to further refine the action.

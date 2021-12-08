@@ -1,5 +1,4 @@
 import pytest
-from typing_extensions import ParamSpec
 
 from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
 
@@ -16,18 +15,56 @@ def test_data_check_action_option_attributes(dummy_data_check_name):
     assert data_check_action_option.data_check_name == dummy_data_check_name
     assert data_check_action_option.action_code == DataCheckActionCode.DROP_COL
     assert data_check_action_option.metadata == {"rows": None, "columns": None}
+    assert data_check_action_option.parameters == None
 
     data_check_action_option = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL, None, metadata={}
+        DataCheckActionCode.DROP_COL, None, metadata={}, parameters={}
     )
     assert data_check_action_option.action_code == DataCheckActionCode.DROP_COL
     assert data_check_action_option.data_check_name is None
     assert data_check_action_option.metadata == {"rows": None, "columns": None}
+    assert data_check_action_option.parameters == None
 
     data_check_action_option = DataCheckActionOption(
         DataCheckActionCode.DROP_COL,
         dummy_data_check_name,
         metadata={"columns": [1, 2]},
+        parameters={
+            "global_parameter_name": {
+                "parameter_type": "global",
+                "type": "float",
+                "default_value": 0.0,
+            },
+            "column_parameter_name": {
+                "parameter_type": "column",
+                "columns": {
+                    "a": {
+                        "impute_strategy": {
+                            "categories": ["mean", "mode"],
+                            "type": "category",
+                            "default_value": "mean",
+                        },
+                        "constant_fill_value": {"type": "float", "default_value": 0},
+                    },
+                    "b": {
+                        "impute_strategy": {
+                            "categories": ["mean", "mode"],
+                            "type": "category",
+                            "default_value": "mean",
+                        },
+                        "constant_fill_value": {"type": "float", "default_value": 0},
+                    },
+                    "c": {
+                        "impute_strategy": {
+                            "categories": ["mean", "mode"],
+                            "type": "category",
+                            "default_value": "mean",
+                        },
+                        "constant_fill_value": {"type": "float", "default_value": 0},
+                    },
+                },
+            },
+        },
     )
     assert data_check_action_option.action_code == DataCheckActionCode.DROP_COL
     assert data_check_action_option.data_check_name == dummy_data_check_name
