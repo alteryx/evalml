@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: ${{ github.repository }}
-          ref: main
+          ref: fix-windows-3.9-tests
       - name: Update apt and install Graphviz
         run: sudo apt update && sudo apt install -y graphviz
       - name: Create virtual environment, upgrade pip
@@ -56,15 +56,15 @@ jobs:
         run: |
           source test_python/bin/activate
           make ${{matrix.command}}
-      - name: Notify on Slack
-        uses: 8398a7/action-slack@v3
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-        with:
-          job_name: Nightly ${{ matrix.python_version }} ${{matrix.command}}
-          status: ${{ job.status }}
-          fields: workflow,job,took
-          mention: channel
-          if_mention: failure,cancelled
-          text: ':elmofire:'
-        if: failure() 
+#      - name: Notify on Slack
+#        uses: 8398a7/action-slack@v3
+#        env:
+#          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+#        with:
+#          job_name: Nightly ${{ matrix.python_version }} ${{matrix.command}}
+#          status: ${{ job.status }}
+#          fields: workflow,job,took
+#          mention: channel
+#          if_mention: failure,cancelled
+#          text: ':elmofire:'
+#        if: failure()

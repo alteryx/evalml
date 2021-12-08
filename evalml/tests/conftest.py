@@ -319,7 +319,7 @@ def pytest_collection_modifyitems(config, items):
     if sys.version_info >= (3, 9):
         skip_39 = pytest.mark.skip(reason="Test dependency not supported in python 3.9")
         for item in items:
-            if "skip_if_39":
+            if "skip_if_39" in item.keywords:
                 item.add_marker(skip_39)
 
 
