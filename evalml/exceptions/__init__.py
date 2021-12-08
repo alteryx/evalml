@@ -9,7 +9,6 @@ from .exceptions import (
     AutoMLSearchException,
     PipelineScoreError,
     DataCheckInitError,
-    EnsembleMissingPipelinesError,
     NullsInColumnWarning,
     ObjectiveCreationError,
     NoPositiveLabelException,
