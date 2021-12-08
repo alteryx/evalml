@@ -105,6 +105,7 @@ class CatBoostRegressor(Estimator):
         cat_cols = list(X.ww.select("category", return_schema=True).columns)
         self.input_feature_names = list(X.columns)
         X, y = super()._manage_woodwork(X, y)
+        X[cat_cols].fillna("", inplace=True)
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return self
 
