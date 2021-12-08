@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
         * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
+        * Added ability to impute only specific columns in ``PerColumnImputer`` :pr:`3123`
         * Added ``TimeSeriesParametersDataCheck`` to verify the time series parameters are valid given the number of splits in cross validation :pr:`3111`
     * Fixes
         * Default parameters for ``RFRegressorSelectFromModel`` and ``RFClassifierSelectFromModel`` has been fixed to avoid selecting all features :pr:`3110`
