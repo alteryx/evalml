@@ -11,8 +11,12 @@ from evalml.problem_types import ProblemTypes, is_time_series
 @pytest.mark.parametrize(
     "test_description, column_names",
     [
-        ("all_null", ["dates", "all_null"]),
-        ("nullable_types", ["dates", "numerical", "int_null", "bool_null", "age_null"]),
+        ("all null", ["dates", "all_null"]), # Should result only in Drop Null Columns Transformer
+        ("only null int", ["int_null"]),
+        ("only null bool", ["bool_null"]),
+        ("only null age", ["age_null"]),
+        ("nullable types", ["numerical", "int_null", "bool_null", "age_null"]),
+        ("just nullable target", ["dates", "numerical"]),
     ],
 )
 def test_nullable_types_builds_pipelines(
@@ -36,6 +40,7 @@ def test_nullable_types_builds_pipelines(
         input_type,
         problem_type,
         column_names=column_names,
+        nullable_target=True if "nullable target" in test_description else False
     )
 
     automl = AutoMLSearch(
@@ -45,12 +50,22 @@ def test_nullable_types_builds_pipelines(
         problem_configuration=parameters,
         _automl_algorithm=automl_algorithm,
     )
-    pipelines = [pl.name for pl in automl.allowed_pipelines]
+    if automl_algorithm == "iterative":
+        pipelines = [pl.name for pl in automl.allowed_pipelines]
+    elif automl_algorithm == "default":
+        pipelines = [pl.name for pl in automl._automl_algorithm.next_batch()]
+    assert len(pipelines) > 0
 
-    if test_description == "nullable_types":
+    if test_description == "just nullable target":
+        if input_type == "pd":
+            assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
+        elif input_type == "ww":
+            assert all([ReplaceNullableTypes.name in pl for pl in pipelines])
+    elif test_description in ["only null int", "only null bool", "only null age", "nullable types"]:
         if input_type == "pd":
             assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
         elif input_type == "ww":
             assert all([ReplaceNullableTypes.name in pl for pl in pipelines])
     else:
         assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
+

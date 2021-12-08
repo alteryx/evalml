@@ -606,7 +606,7 @@ class AutoMLSearch:
         self._searched = False
 
         self.X_train = infer_feature_types(X_train, ignore_nullable_types=True)
-        self.y_train = infer_feature_types(y_train)
+        self.y_train = infer_feature_types(y_train, ignore_nullable_types=True)
 
         default_data_splitter = make_data_splitter(
             self.X_train,

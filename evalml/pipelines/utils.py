@@ -80,7 +80,8 @@ def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
     all_nullable_cols = X.ww.select(
         ["IntegerNullable", "AgeNullable", "BooleanNullable"], return_schema=True
     ).columns
-    if len(all_nullable_cols) > 0:
+    nullable_target = isinstance(y.ww.logical_type, (logical_types.AgeNullable, logical_types.BooleanNullable, logical_types.IntegerNullable))
+    if len(all_nullable_cols) > 0 or nullable_target:
         component.append(ReplaceNullableTypes)
     return component
 
@@ -310,7 +311,7 @@ def make_pipeline(
         ValueError: If estimator is not valid for the given problem type, or sampling is not supported for the given problem type.
     """
     X = infer_feature_types(X, ignore_nullable_types=True)
-    y = infer_feature_types(y)
+    y = infer_feature_types(y, ignore_nullable_types=True)
 
     if estimator:
         problem_type = handle_problem_types(problem_type)

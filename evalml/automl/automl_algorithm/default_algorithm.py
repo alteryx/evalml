@@ -94,7 +94,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         )
 
         self.X = infer_feature_types(X, ignore_nullable_types=True)
-        self.y = infer_feature_types(y)
+        self.y = infer_feature_types(y, ignore_nullable_types=True)
         self.problem_type = problem_type
         self.sampler_name = sampler_name
 
@@ -186,13 +186,14 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         estimators = self._naive_estimators()
         pipelines = [
             make_pipeline(
-                self.X,
-                self.y,
-                estimator,
-                self.problem_type,
+                X = self.X,
+                y = self.y,
+                estimator = estimator,
+                problem_type = self.problem_type,
                 sampler_name=self.sampler_name,
                 extra_components=feature_selector,
                 extra_components_position="after_preprocessing",
+                parameters=self._pipeline_params
             )
             for estimator in estimators
         ]

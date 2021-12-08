@@ -98,7 +98,7 @@ def graphviz():
 
 @pytest.fixture
 def get_test_data_from_configuration():
-    def _get_test_data_from_configuration(input_type, problem_type, column_names=None):
+    def _get_test_data_from_configuration(input_type, problem_type, column_names=None, nullable_target=False):
         X_all = pd.DataFrame(
             {
                 "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
@@ -156,6 +156,10 @@ def get_test_data_from_configuration():
             y = pd.Series([0, 2, 1, 2, 0, 2, 1] * 2)
         elif is_regression(problem_type):
             y = pd.Series([1, 2, 3, 3, 3, 4, 5] * 2)
+        if nullable_target:
+            y.iloc[2] = None
+            if input_type == "ww":
+                y = ww.init_series(y, logical_type="integer_nullable")
         X = X_all[column_names]
 
         if input_type == "ww":
