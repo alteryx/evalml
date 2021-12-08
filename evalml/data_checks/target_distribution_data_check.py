@@ -114,7 +114,7 @@ class TargetDistributionDataCheck(DataCheck):
                     details=details,
                 ).to_dict()
             )
-            results["actions"].append(
+            results["actions"]["actions_list"].append(
                 DataCheckAction(
                     DataCheckActionCode.TRANSFORM_TARGET,
                     data_check_name=self.name,

@@ -172,7 +172,7 @@ class NoVarianceDataCheck(DataCheck):
             )
         all_cols = zero_unique + one_unique + one_unique_with_null
         if all_cols:
-            results["actions"].append(
+            results["actions"]["actions_list"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,

@@ -236,7 +236,7 @@ class InvalidTargetDataCheck(DataCheck):
             impute_strategy = (
                 "mean" if is_regression(self.problem_type) else "most_frequent"
             )
-            results["actions"].append(
+            results["actions"]["actions_list"].append(
                 DataCheckAction(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=self.name,

@@ -103,7 +103,7 @@ class SparsityDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-            results["actions"].append(
+            results["actions"]["actions_list"].append(
                 DataCheckAction(
                     action_code=DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,

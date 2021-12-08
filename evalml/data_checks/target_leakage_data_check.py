@@ -143,7 +143,7 @@ class TargetLeakageDataCheck(DataCheck):
                     details={"columns": highly_corr_cols},
                 ).to_dict()
             )
-            results["actions"].append(
+            results["actions"]["actions_list"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,

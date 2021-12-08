@@ -103,7 +103,7 @@ class HighlyNullDataCheck(DataCheck):
             ...                  'metadata': {'columns': ['all_null'], 'rows': None}}]}
 
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {"warnings": [], "errors": [], "actions": {"action_list": []}}
 
         X = infer_feature_types(X, ignore_nullable_types=True)
 
@@ -123,7 +123,7 @@ class HighlyNullDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-            results["actions"].append(
+            results["actions"]["actions_list"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=self.name,
@@ -152,7 +152,7 @@ class HighlyNullDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-            results["actions"].append(
+            results["actions"]["actions_list"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
