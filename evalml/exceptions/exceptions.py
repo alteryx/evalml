@@ -44,7 +44,6 @@ class AutoMLSearchException(Exception):
     pass
 
 
-
 class PipelineScoreError(Exception):
     """An exception raised when a pipeline errors while scoring any objective in a list of objectives.
 
