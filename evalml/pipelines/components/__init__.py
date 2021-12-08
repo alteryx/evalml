@@ -25,6 +25,7 @@ from .estimators import (
     ProphetRegressor,
     SVMClassifier,
     SVMRegressor,
+    ExponentialSmoothingRegressor,
     ARIMARegressor,
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,

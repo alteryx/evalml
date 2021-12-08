@@ -33,6 +33,7 @@ from .components import (
     KNeighborsClassifier,
     SVMClassifier,
     SVMRegressor,
+    ExponentialSmoothingRegressor,
     ARIMARegressor,
     ProphetRegressor,
     VowpalWabbitBinaryClassifier,
