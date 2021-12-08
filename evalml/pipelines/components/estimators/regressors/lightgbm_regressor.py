@@ -140,12 +140,12 @@ class LightGBMRegressor(Estimator):
 
         if len(cat_cols) == 0:
             return X_encoded
-        if fit:
-            self._ordinal_encoder = OrdinalEncoder()
-            encoder_output = self._ordinal_encoder.fit_transform(X_encoded[cat_cols])
-        else:
-            encoder_output = self._ordinal_encoder.transform(X_encoded[cat_cols])
-        X_encoded[cat_cols] = pd.DataFrame(encoder_output)
+        # if fit:
+        #     self._ordinal_encoder = OrdinalEncoder()
+        #     encoder_output = self._ordinal_encoder.fit_transform(X_encoded[cat_cols])
+        # else:
+        #     encoder_output = self._ordinal_encoder.transform(X_encoded[cat_cols])
+        # X_encoded[cat_cols] = pd.DataFrame(encoder_output)
         X_encoded[cat_cols] = X_encoded[cat_cols].astype("category")
         return X_encoded
 
