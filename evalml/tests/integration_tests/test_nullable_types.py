@@ -6,6 +6,7 @@ from evalml.problem_types import ProblemTypes, is_time_series
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
+@pytest.mark.parametrize("automl_algorithm", ["iterative", "default"])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 @pytest.mark.parametrize(
     "test_description, column_names",
@@ -15,6 +16,7 @@ from evalml.problem_types import ProblemTypes, is_time_series
     ],
 )
 def test_nullable_types_builds_pipelines(
+    automl_algorithm,
     problem_type,
     input_type,
     test_description,
@@ -41,6 +43,7 @@ def test_nullable_types_builds_pipelines(
         y_train=y,
         problem_type=problem_type,
         problem_configuration=parameters,
+        _automl_algorithm=automl_algorithm,
     )
     pipelines = [pl.name for pl in automl.allowed_pipelines]
 
