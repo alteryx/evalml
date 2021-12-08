@@ -110,7 +110,7 @@ class UniquenessDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-            results["actions"]["actions_list"].append(
+            results["actions"].append(
                 DataCheckAction(
                     action_code=DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
@@ -137,7 +137,7 @@ class UniquenessDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-            results["actions"]["actions_list"].append(
+            results["actions"].append(
                 DataCheckAction(
                     action_code=DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,

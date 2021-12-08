@@ -145,7 +145,7 @@ class IDColumnsDataCheck(DataCheck):
                     details={"columns": list(id_cols_above_threshold)},
                 ).to_dict()
             )
-            results["actions"]["actions_list"].append(
+            results["actions"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,

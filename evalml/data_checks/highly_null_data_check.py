@@ -123,7 +123,7 @@ class HighlyNullDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-            results["actions"]["actions_list"].append(
+            results["actions"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=self.name,
@@ -152,7 +152,7 @@ class HighlyNullDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-            results["actions"]["actions_list"].append(
+            results["actions"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
