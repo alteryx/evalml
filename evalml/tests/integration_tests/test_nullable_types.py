@@ -11,7 +11,10 @@ from evalml.problem_types import ProblemTypes, is_time_series
 @pytest.mark.parametrize(
     "test_description, column_names",
     [
-        ("all null", ["dates", "all_null"]), # Should result only in Drop Null Columns Transformer
+        (
+            "all null",
+            ["dates", "all_null"],
+        ),  # Should result only in Drop Null Columns Transformer
         ("only null int", ["int_null"]),
         ("only null bool", ["bool_null"]),
         ("only null age", ["age_null"]),
@@ -40,7 +43,7 @@ def test_nullable_types_builds_pipelines(
         input_type,
         problem_type,
         column_names=column_names,
-        nullable_target=True if "nullable target" in test_description else False
+        nullable_target=True if "nullable target" in test_description else False,
     )
 
     automl = AutoMLSearch(
@@ -61,11 +64,15 @@ def test_nullable_types_builds_pipelines(
             assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
         elif input_type == "ww":
             assert all([ReplaceNullableTypes.name in pl for pl in pipelines])
-    elif test_description in ["only null int", "only null bool", "only null age", "nullable types"]:
+    elif test_description in [
+        "only null int",
+        "only null bool",
+        "only null age",
+        "nullable types",
+    ]:
         if input_type == "pd":
             assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
         elif input_type == "ww":
             assert all([ReplaceNullableTypes.name in pl for pl in pipelines])
     else:
         assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
-

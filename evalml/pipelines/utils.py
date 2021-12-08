@@ -80,7 +80,14 @@ def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
     all_nullable_cols = X.ww.select(
         ["IntegerNullable", "AgeNullable", "BooleanNullable"], return_schema=True
     ).columns
-    nullable_target = isinstance(y.ww.logical_type, (logical_types.AgeNullable, logical_types.BooleanNullable, logical_types.IntegerNullable))
+    nullable_target = isinstance(
+        y.ww.logical_type,
+        (
+            logical_types.AgeNullable,
+            logical_types.BooleanNullable,
+            logical_types.IntegerNullable,
+        ),
+    )
     if len(all_nullable_cols) > 0 or nullable_target:
         component.append(ReplaceNullableTypes)
     return component

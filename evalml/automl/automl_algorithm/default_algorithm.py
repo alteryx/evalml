@@ -186,14 +186,14 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         estimators = self._naive_estimators()
         pipelines = [
             make_pipeline(
-                X = self.X,
-                y = self.y,
-                estimator = estimator,
-                problem_type = self.problem_type,
+                X=self.X,
+                y=self.y,
+                estimator=estimator,
+                problem_type=self.problem_type,
                 sampler_name=self.sampler_name,
                 extra_components=feature_selector,
                 extra_components_position="after_preprocessing",
-                parameters=self._pipeline_params
+                parameters=self._pipeline_params,
             )
             for estimator in estimators
         ]

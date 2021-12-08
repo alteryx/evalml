@@ -98,7 +98,9 @@ def graphviz():
 
 @pytest.fixture
 def get_test_data_from_configuration():
-    def _get_test_data_from_configuration(input_type, problem_type, column_names=None, nullable_target=False):
+    def _get_test_data_from_configuration(
+        input_type, problem_type, column_names=None, nullable_target=False
+    ):
         X_all = pd.DataFrame(
             {
                 "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
