@@ -17,6 +17,7 @@ Release Notes
     * Testing Changes
         * Refactored tests to avoid using ``importorskip`` :pr:`3126`
         * Added ``skip_during_conda`` test marker to skip tests that are not supposed to run during conda build :pr:`3127`
+        * Added ``skip_if_39`` test marker to skip tests that are not supposed to run during python 3.9 :pr:`3133`
 
 .. warning::
 

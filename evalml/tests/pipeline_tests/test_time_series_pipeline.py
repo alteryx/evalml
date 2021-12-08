@@ -1171,6 +1171,7 @@ def test_time_series_pipeline_fit_with_transformed_target(
     pd.testing.assert_series_equal(mock_to_check.call_args[0][1], y + 2)
 
 
+@pytest.mark.skip_if_39
 @pytest.mark.noncore_dependency
 def test_time_series_pipeline_with_detrender(ts_data):
     X, y = ts_data
