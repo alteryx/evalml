@@ -1,3 +1,5 @@
+import warnings
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -12,6 +14,7 @@ from woodwork.logical_types import (
 )
 
 from evalml.pipelines.components import PerColumnImputer
+from evalml.utils.woodwork_utils import infer_feature_types
 
 
 @pytest.fixture
@@ -303,3 +306,68 @@ def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             0: logical_type
         }
+
+
+def test_per_column_imputer_impute_all_is_false():
+    X = pd.DataFrame(
+        {
+            "all_nan_not_included": [np.nan, np.nan, np.nan],
+            "all_nan_included": [np.nan, np.nan, np.nan],
+            "column_with_nan_not_included": [np.nan, 1, 0],
+            "column_with_nan_included": [0, 1, np.nan],
+        }
+    )
+    strategies = {
+        "all_nan_included": {"impute_strategy": "most_frequent"},
+        "column_with_nan_included": {"impute_strategy": "most_frequent"},
+    }
+    transformer = PerColumnImputer(impute_strategies=strategies, impute_all=False)
+    X_expected = pd.DataFrame(
+        {
+            "all_nan_not_included": [np.nan, np.nan, np.nan],
+            "column_with_nan_not_included": [np.nan, 1, 0],
+            "column_with_nan_included": [0, 1, 0],
+        }
+    )
+    X_expected.ww.init(
+        logical_types={
+            "all_nan_not_included": "double",
+            "column_with_nan_included": "double",
+        }
+    )
+    X_t = transformer.fit_transform(X)
+    assert_frame_equal(X_expected, X_t)
+    assert_frame_equal(
+        X,
+        pd.DataFrame(
+            {
+                "all_nan_not_included": [np.nan, np.nan, np.nan],
+                "all_nan_included": [np.nan, np.nan, np.nan],
+                "column_with_nan_not_included": [np.nan, 1, 0],
+                "column_with_nan_included": [0, 1, np.nan],
+            }
+        ),
+    )
+
+
+def test_per_column_imputer_impute_all_is_false_and_impute_strategies_is_None():
+    X = pd.DataFrame(
+        {
+            "all_nan_not_included": [np.nan, np.nan, np.nan],
+            "all_nan_included": [np.nan, np.nan, np.nan],
+            "column_with_nan_not_included": [np.nan, 1, 0],
+            "column_with_nan_included": [0, 1, np.nan],
+        }
+    )
+    X_expected = infer_feature_types(X)
+    transformer = PerColumnImputer(impute_strategies=None, impute_all=False)
+
+    X_t = None
+    with warnings.catch_warnings(record=True) as w:
+        X_t = transformer.fit_transform(X)
+    assert len(w) == 1
+    assert (
+        "No columns to impute. Please check `impute_strategies` and `impute_all` parameters."
+        in str(w[-1].message)
+    )
+    assert_frame_equal(X_expected, X_t)

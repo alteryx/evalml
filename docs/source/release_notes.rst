@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
+        * Added ability to impute only specific columns in ``PerColumnImputer`` :pr:`3123`
         * Added ``TimeSeriesParametersDataCheck`` to verify the time series parameters are valid given the number of splits in cross validation :pr:`3111`
     * Fixes
         * Default parameters for ``RFRegressorSelectFromModel`` and ``RFClassifierSelectFromModel`` has been fixed to avoid selecting all features :pr:`3110`
@@ -16,6 +17,7 @@ Release Notes
     * Testing Changes
         * Refactored tests to avoid using ``importorskip`` :pr:`3126`
         * Added ``skip_during_conda`` test marker to skip tests that are not supposed to run during conda build :pr:`3127`
+        * Added ``skip_if_39`` test marker to skip tests that are not supposed to run during python 3.9 :pr:`3133`
 
 .. warning::
 
