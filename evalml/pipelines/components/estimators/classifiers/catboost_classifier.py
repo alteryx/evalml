@@ -118,6 +118,7 @@ class CatBoostClassifier(Estimator):
             self._label_encoder = LabelEncoder()
             y = pd.Series(self._label_encoder.fit_transform(y))
         for col in cat_cols:
+            X[col] = X[col].apply(str)
             X[col].cat.add_categories("")
         X[cat_cols].fillna("", inplace=True)
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
@@ -135,6 +136,7 @@ class CatBoostClassifier(Estimator):
         X = infer_feature_types(X)
         cat_cols = list(X.ww.select("category", return_schema=True).columns)
         for col in cat_cols:
+            X[col] = X[col].apply(str)
             X[col].cat.add_categories("")
         X[cat_cols].fillna("", inplace=True)
         predictions = self._component_obj.predict(X)
