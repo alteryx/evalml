@@ -112,6 +112,30 @@ class CatBoostRegressor(Estimator):
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return self
 
+    def predict(self, X):
+        """Make predictions using selected features.
+
+        Args:
+            X (pd.DataFrame): Data of shape [n_samples, n_features].
+
+        Returns:
+            pd.Series: Predicted values.
+
+        Raises:
+            MethodPropertyNotFoundError: If estimator does not have a predict method or a component_obj that implements predict.
+        """
+        X = infer_feature_types(X)
+        if isinstance(X.columns, range.RangeIndex):
+            X.columns = [x for x in X.columns]
+        cat_cols = list(X.ww.select("category", return_schema=True).columns)
+        for col in cat_cols:
+            X[col] = X[col].apply(str)
+            X[col] = X[col].cat.add_categories("")
+        X[cat_cols].fillna("", inplace=True)
+        predictions = self._component_obj.predict(X)
+        predictions.index = X.index
+        return predictions
+
     @property
     def feature_importance(self):
         """Feature importance of fitted CatBoost regressor."""
