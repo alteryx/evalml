@@ -11,7 +11,7 @@ from evalml.problem_types import ProblemTypes, is_time_series
     "test_description, column_names",
     [
         ("all_null", ["dates", "all_null"]),
-        ("nullable_types", ["dates", "numerical", "int_null", "bool_null"]),
+        ("nullable_types", ["dates", "numerical", "int_null", "bool_null", "age_null"]),
     ],
 )
 def test_nullable_types_builds_pipelines(

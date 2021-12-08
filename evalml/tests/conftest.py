@@ -104,6 +104,7 @@ def get_test_data_from_configuration():
                 "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
                 * 2,
                 "int_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
+                "age_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
                 "bool_null": [True, None, False, True, False, None, True] * 2,
                 "numerical": range(14),
                 "categorical": ["a", "b", "a", "b", "b", "a", "b"] * 2,
@@ -169,6 +170,8 @@ def get_test_data_from_configuration():
                 logical_types.update({"email": "EmailAddress"})
             if "int_null" in column_names:
                 logical_types.update({"int_null": "integer_nullable"})
+            if "age_null" in column_names:
+                logical_types.update({"age_null": "integer_nullable"})
             if "bool_null" in column_names:
                 logical_types.update({"bool_null": "boolean_nullable"})
 

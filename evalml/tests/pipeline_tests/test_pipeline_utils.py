@@ -66,7 +66,10 @@ from evalml.problem_types import ProblemTypes, is_time_series
         ("url with other features", ["url", "numerical", "categorical"]),
         ("ip with other features", ["ip", "numerical", "categorical"]),
         ("email with other features", ["email", "numerical", "categorical"]),
-        ("nullable_types", ["numerical", "int_null", "bool_null"]),
+        ("only null int", ["int_null"]),
+        ("only null bool", ["bool_null"]),
+        ("only null age", ["age_null"]),
+        ("nullable_types", ["numerical", "int_null", "bool_null", "age_null"]),
     ],
 )
 def test_make_pipeline(
@@ -136,7 +139,9 @@ def test_make_pipeline(
             replace_null = (
                 [ReplaceNullableTypes]
                 if (
-                    any(x in column_names for x in ["bool_null", "int_null"])
+                    any(
+                        x in column_names for x in ["bool_null", "int_null", "age_null"]
+                    )
                     and input_type == "ww"
                 )
                 else []

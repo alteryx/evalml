@@ -136,10 +136,13 @@ def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None):
     text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
 
     types_imputer_handles = {
+        logical_types.AgeNullable,
         logical_types.Boolean,
+        logical_types.BooleanNullable,
         logical_types.Categorical,
         logical_types.Double,
         logical_types.Integer,
+        logical_types.IntegerNullable,
         logical_types.URL,
         logical_types.EmailAddress,
         logical_types.Datetime,
