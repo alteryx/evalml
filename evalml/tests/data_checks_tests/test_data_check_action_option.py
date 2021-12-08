@@ -23,7 +23,7 @@ def test_data_check_action_option_attributes(dummy_data_check_name):
     assert data_check_action_option.action_code == DataCheckActionCode.DROP_COL
     assert data_check_action_option.data_check_name is None
     assert data_check_action_option.metadata == {"rows": None, "columns": None}
-    assert data_check_action_option.parameters == None
+    assert data_check_action_option.parameters == {}
 
     data_check_action_option = DataCheckActionOption(
         DataCheckActionCode.DROP_COL,

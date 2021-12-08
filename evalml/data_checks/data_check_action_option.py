@@ -24,6 +24,7 @@ class DataCheckActionOption:
         self.metadata = {"columns": None, "rows": None}
         if metadata is not None:
             self.metadata.update(metadata)
+        self.validate_parameters()
 
     def __eq__(self, other):
         """Check for equality.
@@ -92,3 +93,36 @@ class DataCheckActionOption:
             if "parameters" in action_dict
             else None,
         )
+
+    def validate_parameters(self):
+        if self.parameters is None:
+            return
+        for _, parameter_value in self.parameters.items():
+            if "parameter_type" not in parameter_value:
+                raise ValueError("Each parameter must have a parameter_type key.")
+            if parameter_value["parameter_type"] == "global":
+                if "type" not in parameter_value:
+                    raise ValueError("Each global parameter must have a type key.")
+            if parameter_value["parameter_type"] == "column":
+                if "columns" not in parameter_value:
+                    raise ValueError(
+                        "Each column parameter must have a column_name key."
+                    )
+                columns = parameter_value["columns"]
+                if not isinstance(columns, dict):
+                    raise ValueError(
+                        "Each column parameter must have a columns dictionary."
+                    )
+                for _, column_parameters in columns.items():
+                    for (
+                        _,
+                        column_parameter_values,
+                    ) in column_parameters.items():
+                        if "type" not in column_parameter_values:
+                            raise ValueError(
+                                "Each column parameter must have a type key."
+                            )
+                        if "default_value" not in column_parameter_values:
+                            raise ValueError(
+                                "Each column parameter must have a value key."
+                            )
