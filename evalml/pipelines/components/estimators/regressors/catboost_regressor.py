@@ -3,6 +3,7 @@ import copy
 import warnings
 
 from skopt.space import Integer, Real
+from pandas.core.indexes import range
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
