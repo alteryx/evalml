@@ -625,7 +625,7 @@ def test_invalid_target_data_check_mismatched_indices():
     assert invalid_targets_check.validate(X, y_diff_index) == {
         "warnings": [
             DataCheckWarning(
-                message="Input target and features have mismatched indices",
+                message="Input target and features have mismatched indices. Details will include the first 10 mismatched indices.",
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.MISMATCHED_INDICES,
                 details={
@@ -640,7 +640,7 @@ def test_invalid_target_data_check_mismatched_indices():
     assert invalid_targets_check.validate(X, y_diff_index_order) == {
         "warnings": [
             DataCheckWarning(
-                message="Input target and features have mismatched indices order",
+                message="Input target and features have mismatched indices order.",
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
                 details={},
@@ -658,7 +658,7 @@ def test_invalid_target_data_check_mismatched_indices():
     assert invalid_targets_check.validate(X_large, y_more_than_ten_diff_indices) == {
         "warnings": [
             DataCheckWarning(
-                message="Input target and features have mismatched indices",
+                message="Input target and features have mismatched indices. Details will include the first 10 mismatched indices.",
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.MISMATCHED_INDICES,
                 details={
@@ -690,7 +690,7 @@ def test_invalid_target_data_check_different_lengths():
                 },
             ).to_dict(),
             DataCheckWarning(
-                message="Input target and features have mismatched indices",
+                message="Input target and features have mismatched indices. Details will include the first 10 mismatched indices.",
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.MISMATCHED_INDICES,
                 details={"indices_not_in_features": [], "indices_not_in_target": [2]},

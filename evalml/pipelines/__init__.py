@@ -28,7 +28,7 @@ from .components import (
     DecisionTreeRegressor,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
-    DelayedFeatureTransformer,
+    TimeSeriesFeaturizer,
     DFSTransformer,
     KNeighborsClassifier,
     SVMClassifier,

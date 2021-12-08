@@ -38,7 +38,7 @@ from .transformers import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     PerColumnImputer,
-    DelayedFeatureTransformer,
+    TimeSeriesFeaturizer,
     SimpleImputer,
     Imputer,
     StandardScaler,
@@ -62,6 +62,7 @@ from .transformers import (
     URLFeaturizer,
     DropRowsTransformer,
     LabelEncoder,
+    ReplaceNullableTypes,
 )
 from .ensemble import (
     StackedEnsembleClassifier,

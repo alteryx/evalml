@@ -595,11 +595,9 @@ def test_plot_disabled_missing_dependency(X_y_binary, has_minimal_dependencies):
         automl.plot.search_iteration_plot
 
 
-def test_plot_iterations_max_iterations(X_y_binary):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_plot_iterations_max_iterations(X_y_binary, go):
+
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -623,11 +621,8 @@ def test_plot_iterations_max_iterations(X_y_binary):
     assert len(y) == 3
 
 
-def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary, go):
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -654,16 +649,9 @@ def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary):
     assert len(y) > 0
 
 
+@pytest.mark.noncore_dependency
 @patch("IPython.display.display")
 def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
-    pytest.importorskip(
-        "IPython.display",
-        reason="Skipping plotting test because ipywidgets not installed",
-    )
-    pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -680,16 +668,11 @@ def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
     mock_ipython_display.assert_called_with(plot.best_score_by_iter_fig)
 
 
+@pytest.mark.noncore_dependency
 @patch("IPython.display.display")
-def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y_binary):
-    pytest.importorskip(
-        "IPython.display",
-        reason="Skipping plotting test because ipywidgets not installed",
-    )
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+def test_plot_iterations_ipython_mock_import_failure(
+    mock_ipython_display, X_y_binary, go
+):
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -1156,6 +1139,7 @@ def test_automl_supports_time_series_classification(
         "delay_target": False,
         "delay_features": True,
         "conf_level": 0.05,
+        "rolling_window_size": 0.25,
     }
 
     automl = AutoMLSearch(
@@ -1175,7 +1159,7 @@ def test_automl_supports_time_series_classification(
             assert result["pipeline_class"] == baseline.__class__
             continue
 
-        assert result["parameters"]["Delayed Feature Transformer"] == configuration
+        assert result["parameters"]["Time Series Featurizer"] == configuration
         assert result["parameters"]["pipeline"] == configuration
 
 
@@ -1430,6 +1414,7 @@ def test_automl_search_dictionary_undersampler(
     assert len(mock_est_fit.call_args[0][0]) == length
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "problem_type,sampling_ratio_dict,length",
     [
@@ -1456,9 +1441,6 @@ def test_automl_search_dictionary_oversampler(
     sampling_ratio_dict,
     length,
 ):
-    pytest.importorskip(
-        "imblearn", reason="Skipping tests since imblearn isn't installed"
-    )
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
     if problem_type == "binary":

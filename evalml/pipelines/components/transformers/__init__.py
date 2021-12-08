@@ -23,11 +23,12 @@ from .preprocessing import (
     DropNullColumns,
     LSA,
     NaturalLanguageFeaturizer,
-    DelayedFeatureTransformer,
+    TimeSeriesFeaturizer,
     DFSTransformer,
     PolynomialDetrender,
     LogTransformer,
     EmailFeaturizer,
     URLFeaturizer,
     DropRowsTransformer,
+    ReplaceNullableTypes,
 )

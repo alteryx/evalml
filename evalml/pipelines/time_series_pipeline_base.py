@@ -37,12 +37,12 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 "Please specify them as a dictionary with the key 'pipeline'."
             )
         pipeline_params = parameters["pipeline"]
-        date_index = pipeline_params["date_index"]
-        if date_index is None:
-            raise ValueError("Parameter date_index cannot be None!")
         self.gap = pipeline_params["gap"]
         self.max_delay = pipeline_params["max_delay"]
         self.forecast_horizon = pipeline_params["forecast_horizon"]
+        self.date_index = pipeline_params["date_index"]
+        if self.date_index is None:
+            raise ValueError("Parameter date_index cannot be None!")
         super().__init__(
             component_graph,
             custom_name=custom_name,
@@ -155,9 +155,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             gap_target,
             y,
         ]
-        padded_features = pd.concat(features_to_concat, axis=0)
-        padded_target = pd.concat(targets_to_concat, axis=0)
-
+        padded_features = pd.concat(features_to_concat, axis=0).fillna(method="ffill")
+        padded_target = pd.concat(targets_to_concat, axis=0).fillna(method="ffill")
         padded_features.ww.init(schema=X_train.ww.schema)
         padded_target = ww.init_series(
             padded_target, logical_type=y_train.ww.logical_type

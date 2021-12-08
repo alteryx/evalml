@@ -163,11 +163,9 @@ def test_plot_disabled_missing_dependency(X_y_regression, has_minimal_dependenci
         automl.plot.search_iteration_plot
 
 
-def test_plot_iterations_max_iterations(X_y_regression):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_plot_iterations_max_iterations(X_y_regression, go):
+
     X, y = X_y_regression
 
     automl = AutoMLSearch(
@@ -186,11 +184,9 @@ def test_plot_iterations_max_iterations(X_y_regression):
     assert len(y) == 3
 
 
-def test_plot_iterations_max_time(AutoMLTestEnv, X_y_regression):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_plot_iterations_max_time(AutoMLTestEnv, X_y_regression, go):
+
     X, y = X_y_regression
 
     automl = AutoMLSearch(
@@ -420,13 +416,13 @@ def test_automl_allowed_component_graphs_search(
 @pytest.mark.parametrize("freq", ["D", "MS"])
 def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, ts_data):
     X, y = ts_data
-    X["date"] = pd.date_range(start="1/1/2018", periods=X.shape[0], freq=freq)
+    X["date"] = pd.date_range(start="1/1/2018", periods=31, freq=freq)
 
     configuration = {
         "date_index": "date",
         "gap": 0,
         "max_delay": 0,
-        "forecast_horizon": 10,
+        "forecast_horizon": 6,
         "delay_target": False,
         "delay_features": True,
     }
@@ -449,23 +445,21 @@ def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, ts_data):
 
         if result["id"] == 0:
             continue
-        if freq == "MS":
-            assert "ARIMA Regressor" not in result["parameters"]
         if "ARIMA Regressor" in result["parameters"]:
             dt_ = result["parameters"]["ARIMA Regressor"].pop("date_index")
             assert "DateTime Featurization Component" not in result["parameters"].keys()
-            assert "Delayed Feature Transformer" not in result["parameters"].keys()
+            assert "Time Series Featurizer" not in result["parameters"].keys()
         elif "Prophet Regressor" in result["parameters"]:
             dt_ = result["parameters"]["Prophet Regressor"].pop("date_index")
             assert "DateTime Featurization Component" not in result["parameters"].keys()
-            assert "Delayed Feature Transformer" in result["parameters"].keys()
+            assert "Time Series Featurizer" in result["parameters"].keys()
         else:
-            dt_ = result["parameters"]["Delayed Feature Transformer"].pop("date_index")
+            dt_ = result["parameters"]["Time Series Featurizer"].pop("date_index")
         assert dt == dt_
         for param_key, param_val in configuration.items():
             if "ARIMA Regressor" not in result["parameters"]:
                 assert (
-                    result["parameters"]["Delayed Feature Transformer"][param_key]
+                    result["parameters"]["Time Series Featurizer"][param_key]
                     == configuration[param_key]
                 )
             assert (

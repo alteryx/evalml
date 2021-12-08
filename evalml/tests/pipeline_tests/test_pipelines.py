@@ -2035,7 +2035,7 @@ def test_predict_has_input_target_name(
                     "date_index": "date",
                     "forecast_horizon": 2,
                 },
-                "Delayed Feature Transformer": {
+                "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
@@ -2050,7 +2050,7 @@ def test_predict_has_input_target_name(
         clf = time_series_binary_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
-                "Delayed Feature Transformer": {
+                "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
@@ -2071,7 +2071,7 @@ def test_predict_has_input_target_name(
         clf = time_series_multiclass_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
-                "Delayed Feature Transformer": {
+                "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
@@ -2290,7 +2290,7 @@ def test_binary_pipeline_string_target_thresholding(
                 "date_index": "date",
                 "forecast_horizon": 3,
             },
-            "Delayed Feature Transformer": {"date_index": "date"},
+            "Time Series Featurizer": {"date_index": "date"},
         }
     )
     pipeline.fit(X_train, y_train)
@@ -2351,12 +2351,9 @@ def test_undersampler_component_in_pipeline_predict():
     assert len(preds) == 1000
 
 
+@pytest.mark.noncore_dependency
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 def test_oversampler_component_in_pipeline_fit(mock_fit):
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping test because imbalanced-learn not installed",
-    )
 
     X = pd.DataFrame(
         {
@@ -2389,11 +2386,8 @@ def test_oversampler_component_in_pipeline_fit(mock_fit):
     assert len(mock_fit.call_args[0][0]) == 1000
 
 
+@pytest.mark.noncore_dependency
 def test_oversampler_component_in_pipeline_predict():
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping test because imbalanced-learn not installed",
-    )
     X = pd.DataFrame(
         {
             "a": [i for i in range(1000)],

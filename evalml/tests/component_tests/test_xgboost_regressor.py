@@ -3,12 +3,11 @@ import string
 import numpy as np
 import pandas as pd
 import pytest
-from pytest import importorskip
 
 from evalml.pipelines.components import XGBoostRegressor
 from evalml.utils import SEED_BOUNDS, get_random_state
 
-xgb = importorskip("xgboost", reason="Skipping test because xgboost not installed")
+pytestmark = pytest.mark.noncore_dependency
 
 
 def test_xgboost_regressor_random_seed_bounds_seed(X_y_regression):

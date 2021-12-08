@@ -48,6 +48,52 @@ def pytest_configure(config):
         "markers",
         "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)",
     )
+    config.addinivalue_line(
+        "markers", "noncore_dependency: mark test as needing non-core dependencies"
+    )
+    config.addinivalue_line(
+        "markers",
+        "skip_during_conda: mark test to be skipped if running during conda build",
+    )
+    config.addinivalue_line(
+        "markers",
+        "skip_if_39: mark test to be skipped if running during conda build",
+    )
+
+
+@pytest.fixture(scope="session")
+def go():
+    from plotly import graph_objects as go
+
+    return go
+
+
+@pytest.fixture(scope="session")
+def im():
+    from imblearn import over_sampling as im
+
+    return im
+
+
+@pytest.fixture(scope="session")
+def lgbm():
+    import lightgbm as lgbm
+
+    return lgbm
+
+
+@pytest.fixture(scope="session")
+def vw():
+    from vowpalwabbit import sklearn_vw as vw
+
+    return vw
+
+
+@pytest.fixture(scope="session")
+def graphviz():
+    import graphviz
+
+    return graphviz
 
 
 def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
@@ -257,6 +303,24 @@ def pytest_addoption(parser):
         help="If true, tests will assume that they are being run as part of"
         "the build_conda_pkg workflow with the feedstock.",
     )
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--has-minimal-dependencies"):
+        skip_noncore = pytest.mark.skip(reason="needs noncore dependency")
+        for item in items:
+            if "noncore_dependency" in item.keywords:
+                item.add_marker(skip_noncore)
+    if config.getoption("--is-using-conda"):
+        skip_conda = pytest.mark.skip(reason="Test does not run during conda")
+        for item in items:
+            if "skip_during_conda" in item.keywords:
+                item.add_marker(skip_conda)
+    if sys.version_info >= (3, 9):
+        skip_39 = pytest.mark.skip(reason="Test dependency not supported in python 3.9")
+        for item in items:
+            if "skip_if_39" in item.keywords:
+                item.add_marker(skip_39)
 
 
 @pytest.fixture
@@ -798,7 +862,7 @@ def time_series_regression_pipeline_class():
         """Random Forest Regression Pipeline for time series regression problems."""
 
         component_graph = [
-            "Delayed Feature Transformer",
+            "Time Series Featurizer",
             "DateTime Featurization Component",
             "Random Forest Regressor",
         ]
@@ -815,14 +879,14 @@ def time_series_regression_pipeline_class():
 def time_series_classification_component_graph():
     component_graph = {
         "Label Encoder": ["Label Encoder", "X", "y"],
-        "Delayed Feature Transformer": [
-            "Delayed Feature Transformer",
+        "Time Series Featurizer": [
+            "Time Series Featurizer",
             "Label Encoder.x",
             "Label Encoder.y",
         ],
         "DateTime Featurization Component": [
             "DateTime Featurization Component",
-            "Delayed Feature Transformer.x",
+            "Time Series Featurizer.x",
             "Label Encoder.y",
         ],
         "Logistic Regression Classifier": [

@@ -1,12 +1,12 @@
 import warnings
 
 import pandas as pd
-from pytest import importorskip
+import pytest
 
 from evalml.pipelines.components import CatBoostRegressor
 from evalml.utils import SEED_BOUNDS
 
-importorskip("catboost", reason="Skipping test because catboost not installed")
+pytestmark = pytest.mark.noncore_dependency
 
 
 def test_catboost_regressor_random_seed_bounds_seed(X_y_regression):

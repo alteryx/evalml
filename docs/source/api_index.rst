@@ -175,7 +175,7 @@ Transformers are components that take in data as input and output transformed da
     evalml.pipelines.components.DropNullColumns
     evalml.pipelines.components.DateTimeFeaturizer
     evalml.pipelines.components.NaturalLanguageFeaturizer
-    evalml.pipelines.components.DelayedFeatureTransformer
+    evalml.pipelines.components.TimeSeriesFeaturizer
     evalml.pipelines.components.DFSTransformer
     evalml.pipelines.components.PolynomialDetrender
     evalml.pipelines.components.Undersampler
@@ -417,6 +417,7 @@ Data Check Classes
     evalml.data_checks.DateTimeNaNDataCheck
     evalml.data_checks.NaturalLanguageNaNDataCheck
     evalml.data_checks.DateTimeFormatDataCheck
+    evalml.data_checks.TimeSeriesParametersDataCheck
     evalml.data_checks.DataChecks
     evalml.data_checks.DefaultDataChecks
 

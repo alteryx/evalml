@@ -14,7 +14,6 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
-    DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
     DropRowsTransformer,
@@ -27,6 +26,7 @@ from evalml.pipelines.components import (
     OneHotEncoder,
     StandardScaler,
     TargetImputer,
+    TimeSeriesFeaturizer,
     Transformer,
     URLFeaturizer,
 )
@@ -179,7 +179,7 @@ def test_make_pipeline(
             assert isinstance(pipeline, pipeline_class)
             label_encoder = [LabelEncoder] if is_classification(problem_type) else []
             delayed_features = (
-                [DelayedFeatureTransformer]
+                [TimeSeriesFeaturizer]
                 if is_time_series(problem_type)
                 and estimator_class.model_family != ModelFamily.ARIMA
                 else []
