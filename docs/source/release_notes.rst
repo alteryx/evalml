@@ -4,7 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-        * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr: `3139`
+        * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
     * Documentation Changes
     * Testing Changes
 
