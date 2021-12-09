@@ -1,4 +1,5 @@
 """A default set of data checks that can be used for a variety of datasets."""
+from . import TimeSeriesParametersDataCheck
 from .class_imbalance_data_check import ClassImbalanceDataCheck
 from .data_checks import DataChecks
 from .datetime_format_data_check import DateTimeFormatDataCheck
@@ -34,6 +35,7 @@ class DefaultDataChecks(DataChecks):
         - `NaturalLanguageNaNDataCheck`
         - `TargetDistributionDataCheck` (for regression problem types)
         - `DateTimeFormatDataCheck` (for time series problem types)
+        - 'TimeSeriesParametersDataCheck' (for time series problem types)
 
     Args:
         problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
@@ -53,19 +55,28 @@ class DefaultDataChecks(DataChecks):
         DateTimeNaNDataCheck,
     ]
 
-    def __init__(self, problem_type, objective, n_splits=3, datetime_column=None):
+    def __init__(self, problem_type, objective, n_splits=3, problem_configuration=None):
         default_checks = self._DEFAULT_DATA_CHECK_CLASSES
         data_check_params = {}
 
         if is_time_series(problem_type):
-            default_checks = default_checks + [DateTimeFormatDataCheck]
+            if problem_configuration is None:
+                raise ValueError(
+                    "problem_configuration cannot be None for time series problems!"
+                )
+            default_checks = default_checks + [
+                DateTimeFormatDataCheck,
+                TimeSeriesParametersDataCheck,
+            ]
             data_check_params.update(
                 {
                     "DateTimeFormatDataCheck": {
-                        "datetime_column": datetime_column
-                        if datetime_column
-                        else "index",
-                    }
+                        "datetime_column": problem_configuration["date_index"],
+                    },
+                    "TimeSeriesParametersDataCheck": {
+                        "problem_configuration": problem_configuration,
+                        "n_splits": n_splits,
+                    },
                 }
             )
 
