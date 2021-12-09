@@ -150,6 +150,29 @@ class CatBoostClassifier(Estimator):
         predictions.index = X.index
         return predictions
 
+    def predict_proba(self, X):
+        """Make probability estimates for labels.
+
+        Args:
+            X (pd.DataFrame): Features.
+
+        Returns:
+            pd.Series: Probability estimates.
+
+        Raises:
+            MethodPropertyNotFoundError: If estimator does not have a predict_proba method or a component_obj that implements predict_proba.
+        """
+        X = infer_feature_types(X)
+        cat_cols = list(X.ww.select(["category", "NaturalLanguage", "EmailAddress", "URL"], return_schema=True).columns)
+        for col in cat_cols:
+            X[col] = X[col].apply(str)
+            X[col] = X[col].cat.add_categories("")
+        X[cat_cols].fillna("", inplace=True)
+        pred_proba = self._component_obj.predict_proba(X)
+        pred_proba = infer_feature_types(pred_proba)
+        pred_proba.index = X.index
+        return pred_proba
+
     @property
     def feature_importance(self):
         """Feature importance of fitted CatBoost classifier."""
