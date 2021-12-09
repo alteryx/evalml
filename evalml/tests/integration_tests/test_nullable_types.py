@@ -56,19 +56,19 @@ def test_nullable_types_builds_pipelines(
     if automl_algorithm == "iterative":
         pipelines = [pl.name for pl in automl.allowed_pipelines]
     elif automl_algorithm == "default":
-        pipelines = [pl.name for pl in automl._automl_algorithm.next_batch()]
+        # TODO: Upon resolution of GH Issue #2691, increase the num of batches.
+        for _ in range(2):
+            pipelines = [pl.name for pl in automl._automl_algorithm.next_batch()]
+
+    # A check to make sure we actually retrieve constructed pipelines from the algo.
     assert len(pipelines) > 0
 
-    if test_description == "just nullable target":
-        if input_type == "pd":
-            assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
-        elif input_type == "ww":
-            assert all([ReplaceNullableTypes.name in pl for pl in pipelines])
-    elif test_description in [
+    if test_description in [
         "only null int",
         "only null bool",
         "only null age",
         "nullable types",
+        "just nullable target",
     ]:
         if input_type == "pd":
             assert not any([ReplaceNullableTypes.name in pl for pl in pipelines])
