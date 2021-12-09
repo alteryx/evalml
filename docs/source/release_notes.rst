@@ -3,7 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
-        * Fixed error caused when tuning threshold for time series binary classification :pr: ``
+        * Fixed error caused when tuning threshold for time series binary classification :pr:`3140`
     * Changes
     * Documentation Changes
     * Testing Changes
