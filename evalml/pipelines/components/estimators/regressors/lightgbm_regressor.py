@@ -147,7 +147,7 @@ class LightGBMRegressor(Estimator):
         # else:
         #     encoder_output = self._ordinal_encoder.transform(X_encoded[cat_cols])
         # X_encoded[cat_cols] = pd.DataFrame(encoder_output)
-        X_encoded[cat_cols] = X_encoded[cat_cols].astype("category")
+        # X_encoded[cat_cols] = X_encoded[cat_cols].astype("category")
         return X_encoded
 
     def fit(self, X, y=None):
