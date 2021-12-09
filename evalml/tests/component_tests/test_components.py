@@ -12,7 +12,6 @@ from skopt.space import Categorical
 
 from evalml.exceptions import (
     ComponentNotYetFittedError,
-    EnsembleMissingPipelinesError,
     MethodPropertyNotFoundError,
 )
 from evalml.model_family import ModelFamily
@@ -795,10 +794,7 @@ def test_clone_fitted(X_y_binary):
 
 def test_components_init_kwargs():
     for component_class in all_components():
-        try:
-            component = component_class()
-        except EnsembleMissingPipelinesError:
-            continue
+        component = component_class()
         if component._component_obj is None:
             continue
         if isinstance(component, StackedEnsembleBase):

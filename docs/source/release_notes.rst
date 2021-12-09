@@ -13,6 +13,7 @@ Release Notes
         * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
         * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
         * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
+        * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
     * Documentation Changes
     * Testing Changes
         * Refactored tests to avoid using ``importorskip`` :pr:`3126`
@@ -25,6 +26,7 @@ Release Notes
         * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` :pr:`3028`
         * ``ProphetRegressor`` now requires a datetime column in ``X`` represented by the ``date_index`` parameter :pr:`3104`
         * Renamed module ``evalml.data_checks.invalid_target_data_check`` to ``evalml.data_checks.invalid_targets_data_check`` :pr:`3122`
+        * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
 
 
 **v0.38.0 Nov. 27, 2021**
