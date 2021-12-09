@@ -10,7 +10,6 @@ import pandas as pd
 import woodwork as ww
 
 from evalml.automl.utils import tune_binary_threshold
-from evalml.data_checks import ClassImbalanceDataCheck, NoVarianceDataCheck
 from evalml.exceptions import PipelineScoreError
 from evalml.preprocessing import split_data
 from evalml.problem_types import is_binary, is_classification, is_multiclass

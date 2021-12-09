@@ -1,7 +1,6 @@
 from unittest.mock import patch
 
 import pandas as pd
-import pytest
 
 from evalml.automl import AutoMLSearch, search_iterative
 from evalml.utils import infer_feature_types

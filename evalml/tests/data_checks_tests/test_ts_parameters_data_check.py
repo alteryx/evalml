@@ -40,10 +40,8 @@ def test_time_series_param_data_check(
     elif y_data == "invalid":
         if problem_type == "time series binary":
             y = pd.Series([1 if i < 50 else 2 for i in range(100)])
-            invalid_splits = []
         elif problem_type == "time series multiclass":
             y = pd.Series([1 if i < 50 else 2 if i < 70 else 3 for i in range(100)])
-            invalid_splits = []
 
     split_size = n_obs // (n_splits + 1)
     window_size = gap + max_delay + forecast_horizon
@@ -61,7 +59,7 @@ def test_time_series_param_data_check(
         DataCheckMessageCode.TIMESERIES_PARAMETERS_NOT_COMPATIBLE_WITH_SPLIT.name
     )
     code_target = DataCheckMessageCode.TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT.name
-    print(results)
+
     if y_data == "invalid" and split_size <= window_size:
         assert len(results["errors"]) == 2
     elif y_data == "invalid":
