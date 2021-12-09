@@ -305,7 +305,9 @@ def test_convert_dict_to_action_bad_parameter_input(dummy_data_check_name):
                     "parameter_type": "column",
                     "columns": {
                         "some_column_name": {
-                            "some_parameter_name": "some parameter value"
+                            "per_column_parameter": {
+                                "default_value": 0.0,
+                            }
                         }
                     },
                 }
@@ -321,7 +323,9 @@ def test_convert_dict_to_action_bad_parameter_input(dummy_data_check_name):
             parameters={
                 "columns_parameter_name": {
                     "parameter_type": "column",
-                    "columns": {"some_column_name": {"type": "float"}},
+                    "columns": {
+                        "some_column_name": {"per_column_parameter": {"type": "float"}}
+                    },
                 }
             },
         )

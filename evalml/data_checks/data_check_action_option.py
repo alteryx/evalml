@@ -114,9 +114,15 @@ class DataCheckActionOption:
                         "`columns` must be a dictionary, where each key is the name of a column and the associated value is a dictionary of parameters for that column."
                     )
                 for _, column_parameters in columns.items():
-                    if "type" not in column_parameters:
-                        raise ValueError("Each column parameter must have a type key.")
-                    if "default_value" not in column_parameters:
-                        raise ValueError(
-                            "Each column parameter must have a default_value key."
-                        )
+                    for (
+                        column_parameter_name,
+                        column_parameter_values,
+                    ) in column_parameters.items():
+                        if "type" not in column_parameter_values:
+                            raise ValueError(
+                                "Each column parameter must have a type key."
+                            )
+                        if "default_value" not in column_parameter_values:
+                            raise ValueError(
+                                "Each column parameter must have a default_value key."
+                            )
