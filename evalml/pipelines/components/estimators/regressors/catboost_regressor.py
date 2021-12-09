@@ -132,7 +132,7 @@ class CatBoostRegressor(Estimator):
         for col in cat_cols:
             X[col] = X[col].apply(str)
             X[col] = X[col].cat.add_categories("")
-        X[cat_cols].fillna("", inplace=True)
+            X[col] = X[col].fillna("")
         predictions = self._component_obj.predict(X)
         return predictions
 

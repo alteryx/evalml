@@ -120,7 +120,7 @@ class CatBoostClassifier(Estimator):
         for col in cat_cols:
             X[col] = X[col].apply(str)
             X[col] = X[col].cat.add_categories("")
-        X[cat_cols].fillna("", inplace=True)
+            X[col] = X[col].fillna("")
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return self
 
@@ -138,7 +138,7 @@ class CatBoostClassifier(Estimator):
         for col in cat_cols:
             X[col] = X[col].apply(str)
             X[col] = X[col].cat.add_categories("")
-        X[cat_cols].fillna("", inplace=True)
+            X[col] = X[col].fillna("")
         predictions = self._component_obj.predict(X)
         if predictions.ndim == 2 and predictions.shape[1] == 1:
             predictions = predictions.flatten()
@@ -167,7 +167,7 @@ class CatBoostClassifier(Estimator):
         for col in cat_cols:
             X[col] = X[col].apply(str)
             X[col] = X[col].cat.add_categories("")
-        X[cat_cols].fillna("", inplace=True)
+            X[col] = X[col].fillna("")
         pred_proba = self._component_obj.predict_proba(X)
         pred_proba = infer_feature_types(pred_proba)
         pred_proba.index = X.index
