@@ -60,6 +60,8 @@ class DefaultDataChecks(DataChecks):
         data_check_params = {}
 
         if is_time_series(problem_type):
+            if problem_configuration is None:
+                raise ValueError("problem_configuration cannot be None for time series problems!")
             default_checks = default_checks + [
                 DateTimeFormatDataCheck,
                 TimeSeriesParametersDataCheck,

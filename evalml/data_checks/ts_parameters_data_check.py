@@ -14,9 +14,9 @@ class TimeSeriesParametersDataCheck(DataCheck):
 
     then the feature engineering window is larger than the smallest split. This will cause the
     pipeline to create features from data that does not exist, which will cause errors.
-    If the target data in the first split doesn't have representation from all classes (for time
-    series classification problems) this will prevent the estimators from training on all potential
-    outcomes which will cause errors during prediction.
+    If the target data in the training and validation of every split doesn't have representation from
+    all classes (for time series classification problems) this will prevent the estimators from training
+    on all potential outcomes which will cause errors during prediction.
 
     Args:
         problem_configuration (dict): Dict containing problem_configuration parameters.

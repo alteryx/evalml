@@ -13,7 +13,7 @@ Release Notes
         * Included target leakage check when fitting ``ARIMARegressor`` to account for the lack of ``TimeSeriesFeaturizer`` in ``ARIMARegressor`` based pipelines :pr:`3104`
         * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
         * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
-        * ``TimeSeriesParametersDataCheck`` was expanded to consider data splitting for time series classification :pr:`3135`
+        * ``TimeSeriesParametersDataCheck`` was expanded to consider inadequate class representation during data splitting for time series classification :pr:`3135`
         * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr: `3135`
         * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
         * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`

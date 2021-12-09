@@ -122,8 +122,8 @@ def tune_binary_threshold(
         problem_type (ProblemType): The problem type of the pipeline.
         X_threshold_tuning (pd.DataFrame): Features to tune pipeline to.
         y_threshold_tuning (pd.Series): Target data to tune pipeline to.
-        X (pd.DataFrame): Features to train pipeline on (used for time series binary)
-        y (pd.Series): Target to train pipeline on (used for time series binary)
+        X (pd.DataFrame): Features to train pipeline on (used for time series binary). Defaults to None.
+        y (pd.Series): Target to train pipeline on (used for time series binary). Defaults to None.
     """
     if (
         is_binary(problem_type)

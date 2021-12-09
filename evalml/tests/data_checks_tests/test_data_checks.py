@@ -535,6 +535,11 @@ def test_default_data_checks_across_problem_types(problem_type):
     assert data_check_classes == default_data_check_list
 
 
+def test_default_data_checks_missing_problem_configuration_for_time_series(ts_data):
+    with pytest.raises(ValueError, match="problem_configuration cannot be None for time series problems!"):
+        DefaultDataChecks("time series binary", get_default_primary_search_objective("time series regression"))
+
+
 def test_data_checks_init_from_classes():
     def make_mock_data_check(check_name):
         class MockCheck(DataCheck):

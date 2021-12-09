@@ -145,9 +145,7 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
         columns=["x" + str(i) for i in range(X_np.shape[1])],
         index=pd.date_range(start="1/1/2018", periods=X_df_with_col_names.shape[0]),
     )
-    X_df_with_col_names_ts["datetime"] = pd.date_range(
-        "1/1/21", periods=X_df_with_col_names.shape[0]
-    )
+
     datatype_combos = [
         (X_np, y_np, range_index, np.unique(y_np), False),
         (X_np, y_list, range_index, np.unique(y_np), False),
