@@ -140,6 +140,8 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True):
         cv_pipeline.problem_type,
         X_threshold_tuning,
         y_threshold_tuning,
+        X,
+        y,
     )
     return cv_pipeline
 
