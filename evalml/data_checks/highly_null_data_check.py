@@ -103,7 +103,7 @@ class HighlyNullDataCheck(DataCheck):
             ...                  'metadata': {'columns': ['all_null'], 'rows': None}}]}
 
         """
-        results = {"warnings": [], "errors": [], "actions": {"action_list": []}}
+        results = {"warnings": [], "errors": [], "actions": []}
 
         X = infer_feature_types(X, ignore_nullable_types=True)
 
