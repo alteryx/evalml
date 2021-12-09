@@ -769,8 +769,6 @@ class AutoMLSearch:
             is_valid, msg = contains_all_ts_parameters(problem_configuration)
             if not is_valid:
                 raise ValueError(msg)
-            if problem_configuration["date_index"] is None:
-                raise ValueError("date_index cannot be None!")
         return problem_configuration or {}
 
     def _handle_keyboard_interrupt(self):
