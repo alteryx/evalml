@@ -10,10 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import check_random_state
 
-from evalml.exceptions import (
-    EnsembleMissingPipelinesError,
-    MissingComponentError,
-)
+from evalml.exceptions import MissingComponentError
 
 logger = logging.getLogger(__name__)
 
@@ -243,8 +240,6 @@ def get_importable_subclasses(base_class, used_in_automl=True):
             logger.debug(
                 f"Could not import class {cls.__name__} in get_importable_subclasses"
             )
-        except EnsembleMissingPipelinesError:
-            classes.append(cls)
     if used_in_automl:
         classes = [cls for cls in classes if cls.__name__ not in _not_used_in_automl]
 

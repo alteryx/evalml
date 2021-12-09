@@ -369,7 +369,6 @@ def _make_stacked_ensemble_pipeline(
 
     Args:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
-            This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         problem_type (ProblemType): Problem type of pipeline
         final_estimator (Estimator): Metalearner to use for the ensembler. Defaults to None.
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
