@@ -30,7 +30,7 @@ class TimeSeriesSplit(BaseCrossValidator):
         >>> X = pd.DataFrame([i for i in range(10)], columns=["First"])
         >>> y = pd.Series([i for i in range(10)])
         ...
-        >>> ts_split = TimeSeriesSplit(n_splits=4)
+        >>> ts_split = TimeSeriesSplit(problem_type="time series regression", n_splits=4)
         >>> generator_ = ts_split.split(X, y)
         ...
         >>> first_split = next(generator_)

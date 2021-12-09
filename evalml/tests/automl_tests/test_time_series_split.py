@@ -5,7 +5,13 @@ from evalml.preprocessing.data_splitters import TimeSeriesSplit
 
 
 def test_time_series_split_init():
-    ts_split = TimeSeriesSplit(gap=3, max_delay=4, n_splits=5, date_index=None)
+    ts_split = TimeSeriesSplit(
+        problem_type="time series regression",
+        gap=3,
+        max_delay=4,
+        n_splits=5,
+        date_index=None,
+    )
     assert ts_split.get_n_splits() == 5
 
     with pytest.raises(
@@ -27,6 +33,7 @@ def test_time_series_split_init():
 )
 def test_time_series_split_n_splits_too_big(gap, max_delay, forecast_horizon, n_splits):
     splitter = TimeSeriesSplit(
+        problem_type="time series regression",
         gap=gap,
         max_delay=max_delay,
         forecast_horizon=forecast_horizon,
@@ -85,6 +92,7 @@ def test_time_series_split(max_delay, gap, forecast_horizon, date_index, y_none)
         y = None
 
     ts_split = TimeSeriesSplit(
+        problem_type="time series regression",
         gap=gap,
         max_delay=max_delay,
         forecast_horizon=forecast_horizon,

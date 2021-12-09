@@ -150,11 +150,6 @@ def search(
     y_train = infer_feature_types(y_train)
     problem_type = handle_problem_types(problem_type)
 
-    if is_time_series(problem_type):
-        is_valid, msg = contains_all_ts_parameters(problem_configuration)
-        if not is_valid:
-            raise ValueError(msg)
-
     if objective == "auto":
         objective = get_default_primary_search_objective(problem_type)
     objective = get_objective(objective, return_instance=False)
@@ -231,21 +226,6 @@ def search_iterative(
     X_train = infer_feature_types(X_train)
     y_train = infer_feature_types(y_train)
     problem_type = handle_problem_types(problem_type)
-
-    datetime_column = None
-    if is_time_series(problem_type):
-        if problem_configuration:
-            if "date_index" in problem_configuration:
-                datetime_column = problem_configuration["date_index"]
-            else:
-                raise ValueError(
-                    "For the default data checks to run in time series, date_index has to be passed in problem_configuration. "
-                    f"Received {problem_configuration}"
-                )
-        else:
-            raise ValueError(
-                "For the default data checks to run in time series, the problem_configuration parameter must be specified."
-            )
 
     if objective == "auto":
         objective = get_default_primary_search_objective(problem_type)

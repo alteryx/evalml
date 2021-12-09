@@ -501,7 +501,10 @@ def test_default_data_checks_across_problem_types(problem_type):
     default_data_check_list = DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES
 
     if is_time_series(problem_type):
-        default_data_check_list = default_data_check_list + [DateTimeFormatDataCheck, TimeSeriesParametersDataCheck]
+        default_data_check_list = default_data_check_list + [
+            DateTimeFormatDataCheck,
+            TimeSeriesParametersDataCheck,
+        ]
     if problem_type in [
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
@@ -512,11 +515,20 @@ def test_default_data_checks_across_problem_types(problem_type):
     else:
         default_data_check_list = default_data_check_list + [ClassImbalanceDataCheck]
 
-    problem_config = {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "datetime"}
+    problem_config = {
+        "gap": 1,
+        "max_delay": 1,
+        "forecast_horizon": 1,
+        "date_index": "datetime",
+    }
     data_check_classes = [
         check.__class__
         for check in DefaultDataChecks(
-            problem_type, get_default_primary_search_objective(problem_type), problem_configuration=problem_config if is_time_series(problem_type) else None
+            problem_type,
+            get_default_primary_search_objective(problem_type),
+            problem_configuration=problem_config
+            if is_time_series(problem_type)
+            else None,
         ).data_checks
     ]
 
@@ -653,9 +665,16 @@ def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
         details=details,
     ).to_dict()
 
-    problem_config = {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "datetime"}
+    problem_config = {
+        "gap": 1,
+        "max_delay": 1,
+        "forecast_horizon": 1,
+        "date_index": "datetime",
+    }
     default_data_check = DefaultDataChecks(
-        problem_type="time series regression", objective=objective, problem_configuration=problem_config
+        problem_type="time series regression",
+        objective=objective,
+        problem_configuration=problem_config,
     ).data_checks
     for check in default_data_check:
         if check.name == "InvalidTargetDataCheck":

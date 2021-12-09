@@ -592,11 +592,19 @@ def is_ts_valid_for_split(
 
     if split_size <= window_size:
         is_split_less_than_window = True
-    if y is not None and handle_problem_types(problem_type) in [ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]:
-        for split_num, train_val_split in enumerate(range(len(y) - n_splits * split_size, len(y), split_size)):
+    if y is not None and handle_problem_types(problem_type) in [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+    ]:
+        for split_num, train_val_split in enumerate(
+            range(len(y) - n_splits * split_size, len(y), split_size)
+        ):
             train_targets = y[:train_val_split]
-            val_targets = y[train_val_split:train_val_split + split_size]
-            if train_targets.nunique() < y.nunique() or val_targets.nunique() < y.nunique():
+            val_targets = y[train_val_split : train_val_split + split_size]
+            if (
+                train_targets.nunique() < y.nunique()
+                or val_targets.nunique() < y.nunique()
+            ):
                 is_split_one_class = True
                 invalid_splits.append(split_num + 1)
 

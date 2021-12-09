@@ -52,53 +52,6 @@ def test_search_iterative_data_check_error(
     pd.testing.assert_series_equal(target, infer_feature_types(y))
 
 
-@pytest.mark.parametrize(
-    "problem_config", [None, "missing_date_index", "has_date_index"]
-)
-def test_search_iterative_data_check_error_timeseries(problem_config):
-    X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
-    problem_configuration = None
-
-    dates = pd.date_range("2021-01-01", periods=29).append(
-        pd.date_range("2021-01-31", periods=1)
-    )
-    X["dates"] = dates
-
-    if problem_config == "missing_date_index":
-        problem_configuration = {"gap": 4}
-        with pytest.raises(
-            ValueError,
-            match="date_index has to be passed in problem_configuration.",
-        ):
-            search_iterative(
-                X_train=X,
-                y_train=y,
-                problem_type="time series regression",
-                problem_configuration=problem_configuration,
-            )
-    elif not problem_config:
-        with pytest.raises(
-            ValueError,
-            match="the problem_configuration parameter must be specified.",
-        ):
-            search_iterative(
-                X_train=X,
-                y_train=y,
-                problem_type="time series regression",
-                problem_configuration=problem_configuration,
-            )
-    else:
-        problem_configuration = {"date_index": "dates"}
-        automl, data_check_results = search_iterative(
-            X_train=X,
-            y_train=y,
-            problem_type="time series regression",
-            problem_configuration=problem_configuration,
-        )
-        assert len(data_check_results["warnings"]) == 1
-        assert len(data_check_results["errors"]) == 1
-
-
 @patch("evalml.data_checks.default_data_checks.DefaultDataChecks.validate")
 @patch("evalml.automl.AutoMLSearch.search")
 def test_search_iterative_kwargs(

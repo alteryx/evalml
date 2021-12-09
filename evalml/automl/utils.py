@@ -106,7 +106,13 @@ def make_data_splitter(
 
 
 def tune_binary_threshold(
-    pipeline, objective, problem_type, X, y, X_threshold_tuning, y_threshold_tuning
+    pipeline,
+    objective,
+    problem_type,
+    X_threshold_tuning,
+    y_threshold_tuning,
+    X=None,
+    y=None,
 ):
     """Tunes the threshold of a binary pipeline to the X and y thresholding data.
 
@@ -116,6 +122,8 @@ def tune_binary_threshold(
         problem_type (ProblemType): The problem type of the pipeline.
         X_threshold_tuning (pd.DataFrame): Features to tune pipeline to.
         y_threshold_tuning (pd.Series): Target data to tune pipeline to.
+        X (pd.DataFrame): Features to train pipeline on (used for time series binary)
+        y (pd.Series): Target to train pipeline on (used for time series binary)
     """
     if (
         is_binary(problem_type)

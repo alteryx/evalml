@@ -110,7 +110,7 @@ class TimeSeriesParametersDataCheck(DataCheck):
                         message=validation.msg[
                             : validation.msg.index("observations.") + 14
                         ]
-                        + validation.msg[validation.msg.index("Time Series Binary"):],
+                        + validation.msg[validation.msg.index("Time Series Binary") :],
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT,
                         details={
