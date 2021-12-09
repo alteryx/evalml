@@ -1,5 +1,4 @@
 """A default set of data checks that can be used for a variety of datasets."""
-from . import TimeSeriesParametersDataCheck
 from .class_imbalance_data_check import ClassImbalanceDataCheck
 from .data_checks import DataChecks
 from .datetime_format_data_check import DateTimeFormatDataCheck
@@ -11,6 +10,7 @@ from .natural_language_nan_data_check import NaturalLanguageNaNDataCheck
 from .no_variance_data_check import NoVarianceDataCheck
 from .target_distribution_data_check import TargetDistributionDataCheck
 from .target_leakage_data_check import TargetLeakageDataCheck
+from .ts_parameters_data_check import TimeSeriesParametersDataCheck
 
 from evalml.problem_types import (
     ProblemTypes,
