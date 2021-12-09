@@ -1,4 +1,5 @@
 """Utility methods for EvalML pipelines."""
+import copy
 import logging
 
 from woodwork import logical_types
@@ -34,6 +35,7 @@ from evalml.pipelines.components import (  # noqa: F401
     Oversampler,
     RandomForestClassifier,
     ReplaceNullableTypes,
+    SelectColumns,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
@@ -287,6 +289,58 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesMulticlassClassificationPipeline
 
 
+def _make_pipeline_time_series(
+    X,
+    y,
+    estimator,
+    problem_type,
+    parameters=None,
+    sampler_name=None,
+    known_in_advance=None,
+):
+
+    if known_in_advance:
+        not_known_in_advance = [c for c in X.columns if c not in known_in_advance]
+        X_not_known_in_advance = X.ww[not_known_in_advance]
+        X_known_in_advance = X.ww[known_in_advance]
+    else:
+        X_not_known_in_advance = X
+        X_known_in_advance = None
+
+    preprocessing_components = _get_preprocessing_components(
+        X_not_known_in_advance, y, problem_type, estimator, sampler_name
+    )
+
+    if known_in_advance:
+        preprocessing_components = [SelectColumns] + preprocessing_components
+
+    component_graph = PipelineBase._make_component_dict_from_component_list(
+        preprocessing_components
+    )
+    base_class = _get_pipeline_base_class(problem_type)
+    pipeline = base_class(component_graph, parameters=parameters)
+    if X_known_in_advance is not None:
+        kin_preprocessing = [SelectColumns] + _get_preprocessing_components(
+            X_known_in_advance, y, ProblemTypes.REGRESSION, estimator, sampler_name
+        )
+        kin_component_graph = PipelineBase._make_component_dict_from_component_list(
+            kin_preprocessing
+        )
+        kin_pipeline = base_class(kin_component_graph, parameters=parameters)
+        pipeline = _make_pipeline_from_multiple_graphs(
+            [pipeline, kin_pipeline],
+            estimator,
+            problem_type,
+            parameters=parameters,
+            sub_pipeline_names={
+                kin_pipeline.name: "Known In Advance",
+                pipeline.name: "Not Known In Advance",
+            },
+        )
+        pipeline = pipeline.new(parameters)
+    return pipeline
+
+
 def make_pipeline(
     X,
     y,
@@ -297,6 +351,7 @@ def make_pipeline(
     extra_components=None,
     extra_components_position="before_preprocessing",
     use_estimator=True,
+    known_in_advance=None,
 ):
     """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
@@ -312,6 +367,7 @@ def make_pipeline(
          extra_components (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
          extra_components_position (str): Where to put extra components. Defaults to "before_preprocessing" and any other value will put components after preprocessing components.
          use_estimator (bool): Whether to add the provided estimator to the pipeline or not. Defaults to True.
+         known_in_advance (list[str], None): List of features that are known in advance.
 
     Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
@@ -333,29 +389,33 @@ def make_pipeline(
                 f"Sampling is unsupported for problem_type {str(problem_type)}"
             )
 
-    preprocessing_components = _get_preprocessing_components(
-        X, y, problem_type, estimator, sampler_name
-    )
-    extra_components = extra_components or []
-    estimator = [estimator] if use_estimator else []
-
-    if extra_components_position == "before_preprocessing":
-        complete_component_list = (
-            extra_components + preprocessing_components + estimator
+    if is_time_series(problem_type):
+        pipeline = _make_pipeline_time_series(
+            X, y, estimator, problem_type, parameters, sampler_name, known_in_advance
         )
     else:
-        complete_component_list = (
-            preprocessing_components + extra_components + estimator
+        preprocessing_components = _get_preprocessing_components(
+            X, y, problem_type, estimator, sampler_name
         )
+        extra_components = extra_components or []
+        estimator_component = [estimator] if use_estimator else []
 
-    component_graph = PipelineBase._make_component_dict_from_component_list(
-        complete_component_list
-    )
-    base_class = _get_pipeline_base_class(problem_type)
-    return base_class(
-        component_graph,
-        parameters=parameters,
-    )
+        if extra_components_position == "before_preprocessing":
+            complete_component_list = (
+                extra_components + preprocessing_components + estimator_component
+            )
+        else:
+            complete_component_list = (
+                preprocessing_components + extra_components + estimator_component
+            )
+
+        component_graph = PipelineBase._make_component_dict_from_component_list(
+            complete_component_list
+        )
+        base_class = _get_pipeline_base_class(problem_type)
+        pipeline = base_class(component_graph, parameters=parameters)
+
+    return pipeline
 
 
 def generate_pipeline_code(element):
@@ -415,8 +475,8 @@ def _make_stacked_ensemble_pipeline(
         else {}
     )
     final_components = []
-    used_model_families = []
-    parameters = {}
+    # used_model_families = []
+    # parameters = {}
 
     if is_classification(problem_type):
         parameters = {
@@ -441,14 +501,15 @@ def _make_stacked_ensemble_pipeline(
         ProblemTypes.REGRESSION: RegressionPipeline,
     }[problem_type]
 
-    for pipeline in input_pipelines:
-        model_family = pipeline.component_graph[-1].model_family
-        model_family_idx = (
-            used_model_families.count(model_family) + 1
-            if used_model_families.count(model_family) > 0
-            else None
-        )
-        used_model_families.append(model_family)
+    for i, pipeline in enumerate(input_pipelines):
+        model_family = pipeline.component_graph.get_last_component().name
+        model_family_idx = i
+        # model_family_idx = (
+        #     used_model_families.count(model_family) + 1
+        #     if used_model_families.count(model_family) > 0
+        #     else None
+        # )
+        # used_model_families.append(model_family)
         final_component = None
         ensemble_y = "y"
         for name, component_list in pipeline.component_graph.component_dict.items():
@@ -522,7 +583,7 @@ def _make_pipeline_from_multiple_graphs(
             return f"{pipeline_name} Pipeline{idx} - {component_name}"
         return f"{str(name)} Pipeline{idx} - {component_name}"
 
-    parameters = parameters if parameters else {}
+    parameters = copy.deepcopy(parameters) if parameters else {}
     final_components = []
     used_names = []
     component_graph = (
@@ -566,7 +627,8 @@ def _make_pipeline_from_multiple_graphs(
                 if i == 0:
                     fitted_comp = handle_component_class(item)
                     new_component_list.append(fitted_comp)
-                    parameters[new_component_name] = pipeline.parameters.get(name, {})
+                    if name in pipeline.parameters:
+                        parameters[new_component_name] = pipeline.parameters[name]
                 elif isinstance(item, str) and item not in ["X", "y"]:
                     new_component_list.append(
                         _make_new_component_name(
