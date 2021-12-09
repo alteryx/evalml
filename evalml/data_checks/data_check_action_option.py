@@ -111,18 +111,12 @@ class DataCheckActionOption:
                 columns = parameter_value["columns"]
                 if not isinstance(columns, dict):
                     raise ValueError(
-                        "`columns` must be a dictionary, where each key is the name of a column and the associated value is the parameters for that column."
+                        "`columns` must be a dictionary, where each key is the name of a column and the associated value is a dictionary of parameters for that column."
                     )
                 for _, column_parameters in columns.items():
-                    for (
-                        _,
-                        column_parameter_values,
-                    ) in column_parameters.items():
-                        if "type" not in column_parameter_values:
-                            raise ValueError(
-                                "Each column parameter must have a type key."
-                            )
-                        if "default_value" not in column_parameter_values:
-                            raise ValueError(
-                                "Each column parameter must have a default_value key."
-                            )
+                    if "type" not in column_parameters:
+                        raise ValueError("Each column parameter must have a type key.")
+                    if "default_value" not in column_parameters:
+                        raise ValueError(
+                            "Each column parameter must have a default_value key."
+                        )

@@ -1,3 +1,5 @@
+import re
+
 import pytest
 
 from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
@@ -257,6 +259,69 @@ def test_convert_dict_to_action_bad_parameter_input(dummy_data_check_name):
                 "global_parameter_name": {
                     "type": "float",
                     "default_value": 0.0,
+                }
+            },
+        )
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "Each `column` parameter type must also have a `columns` key indicating which columns the parameter should address"
+        ),
+    ):
+        DataCheckActionOption(
+            action_code=DataCheckActionCode.DROP_COL,
+            data_check_name=dummy_data_check_name,
+            metadata={"columns": None, "rows": None},
+            parameters={
+                "columns_parameter_name": {
+                    "parameter_type": "column",
+                }
+            },
+        )
+    with pytest.raises(
+        ValueError,
+        match=re.escape(
+            "`columns` must be a dictionary, where each key is the name of a column and the associated value is a dictionary of parameters for that column"
+        ),
+    ):
+        DataCheckActionOption(
+            action_code=DataCheckActionCode.DROP_COL,
+            data_check_name=dummy_data_check_name,
+            metadata={"columns": None, "rows": None},
+            parameters={
+                "columns_parameter_name": {
+                    "parameter_type": "column",
+                    "columns": "some incorrect string input",
+                }
+            },
+        )
+    with pytest.raises(ValueError, match="Each column parameter must have a type key."):
+        DataCheckActionOption(
+            action_code=DataCheckActionCode.DROP_COL,
+            data_check_name=dummy_data_check_name,
+            metadata={"columns": None, "rows": None},
+            parameters={
+                "columns_parameter_name": {
+                    "parameter_type": "column",
+                    "columns": {
+                        "some_column_name": {
+                            "some_parameter_name": "some parameter value"
+                        }
+                    },
+                }
+            },
+        )
+    with pytest.raises(
+        ValueError, match="Each column parameter must have a default_value key."
+    ):
+        DataCheckActionOption(
+            action_code=DataCheckActionCode.DROP_COL,
+            data_check_name=dummy_data_check_name,
+            metadata={"columns": None, "rows": None},
+            parameters={
+                "columns_parameter_name": {
+                    "parameter_type": "column",
+                    "columns": {"some_column_name": {"type": "float"}},
                 }
             },
         )
