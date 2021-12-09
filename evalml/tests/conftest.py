@@ -177,7 +177,7 @@ def get_test_data_from_configuration():
             if "int_null" in column_names:
                 logical_types.update({"int_null": "integer_nullable"})
             if "age_null" in column_names:
-                logical_types.update({"age_null": "integer_nullable"})
+                logical_types.update({"age_null": "age_nullable"})
             if "bool_null" in column_names:
                 logical_types.update({"bool_null": "boolean_nullable"})
 
