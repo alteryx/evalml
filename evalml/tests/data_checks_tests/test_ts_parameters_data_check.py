@@ -7,12 +7,24 @@ from evalml.data_checks import (
 )
 
 
-def test_time_series_param_data_check_raises_value_error():
+@pytest.mark.parametrize("gap,max_delay,forecast_horizon,date_index",
+                         [
+                             [1, 1, 1, None],
+                             [None, None, None, None],
+                             ["missing", 1, 1, "dates"]
+                         ])
+def test_time_series_param_data_check_raises_value_error(gap, max_delay, forecast_horizon, date_index):
+    if all(i is None for i in [gap, max_delay, forecast_horizon, date_index]):
+        params = None
+    elif any(i == "missing" for i in [gap, max_delay, forecast_horizon, date_index]):
+        params = {"max_delay": max_delay, "forecast_horizon": forecast_horizon, "date_index": date_index}
+    else:
+        params = {"gap": gap, "max_delay": max_delay, "forecast_horizon": forecast_horizon, "date_index": date_index}
     with pytest.raises(
         ValueError,
         match="containing values for at least the date_index, gap, max_delay",
     ):
-        TimeSeriesParametersDataCheck({}, n_splits=3)
+        TimeSeriesParametersDataCheck(params, n_splits=3)
 
 
 @pytest.mark.parametrize(
