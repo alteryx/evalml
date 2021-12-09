@@ -4,7 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
-        * ``TimeSeriesParametersDataCheck`` was expanded to consider inadequate class representation during data splitting for time series classification :pr:``
+        * ``TimeSeriesParametersDataCheck`` was expanded to consider inadequate class representation during data splitting for time series classification :pr:`3141`
     * Documentation Changes
     * Testing Changes
 
