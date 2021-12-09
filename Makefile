@@ -86,6 +86,14 @@ installdeps:
 	pip install --upgrade pip -q
 	pip install -e . -q
 
+.PHONY: installdeps-min
+installdeps-min:
+	pip install --upgrade pip -q
+	pip install -e . --no-dependencies
+	pip install -r evalml/tests/dependency_update_check/minimum_test_requirements.txt
+	pip install -r evalml/tests/dependency_update_check/minimum_core_requirements.txt
+	pip install -r evalml/tests/dependency_update_check/minimum_requirements.txt
+
 SITE_PACKAGES_DIR=$$(python -c 'import site; print(site.getsitepackages()[0])')
 .PHONY: installdeps-prophet
 installdeps-prophet:

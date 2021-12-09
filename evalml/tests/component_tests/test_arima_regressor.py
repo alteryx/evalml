@@ -8,7 +8,11 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ARIMARegressor
 from evalml.problem_types import ProblemTypes
 
-pytestmark = pytest.mark.noncore_dependency
+pytestmark = [
+    pytest.mark.noncore_dependency,
+    pytest.mark.skip_during_conda,
+    pytest.mark.skip_if_39,
+]
 
 
 @pytest.fixture(scope="module")
