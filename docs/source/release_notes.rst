@@ -27,6 +27,7 @@ Release Notes
         * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
         * Updated ``make_pipeline`` for handling pandas nullable types in preprocessing pipeline. :pr:`3129`
         * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
+        * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
     * Documentation Changes
     * Testing Changes
         * Refactored tests to avoid using ``importorskip`` :pr:`3126`
@@ -40,6 +41,7 @@ Release Notes
         * ``ProphetRegressor`` now requires a datetime column in ``X`` represented by the ``date_index`` parameter :pr:`3104`
         * Renamed module ``evalml.data_checks.invalid_target_data_check`` to ``evalml.data_checks.invalid_targets_data_check`` :pr:`3122`
         * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
+        * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
 
 
 **v0.38.0 Nov. 27, 2021**
