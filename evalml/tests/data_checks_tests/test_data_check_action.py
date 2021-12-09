@@ -5,7 +5,7 @@ from evalml.data_checks import DataCheckAction, DataCheckActionCode
 
 @pytest.fixture
 def dummy_data_check_name():
-    return dummy_data_check_name
+    return "dummy_data_check_name"
 
 
 def test_data_check_action_attributes(dummy_data_check_name):

@@ -103,15 +103,15 @@ class DataCheckActionOption:
             if parameter_value["parameter_type"] == "global":
                 if "type" not in parameter_value:
                     raise ValueError("Each global parameter must have a type key.")
-            if parameter_value["parameter_type"] == "column":
+            elif parameter_value["parameter_type"] == "column":
                 if "columns" not in parameter_value:
                     raise ValueError(
-                        "Each column parameter must have a column_name key."
+                        "Each `column` parameter type must also have a `columns` key indicating which columns the parameter should address."
                     )
                 columns = parameter_value["columns"]
                 if not isinstance(columns, dict):
                     raise ValueError(
-                        "Each column parameter must have a columns dictionary."
+                        "`columns` must be a dictionary, where each key is the name of a column and the associated value is the parameters for that column."
                     )
                 for _, column_parameters in columns.items():
                     for (
@@ -124,5 +124,5 @@ class DataCheckActionOption:
                             )
                         if "default_value" not in column_parameter_values:
                             raise ValueError(
-                                "Each column parameter must have a value key."
+                                "Each column parameter must have a default_value key."
                             )
