@@ -140,12 +140,14 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
         columns=X_df_no_col_names.columns,
         index=pd.date_range(start="1/1/2018", periods=X_df_no_col_names.shape[0]),
     )
+    print(X_df_no_col_names_ts)
     X_df_with_col_names_ts = pd.DataFrame(
         data=X_df_with_col_names.values,
         columns=["x" + str(i) for i in range(X_np.shape[1])],
         index=pd.date_range(start="1/1/2018", periods=X_df_with_col_names.shape[0]),
     )
-
+    X_df_with_col_names_ts["datetime"] = pd.date_range("1/1/21", periods=X_df_with_col_names.shape[0])
+    print(X_df_with_col_names_ts)
     datatype_combos = [
         (X_np, y_np, range_index, np.unique(y_np), False),
         (X_np, y_list, range_index, np.unique(y_np), False),
@@ -187,6 +189,11 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
             ):
                 continue
             elif (
+                component_class.name in ["Prophet Regressor"]
+                and time_series and "datetime" not in X.columns
+            ):
+                continue
+            elif (
                 component_class.name not in ["ARIMA Regressor", "Prophet Regressor"]
                 and time_series
             ):
@@ -200,9 +207,12 @@ def test_estimator_predict_output_type(X_y_binary, helper_functions):
                     y.name if isinstance(y, pd.Series) else None,
                 )
             )
-            component = helper_functions.safe_init_component_with_njobs_1(
-                component_class
-            )
+            if component_class.name == "Prophet Regressor":
+                component = component_class(date_index="datetime")
+            else:
+                component = helper_functions.safe_init_component_with_njobs_1(
+                    component_class
+                )
             component.fit(X, y=y)
             predict_output = component.predict(X)
             assert isinstance(predict_output, pd.Series)

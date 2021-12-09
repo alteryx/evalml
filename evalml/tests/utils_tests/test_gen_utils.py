@@ -12,7 +12,6 @@ from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
     _rename_column_names_to_numeric,
-    are_ts_parameters_valid_for_split,
     classproperty,
     contains_all_ts_parameters,
     convert_to_seconds,
@@ -20,6 +19,7 @@ from evalml.utils.gen_utils import (
     get_importable_subclasses,
     get_random_seed,
     import_or_raise,
+    is_ts_valid_for_split,
     jupyter_check,
     pad_with_nans,
     save_plot,
@@ -732,12 +732,42 @@ def test_contains_all_ts_parameters():
 
 
 def test_are_ts_parameters_valid():
-    result = are_ts_parameters_valid_for_split(
-        gap=1, max_delay=4, forecast_horizon=2, n_obs=20, n_splits=3
+    y = pd.Series([0 if i < 50 else 1 if i < 70 else 2 for i in range(200)])
+    result = is_ts_valid_for_split(
+        gap=1,
+        max_delay=4,
+        forecast_horizon=2,
+        n_obs=200,
+        n_splits=3,
+        problem_type="time series multiclass",
+        y=y,
     )
     assert not result.is_valid and result.msg
+    assert result.msg.startswith("Since the data has") and result.msg.endswith(
+        f"The following splits are invalid: [1, 2, 3]"
+    )
 
-    result = are_ts_parameters_valid_for_split(
-        gap=1, max_delay=4, forecast_horizon=2, n_obs=200, n_splits=3
+    y = pd.Series([0, 1, 1, 1, 0] * 4)
+    result = is_ts_valid_for_split(
+        gap=1,
+        max_delay=4,
+        forecast_horizon=2,
+        n_obs=20,
+        n_splits=3,
+        problem_type="time series binary",
+        y=y,
+    )
+    assert not result.is_valid and result.msg
+    assert result.msg.startswith("Since the data has") and result.msg.endswith(
+        "collect more data. "
+    )
+
+    result = is_ts_valid_for_split(
+        gap=1,
+        max_delay=4,
+        forecast_horizon=2,
+        n_obs=200,
+        n_splits=3,
+        problem_type="regression",
     )
     assert result.is_valid and not result.msg

@@ -2,7 +2,7 @@
 from sklearn.model_selection import TimeSeriesSplit as SkTimeSeriesSplit
 from sklearn.model_selection._split import BaseCrossValidator
 
-from evalml.utils.gen_utils import are_ts_parameters_valid_for_split
+from evalml.utils.gen_utils import is_ts_valid_for_split
 
 
 class TimeSeriesSplit(BaseCrossValidator):
@@ -12,6 +12,7 @@ class TimeSeriesSplit(BaseCrossValidator):
     is not too small given these parameters.
 
     Args:
+        problem_type (str or ProblemTypes): Problem type.
         max_delay (int): Max delay value for feature engineering. Time series pipelines create delayed features
             from existing features. This process will introduce NaNs into the first max_delay number of rows. The
             splitter uses the last max_delay number of rows from the previous split as the first max_delay number
@@ -53,8 +54,15 @@ class TimeSeriesSplit(BaseCrossValidator):
     """
 
     def __init__(
-        self, max_delay=0, gap=0, forecast_horizon=1, date_index=None, n_splits=3
+        self,
+        problem_type,
+        max_delay=0,
+        gap=0,
+        forecast_horizon=1,
+        date_index=None,
+        n_splits=3,
     ):
+        self.problem_type = problem_type
         self.max_delay = max_delay
         self.gap = gap
         self.forecast_horizon = forecast_horizon
@@ -109,8 +117,14 @@ class TimeSeriesSplit(BaseCrossValidator):
         else:
             split_kwargs = dict(X=X, y=y, groups=groups)
 
-        result = are_ts_parameters_valid_for_split(
-            self.gap, self.max_delay, self.forecast_horizon, X.shape[0], self.n_splits
+        result = is_ts_valid_for_split(
+            self.gap,
+            self.max_delay,
+            self.forecast_horizon,
+            X.shape[0],
+            self.n_splits,
+            self.problem_type,
+            y,
         )
         if not result.is_valid:
             raise ValueError(result.msg)

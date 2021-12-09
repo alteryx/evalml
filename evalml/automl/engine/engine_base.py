@@ -10,6 +10,7 @@ import pandas as pd
 import woodwork as ww
 
 from evalml.automl.utils import tune_binary_threshold
+from evalml.data_checks import ClassImbalanceDataCheck, NoVarianceDataCheck
 from evalml.exceptions import PipelineScoreError
 from evalml.preprocessing import split_data
 from evalml.problem_types import is_binary, is_classification, is_multiclass
@@ -138,6 +139,8 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True):
         cv_pipeline,
         threshold_tuning_objective,
         cv_pipeline.problem_type,
+        X,
+        y,
         X_threshold_tuning,
         y_threshold_tuning,
     )

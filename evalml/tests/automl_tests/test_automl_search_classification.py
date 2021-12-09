@@ -129,7 +129,7 @@ def test_data_splitter(X_y_binary):
         X_train=X,
         y_train=y,
         problem_type="binary",
-        data_splitter=TimeSeriesSplit(n_splits=cv_folds),
+        data_splitter=TimeSeriesSplit("binary", n_splits=cv_folds),
         max_iterations=1,
         n_jobs=1,
     )

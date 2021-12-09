@@ -534,24 +534,32 @@ def contains_all_ts_parameters(problem_configuration):
     """
     required_parameters = {"date_index", "gap", "max_delay", "forecast_horizon"}
     msg = ""
-    if not problem_configuration or not all(
-        p in problem_configuration for p in required_parameters
+    if (
+        not problem_configuration
+        or not all(p in problem_configuration for p in required_parameters)
+        or problem_configuration["date_index"] is None
     ):
         msg = (
             "problem_configuration must be a dict containing values for at least the date_index, gap, max_delay, "
-            f"and forecast_horizon parameters. Received {problem_configuration}."
+            f"and forecast_horizon parameters, and date_index cannot be None. Received {problem_configuration}."
         )
     return not (msg), msg
 
 
 _validation_result = namedtuple(
-    "TSParameterValidationResult",
-    ("is_valid", "msg", "smallest_split_size", "max_window_size"),
+    "TSValidationResult",
+    (
+        "is_valid",
+        "msg",
+        "smallest_split_size",
+        "max_window_size",
+        "invalid_splits",
+    ),
 )
 
 
-def are_ts_parameters_valid_for_split(
-    gap, max_delay, forecast_horizon, n_obs, n_splits
+def is_ts_valid_for_split(
+    gap, max_delay, forecast_horizon, n_obs, n_splits, problem_type, y=None
 ):
     """Validates the time series parameters in problem_configuration are compatible with split sizes.
 
@@ -561,6 +569,8 @@ def are_ts_parameters_valid_for_split(
         forecast_horizon (int): forecast_horizon value.
         n_obs (int): Number of observations in the dataset.
         n_splits (int): Number of cross validation splits.
+        problem_type (str or ProblemTypes): Problem type.
+        y (pd.Series): Target data.
 
     Returns:
         TsParameterValidationResult - named tuple with four fields
@@ -568,16 +578,50 @@ def are_ts_parameters_valid_for_split(
             msg (str): Contains error message to display. Empty if is_valid.
             smallest_split_size (int): Smallest split size given n_obs and n_splits.
             max_window_size (int): Max window size given gap, max_delay, forecast_horizon.
+            invalid_split (list): All the invalid splits as a result of inadequate target class representation.
     """
+    from evalml.problem_types import ProblemTypes, handle_problem_types
+
     split_size = n_obs // (n_splits + 1)
     window_size = gap + max_delay + forecast_horizon
     msg = ""
+
+    is_split_less_than_window = False
+    is_split_one_class = False
+    invalid_splits = []
+
     if split_size <= window_size:
+        is_split_less_than_window = True
+    if y is not None and handle_problem_types(problem_type) in [ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]:
+        for split_num, train_val_split in enumerate(range(len(y) - n_splits * split_size, len(y), split_size)):
+            train_targets = y[:train_val_split]
+            val_targets = y[train_val_split:train_val_split + split_size]
+            if train_targets.nunique() < y.nunique() or val_targets.nunique() < y.nunique():
+                is_split_one_class = True
+                invalid_splits.append(split_num + 1)
+
+    if is_split_less_than_window or is_split_one_class:
         msg = (
             f"Since the data has {n_obs} observations and n_splits={n_splits}, "
             f"the smallest split would have {split_size} observations. "
-            f"Since {gap + max_delay + forecast_horizon} (gap + max_delay + forecast_horizon)  > {split_size}, "
-            "then at least one of the splits would be empty by the time it reaches the pipeline. "
-            "Please use a smaller number of splits, reduce one or more these parameters, or collect more data."
         )
-    return _validation_result(not msg, msg, split_size, window_size)
+        if is_split_less_than_window:
+            msg += (
+                f"Since {gap + max_delay + forecast_horizon} (gap + max_delay + forecast_horizon) >= {split_size}, "
+                "then at least one of the splits would be empty by the time it reaches the pipeline. "
+                "Please use a smaller number of splits, reduce one or more of these parameters, or collect more data. "
+            )
+        if is_split_one_class:
+            msg += (
+                f"Time Series Binary and Time Series Multiclass problem types require every training "
+                f"and validation split to have at least one instance of all the target classes. "
+                f"The following splits are invalid: {invalid_splits}"
+            )
+
+    return _validation_result(
+        not msg,
+        msg,
+        split_size,
+        window_size,
+        invalid_splits,
+    )

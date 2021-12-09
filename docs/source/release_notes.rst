@@ -6,11 +6,14 @@ Release Notes
         * Added ``TimeSeriesParametersDataCheck`` to verify the time series parameters are valid given the number of splits in cross validation :pr:`3111`
     * Fixes
         * Default parameters for ``RFRegressorSelectFromModel`` and ``RFClassifierSelectFromModel`` has been fixed to avoid selecting all features :pr:`3110`
+        * Fixed error caused when tuning threshold for time series binary classification :pr: ``
     * Changes
         * Removed reliance on a datetime index for ``ARIMARegressor`` and ``ProphetRegressor`` :pr:`3104`
         * Included target leakage check when fitting ``ARIMARegressor`` to account for the lack of ``TimeSeriesFeaturizer`` in ``ARIMARegressor`` based pipelines :pr:`3104`
         * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
         * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
+        * ``TimeSeriesParametersDataCheck`` was expanded to consider data splitting for time series classification :pr:``
+        * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr: ``
     * Documentation Changes
     * Testing Changes
         * Refactored tests to avoid using ``importorskip`` :pr:`3126`

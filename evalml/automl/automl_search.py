@@ -137,7 +137,7 @@ def search(
         tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
             Only applicable if patience is not None. Defaults to None.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+            in time series problems, values should be passed in for the date_index, gap, forecast_horizon, and max_delay variables.
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
     Returns:
@@ -150,20 +150,10 @@ def search(
     y_train = infer_feature_types(y_train)
     problem_type = handle_problem_types(problem_type)
 
-    datetime_column = None
     if is_time_series(problem_type):
-        if problem_configuration:
-            if "date_index" in problem_configuration:
-                datetime_column = problem_configuration["date_index"]
-            else:
-                raise ValueError(
-                    "For the default data checks to run in time series, date_index has to be passed in problem_configuration. "
-                    f"Received {problem_configuration}"
-                )
-        else:
-            raise ValueError(
-                "For the default data checks to run in time series, the problem_configuration parameter must be specified."
-            )
+        is_valid, msg = contains_all_ts_parameters(problem_configuration)
+        if not is_valid:
+            raise ValueError(msg)
 
     if objective == "auto":
         objective = get_default_primary_search_objective(problem_type)
@@ -193,7 +183,9 @@ def search(
     }
 
     data_checks = DefaultDataChecks(
-        problem_type=problem_type, objective=objective, datetime_column=datetime_column
+        problem_configuration=problem_configuration,
+        problem_type=problem_type,
+        objective=objective,
     )
     data_check_results = data_checks.validate(X_train, y=y_train)
     if len(data_check_results.get("errors", [])):
@@ -271,7 +263,9 @@ def search_iterative(
     )
 
     data_checks = DefaultDataChecks(
-        problem_type=problem_type, objective=objective, datetime_column=datetime_column
+        problem_configuration=problem_configuration,
+        problem_type=problem_type,
+        objective=objective,
     )
     data_check_results = data_checks.validate(X_train, y=y_train)
     if len(data_check_results.get("errors", [])):
@@ -795,8 +789,6 @@ class AutoMLSearch:
             is_valid, msg = contains_all_ts_parameters(problem_configuration)
             if not is_valid:
                 raise ValueError(msg)
-            if problem_configuration["date_index"] is None:
-                raise ValueError("date_index cannot be None!")
         return problem_configuration or {}
 
     def _handle_keyboard_interrupt(self):
