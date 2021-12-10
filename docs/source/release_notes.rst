@@ -2,6 +2,20 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+        * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
+
+
+**v0.39.0 Dec. 9, 2021**
+    * Enhancements
         * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
         * Added ability to impute only specific columns in ``PerColumnImputer`` :pr:`3123`
         * Added ``TimeSeriesParametersDataCheck`` to verify the time series parameters are valid given the number of splits in cross validation :pr:`3111`
@@ -13,6 +27,7 @@ Release Notes
         * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
         * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
         * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
+        * Updated ``make_pipeline`` for handling pandas nullable types in preprocessing pipeline. :pr:`3129`
         * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
     * Documentation Changes
     * Testing Changes

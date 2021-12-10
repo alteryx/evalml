@@ -1094,13 +1094,13 @@ def test_automl_supports_time_series_classification(
             component_graph=["Time Series Baseline Estimator"],
             parameters={
                 "Time Series Baseline Estimator": {
-                    "date_index": "date",
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 1,
                 },
                 "pipeline": {
-                    "date_index": "date",
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 1,
@@ -1115,13 +1115,13 @@ def test_automl_supports_time_series_classification(
             component_graph=["Time Series Baseline Estimator"],
             parameters={
                 "Time Series Baseline Estimator": {
-                    "date_index": "date",
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 1,
                 },
                 "pipeline": {
-                    "date_index": "date",
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 1,
@@ -1132,7 +1132,7 @@ def test_automl_supports_time_series_classification(
         problem_type = "time series multiclass"
 
     configuration = {
-        "date_index": "date",
+        "time_index": "date",
         "gap": 0,
         "max_delay": 0,
         "forecast_horizon": 1,
@@ -1178,7 +1178,7 @@ def test_automl_time_series_classification_threshold(
     problem_type = "time series binary"
 
     configuration = {
-        "date_index": "date",
+        "time_index": "date",
         "gap": 0,
         "forecast_horizon": 1,
         "max_delay": 0,
@@ -1578,7 +1578,7 @@ def test_time_series_pipeline_parameter_warnings(
     pipeline_parameters.update(
         {
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 2,
@@ -1587,7 +1587,7 @@ def test_time_series_pipeline_parameter_warnings(
     )
     X, y = ts_data_binary
     configuration = {
-        "date_index": "date",
+        "time_index": "date",
         "gap": 0,
         "max_delay": 0,
         "delay_target": False,

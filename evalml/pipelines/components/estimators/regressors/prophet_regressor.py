@@ -37,7 +37,7 @@ class ProphetRegressor(Estimator):
 
     def __init__(
         self,
-        date_index=None,
+        time_index=None,
         changepoint_prior_scale=0.05,
         seasonality_prior_scale=10,
         holidays_prior_scale=10,
@@ -67,8 +67,8 @@ class ProphetRegressor(Estimator):
         prophet = import_or_raise("prophet", error_msg=p_error_msg)
 
         prophet_regressor = prophet.Prophet(**parameters)
-        parameters["date_index"] = date_index
-        self.date_index = date_index
+        parameters["time_index"] = time_index
+        self.time_index = time_index
 
         super().__init__(
             parameters=parameters,
@@ -77,17 +77,17 @@ class ProphetRegressor(Estimator):
         )
 
     @staticmethod
-    def build_prophet_df(X, y=None, date_index="ds"):
+    def build_prophet_df(X, y=None, time_index="ds"):
         """Build the Prophet data to pass fit and predict on."""
         X = copy.deepcopy(X)
         y = copy.deepcopy(y)
-        if date_index is None:
-            raise ValueError("date_index cannot be None!")
+        if time_index is None:
+            raise ValueError("time_index cannot be None!")
 
-        if date_index in X.columns:
-            date_column = X.pop(date_index)
+        if time_index in X.columns:
+            date_column = X.pop(time_index)
         else:
-            raise ValueError(f"Column {date_index} was not found in X!")
+            raise ValueError(f"Column {time_index} was not found in X!")
 
         prophet_df = X
         if y is not None:
@@ -110,7 +110,7 @@ class ProphetRegressor(Estimator):
         X, y = super()._manage_woodwork(X, y)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, date_index=self.date_index
+            X=X, y=y, time_index=self.time_index
         )
 
         self._component_obj.fit(prophet_df)
@@ -129,7 +129,7 @@ class ProphetRegressor(Estimator):
         X = infer_feature_types(X)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, date_index=self.date_index
+            X=X, y=y, time_index=self.time_index
         )
 
         prophet_output = self._component_obj.predict(prophet_df)
@@ -158,7 +158,7 @@ class ProphetRegressor(Estimator):
         """
         parameters = {
             "changepoint_prior_scale": 0.05,
-            "date_index": None,
+            "time_index": None,
             "seasonality_prior_scale": 10,
             "holidays_prior_scale": 10,
             "seasonality_mode": "additive",

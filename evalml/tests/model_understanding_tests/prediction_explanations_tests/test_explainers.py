@@ -975,13 +975,13 @@ def test_explain_predictions_time_series(ts_data):
         ],
         parameters={
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
             },
             "Time Series Featurizer": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
@@ -1034,7 +1034,7 @@ def test_explain_predictions_best_worst_time_series(
         ],
         parameters={
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
@@ -1043,7 +1043,7 @@ def test_explain_predictions_best_worst_time_series(
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "date_index": "date",
+                "time_index": "date",
             },
         },
     )

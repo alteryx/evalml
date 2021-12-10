@@ -15,7 +15,7 @@ class ARIMARegressor(Estimator):
     Currently ARIMARegressor isn't supported via conda install. It's recommended that it be installed via PyPI.
 
     Args:
-        date_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
+        time_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
         trend (str): Controls the deterministic trend. Options are ['n', 'c', 't', 'ct'] where 'c' is a constant term,
             't' indicates a linear trend, and 'ct' is both. Can also be an iterable when defining a polynomial, such
             as [1, 1, 0, 1].
@@ -56,7 +56,7 @@ class ARIMARegressor(Estimator):
 
     def __init__(
         self,
-        date_index=None,
+        time_index=None,
         trend=None,
         start_p=2,
         d=0,
@@ -79,7 +79,7 @@ class ARIMARegressor(Estimator):
             "max_q": max_q,
             "seasonal": seasonal,
             "n_jobs": n_jobs,
-            "date_index": date_index,
+            "time_index": time_index,
         }
 
         parameters.update(kwargs)
