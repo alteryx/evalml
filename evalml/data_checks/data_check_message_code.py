@@ -117,4 +117,4 @@ class DataCheckMessageCode(Enum):
     TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT = (
         "timeseries_target_not_compatible_with_split"
     )
-    """Message code when every training and validation split of the time series target doesn't contain all classes."""
+    """Message code when any training and validation split of the time series target doesn't contain all classes."""
