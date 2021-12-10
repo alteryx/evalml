@@ -33,6 +33,7 @@ from evalml.pipelines.components import (  # noqa: F401
     OneHotEncoder,
     Oversampler,
     RandomForestClassifier,
+    ReplaceNullableTypes,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
@@ -71,6 +72,24 @@ def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         component.append(DropNullColumns)
+    return component
+
+
+def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
+    component = []
+    all_nullable_cols = X.ww.select(
+        ["IntegerNullable", "AgeNullable", "BooleanNullable"], return_schema=True
+    ).columns
+    nullable_target = isinstance(
+        y.ww.logical_type,
+        (
+            logical_types.AgeNullable,
+            logical_types.BooleanNullable,
+            logical_types.IntegerNullable,
+        ),
+    )
+    if len(all_nullable_cols) > 0 or nullable_target:
+        component.append(ReplaceNullableTypes)
     return component
 
 
@@ -125,10 +144,13 @@ def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None):
     text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
 
     types_imputer_handles = {
+        logical_types.AgeNullable,
         logical_types.Boolean,
+        logical_types.BooleanNullable,
         logical_types.Categorical,
         logical_types.Double,
         logical_types.Integer,
+        logical_types.IntegerNullable,
         logical_types.URL,
         logical_types.EmailAddress,
         logical_types.Datetime,
@@ -147,7 +169,9 @@ def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
 
     # The URL and EmailAddress Featurizers will create categorical columns
     categorical_cols = list(
-        X.ww.select(["category", "URL", "EmailAddress"], return_schema=True).columns
+        X.ww.select(
+            ["category", "URL", "EmailAddress", "BooleanNullable"], return_schema=True
+        ).columns
     )
     if len(categorical_cols) > 0 and estimator_class not in {
         CatBoostClassifier,
@@ -214,6 +238,7 @@ def _get_preprocessing_components(
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
+            _get_replace_null,
             _get_drop_index_unknown,
             _get_url_email,
             _get_natural_language,
@@ -228,6 +253,7 @@ def _get_preprocessing_components(
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
+            _get_replace_null,
             _get_drop_index_unknown,
             _get_url_email,
             _get_datetime,
@@ -293,8 +319,8 @@ def make_pipeline(
     Raises:
         ValueError: If estimator is not valid for the given problem type, or sampling is not supported for the given problem type.
     """
-    X = infer_feature_types(X)
-    y = infer_feature_types(y)
+    X = infer_feature_types(X, ignore_nullable_types=True)
+    y = infer_feature_types(y, ignore_nullable_types=True)
 
     if estimator:
         problem_type = handle_problem_types(problem_type)
