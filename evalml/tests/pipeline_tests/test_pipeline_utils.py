@@ -37,6 +37,7 @@ from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _make_pipeline_from_multiple_graphs,
+    _get_preprocessing_components,
     generate_pipeline_code,
     get_estimators,
     is_classification,
@@ -195,6 +196,46 @@ def test_make_pipeline(
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ], test_description
+
+
+@pytest.mark.parametrize("problem_type", [ProblemTypes.TIME_SERIES_MULTICLASS, ProblemTypes.TIME_SERIES_REGRESSION,
+                                          ProblemTypes.TIME_SERIES_BINARY])
+@pytest.mark.parametrize(
+    "test_description, known_in_advance",
+    [
+        ("categorical", ["categorical"]),
+    ],
+)
+def test_make_pipeline_known_in_advance(test_description, known_in_advance, problem_type,
+                                        get_test_data_from_configuration):
+    X, y = get_test_data_from_configuration(
+        "ww",
+        problem_type,
+        column_names=['numerical'] + known_in_advance,
+    )
+    estimators = get_estimators(problem_type=problem_type)
+    for estimator_class in estimators:
+        if problem_type in estimator_class.supported_problem_types:
+            parameters = {
+                "pipeline": {
+                    "date_index": "date",
+                    "gap": 1,
+                    "max_delay": 1,
+                    "forecast_horizon": 3,
+                },
+            }
+
+            pipeline = make_pipeline(X, y, estimator_class, problem_type, parameters,
+                                     known_in_advance=known_in_advance)
+            expected_known_in_advance_components = _get_preprocessing_components(X.ww[known_in_advance], y,
+                                                      ProblemTypes.time_series_to_non_timeseries_problem_type(problem_type),
+                                                      estimator_class
+                                                      )
+            expected_known_in_advance_components = [c.name for c in expected_known_in_advance_components if c.name != "Label Encoder"]
+            expected_known_in_advance_components = ["Select Columns Transformer"] + expected_known_in_advance_components
+            known_in_advance_components = [c.split("-")[1].strip() for c in pipeline.component_graph.compute_order if c.startswith('Known In Advance')]
+            assert expected_known_in_advance_components == known_in_advance_components
+
 
 
 def test_make_pipeline_problem_type_mismatch():
