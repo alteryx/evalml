@@ -973,7 +973,7 @@ def test_get_prediction_vs_actual_over_time_data(ts_data):
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "date_index": "date",
+                "time_index": "date",
             }
         },
     )
@@ -1000,7 +1000,7 @@ def test_graph_prediction_vs_actual_over_time(ts_data, go):
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "date_index": "date",
+                "time_index": "date",
             }
         },
     )
