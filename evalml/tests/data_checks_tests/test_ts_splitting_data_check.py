@@ -32,14 +32,17 @@ def test_time_series_param_data_check(problem_type, is_valid):
     if not is_valid:
         if problem_type == "time series binary":
             y = pd.Series([i % 2 if i < 25 else 1 for i in range(100)])
-            invalid_splits = {1: {"Validation": [25, 50]},
-                              2: {"Validation": [50, 75]},
-                              3: {"Validation": [75, 100]}}
+            invalid_splits = {
+                1: {"Validation": [25, 50]},
+                2: {"Validation": [50, 75]},
+                3: {"Validation": [75, 100]},
+            }
         elif problem_type == "time series multiclass":
             y = pd.Series([i % 3 if i > 65 else 2 for i in range(100)])
-            invalid_splits = {1: {"Training": [0, 25],
-                                  "Validation": [25, 50]},
-                              2: {"Training": [0, 50]}}
+            invalid_splits = {
+                1: {"Training": [0, 25], "Validation": [25, 50]},
+                2: {"Training": [0, 50]},
+            }
     else:
         if problem_type == "time series binary":
             y = pd.Series([i % 2 for i in range(100)])

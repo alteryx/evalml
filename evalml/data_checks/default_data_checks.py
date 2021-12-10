@@ -15,7 +15,8 @@ from .ts_splitting_data_check import TimeSeriesSplittingDataCheck
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
-    is_time_series, is_classification,
+    is_classification,
+    is_time_series,
 )
 
 

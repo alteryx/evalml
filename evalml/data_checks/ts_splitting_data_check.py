@@ -2,7 +2,7 @@
 from sklearn.model_selection import TimeSeriesSplit as SkTimeSeriesSplit
 
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
-from evalml.problem_types import handle_problem_types, ProblemTypes
+from evalml.problem_types import ProblemTypes, handle_problem_types
 
 
 class TimeSeriesSplittingDataCheck(DataCheck):
@@ -19,8 +19,13 @@ class TimeSeriesSplittingDataCheck(DataCheck):
 
     def __init__(self, problem_type, n_splits):
         self.problem_type = problem_type
-        if handle_problem_types(self.problem_type) not in [ProblemTypes.TIME_SERIES_BINARY, ProblemTypes.TIME_SERIES_MULTICLASS]:
-            raise ValueError("Valid splitting of labels in time series is only define for time series binary and time series multiclass problem types.")
+        if handle_problem_types(self.problem_type) not in [
+            ProblemTypes.TIME_SERIES_BINARY,
+            ProblemTypes.TIME_SERIES_MULTICLASS,
+        ]:
+            raise ValueError(
+                "Valid splitting of labels in time series is only define for time series binary and time series multiclass problem types."
+            )
         self.n_splits = n_splits
         self._splitter = SkTimeSeriesSplit(n_splits=n_splits)
 
@@ -74,8 +79,8 @@ class TimeSeriesSplittingDataCheck(DataCheck):
             results["errors"].append(
                 DataCheckError(
                     message=f"Time Series Binary and Time Series Multiclass problem types require every training "
-                            f"and validation split to have at least one instance of all the target classes. "
-                            f"The following splits are invalid: {list(invalid_splits)}",
+                    f"and validation split to have at least one instance of all the target classes. "
+                    f"The following splits are invalid: {list(invalid_splits)}",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT,
                     details={
