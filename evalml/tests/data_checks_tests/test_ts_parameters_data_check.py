@@ -10,7 +10,7 @@ from evalml.data_checks import (
 def test_time_series_param_data_check_raises_value_error():
     with pytest.raises(
         ValueError,
-        match="containing values for at least the date_index, gap, max_delay",
+        match="containing values for at least the time_index, gap, max_delay",
     ):
         TimeSeriesParametersDataCheck({}, n_splits=3)
 
@@ -34,7 +34,7 @@ def test_time_series_param_data_check(
         "gap": gap,
         "max_delay": max_delay,
         "forecast_horizon": forecast_horizon,
-        "date_index": "date",
+        "time_index": "date",
     }
     data_check = TimeSeriesParametersDataCheck(config, n_splits)
     X = pd.DataFrame({"feature": range(n_obs)})

@@ -33,7 +33,7 @@ def test_delayed_features_transformer_init():
         max_delay=4,
         delay_features=True,
         delay_target=False,
-        date_index="date",
+        time_index="date",
         random_seed=1,
     )
     assert delayed_features.parameters == {
@@ -42,7 +42,7 @@ def test_delayed_features_transformer_init():
         "delay_target": False,
         "gap": 0,
         "forecast_horizon": 1,
-        "date_index": "date",
+        "time_index": "date",
         "conf_level": 0.05,
         "rolling_window_size": 0.25,
     }
@@ -61,10 +61,10 @@ def test_delayed_features_init_raises_if_conf_level_None():
         TimeSeriesFeaturizer(conf_level=None)
 
 
-def test_delayed_features_raises_if_date_index_None(delayed_features_data):
+def test_delayed_features_raises_if_time_index_None(delayed_features_data):
     X, y = delayed_features_data
     with pytest.raises(ValueError, match=" cannot be None"):
-        dft = TimeSeriesFeaturizer(date_index=None)
+        dft = TimeSeriesFeaturizer(time_index=None)
         dft.fit_transform(X, y)
 
 
@@ -123,7 +123,7 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
-            max_delay=3, gap=0, forecast_horizon=1, conf_level=1.0, date_index="date"
+            max_delay=3, gap=0, forecast_horizon=1, conf_level=1.0, time_index="date"
         ).fit_transform(X=X, y=y),
     )
 
@@ -143,7 +143,7 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon1_gap0(
             gap=0,
             forecast_horizon=1,
             conf_level=1.0,
-            date_index="date",
+            time_index="date",
             delay_features=False,
         ).fit_transform(X=X, y=y),
     )
@@ -186,7 +186,7 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
             gap=0,
             forecast_horizon=1,
             conf_level=1.0,
-            date_index="date",
+            time_index="date",
         ).fit_transform(X, y),
     )
 
@@ -208,7 +208,7 @@ def test_delayed_feature_extractor_maxdelay5_forecasthorizon1_gap0(
             gap=0,
             forecast_horizon=1,
             conf_level=1.0,
-            date_index="date",
+            time_index="date",
             delay_features=False,
         ).fit_transform(X=X, y=y),
     )
@@ -244,7 +244,7 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
-            max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0, date_index="date"
+            max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0, time_index="date"
         ).fit_transform(X, y),
     )
 
@@ -264,7 +264,7 @@ def test_delayed_feature_extractor_maxdelay3_forecasthorizon7_gap1(
             forecast_horizon=7,
             gap=1,
             conf_level=1.0,
-            date_index="date",
+            time_index="date",
             delay_features=False,
         ).fit_transform(X=X, y=y),
     )
@@ -291,7 +291,7 @@ def test_delayed_feature_extractor_numpy(mock_roll, delayed_features_data):
     assert_frame_equal(
         answer,
         TimeSeriesFeaturizer(
-            max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0, date_index=1
+            max_delay=3, forecast_horizon=7, gap=1, conf_level=1.0, time_index=1
         ).fit_transform(X_np, y_np),
     )
     answer_only_y = pd.DataFrame(
@@ -310,7 +310,7 @@ def test_delayed_feature_extractor_numpy(mock_roll, delayed_features_data):
             forecast_horizon=7,
             gap=1,
             conf_level=1.0,
-            date_index="date",
+            time_index="date",
             delay_features=False,
         ).fit_transform(X=X, y=y_np),
     )
@@ -366,7 +366,7 @@ def test_lagged_feature_extractor_delay_features_delay_target(
         delay_features=delay_features,
         delay_target=delay_target,
         conf_level=1.0,
-        date_index="date",
+        time_index="date",
     )
     assert_frame_equal(all_delays, transformer.fit_transform(X, y))
 
@@ -420,7 +420,7 @@ def test_lagged_feature_extractor_delay_target(
         delay_features=delay_features,
         delay_target=delay_target,
         conf_level=1.0,
-        date_index="date",
+        time_index="date",
     )
     assert_frame_equal(answer, transformer.fit_transform(X, y))
 
@@ -498,7 +498,7 @@ def test_delay_feature_transformer_supports_custom_index(
             forecast_horizon=7,
             conf_level=1.0,
             rolling_window_size=1.0,
-            date_index="date",
+            time_index="date",
         ).fit_transform(X, y),
     )
 
@@ -519,7 +519,7 @@ def test_delay_feature_transformer_supports_custom_index(
             max_delay=3,
             forecast_horizon=7,
             conf_level=1.0,
-            date_index="date",
+            time_index="date",
             rolling_window_size=1.0,
             delay_features=False,
         ).fit_transform(X=X, y=y),
@@ -549,7 +549,7 @@ def test_delay_feature_transformer_multiple_categorical_columns(delayed_features
             forecast_horizon=9,
             gap=2,
             conf_level=1.0,
-            date_index="date",
+            time_index="date",
         ).fit_transform(X, y),
     )
 
@@ -571,7 +571,7 @@ def test_delay_feature_transformer_y_is_none(delayed_features_data):
             forecast_horizon=11,
             conf_level=1.0,
             rolling_window_size=1.0,
-            date_index="date",
+            time_index="date",
         ).fit_transform(X, y=None),
     )
 
@@ -583,7 +583,7 @@ def test_delayed_feature_transformer_does_not_modify_input_data(delayed_features
         max_delay=1,
         forecast_horizon=11,
         conf_level=1.0,
-        date_index="date",
+        time_index="date",
     ).fit_transform(X, y=None)
 
     assert_frame_equal(X, expected)
@@ -611,7 +611,7 @@ def test_time_series_featurizer_rolling_mean(
         forecast_horizon=forecast_horizon,
         gap=gap,
         rolling_window_size=rolling_window_size,
-        date_index="date",
+        time_index="date",
     ).fit_transform(X, y)
 
     size = int(rolling_window_size * max_delay)
@@ -645,7 +645,7 @@ def test_time_series_featurizer_does_not_need_to_delay_to_compute_means(
         gap=gap,
         delay_features=False,
         delay_target=False,
-        date_index="date",
+        time_index="date",
         rolling_window_size=rolling_window_size,
     ).fit_transform(X, y)
 
@@ -714,7 +714,7 @@ def test_delayed_feature_transformer_conf_level(
         forecast_horizon=FORECAST_HORIZON,
         conf_level=0.05,
         gap=0,
-        date_index="date",
+        time_index="date",
     )
     new_X = dft.fit_transform(X, y)
 
@@ -779,7 +779,7 @@ def test_delayed_feature_transformer_selects_first_lag_if_none_significant(
         forecast_horizon=FORECAST_HORIZON,
         conf_level=0.1,
         gap=0,
-        date_index="date",
+        time_index="date",
     )
     new_X = dft.fit_transform(X, y)
     answer = pd.DataFrame(
@@ -824,7 +824,7 @@ def test_delay_feature_transformer_woodwork_custom_overrides_returned_by_compone
             # Casting the fourth and fifth dataframes to datetime will produce all NaNs
             continue
         dft = TimeSeriesFeaturizer(
-            max_delay=1, forecast_horizon=1, conf_level=1.0, date_index="date"
+            max_delay=1, forecast_horizon=1, conf_level=1.0, time_index="date"
         )
         if fit_transform:
             transformed = dft.fit_transform(X, y)
