@@ -2,9 +2,9 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``TimeSeriesSplittingDataCheck`` to ``DefaultDataChecks`` to verify adequate class representation in time series classification problems :pr:`3141`
     * Fixes
     * Changes
-        * ``TimeSeriesParametersDataCheck`` was expanded to consider inadequate class representation during data splitting for time series classification :pr:`3141`
     * Documentation Changes
     * Testing Changes
 

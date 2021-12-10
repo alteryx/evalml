@@ -10,11 +10,12 @@ from .natural_language_nan_data_check import NaturalLanguageNaNDataCheck
 from .no_variance_data_check import NoVarianceDataCheck
 from .target_distribution_data_check import TargetDistributionDataCheck
 from .target_leakage_data_check import TargetLeakageDataCheck
+from .ts_splitting_data_check import TimeSeriesSplittingDataCheck
 
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
-    is_time_series,
+    is_time_series, is_classification,
 )
 
 
@@ -34,6 +35,7 @@ class DefaultDataChecks(DataChecks):
         - `NaturalLanguageNaNDataCheck`
         - `TargetDistributionDataCheck` (for regression problem types)
         - `DateTimeFormatDataCheck` (for time series problem types)
+        - `TimeSeriesSplittingDataCheck` (for time series classification problem types)
 
     Args:
         problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
@@ -58,6 +60,16 @@ class DefaultDataChecks(DataChecks):
         data_check_params = {}
 
         if is_time_series(problem_type):
+            if is_classification(problem_type):
+                default_checks = default_checks + [TimeSeriesSplittingDataCheck]
+                data_check_params.update(
+                    {
+                        "TimeSeriesSplittingDataCheck": {
+                            "problem_type": problem_type,
+                            "n_splits": n_splits,
+                        }
+                    }
+                )
             default_checks = default_checks + [DateTimeFormatDataCheck]
             data_check_params.update(
                 {

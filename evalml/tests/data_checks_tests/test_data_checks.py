@@ -17,10 +17,10 @@ from evalml.data_checks import (
     DataCheckWarning,
     DateTimeFormatDataCheck,
     DefaultDataChecks,
-    TargetDistributionDataCheck,
+    TargetDistributionDataCheck, TimeSeriesSplittingDataCheck,
 )
 from evalml.exceptions import DataCheckInitError
-from evalml.problem_types import ProblemTypes, is_time_series
+from evalml.problem_types import ProblemTypes, is_time_series, is_classification
 
 
 def test_data_checks_not_list_error(X_y_binary):
@@ -500,6 +500,8 @@ def test_default_data_checks_across_problem_types(problem_type):
     default_data_check_list = DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES
 
     if is_time_series(problem_type):
+        if is_classification(problem_type):
+            default_data_check_list = default_data_check_list + [TimeSeriesSplittingDataCheck]
         default_data_check_list = default_data_check_list + [DateTimeFormatDataCheck]
     if problem_type in [
         ProblemTypes.REGRESSION,
