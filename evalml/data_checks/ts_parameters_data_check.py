@@ -40,7 +40,11 @@ class TimeSeriesParametersDataCheck(DataCheck):
             dict: dict with a DataCheckError if parameters are too big for the split sizes.
 
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         validation = are_ts_parameters_valid_for_split(
             gap=self.gap,

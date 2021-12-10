@@ -49,7 +49,11 @@ class OutliersDataCheck(DataCheck):
             ...                  "data_check_name": "OutliersDataCheck",
             ...                  "metadata": {"rows": [3], "columns": None}}]}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         X = infer_feature_types(X)
         X = X.ww.select("numeric")
@@ -96,7 +100,7 @@ class OutliersDataCheck(DataCheck):
             ).to_dict()
         )
 
-        results["actions"].append(
+        results["actions"]["action_list"].append(
             DataCheckAction(
                 DataCheckActionCode.DROP_ROWS,
                 data_check_name=self.name,

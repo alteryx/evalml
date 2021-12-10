@@ -69,13 +69,17 @@ class SparsityDataCheck(DataCheck):
             ...
             >>> df['sparse'] = [float(x % 10) for x in range(100)]
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=1, unique_count_threshold=5)
-            >>> assert sparsity_check.validate(df) == {'warnings': [], 'errors': [], 'actions': []}
+            >>> assert sparsity_check.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list": [], "default_action": None}}
             ...
             ...
             >>> sparse_array = pd.Series([1, 1, 1, 2, 2, 3] * 3)
             >>> assert SparsityDataCheck.sparsity_score(sparse_array, count_threshold=5) == 0.6666666666666666
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         X = infer_feature_types(X)
 
@@ -103,7 +107,7 @@ class SparsityDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-            results["actions"].append(
+            results["actions"]["action_list"].append(
                 DataCheckAction(
                     action_code=DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,

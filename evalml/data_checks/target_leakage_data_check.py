@@ -111,7 +111,11 @@ class TargetLeakageDataCheck(DataCheck):
             ...                  "data_check_name": "TargetLeakageDataCheck",
             ...                  'metadata': {'columns': ['leak', 'x'], 'rows': None}}]}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
@@ -143,7 +147,7 @@ class TargetLeakageDataCheck(DataCheck):
                     details={"columns": highly_corr_cols},
                 ).to_dict()
             )
-            results["actions"].append(
+            results["actions"]["action_list"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,

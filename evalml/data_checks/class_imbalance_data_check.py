@@ -102,9 +102,13 @@ class ClassImbalanceDataCheck(DataCheck):
             ...
             >>> y = pd.Series([0, 0, 1, 1, 1, 1, 2, 2, 2, 2])
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.30, num_cv_folds=1)
-            >>> assert class_imb_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
+            >>> assert class_imb_dc.validate(X, y) == {"warnings": [], "errors": [], "actions": {"action_list": [], "default_action": None}}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         y = infer_feature_types(y)
 

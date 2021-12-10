@@ -109,7 +109,11 @@ def test_target_leakage_data_check_empty(data_type, make_data_type):
     X = make_data_type(data_type, pd.DataFrame())
     y = make_data_type(data_type, pd.Series())
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method="mutual")
-    assert leakage_check.validate(X, y) == {"warnings": [], "errors": [], "actions": []}
+    assert leakage_check.validate(X, y) == {
+        "warnings": [],
+        "errors": [],
+        "actions": {"action_list": [], "default_action": None},
+    }
 
 
 def test_target_leakage_data_check_input_formats():
@@ -179,7 +183,11 @@ def test_target_leakage_none():
     X["b"] = [0, 0, 0, 0]
     y = y.astype(bool)
 
-    expected = {"warnings": [], "errors": [], "actions": []}
+    expected = {
+        "warnings": [],
+        "errors": [],
+        "actions": {"action_list": [], "default_action": None},
+    }
 
     assert leakage_check.validate(X, y) == expected
 
@@ -353,7 +361,11 @@ def test_target_leakage_data_check_warnings_pearson():
 
     y = ["a", "b", "a", "a"]
     leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.5, method="pearson")
-    assert leakage_check.validate(X, y) == {"warnings": [], "errors": [], "actions": []}
+    assert leakage_check.validate(X, y) == {
+        "warnings": [],
+        "errors": [],
+        "actions": {"action_list": [], "default_action": None},
+    }
 
 
 def test_target_leakage_data_check_input_formats_pearson():
@@ -432,7 +444,11 @@ def test_target_leakage_none_pearson():
     X["b"] = [0, 0, 0, 0]
     y = y.astype(bool)
 
-    expected = {"warnings": [], "errors": [], "actions": []}
+    expected = {
+        "warnings": [],
+        "errors": [],
+        "actions": {"action_list": [], "default_action": None},
+    }
 
     assert leakage_check.validate(X, y) == expected
 

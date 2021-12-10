@@ -78,7 +78,7 @@ class IDColumnsDataCheck(DataCheck):
             ... })
             ...
             >>> id_col_check = IDColumnsDataCheck()
-            >>> assert id_col_check.validate(df) == {'warnings': [], 'errors': [], 'actions': []}
+            >>> assert id_col_check.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list": [], "default_action": None}}
             ...
             ...
             >>> id_col_check = IDColumnsDataCheck()
@@ -94,7 +94,11 @@ class IDColumnsDataCheck(DataCheck):
             ...                  'data_check_name': 'IDColumnsDataCheck',
             ...                  'metadata': {'columns': ['Country_Rank'], 'rows': None}}]}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         X = infer_feature_types(X)
 
@@ -145,7 +149,7 @@ class IDColumnsDataCheck(DataCheck):
                     details={"columns": list(id_cols_above_threshold)},
                 ).to_dict()
             )
-            results["actions"].append(
+            results["actions"]["action_list"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,

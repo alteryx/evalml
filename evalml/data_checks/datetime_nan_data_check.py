@@ -29,7 +29,7 @@ class DateTimeNaNDataCheck(DataCheck):
             ...         ['2-4-21', '3-4-21']]
             >>> df = pd.DataFrame(dates, columns=['index', "days"])
             >>> dt_nan_dc = DateTimeNaNDataCheck()
-            >>> assert dt_nan_dc.validate(df) == {'warnings': [], 'errors': [], 'actions': []}
+            >>> assert dt_nan_dc.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list": [], "default_action": None}}
             ...
             ...
             >>> dates[0][0] = np.datetime64('NaT')
@@ -67,7 +67,11 @@ class DateTimeNaNDataCheck(DataCheck):
             ...                 'code': 'DATETIME_HAS_NAN'}],
             ...     'actions': []}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         X = infer_feature_types(X)
         datetime_cols = X.ww.select("datetime")

@@ -64,19 +64,31 @@ cases = [
         all_distinct_X,
         all_distinct_y,
         True,
-        {"warnings": [], "errors": [], "actions": []},
+        {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        },
     ),
     (
         [[1], [2], [3], [4]],
         [1, 2, 3, 2],
         False,
-        {"warnings": [], "errors": [], "actions": []},
+        {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        },
     ),
     (
         np.arange(12).reshape(4, 3),
         [1, 2, 3],
         True,
-        {"warnings": [], "errors": [], "actions": []},
+        {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        },
     ),
     (
         all_null_X,

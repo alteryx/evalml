@@ -476,7 +476,11 @@ def test_invalid_target_data_check_valid_labels_for_nonnegative_objectives(objec
             }
         },
     )
-    assert data_checks.validate(X, y) == {"warnings": [], "errors": [], "actions": []}
+    assert data_checks.validate(X, y) == {
+        "warnings": [],
+        "errors": [],
+        "actions": {"action_list": [], "default_action": None},
+    }
 
 
 def test_invalid_target_data_check_initialize_with_none_objective():
@@ -517,13 +521,25 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data():
     ) == {"warnings": [], "errors": [data_check_error], "actions": []}
     assert invalid_targets_check.validate(
         X=pd.DataFrame({"col": range(len(y_integer))}), y=y_integer
-    ) == {"warnings": [], "errors": [], "actions": []}
+    ) == {
+        "warnings": [],
+        "errors": [],
+        "actions": {"action_list": [], "default_action": None},
+    }
     assert invalid_targets_check.validate(
         X=pd.DataFrame({"col": range(len(y_float))}), y=y_float
-    ) == {"warnings": [], "errors": [], "actions": []}
+    ) == {
+        "warnings": [],
+        "errors": [],
+        "actions": {"action_list": [], "default_action": None},
+    }
     assert invalid_targets_check.validate(
         X=pd.DataFrame({"col": range(len(y_numeric))}), y=y_numeric
-    ) == {"warnings": [], "errors": [], "actions": []}
+    ) == {
+        "warnings": [],
+        "errors": [],
+        "actions": {"action_list": [], "default_action": None},
+    }
 
 
 def test_invalid_target_data_check_multiclass_problem_binary_data():
@@ -542,7 +558,11 @@ def test_invalid_target_data_check_multiclass_problem_binary_data():
     )
     assert invalid_targets_check.validate(
         X=pd.DataFrame({"col": range(len(y_multiclass))}), y=y_multiclass
-    ) == {"warnings": [], "errors": [], "actions": []}
+    ) == {
+        "warnings": [],
+        "errors": [],
+        "actions": {"action_list": [], "default_action": None},
+    }
     assert invalid_targets_check.validate(
         X=pd.DataFrame({"col": range(len(y_binary))}), y=y_binary
     ) == {"warnings": [], "errors": [data_check_error], "actions": []}

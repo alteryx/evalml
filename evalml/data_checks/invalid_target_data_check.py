@@ -156,7 +156,11 @@ class InvalidTargetDataCheck(DataCheck):
             ...     'errors': [],
             ...     'actions': []}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         if y is None:
             results["errors"].append(
@@ -236,7 +240,7 @@ class InvalidTargetDataCheck(DataCheck):
             impute_strategy = (
                 "mean" if is_regression(self.problem_type) else "most_frequent"
             )
-            results["actions"].append(
+            results["actions"]["action_list"].append(
                 DataCheckAction(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=self.name,

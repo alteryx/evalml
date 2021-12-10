@@ -46,7 +46,11 @@ class MulticollinearityDataCheck(DataCheck):
             ...                   'details': {"columns": [('col_1', 'col_2')], "rows": None}}],
             ...     "actions": []}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         X = infer_feature_types(X)
         mutual_info_df = X.ww.mutual_information()

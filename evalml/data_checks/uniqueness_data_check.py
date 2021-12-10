@@ -84,7 +84,11 @@ class UniquenessDataCheck(DataCheck):
             >>> y = pd.Series([1, 1, 1, 2, 2, 3, 3, 3])
             >>> assert UniquenessDataCheck.uniqueness_score(y) == 0.65625
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         X = infer_feature_types(X)
 
@@ -110,7 +114,7 @@ class UniquenessDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-            results["actions"].append(
+            results["actions"]["action_list"].append(
                 DataCheckAction(
                     action_code=DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
@@ -137,7 +141,7 @@ class UniquenessDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-            results["actions"].append(
+            results["actions"]["action_list"].append(
                 DataCheckAction(
                     action_code=DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,

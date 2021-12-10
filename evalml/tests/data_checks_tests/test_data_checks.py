@@ -33,7 +33,11 @@ def test_data_checks(X_y_binary):
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [], "errors": [], "actions": []}
+            return {
+                "warnings": [],
+                "errors": [],
+                "actions": {"action_list": [], "default_action": None},
+            }
 
     class MockDataCheckWarning(DataCheck):
         def validate(self, X, y):
@@ -684,7 +688,11 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
 
     class MockDataCheckWithSameAction(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [], "errors": [], "actions": []}
+            return {
+                "warnings": [],
+                "errors": [],
+                "actions": {"action_list": [], "default_action": None},
+            }
 
     data_checks_list = [MockDataCheck, MockDataCheckWithSameAction]
     data_checks = DataChecks(data_checks=data_checks_list)
@@ -711,7 +719,11 @@ def test_data_checks_drop_index(X_y_binary):
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [], "errors": [], "actions": []}
+            return {
+                "warnings": [],
+                "errors": [],
+                "actions": {"action_list": [], "default_action": None},
+            }
 
     assert MockDataCheck().validate(X, y)
 

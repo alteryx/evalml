@@ -94,7 +94,11 @@ class DataChecks:
         Returns:
             dict: Dictionary containing DataCheckMessage objects
         """
-        messages = {"warnings": [], "errors": [], "actions": []}
+        messages = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
         X = infer_feature_types(X)
         X = X.ww.drop(list(X.ww.select("index", return_schema=True).columns))
         if y is not None:

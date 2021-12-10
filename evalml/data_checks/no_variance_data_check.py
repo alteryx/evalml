@@ -59,7 +59,7 @@ class NoVarianceDataCheck(DataCheck):
             ...
             >>> X["First_Column"] = [2, 2, 2, 3, 3, 3, None, None]
             >>> y = pd.Series([1, 1, 1, 2, 2, 2, None, None])
-            >>> assert novar_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
+            >>> assert novar_dc.validate(X, y) == {"warnings": [], "errors": [], "actions": {"action_list": [], "default_action": None}}
             ...
             ...
             >>> y = pd.Series([None] * 7)
@@ -110,7 +110,11 @@ class NoVarianceDataCheck(DataCheck):
             ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}]}
 
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
         X = infer_feature_types(X, ignore_nullable_types=True)
         y = infer_feature_types(y, ignore_nullable_types=True)
 
@@ -172,7 +176,7 @@ class NoVarianceDataCheck(DataCheck):
             )
         all_cols = zero_unique + one_unique + one_unique_with_null
         if all_cols:
-            results["actions"].append(
+            results["actions"]["action_list"].append(
                 DataCheckAction(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,

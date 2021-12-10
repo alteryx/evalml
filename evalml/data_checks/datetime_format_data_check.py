@@ -57,12 +57,12 @@ class DateTimeFormatDataCheck(DataCheck):
             ...
             >>> X = pd.DataFrame(pd.to_datetime([1, 2, 3, 4]), columns=["Weeks"])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
-            >>> assert datetime_format_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
+            >>> assert datetime_format_dc.validate(X, y) == {"warnings": [], "errors": [], "actions": {"action_list": [], "default_action": None}}
             ...
             ...
             >>> X = pd.DataFrame(pd.date_range("2021-01-01", freq='W', periods=10), columns=["Weeks"])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
-            >>> assert datetime_format_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
+            >>> assert datetime_format_dc.validate(X, y) == {"warnings": [], "errors": [], "actions": {"action_list": [], "default_action": None}}
             ...
             ...
             >>> X = X.iloc[::-1]
@@ -76,7 +76,11 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                 'code': 'DATETIME_IS_NOT_MONOTONIC'}],
             ...     'actions': []}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)

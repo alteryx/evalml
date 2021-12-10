@@ -39,7 +39,11 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             ...                      details={"columns": ['A']}).to_dict()]
             ...    }
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         X = infer_feature_types(X)
         X = X.ww.select("natural_language")
