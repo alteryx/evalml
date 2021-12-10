@@ -313,6 +313,8 @@ def _make_pipeline_time_series(
 
     if known_in_advance:
         preprocessing_components = [SelectColumns] + preprocessing_components
+    else:
+        preprocessing_components += [estimator]
 
     component_graph = PipelineBase._make_component_dict_from_component_list(
         preprocessing_components
@@ -337,7 +339,6 @@ def _make_pipeline_time_series(
                 pipeline.name: "Not Known In Advance",
             },
         )
-        pipeline = pipeline.new(parameters)
     return pipeline
 
 
@@ -475,8 +476,8 @@ def _make_stacked_ensemble_pipeline(
         else {}
     )
     final_components = []
-    # used_model_families = []
-    # parameters = {}
+    used_model_families = []
+    parameters = {}
 
     if is_classification(problem_type):
         parameters = {
@@ -501,15 +502,14 @@ def _make_stacked_ensemble_pipeline(
         ProblemTypes.REGRESSION: RegressionPipeline,
     }[problem_type]
 
-    for i, pipeline in enumerate(input_pipelines):
-        model_family = pipeline.component_graph.get_last_component().name
-        model_family_idx = i
-        # model_family_idx = (
-        #     used_model_families.count(model_family) + 1
-        #     if used_model_families.count(model_family) > 0
-        #     else None
-        # )
-        # used_model_families.append(model_family)
+    for pipeline in input_pipelines:
+        model_family = pipeline.component_graph[-1].model_family
+        model_family_idx = (
+            used_model_families.count(model_family) + 1
+            if used_model_families.count(model_family) > 0
+            else None
+        )
+        used_model_families.append(model_family)
         final_component = None
         ensemble_y = "y"
         for name, component_list in pipeline.component_graph.component_dict.items():
