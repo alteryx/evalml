@@ -246,7 +246,7 @@ def test_make_pipeline_known_in_advance(
         if problem_type in estimator_class.supported_problem_types:
             parameters = {
                 "pipeline": {
-                    "date_index": "date",
+                    "time_index": "date",
                     "gap": 1,
                     "max_delay": 1,
                     "forecast_horizon": 3,

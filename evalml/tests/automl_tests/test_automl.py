@@ -5486,7 +5486,7 @@ def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
         problem_type=problem_type,
         max_batches=3,
         problem_configuration={
-            "date_index": "date",
+            "time_index": "date",
             "max_delay": 3,
             "forecast_horizon": 2,
             "gap": 1,
