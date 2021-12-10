@@ -44,7 +44,3 @@ class ProblemTypes(Enum):
             list(ProblemTypes): List of all defined problem types.
         """
         return list(cls)
-
-    @classmethod
-    def time_series_to_non_timeseries_problem_type(cls, problem_type):
-        return problem_type.value.split("time series ")[1]

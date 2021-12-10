@@ -328,7 +328,9 @@ def _make_pipeline_time_series(
         kin_component_graph = PipelineBase._make_component_dict_from_component_list(
             kin_preprocessing
         )
-        kin_pipeline = base_class(kin_component_graph, parameters=parameters)
+        kin_pipeline = base_class(
+            kin_component_graph, parameters=parameters, custom_name="Pipeline"
+        )
         pipeline = _make_pipeline_from_multiple_graphs(
             [pipeline, kin_pipeline],
             estimator,
@@ -339,6 +341,7 @@ def _make_pipeline_time_series(
                 pipeline.name: "Not Known In Advance",
             },
         )
+        pipeline = pipeline.new(parameters)
     return pipeline
 
 

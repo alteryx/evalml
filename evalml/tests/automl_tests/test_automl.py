@@ -5454,3 +5454,60 @@ def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
     error_text = "Pipeline ID 500 is not a valid ensemble pipeline"
     with pytest.raises(ValueError, match=error_text):
         automl.get_ensembler_input_pipelines(500)
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+    ],
+)
+def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
+    problem_type, ts_data_binary, ts_data_multi, ts_data, AutoMLTestEnv
+):
+    if problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = ts_data_multi
+    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = ts_data_binary
+    else:
+        X, y = ts_data
+
+    X.ww.init()
+    X.ww["email"] = pd.Series(["foo@foo.com"] * X.shape[0], index=X.index)
+    X.ww["category"] = pd.Series(["a"] * X.shape[0], index=X.index)
+    X.ww.set_types({"email": "EmailAddress", "category": "Categorical"})
+    known_in_advance = ["email", "category"]
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=problem_type,
+        max_batches=3,
+        problem_configuration={
+            "date_index": "date",
+            "max_delay": 3,
+            "forecast_horizon": 2,
+            "gap": 1,
+            "known_in_advance": known_in_advance,
+        },
+    )
+
+    test_env = AutoMLTestEnv(problem_type)
+    with test_env.test_context(score_return_value={automl.objective.name: 0.02}):
+        automl.search()
+
+    no_baseline = automl.full_rankings.loc[
+        ~automl.full_rankings.pipeline_name.str.contains("Baseline")
+    ]
+    assert no_baseline.parameters.map(
+        lambda d: d["Known In Advance Pipeline - Select Columns Transformer"]["columns"]
+        == known_in_advance
+    ).all()
+    assert no_baseline.parameters.map(
+        lambda d: d["Not Known In Advance Pipeline - Select Columns Transformer"][
+            "columns"
+        ]
+        == ["features", "date"]
+    ).all()
