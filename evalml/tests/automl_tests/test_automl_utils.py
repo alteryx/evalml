@@ -323,7 +323,9 @@ def test_get_pipelines_from_component_graphs(problem_type, estimator):
         },
     }
     if problem_type == "time series regression":
-        with pytest.raises(ValueError, match="date_index, gap, and max_delay"):
+        with pytest.raises(
+            ValueError, match="date_index, gap, max_delay, and forecast_horizon"
+        ):
             get_pipelines_from_component_graphs(component_graphs, problem_type)
     else:
         returned_pipelines = get_pipelines_from_component_graphs(

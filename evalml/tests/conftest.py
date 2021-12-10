@@ -755,7 +755,9 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
         estimator = MockEstimator
         component_graph = [MockEstimator]
 
-        def __init__(self, parameters, custom_name=None, component_graph=None, random_seed=0):
+        def __init__(
+            self, parameters, custom_name=None, component_graph=None, random_seed=0
+        ):
             super().__init__(
                 self.component_graph, parameters=parameters, random_seed=random_seed
             )

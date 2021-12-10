@@ -158,9 +158,7 @@ def test_train_pipeline_trains_and_tunes_threshold_ts(
     )
     env = AutoMLTestEnv("time series binary")
     with env.test_context():
-        _ = train_pipeline(
-            ts_binary, X, y, automl_config=automl_config
-        )
+        _ = train_pipeline(ts_binary, X, y, automl_config=automl_config)
     env.mock_fit.assert_called_once()
     env.mock_optimize_threshold.assert_called_once()
     mock_split_data.assert_called_once()
