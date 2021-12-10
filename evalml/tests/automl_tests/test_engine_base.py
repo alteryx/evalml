@@ -148,7 +148,7 @@ def test_train_pipeline_trains_and_tunes_threshold_ts(
     dummy_ts_binary_pipeline_class,
 ):
     X, y = ts_data
-    params = {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "date"}
+    params = {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "time_index": "date"}
     ts_binary = dummy_ts_binary_pipeline_class(parameters={"pipeline": params})
     mock_split_data.return_value = split_data(
         X, y, "time series binary", test_size=params["forecast_horizon"] / len(X)
