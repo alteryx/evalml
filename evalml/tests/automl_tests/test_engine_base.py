@@ -109,6 +109,7 @@ def test_train_pipeline_trains_and_tunes_threshold(
     X_y_binary,
     AutoMLTestEnv,
     dummy_binary_pipeline_class,
+    dummy_ts_binary_pipeline_class,
 ):
     X, y = X_y_binary
     mock_split_data.return_value = split_data(
@@ -133,6 +134,32 @@ def test_train_pipeline_trains_and_tunes_threshold(
     with env.test_context():
         _ = train_pipeline(
             dummy_binary_pipeline_class({}), X, y, automl_config=automl_config
+        )
+    env.mock_fit.assert_called_once()
+    env.mock_optimize_threshold.assert_called_once()
+    mock_split_data.assert_called_once()
+
+
+@patch("evalml.automl.engine.engine_base.split_data")
+def test_train_pipeline_trains_and_tunes_threshold_ts(
+    mock_split_data,
+    ts_data,
+    AutoMLTestEnv,
+    dummy_ts_binary_pipeline_class,
+):
+    X, y = ts_data
+    params = {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "date"}
+    ts_binary = dummy_ts_binary_pipeline_class(parameters={"pipeline": params})
+    mock_split_data.return_value = split_data(
+        X, y, "time series binary", test_size=params["forecast_horizon"] / len(X)
+    )
+    automl_config = AutoMLConfig(
+        None, "time series binary", LogLossBinary(), [], F1(), True, None, 0, None, None
+    )
+    env = AutoMLTestEnv("time series binary")
+    with env.test_context():
+        _ = train_pipeline(
+            ts_binary, X, y, automl_config=automl_config
         )
     env.mock_fit.assert_called_once()
     env.mock_optimize_threshold.assert_called_once()
