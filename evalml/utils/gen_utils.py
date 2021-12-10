@@ -527,13 +527,13 @@ def contains_all_ts_parameters(problem_configuration):
         bool, str: True if the configuration contains all parameters. If False, msg is a non-empty
             string with error message.
     """
-    required_parameters = {"date_index", "gap", "max_delay", "forecast_horizon"}
+    required_parameters = {"time_index", "gap", "max_delay", "forecast_horizon"}
     msg = ""
     if not problem_configuration or not all(
         p in problem_configuration for p in required_parameters
     ):
         msg = (
-            "problem_configuration must be a dict containing values for at least the date_index, gap, max_delay, "
+            "problem_configuration must be a dict containing values for at least the time_index, gap, max_delay, "
             f"and forecast_horizon parameters. Received {problem_configuration}."
         )
     return not (msg), msg

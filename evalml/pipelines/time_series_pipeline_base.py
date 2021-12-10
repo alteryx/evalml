@@ -19,8 +19,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
              An empty dictionary {} implies using all default values for component parameters. Pipeline-level
-             parameters such as date_index, gap, and max_delay must be specified with the "pipeline" key. For example:
-             Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
+             parameters such as time_index, gap, and max_delay must be specified with the "pipeline" key. For example:
+             Pipeline(parameters={"pipeline": {"time_index": "Date", "max_delay": 4, "gap": 2}}).
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -33,16 +33,16 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
     ):
         if not parameters or "pipeline" not in parameters:
             raise ValueError(
-                "date_index, gap, max_delay, and forecast_horizon parameters cannot be omitted from the parameters dict. "
+                "time_index, gap, max_delay, and forecast_horizon parameters cannot be omitted from the parameters dict. "
                 "Please specify them as a dictionary with the key 'pipeline'."
             )
         pipeline_params = parameters["pipeline"]
         self.gap = pipeline_params["gap"]
         self.max_delay = pipeline_params["max_delay"]
         self.forecast_horizon = pipeline_params["forecast_horizon"]
-        self.date_index = pipeline_params["date_index"]
-        if self.date_index is None:
-            raise ValueError("Parameter date_index cannot be None!")
+        self.time_index = pipeline_params["time_index"]
+        if self.time_index is None:
+            raise ValueError("Parameter time_index cannot be None!")
         super().__init__(
             component_graph,
             custom_name=custom_name,

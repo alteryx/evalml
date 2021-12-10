@@ -22,7 +22,7 @@ def test_datetime_featurizer_init():
     assert datetime_transformer.parameters == {
         "features_to_extract": ["year", "month", "day_of_week", "hour"],
         "encode_as_categories": False,
-        "date_index": None,
+        "time_index": None,
     }
 
     datetime_transformer = DateTimeFeaturizer(
@@ -31,7 +31,7 @@ def test_datetime_featurizer_init():
     assert datetime_transformer.parameters == {
         "features_to_extract": ["year", "month"],
         "encode_as_categories": True,
-        "date_index": None,
+        "time_index": None,
     }
 
     with pytest.raises(ValueError, match="not valid options for features_to_extract"):
@@ -157,9 +157,9 @@ def test_datetime_featurizer_fit_transform():
     assert datetime_transformer.get_feature_names() == {}
 
 
-def test_datetime_featurizer_fit_transform_date_index():
+def test_datetime_featurizer_fit_transform_time_index():
     datetime_transformer = DateTimeFeaturizer(
-        features_to_extract=["year"], date_index="Date Col 1"
+        features_to_extract=["year"], time_index="Date Col 1"
     )
     X = pd.DataFrame(
         {

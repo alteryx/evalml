@@ -67,7 +67,7 @@ def make_data_splitter(
         y (pd.Series): The target training data of length [n_samples].
         problem_type (ProblemType): The type of machine learning problem.
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the date_index, gap, and max_delay variables. Defaults to None.
+            in time series problems, values should be passed in for the time_index, gap, and max_delay variables. Defaults to None.
         n_splits (int, None): The number of CV splits, if applicable. Defaults to 3.
         shuffle (bool): Whether or not to shuffle the data before splitting, if applicable. Defaults to True.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -89,7 +89,7 @@ def make_data_splitter(
             n_splits=n_splits,
             gap=problem_configuration.get("gap"),
             max_delay=problem_configuration.get("max_delay"),
-            date_index=problem_configuration.get("date_index"),
+            time_index=problem_configuration.get("time_index"),
             forecast_horizon=problem_configuration.get("forecast_horizon"),
         )
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:

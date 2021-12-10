@@ -137,7 +137,7 @@ def search(
         tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
             Only applicable if patience is not None. Defaults to None.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+            in time series problems, values should be passed in for the time_index, gap, and max_delay variables.
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
     Returns:
@@ -153,11 +153,11 @@ def search(
     datetime_column = None
     if is_time_series(problem_type):
         if problem_configuration:
-            if "date_index" in problem_configuration:
-                datetime_column = problem_configuration["date_index"]
+            if "time_index" in problem_configuration:
+                datetime_column = problem_configuration["time_index"]
             else:
                 raise ValueError(
-                    "For the default data checks to run in time series, date_index has to be passed in problem_configuration. "
+                    "For the default data checks to run in time series, time_index has to be passed in problem_configuration. "
                     f"Received {problem_configuration}"
                 )
         else:
@@ -227,7 +227,7 @@ def search_iterative(
             - LogLossMulticlass for multiclass classification problems, and
             - R2 for regression problems.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the date_index, gap, forecast_horizon, and max_delay variables.
+            in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
         **kwargs: Other keyword arguments which are provided will be passed to AutoMLSearch.
 
     Returns:
@@ -243,11 +243,11 @@ def search_iterative(
     datetime_column = None
     if is_time_series(problem_type):
         if problem_configuration:
-            if "date_index" in problem_configuration:
-                datetime_column = problem_configuration["date_index"]
+            if "time_index" in problem_configuration:
+                datetime_column = problem_configuration["time_index"]
             else:
                 raise ValueError(
-                    "For the default data checks to run in time series, date_index has to be passed in problem_configuration. "
+                    "For the default data checks to run in time series, time_index has to be passed in problem_configuration. "
                     f"Received {problem_configuration}"
                 )
         else:
@@ -360,7 +360,7 @@ class AutoMLSearch:
             max_iterations have precedence over stopping the search.
 
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the date_index, gap, forecast_horizon, and max_delay variables.
+            in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
 
         train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
@@ -795,8 +795,8 @@ class AutoMLSearch:
             is_valid, msg = contains_all_ts_parameters(problem_configuration)
             if not is_valid:
                 raise ValueError(msg)
-            if problem_configuration["date_index"] is None:
-                raise ValueError("date_index cannot be None!")
+            if problem_configuration["time_index"] is None:
+                raise ValueError("time_index cannot be None!")
         return problem_configuration or {}
 
     def _handle_keyboard_interrupt(self):
@@ -1091,9 +1091,9 @@ class AutoMLSearch:
         else:
             gap = self.problem_configuration["gap"]
             forecast_horizon = self.problem_configuration["forecast_horizon"]
-            date_index = self.problem_configuration["date_index"]
+            time_index = self.problem_configuration["time_index"]
             baseline = make_timeseries_baseline_pipeline(
-                self.problem_type, gap, forecast_horizon, date_index
+                self.problem_type, gap, forecast_horizon, time_index
             )
         return baseline
 
