@@ -662,14 +662,14 @@ def _make_component_list_from_actions(actions):
     return components
 
 
-def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, date_index):
+def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, time_index):
     """Make a baseline pipeline for time series regression problems.
 
     Args:
         problem_type: One of TIME_SERIES_REGRESSION, TIME_SERIES_MULTICLASS, TIME_SERIES_BINARY
         gap (int): Non-negative gap parameter.
         forecast_horizon (int): Positive forecast_horizon parameter.
-        date_index (str): Column name of date_index parameter.
+        time_index (str): Column name of time_index parameter.
 
     Returns:
         TimeSeriesPipelineBase, a time series pipeline corresponding to the problem type.
@@ -697,7 +697,7 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, date_
         custom_name=pipeline_name,
         parameters={
             "pipeline": {
-                "date_index": date_index,
+                "time_index": time_index,
                 "gap": gap,
                 "max_delay": 0,
                 "forecast_horizon": forecast_horizon,
@@ -708,7 +708,7 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, date_
                 "forecast_horizon": forecast_horizon,
                 "delay_target": True,
                 "delay_features": False,
-                "date_index": date_index,
+                "time_index": time_index,
             },
             "Time Series Baseline Estimator": {
                 "gap": gap,

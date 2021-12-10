@@ -5,7 +5,7 @@ from evalml.preprocessing.data_splitters import TimeSeriesSplit
 
 
 def test_time_series_split_init():
-    ts_split = TimeSeriesSplit(gap=3, max_delay=4, n_splits=5, date_index=None)
+    ts_split = TimeSeriesSplit(gap=3, max_delay=4, n_splits=5, time_index=None)
     assert ts_split.get_n_splits() == 5
 
     with pytest.raises(
@@ -31,7 +31,7 @@ def test_time_series_split_n_splits_too_big(gap, max_delay, forecast_horizon, n_
         max_delay=max_delay,
         forecast_horizon=forecast_horizon,
         n_splits=n_splits,
-        date_index="date",
+        time_index="date",
     )
     X = pd.DataFrame({"features": range(15)})
     with pytest.raises(ValueError, match="Please use a smaller number of splits"):
@@ -39,7 +39,7 @@ def test_time_series_split_n_splits_too_big(gap, max_delay, forecast_horizon, n_
 
 
 @pytest.mark.parametrize(
-    "max_delay,gap,forecast_horizon,date_index",
+    "max_delay,gap,forecast_horizon,time_index",
     [
         (0, 0, 1, "Date"),
         (1, 0, 1, None),
@@ -49,15 +49,15 @@ def test_time_series_split_n_splits_too_big(gap, max_delay, forecast_horizon, n_
     ],
 )
 @pytest.mark.parametrize("y_none", [False, True])
-def test_time_series_split(max_delay, gap, forecast_horizon, date_index, y_none):
+def test_time_series_split(max_delay, gap, forecast_horizon, time_index, y_none):
     X = pd.DataFrame({"features": range(1, 32)})
     y = pd.Series(range(1, 32))
 
     # Splitter does not need a daterange index. We use a daterange index so that the
     # expected answer is easier to understand
     y.index = pd.date_range("2020-10-01", "2020-10-31")
-    if date_index:
-        X[date_index] = pd.date_range("2020-10-01", "2020-10-31")
+    if time_index:
+        X[time_index] = pd.date_range("2020-10-01", "2020-10-31")
     else:
         X.index = pd.date_range("2020-10-01", "2020-10-31")
 
@@ -88,11 +88,11 @@ def test_time_series_split(max_delay, gap, forecast_horizon, date_index, y_none)
         gap=gap,
         max_delay=max_delay,
         forecast_horizon=forecast_horizon,
-        date_index=date_index,
+        time_index=time_index,
     )
     for i, (train, test) in enumerate(ts_split.split(X, y)):
         X_train, X_test = X.iloc[train], X.iloc[test]
-        if date_index:
+        if time_index:
             pd.testing.assert_index_equal(X_train.index, answer_dt[i][0])
             pd.testing.assert_index_equal(X_test.index, answer_dt[i][1])
         else:

@@ -33,7 +33,7 @@ def test_nullable_types_builds_pipelines(
     parameters = {}
     if is_time_series(problem_type):
         parameters = {
-            "date_index": "dates",
+            "time_index": "dates",
             "gap": 1,
             "max_delay": 1,
             "forecast_horizon": 3,

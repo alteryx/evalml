@@ -71,7 +71,7 @@ class DefaultDataChecks(DataChecks):
             data_check_params.update(
                 {
                     "DateTimeFormatDataCheck": {
-                        "datetime_column": problem_configuration["date_index"],
+                        "datetime_column": problem_configuration["time_index"],
                     },
                     "TimeSeriesParametersDataCheck": {
                         "problem_configuration": problem_configuration,

@@ -32,7 +32,7 @@ class TimeSeriesFeaturizer(Transformer):
     Using conf_level value of 1 selects all possible lags.
 
     Args:
-        date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
+        time_index (str): Name of the column containing the datetime information used to order the data. Ignored.
         max_delay (int): Maximum number of time units to delay each feature. Defaults to 2.
         forecast_horizon (int): The number of time periods the pipeline is expected to forecast.
         conf_level (float): Float in range (0, 1] that determines the confidence interval size used to select
@@ -63,7 +63,7 @@ class TimeSeriesFeaturizer(Transformer):
 
     def __init__(
         self,
-        date_index=None,
+        time_index=None,
         max_delay=2,
         gap=0,
         forecast_horizon=1,
@@ -74,7 +74,7 @@ class TimeSeriesFeaturizer(Transformer):
         random_seed=0,
         **kwargs,
     ):
-        self.date_index = date_index
+        self.time_index = time_index
         self.max_delay = max_delay
         self.delay_features = delay_features
         self.delay_target = delay_target
@@ -96,7 +96,7 @@ class TimeSeriesFeaturizer(Transformer):
         self.start_delay = self.forecast_horizon + self.gap
 
         parameters = {
-            "date_index": date_index,
+            "time_index": time_index,
             "max_delay": max_delay,
             "delay_target": delay_target,
             "delay_features": delay_features,
@@ -119,10 +119,10 @@ class TimeSeriesFeaturizer(Transformer):
             self
 
         Raises:
-            ValueError: if self.date_index is None
+            ValueError: if self.time_index is None
         """
-        if self.date_index is None:
-            raise ValueError("date_index cannot be None!")
+        if self.time_index is None:
+            raise ValueError("time_index cannot be None!")
         self.statistically_significant_lags = self._find_significant_lags(
             y, conf_level=self.conf_level, max_delay=self.max_delay
         )
@@ -274,7 +274,7 @@ class TimeSeriesFeaturizer(Transformer):
             y = infer_feature_types(y)
         # Normalize the data into pandas objects
         X_ww = infer_feature_types(X)
-        original_features = [col for col in X_ww.columns if col != self.date_index]
+        original_features = [col for col in X_ww.columns if col != self.time_index]
         delayed_features = self._compute_delays(X_ww, y)
         rolling_means = self._compute_rolling_transforms(X_ww, y, original_features)
         features = ww.concat_columns([delayed_features, rolling_means])

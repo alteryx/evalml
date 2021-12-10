@@ -519,7 +519,7 @@ def test_default_data_checks_across_problem_types(problem_type):
         "gap": 1,
         "max_delay": 1,
         "forecast_horizon": 1,
-        "date_index": "datetime",
+        "time_index": "datetime",
     }
     data_check_classes = [
         check.__class__
@@ -680,7 +680,7 @@ def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
         "gap": 1,
         "max_delay": 1,
         "forecast_horizon": 1,
-        "date_index": "datetime",
+        "time_index": "datetime",
     }
     default_data_check = DefaultDataChecks(
         problem_type="time series regression",
