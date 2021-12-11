@@ -8,6 +8,8 @@ Release Notes
         * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
     * Documentation Changes
     * Testing Changes
+        * Parameterized tests in ``test_datasets.py`` :pr:`3145`
+
 
 .. warning::
 
