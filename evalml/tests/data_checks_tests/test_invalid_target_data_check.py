@@ -49,7 +49,7 @@ def test_invalid_target_data_check_nan_error():
     assert invalid_targets_check.validate(X, y=pd.Series([1, 2, 3])) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
     assert invalid_targets_check.validate(X, y=pd.Series([np.nan, np.nan, np.nan])) == {
         "warnings": [],
@@ -61,7 +61,7 @@ def test_invalid_target_data_check_nan_error():
                 details={},
             ).to_dict(),
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -74,7 +74,7 @@ def test_invalid_target_data_check_numeric_binary_classification_valid_float():
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -97,7 +97,7 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
                 details={"least_populated_class_labels": [0]},
             ).to_dict()
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     y = pd.Series([0] + [1] + [2] * 98)
@@ -113,7 +113,7 @@ def test_invalid_target_data_check_multiclass_two_examples_per_class():
                 details={"least_populated_class_labels": [0, 1]},
             ).to_dict()
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -132,7 +132,7 @@ def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     y = pd.Series(pd.date_range("2000-02-03", periods=5, freq="W"))
@@ -158,7 +158,7 @@ def test_invalid_target_data_check_invalid_pandas_data_types_error(pd_type):
                 details={"target_values": unique_values},
             ).to_dict(),
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -176,7 +176,7 @@ def test_invalid_target_y_none():
                 details={},
             ).to_dict()
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -198,7 +198,7 @@ def test_invalid_target_data_input_formats():
                 details={},
             ).to_dict()
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     expected = {
@@ -272,7 +272,7 @@ def test_invalid_target_data_check_n_unique(problem_type):
                 details={"target_values": unique_values},
             ).to_dict()
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     # Test number of unique values < n_unique
@@ -290,7 +290,7 @@ def test_invalid_target_data_check_n_unique(problem_type):
                 details={"target_values": unique_values},
             ).to_dict()
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     # Test n_unique is None
@@ -311,7 +311,7 @@ def test_invalid_target_data_check_n_unique(problem_type):
                 details={"target_values": unique_values},
             ).to_dict()
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -352,7 +352,7 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_name
                 },
             ).to_dict()
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     X = pd.DataFrame({"column_one": [100, 200, 100, 200, 100]})
@@ -376,7 +376,7 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_name
                 },
             ).to_dict()
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -413,7 +413,7 @@ def test_invalid_target_data_check_invalid_labels_for_nonnegative_objective_inst
                 },
             ).to_dict()
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -437,7 +437,7 @@ def test_invalid_target_data_check_invalid_labels_for_objectives(
             assert data_checks.validate(X, y) == {
                 "warnings": [],
                 "errors": [],
-                "actions": [],
+                "actions": {"action_list": [], "default_action": None},
             }
 
     X = pd.DataFrame({"column_one": [100, 200, 100, 200, 100]})
@@ -451,7 +451,7 @@ def test_invalid_target_data_check_invalid_labels_for_objectives(
             assert invalid_targets_check.validate(X, y) == {
                 "warnings": [],
                 "errors": [],
-                "actions": [],
+                "actions": {"action_list": [], "default_action": None},
             }
 
 
@@ -515,10 +515,18 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data():
     )
     assert invalid_targets_check.validate(
         X=pd.DataFrame({"col": range(len(y_categorical))}), y=y_categorical
-    ) == {"warnings": [], "errors": [data_check_error], "actions": []}
+    ) == {
+        "warnings": [],
+        "errors": [data_check_error],
+        "actions": {"action_list": [], "default_action": None},
+    }
     assert invalid_targets_check.validate(
         X=pd.DataFrame({"col": range(len(y_mixed_cat_numeric))}), y=y_mixed_cat_numeric
-    ) == {"warnings": [], "errors": [data_check_error], "actions": []}
+    ) == {
+        "warnings": [],
+        "errors": [data_check_error],
+        "actions": {"action_list": [], "default_action": None},
+    }
     assert invalid_targets_check.validate(
         X=pd.DataFrame({"col": range(len(y_integer))}), y=y_integer
     ) == {
@@ -565,7 +573,11 @@ def test_invalid_target_data_check_multiclass_problem_binary_data():
     }
     assert invalid_targets_check.validate(
         X=pd.DataFrame({"col": range(len(y_binary))}), y=y_binary
-    ) == {"warnings": [], "errors": [data_check_error], "actions": []}
+    ) == {
+        "warnings": [],
+        "errors": [data_check_error],
+        "actions": {"action_list": [], "default_action": None},
+    }
 
 
 @pytest.mark.parametrize(
@@ -590,7 +602,7 @@ def test_invalid_target_data_check_multiclass_problem_almost_continuous_data(
     assert invalid_targets_check.validate(X, y=y_multiclass_high_classes) == {
         "warnings": [data_check_warning],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     y_multiclass_med_classes = pd.Series(
@@ -606,7 +618,7 @@ def test_invalid_target_data_check_multiclass_problem_almost_continuous_data(
     assert invalid_targets_check.validate(X, y=y_multiclass_med_classes) == {
         "warnings": [data_check_warning],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     y_multiclass_low_classes = pd.Series(
@@ -616,7 +628,7 @@ def test_invalid_target_data_check_multiclass_problem_almost_continuous_data(
     assert invalid_targets_check.validate(X, y=y_multiclass_low_classes) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -632,12 +644,12 @@ def test_invalid_target_data_check_mismatched_indices():
     assert invalid_targets_check.validate(X=None, y=y_same_index) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
     assert invalid_targets_check.validate(X, y_same_index) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     X_index_missing = list(set(y_diff_index.index) - set(X.index))
@@ -655,7 +667,7 @@ def test_invalid_target_data_check_mismatched_indices():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
     assert invalid_targets_check.validate(X, y_diff_index_order) == {
         "warnings": [
@@ -667,7 +679,7 @@ def test_invalid_target_data_check_mismatched_indices():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     # Test that we only store ten mismatches when there are more than 10 differences in indices found
@@ -688,7 +700,7 @@ def test_invalid_target_data_check_mismatched_indices():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -717,7 +729,7 @@ def test_invalid_target_data_check_different_lengths():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -730,7 +742,7 @@ def test_invalid_target_data_check_numeric_binary_does_not_return_warnings():
     assert invalid_targets_check.validate(X, y) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -814,7 +826,7 @@ def test_invalid_target_data_action_for_all_null(problem_type):
                 details={},
             ).to_dict(),
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
     messages = invalid_targets_check.validate(X, y_all_null)
     assert messages == expected

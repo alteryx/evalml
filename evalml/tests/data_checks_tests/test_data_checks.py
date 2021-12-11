@@ -50,7 +50,7 @@ def test_data_checks(X_y_binary):
                     ).to_dict()
                 ],
                 "errors": [],
-                "actions": [],
+                "actions": {"action_list": [], "default_action": None},
             }
 
     class MockDataCheckError(DataCheck):
@@ -64,7 +64,7 @@ def test_data_checks(X_y_binary):
                         message_code=None,
                     ).to_dict()
                 ],
-                "actions": [],
+                "actions": {"action_list": [], "default_action": None},
             }
 
     class MockDataCheckErrorAndWarning(DataCheck):
@@ -84,7 +84,7 @@ def test_data_checks(X_y_binary):
                         message_code=None,
                     ).to_dict()
                 ],
-                "actions": [],
+                "actions": {"action_list": [], "default_action": None},
             }
 
     data_checks_list = [
@@ -111,7 +111,7 @@ def test_data_checks(X_y_binary):
                 message="error two", data_check_name="MockDataCheckErrorAndWarning"
             ).to_dict(),
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -663,7 +663,7 @@ def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
             assert check.validate(X, y) == {
                 "warnings": [],
                 "errors": [data_check_error],
-                "actions": [],
+                "actions": {"action_list": [], "default_action": None},
             }
 
 

@@ -66,13 +66,16 @@ def test_target_leakage_data_check_warnings():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=target_leakage_data_check_name,
-                metadata={"columns": ["a", "b", "c", "d"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": ["a", "b", "c", "d"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
 
@@ -94,13 +97,16 @@ def test_target_leakage_data_check_singular_warning():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=target_leakage_data_check_name,
-                metadata={"columns": ["a"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": ["a"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
 
@@ -137,13 +143,16 @@ def test_target_leakage_data_check_input_formats():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=target_leakage_data_check_name,
-                metadata={"columns": ["a", "b", "c", "d"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": ["a", "b", "c", "d"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
     # test X, y with ww
     X_ww = X.copy()
@@ -165,13 +174,16 @@ def test_target_leakage_data_check_input_formats():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=target_leakage_data_check_name,
-                metadata={"columns": [0, 1, 2, 3]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": [0, 1, 2, 3]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
 
@@ -220,13 +232,16 @@ def test_target_leakage_types():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=target_leakage_data_check_name,
-                metadata={"columns": ["a", "b", "c", "d"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": ["a", "b", "c", "d"]},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
 
     assert leakage_check.validate(X, y) == expected
@@ -239,7 +254,7 @@ def test_target_leakage_multi():
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     y = pd.Series([1, 0, 2, 1, 2, 0])
@@ -260,13 +275,16 @@ def test_target_leakage_multi():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=target_leakage_data_check_name,
-                metadata={"columns": ["a", "b", "c"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": ["a", "b", "c"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
     # test X, y with ww
@@ -286,7 +304,7 @@ def test_target_leakage_regression():
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     y = pd.Series(
@@ -310,13 +328,16 @@ def test_target_leakage_regression():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=target_leakage_data_check_name,
-                metadata={"columns": ["a", "b", "c", "e"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": ["a", "b", "c", "e"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
     # test X, y with ww
@@ -350,13 +371,16 @@ def test_target_leakage_data_check_warnings_pearson():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=target_leakage_data_check_name,
-                metadata={"columns": ["a", "b", "c", "d"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": ["a", "b", "c", "d"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
     y = ["a", "b", "a", "a"]
@@ -375,7 +399,7 @@ def test_target_leakage_data_check_input_formats_pearson():
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     y = pd.Series([1, 0, 1, 1])
@@ -397,13 +421,16 @@ def test_target_leakage_data_check_input_formats_pearson():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=target_leakage_data_check_name,
-                metadata={"columns": ["a", "b", "c", "d"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": ["a", "b", "c", "d"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
     # test X as np.array
@@ -417,13 +444,16 @@ def test_target_leakage_data_check_input_formats_pearson():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=target_leakage_data_check_name,
-                metadata={"columns": [0, 1, 2, 3]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=target_leakage_data_check_name,
+                    metadata={"columns": [0, 1, 2, 3]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
     # test X, y with ww

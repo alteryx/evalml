@@ -44,7 +44,7 @@ class MulticollinearityDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "IS_MULTICOLLINEAR",
             ...                   'details': {"columns": [('col_1', 'col_2')], "rows": None}}],
-            ...     "actions": []}
+            ...     "actions": {"action_list":[], "default_action": None}}
         """
         results = {
             "warnings": [],

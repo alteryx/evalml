@@ -57,13 +57,16 @@ def test_id_columns_warning():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=id_data_check_name,
-                metadata={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
 
     X = pd.DataFrame.from_dict(X_dict)
@@ -78,13 +81,16 @@ def test_id_columns_warning():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=id_data_check_name,
-                metadata={"columns": ["Id", "col_1_id"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["Id", "col_1_id"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
 
@@ -122,13 +128,16 @@ def test_id_columns_strings():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=id_data_check_name,
-                metadata={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
     id_cols_check = IDColumnsDataCheck(id_threshold=1.0)
@@ -142,13 +151,16 @@ def test_id_columns_strings():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=id_data_check_name,
-                metadata={"columns": ["Id", "col_1_id"]},
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": ["Id", "col_1_id"]},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
 
 
@@ -159,7 +171,7 @@ def test_id_cols_data_check_input_formats():
     assert id_cols_check.validate(pd.DataFrame()) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     #  test Woodwork
@@ -175,13 +187,16 @@ def test_id_cols_data_check_input_formats():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=id_data_check_name,
-                metadata={"columns": [0, 1]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": [0, 1]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
     #  test 2D list
@@ -195,13 +210,16 @@ def test_id_cols_data_check_input_formats():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=id_data_check_name,
-                metadata={"columns": [0, 1]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": [0, 1]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
     # test np.array
@@ -217,11 +235,14 @@ def test_id_cols_data_check_input_formats():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=id_data_check_name,
-                metadata={"columns": [0, 1]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=id_data_check_name,
+                    metadata={"columns": [0, 1]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }

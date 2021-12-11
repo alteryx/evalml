@@ -80,7 +80,7 @@ class ClassImbalanceDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "CLASS_IMBALANCE_SEVERE",
             ...                   "details": {"target_values": [0], "rows": None, "columns": None}}],
-            ...      "actions": []}
+            ...      "actions": {"action_list":[], "default_action": None}}
             ...
             ...
             >>> y = pd.Series([0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2])

@@ -39,7 +39,7 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                 "details": {"columns": None, "rows": None}
             ...                 }],
             ...     "warnings": [],
-            ...     "actions": []}
+            ...     "actions": {"action_list":[], "default_action": None}}
             ...
             ...
             >>> X = pd.DataFrame([1, 2, 3, 4], columns=["Weeks"])
