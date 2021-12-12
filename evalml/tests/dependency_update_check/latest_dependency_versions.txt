@@ -16,7 +16,7 @@ networkx==2.5.1
 nlp-primitives==2.0.0
 numba==0.53.0
 numpy==1.21.4
-pandas==1.3.4
+pandas==1.3.5
 plotly==5.4.0
 pmdarima==1.8.0
 pyzmq==22.3.0
