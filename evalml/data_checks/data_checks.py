@@ -109,8 +109,8 @@ class DataChecks:
             messages["warnings"].extend(messages_new["warnings"])
             messages["errors"].extend(messages_new["errors"])
 
-            new_actions = messages_new["actions"]
+            new_actions = messages_new["actions"]["action_list"]
             for new_action in new_actions:
-                if new_action not in messages["actions"]:
-                    messages["actions"].append(new_action)
+                if new_action not in messages["actions"]["action_list"]:
+                    messages["actions"]["action_list"].append(new_action)
         return messages

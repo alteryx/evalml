@@ -217,16 +217,19 @@ def test_invalid_target_data_input_formats():
                 details={"target_values": [0]},
             ).to_dict(),
         ],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.IMPUTE_COL,
-                data_check_name=invalid_targets_data_check_name,
-                metadata={
-                    "is_target": True,
-                    "impute_strategy": "most_frequent",
-                },
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.IMPUTE_COL,
+                    data_check_name=invalid_targets_data_check_name,
+                    metadata={
+                        "is_target": True,
+                        "impute_strategy": "most_frequent",
+                    },
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
     #  test Woodwork
     y = pd.Series([None, None, None, 0])
@@ -765,16 +768,19 @@ def test_invalid_target_data_action_for_data_with_null(problem_type):
                 details={"num_null_rows": 3, "pct_null_rows": 30.0},
             ).to_dict()
         ],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.IMPUTE_COL,
-                data_check_name=invalid_targets_data_check_name,
-                metadata={
-                    "is_target": True,
-                    "impute_strategy": impute_strategy,
-                },
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.IMPUTE_COL,
+                    data_check_name=invalid_targets_data_check_name,
+                    metadata={
+                        "is_target": True,
+                        "impute_strategy": impute_strategy,
+                    },
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
     if is_binary(problem_type):
         expected["errors"].append(
