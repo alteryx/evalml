@@ -12,7 +12,6 @@ from skopt.space import Categorical
 
 from evalml.exceptions import (
     ComponentNotYetFittedError,
-    EnsembleMissingPipelinesError,
     MethodPropertyNotFoundError,
 )
 from evalml.model_family import ModelFamily
@@ -229,6 +228,7 @@ def test_describe_component():
         "parameters": {
             "impute_strategies": {"a": "mean", "b": ("constant", 100)},
             "default_impute_strategy": "most_frequent",
+            "impute_all": True,
         },
     }
     assert scaler.describe(return_dict=True) == {
@@ -270,7 +270,7 @@ def test_describe_component():
         "parameters": {
             "features_to_extract": ["year", "month", "day_of_week", "hour"],
             "encode_as_categories": False,
-            "date_index": None,
+            "time_index": None,
         },
     }
     assert natural_language_featurizer.describe(return_dict=True) == {
@@ -511,7 +511,7 @@ def test_describe_component():
             "name": "Prophet Regressor",
             "parameters": {
                 "changepoint_prior_scale": 0.05,
-                "date_index": None,
+                "time_index": None,
                 "holidays_prior_scale": 10,
                 "seasonality_mode": "additive",
                 "seasonality_prior_scale": 10,
@@ -794,10 +794,7 @@ def test_clone_fitted(X_y_binary):
 
 def test_components_init_kwargs():
     for component_class in all_components():
-        try:
-            component = component_class()
-        except EnsembleMissingPipelinesError:
-            continue
+        component = component_class()
         if component._component_obj is None:
             continue
         if isinstance(component, StackedEnsembleBase):
@@ -1113,7 +1110,7 @@ def test_all_transformers_check_fit(X_y_binary, ts_data_binary):
             component = component_class(sampling_ratio=1)
         elif component_class == TimeSeriesFeaturizer:
             X, y = ts_data_binary
-            component = component_class(date_index="date")
+            component = component_class(time_index="date")
 
         with pytest.raises(
             ComponentNotYetFittedError, match=f"You must fit {component_class.__name__}"
@@ -1127,7 +1124,7 @@ def test_all_transformers_check_fit(X_y_binary, ts_data_binary):
         if "Oversampler" == component_class.name:
             component = component_class(sampling_ratio=1)
         elif component_class == TimeSeriesFeaturizer:
-            component = component_class(date_index="date")
+            component = component_class(time_index="date")
         component.fit_transform(X, y)
         component.transform(X, y)
 
@@ -1161,7 +1158,7 @@ def test_all_estimators_check_fit(
             X, y = X_y_binary
 
         if component_class.__name__ == "ProphetRegressor":
-            component = component_class(date_index="date")
+            component = component_class(time_index="date")
         else:
             component = helper_functions.safe_init_component_with_njobs_1(
                 component_class
@@ -1226,7 +1223,7 @@ def test_all_transformers_check_fit_input_type(
             continue
         if component_class == TimeSeriesFeaturizer:
             X, y = ts_data_binary
-            kwargs = {"date_index": "date"}
+            kwargs = {"time_index": "date"}
 
         component = component_class(**kwargs)
         component.fit(X, y)
@@ -1249,12 +1246,12 @@ def test_no_fitting_required_components(
 
 def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), "component.pkl")
-    requires_date_index = [ARIMARegressor, ProphetRegressor, TimeSeriesFeaturizer]
+    requires_time_index = [ARIMARegressor, ProphetRegressor, TimeSeriesFeaturizer]
     for component_class in all_components():
         print("Testing serialization of component {}".format(component_class.name))
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
-        if component_class in requires_date_index:
-            component = component_class(date_index="date")
+        if component_class in requires_time_index:
+            component = component_class(time_index="date")
             X, y = ts_data
         else:
             X, y = X_y_binary
@@ -1565,7 +1562,7 @@ def test_transformer_fit_and_transform_respect_custom_indices(
 
     kwargs = {}
     if transformer_class == TimeSeriesFeaturizer:
-        kwargs.update({"date_index": "date"})
+        kwargs.update({"time_index": "date"})
         X, y = ts_data_binary
 
     X = pd.DataFrame(X)
@@ -1644,7 +1641,7 @@ def test_estimator_fit_respects_custom_indices(
 
     try:
         if estimator_class.__name__ == "ProphetRegressor":
-            estimator = estimator_class(date_index="date")
+            estimator = estimator_class(time_index="date")
         else:
             estimator = estimator_class(n_jobs=1)
     except TypeError:

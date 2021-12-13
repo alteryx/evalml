@@ -2,8 +2,25 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
         * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
+    * Fixes
+    * Changes
+        * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
+    * Documentation Changes
+    * Testing Changes
+        * Parameterized tests in ``test_datasets.py`` :pr:`3145`
+
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
+
+
+**v0.39.0 Dec. 9, 2021**
+    * Enhancements
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
+        * Added ability to impute only specific columns in ``PerColumnImputer`` :pr:`3123`
         * Added ``TimeSeriesParametersDataCheck`` to verify the time series parameters are valid given the number of splits in cross validation :pr:`3111`
     * Fixes
         * Default parameters for ``RFRegressorSelectFromModel`` and ``RFClassifierSelectFromModel`` has been fixed to avoid selecting all features :pr:`3110`
@@ -13,10 +30,13 @@ Release Notes
         * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
         * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
         * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
+        * Updated ``make_pipeline`` for handling pandas nullable types in preprocessing pipeline. :pr:`3129`
+        * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
     * Documentation Changes
     * Testing Changes
         * Refactored tests to avoid using ``importorskip`` :pr:`3126`
         * Added ``skip_during_conda`` test marker to skip tests that are not supposed to run during conda build :pr:`3127`
+        * Added ``skip_if_39`` test marker to skip tests that are not supposed to run during python 3.9 :pr:`3133`
 
 .. warning::
 
@@ -24,6 +44,7 @@ Release Notes
         * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` :pr:`3028`
         * ``ProphetRegressor`` now requires a datetime column in ``X`` represented by the ``date_index`` parameter :pr:`3104`
         * Renamed module ``evalml.data_checks.invalid_target_data_check`` to ``evalml.data_checks.invalid_targets_data_check`` :pr:`3122`
+        * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
 
 
 **v0.38.0 Nov. 27, 2021**

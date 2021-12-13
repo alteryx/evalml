@@ -53,7 +53,7 @@ def test_search_iterative_data_check_error(
 
 
 @pytest.mark.parametrize(
-    "problem_config", [None, "missing_date_index", "has_date_index"]
+    "problem_config", [None, "missing_time_index", "has_time_index"]
 )
 def test_search_iterative_data_check_error_timeseries(problem_config):
     X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
@@ -64,11 +64,11 @@ def test_search_iterative_data_check_error_timeseries(problem_config):
     )
     X["dates"] = dates
 
-    if problem_config == "missing_date_index":
+    if problem_config == "missing_time_index":
         problem_configuration = {"gap": 4}
         with pytest.raises(
             ValueError,
-            match="date_index has to be passed in problem_configuration.",
+            match="time_index has to be passed in problem_configuration.",
         ):
             search_iterative(
                 X_train=X,
@@ -88,7 +88,7 @@ def test_search_iterative_data_check_error_timeseries(problem_config):
                 problem_configuration=problem_configuration,
             )
     else:
-        problem_configuration = {"date_index": "dates"}
+        problem_configuration = {"time_index": "dates"}
         automl, data_check_results = search_iterative(
             X_train=X,
             y_train=y,

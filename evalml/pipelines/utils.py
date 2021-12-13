@@ -33,6 +33,7 @@ from evalml.pipelines.components import (  # noqa: F401
     OneHotEncoder,
     Oversampler,
     RandomForestClassifier,
+    ReplaceNullableTypes,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
@@ -71,6 +72,24 @@ def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
     all_null_cols = X.columns[X.isnull().all()]
     if len(all_null_cols) > 0:
         component.append(DropNullColumns)
+    return component
+
+
+def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
+    component = []
+    all_nullable_cols = X.ww.select(
+        ["IntegerNullable", "AgeNullable", "BooleanNullable"], return_schema=True
+    ).columns
+    nullable_target = isinstance(
+        y.ww.logical_type,
+        (
+            logical_types.AgeNullable,
+            logical_types.BooleanNullable,
+            logical_types.IntegerNullable,
+        ),
+    )
+    if len(all_nullable_cols) > 0 or nullable_target:
+        component.append(ReplaceNullableTypes)
     return component
 
 
@@ -125,10 +144,13 @@ def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None):
     text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
 
     types_imputer_handles = {
+        logical_types.AgeNullable,
         logical_types.Boolean,
+        logical_types.BooleanNullable,
         logical_types.Categorical,
         logical_types.Double,
         logical_types.Integer,
+        logical_types.IntegerNullable,
         logical_types.URL,
         logical_types.EmailAddress,
         logical_types.Datetime,
@@ -147,7 +169,9 @@ def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
 
     # The URL and EmailAddress Featurizers will create categorical columns
     categorical_cols = list(
-        X.ww.select(["category", "URL", "EmailAddress"], return_schema=True).columns
+        X.ww.select(
+            ["category", "URL", "EmailAddress", "BooleanNullable"], return_schema=True
+        ).columns
     )
     if len(categorical_cols) > 0 and estimator_class not in {
         CatBoostClassifier,
@@ -214,6 +238,7 @@ def _get_preprocessing_components(
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
+            _get_replace_null,
             _get_drop_index_unknown,
             _get_url_email,
             _get_natural_language,
@@ -228,6 +253,7 @@ def _get_preprocessing_components(
         components_functions = [
             _get_label_encoder,
             _get_drop_all_null,
+            _get_replace_null,
             _get_drop_index_unknown,
             _get_url_email,
             _get_datetime,
@@ -293,8 +319,8 @@ def make_pipeline(
     Raises:
         ValueError: If estimator is not valid for the given problem type, or sampling is not supported for the given problem type.
     """
-    X = infer_feature_types(X)
-    y = infer_feature_types(y)
+    X = infer_feature_types(X, ignore_nullable_types=True)
+    y = infer_feature_types(y, ignore_nullable_types=True)
 
     if estimator:
         problem_type = handle_problem_types(problem_type)
@@ -369,7 +395,6 @@ def _make_stacked_ensemble_pipeline(
 
     Args:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
-            This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         problem_type (ProblemType): Problem type of pipeline
         final_estimator (Estimator): Metalearner to use for the ensembler. Defaults to None.
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
@@ -637,14 +662,14 @@ def _make_component_list_from_actions(actions):
     return components
 
 
-def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, date_index):
+def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, time_index):
     """Make a baseline pipeline for time series regression problems.
 
     Args:
         problem_type: One of TIME_SERIES_REGRESSION, TIME_SERIES_MULTICLASS, TIME_SERIES_BINARY
         gap (int): Non-negative gap parameter.
         forecast_horizon (int): Positive forecast_horizon parameter.
-        date_index (str): Column name of date_index parameter.
+        time_index (str): Column name of time_index parameter.
 
     Returns:
         TimeSeriesPipelineBase, a time series pipeline corresponding to the problem type.
@@ -672,7 +697,7 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, date_
         custom_name=pipeline_name,
         parameters={
             "pipeline": {
-                "date_index": date_index,
+                "time_index": time_index,
                 "gap": gap,
                 "max_delay": 0,
                 "forecast_horizon": forecast_horizon,
@@ -683,7 +708,7 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, date_
                 "forecast_horizon": forecast_horizon,
                 "delay_target": True,
                 "delay_features": False,
-                "date_index": date_index,
+                "time_index": time_index,
             },
             "Time Series Baseline Estimator": {
                 "gap": gap,

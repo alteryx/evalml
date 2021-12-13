@@ -10,10 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import check_random_state
 
-from evalml.exceptions import (
-    EnsembleMissingPipelinesError,
-    MissingComponentError,
-)
+from evalml.exceptions import MissingComponentError
 
 logger = logging.getLogger(__name__)
 
@@ -243,8 +240,6 @@ def get_importable_subclasses(base_class, used_in_automl=True):
             logger.debug(
                 f"Could not import class {cls.__name__} in get_importable_subclasses"
             )
-        except EnsembleMissingPipelinesError:
-            classes.append(cls)
     if used_in_automl:
         classes = [cls for cls in classes if cls.__name__ not in _not_used_in_automl]
 
@@ -532,13 +527,13 @@ def contains_all_ts_parameters(problem_configuration):
         bool, str: True if the configuration contains all parameters. If False, msg is a non-empty
             string with error message.
     """
-    required_parameters = {"date_index", "gap", "max_delay", "forecast_horizon"}
+    required_parameters = {"time_index", "gap", "max_delay", "forecast_horizon"}
     msg = ""
     if not problem_configuration or not all(
         p in problem_configuration for p in required_parameters
     ):
         msg = (
-            "problem_configuration must be a dict containing values for at least the date_index, gap, max_delay, "
+            "problem_configuration must be a dict containing values for at least the time_index, gap, max_delay, "
             f"and forecast_horizon parameters. Received {problem_configuration}."
         )
     return not (msg), msg

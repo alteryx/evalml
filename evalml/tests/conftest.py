@@ -55,6 +55,10 @@ def pytest_configure(config):
         "markers",
         "skip_during_conda: mark test to be skipped if running during conda build",
     )
+    config.addinivalue_line(
+        "markers",
+        "skip_if_39: mark test to be skipped if running during conda build",
+    )
 
 
 @pytest.fixture(scope="session")
@@ -90,6 +94,100 @@ def graphviz():
     import graphviz
 
     return graphviz
+
+
+@pytest.fixture
+def get_test_data_from_configuration():
+    def _get_test_data_from_configuration(
+        input_type, problem_type, column_names=None, nullable_target=False
+    ):
+        X_all = pd.DataFrame(
+            {
+                "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+                * 2,
+                "int_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
+                "age_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
+                "bool_null": [True, None, False, True, False, None, True] * 2,
+                "numerical": range(14),
+                "categorical": ["a", "b", "a", "b", "b", "a", "b"] * 2,
+                "dates": pd.date_range("2000-02-03", periods=14, freq="W"),
+                "text": [
+                    "this is a string",
+                    "this is another string",
+                    "this is just another string",
+                    "evalml should handle string input",
+                    "cats are gr8",
+                    "hello world",
+                    "evalml is gr8",
+                ]
+                * 2,
+                "email": [
+                    "abalone_0@gmail.com",
+                    "AbaloneRings@yahoo.com",
+                    "abalone_2@abalone.com",
+                    "titanic_data@hotmail.com",
+                    "fooEMAIL@email.org",
+                    "evalml@evalml.org",
+                    "evalml@alteryx.org",
+                ]
+                * 2,
+                "url": [
+                    "https://evalml.alteryx.com/en/stable/",
+                    "https://woodwork.alteryx.com/en/stable/guides/statistical_insights.html",
+                    "https://twitter.com/AlteryxOSS",
+                    "https://www.twitter.com/AlteryxOSS",
+                    "https://www.evalml.alteryx.com/en/stable/demos/text_input.html",
+                    "https://github.com/alteryx/evalml",
+                    "https://github.com/alteryx/featuretools",
+                ]
+                * 2,
+                "ip": [
+                    "0.0.0.0",
+                    "1.1.1.101",
+                    "1.1.101.1",
+                    "1.101.1.1",
+                    "101.1.1.1",
+                    "192.168.1.1",
+                    "255.255.255.255",
+                ]
+                * 2,
+            }
+        )
+        y = pd.Series([0, 0, 1, 0, 0, 1, 1] * 2)
+        if problem_type == ProblemTypes.MULTICLASS:
+            y = pd.Series([0, 2, 1, 2, 0, 2, 1] * 2)
+        elif is_regression(problem_type):
+            y = pd.Series([1, 2, 3, 3, 3, 4, 5] * 2)
+        if nullable_target:
+            y.iloc[2] = None
+            if input_type == "ww":
+                y = ww.init_series(y, logical_type="integer_nullable")
+        X = X_all[column_names]
+
+        if input_type == "ww":
+            logical_types = {}
+            if "text" in column_names:
+                logical_types.update({"text": "NaturalLanguage"})
+            if "categorical" in column_names:
+                logical_types.update({"categorical": "Categorical"})
+            if "url" in column_names:
+                logical_types.update({"url": "URL"})
+            if "email" in column_names:
+                logical_types.update({"email": "EmailAddress"})
+            if "int_null" in column_names:
+                logical_types.update({"int_null": "integer_nullable"})
+            if "age_null" in column_names:
+                logical_types.update({"age_null": "age_nullable"})
+            if "bool_null" in column_names:
+                logical_types.update({"bool_null": "boolean_nullable"})
+
+            X.ww.init(logical_types=logical_types)
+
+            y = ww.init_series(y)
+
+        return X, y
+
+    return _get_test_data_from_configuration
 
 
 def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
@@ -312,6 +410,11 @@ def pytest_collection_modifyitems(config, items):
         for item in items:
             if "skip_during_conda" in item.keywords:
                 item.add_marker(skip_conda)
+    if sys.version_info >= (3, 9):
+        skip_39 = pytest.mark.skip(reason="Test dependency not supported in python 3.9")
+        for item in items:
+            if "skip_if_39" in item.keywords:
+                item.add_marker(skip_39)
 
 
 @pytest.fixture

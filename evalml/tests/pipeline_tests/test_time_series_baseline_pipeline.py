@@ -63,7 +63,7 @@ def test_time_series_baseline(
     X_validation = X.iloc[(15 + gap) : (15 + gap + forecast_horizon)]
 
     clf = make_timeseries_baseline_pipeline(
-        problem_type, gap, forecast_horizon, date_index="date"
+        problem_type, gap, forecast_horizon, time_index="date"
     )
     clf.fit(X_train, y_train)
     np.testing.assert_allclose(
