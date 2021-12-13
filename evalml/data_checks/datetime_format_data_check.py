@@ -52,7 +52,7 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': None, 'rows': None},
             ...                 'code': 'DATETIME_INFORMATION_NOT_FOUND'}],
-            ...     'actions': []}
+            ...     "actions": {"action_list":[], "default_action": None}}
             ...
             ...
             >>> X = pd.DataFrame(pd.to_datetime([1, 2, 3, 4]), columns=["Weeks"])
@@ -74,7 +74,7 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': None, 'rows': None},
             ...                 'code': 'DATETIME_IS_NOT_MONOTONIC'}],
-            ...     'actions': []}
+            ...     "actions": {"action_list":[], "default_action": None}}
         """
         results = {
             "warnings": [],

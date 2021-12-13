@@ -41,7 +41,7 @@ class DateTimeNaNDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': ['index'], 'rows': None},
             ...                 'code': 'DATETIME_HAS_NAN'}],
-            ...     'actions': []}
+            ...     "actions": {"action_list":[], "default_action": None}}
             ...
             ...
             >>> dates[0][1] = None
@@ -53,7 +53,7 @@ class DateTimeNaNDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': ['index', 'days'], 'rows': None},
             ...                 'code': 'DATETIME_HAS_NAN'}],
-            ...     'actions': []}
+            ...     "actions": {"action_list":[], "default_action": None}}
             ...
             ...
             >>> dates[0][1] = pd.NA
@@ -65,7 +65,7 @@ class DateTimeNaNDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': ['index', 'days'], 'rows': None},
             ...                 'code': 'DATETIME_HAS_NAN'}],
-            ...     'actions': []}
+            ...     "actions": {"action_list":[], "default_action": None}}
         """
         results = {
             "warnings": [],

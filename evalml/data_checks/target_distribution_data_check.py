@@ -39,12 +39,12 @@ class TargetDistributionDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "TARGET_LOGNORMAL_DISTRIBUTION",
             ...                   "details": {"normalization_method": "shapiro", "statistic": 0.8, "p-value": 0.045, "columns": None, "rows": None}}],
-            ...     "actions": [{'code': 'TRANSFORM_TARGET',
+            ...     "actions": {"action_list": [{'code': 'TRANSFORM_TARGET',
             ...                  "data_check_name": "TargetDistributionDataCheck",
             ...                  'metadata': {'transformation_strategy': 'lognormal',
             ...                               'is_target': True,
             ...                               "columns": None,
-            ...                               "rows": None}}]}
+            ...                               "rows": None}}], "default_action": None}}
             ...
             ...
             >>> y = pd.Series([1, 1, 1, 2, 2, 3, 4, 4, 5, 5, 5])
@@ -59,7 +59,7 @@ class TargetDistributionDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': None, 'rows': None, 'unsupported_type': 'datetime'},
             ...                 'code': 'TARGET_UNSUPPORTED_TYPE'}],
-            ...     'actions': []}
+            ...     "actions": {"action_list":[], "default_action": None}}
         """
         results = {
             "warnings": [],

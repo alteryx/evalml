@@ -87,7 +87,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': None, 'rows': None},
             ...                 'code': 'TARGET_UNSUPPORTED_TYPE'}],
-            ...     'actions': []}
+            ...     "actions": {"action_list":[], "default_action": None}}
             ...
             ...
             >>> y = pd.Series([None, pd.NA, pd.NaT, None])
@@ -98,7 +98,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': None, 'rows': None},
             ...                 'code': 'TARGET_IS_EMPTY_OR_FULLY_NULL'}],
-            ...     'actions': []}
+            ...     "actions": {"action_list":[], "default_action": None}}
             ...
             ...
             >>> y = pd.Series([1, None, 3, None])
@@ -112,12 +112,12 @@ class InvalidTargetDataCheck(DataCheck):
             ...                             'num_null_rows': 2,
             ...                             'pct_null_rows': 50.0},
             ...                 'code': 'TARGET_HAS_NULL'}],
-            ...     'actions': [{'code': 'IMPUTE_COL',
+            ...     'actions': {"action_list": [{'code': 'IMPUTE_COL',
             ...                  'data_check_name': 'InvalidTargetDataCheck',
             ...                  'metadata': {'columns': None,
             ...                               'rows': None,
             ...                               'is_target': True,
-            ...                               'impute_strategy': 'mean'}}]}
+            ...                               'impute_strategy': 'mean'}}], "default_action": None}}
             ...
             ...
             >>> X = pd.DataFrame([i for i in range(50)])
@@ -130,7 +130,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': None, 'rows': None, 'num_classes': 2},
             ...                 'code': 'TARGET_MULTICLASS_NOT_ENOUGH_CLASSES'}],
-            ...     'actions': []}
+            ...     "actions": {"action_list":[], "default_action": None}}
             ...
             ...
             >>> target_check = InvalidTargetDataCheck('regression', 'R2')
@@ -154,7 +154,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                               'indices_not_in_target': [0]},
             ...                   'code': 'MISMATCHED_INDICES'}],
             ...     'errors': [],
-            ...     'actions': []}
+            ...     "actions": {"action_list":[], "default_action": None}}
         """
         results = {
             "warnings": [],

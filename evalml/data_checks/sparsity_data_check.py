@@ -62,9 +62,9 @@ class SparsityDataCheck(DataCheck):
             ...                    "level": "warning",
             ...                    "code": "TOO_SPARSE",
             ...                    "details": {"columns": ["sparse"], "sparsity_score": {"sparse": 0.0}, "rows": None}}],
-            ...     "actions": [{"code": "DROP_COL",
+            ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "SparsityDataCheck",
-            ...                  "metadata": {"columns": ["sparse"], "rows": None}}]}
+            ...                  "metadata": {"columns": ["sparse"], "rows": None}}], "default_action": None}}
             ...
             ...
             >>> df['sparse'] = [float(x % 10) for x in range(100)]

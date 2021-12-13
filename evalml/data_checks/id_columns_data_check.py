@@ -53,9 +53,9 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "HAS_ID_COLUMN",
             ...                   "details": {"columns": ["customer_id"], "rows": None}}],
-            ...     "actions": [{"code": "DROP_COL",
+            ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
-            ...                  "metadata": {"columns": ["customer_id"], "rows": None}}]}
+            ...                  "metadata": {"columns": ["customer_id"], "rows": None}}], "default_action": None}}
             ...
             ...
             >>> df = df.rename(columns={"customer_id": "ID"})
@@ -67,9 +67,9 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "HAS_ID_COLUMN",
             ...                   "details": {"columns": ["ID"], "rows": None}}],
-            ...     "actions": [{"code": "DROP_COL",
+            ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
-            ...                  "metadata": {"columns": ["ID"], "rows": None}}]}
+            ...                  "metadata": {"columns": ["ID"], "rows": None}}], "default_action": None}}
             ...
             ...
             >>> df = pd.DataFrame({
@@ -90,9 +90,9 @@ class IDColumnsDataCheck(DataCheck):
             ...                   'details': {'columns': ['Country_Rank'], 'rows': None},
             ...                   'code': 'HAS_ID_COLUMN'}],
             ...     'errors': [],
-            ...     'actions': [{'code': 'DROP_COL',
+            ...     'actions': {"action_list": [{'code': 'DROP_COL',
             ...                  'data_check_name': 'IDColumnsDataCheck',
-            ...                  'metadata': {'columns': ['Country_Rank'], 'rows': None}}]}
+            ...                  'metadata': {'columns': ['Country_Rank'], 'rows': None}}], "default_action": None}}
         """
         results = {
             "warnings": [],

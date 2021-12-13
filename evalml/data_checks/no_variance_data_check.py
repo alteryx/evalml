@@ -52,9 +52,9 @@ class NoVarianceDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': ['Y'], 'rows': None},
             ...                 'code': 'NO_VARIANCE'}],
-            ...     'actions': [{'code': 'DROP_COL',
+            ...     'actions': {"action_list": [{'code': 'DROP_COL',
             ...                  'data_check_name': 'NoVarianceDataCheck',
-            ...                  'metadata': {'columns': ["First_Column"], 'rows': None}}]}
+            ...                  'metadata': {'columns': ["First_Column"], 'rows': None}}], "default_action": None}}
             ...
             ...
             >>> X["First_Column"] = [2, 2, 2, 3, 3, 3, None, None]
@@ -70,7 +70,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': ['Y'], 'rows': None},
             ...                 'code': 'NO_VARIANCE'}],
-            ...     'actions': []}
+            ...     "actions": {"action_list":[], "default_action": None}}
             ...
             ...
             >>> X["First_Column"] = [2, 2, 2, 2, None, None, None, None]
@@ -87,9 +87,9 @@ class NoVarianceDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': ['Y'], 'rows': None},
             ...                 'code': 'NO_VARIANCE'}],
-            ...     'actions': [{'code': 'DROP_COL',
+            ...     'actions': {"action_list": [{'code': 'DROP_COL',
             ...                  'data_check_name': 'NoVarianceDataCheck',
-            ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}]}
+            ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}], "default_action": None}}
             ...
             ...
             >>> novar_dc = NoVarianceDataCheck(count_nan_as_value=True)
@@ -105,9 +105,9 @@ class NoVarianceDataCheck(DataCheck):
             ...                   'details': {'columns': ['Y'], 'rows': None},
             ...                   'code': 'NO_VARIANCE_WITH_NULL'}],
             ...     'errors': [],
-            ...     'actions': [{'code': 'DROP_COL',
+            ...     'actions': {"action_list": [{'code': 'DROP_COL',
             ...                  'data_check_name': 'NoVarianceDataCheck',
-            ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}]}
+            ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}], "default_action": None}}
 
         """
         results = {

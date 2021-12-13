@@ -62,24 +62,30 @@ class UniquenessDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "NOT_UNIQUE_ENOUGH",
             ...                   "details": {"columns": ["regression_not_unique_enough"], "uniqueness_score": {"regression_not_unique_enough": 0.0}, "rows": None}}],
-            ...     "actions": [{"code": "DROP_COL",
-            ...                  "data_check_name": 'UniquenessDataCheck',
-            ...                  "metadata": {"columns": ["regression_not_unique_enough"], "rows": None}}]}
+            ...     "actions": {"action_list": [{'code': 'DROP_COL',
+            ...                                  'data_check_name': 'UniquenessDataCheck',
+            ...                                  'metadata': {'columns': ['regression_not_unique_enough'], 'rows': None}}],
+            ...                 "default_action": None
+            ...                }
+            ... }
             ...
             ...
             >>> uniqueness_check = UniquenessDataCheck(problem_type="multiclass", threshold=0.8)
             >>> assert uniqueness_check.validate(df) == {
-            ...     'warnings': [{'message': "Input columns 'regression_unique_enough' for multiclass problem type are too unique.",
+            ...     "warnings": [{'message': "Input columns 'regression_unique_enough' for multiclass problem type are too unique.",
             ...                   'data_check_name': 'UniquenessDataCheck',
             ...                   'level': 'warning',
             ...                   'details': {'columns': ['regression_unique_enough'],
             ...                               'rows': None,
             ...                               'uniqueness_score': {'regression_unique_enough': 0.99}},
             ...                   'code': 'TOO_UNIQUE'}],
-            ...     'errors': [],
-            ...     'actions': [{'code': 'DROP_COL',
-            ...                  'data_check_name': 'UniquenessDataCheck',
-            ...                  'metadata': {'columns': ['regression_unique_enough'], 'rows': None}}]}
+            ...     "errors": [],
+            ...     "actions": {"action_list": [{'code': 'DROP_COL',
+            ...                                  'data_check_name': 'UniquenessDataCheck',
+            ...                                  'metadata': {'columns': ['regression_unique_enough'], 'rows': None}}],
+            ...                 "default_action": None
+            ...                 }
+            ... }
             ...
             >>> y = pd.Series([1, 1, 1, 2, 2, 3, 3, 3])
             >>> assert UniquenessDataCheck.uniqueness_score(y) == 0.65625

@@ -70,9 +70,13 @@ class HighlyNullDataCheck(DataCheck):
             ...                               'pct_null_rows': {'all_null': 1.0, 'lots_of_null': 0.8}},
             ...                   'code': 'HIGHLY_NULL_COLS'}],
             ...     'errors': [],
-            ...     'actions': [{'code': 'DROP_COL',
-            ...                  'data_check_name': 'HighlyNullDataCheck',
-            ...                  'metadata': {'columns': ['all_null', 'lots_of_null'], 'rows': None}}]}
+            ...     "actions": {
+            ...         "action_list": [{'code': 'DROP_COL',
+            ...                         'data_check_name': 'HighlyNullDataCheck',
+            ...                         'metadata': {'columns': ['all_null', 'lots_of_null'], 'rows': None}}],
+            ...         "default_action": None
+            ...     }
+            ... }
             ...
             ...
             >>> highly_null_dc = HighlyNullDataCheck(pct_null_row_threshold=0.50)
@@ -95,12 +99,13 @@ class HighlyNullDataCheck(DataCheck):
             ...                               'pct_null_rows': {'all_null': 1.0}},
             ...                   'code': 'HIGHLY_NULL_COLS'}],
             ...     'errors': [],
-            ...     'actions': [{'code': 'DROP_ROWS',
+            ...     'actions': {'action_list': [{'code': 'DROP_ROWS',
             ...                  'data_check_name': 'HighlyNullDataCheck',
             ...                  'metadata': {'columns': None, 'rows': [0, 1, 2, 3]}},
-            ...                 {'code': 'DROP_COL',
+            ...                   {'code': 'DROP_COL',
             ...                  'data_check_name': 'HighlyNullDataCheck',
-            ...                  'metadata': {'columns': ['all_null'], 'rows': None}}]}
+            ...                  'metadata': {'columns': ['all_null'], 'rows': None}}],
+            ...                  'default_action': None}}
 
         """
         results = {
