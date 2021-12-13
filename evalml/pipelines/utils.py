@@ -609,6 +609,8 @@ def _make_pipeline_from_multiple_graphs(
             return f"{pipeline_name} Pipeline{idx} - {component_name}"
         return f"{str(name)} Pipeline{idx} - {component_name}"
 
+    # Without this copy, the parameters will be modified in between
+    # invocations of this method.
     parameters = copy.deepcopy(parameters) if parameters else {}
     final_components = []
     used_names = []
@@ -653,8 +655,7 @@ def _make_pipeline_from_multiple_graphs(
                 if i == 0:
                     fitted_comp = handle_component_class(item)
                     new_component_list.append(fitted_comp)
-                    if name in pipeline.parameters:
-                        parameters[new_component_name] = pipeline.parameters[name]
+                    parameters[new_component_name] = pipeline.parameters.get(name, {})
                 elif isinstance(item, str) and item not in ["X", "y"]:
                     new_component_list.append(
                         _make_new_component_name(
