@@ -243,53 +243,67 @@ def test_make_pipeline_known_in_advance(
 
     estimators = get_estimators(problem_type=problem_type)
     for estimator_class in estimators:
-        if problem_type in estimator_class.supported_problem_types:
-            parameters = {
-                "pipeline": {
-                    "time_index": "date",
-                    "gap": 1,
-                    "max_delay": 1,
-                    "forecast_horizon": 3,
-                },
-                "Known In Advance Pipeline - Select Columns Transformer": {
-                    "columns": known_in_advance
-                },
-                "Not Known In Advance Pipeline - Select Columns Transformer": {
-                    "columns": ["numerical"]
-                },
-            }
+        parameters = {
+            "pipeline": {
+                "time_index": "date",
+                "gap": 1,
+                "max_delay": 1,
+                "forecast_horizon": 3,
+            },
+            "Known In Advance Pipeline - Select Columns Transformer": {
+                "columns": known_in_advance
+            },
+            "Not Known In Advance Pipeline - Select Columns Transformer": {
+                "columns": ["numerical"]
+            },
+        }
 
-            pipeline = make_pipeline(
-                X,
-                y,
-                estimator_class,
-                problem_type,
-                parameters,
-                known_in_advance=known_in_advance,
+        pipeline = make_pipeline(
+            X,
+            y,
+            estimator_class,
+            problem_type,
+            parameters,
+            known_in_advance=known_in_advance,
+            sampler_name="Undersampler" if is_classification(problem_type) else None,
+        )
+        expected_known_in_advance_components = _get_preprocessing_components(
+            X.ww[known_in_advance],
+            y,
+            "regression",
+            estimator_class,
+            sampler_name="Undersampler" if is_classification(problem_type) else None,
+        )
+        expected_known_in_advance_components = [
+            c.name
+            for c in expected_known_in_advance_components
+            if c.name != "Label Encoder"
+        ]
+        expected_known_in_advance_components = [
+            "Select Columns Transformer"
+        ] + expected_known_in_advance_components
+        known_in_advance_components = [
+            c.split("-")[1].strip()
+            for c in pipeline.component_graph.compute_order
+            if c.startswith("Known In Advance")
+        ]
+
+        assert expected_known_in_advance_components == known_in_advance_components
+        for k in [
+            "pipeline",
+            "Known In Advance Pipeline - Select Columns Transformer",
+            "Not Known In Advance Pipeline - Select Columns Transformer",
+        ]:
+            assert pipeline.parameters[k] == parameters[k]
+        if is_classification(problem_type):
+            assert (
+                len([c for c in pipeline.component_graph if "Label Encoder" in c.name])
+                == 2
             )
-            expected_known_in_advance_components = _get_preprocessing_components(
-                X.ww[known_in_advance], y, "regression", estimator_class
+            assert (
+                len([c for c in pipeline.component_graph if "Undersampler" in c.name])
+                == 2
             )
-            expected_known_in_advance_components = [
-                c.name
-                for c in expected_known_in_advance_components
-                if c.name != "Label Encoder"
-            ]
-            expected_known_in_advance_components = [
-                "Select Columns Transformer"
-            ] + expected_known_in_advance_components
-            known_in_advance_components = [
-                c.split("-")[1].strip()
-                for c in pipeline.component_graph.compute_order
-                if c.startswith("Known In Advance")
-            ]
-            assert expected_known_in_advance_components == known_in_advance_components
-            for k in [
-                "pipeline",
-                "Known In Advance Pipeline - Select Columns Transformer",
-                "Not Known In Advance Pipeline - Select Columns Transformer",
-            ]:
-                assert pipeline.parameters[k] == parameters[k]
 
 
 def test_make_pipeline_problem_type_mismatch():

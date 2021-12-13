@@ -298,7 +298,26 @@ def _make_pipeline_time_series(
     sampler_name=None,
     known_in_advance=None,
 ):
+    """Make a pipeline for time series problems.
 
+    If there are known-in-advance features, the pipeline will have two parallel subgraphs.
+    In the first part, the not known_in_advance features will be featurized with a TimeSeriesFeaturizer.
+    The known_in_advance features are treated like a non-time-series features since they don't change with time.
+
+    Args:
+         X (pd.DataFrame): The input data of shape [n_samples, n_features].
+         y (pd.Series): The target data of length [n_samples].
+         estimator (Estimator): Estimator for pipeline.
+         problem_type (ProblemTypes or str): Problem type for pipeline to generate.
+         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+             An empty dictionary or None implies using all default values for component parameters.
+         sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
+             Defaults to None
+         known_in_advance (list[str], None): List of features that are known in advance.
+
+    Returns:
+        PipelineBase: TimeSeriesPipeline''
+    """
     if known_in_advance:
         not_known_in_advance = [c for c in X.columns if c not in known_in_advance]
         X_not_known_in_advance = X.ww[not_known_in_advance]
@@ -322,6 +341,10 @@ def _make_pipeline_time_series(
     base_class = _get_pipeline_base_class(problem_type)
     pipeline = base_class(component_graph, parameters=parameters)
     if X_known_in_advance is not None:
+        # Pre-processing components do not depend on problem type so we
+        # are ok by specifying regression for the known-in-advance sub pipeline
+        # Since we specify the correct problem type for the not known-in-advance pipeline
+        # the label encoder and time series featurizer will be correctly added
         kin_preprocessing = [SelectColumns] + _get_preprocessing_components(
             X_known_in_advance, y, ProblemTypes.REGRESSION, estimator, sampler_name
         )
