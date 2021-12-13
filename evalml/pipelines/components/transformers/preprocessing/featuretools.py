@@ -47,6 +47,7 @@ class DFSTransformer(Transformer):
 
     def _filter_features(self, X):
         features_to_use = []
+        X_columns_set = set(X.columns)
         for feature in self.features:
             input_cols = [f.column_name for f in feature.base_features]
             if (
@@ -54,11 +55,11 @@ class DFSTransformer(Transformer):
                 and feature.column_name not in X.columns
             ):
                 continue
-            if not set(input_cols).issubset(set(X.columns)):
+            if not set(input_cols).issubset(X_columns_set):
                 continue
             if not isinstance(feature, IdentityFeature) and set(
                 feature.get_feature_names()
-            ).intersection(set(X.columns)):
+            ).intersection(X_columns_set):
                 continue
             features_to_use.append(feature)
         return features_to_use
@@ -101,7 +102,6 @@ class DFSTransformer(Transformer):
         all_identity = all([isinstance(f, IdentityFeature) for f in features_to_use])
         if not features_to_use or (all_identity and self._passed_in_features):
             return X_ww
-
         es = self._make_entity_set(X_ww)
         feature_matrix = calculate_feature_matrix(
             features=features_to_use, entityset=es
