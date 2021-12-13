@@ -50,17 +50,24 @@ class DFSTransformer(Transformer):
         X_columns_set = set(X.columns)
         for feature in self.features:
             input_cols = [f.column_name for f in feature.base_features]
+
+            # If feature is an identity feature and the column doesn't exist, skip feature
             if (
                 isinstance(feature, IdentityFeature)
                 and feature.column_name not in X.columns
             ):
                 continue
+
+            # If feature's required columns doesn't exist, skip feature
             if not set(input_cols).issubset(X_columns_set):
                 continue
+
+            # If feature's transformed columns already exist, skip feature
             if not isinstance(feature, IdentityFeature) and set(
                 feature.get_feature_names()
             ).intersection(X_columns_set):
                 continue
+
             features_to_use.append(feature)
         return features_to_use
 
