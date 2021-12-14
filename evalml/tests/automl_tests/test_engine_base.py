@@ -145,20 +145,20 @@ def test_train_pipeline_trains_and_tunes_threshold_ts(
     dummy_ts_binary_pipeline_class,
 ):
     X, y = ts_data
+    y = pd.Series([0, 1, 0, 1] * 8)
+
     params = {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "time_index": "date"}
     ts_binary = dummy_ts_binary_pipeline_class(parameters={"pipeline": params})
+    assert ts_binary.threshold is None
+
     X, X_threshold_tuning, y, y_threshold_tuning = split_data(
         X, y, "time series binary", test_size=0.2
     )
     automl_config = AutoMLConfig(
         None, "time series binary", LogLossBinary(), [], F1(), True, None, 0, None, None
     )
-    env = AutoMLTestEnv("time series binary")
-    with env.test_context():
-        _ = train_pipeline(ts_binary, X, y, automl_config=automl_config)
-    env.mock_fit.assert_called_once()
-    env.mock_optimize_threshold.assert_called_once()
-    mock_split_data.assert_called_once()
+    cv_pipeline = train_pipeline(ts_binary, X, y, automl_config=automl_config)
+    assert cv_pipeline.threshold is not None
 
 
 def test_job_logger_warning_and_error_messages(caplog):

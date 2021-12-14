@@ -41,6 +41,7 @@ from evalml.problem_types import (
     handle_problem_types,
     is_regression,
 )
+from evalml.utils import infer_feature_types
 
 
 def pytest_configure(config):
@@ -641,6 +642,12 @@ def dummy_classifier_estimator_class():
         def fit(self, X, y):
             return self
 
+        def predict_proba(self, X):
+            y_pred = infer_feature_types(pd.DataFrame(index=X.index))
+            y_pred["first"] = [i for i in range(len(X))]
+            y_pred["second"] = [i for i in range(len(X))]
+            return y_pred
+
     return MockEstimator
 
 
@@ -855,6 +862,12 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
             super().__init__(
                 self.component_graph, parameters=parameters, random_seed=random_seed
             )
+
+        def predict_proba_in_sample(self, X1, X2, y1, y2):
+            y_pred = infer_feature_types(pd.DataFrame(index=X1.index))
+            y_pred["first"] = [i for i in range(len(X1))]
+            y_pred["second"] = [i for i in range(len(X1))]
+            return y_pred
 
     return MockBinaryClassificationPipeline
 
