@@ -6,6 +6,7 @@ Release Notes
     * Fixes
         * Fixed error caused when tuning threshold for time series binary classification :pr:`3140`
     * Changes
+        * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
         * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
     * Documentation Changes
     * Testing Changes

@@ -529,12 +529,14 @@ def contains_all_ts_parameters(problem_configuration):
     """
     required_parameters = {"time_index", "gap", "max_delay", "forecast_horizon"}
     msg = ""
-    if not problem_configuration or not all(
-        p in problem_configuration for p in required_parameters
+    if (
+        not problem_configuration
+        or not all(p in problem_configuration for p in required_parameters)
+        or problem_configuration["time_index"] is None
     ):
         msg = (
             "problem_configuration must be a dict containing values for at least the time_index, gap, max_delay, "
-            f"and forecast_horizon parameters. Received {problem_configuration}."
+            f"and forecast_horizon parameters, and time_index cannot be None. Received {problem_configuration}."
         )
     return not (msg), msg
 
