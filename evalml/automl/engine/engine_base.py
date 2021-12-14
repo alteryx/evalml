@@ -12,12 +12,7 @@ import woodwork as ww
 from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
 from evalml.preprocessing import split_data
-from evalml.problem_types import (
-    is_binary,
-    is_classification,
-    is_multiclass,
-    is_time_series,
-)
+from evalml.problem_types import is_binary, is_classification, is_multiclass
 
 
 class EngineComputation(ABC):
@@ -134,12 +129,11 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True):
         automl_config.optimize_thresholds
         and pipeline.can_tune_threshold_with_objective(threshold_tuning_objective)
     ):
-        test_size_ = 0.2
         X, X_threshold_tuning, y, y_threshold_tuning = split_data(
             X,
             y,
             pipeline.problem_type,
-            test_size=test_size_,
+            test_size=0.2,
             random_seed=pipeline.random_seed,
         )
     cv_pipeline = pipeline.clone()
