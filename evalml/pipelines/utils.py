@@ -345,22 +345,25 @@ def _make_pipeline_time_series(
         # are ok by specifying regression for the known-in-advance sub pipeline
         # Since we specify the correct problem type for the not known-in-advance pipeline
         # the label encoder and time series featurizer will be correctly added
-        kin_preprocessing = [SelectColumns] + _get_preprocessing_components(
+        kina_preprocessing = [SelectColumns] + _get_preprocessing_components(
             X_known_in_advance, y, ProblemTypes.REGRESSION, estimator, sampler_name
         )
-        kin_component_graph = PipelineBase._make_component_dict_from_component_list(
-            kin_preprocessing
+        kina_component_graph = PipelineBase._make_component_dict_from_component_list(
+            kina_preprocessing
         )
-        kin_pipeline = base_class(
-            kin_component_graph, parameters=parameters, custom_name="Pipeline"
+        # Give the known-in-advance pipeline a different name to ensure that it does not have the
+        # same name as the other pipeline. Otherwise there could be a clash in the sub_pipeline_names
+        # dict below for some estimators that don't have a lot of preprocessing steps, e.g ARIMA
+        kina_pipeline = base_class(
+            kina_component_graph, parameters=parameters, custom_name="Pipeline"
         )
         pipeline = _make_pipeline_from_multiple_graphs(
-            [pipeline, kin_pipeline],
+            [pipeline, kina_pipeline],
             estimator,
             problem_type,
             parameters=parameters,
             sub_pipeline_names={
-                kin_pipeline.name: "Known In Advance",
+                kina_pipeline.name: "Known In Advance",
                 pipeline.name: "Not Known In Advance",
             },
         )

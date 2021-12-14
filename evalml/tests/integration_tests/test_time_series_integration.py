@@ -4,6 +4,8 @@ import pytest
 from evalml.automl import AutoMLSearch
 from evalml.problem_types import ProblemTypes
 
+PERIODS = 500
+
 
 @pytest.mark.parametrize(
     "problem_type",
@@ -18,9 +20,12 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
 ):
 
     X = pd.DataFrame(
-        {"features": range(101, 601), "date": pd.date_range("2010-10-01", periods=500)}
+        {
+            "features": range(101, 101 + PERIODS),
+            "date": pd.date_range("2010-10-01", periods=PERIODS),
+        }
     )
-    y = pd.Series(range(500))
+    y = pd.Series(range(PERIODS))
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         y = y % 2
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
@@ -76,9 +81,12 @@ def test_can_run_automl_for_time_series_known_in_advance(
 ):
 
     X = pd.DataFrame(
-        {"features": range(101, 601), "date": pd.date_range("2010-10-01", periods=500)}
+        {
+            "features": range(101, 101 + PERIODS),
+            "date": pd.date_range("2010-10-01", periods=PERIODS),
+        }
     )
-    y = pd.Series(range(500))
+    y = pd.Series(range(PERIODS))
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
         # So that we have coverage for sampling
         y = (
