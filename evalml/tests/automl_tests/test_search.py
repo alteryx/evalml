@@ -70,8 +70,8 @@ def test_search_data_check_error_timeseries(problem_config):
         problem_configuration = {"time_index": "dates", "max_delay": 2, "gap": 2}
 
     with pytest.raises(
-            ValueError,
-            match="problem_configuration must be a dict containing",
+        ValueError,
+        match="problem_configuration must be a dict containing",
     ):
         search(
             X_train=X,
