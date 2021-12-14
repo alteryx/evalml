@@ -329,3 +329,5 @@ def test_dfs_multi_input_primitive(X_y_binary):
     excluded_cols = ["1"]
     for i in range(20):
         excluded_cols.append(f"1 / {i}")
+    for col in excluded_cols:
+        assert col not in X_t.columns
