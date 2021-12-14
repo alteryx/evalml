@@ -1,9 +1,8 @@
 """Data check that checks if there are any highly-null columns and rows in the input."""
-
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
 )
@@ -132,11 +131,19 @@ class HighlyNullDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
+            rows_to_drop = highly_null_rows.index.tolist()
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=self.name,
-                    metadata={"rows": highly_null_rows.index.tolist()},
+                    parameters={
+                        "rows_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "rows": rows_to_drop,
+                        }
+                    },
+                    metadata={"rows": rows_to_drop},
                 ).to_dict()
             )
 
@@ -161,13 +168,22 @@ class HighlyNullDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
+
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": list(highly_null_cols),
+                        }
+                    },
                     metadata={"columns": list(highly_null_cols)},
                 ).to_dict()
             )
+
         return results
 
     @staticmethod

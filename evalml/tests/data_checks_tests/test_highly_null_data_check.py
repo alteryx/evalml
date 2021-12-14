@@ -3,8 +3,8 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks import (
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
     HighlyNullDataCheck,
@@ -106,14 +106,28 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
+                    parameters={
+                        "rows_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "rows": [0, 1, 2, 3, 4],
+                        }
+                    },
                     metadata={"rows": [0, 1, 2, 3, 4]},
                 ).to_dict(),
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": ["lots_of_null", "all_null"],
+                        }
+                    },
                     metadata={"columns": ["lots_of_null", "all_null"]},
                 ).to_dict(),
             ],
@@ -150,14 +164,28 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
+                    parameters={
+                        "rows_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "rows": [0, 1, 2, 3],
+                        }
+                    },
                     metadata={"rows": [0, 1, 2, 3]},
                 ).to_dict(),
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": ["lots_of_null", "all_null"],
+                        }
+                    },
                     metadata={"columns": ["lots_of_null", "all_null"]},
                 ).to_dict(),
             ],
@@ -183,9 +211,16 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": ["all_null"],
+                        }
+                    },
                     metadata={"columns": ["all_null"]},
                 ).to_dict()
             ],
@@ -224,14 +259,28 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
+                    parameters={
+                        "rows_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "rows": [0, 1, 2, 3, 4],
+                        }
+                    },
                     metadata={"rows": [0, 1, 2, 3, 4]},
                 ).to_dict(),
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": ["all_null"],
+                        }
+                    },
                     metadata={"columns": ["all_null"]},
                 ).to_dict(),
             ],
@@ -258,11 +307,18 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": ["lots_of_null", "all_null"],
+                        }
+                    },
                     metadata={"columns": ["lots_of_null", "all_null"]},
-                ).to_dict(),
+                ).to_dict()
             ],
             "default_action": None,
         },
@@ -303,14 +359,28 @@ def test_highly_null_data_check_input_formats():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
+                    parameters={
+                        "rows_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "rows": [0],
+                        }
+                    },
                     metadata={"rows": [0]},
                 ).to_dict(),
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": [0, 1, 2],
+                        }
+                    },
                     metadata={"columns": [0, 1, 2]},
                 ).to_dict(),
             ],
