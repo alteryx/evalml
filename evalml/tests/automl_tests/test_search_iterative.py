@@ -53,7 +53,7 @@ def test_search_iterative_data_check_error(
 
 
 @pytest.mark.parametrize(
-    "problem_config", [None, "missing_time_index", "missing_other"]
+    "problem_config", [None, "missing_time_index", "missing_other_index"]
 )
 def test_search_iterative_data_check_error_timeseries(problem_config):
     X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
