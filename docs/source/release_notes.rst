@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
     * Fixes
     * Changes
         * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
