@@ -133,7 +133,9 @@ def tune_binary_threshold(
         pipeline.threshold = 0.5
         if X_threshold_tuning is not None:
             if problem_type == ProblemTypes.TIME_SERIES_BINARY:
-                y_predict_proba = pipeline.predict_proba_in_sample(X_threshold_tuning, y_threshold_tuning, X, y)
+                y_predict_proba = pipeline.predict_proba_in_sample(
+                    X_threshold_tuning, y_threshold_tuning, X, y
+                )
             else:
                 y_predict_proba = pipeline.predict_proba(X_threshold_tuning, X, y)
             y_predict_proba = y_predict_proba.iloc[:, 1]
