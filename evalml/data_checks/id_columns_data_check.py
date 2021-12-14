@@ -1,8 +1,8 @@
 """Data check that checks if any of the features are likely to be ID columns."""
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
 )
@@ -149,11 +149,25 @@ class IDColumnsDataCheck(DataCheck):
                     details={"columns": list(id_cols_above_threshold)},
                 ).to_dict()
             )
+
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": list(id_cols_above_threshold),
+                        }
+                    },
                     metadata={"columns": list(id_cols_above_threshold)},
                 ).to_dict()
+                # results["actions"]["action_list"]
+                #     DataCheckAction(
+                #         DataCheckActionCode.DROP_COL,
+                #         data_check_name=self.name,
+                #         metadata={"columns": list(id_cols_above_threshold)},
+                #     ).to_dict()
             )
         return results
