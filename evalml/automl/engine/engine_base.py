@@ -134,11 +134,7 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True):
         automl_config.optimize_thresholds
         and pipeline.can_tune_threshold_with_objective(threshold_tuning_objective)
     ):
-        test_size_ = (
-            pipeline.forecast_horizon / len(X)
-            if is_time_series(automl_config.problem_type)
-            else 0.2
-        )
+        test_size_ = 0.2
         X, X_threshold_tuning, y, y_threshold_tuning = split_data(
             X,
             y,
