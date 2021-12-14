@@ -5,7 +5,6 @@ import pytest
 
 from evalml.automl import AutoMLSearch, search
 from evalml.automl.automl_algorithm import DefaultAlgorithm
-from evalml.objectives import LogLossBinary
 from evalml.utils import infer_feature_types
 
 
