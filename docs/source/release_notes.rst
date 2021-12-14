@@ -5,6 +5,7 @@ Release Notes
         * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
     * Fixes
     * Changes
+        * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
         * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
     * Documentation Changes
     * Testing Changes

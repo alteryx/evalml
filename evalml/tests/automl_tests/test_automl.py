@@ -3539,7 +3539,7 @@ def test_automl_validates_problem_configuration(ts_data):
             problem_configuration={"max_delay": 2, "gap": 3},
         )
 
-    with pytest.raises(ValueError, match="time_index cannot be None!"):
+    with pytest.raises(ValueError, match="time_index cannot be None."):
         AutoMLSearch(
             X_train=X,
             y_train=y,
