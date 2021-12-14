@@ -150,6 +150,10 @@ def search(
     y_train = infer_feature_types(y_train)
     problem_type = handle_problem_types(problem_type)
 
+    is_valid, msg = contains_all_ts_parameters(problem_configuration)
+    if not is_valid:
+        raise ValueError(msg)
+
     if objective == "auto":
         objective = get_default_primary_search_objective(problem_type)
     objective = get_objective(objective, return_instance=False)
@@ -226,6 +230,10 @@ def search_iterative(
     X_train = infer_feature_types(X_train)
     y_train = infer_feature_types(y_train)
     problem_type = handle_problem_types(problem_type)
+
+    is_valid, msg = contains_all_ts_parameters(problem_configuration)
+    if not is_valid:
+        raise ValueError(msg)
 
     if objective == "auto":
         objective = get_default_primary_search_objective(problem_type)

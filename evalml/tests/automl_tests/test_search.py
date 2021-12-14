@@ -5,6 +5,7 @@ import pytest
 
 from evalml.automl import AutoMLSearch, search
 from evalml.automl.automl_algorithm import DefaultAlgorithm
+from evalml.objectives import LogLossBinary
 from evalml.utils import infer_feature_types
 
 
@@ -47,6 +48,37 @@ def test_search_data_check_error(
     )
     pd.testing.assert_frame_equal(data, infer_feature_types(X))
     pd.testing.assert_series_equal(target, infer_feature_types(y))
+
+
+@pytest.mark.parametrize(
+    "problem_config", [None, "missing_time_index", "missing_other"]
+)
+def test_search_data_check_error_timeseries(problem_config):
+    X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
+    problem_configuration = None
+
+    dates = pd.date_range("2021-01-01", periods=29).append(
+        pd.date_range("2021-01-31", periods=1)
+    )
+    X["dates"] = dates
+
+    if not problem_config:
+        problem_configuration = None
+    elif problem_config == "missing_time_index":
+        problem_configuration = {"gap": 4}
+    elif problem_config == "missing_other_index":
+        problem_configuration = {"time_index": "dates", "max_delay": 2, "gap": 2}
+
+    with pytest.raises(
+            ValueError,
+            match="problem_configuration must be a dict containing",
+    ):
+        search(
+            X_train=X,
+            y_train=y,
+            problem_type="time series regression",
+            problem_configuration=problem_configuration,
+        )
 
 
 @patch("evalml.data_checks.default_data_checks.DefaultDataChecks.validate")
