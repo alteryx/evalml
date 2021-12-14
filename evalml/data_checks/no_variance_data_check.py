@@ -1,8 +1,8 @@
 """Data check that checks if the target or any of the features have no variance."""
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
@@ -177,9 +177,16 @@ class NoVarianceDataCheck(DataCheck):
         all_cols = zero_unique + one_unique + one_unique_with_null
         if all_cols:
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": all_cols,
+                        }
+                    },
                     metadata={"columns": all_cols},
                 ).to_dict()
             )
