@@ -111,6 +111,7 @@ def search(
     patience=None,
     tolerance=None,
     problem_configuration=None,
+    n_splits=3,
     verbose=False,
 ):
     """Given data and configuration, run an automl search.
@@ -138,6 +139,7 @@ def search(
             Only applicable if patience is not None. Defaults to None.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the time_index, gap, and max_delay variables.
+        n_splits (int): Number of splits to use with the default data splitter.
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
     Returns:
@@ -190,10 +192,12 @@ def search(
         "patience": patience,
         "tolerance": tolerance,
         "verbose": verbose,
+        "problem_configuration": problem_configuration,
+        "n_splits": n_splits,
     }
 
     data_checks = DefaultDataChecks(
-        problem_type=problem_type, objective=objective, datetime_column=datetime_column
+        problem_type=problem_type, objective=objective, n_splits=n_splits, datetime_column=datetime_column
     )
     data_check_results = data_checks.validate(X_train, y=y_train)
     if len(data_check_results.get("errors", [])):
@@ -210,6 +214,7 @@ def search_iterative(
     problem_type=None,
     objective="auto",
     problem_configuration=None,
+    n_splits=3,
     **kwargs,
 ):
     """Given data and configuration, run an automl search.
@@ -228,6 +233,7 @@ def search_iterative(
             - R2 for regression problems.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
+        n_splits (int): Number of splits to use with the default data splitter.
         **kwargs: Other keyword arguments which are provided will be passed to AutoMLSearch.
 
     Returns:
@@ -267,11 +273,13 @@ def search_iterative(
             "problem_type": problem_type,
             "objective": objective,
             "max_batches": 1,
+            "problem_configuration": problem_configuration,
+            "n_splits": n_splits,
         }
     )
 
     data_checks = DefaultDataChecks(
-        problem_type=problem_type, objective=objective, datetime_column=datetime_column
+        problem_type=problem_type, objective=objective, n_splits=n_splits, datetime_column=datetime_column
     )
     data_check_results = data_checks.validate(X_train, y=y_train)
     if len(data_check_results.get("errors", [])):
@@ -324,6 +332,8 @@ class AutoMLSearch:
             model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
             to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
             this parameter will be ignored.
+
+        n_splits (int): Number of splits to use in the default data splitter. Will be ignored if a data_splitter is passed.
 
         data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
 
@@ -410,6 +420,7 @@ class AutoMLSearch:
         max_time=None,
         patience=None,
         tolerance=None,
+        n_splits=3,
         data_splitter=None,
         allowed_component_graphs=None,
         allowed_model_families=None,
@@ -613,7 +624,7 @@ class AutoMLSearch:
             self.y_train,
             self.problem_type,
             self.problem_configuration,
-            n_splits=3,
+            n_splits=n_splits,
             shuffle=True,
             random_seed=self.random_seed,
         )

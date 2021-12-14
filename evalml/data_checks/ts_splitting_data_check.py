@@ -3,6 +3,7 @@ from sklearn.model_selection import TimeSeriesSplit as SkTimeSeriesSplit
 
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
 from evalml.problem_types import ProblemTypes, handle_problem_types
+from evalml.utils import infer_feature_types
 
 
 class TimeSeriesSplittingDataCheck(DataCheck):
@@ -24,10 +25,10 @@ class TimeSeriesSplittingDataCheck(DataCheck):
             ProblemTypes.TIME_SERIES_MULTICLASS,
         ]:
             raise ValueError(
-                "Valid splitting of labels in time series is only define for time series binary and time series multiclass problem types."
+                "Valid splitting of labels in time series is only defined for time series binary and time series multiclass problem types."
             )
         self.n_splits = n_splits
-        self._splitter = SkTimeSeriesSplit(n_splits=n_splits)
+        self._splitter = SkTimeSeriesSplit(n_splits=self.n_splits)
 
     def validate(self, X, y):
         """Check if the training and validation targets are compatible with time series data splitting.
@@ -61,8 +62,9 @@ class TimeSeriesSplittingDataCheck(DataCheck):
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
-        invalid_splits = {}
+        y = infer_feature_types(y)
 
+        invalid_splits = {}
         if y is not None:
             for split_num, (train, val) in enumerate(self._splitter.split(X=y)):
                 invalid_dict = {}
