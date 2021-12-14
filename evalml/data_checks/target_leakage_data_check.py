@@ -1,8 +1,8 @@
 """Data check that checks if any of the features are highly correlated with the target by using mutual information or Pearson correlation."""
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
 )
@@ -148,10 +148,25 @@ class TargetLeakageDataCheck(DataCheck):
                 ).to_dict()
             )
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": highly_corr_cols,
+                        }
+                    },
                     metadata={"columns": highly_corr_cols},
                 ).to_dict()
             )
+
+            # results["actions"]["action_list"].append(
+            #     DataCheckAction(
+            #         DataCheckActionCode.DROP_COL,
+            #         data_check_name=self.name,
+            #         metadata={"columns": highly_corr_cols},
+            #     ).to_dict()
+            # )
         return results

@@ -163,11 +163,5 @@ class IDColumnsDataCheck(DataCheck):
                     },
                     metadata={"columns": list(id_cols_above_threshold)},
                 ).to_dict()
-                # results["actions"]["action_list"]
-                #     DataCheckAction(
-                #         DataCheckActionCode.DROP_COL,
-                #         data_check_name=self.name,
-                #         metadata={"columns": list(id_cols_above_threshold)},
-                #     ).to_dict()
             )
         return results
