@@ -2,8 +2,8 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks import (
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
     SparsityDataCheck,
@@ -137,11 +137,18 @@ def test_sparsity_data_check_warnings():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=sparsity_data_check_name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": ["most_sparse", "more_sparse", "sparse"],
+                        }
+                    },
                     metadata={"columns": ["most_sparse", "more_sparse", "sparse"]},
-                ).to_dict(),
+                ).to_dict()
             ],
             "default_action": None,
         },
