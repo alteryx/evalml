@@ -295,3 +295,37 @@ def test_transform_identity_and_non_identity():
     X_t = dfs.transform(feature_matrix)
 
     pd.testing.assert_frame_equal(X_t, feature_matrix)
+
+
+def test_dfs_multi_input_primitive(X_y_binary):
+    X, y = X_y_binary
+    X_pd = pd.DataFrame(X)
+    X_pd.columns = X_pd.columns.astype(str)
+    X_fit = X_pd.iloc[: len(X) // 3]
+    X_transform = X_pd.iloc[len(X) // 3 :]
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X", dataframe=X_transform, index="index", make_index=True
+    )
+    feature_matrix, features = ft.dfs(
+        entityset=es, target_dataframe_name="X", trans_primitives=["divide_numeric"]
+    )  # divide_numeric is a primitive that generates features with 2 input columns
+
+    dfs = DFSTransformer(features=features)
+    dfs.fit(X_fit)
+
+    X_t = dfs.transform(X_transform)  # transform case
+    assert_frame_equal(feature_matrix, X_t)
+    assert features == dfs.features
+
+    X_t = dfs.transform(feature_matrix)  # skip transform case
+    assert_frame_equal(feature_matrix, X_t)
+    assert features == dfs.features
+
+    X_transform = X_transform.drop("1", axis=1)  # missing input case
+    X_t = dfs.transform(X_transform)
+
+    excluded_cols = ["1"]
+    for i in range(20):
+        excluded_cols.append(f"1 / {i}")
