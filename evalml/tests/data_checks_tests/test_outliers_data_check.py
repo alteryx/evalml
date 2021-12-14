@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks import (
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
     OutliersDataCheck,
@@ -43,9 +43,16 @@ def test_outliers_data_check_warnings():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
+                    parameters={
+                        "rows_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "rows": [0, 3, 5, 10],
+                        }
+                    },
                     metadata={"rows": [0, 3, 5, 10]},
                 ).to_dict()
             ],
@@ -82,9 +89,16 @@ def test_outliers_data_check_warnings_with_duplicate_outlier_indices():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
+                    parameters={
+                        "rows_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "rows": [0, 3],
+                        }
+                    },
                     metadata={"rows": [0, 3]},
                 ).to_dict()
             ],
@@ -130,9 +144,16 @@ def test_outliers_data_check_input_formats():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
+                    parameters={
+                        "rows_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "rows": [0, 3, 5, 10],
+                        }
+                    },
                     metadata={"rows": [0, 3, 5, 10]},
                 ).to_dict()
             ],
@@ -159,9 +180,16 @@ def test_outliers_data_check_input_formats():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
+                    parameters={
+                        "rows_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "rows": [0, 3, 5, 10],
+                        }
+                    },
                     metadata={"rows": [0, 3, 5, 10]},
                 ).to_dict()
             ],
@@ -197,9 +225,16 @@ def test_outliers_data_check_string_cols():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
+                    parameters={
+                        "rows_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "rows": [0],
+                        }
+                    },
                     metadata={"rows": [0]},
                 ).to_dict()
             ],
@@ -248,9 +283,16 @@ def test_outliers_data_check_warnings_has_nan():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
+                    parameters={
+                        "rows_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "rows": [3, 5, 10],
+                        }
+                    },
                     metadata={"rows": [3, 5, 10]},
                 ).to_dict()
             ],

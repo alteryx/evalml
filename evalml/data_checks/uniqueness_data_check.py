@@ -1,8 +1,8 @@
 """Data check that checks if there are any columns in the input that are either too unique for classification problems or not unique enough for regression problems."""
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
 )
@@ -120,10 +120,18 @@ class UniquenessDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
+
             results["actions"]["action_list"].append(
-                DataCheckAction(
-                    action_code=DataCheckActionCode.DROP_COL,
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": not_unique_enough_cols,
+                        }
+                    },
                     metadata={"columns": not_unique_enough_cols},
                 ).to_dict()
             )
@@ -147,10 +155,18 @@ class UniquenessDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
+
             results["actions"]["action_list"].append(
-                DataCheckAction(
-                    action_code=DataCheckActionCode.DROP_COL,
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
+                    parameters={
+                        "columns_to_drop": {
+                            "parameter_type": "global",
+                            "type": "list",
+                            "columns": too_unique_cols,
+                        }
+                    },
                     metadata={"columns": too_unique_cols},
                 ).to_dict()
             )
