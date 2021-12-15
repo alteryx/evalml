@@ -341,10 +341,13 @@ def _make_pipeline_time_series(
     base_class = _get_pipeline_base_class(problem_type)
     pipeline = base_class(component_graph, parameters=parameters)
     if X_known_in_advance is not None:
-        # Pre-processing components do not depend on problem type so we
+        # We can't specify a time series problem type because then the known-in-advance
+        # pipeline will have a time series featurizer, which is not what we want.
+        # The pre-processing components do not depend on problem type so we
         # are ok by specifying regression for the known-in-advance sub pipeline
         # Since we specify the correct problem type for the not known-in-advance pipeline
-        # the label encoder and time series featurizer will be correctly added
+        # the label encoder and time series featurizer will be correctly added to the
+        # overall pipeline
         kina_preprocessing = [SelectColumns] + _get_preprocessing_components(
             X_known_in_advance, y, ProblemTypes.REGRESSION, estimator, sampler_name
         )
