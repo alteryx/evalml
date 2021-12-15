@@ -68,7 +68,7 @@ def test_n_splits_passed_to_ts_splitting_data_check(mock_ts_splitting_dc, ts_dat
 
 
 @pytest.mark.parametrize(
-    "problem_config", [None, "missing_time_index", "has_time_index"]
+    "problem_config", [None, "missing_time_index", "missing_other_index"]
 )
 def test_search_data_check_error_timeseries(problem_config):
     X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
@@ -79,39 +79,23 @@ def test_search_data_check_error_timeseries(problem_config):
     )
     X["dates"] = dates
 
-    if problem_config == "missing_time_index":
+    if not problem_config:
+        problem_configuration = None
+    elif problem_config == "missing_time_index":
         problem_configuration = {"gap": 4}
-        with pytest.raises(
-            ValueError,
-            match="time_index has to be passed in problem_configuration.",
-        ):
-            search(
-                X_train=X,
-                y_train=y,
-                problem_type="time series regression",
-                problem_configuration=problem_configuration,
-            )
-    elif not problem_config:
-        with pytest.raises(
-            ValueError,
-            match="the problem_configuration parameter must be specified.",
-        ):
-            search(
-                X_train=X,
-                y_train=y,
-                problem_type="time series regression",
-                problem_configuration=problem_configuration,
-            )
-    else:
-        problem_configuration = {"time_index": "dates"}
-        automl, data_check_results = search(
+    elif problem_config == "missing_other_index":
+        problem_configuration = {"time_index": "dates", "max_delay": 2, "gap": 2}
+
+    with pytest.raises(
+        ValueError,
+        match="problem_configuration must be a dict containing",
+    ):
+        search(
             X_train=X,
             y_train=y,
             problem_type="time series regression",
             problem_configuration=problem_configuration,
         )
-        assert len(data_check_results["warnings"]) == 1
-        assert len(data_check_results["errors"]) == 1
 
 
 @patch("evalml.data_checks.default_data_checks.DefaultDataChecks.validate")

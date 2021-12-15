@@ -10,6 +10,7 @@ from .natural_language_nan_data_check import NaturalLanguageNaNDataCheck
 from .no_variance_data_check import NoVarianceDataCheck
 from .target_distribution_data_check import TargetDistributionDataCheck
 from .target_leakage_data_check import TargetLeakageDataCheck
+from .ts_parameters_data_check import TimeSeriesParametersDataCheck
 from .ts_splitting_data_check import TimeSeriesSplittingDataCheck
 
 from evalml.problem_types import (
@@ -36,6 +37,7 @@ class DefaultDataChecks(DataChecks):
         - `NaturalLanguageNaNDataCheck`
         - `TargetDistributionDataCheck` (for regression problem types)
         - `DateTimeFormatDataCheck` (for time series problem types)
+        - 'TimeSeriesParametersDataCheck' (for time series problem types)
         - `TimeSeriesSplittingDataCheck` (for time series classification problem types)
 
     Args:
@@ -56,11 +58,15 @@ class DefaultDataChecks(DataChecks):
         DateTimeNaNDataCheck,
     ]
 
-    def __init__(self, problem_type, objective, n_splits=3, datetime_column=None):
+    def __init__(self, problem_type, objective, n_splits=3, problem_configuration=None):
         default_checks = self._DEFAULT_DATA_CHECK_CLASSES
         data_check_params = {}
 
         if is_time_series(problem_type):
+            if problem_configuration is None:
+                raise ValueError(
+                    "problem_configuration cannot be None for time series problems!"
+                )
             if is_classification(problem_type):
                 default_checks = default_checks + [TimeSeriesSplittingDataCheck]
                 data_check_params.update(
@@ -71,14 +77,19 @@ class DefaultDataChecks(DataChecks):
                         }
                     }
                 )
-            default_checks = default_checks + [DateTimeFormatDataCheck]
+            default_checks = default_checks + [
+                DateTimeFormatDataCheck,
+                TimeSeriesParametersDataCheck,
+            ]
             data_check_params.update(
                 {
                     "DateTimeFormatDataCheck": {
-                        "datetime_column": datetime_column
-                        if datetime_column
-                        else "index",
-                    }
+                        "datetime_column": problem_configuration["time_index"],
+                    },
+                    "TimeSeriesParametersDataCheck": {
+                        "problem_configuration": problem_configuration,
+                        "n_splits": n_splits,
+                    },
                 }
             )
 
