@@ -142,13 +142,15 @@ def test_train_pipeline_trains_and_tunes_threshold(
 
 def test_train_pipeline_trains_and_tunes_threshold_ts(
     ts_data,
-    dummy_ts_binary_pipeline_class,
+    dummy_ts_binary_linear_classifier_pipeline_class,
 ):
-    X, y = ts_data
+    X = pd.DataFrame([i for i in range(32)])
     y = pd.Series([0, 1, 0, 1] * 8)
 
     params = {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "time_index": "date"}
-    ts_binary = dummy_ts_binary_pipeline_class(parameters={"pipeline": params})
+    ts_binary = dummy_ts_binary_linear_classifier_pipeline_class(
+        parameters={"pipeline": params}
+    )
     assert ts_binary.threshold is None
 
     X, X_threshold_tuning, y, y_threshold_tuning = split_data(

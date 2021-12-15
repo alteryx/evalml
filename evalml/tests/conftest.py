@@ -642,12 +642,6 @@ def dummy_classifier_estimator_class():
         def fit(self, X, y):
             return self
 
-        def predict_proba(self, X):
-            y_pred = infer_feature_types(pd.DataFrame(index=X.index))
-            y_pred["first"] = [i for i in range(len(X))]
-            y_pred["second"] = [i for i in range(len(X))]
-            return y_pred
-
     return MockEstimator
 
 
@@ -863,11 +857,23 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
                 self.component_graph, parameters=parameters, random_seed=random_seed
             )
 
-        def predict_proba_in_sample(self, X1, X2, y1, y2):
-            y_pred = infer_feature_types(pd.DataFrame(index=X1.index))
-            y_pred["first"] = [i for i in range(len(X1))]
-            y_pred["second"] = [i for i in range(len(X1))]
-            return y_pred
+    return MockBinaryClassificationPipeline
+
+
+@pytest.fixture
+def dummy_ts_binary_linear_classifier_pipeline_class():
+    log_reg_classifier = LogisticRegressionClassifier
+
+    class MockBinaryClassificationPipeline(TimeSeriesBinaryClassificationPipeline):
+        estimator = log_reg_classifier
+        component_graph = [estimator]
+
+        def __init__(
+            self, parameters, custom_name=None, component_graph=None, random_seed=0
+        ):
+            super().__init__(
+                self.component_graph, parameters=parameters, random_seed=random_seed
+            )
 
     return MockBinaryClassificationPipeline
 
