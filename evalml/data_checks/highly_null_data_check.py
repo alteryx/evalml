@@ -52,7 +52,10 @@ class HighlyNullDataCheck(DataCheck):
             ...
             ...     def __eq__(self, series_2):
             ...         return all(self.series.eq(series_2.series))
-            ...
+
+            With pct_null_col_threshold set to 0.50, any column that has 50% or more of its observations set to null will be
+            included in the warning, as well as the percentage of null values identified ("all_null": 1.0, "lots_of_null": 0.8).
+
             >>> df = pd.DataFrame({
             ...     'all_null': [None, pd.NA, None, None, None],
             ...     'lots_of_null': [None, None, None, None, 5],
@@ -73,8 +76,12 @@ class HighlyNullDataCheck(DataCheck):
             ...     'actions': [{'code': 'DROP_COL',
             ...                  'data_check_name': 'HighlyNullDataCheck',
             ...                  'metadata': {'columns': ['all_null', 'lots_of_null'], 'rows': None}}]}
-            ...
-            ...
+
+            With pct_null_row_threshold set to 0.50, any row with 50% or more of its respective column values set to null will
+            included in the warning, as well as the offending rows ("rows": [0, 1, 2, 3]).
+            Since the default value for pct_null_col_threshold is 0.95, "all_null" is also included in the warnings since
+            the percentage of null values in that row is over 95%.
+
             >>> highly_null_dc = HighlyNullDataCheck(pct_null_row_threshold=0.50)
             >>> validation_results = highly_null_dc.validate(df)
             >>> validation_results['warnings'][0]['details']['pct_null_cols'] = SeriesWrap(validation_results['warnings'][0]['details']['pct_null_cols'])

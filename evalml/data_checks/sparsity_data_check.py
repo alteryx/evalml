@@ -48,7 +48,9 @@ class SparsityDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
-            ...
+
+            For multiclass problems, if a column doesn't have enough representation from unique values, it will be considered sparse.
+
             >>> df = pd.DataFrame({
             ...    'sparse': [float(x) for x in range(100)],
             ...    'not_sparse': [float(1) for x in range(100)]

@@ -64,7 +64,7 @@ class ClassImbalanceDataCheck(DataCheck):
             >>> X = pd.DataFrame()
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
 
-            In this example, the target class 0 is present in fewer than 10% (threshold=0.10) of instances, and fewer than 2 * the number
+            In this binary example, the target class 0 is present in fewer than 10% (threshold=0.10) of instances, and fewer than 2 * the number
             of cross folds (2 * 3 = 6). Therefore, both a warning and an error are returned as part of the Class Imbalance Data Check.
             In addition, if a target is present with fewer than `min_samples` occurrences (default is 100) and is under the threshold,
             a severe class imbalance warning will be raised.
