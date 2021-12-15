@@ -153,9 +153,6 @@ def test_train_pipeline_trains_and_tunes_threshold_ts(
     )
     assert ts_binary.threshold is None
 
-    X, X_threshold_tuning, y, y_threshold_tuning = split_data(
-        X, y, "time series binary", test_size=0.2
-    )
     automl_config = AutoMLConfig(
         None, "time series binary", LogLossBinary(), [], F1(), True, None, 0, None, None
     )

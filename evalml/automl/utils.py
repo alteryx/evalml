@@ -2,7 +2,6 @@
 from collections import namedtuple
 
 import pandas as pd
-import woodwork as ww
 from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
