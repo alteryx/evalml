@@ -36,6 +36,7 @@ from evalml.pipelines.components.transformers.encoders.label_encoder import (
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
+    _get_preprocessing_components,
     _make_pipeline_from_multiple_graphs,
     generate_pipeline_code,
     get_estimators,
@@ -195,6 +196,114 @@ def test_make_pipeline(
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ], test_description
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.TIME_SERIES_BINARY,
+    ],
+)
+@pytest.mark.parametrize(
+    "test_description, known_in_advance",
+    [
+        ("categorical", ["categorical"]),
+        ("email", ["email"]),
+        ("url", ["url"]),
+        ("text", ["text"]),
+        ("nullable", ["int_null", "bool_null", "age_null"]),
+        (
+            "all",
+            [
+                "int_null",
+                "bool_null",
+                "age_null",
+                "categorical",
+                "email",
+                "url",
+                "text",
+            ],
+        ),
+        ("other numerical", []),
+    ],
+)
+def test_make_pipeline_known_in_advance(
+    test_description, known_in_advance, problem_type, get_test_data_from_configuration
+):
+    X, y = get_test_data_from_configuration(
+        "ww",
+        problem_type,
+        column_names=["numerical"] + known_in_advance,
+    )
+    if test_description == "other numerical":
+        X.ww["other numerical"] = pd.Series(range(X.shape[0]))
+        known_in_advance = ["other numerical"]
+
+    estimators = get_estimators(problem_type=problem_type)
+    for estimator_class in estimators:
+        parameters = {
+            "pipeline": {
+                "time_index": "date",
+                "gap": 1,
+                "max_delay": 1,
+                "forecast_horizon": 3,
+            },
+            "Known In Advance Pipeline - Select Columns Transformer": {
+                "columns": known_in_advance
+            },
+            "Not Known In Advance Pipeline - Select Columns Transformer": {
+                "columns": ["numerical"]
+            },
+        }
+
+        pipeline = make_pipeline(
+            X,
+            y,
+            estimator_class,
+            problem_type,
+            parameters,
+            known_in_advance=known_in_advance,
+            sampler_name="Undersampler" if is_classification(problem_type) else None,
+        )
+        expected_known_in_advance_components = _get_preprocessing_components(
+            X.ww[known_in_advance],
+            y,
+            "regression",
+            estimator_class,
+            sampler_name="Undersampler" if is_classification(problem_type) else None,
+        )
+        expected_known_in_advance_components = [
+            c.name
+            for c in expected_known_in_advance_components
+            if c.name != "Label Encoder"
+        ]
+        expected_known_in_advance_components = [
+            "Select Columns Transformer"
+        ] + expected_known_in_advance_components
+        known_in_advance_components = [
+            c.split("-")[1].strip()
+            for c in pipeline.component_graph.compute_order
+            if c.startswith("Known In Advance")
+        ]
+
+        assert expected_known_in_advance_components == known_in_advance_components
+        for k in [
+            "pipeline",
+            "Known In Advance Pipeline - Select Columns Transformer",
+            "Not Known In Advance Pipeline - Select Columns Transformer",
+        ]:
+            assert pipeline.parameters[k] == parameters[k]
+        if is_classification(problem_type):
+            assert (
+                len([c for c in pipeline.component_graph if "Label Encoder" in c.name])
+                == 2
+            )
+            assert (
+                len([c for c in pipeline.component_graph if "Undersampler" in c.name])
+                == 2
+            )
 
 
 def test_make_pipeline_problem_type_mismatch():

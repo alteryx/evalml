@@ -1,4 +1,5 @@
 """Utility methods for EvalML pipelines."""
+import copy
 import logging
 
 from woodwork import logical_types
@@ -34,6 +35,7 @@ from evalml.pipelines.components import (  # noqa: F401
     Oversampler,
     RandomForestClassifier,
     ReplaceNullableTypes,
+    SelectColumns,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
@@ -287,6 +289,91 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesMulticlassClassificationPipeline
 
 
+def _make_pipeline_time_series(
+    X,
+    y,
+    estimator,
+    problem_type,
+    parameters=None,
+    sampler_name=None,
+    known_in_advance=None,
+):
+    """Make a pipeline for time series problems.
+
+    If there are known-in-advance features, the pipeline will have two parallel subgraphs.
+    In the first part, the not known_in_advance features will be featurized with a TimeSeriesFeaturizer.
+    The known_in_advance features are treated like a non-time-series features since they don't change with time.
+
+    Args:
+         X (pd.DataFrame): The input data of shape [n_samples, n_features].
+         y (pd.Series): The target data of length [n_samples].
+         estimator (Estimator): Estimator for pipeline.
+         problem_type (ProblemTypes or str): Problem type for pipeline to generate.
+         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+             An empty dictionary or None implies using all default values for component parameters.
+         sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
+             Defaults to None
+         known_in_advance (list[str], None): List of features that are known in advance.
+
+    Returns:
+        PipelineBase: TimeSeriesPipeline''
+    """
+    if known_in_advance:
+        not_known_in_advance = [c for c in X.columns if c not in known_in_advance]
+        X_not_known_in_advance = X.ww[not_known_in_advance]
+        X_known_in_advance = X.ww[known_in_advance]
+    else:
+        X_not_known_in_advance = X
+        X_known_in_advance = None
+
+    preprocessing_components = _get_preprocessing_components(
+        X_not_known_in_advance, y, problem_type, estimator, sampler_name
+    )
+
+    if known_in_advance:
+        preprocessing_components = [SelectColumns] + preprocessing_components
+    else:
+        preprocessing_components += [estimator]
+
+    component_graph = PipelineBase._make_component_dict_from_component_list(
+        preprocessing_components
+    )
+    base_class = _get_pipeline_base_class(problem_type)
+    pipeline = base_class(component_graph, parameters=parameters)
+    if X_known_in_advance is not None:
+        # We can't specify a time series problem type because then the known-in-advance
+        # pipeline will have a time series featurizer, which is not what we want.
+        # The pre-processing components do not depend on problem type so we
+        # are ok by specifying regression for the known-in-advance sub pipeline
+        # Since we specify the correct problem type for the not known-in-advance pipeline
+        # the label encoder and time series featurizer will be correctly added to the
+        # overall pipeline
+        kina_preprocessing = [SelectColumns] + _get_preprocessing_components(
+            X_known_in_advance, y, ProblemTypes.REGRESSION, estimator, sampler_name
+        )
+        kina_component_graph = PipelineBase._make_component_dict_from_component_list(
+            kina_preprocessing
+        )
+        # Give the known-in-advance pipeline a different name to ensure that it does not have the
+        # same name as the other pipeline. Otherwise there could be a clash in the sub_pipeline_names
+        # dict below for some estimators that don't have a lot of preprocessing steps, e.g ARIMA
+        kina_pipeline = base_class(
+            kina_component_graph, parameters=parameters, custom_name="Pipeline"
+        )
+        pipeline = _make_pipeline_from_multiple_graphs(
+            [pipeline, kina_pipeline],
+            estimator,
+            problem_type,
+            parameters=parameters,
+            sub_pipeline_names={
+                kina_pipeline.name: "Known In Advance",
+                pipeline.name: "Not Known In Advance",
+            },
+        )
+        pipeline = pipeline.new(parameters)
+    return pipeline
+
+
 def make_pipeline(
     X,
     y,
@@ -297,6 +384,7 @@ def make_pipeline(
     extra_components=None,
     extra_components_position="before_preprocessing",
     use_estimator=True,
+    known_in_advance=None,
 ):
     """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
@@ -312,6 +400,7 @@ def make_pipeline(
          extra_components (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
          extra_components_position (str): Where to put extra components. Defaults to "before_preprocessing" and any other value will put components after preprocessing components.
          use_estimator (bool): Whether to add the provided estimator to the pipeline or not. Defaults to True.
+         known_in_advance (list[str], None): List of features that are known in advance.
 
     Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
@@ -333,29 +422,33 @@ def make_pipeline(
                 f"Sampling is unsupported for problem_type {str(problem_type)}"
             )
 
-    preprocessing_components = _get_preprocessing_components(
-        X, y, problem_type, estimator, sampler_name
-    )
-    extra_components = extra_components or []
-    estimator = [estimator] if use_estimator else []
-
-    if extra_components_position == "before_preprocessing":
-        complete_component_list = (
-            extra_components + preprocessing_components + estimator
+    if is_time_series(problem_type):
+        pipeline = _make_pipeline_time_series(
+            X, y, estimator, problem_type, parameters, sampler_name, known_in_advance
         )
     else:
-        complete_component_list = (
-            preprocessing_components + extra_components + estimator
+        preprocessing_components = _get_preprocessing_components(
+            X, y, problem_type, estimator, sampler_name
         )
+        extra_components = extra_components or []
+        estimator_component = [estimator] if use_estimator else []
 
-    component_graph = PipelineBase._make_component_dict_from_component_list(
-        complete_component_list
-    )
-    base_class = _get_pipeline_base_class(problem_type)
-    return base_class(
-        component_graph,
-        parameters=parameters,
-    )
+        if extra_components_position == "before_preprocessing":
+            complete_component_list = (
+                extra_components + preprocessing_components + estimator_component
+            )
+        else:
+            complete_component_list = (
+                preprocessing_components + extra_components + estimator_component
+            )
+
+        component_graph = PipelineBase._make_component_dict_from_component_list(
+            complete_component_list
+        )
+        base_class = _get_pipeline_base_class(problem_type)
+        pipeline = base_class(component_graph, parameters=parameters)
+
+    return pipeline
 
 
 def generate_pipeline_code(element):
@@ -522,7 +615,9 @@ def _make_pipeline_from_multiple_graphs(
             return f"{pipeline_name} Pipeline{idx} - {component_name}"
         return f"{str(name)} Pipeline{idx} - {component_name}"
 
-    parameters = parameters if parameters else {}
+    # Without this copy, the parameters will be modified in between
+    # invocations of this method.
+    parameters = copy.deepcopy(parameters) if parameters else {}
     final_components = []
     used_names = []
     component_graph = (
