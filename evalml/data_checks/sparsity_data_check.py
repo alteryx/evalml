@@ -67,13 +67,11 @@ class SparsityDataCheck(DataCheck):
             ...     "actions": [{"code": "DROP_COL",
             ...                  "data_check_name": "SparsityDataCheck",
             ...                  "metadata": {"columns": ["sparse"], "rows": None}}]}
-            ...
-            ...
+
             >>> df['sparse'] = [float(x % 10) for x in range(100)]
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=1, unique_count_threshold=5)
             >>> assert sparsity_check.validate(df) == {'warnings': [], 'errors': [], 'actions': []}
-            ...
-            ...
+
             >>> sparse_array = pd.Series([1, 1, 1, 2, 2, 3] * 3)
             >>> assert SparsityDataCheck.sparsity_score(sparse_array, count_threshold=5) == 0.6666666666666666
         """
