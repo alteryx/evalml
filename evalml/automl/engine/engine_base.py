@@ -12,7 +12,12 @@ import woodwork as ww
 from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
 from evalml.preprocessing import split_data
-from evalml.problem_types import is_binary, is_classification, is_multiclass, is_time_series
+from evalml.problem_types import (
+    is_binary,
+    is_classification,
+    is_multiclass,
+    is_time_series,
+)
 
 
 class EngineComputation(ABC):

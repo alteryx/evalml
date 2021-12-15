@@ -40,6 +40,7 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_regression,
+    is_time_series,
 )
 from evalml.utils import infer_feature_types
 
@@ -1463,6 +1464,7 @@ class _AutoMLTestEnv:
         self._mock_get_names = None
         self._mock_encode_targets = None
         self._mock_predict_proba = None
+        self._mock_predict_proba_in_sample = None
         self._mock_optimize_threshold = None
 
     @property
@@ -1495,6 +1497,7 @@ class _AutoMLTestEnv:
         self._mock_get_names = None
         self._mock_encode_targets = None
         self._mock_predict_proba = None
+        self._mock_predict_proba_in_sample = None
         self._mock_optimize_threshold = None
 
     def _get_mock(self, mock_name):
@@ -1527,6 +1530,10 @@ class _AutoMLTestEnv:
         return self._get_mock("predict_proba")
 
     @property
+    def mock_predict_proba_in_sample(self):
+        return self._get_mock("predict_proba_in_sample")
+
+    @property
     def mock_optimize_threshold(self):
         return self._get_mock("optimize_threshold")
 
@@ -1538,6 +1545,7 @@ class _AutoMLTestEnv:
         mock_fit_side_effect=None,
         mock_fit_return_value=None,
         predict_proba_return_value=None,
+        predict_proba_in_sample_return_value=None,
         optimize_threshold_return_value=0.2,
     ):
         """A context manager for creating an environment that patches time-consuming pipeline methods.
@@ -1581,6 +1589,18 @@ class _AutoMLTestEnv:
             return_value=predict_proba_return_value,
             pipeline_class_str=pipeline_to_mock,
         )
+        if handle_problem_types(self.problem_type) in [
+            ProblemTypes.TIME_SERIES_BINARY,
+            ProblemTypes.TIME_SERIES_MULTICLASS,
+        ]:
+            mock_predict_proba_in_sample = self._patch_method(
+                "predict_proba_in_sample",
+                side_effect=None,
+                return_value=predict_proba_in_sample_return_value,
+                pipeline_class_str=pipeline_to_mock,
+            )
+        else:
+            mock_predict_proba_in_sample = None
 
         mock_optimize = patch(
             "evalml.objectives.BinaryClassificationObjective.optimize_threshold",
@@ -1599,17 +1619,29 @@ class _AutoMLTestEnv:
         mock_sleep = patch(
             "evalml.automl.AutoMLSearch._sleep_time", new_callable=sleep_time
         )
-
-        with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
-            # Can think of `yield` as blocking this method until the computation finishes running
-            yield
-            self._mock_fit = fit
-            self._mock_tell = tell
-            self._mock_score = score
-            self._mock_get_names = get_names
-            self._mock_encode_targets = encode
-            self._mock_predict_proba = proba
-            self._mock_optimize_threshold = optimize
+        if mock_predict_proba_in_sample is None:
+            with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
+                # Can think of `yield` as blocking this method until the computation finishes running
+                yield
+                self._mock_fit = fit
+                self._mock_tell = tell
+                self._mock_score = score
+                self._mock_get_names = get_names
+                self._mock_encode_targets = encode
+                self._mock_predict_proba = proba
+                self._mock_optimize_threshold = optimize
+        else:
+            with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_predict_proba_in_sample as proba_in_sample, mock_tell as tell, mock_optimize as optimize:
+                # Can think of `yield` as blocking this method until the computation finishes running
+                yield
+                self._mock_fit = fit
+                self._mock_tell = tell
+                self._mock_score = score
+                self._mock_get_names = get_names
+                self._mock_encode_targets = encode
+                self._mock_predict_proba = proba
+                self._mock_predict_proba_in_sample = proba_in_sample
+                self._mock_optimize_threshold = optimize
 
 
 @pytest.fixture
