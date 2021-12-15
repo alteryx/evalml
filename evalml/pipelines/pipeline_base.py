@@ -623,7 +623,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             A new instance of this pipeline with identical components, parameters, and random seed.
         """
         clone = self.__class__(
-            self.component_graph,
+            component_graph=self.component_graph,
             parameters=self.parameters,
             custom_name=self.custom_name,
             random_seed=self.random_seed,

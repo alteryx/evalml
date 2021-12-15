@@ -148,7 +148,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
 
     with pytest.raises(
         ValueError,
-        match="time_index, gap, and max_delay parameters cannot be omitted from the parameters dict",
+        match="time_index, gap, max_delay, and forecast_horizon",
     ):
         pipeline_class(component_graph, {})
 
