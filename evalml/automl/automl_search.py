@@ -138,7 +138,7 @@ def search(
         tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
             Only applicable if patience is not None. Defaults to None.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the time_index, gap, and max_delay variables.
+            in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
         n_splits (int): Number of splits to use with the default data splitter.
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
@@ -187,7 +187,10 @@ def search(
     }
 
     data_checks = DefaultDataChecks(
-        problem_type=problem_type, objective=objective, n_splits=n_splits, problem_configuration=problem_configuration
+        problem_type=problem_type,
+        objective=objective,
+        n_splits=n_splits,
+        problem_configuration=problem_configuration,
     )
     data_check_results = data_checks.validate(X_train, y=y_train)
     if len(data_check_results.get("errors", [])):
@@ -259,7 +262,10 @@ def search_iterative(
     )
 
     data_checks = DefaultDataChecks(
-        problem_type=problem_type, objective=objective, n_splits=n_splits, problem_configuration=problem_configuration,
+        problem_type=problem_type,
+        objective=objective,
+        n_splits=n_splits,
+        problem_configuration=problem_configuration,
     )
     data_check_results = data_checks.validate(X_train, y=y_train)
     if len(data_check_results.get("errors", [])):

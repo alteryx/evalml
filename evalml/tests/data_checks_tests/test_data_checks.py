@@ -510,7 +510,10 @@ def test_default_data_checks_across_problem_types(problem_type):
             default_data_check_list = default_data_check_list + [
                 TimeSeriesSplittingDataCheck
             ]
-        default_data_check_list = default_data_check_list + [DateTimeFormatDataCheck, TimeSeriesParametersDataCheck]
+        default_data_check_list = default_data_check_list + [
+            DateTimeFormatDataCheck,
+            TimeSeriesParametersDataCheck,
+        ]
 
     if problem_type in [
         ProblemTypes.REGRESSION,
