@@ -172,11 +172,13 @@ def search(
     elif mode == "long" and max_time is None:
         max_batches = 6  # corresponds to end of 'long' exploration phase
 
-    data_splitter = make_data_splitter(X=X_train,
-                                       y=y_train,
-                                       problem_type=problem_type,
-                                       problem_configuration=problem_configuration,
-                                       n_splits=n_splits)
+    data_splitter = make_data_splitter(
+        X=X_train,
+        y=y_train,
+        problem_type=problem_type,
+        problem_configuration=problem_configuration,
+        n_splits=n_splits,
+    )
 
     automl_config = {
         "X_train": X_train,
@@ -254,11 +256,13 @@ def search_iterative(
         objective = get_default_primary_search_objective(problem_type)
     objective = get_objective(objective, return_instance=False)
 
-    data_splitter = make_data_splitter(X=X_train,
-                                       y=y_train,
-                                       problem_type=problem_type,
-                                       problem_configuration=problem_configuration,
-                                       n_splits=n_splits)
+    data_splitter = make_data_splitter(
+        X=X_train,
+        y=y_train,
+        problem_type=problem_type,
+        problem_configuration=problem_configuration,
+        n_splits=n_splits,
+    )
 
     automl_config = kwargs
     automl_config.update(
@@ -619,7 +623,7 @@ class AutoMLSearch:
             self.y_train,
             self.problem_type,
             self.problem_configuration,
-            n_splits=n_splits,
+            n_splits=3,
             shuffle=True,
             random_seed=self.random_seed,
         )
