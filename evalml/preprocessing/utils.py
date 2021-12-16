@@ -131,6 +131,9 @@ def number_of_features(dtypes):
         >>> X["floats"] = [float(i) for i in range(10)]
         >>> X["strings"] = [str(i) for i in range(10)]
         >>> X["booleans"] = [bool(i%2) for i in range(10)]
+
+        Lists the number of columns corresponding to each dtype.
+
         >>> number_of_features(X.dtypes)
                      Number of Features
         Boolean                       1

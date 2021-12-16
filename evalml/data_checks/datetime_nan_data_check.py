@@ -30,8 +30,9 @@ class DateTimeNaNDataCheck(DataCheck):
             >>> df = pd.DataFrame(dates, columns=['index', "days"])
             >>> dt_nan_dc = DateTimeNaNDataCheck()
             >>> assert dt_nan_dc.validate(df) == {'warnings': [], 'errors': [], 'actions': []}
-            ...
-            ...
+
+            The first value in the column "index" is replaced with NaT, which will raise an error in this data check.
+
             >>> dates[0][0] = np.datetime64('NaT')
             >>> df = pd.DataFrame(dates, columns=['index', "days"])
             >>> assert dt_nan_dc.validate(df) == {
@@ -42,8 +43,9 @@ class DateTimeNaNDataCheck(DataCheck):
             ...                 'details': {'columns': ['index'], 'rows': None},
             ...                 'code': 'DATETIME_HAS_NAN'}],
             ...     'actions': []}
-            ...
-            ...
+
+            The value None will be treated the same way.
+
             >>> dates[0][1] = None
             >>> df = pd.DataFrame(dates, columns=['index', "days"])
             >>> assert dt_nan_dc.validate(df) == {
@@ -54,8 +56,9 @@ class DateTimeNaNDataCheck(DataCheck):
             ...                 'details': {'columns': ['index', 'days'], 'rows': None},
             ...                 'code': 'DATETIME_HAS_NAN'}],
             ...     'actions': []}
-            ...
-            ...
+
+            As will pd.NA.
+
             >>> dates[0][1] = pd.NA
             >>> df = pd.DataFrame(dates, columns=['index', "days"])
             >>> assert dt_nan_dc.validate(df) == {

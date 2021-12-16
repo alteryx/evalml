@@ -48,7 +48,10 @@ class UniquenessDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
-            ...
+
+            Because the problem type is regression, the column "regression_not_unique_enough" raises a warning
+            for having just one value.
+
             >>> df = pd.DataFrame({
             ...    'regression_unique_enough': [float(x) for x in range(100)],
             ...    'regression_not_unique_enough': [float(1) for x in range(100)]
@@ -65,8 +68,10 @@ class UniquenessDataCheck(DataCheck):
             ...     "actions": [{"code": "DROP_COL",
             ...                  "data_check_name": 'UniquenessDataCheck',
             ...                  "metadata": {"columns": ["regression_not_unique_enough"], "rows": None}}]}
-            ...
-            ...
+
+            For multiclass, the column "regression_unique_enough" has too many unique values and will raise
+            an appropriate warning.
+
             >>> uniqueness_check = UniquenessDataCheck(problem_type="multiclass", threshold=0.8)
             >>> assert uniqueness_check.validate(df) == {
             ...     'warnings': [{'message': "Input columns 'regression_unique_enough' for multiclass problem type are too unique.",
@@ -80,7 +85,7 @@ class UniquenessDataCheck(DataCheck):
             ...     'actions': [{'code': 'DROP_COL',
             ...                  'data_check_name': 'UniquenessDataCheck',
             ...                  'metadata': {'columns': ['regression_unique_enough'], 'rows': None}}]}
-            ...
+
             >>> y = pd.Series([1, 1, 1, 2, 2, 3, 3, 3])
             >>> assert UniquenessDataCheck.uniqueness_score(y) == 0.65625
         """

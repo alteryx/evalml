@@ -22,7 +22,9 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             >>> import pandas as pd
             >>> import woodwork as ww
             >>> import numpy as np
-            ...
+
+            Columns containing Natural Language data will raise an error if NaN values are present.
+
             >>> data = pd.DataFrame()
             >>> data['A'] = [None, "string_that_is_long_enough_for_natural_language"]
             >>> data['B'] = ['string_that_is_long_enough_for_natural_language', 'string_that_is_long_enough_for_natural_language']
