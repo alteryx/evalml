@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
         * Added support for known-in-advance features :pr:`3149`
+        * Added Holt-Winters ``ExponentialSmoothingRegressor` for time series regression problems :pr:`3157`
     * Fixes
         * Fixed error caused when tuning threshold for time series binary classification :pr:`3140`
     * Changes

@@ -44,7 +44,7 @@ class ExponentialSmoothingRegressor(Estimator):
         sktime_smoothing = import_or_raise(
             "sktime.forecasting.exp_smoothing", error_msg=smoothing_model_msg
         )
-        smoothing_model = sktime_smoothing.ExponentialSmoothing()
+        smoothing_model = sktime_smoothing.ExponentialSmoothing(**parameters)
 
         super().__init__(
             parameters=parameters,
