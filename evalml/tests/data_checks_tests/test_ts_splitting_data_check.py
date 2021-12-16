@@ -15,18 +15,10 @@ def test_time_series_splitting_data_check_raises_value_error():
         TimeSeriesSplittingDataCheck("time series regression", n_splits=3)
 
 
-@pytest.mark.parametrize(
-    "problem_type,is_valid",
-    [
-        ["time series binary", True],
-        ["time series binary", False],
-        ["time series multiclass", True],
-        ["time series multiclass", False],
-    ],
-)
-def test_time_series_param_data_check(problem_type, is_valid):
+@pytest.mark.parametrize("problem_type", ["time series binary", "time series multiclass"])
+@pytest.mark.parametrize("is_valid", [True, False])
+def test_time_series_param_data_check(is_valid, problem_type):
     X = None
-    y = pd.Series([0 if i < 10 else 1 for i in range(100)])
     invalid_splits = {}
 
     if not is_valid:
