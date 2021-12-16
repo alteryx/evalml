@@ -1,7 +1,6 @@
 """Holt-Winters Exponential Smoothing Forecaster."""
 import numpy as np
 import pandas as pd
-from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
@@ -15,7 +14,6 @@ class ExponentialSmoothingRegressor(Estimator):
     Currently ExponentialSmoothingRegressor isn't supported via conda install. It's recommended that it be installed via PyPI.
 
     Args:
-        date_index (str): Specifies the name of the column in X that provides the datetime objects. Defaults to None.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -31,12 +29,11 @@ class ExponentialSmoothingRegressor(Estimator):
 
     def __init__(
         self,
-        date_index=None,
         n_jobs=-1,
         random_seed=0,
         **kwargs,
     ):
-        parameters = {"date_index": date_index}
+        parameters = {}
         parameters.update(kwargs)
         smoothing_model_msg = (
             "sktime is not installed. Please install using `pip install sktime.`"

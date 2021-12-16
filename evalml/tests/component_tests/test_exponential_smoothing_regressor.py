@@ -16,13 +16,6 @@ pytestmark = [
 
 
 @pytest.fixture(scope="module")
-def sktime_arima():
-    from sktime.forecasting import exp_smoothing as sktime_exp
-
-    return sktime_arima
-
-
-@pytest.fixture(scope="module")
 def forecasting():
     from sktime.forecasting import base as forecasting
 
