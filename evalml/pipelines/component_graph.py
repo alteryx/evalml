@@ -45,6 +45,9 @@ class ComponentGraph:
         ...                   'estimator_2': ['Decision Tree Classifier', 'OHE.x', 'y'],
         ...                   'final': ['Logistic Regression Classifier', 'estimator_1.x', 'estimator_2.x', 'y']}
         >>> component_graph = ComponentGraph(component_dict)
+
+        The default parameters for every component in the component graph.
+
         >>> assert component_graph.default_parameters == {
         ...     'Imputer': {'categorical_impute_strategy': 'most_frequent',
         ...                 'numeric_impute_strategy': 'mean',
