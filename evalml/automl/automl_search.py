@@ -172,6 +172,12 @@ def search(
     elif mode == "long" and max_time is None:
         max_batches = 6  # corresponds to end of 'long' exploration phase
 
+    data_splitter = make_data_splitter(X=X_train,
+                                       y=y_train,
+                                       problem_type=problem_type,
+                                       problem_configuration=problem_configuration,
+                                       n_splits=n_splits)
+
     automl_config = {
         "X_train": X_train,
         "y_train": y_train,
@@ -183,7 +189,7 @@ def search(
         "tolerance": tolerance,
         "verbose": verbose,
         "problem_configuration": problem_configuration,
-        "n_splits": n_splits,
+        "data_splitter": data_splitter,
     }
 
     data_checks = DefaultDataChecks(
@@ -248,6 +254,12 @@ def search_iterative(
         objective = get_default_primary_search_objective(problem_type)
     objective = get_objective(objective, return_instance=False)
 
+    data_splitter = make_data_splitter(X=X_train,
+                                       y=y_train,
+                                       problem_type=problem_type,
+                                       problem_configuration=problem_configuration,
+                                       n_splits=n_splits)
+
     automl_config = kwargs
     automl_config.update(
         {
@@ -257,7 +269,7 @@ def search_iterative(
             "objective": objective,
             "max_batches": 1,
             "problem_configuration": problem_configuration,
-            "n_splits": n_splits,
+            "data_splitter": data_splitter,
         }
     )
 
@@ -318,8 +330,6 @@ class AutoMLSearch:
             model families. Run evalml.pipelines.components.utils.allowed_model_families("binary") to see options. Change `binary`
             to `multiclass` or `regression` depending on the problem type. Note that if allowed_pipelines is provided,
             this parameter will be ignored.
-
-        n_splits (int): Number of splits to use in the default data splitter. Will be ignored if a data_splitter is passed.
 
         data_splitter (sklearn.model_selection.BaseCrossValidator): Data splitting method to use. Defaults to StratifiedKFold.
 
@@ -406,7 +416,6 @@ class AutoMLSearch:
         max_time=None,
         patience=None,
         tolerance=None,
-        n_splits=3,
         data_splitter=None,
         allowed_component_graphs=None,
         allowed_model_families=None,

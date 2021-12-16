@@ -65,14 +65,15 @@ class TimeSeriesSplittingDataCheck(DataCheck):
         y = infer_feature_types(y)
 
         invalid_splits = {}
+        y_unique = y.nunique()
         if y is not None:
             for split_num, (train, val) in enumerate(self._splitter.split(X=y)):
                 invalid_dict = {}
                 train_targets = y[train]
                 val_targets = y[val]
-                if train_targets.nunique() < y.nunique():
+                if train_targets.nunique() < y_unique:
                     invalid_dict["Training"] = [0, len(train)]
-                if val_targets.nunique() < y.nunique():
+                if val_targets.nunique() < y_unique:
                     invalid_dict["Validation"] = [len(train), len(train) + len(val)]
                 if invalid_dict:
                     invalid_splits[(split_num + 1)] = invalid_dict
