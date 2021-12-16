@@ -36,11 +36,8 @@ class ExponentialSmoothingRegressor(Estimator):
         random_seed=0,
         **kwargs,
     ):
-        parameters = {
-            "date_index": date_index,
-        }
+        parameters = {"date_index": date_index}
         parameters.update(kwargs)
-
         smoothing_model_msg = (
             "sktime is not installed. Please install using `pip install sktime.`"
         )

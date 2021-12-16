@@ -76,6 +76,7 @@ minimum_dependencies_set = set(
 additional_requirements_set = set(
     [
         "ARIMA Regressor",
+        "Exponential Smoothing Regressor",
         "CatBoost Classifier",
         "CatBoost Regressor",
         "LightGBM Classifier",
