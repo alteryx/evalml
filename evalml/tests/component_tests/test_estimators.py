@@ -28,7 +28,7 @@ def test_estimators_feature_name_with_random_ascii(
     X_y_binary, X_y_multi, X_y_regression, ts_data, helper_functions
 ):
     for estimator_class in _all_estimators_used_in_search():
-        if estimator_class.__name__ in ["ARIMARegressor", "ProphetRegressor"]:
+        if estimator_class.__name__ in ["ARIMARegressor", "ExponentialSmoothingRegressos", "ProphetRegressor"]:
             continue
         supported_problem_types = [
             handle_problem_types(pt) for pt in estimator_class.supported_problem_types

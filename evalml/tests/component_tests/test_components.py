@@ -34,6 +34,7 @@ from evalml.pipelines.components import (
     ElasticNetClassifier,
     ElasticNetRegressor,
     Estimator,
+    ExponentialSmoothingRegressor,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
     Imputer,
@@ -1250,7 +1251,7 @@ def test_no_fitting_required_components(
 
 def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), "component.pkl")
-    requires_date_index = [ARIMARegressor, ProphetRegressor, TimeSeriesFeaturizer]
+    requires_date_index = [ARIMARegressor, ExponentialSmoothingRegressor, ProphetRegressor, TimeSeriesFeaturizer]
     for component_class in all_components():
         print("Testing serialization of component {}".format(component_class.name))
         component = helper_functions.safe_init_component_with_njobs_1(component_class)

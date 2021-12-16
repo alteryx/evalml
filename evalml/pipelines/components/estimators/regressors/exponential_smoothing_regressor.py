@@ -21,8 +21,7 @@ class ExponentialSmoothingRegressor(Estimator):
     """
 
     name = "Exponential Smoothing Regressor"
-    hyperparameter_ranges = {
-    }
+    hyperparameter_ranges = {}
     """{
     }"""
     model_family = ModelFamily.EXPONENTIAL_SMOOTHING
@@ -33,14 +32,12 @@ class ExponentialSmoothingRegressor(Estimator):
     def __init__(
         self,
         date_index=None,
-        forecast_horizon=None,
         n_jobs=-1,
         random_seed=0,
         **kwargs,
     ):
         parameters = {
             "date_index": date_index,
-            "forecast_horizon": forecast_horizon,
         }
         parameters.update(kwargs)
 
@@ -53,11 +50,40 @@ class ExponentialSmoothingRegressor(Estimator):
         smoothing_model = sktime_smoothing.ExponentialSmoothing()
 
         super().__init__(
-            parameters=parameters, component_obj=smoothing_model, random_seed=random_seed
+            parameters=parameters,
+            component_obj=smoothing_model,
+            random_seed=random_seed,
         )
 
+    def _remove_datetime(self, data, features=False):
+        if data is None:
+            return None
+        data_no_dt = data.copy()
+        if isinstance(
+            data_no_dt.index, (pd.DatetimeIndex, pd.PeriodIndex, pd.IntervalIndex)
+        ):
+            data_no_dt = data_no_dt.reset_index(drop=True)
+        if features:
+            data_no_dt = data_no_dt.select_dtypes(exclude=["datetime64"])
+
+        return data_no_dt
+
+    def _match_indices(self, X, y):
+        if X is not None:
+            if X.index.equals(y.index):
+                return X, y
+            else:
+                y.index = X.index
+        return X, y
+
+    def _set_forecast(self, X):
+        from sktime.forecasting.base import ForecastingHorizon
+
+        fh_ = ForecastingHorizon([i + 1 for i in range(len(X))], is_relative=True)
+        return fh_
+
     def fit(self, X, y=None):
-        """Fits Exponential Smoothing regressor to data.
+        """Fits Exponential Smoothing Regressor to data.
 
         Args:
             X (pd.DataFrame): The input training data of shape [n_samples, n_features].
@@ -69,16 +95,17 @@ class ExponentialSmoothingRegressor(Estimator):
         Raises:
             ValueError: If X was passed to `fit` but not passed in `predict`.
         """
+        X, y = self._manage_woodwork(X, y)
         if y is None:
             raise ValueError("Exponential Smoothing Regressor requires y as input.")
 
-        X, y = self._manage_woodwork(X, y)
+        X = self._remove_datetime(X, features=True)
+        y = self._remove_datetime(y)
+        X, y = self._match_indices(X, y)
+
         if X is not None and not X.empty:
-            X = X.select_dtypes(exclude=["datetime64"])
-            #self._component_obj.fit(y=y, X=X, fh=self.parameters["forecast_horizon"])
             self._component_obj.fit(y=y, X=X)
         else:
-            #self._component_obj.fit(y=y, fh=self.parameters["forecast_horizon"])
             self._component_obj.fit(y=y)
         return self
 
@@ -96,11 +123,15 @@ class ExponentialSmoothingRegressor(Estimator):
             ValueError: If X was passed to `fit` but not passed in `predict`.
         """
         X, y = self._manage_woodwork(X, y)
-        if X is not None and not X.empty:
-            X = X.select_dtypes(exclude=["datetime64"])
-            y_pred = self._component_obj.predict(fh=self.parameters["forecast_horizon"], X=X)
+        fh_ = self._set_forecast(X)
+        X = X.select_dtypes(exclude=["datetime64"])
+
+        if not X.empty:
+            y_pred = self._component_obj.predict(fh=fh_, X=X)
         else:
-            y_pred = self._component_obj.predict(fh=self.parameters["forecast_horizon"])
+            y_pred = self._component_obj.predict(fh=fh_)
+        y_pred.index = X.index
+
         return infer_feature_types(y_pred)
 
     @property
