@@ -42,7 +42,13 @@ class TimeSeriesSplittingDataCheck(DataCheck):
 
         Example:
             >>> import pandas as pd
-            ...
+
+            Passing n_splits as 3 means that the data will be segmented into 4 parts to be iterated over for training
+            and validation splits. The first split results in training indices of [0:25] and validation indices of [25:50].
+            The training indices of the first split result in only one unique value (0).
+            The third split results in training indices of [0:75] and validation indices of [75:100]. The validation indices
+            of the third split result in only one unique value (1).
+
             >>> X = None
             >>> y = pd.Series([0 if i < 45 else i % 2 if i < 55 else 1 for i in range(100)])
             ...
