@@ -722,11 +722,16 @@ def test_deprecate_arg():
 
 def test_contains_all_ts_parameters():
     is_valid, msg = contains_all_ts_parameters(
-        {"date_index": "date", "max_delay": 1, "forecast_horizon": 3, "gap": 7}
+        {"time_index": "date", "max_delay": 1, "forecast_horizon": 3, "gap": 7}
     )
     assert is_valid and not msg
 
-    is_valid, msg = contains_all_ts_parameters({"date_index": "date"})
+    is_valid, msg = contains_all_ts_parameters(
+        {"time_index": None, "max_delay": 1, "forecast_horizon": 3, "gap": 7}
+    )
+    assert not is_valid and msg
+
+    is_valid, msg = contains_all_ts_parameters({"time_index": "date"})
 
     assert not is_valid and msg
 

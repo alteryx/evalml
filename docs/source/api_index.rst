@@ -42,7 +42,6 @@ Exceptions
     evalml.exceptions.ComponentNotYetFittedError
     evalml.exceptions.PipelineNotYetFittedError
     evalml.exceptions.AutoMLSearchException
-    evalml.exceptions.EnsembleMissingPipelinesError
     evalml.exceptions.PipelineScoreError
     evalml.exceptions.DataCheckInitError
     evalml.exceptions.NullsInColumnWarning

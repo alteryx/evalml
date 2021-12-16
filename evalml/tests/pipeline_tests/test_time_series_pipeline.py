@@ -50,7 +50,7 @@ def test_time_series_pipeline_validates_holdout_data(
         component_graph=[estimator],
         parameters={
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": gap,
                 "max_delay": 2,
                 "forecast_horizon": forecast_horizon,
@@ -95,7 +95,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
             component_graph=component_graph,
             parameters={
                 "pipeline": {
-                    "date_index": "date",
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 5,
                     "forecast_horizon": 3,
@@ -107,18 +107,18 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
             "forecast_horizon": 3,
             "gap": 0,
             "max_delay": 5,
-            "date_index": "date",
+            "time_index": "date",
         }
     else:
         parameters = {
             "Time Series Featurizer": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 5,
                 "forecast_horizon": 3,
             },
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 5,
                 "forecast_horizon": 3,
@@ -126,7 +126,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
         }
         pl = pipeline_class(component_graph=component_graph, parameters=parameters)
         assert pl.parameters["Time Series Featurizer"] == {
-            "date_index": "date",
+            "time_index": "date",
             "gap": 0,
             "forecast_horizon": 3,
             "max_delay": 5,
@@ -139,7 +139,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
             "gap": 0,
             "forecast_horizon": 3,
             "max_delay": 5,
-            "date_index": "date",
+            "time_index": "date",
         }
 
     assert (
@@ -148,7 +148,7 @@ def test_time_series_pipeline_init(pipeline_class, estimator, components):
 
     with pytest.raises(
         ValueError,
-        match="date_index, gap, and max_delay parameters cannot be omitted from the parameters dict",
+        match="time_index, gap, max_delay, and forecast_horizon",
     ):
         pipeline_class(component_graph, {})
 
@@ -202,7 +202,7 @@ def test_fit_drop_nans_before_estimator(
         component_graph=component_graph,
         parameters={
             "Time Series Featurizer": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": gap,
                 "forecast_horizon": forecast_horizon,
                 "max_delay": max_delay,
@@ -212,7 +212,7 @@ def test_fit_drop_nans_before_estimator(
                 "rolling_window_size": 1.0,
             },
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": gap,
                 "max_delay": max_delay,
                 "forecast_horizon": forecast_horizon,
@@ -269,7 +269,7 @@ def test_transform_all_but_final_for_time_series(
                 "forecast_horizon": forecast_horizon,
                 "gap": gap,
                 "max_delay": max_delay,
-                "date_index": "date",
+                "time_index": "date",
             },
             "Random Forest Regressor": {"n_jobs": 1},
             "Time Series Featurizer": {
@@ -278,7 +278,7 @@ def test_transform_all_but_final_for_time_series(
                 "forecast_horizon": forecast_horizon,
                 "conf_level": 1.0,
                 "rolling_window_size": 1.0,
-                "date_index": "date",
+                "time_index": "date",
             },
         },
     )
@@ -292,7 +292,7 @@ def test_transform_all_but_final_for_time_series(
         forecast_horizon=forecast_horizon,
         conf_level=1.0,
         rolling_window_size=1.0,
-        date_index="date",
+        time_index="date",
     )
     date_featurizer = DateTimeFeaturizer()
     expected_features = date_featurizer.fit_transform(
@@ -309,7 +309,7 @@ def test_transform_all_but_final_for_time_series(
 @pytest.mark.parametrize("include_feature_not_known_in_advance", [True, False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize(
-    "forecast_horizon,gap,max_delay,n_to_pred,date_index",
+    "forecast_horizon,gap,max_delay,n_to_pred,time_index",
     [
         (1, 0, 1, 1, None),
         (1, 0, 2, 1, None),
@@ -348,7 +348,7 @@ def test_predict_and_predict_in_sample(
     gap,
     max_delay,
     n_to_pred,
-    date_index,
+    time_index,
     include_delayed_features,
     include_feature_not_known_in_advance,
     ts_data,
@@ -379,7 +379,7 @@ def test_predict_and_predict_in_sample(
 
     parameters = {
         "pipeline": {
-            "date_index": "date",
+            "time_index": "date",
             "gap": gap,
             "max_delay": max_delay,
             "forecast_horizon": forecast_horizon,
@@ -402,7 +402,7 @@ def test_predict_and_predict_in_sample(
     if include_delayed_features:
         component_graph = ["Time Series Featurizer"] + component_graph
         delayer_params = {
-            "date_index": "date",
+            "time_index": "date",
             "gap": gap,
             "max_delay": max_delay,
             "forecast_horizon": forecast_horizon,
@@ -463,7 +463,7 @@ def test_predict_and_predict_in_sample(
 )
 @patch("evalml.pipelines.components.RandomForestClassifier.predict")
 @patch("evalml.pipelines.components.RandomForestRegressor.predict")
-def test_predict_and_predict_in_sample_with_date_index(
+def test_predict_and_predict_in_sample_with_time_index(
     mock_regressor_predict,
     mock_classifier_predict,
     pipeline_class,
@@ -488,7 +488,7 @@ def test_predict_and_predict_in_sample_with_date_index(
         estimator_name,
     ]
     delayer_params = {
-        "date_index": "date",
+        "time_index": "date",
         "gap": 1,
         "max_delay": 3,
         "forecast_horizon": 1,
@@ -499,7 +499,7 @@ def test_predict_and_predict_in_sample_with_date_index(
     }
     parameters = {
         "pipeline": {
-            "date_index": "date",
+            "time_index": "date",
             "gap": 1,
             "max_delay": 3,
             "forecast_horizon": 1,
@@ -543,7 +543,7 @@ def test_predict_and_predict_in_sample_with_date_index(
 @pytest.mark.parametrize("only_use_y", [False])
 @pytest.mark.parametrize("include_delayed_features", [True, False])
 @pytest.mark.parametrize(
-    "forecast_horizon,gap,max_delay,date_index",
+    "forecast_horizon,gap,max_delay,time_index",
     [
         (1, 0, 1, None),
         (3, 1, 1, None),
@@ -581,7 +581,7 @@ def test_ts_score(
     forecast_horizon,
     gap,
     max_delay,
-    date_index,
+    time_index,
     include_delayed_features,
     only_use_y,
     ts_data,
@@ -603,7 +603,7 @@ def test_ts_score(
         component_graph=["Time Series Featurizer", estimator_name],
         parameters={
             "Time Series Featurizer": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": gap,
                 "max_delay": max_delay,
                 "delay_features": include_delayed_features,
@@ -611,7 +611,7 @@ def test_ts_score(
                 "forecast_horizon": forecast_horizon,
             },
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": gap,
                 "max_delay": max_delay,
                 "forecast_horizon": forecast_horizon,
@@ -697,7 +697,7 @@ def test_classification_pipeline_encodes_targets(
         },
         parameters={
             "Time Series Featurizer": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 1,
                 "forecast_horizon": 1,
@@ -705,7 +705,7 @@ def test_classification_pipeline_encodes_targets(
                 "rolling_window_size": 1.0,
             },
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 1,
                 "forecast_horizon": 1,
@@ -786,14 +786,14 @@ def test_ts_score_works(
     pl = pipeline(
         parameters={
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 1,
                 "max_delay": 3,
                 "delay_features": False,
                 "forecast_horizon": 10,
             },
             "Time Series Featurizer": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 1,
                 "max_delay": 3,
                 "delay_features": False,
@@ -849,7 +849,7 @@ def test_binary_classification_predictions_thresholded_properly(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 3,
-                "date_index": "date",
+                "time_index": "date",
                 "forecast_horizon": 3,
             },
         }
@@ -906,7 +906,7 @@ def test_binary_predict_pipeline_objective_mismatch(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 0,
-                "date_index": "date",
+                "time_index": "date",
                 "forecast_horizon": 2,
             },
         }
@@ -944,13 +944,13 @@ def test_time_series_pipeline_not_fitted_error(
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 10,
                 },
                 "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 10,
                 },
             }
@@ -964,13 +964,13 @@ def test_time_series_pipeline_not_fitted_error(
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 10,
                 },
                 "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 10,
                 },
             }
@@ -983,13 +983,13 @@ def test_time_series_pipeline_not_fitted_error(
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 10,
                 },
                 "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 10,
                 },
             }
@@ -1054,11 +1054,11 @@ def test_ts_binary_pipeline_target_thresholding(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 0,
-                "date_index": "date",
+                "time_index": "date",
                 "forecast_horizon": 10,
             },
             "Time Series Featurizer": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 10,
@@ -1088,13 +1088,13 @@ def test_binary_predict_pipeline_use_objective(
             "pipeline": {
                 "gap": 3,
                 "max_delay": 0,
-                "date_index": "date",
+                "time_index": "date",
                 "forecast_horizon": 5,
             },
             "Time Series Featurizer": {
                 "gap": 3,
                 "max_delay": 0,
-                "date_index": "date",
+                "time_index": "date",
                 "forecast_horizon": 5,
             },
         }
@@ -1162,7 +1162,7 @@ def test_time_series_pipeline_fit_with_transformed_target(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 2,
-                "date_index": "date",
+                "time_index": "date",
                 "forecast_horizon": 3,
             },
         },
@@ -1191,14 +1191,14 @@ def test_time_series_pipeline_with_detrender(ts_data):
             "pipeline": {
                 "gap": 1,
                 "max_delay": 10,
-                "date_index": "date",
+                "time_index": "date",
                 "forecast_horizon": 7,
             },
             "Time Series Featurizer": {
                 "max_delay": 2,
                 "gap": 1,
                 "forecast_horizon": 10,
-                "date_index": "date",
+                "time_index": "date",
             },
         },
     )
@@ -1245,7 +1245,7 @@ def test_ts_pipeline_predict_without_final_estimator(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 2,
-                "date_index": "date",
+                "time_index": "date",
                 "forecast_horizon": 3,
             },
         },
@@ -1306,7 +1306,7 @@ def test_ts_pipeline_transform(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 0,
-                "date_index": "date",
+                "time_index": "date",
                 "forecast_horizon": 3,
             },
         },
@@ -1352,13 +1352,13 @@ def test_ts_pipeline_transform_with_final_estimator(
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 5,
                 },
                 "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 5,
                 },
             }
@@ -1373,13 +1373,13 @@ def test_ts_pipeline_transform_with_final_estimator(
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 5,
                 },
                 "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 5,
                 },
             }
@@ -1393,13 +1393,13 @@ def test_ts_pipeline_transform_with_final_estimator(
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 5,
                 },
                 "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 5,
                 },
             }
@@ -1415,16 +1415,16 @@ def test_ts_pipeline_transform_with_final_estimator(
         pipeline.transform(X_validation, y_validation)
 
 
-def test_date_index_cannot_be_none(time_series_regression_pipeline_class):
+def test_time_index_cannot_be_none(time_series_regression_pipeline_class):
 
-    with pytest.raises(ValueError, match="date_index cannot be None!"):
+    with pytest.raises(ValueError, match="time_index cannot be None!"):
         time_series_regression_pipeline_class(
             {
                 "pipeline": {
                     "gap": 1,
                     "max_delay": 2,
                     "forecast_horizon": 1,
-                    "date_index": None,
+                    "time_index": None,
                 }
             }
         )

@@ -10,10 +10,7 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import check_random_state
 
-from evalml.exceptions import (
-    EnsembleMissingPipelinesError,
-    MissingComponentError,
-)
+from evalml.exceptions import MissingComponentError
 
 logger = logging.getLogger(__name__)
 
@@ -244,8 +241,6 @@ def get_importable_subclasses(base_class, used_in_automl=True):
             logger.debug(
                 f"Could not import class {cls.__name__} in get_importable_subclasses"
             )
-        except EnsembleMissingPipelinesError:
-            classes.append(cls)
     if used_in_automl:
         classes = [cls for cls in classes if cls.__name__ not in _not_used_in_automl]
 
@@ -533,14 +528,16 @@ def contains_all_ts_parameters(problem_configuration):
         bool, str: True if the configuration contains all parameters. If False, msg is a non-empty
             string with error message.
     """
-    required_parameters = {"date_index", "gap", "max_delay", "forecast_horizon"}
+    required_parameters = {"time_index", "gap", "max_delay", "forecast_horizon"}
     msg = ""
-    if not problem_configuration or not all(
-        p in problem_configuration for p in required_parameters
+    if (
+        not problem_configuration
+        or not all(p in problem_configuration for p in required_parameters)
+        or problem_configuration["time_index"] is None
     ):
         msg = (
-            "problem_configuration must be a dict containing values for at least the date_index, gap, max_delay, "
-            f"and forecast_horizon parameters. Received {problem_configuration}."
+            "problem_configuration must be a dict containing values for at least the time_index, gap, max_delay, "
+            f"and forecast_horizon parameters, and time_index cannot be None. Received {problem_configuration}."
         )
     return not (msg), msg
 
@@ -577,7 +574,7 @@ def are_ts_parameters_valid_for_split(
         msg = (
             f"Since the data has {n_obs} observations and n_splits={n_splits}, "
             f"the smallest split would have {split_size} observations. "
-            f"Since {gap + max_delay + forecast_horizon} (gap + max_delay + forecast_horizon)  > {split_size}, "
+            f"Since {gap + max_delay + forecast_horizon} (gap + max_delay + forecast_horizon) >= {split_size}, "
             "then at least one of the splits would be empty by the time it reaches the pipeline. "
             "Please use a smaller number of splits, reduce one or more these parameters, or collect more data."
         )

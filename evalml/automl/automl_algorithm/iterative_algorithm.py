@@ -89,8 +89,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         allow_long_running_models=False,
         verbose=False,
     ):
-        self.X = infer_feature_types(X)
-        self.y = infer_feature_types(y)
+        self.X = infer_feature_types(X, ignore_nullable_types=True)
+        self.y = infer_feature_types(y, ignore_nullable_types=True)
         self.problem_type = problem_type
         self.random_seed = random_seed
         self.sampler_name = sampler_name
@@ -199,6 +199,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         self.problem_type,
                         parameters=self._pipeline_params,
                         sampler_name=self.sampler_name,
+                        known_in_advance=self._pipeline_params.get("pipeline", {}).get(
+                            "known_in_advance", None
+                        ),
                     )
                     for estimator in allowed_estimators
                 ]
@@ -432,9 +435,14 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 component_parameters["n_jobs"] = self.n_jobs
             if "number_features" in init_params:
                 component_parameters["number_features"] = self.number_features
+            names_to_check = [
+                "Drop Columns Transformer",
+                "Known In Advance Pipeline - Select Columns Transformer",
+                "Not Known In Advance Pipeline - Select Columns Transformer",
+            ]
             if (
                 name in self._pipeline_params
-                and name == "Drop Columns Transformer"
+                and name in names_to_check
                 and self._batch_number > 0
             ):
                 component_parameters["columns"] = self._pipeline_params[name]["columns"]

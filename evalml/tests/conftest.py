@@ -96,6 +96,100 @@ def graphviz():
     return graphviz
 
 
+@pytest.fixture
+def get_test_data_from_configuration():
+    def _get_test_data_from_configuration(
+        input_type, problem_type, column_names=None, nullable_target=False
+    ):
+        X_all = pd.DataFrame(
+            {
+                "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+                * 2,
+                "int_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
+                "age_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
+                "bool_null": [True, None, False, True, False, None, True] * 2,
+                "numerical": range(14),
+                "categorical": ["a", "b", "a", "b", "b", "a", "b"] * 2,
+                "dates": pd.date_range("2000-02-03", periods=14, freq="W"),
+                "text": [
+                    "this is a string",
+                    "this is another string",
+                    "this is just another string",
+                    "evalml should handle string input",
+                    "cats are gr8",
+                    "hello world",
+                    "evalml is gr8",
+                ]
+                * 2,
+                "email": [
+                    "abalone_0@gmail.com",
+                    "AbaloneRings@yahoo.com",
+                    "abalone_2@abalone.com",
+                    "titanic_data@hotmail.com",
+                    "fooEMAIL@email.org",
+                    "evalml@evalml.org",
+                    "evalml@alteryx.org",
+                ]
+                * 2,
+                "url": [
+                    "https://evalml.alteryx.com/en/stable/",
+                    "https://woodwork.alteryx.com/en/stable/guides/statistical_insights.html",
+                    "https://twitter.com/AlteryxOSS",
+                    "https://www.twitter.com/AlteryxOSS",
+                    "https://www.evalml.alteryx.com/en/stable/demos/text_input.html",
+                    "https://github.com/alteryx/evalml",
+                    "https://github.com/alteryx/featuretools",
+                ]
+                * 2,
+                "ip": [
+                    "0.0.0.0",
+                    "1.1.1.101",
+                    "1.1.101.1",
+                    "1.101.1.1",
+                    "101.1.1.1",
+                    "192.168.1.1",
+                    "255.255.255.255",
+                ]
+                * 2,
+            }
+        )
+        y = pd.Series([0, 0, 1, 0, 0, 1, 1] * 2)
+        if problem_type == ProblemTypes.MULTICLASS:
+            y = pd.Series([0, 2, 1, 2, 0, 2, 1] * 2)
+        elif is_regression(problem_type):
+            y = pd.Series([1, 2, 3, 3, 3, 4, 5] * 2)
+        if nullable_target:
+            y.iloc[2] = None
+            if input_type == "ww":
+                y = ww.init_series(y, logical_type="integer_nullable")
+        X = X_all[column_names]
+
+        if input_type == "ww":
+            logical_types = {}
+            if "text" in column_names:
+                logical_types.update({"text": "NaturalLanguage"})
+            if "categorical" in column_names:
+                logical_types.update({"categorical": "Categorical"})
+            if "url" in column_names:
+                logical_types.update({"url": "URL"})
+            if "email" in column_names:
+                logical_types.update({"email": "EmailAddress"})
+            if "int_null" in column_names:
+                logical_types.update({"int_null": "integer_nullable"})
+            if "age_null" in column_names:
+                logical_types.update({"age_null": "age_nullable"})
+            if "bool_null" in column_names:
+                logical_types.update({"bool_null": "boolean_nullable"})
+
+            X.ww.init(logical_types=logical_types)
+
+            y = ww.init_series(y)
+
+        return X, y
+
+    return _get_test_data_from_configuration
+
+
 def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
     est_parameters = (
         {estimator.name: {"n_jobs": 1}}
@@ -755,7 +849,27 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
         estimator = MockEstimator
         component_graph = [MockEstimator]
 
-        def __init__(self, parameters, random_seed=0):
+        def __init__(
+            self, parameters, custom_name=None, component_graph=None, random_seed=0
+        ):
+            super().__init__(
+                self.component_graph, parameters=parameters, random_seed=random_seed
+            )
+
+    return MockBinaryClassificationPipeline
+
+
+@pytest.fixture
+def dummy_ts_binary_linear_classifier_pipeline_class():
+    log_reg_classifier = LogisticRegressionClassifier
+
+    class MockBinaryClassificationPipeline(TimeSeriesBinaryClassificationPipeline):
+        estimator = log_reg_classifier
+        component_graph = [estimator]
+
+        def __init__(
+            self, parameters, custom_name=None, component_graph=None, random_seed=0
+        ):
             super().__init__(
                 self.component_graph, parameters=parameters, random_seed=random_seed
             )
@@ -1348,6 +1462,7 @@ class _AutoMLTestEnv:
         self._mock_get_names = None
         self._mock_encode_targets = None
         self._mock_predict_proba = None
+        self._mock_predict_proba_in_sample = None
         self._mock_optimize_threshold = None
 
     @property
@@ -1380,6 +1495,7 @@ class _AutoMLTestEnv:
         self._mock_get_names = None
         self._mock_encode_targets = None
         self._mock_predict_proba = None
+        self._mock_predict_proba_in_sample = None
         self._mock_optimize_threshold = None
 
     def _get_mock(self, mock_name):
@@ -1412,6 +1528,10 @@ class _AutoMLTestEnv:
         return self._get_mock("predict_proba")
 
     @property
+    def mock_predict_proba_in_sample(self):
+        return self._get_mock("predict_proba_in_sample")
+
+    @property
     def mock_optimize_threshold(self):
         return self._get_mock("optimize_threshold")
 
@@ -1423,6 +1543,7 @@ class _AutoMLTestEnv:
         mock_fit_side_effect=None,
         mock_fit_return_value=None,
         predict_proba_return_value=None,
+        predict_proba_in_sample_return_value=None,
         optimize_threshold_return_value=0.2,
     ):
         """A context manager for creating an environment that patches time-consuming pipeline methods.
@@ -1466,6 +1587,18 @@ class _AutoMLTestEnv:
             return_value=predict_proba_return_value,
             pipeline_class_str=pipeline_to_mock,
         )
+        if handle_problem_types(self.problem_type) in [
+            ProblemTypes.TIME_SERIES_BINARY,
+            ProblemTypes.TIME_SERIES_MULTICLASS,
+        ]:
+            mock_predict_proba_in_sample = self._patch_method(
+                "predict_proba_in_sample",
+                side_effect=None,
+                return_value=predict_proba_in_sample_return_value,
+                pipeline_class_str=pipeline_to_mock,
+            )
+        else:
+            mock_predict_proba_in_sample = None
 
         mock_optimize = patch(
             "evalml.objectives.BinaryClassificationObjective.optimize_threshold",
@@ -1484,17 +1617,29 @@ class _AutoMLTestEnv:
         mock_sleep = patch(
             "evalml.automl.AutoMLSearch._sleep_time", new_callable=sleep_time
         )
-
-        with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
-            # Can think of `yield` as blocking this method until the computation finishes running
-            yield
-            self._mock_fit = fit
-            self._mock_tell = tell
-            self._mock_score = score
-            self._mock_get_names = get_names
-            self._mock_encode_targets = encode
-            self._mock_predict_proba = proba
-            self._mock_optimize_threshold = optimize
+        if mock_predict_proba_in_sample is None:
+            with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
+                # Can think of `yield` as blocking this method until the computation finishes running
+                yield
+                self._mock_fit = fit
+                self._mock_tell = tell
+                self._mock_score = score
+                self._mock_get_names = get_names
+                self._mock_encode_targets = encode
+                self._mock_predict_proba = proba
+                self._mock_optimize_threshold = optimize
+        else:
+            with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_predict_proba_in_sample as proba_in_sample, mock_tell as tell, mock_optimize as optimize:
+                # Can think of `yield` as blocking this method until the computation finishes running
+                yield
+                self._mock_fit = fit
+                self._mock_tell = tell
+                self._mock_score = score
+                self._mock_get_names = get_names
+                self._mock_encode_targets = encode
+                self._mock_predict_proba = proba
+                self._mock_predict_proba_in_sample = proba_in_sample
+                self._mock_optimize_threshold = optimize
 
 
 @pytest.fixture
