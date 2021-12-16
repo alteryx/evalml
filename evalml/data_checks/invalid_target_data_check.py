@@ -71,7 +71,9 @@ class InvalidTargetDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
-            ...
+
+            Target values must be integers, doubles, or booleans.
+
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = pd.Series(["cat_1", "cat_2", "cat_1", "cat_2"])
             >>> target_check = InvalidTargetDataCheck('regression', 'R2')
@@ -88,8 +90,9 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 'details': {'columns': None, 'rows': None},
             ...                 'code': 'TARGET_UNSUPPORTED_TYPE'}],
             ...     'actions': []}
-            ...
-            ...
+
+            The target cannot have null values.
+
             >>> y = pd.Series([None, pd.NA, pd.NaT, None])
             >>> assert target_check.validate(X, y) == {
             ...     'warnings': [],
@@ -118,8 +121,10 @@ class InvalidTargetDataCheck(DataCheck):
             ...                               'rows': None,
             ...                               'is_target': True,
             ...                               'impute_strategy': 'mean'}}]}
-            ...
-            ...
+
+            If the target values don't match the problem type passed, an error will be raised.
+            In this instance, only two values exist in the target column, but multiclass has been passed as the problem type.
+
             >>> X = pd.DataFrame([i for i in range(50)])
             >>> y = pd.Series([i%2 for i in range(50)])
             >>> target_check = InvalidTargetDataCheck('multiclass', 'Log Loss Multiclass')
@@ -131,8 +136,9 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 'details': {'columns': None, 'rows': None, 'num_classes': 2},
             ...                 'code': 'TARGET_MULTICLASS_NOT_ENOUGH_CLASSES'}],
             ...     'actions': []}
-            ...
-            ...
+
+            If the length of X and y differ, a warning will be raised. A warning will also be raised for indices that don't match.
+
             >>> target_check = InvalidTargetDataCheck('regression', 'R2')
             >>> X = pd.DataFrame([i for i in range(5)])
             >>> y = pd.Series([1, 2, 4, 3], index=[1, 2, 4, 3])
