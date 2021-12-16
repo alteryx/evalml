@@ -105,7 +105,13 @@ def make_data_splitter(
 
 
 def tune_binary_threshold(
-    pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning
+    pipeline,
+    objective,
+    problem_type,
+    X_threshold_tuning,
+    y_threshold_tuning,
+    X=None,
+    y=None,
 ):
     """Tunes the threshold of a binary pipeline to the X and y thresholding data.
 
@@ -113,8 +119,10 @@ def tune_binary_threshold(
         pipeline (Pipeline): Pipeline instance to threshold.
         objective (ObjectiveBase): The objective we want to tune with. If not tuneable and best_pipeline is True, will use F1.
         problem_type (ProblemType): The problem type of the pipeline.
-        X_threshold_tuning (pd.DataFrame): Features to tune pipeline to.
-        y_threshold_tuning (pd.Series): Target data to tune pipeline to.
+        X_threshold_tuning (pd.DataFrame): Features to which the pipeline will be tuned.
+        y_threshold_tuning (pd.Series): Target data to which the pipeline will be tuned.
+        X (pd.DataFrame): Features to which the pipeline will be trained (used for time series binary). Defaults to None.
+        y (pd.Series): Target to which the pipeline will be trained (used for time series binary). Defaults to None.
     """
     if (
         is_binary(problem_type)
@@ -123,7 +131,12 @@ def tune_binary_threshold(
     ):
         pipeline.threshold = 0.5
         if X_threshold_tuning is not None:
-            y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
+            if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+                y_predict_proba = pipeline.predict_proba_in_sample(
+                    X_threshold_tuning, y_threshold_tuning, X, y
+                )
+            else:
+                y_predict_proba = pipeline.predict_proba(X_threshold_tuning, X, y)
             y_predict_proba = y_predict_proba.iloc[:, 1]
             pipeline.optimize_threshold(
                 X_threshold_tuning, y_threshold_tuning, y_predict_proba, objective
