@@ -11,10 +11,12 @@ from .no_variance_data_check import NoVarianceDataCheck
 from .target_distribution_data_check import TargetDistributionDataCheck
 from .target_leakage_data_check import TargetLeakageDataCheck
 from .ts_parameters_data_check import TimeSeriesParametersDataCheck
+from .ts_splitting_data_check import TimeSeriesSplittingDataCheck
 
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
+    is_classification,
     is_time_series,
 )
 
@@ -36,6 +38,7 @@ class DefaultDataChecks(DataChecks):
         - `TargetDistributionDataCheck` (for regression problem types)
         - `DateTimeFormatDataCheck` (for time series problem types)
         - 'TimeSeriesParametersDataCheck' (for time series problem types)
+        - `TimeSeriesSplittingDataCheck` (for time series classification problem types)
 
     Args:
         problem_type (str): The problem type that is being validated. Can be regression, binary, or multiclass.
@@ -63,6 +66,16 @@ class DefaultDataChecks(DataChecks):
             if problem_configuration is None:
                 raise ValueError(
                     "problem_configuration cannot be None for time series problems!"
+                )
+            if is_classification(problem_type):
+                default_checks = default_checks + [TimeSeriesSplittingDataCheck]
+                data_check_params.update(
+                    {
+                        "TimeSeriesSplittingDataCheck": {
+                            "problem_type": problem_type,
+                            "n_splits": n_splits,
+                        }
+                    }
                 )
             default_checks = default_checks + [
                 DateTimeFormatDataCheck,
