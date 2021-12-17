@@ -36,7 +36,7 @@ class ModelFamily(Enum):
     """Decision Tree model family."""
 
     EXPONENTIAL_SMOOTHING = "exponential_smoothing"
-    """ Exponential Smoothing model family."""
+    """Exponential Smoothing model family."""
 
     ARIMA = "arima"
     """ARIMA model family."""

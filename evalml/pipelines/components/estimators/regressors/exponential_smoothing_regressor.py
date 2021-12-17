@@ -87,14 +87,13 @@ class ExponentialSmoothingRegressor(Estimator):
             self
 
         Raises:
-            ValueError: If X was passed to `fit` but not passed in `predict`.
+            ValueError: If y was not passed in.
         """
         X, y = self._manage_woodwork(X, y)
         if y is None:
             raise ValueError("Exponential Smoothing Regressor requires y as input.")
 
         X = self._remove_datetime(X, features=True)
-        y = self._remove_datetime(y)
         X, y = self._match_indices(X, y)
 
         if X is not None and not X.empty:
@@ -112,9 +111,6 @@ class ExponentialSmoothingRegressor(Estimator):
 
         Returns:
             pd.Series: Predicted values.
-
-        Raises:
-            ValueError: If X was passed to `fit` but not passed in `predict`.
         """
         X, y = self._manage_woodwork(X, y)
         fh_ = self._set_forecast(X)

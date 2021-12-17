@@ -153,6 +153,7 @@ def test_feature_importance(ts_data):
         (True, False, False, False, False, False),
         (False, True, True, False, False, True),
         (False, True, True, False, False, False),
+        (True, False, True, True, True, False),
     ],
 )
 def test_fit_predict(
@@ -197,12 +198,12 @@ def test_predict_no_X(
     from sktime.forecasting.exp_smoothing import ExponentialSmoothing
 
     X_train, X_test, y_train = get_ts_X_y(
-        train_features_index_dt = False,
-        train_target_index_dt = True,
-        train_none = True, 
-        datetime_feature = False,
-        no_features = True,
-        test_features_index_dt = False,
+        train_features_index_dt=False,
+        train_target_index_dt=True,
+        train_none=True,
+        datetime_feature=False,
+        no_features=True,
+        test_features_index_dt=False,
     )
 
     fh_ = ForecastingHorizon([i + 1 for i in range(len(X_test))], is_relative=True)
