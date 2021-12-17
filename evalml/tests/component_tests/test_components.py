@@ -1249,7 +1249,6 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), "component.pkl")
     requires_time_index = [
         ARIMARegressor,
-        ExponentialSmoothingRegressor,
         ProphetRegressor,
         TimeSeriesFeaturizer,
     ]
