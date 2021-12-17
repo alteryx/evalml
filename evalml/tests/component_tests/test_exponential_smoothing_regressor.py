@@ -15,13 +15,6 @@ pytestmark = [
 ]
 
 
-@pytest.fixture(scope="module")
-def forecasting():
-    from sktime.forecasting import base as forecasting
-
-    return forecasting
-
-
 def test_model_family():
     assert (
         ExponentialSmoothingRegressor().model_family

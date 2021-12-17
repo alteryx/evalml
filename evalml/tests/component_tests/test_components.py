@@ -33,7 +33,6 @@ from evalml.pipelines.components import (
     ElasticNetClassifier,
     ElasticNetRegressor,
     Estimator,
-    ExponentialSmoothingRegressor,
     ExtraTreesClassifier,
     ExtraTreesRegressor,
     Imputer,
