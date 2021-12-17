@@ -111,6 +111,7 @@ def search(
     patience=None,
     tolerance=None,
     problem_configuration=None,
+    n_splits=3,
     verbose=False,
 ):
     """Given data and configuration, run an automl search.
@@ -138,6 +139,7 @@ def search(
             Only applicable if patience is not None. Defaults to None.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
+        n_splits (int): Number of splits to use with the default data splitter.
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
     Returns:
@@ -170,6 +172,14 @@ def search(
     elif mode == "long" and max_time is None:
         max_batches = 6  # corresponds to end of 'long' exploration phase
 
+    data_splitter = make_data_splitter(
+        X=X_train,
+        y=y_train,
+        problem_type=problem_type,
+        problem_configuration=problem_configuration,
+        n_splits=n_splits,
+    )
+
     automl_config = {
         "X_train": X_train,
         "y_train": y_train,
@@ -180,11 +190,14 @@ def search(
         "patience": patience,
         "tolerance": tolerance,
         "verbose": verbose,
+        "problem_configuration": problem_configuration,
+        "data_splitter": data_splitter,
     }
 
     data_checks = DefaultDataChecks(
         problem_type=problem_type,
         objective=objective,
+        n_splits=n_splits,
         problem_configuration=problem_configuration,
     )
     data_check_results = data_checks.validate(X_train, y=y_train)
@@ -202,6 +215,7 @@ def search_iterative(
     problem_type=None,
     objective="auto",
     problem_configuration=None,
+    n_splits=3,
     **kwargs,
 ):
     """Given data and configuration, run an automl search.
@@ -220,6 +234,7 @@ def search_iterative(
             - R2 for regression problems.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
             in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
+        n_splits (int): Number of splits to use with the default data splitter.
         **kwargs: Other keyword arguments which are provided will be passed to AutoMLSearch.
 
     Returns:
@@ -241,6 +256,14 @@ def search_iterative(
         objective = get_default_primary_search_objective(problem_type)
     objective = get_objective(objective, return_instance=False)
 
+    data_splitter = make_data_splitter(
+        X=X_train,
+        y=y_train,
+        problem_type=problem_type,
+        problem_configuration=problem_configuration,
+        n_splits=n_splits,
+    )
+
     automl_config = kwargs
     automl_config.update(
         {
@@ -249,12 +272,15 @@ def search_iterative(
             "problem_type": problem_type,
             "objective": objective,
             "max_batches": 1,
+            "problem_configuration": problem_configuration,
+            "data_splitter": data_splitter,
         }
     )
 
     data_checks = DefaultDataChecks(
         problem_type=problem_type,
         objective=objective,
+        n_splits=n_splits,
         problem_configuration=problem_configuration,
     )
     data_check_results = data_checks.validate(X_train, y=y_train)

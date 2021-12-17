@@ -52,6 +52,26 @@ def test_search_iterative_data_check_error(
     pd.testing.assert_series_equal(target, infer_feature_types(y))
 
 
+def test_n_splits_passed_to_ts_splitting_data_check(ts_data):
+    X = pd.DataFrame(pd.date_range("1/1/21", periods=100), columns=["date"])
+    y = pd.Series(0 if i < 40 else 1 for i in range(100))
+
+    problem_config = {
+        "gap": 1,
+        "max_delay": 1,
+        "forecast_horizon": 1,
+        "time_index": "date",
+    }
+    _, data_checks = search_iterative(
+        X_train=X,
+        y_train=y,
+        problem_configuration=problem_config,
+        problem_type="time series binary",
+        n_splits=4,
+    )
+    assert len(data_checks["errors"][0]["details"]["invalid_splits"]) == 4
+
+
 @pytest.mark.parametrize(
     "problem_config", [None, "missing_time_index", "missing_other_index"]
 )

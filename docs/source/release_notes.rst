@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added ``TimeSeriesSplittingDataCheck`` to ``DefaultDataChecks`` to verify adequate class representation in time series classification problems :pr:`3141`
         * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
         * Added support for known-in-advance features :pr:`3149`
         * Added Holt-Winters ``ExponentialSmoothingRegressor`` for time series regression problems :pr:`3157`
