@@ -190,6 +190,45 @@ def get_test_data_from_configuration():
     return _get_test_data_from_configuration
 
 
+@pytest.fixture
+def get_ts_X_y():
+    def _get_X_y(
+        train_features_index_dt,
+        train_target_index_dt,
+        train_none,
+        datetime_feature,
+        no_features,
+        test_features_index_dt,
+    ):
+        X = pd.DataFrame(index=[i + 1 for i in range(50)])
+        dates = pd.date_range("1/1/21", periods=50)
+        feature = [1, 5, 2] * 10 + [3, 1] * 10
+        y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
+
+        X_train = X[:40]
+        X_test = X[40:]
+        y_train = y[:40]
+
+        if train_features_index_dt:
+            X_train.index = dates[:40]
+        if train_target_index_dt:
+            y_train.index = dates[:40]
+        if test_features_index_dt:
+            X_test.index = dates[40:]
+        if not no_features:
+            X_train["Feature"] = feature[:40]
+            X_test["Feature"] = feature[40:]
+            if datetime_feature:
+                X_train["Dates"] = dates[:40]
+                X_test["Dates"] = dates[40:]
+        if train_none:
+            X_train = None
+
+        return X_train, X_test, y_train
+
+    return _get_X_y
+
+
 def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
     est_parameters = (
         {estimator.name: {"n_jobs": 1}}

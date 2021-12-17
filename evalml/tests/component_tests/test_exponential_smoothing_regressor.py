@@ -45,45 +45,6 @@ def test_fit_ts_without_y(ts_data):
         clf.fit(X=X)
 
 
-@pytest.fixture
-def get_X_y():
-    def _get_X_y(
-        train_features_index_dt,
-        train_target_index_dt,
-        train_none,
-        datetime_feature,
-        no_features,
-        test_features_index_dt,
-    ):
-        X = pd.DataFrame(index=[i + 1 for i in range(50)])
-        dates = pd.date_range("1/1/21", periods=50)
-        feature = [1, 5, 2] * 10 + [3, 1] * 10
-        y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
-
-        X_train = X[:40]
-        X_test = X[40:]
-        y_train = y[:40]
-
-        if train_features_index_dt:
-            X_train.index = dates[:40]
-        if train_target_index_dt:
-            y_train.index = dates[:40]
-        if test_features_index_dt:
-            X_test.index = dates[40:]
-        if not no_features:
-            X_train["Feature"] = feature[:40]
-            X_test["Feature"] = feature[40:]
-            if datetime_feature:
-                X_train["Dates"] = dates[:40]
-                X_test["Dates"] = dates[40:]
-        if train_none:
-            X_train = None
-
-        return X_train, X_test, y_train
-
-    return _get_X_y
-
-
 @pytest.mark.parametrize("train_features_index_dt", [True, False])
 @pytest.mark.parametrize("train_target_index_dt", [True, False])
 @pytest.mark.parametrize(
@@ -101,9 +62,9 @@ def test_remove_datetime(
     train_none,
     datetime_feature,
     no_features,
-    get_X_y,
+    get_ts_X_y,
 ):
-    X_train, _, y_train = get_X_y(
+    X_train, _, y_train = get_ts_X_y(
         train_features_index_dt,
         train_target_index_dt,
         train_none,
@@ -140,8 +101,8 @@ def test_remove_datetime(
     assert not isinstance(y_train_no_dt.index, pd.DatetimeIndex)
 
 
-def test_match_indices(get_X_y):
-    X_train, _, y_train = get_X_y(
+def test_match_indices(get_ts_X_y):
+    X_train, _, y_train = get_ts_X_y(
         train_features_index_dt=False,
         train_target_index_dt=False,
         train_none=False,
@@ -157,10 +118,10 @@ def test_match_indices(get_X_y):
     assert X_.index.equals(y_.index)
 
 
-def test_set_forecast(get_X_y):
+def test_set_forecast(get_ts_X_y):
     from sktime.forecasting.base import ForecastingHorizon
 
-    _, X_test, _ = get_X_y(
+    _, X_test, _ = get_ts_X_y(
         train_features_index_dt=False,
         train_target_index_dt=False,
         train_none=False,
@@ -201,12 +162,12 @@ def test_fit_predict(
     no_features,
     datetime_feature,
     test_features_index_dt,
-    get_X_y,
+    get_ts_X_y,
 ):
     from sktime.forecasting.base import ForecastingHorizon
     from sktime.forecasting.exp_smoothing import ExponentialSmoothing
 
-    X_train, X_test, y_train = get_X_y(
+    X_train, X_test, y_train = get_ts_X_y(
         train_features_index_dt,
         train_target_index_dt,
         train_none,
@@ -227,3 +188,31 @@ def test_fit_predict(
 
     assert (y_pred_sk.values == y_pred.values).all()
     assert y_pred.index.equals(X_test.index)
+
+
+def test_predict_no_X(
+    get_ts_X_y,
+):
+    from sktime.forecasting.base import ForecastingHorizon
+    from sktime.forecasting.exp_smoothing import ExponentialSmoothing
+
+    X_train, X_test, y_train = get_ts_X_y(
+        train_features_index_dt = False,
+        train_target_index_dt = True,
+        train_none = True, 
+        datetime_feature = False,
+        no_features = True,
+        test_features_index_dt = False,
+    )
+
+    fh_ = ForecastingHorizon([i + 1 for i in range(len(X_test))], is_relative=True)
+
+    sk_clf = ExponentialSmoothing()
+    clf = sk_clf.fit(X=X_train, y=y_train)
+    y_pred_sk = clf.predict(fh=fh_)
+
+    m_clf = ExponentialSmoothingRegressor()
+    m_clf.fit(X=X_train, y=y_train)
+    y_pred = m_clf.predict(X=X_test)
+
+    assert (y_pred_sk.values == y_pred.values).all()
