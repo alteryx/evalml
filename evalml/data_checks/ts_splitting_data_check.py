@@ -64,9 +64,13 @@ class TimeSeriesSplittingDataCheck(DataCheck):
             ...                                                                                3: {"Validation": [75, 100]}}},
             ...                  'code': 'TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT'}],
             ...     "warnings": [],
-            ...     "actions": []}
+            ...     "actions": "actions": {"action_list": [], "default_action": None}}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         y = infer_feature_types(y)
 

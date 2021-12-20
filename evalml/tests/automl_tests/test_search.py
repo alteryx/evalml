@@ -49,7 +49,7 @@ def test_search_data_check_error(
     pd.testing.assert_series_equal(target, infer_feature_types(y))
 
 
-def test_n_splits_passed_to_ts_splitting_data_check(ts_data):
+def test_n_splits_passed_to_ts_splitting_data_check():
     X = pd.DataFrame(pd.date_range("1/1/21", periods=100), columns=["date"])
     y = pd.Series(0 if i < 40 else 1 for i in range(100))
 
