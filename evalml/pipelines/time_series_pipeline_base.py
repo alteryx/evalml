@@ -103,7 +103,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         try:
             units_difference = dt_difference / X_frequency_dict[test_copy.ww.time_index]
         except ValueError:
-            units_difference = dt_difference / ("1" + X_frequency_dict[test_copy.ww.time_index])
+            units_difference = dt_difference / (
+                "1" + X_frequency_dict[test_copy.ww.time_index]
+            )
         return units_difference == gap_difference
 
     def _validate_holdout_datasets(self, X, X_train):
