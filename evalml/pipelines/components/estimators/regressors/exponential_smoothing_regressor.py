@@ -1,6 +1,7 @@
 """Holt-Winters Exponential Smoothing Forecaster."""
 import numpy as np
 import pandas as pd
+from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
@@ -19,8 +20,19 @@ class ExponentialSmoothingRegressor(Estimator):
     """
 
     name = "Exponential Smoothing Regressor"
-    hyperparameter_ranges = {}
+    hyperparameter_ranges = {
+        "trend": ["additive", "multiplicative"],
+        "damped_trend": [True, False],
+        "seasonal": ["additive", "multiplicative"],
+        "sp": Integer(1, 12),
+        "use_boxcox": [True, False, "log"],
+    }
     """{
+        "trend": ["additive", "multiplicative"],
+        "damped_trend": [True, False],
+        "seasonal": ["additive", "multiplicative"],
+        "sp": Integer(1, 12),
+        "use_boxcox": [True, False, "log"],
     }"""
     model_family = ModelFamily.EXPONENTIAL_SMOOTHING
     """ModelFamily.EXPONENTIAL_SMOOTHING"""
@@ -29,11 +41,22 @@ class ExponentialSmoothingRegressor(Estimator):
 
     def __init__(
         self,
+        trend=None,
+        damped_trend=False,
+        seasonal=None,
+        sp=None,
+        use_boxcox=None,
         n_jobs=-1,
         random_seed=0,
         **kwargs,
     ):
-        parameters = {}
+        parameters = {
+            "trend": trend,
+            "damped_trend": damped_trend,
+            "seasonal": seasonal,
+            "sp": sp,
+            "use_boxcox": use_boxcox,
+        }
         parameters.update(kwargs)
         smoothing_model_msg = (
             "sktime is not installed. Please install using `pip install sktime.`"
@@ -64,10 +87,7 @@ class ExponentialSmoothingRegressor(Estimator):
 
     def _match_indices(self, X, y):
         if X is not None:
-            if X.index.equals(y.index):
-                return X, y
-            else:
-                y.index = X.index
+            y.index = X.index
         return X, y
 
     def _set_forecast(self, X):
@@ -94,6 +114,7 @@ class ExponentialSmoothingRegressor(Estimator):
             raise ValueError("Exponential Smoothing Regressor requires y as input.")
 
         X = self._remove_datetime(X, features=True)
+        y = self._remove_datetime(y)
         X, y = self._match_indices(X, y)
 
         if X is not None and not X.empty:
