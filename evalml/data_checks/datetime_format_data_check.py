@@ -27,7 +27,10 @@ class DateTimeFormatDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
-            ...
+
+            The column "dates" has the date 2021-01-31 appended to the end, which is inconsistent with the frequency of the previous
+            9 dates (1 day).
+
             >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=9).append(pd.date_range("2021-01-31", periods=1)), columns=["dates"])
             >>> y = pd.Series([0, 1, 0, 1, 1, 0, 0, 0, 1, 0])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
@@ -40,8 +43,9 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                 }],
             ...     "warnings": [],
             ...     "actions": []}
-            ...
-            ...
+
+            The column "Weeks" passed integers instead of datetime data, which will raise an error.
+
             >>> X = pd.DataFrame([1, 2, 3, 4], columns=["Weeks"])
             >>> y = pd.Series([0] * 4)
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
@@ -53,18 +57,20 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                 'details': {'columns': None, 'rows': None},
             ...                 'code': 'DATETIME_INFORMATION_NOT_FOUND'}],
             ...     'actions': []}
-            ...
-            ...
+
+            Converting that same integer data to datetime however is valid.
+
             >>> X = pd.DataFrame(pd.to_datetime([1, 2, 3, 4]), columns=["Weeks"])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
             >>> assert datetime_format_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
-            ...
-            ...
+
             >>> X = pd.DataFrame(pd.date_range("2021-01-01", freq='W', periods=10), columns=["Weeks"])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
             >>> assert datetime_format_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
-            ...
-            ...
+
+            While the data passed in is of datetime type, time series requires the datetime information in datetime_column
+            to be monotonically increasing (ascending).
+
             >>> X = X.iloc[::-1]
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
             >>> assert datetime_format_dc.validate(X, y) == {

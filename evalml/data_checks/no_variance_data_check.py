@@ -35,7 +35,9 @@ class NoVarianceDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
-            ...
+
+            Columns or target data that have only one unique value will raise an error.
+
             >>> X = pd.DataFrame([2, 2, 2, 2, 2, 2, 2, 2], columns=["First_Column"])
             >>> y = pd.Series([1, 1, 1, 1, 1, 1, 1, 1])
             ...
@@ -55,8 +57,10 @@ class NoVarianceDataCheck(DataCheck):
             ...     'actions': [{'code': 'DROP_COL',
             ...                  'data_check_name': 'NoVarianceDataCheck',
             ...                  'metadata': {'columns': ["First_Column"], 'rows': None}}]}
-            ...
-            ...
+
+            By default, NaNs will not be counted as distinct values. In the first example, there are still two distinct values
+            besides None. In the second, there are no distinct values as the target is entirely null.
+
             >>> X["First_Column"] = [2, 2, 2, 3, 3, 3, None, None]
             >>> y = pd.Series([1, 1, 1, 2, 2, 2, None, None])
             >>> assert novar_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
@@ -71,8 +75,9 @@ class NoVarianceDataCheck(DataCheck):
             ...                 'details': {'columns': ['Y'], 'rows': None},
             ...                 'code': 'NO_VARIANCE'}],
             ...     'actions': []}
-            ...
-            ...
+
+            As None is not considered a distinct value by default, there is only one unique value in X and y.
+
             >>> X["First_Column"] = [2, 2, 2, 2, None, None, None, None]
             >>> y = pd.Series([1, 1, 1, 1, None, None, None, None])
             >>> assert novar_dc.validate(X, y) == {
@@ -90,8 +95,11 @@ class NoVarianceDataCheck(DataCheck):
             ...     'actions': [{'code': 'DROP_COL',
             ...                  'data_check_name': 'NoVarianceDataCheck',
             ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}]}
-            ...
-            ...
+
+            If count_nan_as_value is set to True, then NaNs are counted as unique values. In the event that there is an
+            adequate number of unique values only because count_nan_as_value is set to True, a warning will be raised so
+            the user can encode these values.
+
             >>> novar_dc = NoVarianceDataCheck(count_nan_as_value=True)
             >>> assert novar_dc.validate(X, y) == {
             ...     'warnings': [{'message': "'First_Column' has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.",

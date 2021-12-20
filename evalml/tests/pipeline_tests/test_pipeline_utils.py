@@ -3,7 +3,6 @@ from unittest.mock import patch
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
 
 from evalml.data_checks import DataCheckAction, DataCheckActionCode
 from evalml.model_family import ModelFamily
@@ -24,6 +23,7 @@ from evalml.pipelines.components import (
     LogisticRegressionClassifier,
     NaturalLanguageFeaturizer,
     OneHotEncoder,
+    ReplaceNullableTypes,
     StandardScaler,
     TargetImputer,
     TimeSeriesFeaturizer,
@@ -36,6 +36,7 @@ from evalml.pipelines.components.transformers.encoders.label_encoder import (
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
+    _get_preprocessing_components,
     _make_pipeline_from_multiple_graphs,
     generate_pipeline_code,
     get_estimators,
@@ -44,86 +45,7 @@ from evalml.pipelines.utils import (
     make_pipeline_from_actions,
     rows_of_interest,
 )
-from evalml.problem_types import ProblemTypes, is_regression, is_time_series
-
-
-@pytest.fixture
-def get_test_data_from_configuration():
-    def _get_test_data_from_configuration(input_type, problem_type, column_names=None):
-        X_all = pd.DataFrame(
-            {
-                "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
-                * 2,
-                "numerical": range(14),
-                "categorical": ["a", "b", "a", "b", "b", "a", "b"] * 2,
-                "dates": pd.date_range("2000-02-03", periods=14, freq="W"),
-                "text": [
-                    "this is a string",
-                    "this is another string",
-                    "this is just another string",
-                    "evalml should handle string input",
-                    "cats are gr8",
-                    "hello world",
-                    "evalml is gr8",
-                ]
-                * 2,
-                "email": [
-                    "abalone_0@gmail.com",
-                    "AbaloneRings@yahoo.com",
-                    "abalone_2@abalone.com",
-                    "titanic_data@hotmail.com",
-                    "fooEMAIL@email.org",
-                    "evalml@evalml.org",
-                    "evalml@alteryx.org",
-                ]
-                * 2,
-                "url": [
-                    "https://evalml.alteryx.com/en/stable/",
-                    "https://woodwork.alteryx.com/en/stable/guides/statistical_insights.html",
-                    "https://twitter.com/AlteryxOSS",
-                    "https://www.twitter.com/AlteryxOSS",
-                    "https://www.evalml.alteryx.com/en/stable/demos/text_input.html",
-                    "https://github.com/alteryx/evalml",
-                    "https://github.com/alteryx/featuretools",
-                ]
-                * 2,
-                "ip": [
-                    "0.0.0.0",
-                    "1.1.1.101",
-                    "1.1.101.1",
-                    "1.101.1.1",
-                    "101.1.1.1",
-                    "192.168.1.1",
-                    "255.255.255.255",
-                ]
-                * 2,
-            }
-        )
-        y = pd.Series([0, 0, 1, 0, 0, 1, 1] * 2)
-        if problem_type == ProblemTypes.MULTICLASS:
-            y = pd.Series([0, 2, 1, 2, 0, 2, 1] * 2)
-        elif is_regression(problem_type):
-            y = pd.Series([1, 2, 3, 3, 3, 4, 5] * 2)
-        X = X_all[column_names]
-
-        if input_type == "ww":
-            logical_types = {}
-            if "text" in column_names:
-                logical_types.update({"text": "NaturalLanguage"})
-            if "categorical" in column_names:
-                logical_types.update({"categorical": "Categorical"})
-            if "url" in column_names:
-                logical_types.update({"url": "URL"})
-            if "email" in column_names:
-                logical_types.update({"email": "EmailAddress"})
-
-            X.ww.init(logical_types=logical_types)
-
-            y = ww.init_series(y)
-
-        return X, y
-
-    return _get_test_data_from_configuration
+from evalml.problem_types import ProblemTypes, is_time_series
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -145,6 +67,10 @@ def get_test_data_from_configuration():
         ("url with other features", ["url", "numerical", "categorical"]),
         ("ip with other features", ["ip", "numerical", "categorical"]),
         ("email with other features", ["email", "numerical", "categorical"]),
+        ("only null int", ["int_null"]),
+        ("only null bool", ["bool_null"]),
+        ("only null age", ["age_null"]),
+        ("nullable_types", ["numerical", "int_null", "bool_null", "age_null"]),
     ],
 )
 def test_make_pipeline(
@@ -168,7 +94,7 @@ def test_make_pipeline(
             if is_time_series(problem_type):
                 parameters = {
                     "pipeline": {
-                        "date_index": "date",
+                        "time_index": "date",
                         "gap": 1,
                         "max_delay": 1,
                         "forecast_horizon": 3,
@@ -184,17 +110,15 @@ def test_make_pipeline(
                 and estimator_class.model_family != ModelFamily.ARIMA
                 else []
             )
-            ohe = (
-                [OneHotEncoder]
-                if estimator_class.model_family != ModelFamily.CATBOOST
-                and (
-                    any(
-                        ltype in column_names
-                        for ltype in ["url", "email", "categorical"]
-                    )
-                )
-                else []
-            )
+
+            if estimator_class.model_family != ModelFamily.CATBOOST and any(
+                column_name in ["url", "email", "categorical", "bool_null"]
+                for column_name in column_names
+            ):
+                ohe = [OneHotEncoder]
+            else:
+                ohe = []
+
             datetime = (
                 [DateTimeFeaturizer]
                 if estimator_class.model_family
@@ -208,6 +132,16 @@ def test_make_pipeline(
                 else []
             )
             drop_null = [DropNullColumns] if "all_null" in column_names else []
+            replace_null = (
+                [ReplaceNullableTypes]
+                if (
+                    any(
+                        x in column_names for x in ["bool_null", "int_null", "age_null"]
+                    )
+                    and input_type == "ww"
+                )
+                else []
+            )
             natural_language_featurizer = (
                 [NaturalLanguageFeaturizer]
                 if "text" in column_names and input_type == "ww"
@@ -232,6 +166,7 @@ def test_make_pipeline(
                     label_encoder
                     + email_featurizer
                     + url_featurizer
+                    + replace_null
                     + drop_null
                     + drop_col
                     + natural_language_featurizer
@@ -247,6 +182,7 @@ def test_make_pipeline(
                     label_encoder
                     + email_featurizer
                     + url_featurizer
+                    + replace_null
                     + drop_null
                     + drop_col
                     + delayed_features
@@ -260,6 +196,114 @@ def test_make_pipeline(
             assert pipeline.component_graph.compute_order == [
                 component.name for component in expected_components
             ], test_description
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.TIME_SERIES_BINARY,
+    ],
+)
+@pytest.mark.parametrize(
+    "test_description, known_in_advance",
+    [
+        ("categorical", ["categorical"]),
+        ("email", ["email"]),
+        ("url", ["url"]),
+        ("text", ["text"]),
+        ("nullable", ["int_null", "bool_null", "age_null"]),
+        (
+            "all",
+            [
+                "int_null",
+                "bool_null",
+                "age_null",
+                "categorical",
+                "email",
+                "url",
+                "text",
+            ],
+        ),
+        ("other numerical", []),
+    ],
+)
+def test_make_pipeline_known_in_advance(
+    test_description, known_in_advance, problem_type, get_test_data_from_configuration
+):
+    X, y = get_test_data_from_configuration(
+        "ww",
+        problem_type,
+        column_names=["numerical"] + known_in_advance,
+    )
+    if test_description == "other numerical":
+        X.ww["other numerical"] = pd.Series(range(X.shape[0]))
+        known_in_advance = ["other numerical"]
+
+    estimators = get_estimators(problem_type=problem_type)
+    for estimator_class in estimators:
+        parameters = {
+            "pipeline": {
+                "time_index": "date",
+                "gap": 1,
+                "max_delay": 1,
+                "forecast_horizon": 3,
+            },
+            "Known In Advance Pipeline - Select Columns Transformer": {
+                "columns": known_in_advance
+            },
+            "Not Known In Advance Pipeline - Select Columns Transformer": {
+                "columns": ["numerical"]
+            },
+        }
+
+        pipeline = make_pipeline(
+            X,
+            y,
+            estimator_class,
+            problem_type,
+            parameters,
+            known_in_advance=known_in_advance,
+            sampler_name="Undersampler" if is_classification(problem_type) else None,
+        )
+        expected_known_in_advance_components = _get_preprocessing_components(
+            X.ww[known_in_advance],
+            y,
+            "regression",
+            estimator_class,
+            sampler_name="Undersampler" if is_classification(problem_type) else None,
+        )
+        expected_known_in_advance_components = [
+            c.name
+            for c in expected_known_in_advance_components
+            if c.name != "Label Encoder"
+        ]
+        expected_known_in_advance_components = [
+            "Select Columns Transformer"
+        ] + expected_known_in_advance_components
+        known_in_advance_components = [
+            c.split("-")[1].strip()
+            for c in pipeline.component_graph.compute_order
+            if c.startswith("Known In Advance")
+        ]
+
+        assert expected_known_in_advance_components == known_in_advance_components
+        for k in [
+            "pipeline",
+            "Known In Advance Pipeline - Select Columns Transformer",
+            "Not Known In Advance Pipeline - Select Columns Transformer",
+        ]:
+            assert pipeline.parameters[k] == parameters[k]
+        if is_classification(problem_type):
+            assert (
+                len([c for c in pipeline.component_graph if "Label Encoder" in c.name])
+                == 2
+            )
+            assert (
+                len([c for c in pipeline.component_graph if "Undersampler" in c.name])
+                == 2
+            )
 
 
 def test_make_pipeline_problem_type_mismatch():

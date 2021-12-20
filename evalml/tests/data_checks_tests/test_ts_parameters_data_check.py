@@ -7,12 +7,33 @@ from evalml.data_checks import (
 )
 
 
-def test_time_series_param_data_check_raises_value_error():
+@pytest.mark.parametrize(
+    "gap,max_delay,forecast_horizon,time_index",
+    [[1, 1, 1, None], [None, None, None, None], ["missing", 1, 1, "dates"]],
+)
+def test_time_series_param_data_check_raises_value_error(
+    gap, max_delay, forecast_horizon, time_index
+):
+    if all(i is None for i in [gap, max_delay, forecast_horizon, time_index]):
+        params = None
+    elif any(i == "missing" for i in [gap, max_delay, forecast_horizon, time_index]):
+        params = {
+            "max_delay": max_delay,
+            "forecast_horizon": forecast_horizon,
+            "time_index": time_index,
+        }
+    else:
+        params = {
+            "gap": gap,
+            "max_delay": max_delay,
+            "forecast_horizon": forecast_horizon,
+            "time_index": time_index,
+        }
     with pytest.raises(
         ValueError,
-        match="containing values for at least the date_index, gap, max_delay",
+        match="containing values for at least the time_index, gap, max_delay",
     ):
-        TimeSeriesParametersDataCheck({}, n_splits=3)
+        TimeSeriesParametersDataCheck(params, n_splits=3)
 
 
 @pytest.mark.parametrize(
@@ -34,7 +55,7 @@ def test_time_series_param_data_check(
         "gap": gap,
         "max_delay": max_delay,
         "forecast_horizon": forecast_horizon,
-        "date_index": "date",
+        "time_index": "date",
     }
     data_check = TimeSeriesParametersDataCheck(config, n_splits)
     X = pd.DataFrame({"feature": range(n_obs)})

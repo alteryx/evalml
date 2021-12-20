@@ -2032,14 +2032,14 @@ def test_predict_has_input_target_name(
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 2,
                 },
                 "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
-                    "date_index": "date",
+                    "time_index": "date",
                 },
             }
         )
@@ -2054,12 +2054,12 @@ def test_predict_has_input_target_name(
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
-                    "date_index": "date",
+                    "time_index": "date",
                 },
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 2,
                 },
             }
@@ -2075,12 +2075,12 @@ def test_predict_has_input_target_name(
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
-                    "date_index": "date",
+                    "time_index": "date",
                 },
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": "date",
+                    "time_index": "date",
                     "forecast_horizon": 2,
                 },
             }
@@ -2287,10 +2287,10 @@ def test_binary_pipeline_string_target_thresholding(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 1,
-                "date_index": "date",
+                "time_index": "date",
                 "forecast_horizon": 3,
             },
-            "Time Series Featurizer": {"date_index": "date"},
+            "Time Series Featurizer": {"time_index": "date"},
         }
     )
     pipeline.fit(X_train, y_train)
