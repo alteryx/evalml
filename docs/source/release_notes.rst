@@ -10,6 +10,7 @@ Release Notes
     * Changes
         * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
         * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
+        * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:``
     * Documentation Changes
         * Added comments to provide clarity on doctests :pr:`3155`
     * Testing Changes
