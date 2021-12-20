@@ -80,20 +80,31 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         else:
             return index + gap
 
-    @staticmethod
-    def _are_datasets_separated_by_gap(train_index, test_index, gap):
-        """Determine if the train and test datasets are separated by gap number of units.
+    def _are_datasets_separated_by_gap_time_index(self, train, test, gap):
+        """Determine if the train and test datasets are separated by gap number of units using the time_index.
 
         This will be true when users are predicting on unseen data but not during cross
         validation since the target is known.
         """
         gap_difference = gap + 1
-        index_difference = test_index[0] - train_index[-1]
-        if isinstance(
-            train_index, (pd.DatetimeIndex, pd.PeriodIndex, pd.TimedeltaIndex)
-        ):
-            gap_difference *= test_index.freq
-        return index_difference == gap_difference
+
+        train_copy = train.copy()
+        test_copy = test.copy()
+        train_copy.ww.init(time_index=self.time_index)
+        test_copy.ww.init(time_index=self.time_index)
+
+        X_frequency_dict = train_copy.ww.infer_temporal_frequencies(
+            temporal_columns=[train_copy.ww.time_index]
+        )
+        first_testing_date = test_copy[test_copy.ww.time_index].iloc[0]
+        last_training_date = train_copy[train_copy.ww.time_index].iloc[-1]
+        dt_difference = first_testing_date - last_training_date
+
+        try:
+            units_difference = dt_difference / X_frequency_dict[test_copy.ww.time_index]
+        except ValueError:
+            units_difference = dt_difference / ("1" + X_frequency_dict[test_copy.ww.time_index])
+        return units_difference == gap_difference
 
     def _validate_holdout_datasets(self, X, X_train):
         """Validate the holdout datasets match out expectations.
@@ -107,8 +118,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 are not separated by gap.
         """
         right_length = len(X) <= self.forecast_horizon
-        X_separated_by_gap = self._are_datasets_separated_by_gap(
-            X_train.index, X.index, self.gap
+        X_separated_by_gap = self._are_datasets_separated_by_gap_time_index(
+            X_train, X, self.gap
         )
         if not (right_length and X_separated_by_gap):
             raise ValueError(
@@ -128,7 +139,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         gap_features = pd.DataFrame()
         gap_target = pd.Series()
         if (
-            self._are_datasets_separated_by_gap(X_train.index, X.index, self.gap)
+            self._are_datasets_separated_by_gap_time_index(X_train, X, self.gap)
             and self.gap
         ):
             # The training data does not have the gap dates so don't need to include them
