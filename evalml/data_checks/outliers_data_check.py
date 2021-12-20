@@ -30,7 +30,9 @@ class OutliersDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
-            ...
+
+            The column "z" has an outlier so a warning is added to alert the user of its location.
+
             >>> df = pd.DataFrame({
             ...     'x': [1, 2, 3, 4, 5],
             ...     'y': [6, 7, 8, 9, 10],

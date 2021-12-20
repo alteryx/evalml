@@ -31,7 +31,9 @@ class MulticollinearityDataCheck(DataCheck):
 
         Example:
             >>> import pandas as pd
-            ...
+
+            Columns in X that are highly correlated with each other will be identified using mutual information.
+
             >>> col = pd.Series([1, 0, 2, 3, 4])
             >>> X = pd.DataFrame({"col_1": col, "col_2": col * 3})
             >>> y = pd.Series([1, 0, 0, 1, 0])

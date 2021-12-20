@@ -27,7 +27,10 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
         ...
         >>> assert pipeline.custom_name == "My TimeSeriesRegression Pipeline"
         >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Linear Regressor'}
-        ...
+
+        The pipeline parameters will be chosen from the default parameters for every component, unless specific parameters
+        were passed in as they were above.
+
         >>> assert pipeline.parameters == {
         ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
         ...     'Linear Regressor': {'fit_intercept': True, 'normalize': True, 'n_jobs': -1},

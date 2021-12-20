@@ -24,7 +24,9 @@ class SKOptTuner(Tuner):
         ...
         >>> assert proposal.keys() == {'My Component'}
         >>> assert proposal['My Component'] == {'param a': 5.928446182250184, 'param b': 'c'}
-        ...
+
+        Determines points using a Bayesian Optimizer approach.
+
         >>> for each in range(7):
         ...     print(tuner.propose())
         {'My Component': {'param a': 8.57945617622757, 'param b': 'c'}}
