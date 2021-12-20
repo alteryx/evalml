@@ -29,7 +29,9 @@ class TargetDistributionDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
-            ...
+
+            Targets that exhibit a lognormal distribution will raise a warning for the user to transform the target.
+
             >>> y = [0.946, 0.972, 1.154, 0.954, 0.969, 1.222, 1.038, 0.999, 0.973, 0.897]
             >>> target_check = TargetDistributionDataCheck()
             >>> assert target_check.validate(None, y) == {
