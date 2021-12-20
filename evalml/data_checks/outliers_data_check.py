@@ -113,11 +113,6 @@ class OutliersDataCheck(DataCheck):
                 },
                 metadata={"rows": all_rows_with_indices},
             ).to_dict()
-            # DataCheckAction(
-            #     DataCheckActionCode.DROP_ROWS,
-            #     data_check_name=self.name,
-            #     metadata={"rows": all_rows_with_indices},
-            # ).to_dict()
         )
         return results
 

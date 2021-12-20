@@ -5,8 +5,8 @@ from scipy.stats import jarque_bera, shapiro
 
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
@@ -118,16 +118,29 @@ class TargetDistributionDataCheck(DataCheck):
                     details=details,
                 ).to_dict()
             )
+
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.TRANSFORM_TARGET,
                     data_check_name=self.name,
+                    parameters={},
                     metadata={
                         "is_target": True,
                         "transformation_strategy": "lognormal",
                     },
                 ).to_dict()
             )
+
+            # results["actions"]["action_list"].append(
+            #     DataCheckAction(
+            #         DataCheckActionCode.TRANSFORM_TARGET,
+            #         data_check_name=self.name,
+            #         metadata={
+            #             "is_target": True,
+            #             "transformation_strategy": "lognormal",
+            #         },
+            #     ).to_dict()
+            # )
 
         return results
 
