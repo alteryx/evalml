@@ -3,7 +3,7 @@ import woodwork as ww
 
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
+    DataCheckActionOption,
     DataCheckActionCode,
     DataCheckError,
     DataCheckMessageCode,
@@ -16,6 +16,7 @@ from evalml.problem_types import (
     is_binary,
     is_multiclass,
     is_regression,
+    problem_types,
 )
 from evalml.utils.woodwork_utils import (
     infer_feature_types,
@@ -237,19 +238,35 @@ class InvalidTargetDataCheck(DataCheck):
                 ),
                 results,
             )
-            impute_strategy = (
-                "mean" if is_regression(self.problem_type) else "most_frequent"
-            )
+            # impute_strategy = (
+            #     "mean" if is_regression(self.problem_type) else "most_frequent"
+            # )
+
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=self.name,
-                    metadata={
-                        "is_target": True,
-                        "impute_strategy": impute_strategy,
+                    parameters={
+                        "impute_strategy": {
+                            "parameter_type": "global",
+                            "type": "category",
+                            "categories": ["mean", "most_frequent"] if is_regression(self.problem_type) else ["most_frequent"],
+                            "default_value": "mean" if is_regression(self.problem_type) else "most_frequent"
+                        }
                     },
+                    metadata={"is_target": True},
                 ).to_dict()
             )
+            # results["actions"]["action_list"].append(
+            #     DataCheckAction(
+            #         DataCheckActionCode.IMPUTE_COL,
+            #         data_check_name=self.name,
+            #         metadata={
+            #             "is_target": True,
+            #             "impute_strategy": impute_strategy,
+            #         },
+            #     ).to_dict()
+            # )
         return results
 
     def _check_target_and_features_compatible(self, X, y, results):
