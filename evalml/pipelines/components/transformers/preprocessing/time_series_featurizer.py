@@ -4,12 +4,14 @@ import pandas as pd
 import woodwork as ww
 from featuretools.primitives import RollingMean
 from scipy.signal import find_peaks
-from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from sklearn.preprocessing import OrdinalEncoder
 from skopt.space import Real
 from statsmodels.tsa.stattools import acf
 from woodwork import logical_types
 
 from evalml.pipelines.components.transformers.transformer import Transformer
+from evalml.pipelines.components.transformers import LabelEncoder
+
 from evalml.utils import infer_feature_types
 
 

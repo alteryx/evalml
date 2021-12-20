@@ -4,11 +4,13 @@ import copy
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer_dtype
-from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from sklearn.preprocessing import OrdinalEncoder
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.transformers import LabelEncoder
+
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     SEED_BOUNDS,

@@ -2,8 +2,8 @@
 import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer_dtype
-from sklearn.preprocessing import LabelEncoder
 from skopt.space import Integer, Real
+from evalml.pipelines.components.transformers import LabelEncoder
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator

@@ -806,6 +806,7 @@ def test_components_init_kwargs():
         patched = module + "." + obj_class + ".__init__"
         if component_class == LabelEncoder:
             # scikit-learn's LabelEncoder found in different module than where we import from
+            import pdb; pdb.set_trace()
             patched = module[: module.rindex(".")] + "." + obj_class + ".__init__"
 
         def all_init(self, *args, **kwargs):
