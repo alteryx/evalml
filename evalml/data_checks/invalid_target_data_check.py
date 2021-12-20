@@ -3,8 +3,8 @@ import woodwork as ww
 
 from evalml.data_checks import (
     DataCheck,
-    DataCheckActionOption,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
@@ -257,8 +257,12 @@ class InvalidTargetDataCheck(DataCheck):
                         "impute_strategy": {
                             "parameter_type": "global",
                             "type": "category",
-                            "categories": ["mean", "most_frequent"] if is_regression(self.problem_type) else ["most_frequent"],
-                            "default_value": "mean" if is_regression(self.problem_type) else "most_frequent"
+                            "categories": ["mean", "most_frequent"]
+                            if is_regression(self.problem_type)
+                            else ["most_frequent"],
+                            "default_value": "mean"
+                            if is_regression(self.problem_type)
+                            else "most_frequent",
                         }
                     },
                     metadata={"is_target": True},
