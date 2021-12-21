@@ -96,16 +96,20 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         X_frequency_dict = train_copy.ww.infer_temporal_frequencies(
             temporal_columns=[train_copy.ww.time_index]
         )
+        freq = X_frequency_dict[test_copy.ww.time_index]
+        if freq is None:
+            raise ValueError(
+                "The training data must have an inferrable interval frequency!"
+            )
+
         first_testing_date = test_copy[test_copy.ww.time_index].iloc[0]
         last_training_date = train_copy[train_copy.ww.time_index].iloc[-1]
         dt_difference = first_testing_date - last_training_date
 
         try:
-            units_difference = dt_difference / X_frequency_dict[test_copy.ww.time_index]
+            units_difference = dt_difference / freq
         except ValueError:
-            units_difference = dt_difference / (
-                "1" + X_frequency_dict[test_copy.ww.time_index]
-            )
+            units_difference = dt_difference / ("1" + freq)
         return units_difference == gap_difference
 
     def _validate_holdout_datasets(self, X, X_train):
@@ -125,11 +129,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         )
         if not (right_length and X_separated_by_gap):
             raise ValueError(
-                f"Holdout data X must have {self.forecast_horizon}  rows (value of forecast horizon) "
-                "and its index needs to "
-                f"start {self.gap + 1} values ahead of the training index. "
+                f"Holdout data X must have {self.forecast_horizon} rows (value of forecast horizon) "
+                f"and the first value indicated by the column {self.time_index} needs to "
+                f"start {self.gap + 1} units ahead of the training data. "
                 f"Data received - Length X: {len(X)}, "
-                f"X index start: {X.index[0]}, X_train index end {X_train.index[-1]}."
+                f"X value start: {X[self.time_index].iloc[0]}, X_train value end {X_train[self.time_index].iloc[-1]}."
             )
 
     def _add_training_data_to_X_Y(self, X, y, X_train, y_train):
