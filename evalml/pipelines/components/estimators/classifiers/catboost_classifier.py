@@ -116,7 +116,7 @@ class CatBoostClassifier(Estimator):
         # For binary classification, catboost expects numeric values, so encoding before.
         if y.nunique() <= 2:
             self._label_encoder = LabelEncoder()
-            y = pd.Series(self._label_encoder.fit_transform(None, y))
+            y = self._label_encoder.fit_transform(None, y)[1]
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return self
 
