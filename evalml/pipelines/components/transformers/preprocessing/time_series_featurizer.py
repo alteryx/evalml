@@ -132,7 +132,7 @@ class TimeSeriesFeaturizer(Transformer):
 
     @staticmethod
     def _encode_y_while_preserving_index(y):
-        y_encoded = LabelEncoder().fit_transform(y)
+        y_encoded = LabelEncoder().fit_transform(None, y)[1]
         y = pd.Series(y_encoded, index=y.index)
         return y
 
