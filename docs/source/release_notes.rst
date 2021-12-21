@@ -5,7 +5,7 @@ Release Notes
         * Added ``TimeSeriesSplittingDataCheck`` to ``DefaultDataChecks`` to verify adequate class representation in time series classification problems :pr:`3141`
         * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
         * Added support for known-in-advance features :pr:`3149`
-        * Added string support for DataCheckActionCode :pr:``
+        * Added string support for DataCheckActionCode :pr:`3167`
     * Fixes
         * Fixed error caused when tuning threshold for time series binary classification :pr:`3140`
     * Changes
