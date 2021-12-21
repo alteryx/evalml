@@ -110,11 +110,11 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
                     parameters={
-                        "rows_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "rows": [0, 1, 2, 3, 4],
-                        }
+                        # "rows_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "rows": [0, 1, 2, 3, 4],
+                        # }
                     },
                     metadata={"rows": [0, 1, 2, 3, 4]},
                 ).to_dict(),
@@ -168,11 +168,11 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
                     parameters={
-                        "rows_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "rows": [0, 1, 2, 3],
-                        }
+                        # "rows_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "rows": [0, 1, 2, 3],
+                        # }
                     },
                     metadata={"rows": [0, 1, 2, 3]},
                 ).to_dict(),
@@ -263,11 +263,11 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
                     parameters={
-                        "rows_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "rows": [0, 1, 2, 3, 4],
-                        }
+                        # "rows_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "rows": [0, 1, 2, 3, 4],
+                        # }
                     },
                     metadata={"rows": [0, 1, 2, 3, 4]},
                 ).to_dict(),
@@ -363,11 +363,11 @@ def test_highly_null_data_check_input_formats():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
                     parameters={
-                        "rows_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "rows": [0],
-                        }
+                        # "rows_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "rows": [0],
+                        # }
                     },
                     metadata={"rows": [0]},
                 ).to_dict(),

@@ -107,12 +107,12 @@ class OutliersDataCheck(DataCheck):
                 DataCheckActionCode.DROP_ROWS,
                 data_check_name=self.name,
                 parameters={
-                    "rows_to_drop": {
-                        "parameter_type": "global",
-                        "type": "list",
-                        "rows": all_rows_with_indices,
-                        "default_value": all_rows_with_indices,
-                    }
+                    # "rows_to_drop": {
+                    #     "parameter_type": "global",
+                    #     "type": "list",
+                    #     "rows": all_rows_with_indices,
+                    #     "default_value": all_rows_with_indices,
+                    # }
                 },
                 metadata={"rows": all_rows_with_indices},
             ).to_dict()

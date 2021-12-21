@@ -144,12 +144,12 @@ class HighlyNullDataCheck(DataCheck):
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=self.name,
                     parameters={
-                        "rows_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "rows": rows_to_drop,
-                            "default_value": rows_to_drop,
-                        }
+                        # "rows_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "rows": rows_to_drop,
+                        #     "default_value": rows_to_drop,
+                        # }
                     },
                     metadata={"rows": rows_to_drop},
                 ).to_dict()

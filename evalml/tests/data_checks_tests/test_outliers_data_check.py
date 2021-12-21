@@ -47,11 +47,11 @@ def test_outliers_data_check_warnings():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     parameters={
-                        "rows_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "rows": [0, 3, 5, 10],
-                        }
+                        # "rows_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "rows": [0, 3, 5, 10],
+                        # }
                     },
                     metadata={"rows": [0, 3, 5, 10]},
                 ).to_dict()
@@ -93,11 +93,11 @@ def test_outliers_data_check_warnings_with_duplicate_outlier_indices():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     parameters={
-                        "rows_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "rows": [0, 3],
-                        }
+                        # "rows_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "rows": [0, 3],
+                        # }
                     },
                     metadata={"rows": [0, 3]},
                 ).to_dict()
@@ -148,11 +148,11 @@ def test_outliers_data_check_input_formats():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     parameters={
-                        "rows_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "rows": [0, 3, 5, 10],
-                        }
+                        # "rows_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "rows": [0, 3, 5, 10],
+                        # }
                     },
                     metadata={"rows": [0, 3, 5, 10]},
                 ).to_dict()
@@ -184,11 +184,11 @@ def test_outliers_data_check_input_formats():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     parameters={
-                        "rows_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "rows": [0, 3, 5, 10],
-                        }
+                        # "rows_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "rows": [0, 3, 5, 10],
+                        # }
                     },
                     metadata={"rows": [0, 3, 5, 10]},
                 ).to_dict()
@@ -229,11 +229,11 @@ def test_outliers_data_check_string_cols():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     parameters={
-                        "rows_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "rows": [0],
-                        }
+                        # "rows_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "rows": [0],
+                        # }
                     },
                     metadata={"rows": [0]},
                 ).to_dict()
@@ -287,11 +287,11 @@ def test_outliers_data_check_warnings_has_nan():
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     parameters={
-                        "rows_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "rows": [3, 5, 10],
-                        }
+                        # "rows_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "rows": [3, 5, 10],
+                        # }
                     },
                     metadata={"rows": [3, 5, 10]},
                 ).to_dict()
