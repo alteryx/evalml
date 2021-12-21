@@ -28,6 +28,7 @@ def test_handle_action_code_errors():
         ("drop_rows", DataCheckActionCode.DROP_ROWS),
         ("Drop_col", DataCheckActionCode.DROP_COL),
         ("TRANSFORM_TARGET", DataCheckActionCode.TRANSFORM_TARGET),
+        (DataCheckActionCode.IMPUTE_COL, DataCheckActionCode.IMPUTE_COL),
     ],
 )
 def test_handle_action_code(action_code, expected_code):
