@@ -193,6 +193,7 @@ class NoVarianceDataCheck(DataCheck):
                             "parameter_type": "global",
                             "type": "list",
                             "columns": all_cols,
+                            "default_value": all_cols,
                         }
                     },
                     metadata={"columns": all_cols},

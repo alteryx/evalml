@@ -16,7 +16,7 @@ from .multiclass_classification_pipeline import (
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
-from evalml.data_checks import DataCheckActionCode
+from evalml.data_checks import DataCheckAction, DataCheckActionCode
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
@@ -755,6 +755,34 @@ def _make_component_list_from_actions(actions):
         components.append(DropRowsTransformer(indices_to_drop=indices_to_drop))
 
     return components
+
+
+def _get_default_actions_from_options(action_options):
+    """Creates a list of components from the input DataCheckAction list.
+
+    TODO: Still a work in progress for this PR. For now, store in metadata of action?
+
+    Args:
+        action_options (list(DataCheckActionOption)): List of DataCheckAction objects used to create list of components
+
+    Returns:
+        list(ComponentBase): List of components used to address the input actions
+    """
+    actions = []
+    for (
+        option
+    ) in action_options:  # for now, use all. later, get default list of options
+        parameters = option.parameters
+        actions_metadata = {}
+        for parameter, parameter_info in parameters.items():
+            actions_metadata[parameter] = parameter_info["default_value"]
+        actions_metadata.update(option.metadata)
+        actions.append(
+            DataCheckAction(
+                option.action_code, option.data_check_name, metadata=actions_metadata
+            )
+        )
+    return actions
 
 
 def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, time_index):

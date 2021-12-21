@@ -435,6 +435,7 @@ def test_target_leakage_data_check_warnings_pearson():
                             "parameter_type": "global",
                             "type": "list",
                             "columns": ["a", "b", "c", "d"],
+                            "default_value": ["a", "b", "c", "d"],
                         }
                     },
                     metadata={"columns": ["a", "b", "c", "d"]},
@@ -492,6 +493,7 @@ def test_target_leakage_data_check_input_formats_pearson():
                             "parameter_type": "global",
                             "type": "list",
                             "columns": ["a", "b", "c", "d"],
+                            "default_value": ["a", "b", "c", "d"],
                         }
                     },
                     metadata={"columns": ["a", "b", "c", "d"]},
@@ -522,6 +524,7 @@ def test_target_leakage_data_check_input_formats_pearson():
                             "parameter_type": "global",
                             "type": "list",
                             "columns": [0, 1, 2, 3],
+                            "default_value": [0, 1, 2, 3],
                         }
                     },
                     metadata={"columns": [0, 1, 2, 3]},

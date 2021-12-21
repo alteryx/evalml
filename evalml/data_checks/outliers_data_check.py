@@ -111,6 +111,7 @@ class OutliersDataCheck(DataCheck):
                         "parameter_type": "global",
                         "type": "list",
                         "rows": all_rows_with_indices,
+                        "default_value": all_rows_with_indices,
                     }
                 },
                 metadata={"rows": all_rows_with_indices},

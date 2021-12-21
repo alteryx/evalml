@@ -119,6 +119,7 @@ class SparsityDataCheck(DataCheck):
                             "parameter_type": "global",
                             "type": "list",
                             "columns": too_sparse_cols,
+                            "default_value": too_sparse_cols,
                         }
                     },
                     metadata={"columns": too_sparse_cols},

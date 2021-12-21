@@ -115,6 +115,7 @@ def test_uniqueness_data_check_warnings():
                             "parameter_type": "global",
                             "type": "list",
                             "columns": ["regression_not_unique_enough"],
+                            "default_value": ["regression_not_unique_enough"],
                         }
                     },
                     metadata={"columns": ["regression_not_unique_enough"]},
@@ -154,6 +155,7 @@ def test_uniqueness_data_check_warnings():
                             "parameter_type": "global",
                             "type": "list",
                             "columns": ["multiclass_too_unique"],
+                            "default_value": ["multiclass_too_unique"],
                         }
                     },
                     metadata={"columns": ["multiclass_too_unique"]},

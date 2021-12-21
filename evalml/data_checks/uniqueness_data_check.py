@@ -135,6 +135,7 @@ class UniquenessDataCheck(DataCheck):
                             "parameter_type": "global",
                             "type": "list",
                             "columns": not_unique_enough_cols,
+                            "default_value": not_unique_enough_cols,
                         }
                     },
                     metadata={"columns": not_unique_enough_cols},
@@ -170,6 +171,7 @@ class UniquenessDataCheck(DataCheck):
                             "parameter_type": "global",
                             "type": "list",
                             "columns": too_unique_cols,
+                            "default_value": too_unique_cols,
                         }
                     },
                     metadata={"columns": too_unique_cols},

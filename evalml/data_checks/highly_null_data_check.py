@@ -148,6 +148,7 @@ class HighlyNullDataCheck(DataCheck):
                             "parameter_type": "global",
                             "type": "list",
                             "rows": rows_to_drop,
+                            "default_value": rows_to_drop,
                         }
                     },
                     metadata={"rows": rows_to_drop},
@@ -185,6 +186,7 @@ class HighlyNullDataCheck(DataCheck):
                             "parameter_type": "global",
                             "type": "list",
                             "columns": list(highly_null_cols),
+                            "default_value": list(highly_null_cols),
                         }
                     },
                     metadata={"columns": list(highly_null_cols)},

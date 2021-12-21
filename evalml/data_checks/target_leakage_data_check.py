@@ -160,6 +160,7 @@ class TargetLeakageDataCheck(DataCheck):
                             "parameter_type": "global",
                             "type": "list",
                             "columns": highly_corr_cols,
+                            "default_value": highly_corr_cols,
                         }
                     },
                     metadata={"columns": highly_corr_cols},
