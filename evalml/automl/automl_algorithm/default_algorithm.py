@@ -32,9 +32,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
     """An automl algorithm that consists of two modes: fast and long, where fast is a subset of long.
 
     1. Naive pipelines:
-        a. run baseline with default preprocessing pipeline
-        b. run naive linear model with default preprocessing pipeline
-        c. run basic RF pipeline with default preprocessing pipeline
+        a. run naive linear model with default preprocessing pipeline
+        b. run basic RF pipeline with default preprocessing pipeline
     2. Naive pipelines with feature selection
         a. subsequent pipelines will use the selected features with a SelectedColumns transformer
 
@@ -46,10 +45,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
 
     Fast mode ends here. Begin long mode.
 
-    6. Run top 3 estimators:
+    5. Run top 3 estimators:
         a. Generate 50 random parameter sets. Run all 150 in one batch
-    7. Second ensembling run
-    8. Repeat these indefinitely until stopping criterion is met:
+    6. Second ensembling run
+    7. Repeat these indefinitely until stopping criterion is met:
         a. For each of the previous top 3 estimators, sample 10 parameters from the tuner. Run all 30 in one batch
         b. Run ensembling
 
