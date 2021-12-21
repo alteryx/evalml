@@ -25,6 +25,7 @@ from evalml.exceptions import DataCheckInitError
 from evalml.problem_types import (
     ProblemTypes,
     is_classification,
+    is_regression,
     is_time_series,
 )
 
@@ -169,71 +170,46 @@ messages = [
     ).to_dict(),
 ]
 
-# expected_actions = [
-#     DataCheckAction(
-#         DataCheckActionCode.DROP_COL,
-#         data_check_name="HighlyNullDataCheck",
-#         metadata={"columns": ["all_null", "also_all_null"]},
-#     ).to_dict(),
-#     DataCheckAction(
-#         DataCheckActionCode.DROP_COL,
-#         data_check_name="IDColumnsDataCheck",
-#         metadata={"columns": ["id"]},
-#     ).to_dict(),
-#     DataCheckAction(
-#         DataCheckActionCode.IMPUTE_COL,
-#         data_check_name="InvalidTargetDataCheck",
-#         metadata={
-#             "is_target": True,
-#             "impute_strategy": "most_frequent",
-#         },
-#     ).to_dict(),
-#     DataCheckAction(
-#         DataCheckActionCode.DROP_COL,
-#         data_check_name="NoVarianceDataCheck",
-#         metadata={"columns": ["all_null", "also_all_null", "lots_of_null"]},
-#     ).to_dict(),
-# ]
 
-expected_actions = [
-    DataCheckActionOption(
-        DataCheckActionCode.DROP_COL,
-        data_check_name="HighlyNullDataCheck",
-        parameters={
-            # "columns_to_drop": {
-            #     "parameter_type": "global",
-            #     "type": "list",
-            #     "columns": ["all_null", "also_all_null"],
-            # }
-        },
-        metadata={"columns": ["all_null", "also_all_null"]},
-    ).to_dict(),
-    DataCheckActionOption(
-        DataCheckActionCode.DROP_COL,
-        data_check_name="IDColumnsDataCheck",
-        parameters={
-            # "columns_to_drop": {
-            #     "parameter_type": "global",
-            #     "type": "list",
-            #     "columns": ["id"],
-            # }
-        },
-        metadata={"columns": ["id"]},
-    ).to_dict(),
-    ## TODO: add impute_col action
-    DataCheckActionOption(
-        DataCheckActionCode.DROP_COL,
-        data_check_name="NoVarianceDataCheck",
-        parameters={
-            # "columns_to_drop": {
-            #     "parameter_type": "global",
-            #     "type": "list",
-            #     "columns": ["all_null", "also_all_null", "lots_of_null"],
-            # }
-        },
-        metadata={"columns": ["all_null", "also_all_null", "lots_of_null"]},
-    ).to_dict(),
-]
+def get_expected_actions(problem_type):
+    expected_actions = [
+        DataCheckActionOption(
+            DataCheckActionCode.DROP_COL,
+            data_check_name="HighlyNullDataCheck",
+            parameters={},
+            metadata={"columns": ["all_null", "also_all_null"]},
+        ).to_dict(),
+        DataCheckActionOption(
+            DataCheckActionCode.DROP_COL,
+            data_check_name="IDColumnsDataCheck",
+            parameters={},
+            metadata={"columns": ["id"]},
+        ).to_dict(),
+        DataCheckActionOption(
+            DataCheckActionCode.IMPUTE_COL,
+            data_check_name="InvalidTargetDataCheck",
+            parameters={
+                "impute_strategy": {
+                    "parameter_type": "global",
+                    "type": "category",
+                    "categories": ["mean", "most_frequent"]
+                    if is_regression(problem_type)
+                    else ["most_frequent"],
+                    "default_value": "mean"
+                    if is_regression(problem_type)
+                    else "most_frequent",
+                }
+            },
+            metadata={"is_target": True},
+        ).to_dict(),
+        DataCheckActionOption(
+            DataCheckActionCode.DROP_COL,
+            data_check_name="NoVarianceDataCheck",
+            parameters={},
+            metadata={"columns": ["all_null", "also_all_null", "lots_of_null"]},
+        ).to_dict(),
+    ]
+    return expected_actions
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -281,7 +257,7 @@ def test_default_data_checks_classification(input_type):
         "warnings": messages[:2],
         "errors": messages[2:] + imbalance,
         "actions": {
-            "action_list": expected_actions,
+            "action_list": get_expected_actions("binary"),
             "default_action": None,
         },
     }
@@ -299,7 +275,7 @@ def test_default_data_checks_classification(input_type):
         "warnings": messages[:2],
         "errors": messages[2:],
         "actions": {
-            "action_list": expected_actions,
+            "action_list": get_expected_actions("binary"),
             "default_action": None,
         },
     }
@@ -337,7 +313,7 @@ def test_default_data_checks_classification(input_type):
         "warnings": messages[:2] + high_class_to_sample_ratio,
         "errors": [messages[2]] + min_2_class_count + messages[3:] + imbalance,
         "actions": {
-            "action_list": expected_actions,
+            "action_list": get_expected_actions("multiclass"),
             "default_action": None,
         },
     }
@@ -355,7 +331,7 @@ def test_default_data_checks_classification(input_type):
         "warnings": messages[:2] + high_class_to_sample_ratio,
         "errors": [messages[2]] + min_2_class_count + messages[3:],
         "actions": {
-            "action_list": expected_actions,
+            "action_list": get_expected_actions("multiclass"),
             "default_action": None,
         },
     }
@@ -412,21 +388,52 @@ def test_default_data_checks_regression(input_type):
             details={"columns": ["id", "nan_dt_col"]},
         ).to_dict()
     ]
-    impute_action = DataCheckAction(
+
+    impute_action = DataCheckActionOption(
         DataCheckActionCode.IMPUTE_COL,
         data_check_name="InvalidTargetDataCheck",
-        metadata={"is_target": True, "impute_strategy": "mean"},
+        parameters={
+            "impute_strategy": {
+                "parameter_type": "global",
+                "type": "category",
+                "categories": ["mean", "most_frequent"],
+                "default_value": "mean",
+            }
+        },
+        metadata={"is_target": True},
     ).to_dict()
-    leakage_drop_action = DataCheckAction(
+
+    leakage_drop_action = DataCheckActionOption(
         DataCheckActionCode.DROP_COL,
         data_check_name="TargetLeakageDataCheck",
+        parameters={},
         metadata={"columns": ["id", "nan_dt_col"]},
     ).to_dict()
-    target_leakage_drop_action = DataCheckAction(
+
+    target_leakage_drop_action = DataCheckActionOption(
         DataCheckActionCode.DROP_COL,
         data_check_name="TargetLeakageDataCheck",
+        parameters={},
         metadata={"columns": ["lots_of_null"]},
     ).to_dict()
+
+    # impute_action = DataCheckAction(
+    #     DataCheckActionCode.IMPUTE_COL,
+    #     data_check_name="InvalidTargetDataCheck",
+    #     metadata={"is_target": True, "impute_strategy": "mean"},
+    # ).to_dict()
+    # leakage_drop_action = DataCheckAction(
+    #     DataCheckActionCode.DROP_COL,
+    #     data_check_name="TargetLeakageDataCheck",
+    #     metadata={"columns": ["id", "nan_dt_col"]},
+    # ).to_dict()
+    # target_leakage_drop_action = DataCheckAction(
+    #     DataCheckActionCode.DROP_COL,
+    #     data_check_name="TargetLeakageDataCheck",
+    #     metadata={"columns": ["lots_of_null"]},
+    # ).to_dict()
+
+    expected_actions = get_expected_actions("regression")
     expected_actions_with_drop_and_impute = (
         expected_actions[:2]
         + [leakage_drop_action, impute_action]
@@ -534,28 +541,35 @@ def test_default_data_checks_null_rows():
         ],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name="HighlyNullDataCheck",
+                    parameters={},
                     metadata={"rows": [0, 1, 2, 3, 4]},
                 ).to_dict(),
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name="HighlyNullDataCheck",
+                    parameters={},
                     metadata={"columns": ["all_null", "also_all_null"]},
                 ).to_dict(),
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name="InvalidTargetDataCheck",
-                    metadata={
-                        "columns": None,
-                        "is_target": True,
-                        "impute_strategy": "mean",
+                    parameters={
+                        "impute_strategy": {
+                            "parameter_type": "global",
+                            "type": "category",
+                            "categories": ["mean", "most_frequent"],
+                            "default_value": "mean",
+                        }
                     },
+                    metadata={"is_target": True},
                 ).to_dict(),
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name="NoVarianceDataCheck",
+                    parameters={},
                     metadata={"columns": ["all_null", "also_all_null"]},
                 ).to_dict(),
             ],
@@ -786,10 +800,11 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
                 "errors": [],
                 "actions": {
                     "action_list": [
-                        DataCheckAction(
+                        DataCheckActionOption(
                             DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,
-                            metadata={"column": "col_to_drop"},
+                            parameters={},
+                            metadata={"columns": ["col_to_drop"]},
                         ).to_dict()
                     ],
                     "default_action": None,
@@ -813,10 +828,11 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=MockDataCheck.name,
-                    metadata={"column": "col_to_drop"},
+                    parameters={},
+                    metadata={"columns": ["col_to_drop"]},
                 ).to_dict()
             ],
             "default_action": None,

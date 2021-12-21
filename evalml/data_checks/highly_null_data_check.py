@@ -143,14 +143,7 @@ class HighlyNullDataCheck(DataCheck):
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=self.name,
-                    parameters={
-                        # "rows_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "rows": rows_to_drop,
-                        #     "default_value": rows_to_drop,
-                        # }
-                    },
+                    parameters={},
                     metadata={"rows": rows_to_drop},
                 ).to_dict()
             )
@@ -181,14 +174,7 @@ class HighlyNullDataCheck(DataCheck):
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": list(highly_null_cols),
-                        #     "default_value": list(highly_null_cols),
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": list(highly_null_cols)},
                 ).to_dict()
             )

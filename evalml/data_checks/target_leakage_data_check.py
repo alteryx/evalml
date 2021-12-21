@@ -155,14 +155,7 @@ class TargetLeakageDataCheck(DataCheck):
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": highly_corr_cols,
-                        #     "default_value": highly_corr_cols,
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": highly_corr_cols},
                 ).to_dict()
             )
