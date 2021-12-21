@@ -37,7 +37,7 @@ def get_evalml_pip_requirements(evalml_path):
     extra_reqs = open(pathlib.Path(evalml_path, "requirements.txt")).readlines()
     extra_reqs = [req for req in extra_reqs if "-r core-requirements.txt" not in req]
     all_reqs = core_reqs + extra_reqs
-    return standardize_format(requirements.parse("".join(all_reqs)))
+    return standardize_format(requirements.parse("\n".join(all_reqs)))
 
 
 def get_evalml_conda_requirements(conda_recipe):
