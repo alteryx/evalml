@@ -7,6 +7,7 @@ Release Notes
         * Added support for known-in-advance features :pr:`3149`
     * Fixes
         * Fixed error caused when tuning threshold for time series binary classification :pr:`3140`
+        * Pinned nltk to version 3.6.5 to prevent components that rely on nlp-primitives from breaking :pr:`3164`
     * Changes
         * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
         * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
