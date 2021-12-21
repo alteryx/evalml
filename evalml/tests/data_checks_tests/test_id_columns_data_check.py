@@ -63,11 +63,11 @@ def test_id_columns_warning():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": ["Id", "col_1_id", "col_2", "col_3_id"],
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": ["Id", "col_1_id", "col_2", "col_3_id"],
+                        # }
                     },
                     metadata={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
                 ).to_dict()
@@ -94,11 +94,11 @@ def test_id_columns_warning():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": ["Id", "col_1_id"],
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": ["Id", "col_1_id"],
+                        # }
                     },
                     metadata={"columns": ["Id", "col_1_id"]},
                 ).to_dict()
@@ -148,11 +148,11 @@ def test_id_columns_strings():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": ["Id", "col_1_id", "col_2", "col_3_id"],
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": ["Id", "col_1_id", "col_2", "col_3_id"],
+                        # }
                     },
                     metadata={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
                 ).to_dict()
@@ -178,11 +178,11 @@ def test_id_columns_strings():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": ["Id", "col_1_id"],
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": ["Id", "col_1_id"],
+                        # }
                     },
                     metadata={"columns": ["Id", "col_1_id"]},
                 ).to_dict()
@@ -221,11 +221,11 @@ def test_id_cols_data_check_input_formats():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": [0, 1],
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": [0, 1],
+                        # }
                     },
                     metadata={"columns": [0, 1]},
                 ).to_dict()
@@ -251,11 +251,11 @@ def test_id_cols_data_check_input_formats():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": [0, 1],
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": [0, 1],
+                        # }
                     },
                     metadata={"columns": [0, 1]},
                 ).to_dict()
@@ -283,11 +283,11 @@ def test_id_cols_data_check_input_formats():
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": [0, 1],
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": [0, 1],
+                        # }
                     },
                     metadata={"columns": [0, 1]},
                 ).to_dict()

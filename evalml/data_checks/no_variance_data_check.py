@@ -189,12 +189,12 @@ class NoVarianceDataCheck(DataCheck):
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": all_cols,
-                            "default_value": all_cols,
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": all_cols,
+                        #     "default_value": all_cols,
+                        # }
                     },
                     metadata={"columns": all_cols},
                 ).to_dict()

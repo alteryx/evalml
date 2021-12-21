@@ -182,12 +182,12 @@ class HighlyNullDataCheck(DataCheck):
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": list(highly_null_cols),
-                            "default_value": list(highly_null_cols),
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": list(highly_null_cols),
+                        #     "default_value": list(highly_null_cols),
+                        # }
                     },
                     metadata={"columns": list(highly_null_cols)},
                 ).to_dict()

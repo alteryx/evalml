@@ -131,12 +131,12 @@ class UniquenessDataCheck(DataCheck):
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": not_unique_enough_cols,
-                            "default_value": not_unique_enough_cols,
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": not_unique_enough_cols,
+                        #     "default_value": not_unique_enough_cols,
+                        # }
                     },
                     metadata={"columns": not_unique_enough_cols},
                 ).to_dict()
@@ -167,12 +167,12 @@ class UniquenessDataCheck(DataCheck):
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": too_unique_cols,
-                            "default_value": too_unique_cols,
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": too_unique_cols,
+                        #     "default_value": too_unique_cols,
+                        # }
                     },
                     metadata={"columns": too_unique_cols},
                 ).to_dict()

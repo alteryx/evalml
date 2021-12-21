@@ -200,11 +200,11 @@ expected_actions = [
         DataCheckActionCode.DROP_COL,
         data_check_name="HighlyNullDataCheck",
         parameters={
-            "columns_to_drop": {
-                "parameter_type": "global",
-                "type": "list",
-                "columns": ["all_null", "also_all_null"],
-            }
+            # "columns_to_drop": {
+            #     "parameter_type": "global",
+            #     "type": "list",
+            #     "columns": ["all_null", "also_all_null"],
+            # }
         },
         metadata={"columns": ["all_null", "also_all_null"]},
     ).to_dict(),
@@ -212,11 +212,11 @@ expected_actions = [
         DataCheckActionCode.DROP_COL,
         data_check_name="IDColumnsDataCheck",
         parameters={
-            "columns_to_drop": {
-                "parameter_type": "global",
-                "type": "list",
-                "columns": ["id"],
-            }
+            # "columns_to_drop": {
+            #     "parameter_type": "global",
+            #     "type": "list",
+            #     "columns": ["id"],
+            # }
         },
         metadata={"columns": ["id"]},
     ).to_dict(),
@@ -225,11 +225,11 @@ expected_actions = [
         DataCheckActionCode.DROP_COL,
         data_check_name="NoVarianceDataCheck",
         parameters={
-            "columns_to_drop": {
-                "parameter_type": "global",
-                "type": "list",
-                "columns": ["all_null", "also_all_null", "lots_of_null"],
-            }
+            # "columns_to_drop": {
+            #     "parameter_type": "global",
+            #     "type": "list",
+            #     "columns": ["all_null", "also_all_null", "lots_of_null"],
+            # }
         },
         metadata={"columns": ["all_null", "also_all_null", "lots_of_null"]},
     ).to_dict(),

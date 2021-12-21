@@ -162,11 +162,11 @@ class IDColumnsDataCheck(DataCheck):
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": list(id_cols_above_threshold),
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": list(id_cols_above_threshold),
+                        # }
                     },
                     metadata={"columns": list(id_cols_above_threshold)},
                 ).to_dict()

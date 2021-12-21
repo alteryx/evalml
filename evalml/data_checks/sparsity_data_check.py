@@ -115,12 +115,12 @@ class SparsityDataCheck(DataCheck):
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
                     parameters={
-                        "columns_to_drop": {
-                            "parameter_type": "global",
-                            "type": "list",
-                            "columns": too_sparse_cols,
-                            "default_value": too_sparse_cols,
-                        }
+                        # "columns_to_drop": {
+                        #     "parameter_type": "global",
+                        #     "type": "list",
+                        #     "columns": too_sparse_cols,
+                        #     "default_value": too_sparse_cols,
+                        # }
                     },
                     metadata={"columns": too_sparse_cols},
                 ).to_dict()
