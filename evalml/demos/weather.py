@@ -1,5 +1,6 @@
 """The Australian daily-min-termperatures weather dataset."""
 import pandas as pd
+
 import evalml
 from evalml.preprocessing import load_data
 from evalml.utils import infer_feature_types
