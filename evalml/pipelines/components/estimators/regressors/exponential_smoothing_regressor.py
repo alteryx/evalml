@@ -21,9 +21,9 @@ class ExponentialSmoothingRegressor(Estimator):
 
     name = "Exponential Smoothing Regressor"
     hyperparameter_ranges = {
-        "trend": ["additive", "multiplicative"],
+        "trend": [None, "additive", "multiplicative"],
         "damped_trend": [True, False],
-        "seasonal": ["additive", "multiplicative"],
+        "seasonal": [None, "additive", "multiplicative"],
         "sp": Integer(1, 12),
         "use_boxcox": [True, False, "log"],
     }
@@ -44,8 +44,8 @@ class ExponentialSmoothingRegressor(Estimator):
         trend=None,
         damped_trend=False,
         seasonal=None,
-        sp=None,
-        use_boxcox=None,
+        sp=1,
+        use_boxcox=False,
         n_jobs=-1,
         random_seed=0,
         **kwargs,
