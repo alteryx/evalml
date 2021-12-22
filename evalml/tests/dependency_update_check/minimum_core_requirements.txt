@@ -17,4 +17,3 @@ dask==2021.10.0
 nlp-primitives==2.1.0
 featuretools==1.2.0
 networkx==2.5
-nltk==3.6.5
