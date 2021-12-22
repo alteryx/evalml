@@ -11,6 +11,7 @@ Release Notes
     * Changes
         * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
         * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
+        * Updated ``nlp-primitives`` minimum version to 2.1.0 :pr:`3166`
     * Documentation Changes
         * Added comments to provide clarity on doctests :pr:`3155`
     * Testing Changes
