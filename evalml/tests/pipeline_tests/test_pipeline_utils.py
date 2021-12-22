@@ -143,17 +143,11 @@ def test_make_pipeline(
                 else []
             )
             natural_language_featurizer = (
-                [NaturalLanguageFeaturizer]
-                if "text" in column_names 
-                else []
+                [NaturalLanguageFeaturizer] if "text" in column_names else []
             )
             email_featurizer = [EmailFeaturizer] if "email" in column_names else []
             url_featurizer = [URLFeaturizer] if "url" in column_names else []
-            imputer = (
-                []
-                if (column_names in [["ip"]])
-                else [Imputer]
-            )
+            imputer = [] if (column_names in [["ip"]]) else [Imputer]
 
             if is_time_series(problem_type):
                 expected_components = (
