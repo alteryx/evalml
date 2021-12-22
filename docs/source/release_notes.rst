@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
     * Documentation Changes
     * Testing Changes
 
