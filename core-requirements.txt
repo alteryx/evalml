@@ -14,7 +14,7 @@ statsmodels>=0.12.2
 texttable>=1.6.2
 woodwork>=0.8.2
 dask>=2021.10.0
-nlp-primitives>=2.0.0
+nlp-primitives>=2.1.0
 featuretools>=1.2.0
 networkx>=2.5,<2.6
 nltk==3.6.5

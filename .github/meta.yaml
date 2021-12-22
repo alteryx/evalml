@@ -40,7 +40,7 @@ outputs:
         - texttable >=1.6.2
         - woodwork >=0.8.2
         - featuretools>=1.2.0
-        - nlp-primitives>=2.0.0
+        - nlp-primitives>=2.1.0
         - python >=3.7.*
         - networkx >=2.5,<2.6
         - category_encoders >=2.2.2
