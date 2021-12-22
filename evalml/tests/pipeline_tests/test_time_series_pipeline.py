@@ -1428,3 +1428,46 @@ def test_time_index_cannot_be_none(time_series_regression_pipeline_class):
                 }
             }
         )
+
+
+@pytest.mark.parametrize(
+    "gap,reset_index,freq",
+    [
+        (0, False, "1D"),
+        (0, True, "3D"),
+        (1, False, "1D"),
+        (1, True, "1D"),
+        (5, False, "1D"),
+        (5, True, "1D"),
+    ],
+)
+@pytest.mark.parametrize(
+    "pipeline_class,estimator_name",
+    [
+        (TimeSeriesRegressionPipeline, "Random Forest Regressor"),
+        (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
+        (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier"),
+    ],
+)
+def test_noninferrable_data(pipeline_class, estimator_name, gap, reset_index, freq):
+    date_range_ = pd.date_range("1/1/21", freq=freq, periods=100)
+    trianing_date_range = date_range_[:80]
+    testing_date_range = date_range_[80 + gap : 85 + gap]
+
+    X_train = pd.DataFrame(trianing_date_range, columns=["date"])
+    X = pd.DataFrame(testing_date_range, columns=["date"], index=)
+
+    pl = pipeline_class(
+        component_graph=[estimator_name],
+        parameters={
+            "pipeline": {
+                "time_index": "date",
+                "gap": gap,
+                "max_delay": 1,
+                "forecast_horizon": 5,
+            },
+        },
+    )
+
+    are_equal = pl._are_datasets_separated_by_gap_time_index(X_train, X, gap)
+    assert are_equal
