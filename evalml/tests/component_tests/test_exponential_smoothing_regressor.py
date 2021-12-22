@@ -101,23 +101,6 @@ def test_remove_datetime(
     assert not isinstance(y_train_no_dt.index, pd.DatetimeIndex)
 
 
-def test_match_indices(get_ts_X_y):
-    X_train, _, y_train = get_ts_X_y(
-        train_features_index_dt=False,
-        train_target_index_dt=False,
-        train_none=False,
-        datetime_feature=False,
-        no_features=False,
-        test_features_index_dt=False,
-    )
-
-    assert not X_train.index.equals(y_train.index)
-
-    clf = ExponentialSmoothingRegressor()
-    X_, y_ = clf._match_indices(X_train, y_train)
-    assert X_.index.equals(y_.index)
-
-
 def test_set_forecast(get_ts_X_y):
     from sktime.forecasting.base import ForecastingHorizon
 

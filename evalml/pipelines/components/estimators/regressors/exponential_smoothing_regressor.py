@@ -85,11 +85,6 @@ class ExponentialSmoothingRegressor(Estimator):
 
         return data_no_dt
 
-    def _match_indices(self, X, y):
-        if X is not None:
-            y.index = X.index
-        return X, y
-
     def _set_forecast(self, X):
         from sktime.forecasting.base import ForecastingHorizon
 
@@ -113,14 +108,9 @@ class ExponentialSmoothingRegressor(Estimator):
         if y is None:
             raise ValueError("Exponential Smoothing Regressor requires y as input.")
 
-        X = self._remove_datetime(X, features=True)
         y = self._remove_datetime(y)
-        X, y = self._match_indices(X, y)
 
-        if X is not None and not X.empty:
-            self._component_obj.fit(y=y, X=X)
-        else:
-            self._component_obj.fit(y=y)
+        self._component_obj.fit(y=y)
         return self
 
     def predict(self, X, y=None):
@@ -135,12 +125,8 @@ class ExponentialSmoothingRegressor(Estimator):
         """
         X, y = self._manage_woodwork(X, y)
         fh_ = self._set_forecast(X)
-        X = X.select_dtypes(exclude=["datetime64"])
 
-        if not X.empty:
-            y_pred = self._component_obj.predict(fh=fh_, X=X)
-        else:
-            y_pred = self._component_obj.predict(fh=fh_)
+        y_pred = self._component_obj.predict(fh=fh_)
         y_pred.index = X.index
 
         return infer_feature_types(y_pred)

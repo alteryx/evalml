@@ -30,7 +30,7 @@ def test_estimators_feature_name_with_random_ascii(
     for estimator_class in _all_estimators_used_in_search():
         if estimator_class.__name__ in [
             "ARIMARegressor",
-            "ExponentialSmoothingRegressos",
+            "ExponentialSmoothingRegressor",
             "ProphetRegressor",
         ]:
             continue
