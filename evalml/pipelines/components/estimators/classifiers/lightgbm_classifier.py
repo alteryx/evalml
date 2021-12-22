@@ -169,7 +169,7 @@ class LightGBMClassifier(Estimator):
         if not is_integer_dtype(y_encoded):
             self._label_encoder = LabelEncoder()
             y_encoded = pd.Series(
-                self._label_encoder.fit_transform(y_encoded), dtype="int64"
+                self._label_encoder.fit_transform(None, y_encoded)[1], dtype="int64"
             )
         return y_encoded
 

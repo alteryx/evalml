@@ -103,7 +103,7 @@ class XGBoostClassifier(Estimator):
     def _label_encode(self, y):
         if not is_integer_dtype(y):
             self._label_encoder = LabelEncoder()
-            y = pd.Series(self._label_encoder.fit_transform(y), dtype="int64")
+            y = pd.Series(self._label_encoder.fit_transform(None, y)[1], dtype="int64")
         return y
 
     def fit(self, X, y=None):
