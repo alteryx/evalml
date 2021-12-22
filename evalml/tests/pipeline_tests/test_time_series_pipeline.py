@@ -1439,6 +1439,7 @@ def test_time_index_cannot_be_none(time_series_regression_pipeline_class):
         (1, True, "1D"),
         (5, False, "1D"),
         (5, True, "1D"),
+        (5, False, None),
     ],
 )
 @pytest.mark.parametrize(
@@ -1451,11 +1452,16 @@ def test_time_index_cannot_be_none(time_series_regression_pipeline_class):
 )
 def test_noninferrable_data(pipeline_class, estimator_name, gap, reset_index, freq):
     date_range_ = pd.date_range("1/1/21", freq=freq, periods=100)
-    trianing_date_range = date_range_[:80]
+    training_date_range = date_range_[:80]
+    if freq is None:
+        training_date_range = pd.DatetimeIndex(["12/12/1984"]).append(date_range_[1:])
     testing_date_range = date_range_[80 + gap : 85 + gap]
 
-    X_train = pd.DataFrame(trianing_date_range, columns=["date"])
-    X = pd.DataFrame(testing_date_range, columns=["date"], index=)
+    X_train = pd.DataFrame(training_date_range, columns=["date"])
+    X = pd.DataFrame(testing_date_range, columns=["date"])
+
+    if not reset_index:
+        X.index = [i for i in range(80, 85)]
 
     pl = pipeline_class(
         component_graph=[estimator_name],
@@ -1469,5 +1475,11 @@ def test_noninferrable_data(pipeline_class, estimator_name, gap, reset_index, fr
         },
     )
 
-    are_equal = pl._are_datasets_separated_by_gap_time_index(X_train, X, gap)
-    assert are_equal
+    if freq is None:
+        with pytest.raises(
+                ValueError, match="The training data must have an inferrable interval frequency!"
+        ):
+            pl._are_datasets_separated_by_gap_time_index(X_train, X, gap)
+    else:
+        are_equal = pl._are_datasets_separated_by_gap_time_index(X_train, X, gap)
+        assert are_equal
