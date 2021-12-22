@@ -10,7 +10,6 @@ from skopt.space import Integer, Real
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.pipelines.components.transformers import LabelEncoder
-
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     SEED_BOUNDS,

@@ -9,9 +9,8 @@ from skopt.space import Real
 from statsmodels.tsa.stattools import acf
 from woodwork import logical_types
 
-from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.pipelines.components.transformers import LabelEncoder
-
+from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
 
 

@@ -3,10 +3,10 @@ import numpy as np
 import pandas as pd
 from pandas.api.types import is_integer_dtype
 from skopt.space import Integer, Real
-from evalml.pipelines.components.transformers import LabelEncoder
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.transformers import LabelEncoder
 from evalml.problem_types import ProblemTypes
 from evalml.utils import (
     _rename_column_names_to_numeric,
