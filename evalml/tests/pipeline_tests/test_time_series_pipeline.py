@@ -1477,7 +1477,8 @@ def test_noninferrable_data(pipeline_class, estimator_name, gap, reset_index, fr
 
     if freq is None:
         with pytest.raises(
-                ValueError, match="The training data must have an inferrable interval frequency!"
+            ValueError,
+            match="The training data must have an inferrable interval frequency!",
         ):
             pl._are_datasets_separated_by_gap_time_index(X_train, X, gap)
     else:
