@@ -45,7 +45,6 @@ outputs:
         - networkx >=2.5,<2.6
         - category_encoders >=2.2.2
         - python-graphviz >=0.13
-        - nltk ==3.6.5
     test:
       imports:
         - evalml
