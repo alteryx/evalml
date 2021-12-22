@@ -174,7 +174,7 @@ def test_fit_predict(
     assert y_pred.index.equals(X_test.index)
 
 
-def test_predict_no_X(
+def test_predict_no_X_in_fit(
     get_ts_X_y,
 ):
     from sktime.forecasting.base import ForecastingHorizon
@@ -196,7 +196,7 @@ def test_predict_no_X(
     y_pred_sk = clf.predict(fh=fh_)
 
     m_clf = ExponentialSmoothingRegressor()
-    m_clf.fit(X=X_train, y=y_train)
+    m_clf.fit(X=None, y=y_train)
     y_pred = m_clf.predict(X=X_test)
 
     assert (y_pred_sk.values == y_pred.values).all()

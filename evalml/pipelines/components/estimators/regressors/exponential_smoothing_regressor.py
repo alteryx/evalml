@@ -15,6 +15,11 @@ class ExponentialSmoothingRegressor(Estimator):
     Currently ExponentialSmoothingRegressor isn't supported via conda install. It's recommended that it be installed via PyPI.
 
     Args:
+        trend (str): Type of trend component. Defaults to None.
+        damped_trend (bool): If the trend component should be damped. Defaults to False.
+        seasonal (str): Type of seasonal component. Takes one of {“add”, “mul”, “additive”, “multiplicative”, None}. Defaults to None.
+        sp (int): The number of seasonal periods to consider. Defaults to 1.
+        use_boxcox (bool, str): If the Box-Cox transform should be applied to the data first. If ‘log’ then apply the log. Defaults to False.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
@@ -95,7 +100,7 @@ class ExponentialSmoothingRegressor(Estimator):
         """Fits Exponential Smoothing Regressor to data.
 
         Args:
-            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features]. Ignored.
             y (pd.Series): The target training data of length [n_samples].
 
         Returns:
@@ -117,7 +122,7 @@ class ExponentialSmoothingRegressor(Estimator):
         """Make predictions using fitted Exponential Smoothing regressor.
 
         Args:
-            X (pd.DataFrame): Data of shape [n_samples, n_features].
+            X (pd.DataFrame): Data of shape [n_samples, n_features]. Ignored except to set forecast horizon.
             y (pd.Series): Target data.
 
         Returns:
