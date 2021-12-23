@@ -158,3 +158,33 @@ def test_convert_dict_to_action(dummy_data_check_name):
         data_check_action_dict_with_other_metadata
     )
     assert data_check_action == expected_data_check_action
+
+
+@pytest.mark.parametrize(
+    "action_code,expected_code",
+    [
+        ("drop_rows", DataCheckActionCode.DROP_ROWS),
+        ("Drop_col", DataCheckActionCode.DROP_COL),
+        ("TRANSFORM_TARGET", DataCheckActionCode.TRANSFORM_TARGET),
+    ],
+)
+def test_data_check_action_equality_string_input(
+    action_code, expected_code, dummy_data_check_name
+):
+    data_check_action = DataCheckAction(action_code, dummy_data_check_name)
+    data_check_action_eq = DataCheckAction(expected_code, dummy_data_check_name)
+
+    assert data_check_action == data_check_action
+    assert data_check_action == data_check_action_eq
+    assert data_check_action_eq == data_check_action
+
+    data_check_action = DataCheckAction(
+        action_code, None, metadata={"same detail": "same same same"}
+    )
+    data_check_action_eq = DataCheckAction(
+        expected_code, None, metadata={"same detail": "same same same"}
+    )
+
+    assert data_check_action == data_check_action
+    assert data_check_action == data_check_action_eq
+    assert data_check_action.to_dict() == data_check_action_eq.to_dict()
