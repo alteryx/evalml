@@ -2,6 +2,14 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.40.0 Dec. 22, 2021**
+    * Enhancements
         * Added ``TimeSeriesSplittingDataCheck`` to ``DefaultDataChecks`` to verify adequate class representation in time series classification problems :pr:`3141`
         * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
         * Added support for known-in-advance features :pr:`3149`
@@ -11,10 +19,12 @@ Release Notes
         * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
         * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
         * Updated ``nlp-primitives`` minimum version to 2.1.0 :pr:`3166`
+        * Updated minimum version of ``woodwork`` to v0.11.0 :pr:`3171`
     * Documentation Changes
         * Added comments to provide clarity on doctests :pr:`3155`
     * Testing Changes
         * Parameterized tests in ``test_datasets.py`` :pr:`3145`
+        
 
 
 .. warning::
