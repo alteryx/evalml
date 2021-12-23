@@ -130,7 +130,6 @@ def test_invalid_path(tmpdir, test_pipeline):
 
 @pytest.mark.noncore_dependency
 def test_graph_feature_importance(X_y_binary, test_pipeline, go):
-
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
@@ -139,7 +138,6 @@ def test_graph_feature_importance(X_y_binary, test_pipeline, go):
 
 @pytest.mark.noncore_dependency
 def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline, go):
-
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
@@ -153,7 +151,6 @@ def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline, g
 
 @pytest.mark.noncore_dependency
 def test_graph_feature_importance_threshold(X_y_binary, test_pipeline, go):
-
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)

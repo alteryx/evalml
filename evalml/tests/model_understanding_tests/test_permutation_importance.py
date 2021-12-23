@@ -393,78 +393,46 @@ def test_fast_permutation_importance_matches_slow_output(
         )
 
 
-class PipelineWithDimReduction(BinaryClassificationPipeline):
-    component_graph = [PCA, "Logistic Regression Classifier"]
+def pipelines_that_do_not_support_fast_permutation_importance():
+    pipeline_with_dfs = BinaryClassificationPipeline(
+        [DFSTransformer, "Logistic Regression Classifier"]
+    )
+    pipeline_with_custom_component = BinaryClassificationPipeline(
+        [DoubleColumns, "Logistic Regression Classifier"]
+    )
+    pipeline_with_ensemble_dag = BinaryClassificationPipeline(
+        component_graph={
+            "Imputer_1": ["Imputer", "X", "y"],
+            "Imputer_2": ["Imputer", "X", "y"],
+            "OHE_1": ["One Hot Encoder", "Imputer_1.x", "y"],
+            "OHE_2": ["One Hot Encoder", "Imputer_2.x", "y"],
+            "DT_1": ["DateTime Featurization Component", "OHE_1.x", "y"],
+            "DT_2": ["DateTime Featurization Component", "OHE_2.x", "y"],
+            "Estimator_1": ["Random Forest Classifier", "DT_1.x", "y"],
+            "Estimator_2": ["Extra Trees Classifier", "DT_2.x", "y"],
+            "Ensembler": [
+                "Stacked Ensemble Classifier",
+                "Estimator_1.x",
+                "Estimator_2.x",
+                "y",
+            ],
+        }
+    )
+    pipeline_with_dim_reduction = BinaryClassificationPipeline(
+        [PCA, "Logistic Regression Classifier"]
+    )
 
-    def __init__(self, parameters, random_seed=0):
-        super().__init__(
-            self.component_graph,
-            parameters=parameters,
-            random_seed=random_seed,
-        )
-
-
-class EnsembleDag(BinaryClassificationPipeline):
-    component_graph = {
-        "Imputer_1": ["Imputer", "X", "y"],
-        "Imputer_2": ["Imputer", "X", "y"],
-        "OHE_1": ["One Hot Encoder", "Imputer_1.x", "y"],
-        "OHE_2": ["One Hot Encoder", "Imputer_2.x", "y"],
-        "DT_1": ["DateTime Featurization Component", "OHE_1.x", "y"],
-        "DT_2": ["DateTime Featurization Component", "OHE_2.x", "y"],
-        "Estimator_1": ["Random Forest Classifier", "DT_1.x", "y"],
-        "Estimator_2": ["Extra Trees Classifier", "DT_2.x", "y"],
-        "Ensembler": [
-            "Stacked Ensemble Classifier",
-            "Estimator_1.x",
-            "Estimator_2.x",
-            "y",
-        ],
-    }
-
-    def __init__(self, parameters, random_seed=0):
-        super().__init__(
-            self.component_graph,
-            parameters=parameters,
-            random_seed=random_seed,
-        )
-
-
-class PipelineWithDFS(BinaryClassificationPipeline):
-    component_graph = [DFSTransformer, "Logistic Regression Classifier"]
-
-    def __init__(self, parameters, random_seed=0):
-        super().__init__(
-            self.component_graph,
-            parameters=parameters,
-            random_seed=random_seed,
-        )
+    return [
+        pipeline_with_dfs,
+        pipeline_with_custom_component,
+        pipeline_with_ensemble_dag,
+        pipeline_with_dim_reduction,
+    ]
 
 
-class PipelineWithCustomComponent(BinaryClassificationPipeline):
-    component_graph = [DoubleColumns, "Logistic Regression Classifier"]
-
-    def __init__(self, parameters, random_seed=0):
-        super().__init__(
-            self.component_graph,
-            parameters=parameters,
-            random_seed=random_seed,
-        )
-
-
-pipelines_that_do_not_support_fast_permutation_importance = [
-    PipelineWithDimReduction,
-    PipelineWithDFS,
-    PipelineWithCustomComponent,
-    EnsembleDag,
-]
-
-
-@pytest.mark.parametrize(
-    "pipeline_class", pipelines_that_do_not_support_fast_permutation_importance
-)
-def test_supports_fast_permutation_importance(pipeline_class):
-    assert not pipeline_class({})._supports_fast_permutation_importance
+def test_supports_fast_permutation_importance():
+    for pipeline in pipelines_that_do_not_support_fast_permutation_importance():
+        assert not pipeline._supports_fast_permutation_importance
 
 
 def test_get_permutation_importance_invalid_objective(
@@ -662,21 +630,18 @@ def test_get_permutation_importance_one_column_fast_no_precomputed_features(
         )
 
 
-@pytest.mark.parametrize(
-    "pipeline_class", pipelines_that_do_not_support_fast_permutation_importance
-)
 def test_get_permutation_importance_one_column_pipeline_does_not_support_fast(
-    X_y_binary, pipeline_class
+    X_y_binary,
 ):
     X, y = X_y_binary
-    assert not pipeline_class({})._supports_fast_permutation_importance
-    with pytest.raises(
-        ValueError,
-        match="Pipeline does not support fast permutation importance calculation",
-    ):
-        calculate_permutation_importance_one_column(
-            pipeline_class({}), X, y, 0, "log loss binary", fast=True
-        )
+    for pipeline in pipelines_that_do_not_support_fast_permutation_importance():
+        with pytest.raises(
+            ValueError,
+            match="Pipeline does not support fast permutation importance calculation",
+        ):
+            calculate_permutation_importance_one_column(
+                pipeline, X, y, 0, "log loss binary", fast=True
+            )
 
 
 def test_permutation_importance_unknown(X_y_binary):

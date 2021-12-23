@@ -424,18 +424,8 @@ def test_describe_pipeline(
 
 
 def test_nonlinear_model_family(example_graph):
-    class DummyNonlinearPipeline(BinaryClassificationPipeline):
-        component_graph = example_graph
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                random_seed=random_seed,
-            )
-
-    nlbp = DummyNonlinearPipeline({})
-    assert nlbp.model_family == ModelFamily.LINEAR_MODEL
+    non_linear_binary_pipeline = BinaryClassificationPipeline(example_graph)
+    assert non_linear_binary_pipeline.model_family == ModelFamily.LINEAR_MODEL
 
 
 def test_parameters(logistic_regression_binary_pipeline_class):
@@ -916,7 +906,7 @@ def test_transform_all_but_final_nonlinear(
     assert mock_rf_predict_proba.call_count == 2
 
 
-def test_no_default_parameters():
+def test_instantiating_pipeline_with_required_parameters():
     class MockComponent(Transformer):
         name = "Mock Component"
         hyperparameter_ranges = {"a": [0, 1, 2]}
@@ -930,18 +920,17 @@ def test_no_default_parameters():
         def transform(self, X, y=None):
             return X
 
-    class TestPipeline(BinaryClassificationPipeline):
-        component_graph = [MockComponent, "Logistic Regression Classifier"]
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, parameters=parameters)
-
     with pytest.raises(
         ValueError, match="Error received when instantiating component *."
     ):
-        TestPipeline(parameters={})
+        BinaryClassificationPipeline(
+            [MockComponent, "Logistic Regression Classifier"], parameters={}
+        )
 
-    assert TestPipeline(parameters={"Mock Component": {"a": 42}})
+    assert BinaryClassificationPipeline(
+        [MockComponent, "Logistic Regression Classifier"],
+        parameters={"Mock Component": {"a": 42}},
+    )
 
 
 def test_init_components_invalid_parameters():
@@ -1556,9 +1545,11 @@ def test_pipeline_equality_subclasses(pipeline_class):
     else:
         final_estimator = "Random Forest Regressor"
 
+    component_list = ["Imputer", final_estimator]
+
     class MockPipeline(pipeline_class):
         custom_name = "Mock Pipeline"
-        component_graph = ["Imputer", final_estimator]
+        component_graph = component_list
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
@@ -1568,10 +1559,7 @@ def test_pipeline_equality_subclasses(pipeline_class):
                 random_seed=random_seed,
             )
 
-    class MockPipelineSubclass(MockPipeline):
-        pass
-
-    assert MockPipeline(parameters={}) != MockPipelineSubclass(parameters={})
+    assert MockPipeline(parameters={}) != pipeline_class(component_list, parameters={})
 
 
 @pytest.mark.parametrize(
@@ -1782,46 +1770,19 @@ def test_pipeline_equality_different_fitted_data(
     assert pipeline != pipeline_diff_data
 
 
-def test_pipeline_str():
-    class MockBinaryPipeline(BinaryClassificationPipeline):
-        custom_name = "Mock Binary Pipeline"
-        component_graph = ["Imputer", "Random Forest Classifier"]
+def test_pipeline_str_equivalent_to_custom_name():
+    classification_component_graph = ["Imputer", "Random Forest Classifier"]
+    regression_component_graph = ["Imputer", "Random Forest Regressor"]
 
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-    class MockMulticlassPipeline(MulticlassClassificationPipeline):
-        custom_name = "Mock Multiclass Pipeline"
-        component_graph = ["Imputer", "Random Forest Classifier"]
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-    class MockRegressionPipeline(RegressionPipeline):
-        custom_name = "Mock Regression Pipeline"
-        component_graph = ["Imputer", "Random Forest Regressor"]
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-    binary_pipeline = MockBinaryPipeline(parameters={})
-    multiclass_pipeline = MockMulticlassPipeline(parameters={})
-    regression_pipeline = MockRegressionPipeline(parameters={})
+    binary_pipeline = BinaryClassificationPipeline(
+        classification_component_graph, custom_name="Mock Binary Pipeline"
+    )
+    multiclass_pipeline = MulticlassClassificationPipeline(
+        classification_component_graph, custom_name="Mock Multiclass Pipeline"
+    )
+    regression_pipeline = RegressionPipeline(
+        regression_component_graph, custom_name="Mock Regression Pipeline"
+    )
 
     assert str(binary_pipeline) == "Mock Binary Pipeline"
     assert str(multiclass_pipeline) == "Mock Multiclass Pipeline"
