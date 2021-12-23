@@ -23,7 +23,7 @@ def test_handle_action_code_errors():
 
 
 @pytest.mark.parametrize(
-    "action_code,expected_code",
+    "action_code_str,expected_enum",
     [
         ("drop_rows", DataCheckActionCode.DROP_ROWS),
         ("Drop_col", DataCheckActionCode.DROP_COL),
@@ -31,5 +31,5 @@ def test_handle_action_code_errors():
         (DataCheckActionCode.IMPUTE_COL, DataCheckActionCode.IMPUTE_COL),
     ],
 )
-def test_handle_action_code(action_code, expected_code):
-    assert handle_data_check_action_code(action_code) == expected_code
+def test_handle_action_code(action_code_str, expected_enum):
+    assert handle_data_check_action_code(action_code_str) == expected_enum

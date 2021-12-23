@@ -22,10 +22,10 @@ def handle_data_check_action_code(action_code):
     """
     if isinstance(action_code, str):
         try:
-            tpe = DataCheckActionCode._all_values[action_code.upper()]
+            dcac = DataCheckActionCode._all_values[action_code.upper()]
         except KeyError:
             raise KeyError("Action code '{}' does not exist".format(action_code))
-        return tpe
+        return dcac
     if isinstance(action_code, DataCheckActionCode):
         return action_code
     raise ValueError(
