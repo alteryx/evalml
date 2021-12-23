@@ -65,7 +65,7 @@ class UniquenessDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "NOT_UNIQUE_ENOUGH",
             ...                   "details": {"columns": ["regression_not_unique_enough"], "uniqueness_score": {"regression_not_unique_enough": 0.0}, "rows": None}}],
-            ...     "actions": {"action_list": [{'code': 'DROP_COL',
+            ...     "actions": {"action_list": [{'code': 'DROP_COL', 'parameters': {},
             ...                                  'data_check_name': 'UniquenessDataCheck',
             ...                                  'metadata': {'columns': ['regression_not_unique_enough'], 'rows': None}}],
             ...                 "default_action": None
@@ -85,7 +85,7 @@ class UniquenessDataCheck(DataCheck):
             ...                               'uniqueness_score': {'regression_unique_enough': 0.99}},
             ...                   'code': 'TOO_UNIQUE'}],
             ...     "errors": [],
-            ...     "actions": {"action_list": [{'code': 'DROP_COL',
+            ...     "actions": {"action_list": [{'code': 'DROP_COL', 'parameters': {},
             ...                                  'data_check_name': 'UniquenessDataCheck',
             ...                                  'metadata': {'columns': ['regression_unique_enough'], 'rows': None}}],
             ...                 "default_action": None
@@ -130,14 +130,6 @@ class UniquenessDataCheck(DataCheck):
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": not_unique_enough_cols,
-                        #     "default_value": not_unique_enough_cols,
-                        # }
-                    },
                     metadata={"columns": not_unique_enough_cols},
                 ).to_dict()
             )
@@ -166,14 +158,7 @@ class UniquenessDataCheck(DataCheck):
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": too_unique_cols,
-                        #     "default_value": too_unique_cols,
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": too_unique_cols},
                 ).to_dict()
             )

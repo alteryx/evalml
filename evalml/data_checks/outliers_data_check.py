@@ -47,7 +47,7 @@ class OutliersDataCheck(DataCheck):
             ...                   "code": "HAS_OUTLIERS",
             ...                   "details": {"columns": ["z"], "rows": [3], "column_indices": {"z": [3]}}}],
             ...     "errors": [],
-            ...     "actions": {"action_list": [{"code": "DROP_ROWS",
+            ...     "actions": {"action_list": [{"code": "DROP_ROWS", "parameters": {},
             ...                  "data_check_name": "OutliersDataCheck",
             ...                  "metadata": {"rows": [3], "columns": None}}], "default_action": None}}
         """
@@ -106,14 +106,6 @@ class OutliersDataCheck(DataCheck):
             DataCheckActionOption(
                 DataCheckActionCode.DROP_ROWS,
                 data_check_name=self.name,
-                parameters={
-                    # "rows_to_drop": {
-                    #     "parameter_type": "global",
-                    #     "type": "list",
-                    #     "rows": all_rows_with_indices,
-                    #     "default_value": all_rows_with_indices,
-                    # }
-                },
                 metadata={"rows": all_rows_with_indices},
             ).to_dict()
         )

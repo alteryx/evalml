@@ -20,7 +20,7 @@ class DataCheckActionOption:
     def __init__(self, action_code, data_check_name, parameters=None, metadata=None):
         self.action_code = action_code
         self.data_check_name = data_check_name
-        self.parameters = parameters
+        self.parameters = parameters or {}
         self.metadata = {"columns": None, "rows": None}
         if metadata is not None:
             self.metadata.update(metadata)
@@ -95,8 +95,6 @@ class DataCheckActionOption:
         )
 
     def validate_parameters(self):
-        if self.parameters is None:
-            return
         for _, parameter_value in self.parameters.items():
             if "parameter_type" not in parameter_value:
                 raise ValueError("Each parameter must have a parameter_type key.")

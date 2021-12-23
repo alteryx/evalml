@@ -43,6 +43,7 @@ class TargetDistributionDataCheck(DataCheck):
             ...                   "details": {"normalization_method": "shapiro", "statistic": 0.8, "p-value": 0.045, "columns": None, "rows": None}}],
             ...     "actions": {"action_list": [{'code': 'TRANSFORM_TARGET',
             ...                  "data_check_name": "TargetDistributionDataCheck",
+            ...                  'parameters': {},
             ...                  'metadata': {'transformation_strategy': 'lognormal',
             ...                               'is_target': True,
             ...                               "columns": None,

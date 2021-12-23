@@ -119,10 +119,10 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 'code': 'TARGET_HAS_NULL'}],
             ...     'actions': {"action_list": [{'code': 'IMPUTE_COL',
             ...                  'data_check_name': 'InvalidTargetDataCheck',
+            ...                  "parameters": {"impute_strategy": {"parameter_type": "global", "type": "category", "categories": ["mean", "most_frequent"], "default_value": "mean"}},
             ...                  'metadata': {'columns': None,
             ...                               'rows': None,
-            ...                               'is_target': True,
-            ...                               'impute_strategy': 'mean'}}], "default_action": None}}
+            ...                               'is_target': True}}], "default_action": None}}
 
             If the target values don't match the problem type passed, an error will be raised.
             In this instance, only two values exist in the target column, but multiclass has been passed as the problem type.
@@ -245,9 +245,6 @@ class InvalidTargetDataCheck(DataCheck):
                 ),
                 results,
             )
-            # impute_strategy = (
-            #     "mean" if is_regression(self.problem_type) else "most_frequent"
-            # )
 
             results["actions"]["action_list"].append(
                 DataCheckActionOption(
@@ -268,16 +265,6 @@ class InvalidTargetDataCheck(DataCheck):
                     metadata={"is_target": True},
                 ).to_dict()
             )
-            # results["actions"]["action_list"].append(
-            #     DataCheckAction(
-            #         DataCheckActionCode.IMPUTE_COL,
-            #         data_check_name=self.name,
-            #         metadata={
-            #             "is_target": True,
-            #             "impute_strategy": impute_strategy,
-            #         },
-            #     ).to_dict()
-            # )
         return results
 
     def _check_target_and_features_compatible(self, X, y, results):

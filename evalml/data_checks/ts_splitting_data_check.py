@@ -64,7 +64,7 @@ class TimeSeriesSplittingDataCheck(DataCheck):
             ...                                                                                3: {"Validation": [75, 100]}}},
             ...                  'code': 'TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT'}],
             ...     "warnings": [],
-            ...     "actions": "actions": {"action_list": [], "default_action": None}}
+            ...     "actions": {"action_list": [], "default_action": None}}
         """
         results = {
             "warnings": [],

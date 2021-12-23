@@ -55,7 +55,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "HAS_ID_COLUMN",
             ...                   "details": {"columns": ["customer_id"], "rows": None}}],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            ...     "actions": {"action_list": [{"code": "DROP_COL", "parameters": {},
             ...                  "data_check_name": "IDColumnsDataCheck",
             ...                  "metadata": {"columns": ["customer_id"], "rows": None}}], "default_action": None}}
 
@@ -70,7 +70,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "HAS_ID_COLUMN",
             ...                   "details": {"columns": ["ID"], "rows": None}}],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            ...     "actions": {"action_list": [{"code": "DROP_COL", "parameters": {},
             ...                  "data_check_name": "IDColumnsDataCheck",
             ...                  "metadata": {"columns": ["ID"], "rows": None}}], "default_action": None}}
 
@@ -97,7 +97,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   'details': {'columns': ['Country_Rank'], 'rows': None},
             ...                   'code': 'HAS_ID_COLUMN'}],
             ...     'errors': [],
-            ...     'actions': {"action_list": [{'code': 'DROP_COL',
+            ...     'actions': {"action_list": [{'code': 'DROP_COL', "parameters": {},
             ...                  'data_check_name': 'IDColumnsDataCheck',
             ...                  'metadata': {'columns': ['Country_Rank'], 'rows': None}}], "default_action": None}}
         """
@@ -161,13 +161,6 @@ class IDColumnsDataCheck(DataCheck):
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": list(id_cols_above_threshold),
-                        # }
-                    },
                     metadata={"columns": list(id_cols_above_threshold)},
                 ).to_dict()
             )

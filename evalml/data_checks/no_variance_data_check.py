@@ -54,7 +54,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 'level': 'error',
             ...                 'details': {'columns': ['Y'], 'rows': None},
             ...                 'code': 'NO_VARIANCE'}],
-            ...     'actions': {"action_list": [{'code': 'DROP_COL',
+            ...     'actions': {"action_list": [{'code': 'DROP_COL', 'parameters': {},
             ...                  'data_check_name': 'NoVarianceDataCheck',
             ...                  'metadata': {'columns': ["First_Column"], 'rows': None}}], "default_action": None}}
 
@@ -93,7 +93,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 'details': {'columns': ['Y'], 'rows': None},
             ...                 'code': 'NO_VARIANCE'}],
             ...     'actions': {"action_list": [{'code': 'DROP_COL',
-            ...                  'data_check_name': 'NoVarianceDataCheck',
+            ...                  'data_check_name': 'NoVarianceDataCheck', 'parameters': {},
             ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}], "default_action": None}}
 
             If count_nan_as_value is set to True, then NaNs are counted as unique values. In the event that there is an
@@ -113,7 +113,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                   'details': {'columns': ['Y'], 'rows': None},
             ...                   'code': 'NO_VARIANCE_WITH_NULL'}],
             ...     'errors': [],
-            ...     'actions': {"action_list": [{'code': 'DROP_COL',
+            ...     'actions': {"action_list": [{'code': 'DROP_COL', 'parameters': {},
             ...                  'data_check_name': 'NoVarianceDataCheck',
             ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}], "default_action": None}}
 
@@ -188,7 +188,6 @@ class NoVarianceDataCheck(DataCheck):
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
-                    parameters={},
                     metadata={"columns": all_cols},
                 ).to_dict()
             )
