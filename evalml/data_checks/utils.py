@@ -16,9 +16,9 @@ def handle_data_check_action_code(action_code):
         ValueError: If input is not a string or DatCheckActionCode object.
 
     Examples:
-        >>> assert handle_data_check_action_code_types("drop_col") == DataCheckActionCode.DROP_COL
-        >>> assert handle_data_check_action_code_types("DROP_ROWS") == DataCheckActionCode.DROP_ROWS
-        >>> assert handle_data_check_action_code_types("Impute_col") == DataCheckActionCode.IMPUTE_COL
+        >>> assert handle_data_check_action_code("drop_col") == DataCheckActionCode.DROP_COL
+        >>> assert handle_data_check_action_code("DROP_ROWS") == DataCheckActionCode.DROP_ROWS
+        >>> assert handle_data_check_action_code("Impute_col") == DataCheckActionCode.IMPUTE_COL
     """
     if isinstance(action_code, str):
         try:
