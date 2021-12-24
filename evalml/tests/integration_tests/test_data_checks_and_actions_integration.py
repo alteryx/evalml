@@ -9,6 +9,7 @@ from evalml.data_checks import (
     DefaultDataChecks,
     OutliersDataCheck,
 )
+from evalml.data_checks.data_check_action_option import DataCheckActionOption
 from evalml.data_checks.highly_null_data_check import HighlyNullDataCheck
 from evalml.data_checks.invalid_target_data_check import InvalidTargetDataCheck
 from evalml.pipelines import BinaryClassificationPipeline
@@ -17,7 +18,10 @@ from evalml.pipelines.components import (
     DropRowsTransformer,
     TargetImputer,
 )
-from evalml.pipelines.utils import make_pipeline_from_actions
+from evalml.pipelines.utils import (
+    _get_default_actions_from_options,
+    make_pipeline_from_actions,
+)
 
 
 def test_data_checks_with_healthy_data(X_y_binary):
@@ -81,10 +85,14 @@ def test_data_checks_impute_cols():
     data_check = InvalidTargetDataCheck("binary", "Log Loss Binary")
     data_checks_output = data_check.validate(None, y)
 
-    actions = [
-        DataCheckAction.convert_dict_to_action(action)
-        for action in data_checks_output["actions"]["action_list"]
-    ]
+    actions = _get_default_actions_from_options(
+        DataCheckActionOption.convert_dict_to_action(option)
+        for option in data_checks_output["actions"]["action_list"]
+    )
+    # actions = [
+    #     DataCheckAction.convert_dict_to_action(action)
+    #     for action in data_checks_output["actions"]["action_list"]
+    # ]
     action_pipeline = make_pipeline_from_actions("binary", actions)
     assert action_pipeline == BinaryClassificationPipeline(
         component_graph={"Target Imputer": [TargetImputer, "X", "y"]},

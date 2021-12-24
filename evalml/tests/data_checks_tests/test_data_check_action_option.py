@@ -17,7 +17,7 @@ def test_data_check_action_option_attributes(dummy_data_check_name):
     assert data_check_action_option.data_check_name == dummy_data_check_name
     assert data_check_action_option.action_code == DataCheckActionCode.DROP_COL
     assert data_check_action_option.metadata == {"rows": None, "columns": None}
-    assert data_check_action_option.parameters == None
+    assert data_check_action_option.parameters == {}
 
     data_check_action_option = DataCheckActionOption(
         DataCheckActionCode.DROP_COL, None, metadata={}, parameters={}
@@ -170,19 +170,19 @@ def test_data_check_action_option_to_dict(dummy_data_check_name):
     assert data_check_action_option.to_dict() == {
         "code": DataCheckActionCode.DROP_COL.name,
         "data_check_name": dummy_data_check_name,
-        "parameters": None,
+        "parameters": {},
         "metadata": {"columns": None, "rows": None},
     }
     assert data_check_action_option_empty_metadata.to_dict() == {
         "code": DataCheckActionCode.DROP_COL.name,
         "data_check_name": dummy_data_check_name,
-        "parameters": None,
+        "parameters": {},
         "metadata": {"columns": None, "rows": None},
     }
     assert data_check_action_option_with_metadata.to_dict() == {
         "code": DataCheckActionCode.DROP_COL.name,
         "data_check_name": dummy_data_check_name,
-        "parameters": None,
+        "parameters": {},
         "metadata": {
             "some detail": ["some detail value"],
             "columns": None,
