@@ -262,6 +262,19 @@ def test_convert_dict_to_action_bad_parameter_input(dummy_data_check_name):
                 }
             },
         )
+    with pytest.raises(ValueError, match="Each global parameter must have a type key."):
+        DataCheckActionOption(
+            action_code=DataCheckActionCode.DROP_COL,
+            data_check_name=dummy_data_check_name,
+            metadata={"columns": None, "rows": None},
+            parameters={
+                "global_parameter_name": {
+                    "parameter_type": "global",
+                    "default_value": 0.0,
+                }
+            },
+        )
+
     with pytest.raises(
         ValueError,
         match=re.escape(
