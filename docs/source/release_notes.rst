@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added string support for DataCheckActionCode :pr:`3167`
+        * Added ``DataCheckActionOption`` class :pr:`3134`
     * Fixes
     * Changes
     * Documentation Changes

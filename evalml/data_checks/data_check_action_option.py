@@ -4,11 +4,11 @@ from evalml.data_checks.data_check_action_code import DataCheckActionCode
 
 
 class DataCheckActionOption:
-    # TODO: make child class of DataCheckAction??
-    # How to make parameters a more established structure..? Have checks for each parameter in parameters?
-    """A recommended action option returned by a DataCheck. It contains an action code that indicates what the
+    """A recommended action option returned by a DataCheck.
+
+        It contains an action code that indicates what the
         action should be, a data check name that indicates what data check was used to generate the action, and
-        parameters which can be used to further refine the action.
+        parameters and metadata which can be used to further refine the action.
 
     Args:
         action_code (DataCheckActionCode): Action code associated with the action option.
@@ -24,7 +24,7 @@ class DataCheckActionOption:
         self.metadata = {"columns": None, "rows": None}
         if metadata is not None:
             self.metadata.update(metadata)
-        self.validate_parameters()
+        self._validate_parameters()
 
     def __eq__(self, other):
         """Check for equality.
@@ -94,7 +94,8 @@ class DataCheckActionOption:
             else None,
         )
 
-    def validate_parameters(self):
+    def _validate_parameters(self):
+        """Validate parameters associated with the action option."""
         if self.parameters is None:
             return
         for _, parameter_value in self.parameters.items():
