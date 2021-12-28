@@ -1168,7 +1168,6 @@ def test_add_to_rankings_regression_large(
         automl.add_to_rankings(dummy_regression_pipeline_class({}))
         assert isinstance(automl.data_splitter, TrainingValidationSplit)
         assert len(automl.rankings) == 1
-        assert 0.1234 not in automl.rankings["mean_cv_score"].values
         assert np.isnan(automl.rankings["mean_cv_score"].values[0])
 
 
