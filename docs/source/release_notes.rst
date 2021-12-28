@@ -6,7 +6,7 @@ Release Notes
     * Changes
     * Documentation Changes
     * Testing Changes
-
+        * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
 
 **v0.40.0 Dec. 22, 2021**
     * Enhancements
