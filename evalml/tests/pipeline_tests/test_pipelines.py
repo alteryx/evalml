@@ -1347,8 +1347,7 @@ def test_targets_data_types_classification_pipelines(
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
-    for pipeline_class in pipeline_classes:
-        pipeline = pipeline_class(pipeline_class.parameters)
+    for pipeline in pipeline_classes:
         pipeline.fit(X, y)
         predictions = pipeline.predict(X, objective)
         assert set(predictions.unique()).issubset(unique_vals)
