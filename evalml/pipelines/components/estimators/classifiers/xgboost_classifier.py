@@ -8,11 +8,7 @@ from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
 from evalml.pipelines.components.transformers import LabelEncoder
 from evalml.problem_types import ProblemTypes
-from evalml.utils import (
-    _rename_column_names_to_numeric,
-    import_or_raise,
-    infer_feature_types,
-)
+from evalml.utils import _rename_column_names_to_numeric, import_or_raise
 
 
 class XGBoostClassifier(Estimator):
@@ -139,11 +135,10 @@ class XGBoostClassifier(Estimator):
         predictions = super().predict(X)
         if not self._label_encoder:
             return predictions
-        predictions = pd.Series(
-            self._label_encoder.inverse_transform(predictions.astype(np.int64)),
-            index=predictions.index,
+        predictions = self._label_encoder.inverse_transform(
+            predictions.astype(np.int64)
         )
-        return infer_feature_types(predictions)
+        return predictions
 
     def predict_proba(self, X):
         """Make predictions using the fitted CatBoost classifier.

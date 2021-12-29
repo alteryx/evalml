@@ -201,11 +201,10 @@ class LightGBMClassifier(Estimator):
         predictions = super().predict(X_encoded)
         if not self._label_encoder:
             return predictions
-        predictions = pd.Series(
-            self._label_encoder.inverse_transform(predictions.astype(np.int64)),
-            index=predictions.index,
+        predictions = self._label_encoder.inverse_transform(
+            predictions.astype(np.int64)
         )
-        return infer_feature_types(predictions)
+        return predictions
 
     def predict_proba(self, X):
         """Make prediction probabilities using the fitted LightGBM classifier.
