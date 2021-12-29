@@ -955,7 +955,7 @@ class AutoMLSearch:
             full_rankings = self.full_rankings
             current_batch_idx = full_rankings["id"].isin(new_pipeline_ids)
             current_batch_pipeline_scores = full_rankings[current_batch_idx][
-                "mean_cv_score"
+                "validation_score"
             ]
             if (
                 len(current_batch_pipeline_scores)
@@ -977,7 +977,7 @@ class AutoMLSearch:
             best_pipeline_name = best_pipeline["pipeline_name"]
             self.logger.info(f"Best pipeline: {best_pipeline_name}")
             self.logger.info(
-                f"Best pipeline {self.objective.name}: {best_pipeline['mean_cv_score']:3f}"
+                f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
 
@@ -1145,7 +1145,11 @@ class AutoMLSearch:
         cv_data = evaluation_results["cv_data"]
         cv_scores = evaluation_results["cv_scores"]
         is_baseline = pipeline.model_family == ModelFamily.BASELINE
-        cv_score = cv_scores.mean()
+        if len(cv_scores) == 1:
+            validation_score = cv_scores[0]
+            mean_cv_score = np.nan
+        elif len(cv_scores) > 1:
+            validation_score = mean_cv_score = cv_scores.mean()
         cv_sd = cv_scores.std()
 
         percent_better_than_baseline = {}
@@ -1174,7 +1178,7 @@ class AutoMLSearch:
             "pipeline_class": pipeline.__class__,
             "pipeline_summary": pipeline.summary,
             "parameters": pipeline.parameters,
-            "mean_cv_score": cv_score,
+            "mean_cv_score": mean_cv_score,
             "standard_deviation_cv_score": cv_sd,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
@@ -1183,7 +1187,7 @@ class AutoMLSearch:
             "percent_better_than_baseline": percent_better_than_baseline[
                 self.objective.name
             ],
-            "validation_score": cv_scores[0],
+            "validation_score": validation_score,
         }
         self._pipelines_searched.update({pipeline_id: pipeline.clone()})
 
@@ -1200,7 +1204,9 @@ class AutoMLSearch:
 
         if not is_baseline:
             score_to_minimize = (
-                -cv_score if self.objective.greater_is_better else cv_score
+                -validation_score
+                if self.objective.greater_is_better
+                else validation_score
             )
             try:
                 self._automl_algorithm.add_result(
@@ -1416,7 +1422,7 @@ class AutoMLSearch:
         rankings_df.insert(
             2, "search_order", pd.Series(self._results["search_order"])
         )  # place search_order after pipeline_name
-        rankings_df.sort_values("mean_cv_score", ascending=ascending, inplace=True)
+        rankings_df.sort_values("validation_score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
 
