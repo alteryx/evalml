@@ -15,6 +15,32 @@ class DataCheckActionOption:
         data_check_name (str): Name of the data check that produced this option.
         parameters (dict): Parameters associated with the action option. Defaults to None.
         metadata (dict, optional): Additional useful information associated with the action option. Defaults to None.
+
+
+    Examples:
+        >>> parameters = {
+        ...     "global_parameter_name": {
+        ...         "parameter_type": "global",
+        ...         "type": "float",
+        ...         "default_value": 0.0,
+        ...     },
+        ...     "column_parameter_name": {
+        ...         "parameter_type": "column",
+        ...         "columns": {
+        ...             "a": {
+        ...                 "impute_strategy": {
+        ...                     "categories": ["mean", "mode"],
+        ...                     "type": "category",
+        ...                     "default_value": "mean",
+        ...                 },
+        ...             "constant_fill_value": {"type": "float", "default_value": 0},
+        ...             },
+        ...         },
+        ...     },
+        ... }
+        >>> data_check_action = DataCheckActionOption(DataCheckActionCode.DROP_COL, None, metadata={}, parameters=parameters)
+
+
     """
 
     def __init__(self, action_code, data_check_name, parameters=None, metadata=None):
@@ -77,10 +103,10 @@ class DataCheckActionOption:
             )
         if (
             "columns" not in action_dict["metadata"]
-            or "rows" not in action_dict["metadata"]
+            and "rows" not in action_dict["metadata"]
         ):
             raise ValueError(
-                "The metadata dictionary should have the keys `columns` and `rows`. Set to None if not using."
+                "The metadata dictionary should have the keys `columns` or `rows`. Set to None if not using."
             )
 
         return DataCheckActionOption(
@@ -114,11 +140,8 @@ class DataCheckActionOption:
                     raise ValueError(
                         "`columns` must be a dictionary, where each key is the name of a column and the associated value is a dictionary of parameters for that column."
                     )
-                for _, column_parameters in columns.items():
-                    for (
-                        column_parameter_name,
-                        column_parameter_values,
-                    ) in column_parameters.items():
+                for column_parameters in columns.values():
+                    for column_parameter_values in column_parameters.values():
                         if "type" not in column_parameter_values:
                             raise ValueError(
                                 "Each column parameter must have a type key."
