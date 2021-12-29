@@ -6,6 +6,7 @@ Release Notes
         * Added ``DataCheckActionOption`` class :pr:`3134`
     * Fixes
     * Changes
+        * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
     * Documentation Changes
     * Testing Changes
 
