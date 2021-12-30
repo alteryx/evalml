@@ -21,7 +21,7 @@ plotly==5.5.0
 pmdarima==1.8.0
 pyzmq==22.3.0
 requirements-parser==0.3.1
-scikit-learn==1.0.1
+scikit-learn==1.0.2
 scikit-optimize==0.9.0
 scipy==1.7.3
 seaborn==0.11.2
