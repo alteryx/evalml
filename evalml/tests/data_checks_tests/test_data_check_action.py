@@ -3,11 +3,6 @@ import pytest
 from evalml.data_checks import DataCheckAction, DataCheckActionCode
 
 
-@pytest.fixture
-def dummy_data_check_name():
-    return dummy_data_check_name
-
-
 def test_data_check_action_attributes(dummy_data_check_name):
     data_check_action = DataCheckAction(
         DataCheckActionCode.DROP_COL, dummy_data_check_name
@@ -114,21 +109,12 @@ def test_convert_dict_to_action_bad_input():
 
     data_check_action_dict_no_columns = {
         "code": DataCheckActionCode.DROP_COL.name,
-        "metadata": {"rows": None},
+        "metadata": {"cow": None},
     }
     with pytest.raises(
         ValueError, match="The metadata dictionary should have the keys"
     ):
         DataCheckAction.convert_dict_to_action(data_check_action_dict_no_columns)
-
-    data_check_action_dict_no_rows = {
-        "code": DataCheckActionCode.DROP_COL.name,
-        "metadata": {"columns": None},
-    }
-    with pytest.raises(
-        ValueError, match="The metadata dictionary should have the keys"
-    ):
-        DataCheckAction.convert_dict_to_action(data_check_action_dict_no_rows)
 
 
 def test_convert_dict_to_action(dummy_data_check_name):
