@@ -4,17 +4,43 @@ from evalml.data_checks.data_check_action_code import DataCheckActionCode
 
 
 class DataCheckActionOption:
-    # TODO: make child class of DataCheckAction??
-    # How to make parameters a more established structure..? Have checks for each parameter in parameters?
-    """A recommended action option returned by a DataCheck. It contains an action code that indicates what the
+    """A recommended action option returned by a DataCheck.
+
+        It contains an action code that indicates what the
         action should be, a data check name that indicates what data check was used to generate the action, and
-        parameters which can be used to further refine the action.
+        parameters and metadata which can be used to further refine the action.
 
     Args:
         action_code (DataCheckActionCode): Action code associated with the action option.
         data_check_name (str): Name of the data check that produced this option.
         parameters (dict): Parameters associated with the action option. Defaults to None.
         metadata (dict, optional): Additional useful information associated with the action option. Defaults to None.
+
+
+    Examples:
+        >>> parameters = {
+        ...     "global_parameter_name": {
+        ...         "parameter_type": "global",
+        ...         "type": "float",
+        ...         "default_value": 0.0,
+        ...     },
+        ...     "column_parameter_name": {
+        ...         "parameter_type": "column",
+        ...         "columns": {
+        ...             "a": {
+        ...                 "impute_strategy": {
+        ...                     "categories": ["mean", "mode"],
+        ...                     "type": "category",
+        ...                     "default_value": "mean",
+        ...                 },
+        ...             "constant_fill_value": {"type": "float", "default_value": 0},
+        ...             },
+        ...         },
+        ...     },
+        ... }
+        >>> data_check_action = DataCheckActionOption(DataCheckActionCode.DROP_COL, None, metadata={}, parameters=parameters)
+
+
     """
 
     def __init__(self, action_code, data_check_name, parameters=None, metadata=None):
@@ -24,7 +50,7 @@ class DataCheckActionOption:
         self.metadata = {"columns": None, "rows": None}
         if metadata is not None:
             self.metadata.update(metadata)
-        self.validate_parameters()
+        self._validate_parameters()
 
     def __eq__(self, other):
         """Check for equality.
@@ -77,10 +103,10 @@ class DataCheckActionOption:
             )
         if (
             "columns" not in action_dict["metadata"]
-            or "rows" not in action_dict["metadata"]
+            and "rows" not in action_dict["metadata"]
         ):
             raise ValueError(
-                "The metadata dictionary should have the keys `columns` and `rows`. Set to None if not using."
+                "The metadata dictionary should have the keys `columns` or `rows`. Set to None if not using."
             )
 
         return DataCheckActionOption(
@@ -94,7 +120,8 @@ class DataCheckActionOption:
             else None,
         )
 
-    def validate_parameters(self):
+    def _validate_parameters(self):
+        """Validate parameters associated with the action option."""
         if self.parameters is None:
             return
         for _, parameter_value in self.parameters.items():
@@ -113,11 +140,8 @@ class DataCheckActionOption:
                     raise ValueError(
                         "`columns` must be a dictionary, where each key is the name of a column and the associated value is a dictionary of parameters for that column."
                     )
-                for _, column_parameters in columns.items():
-                    for (
-                        column_parameter_name,
-                        column_parameter_values,
-                    ) in column_parameters.items():
+                for column_parameters in columns.values():
+                    for column_parameter_values in column_parameters.values():
                         if "type" not in column_parameter_values:
                             raise ValueError(
                                 "Each column parameter must have a type key."
