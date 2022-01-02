@@ -730,7 +730,7 @@ def test_automl_allowed_component_graphs_no_component_graphs(
 def test_automl_component_graphs_specified_component_graphs_binary(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     X, y = X_y_binary
@@ -744,10 +744,9 @@ def test_automl_component_graphs_specified_component_graphs_binary(
         optimize_thresholds=False,
         allowed_model_families=None,
     )
-    expected_pipeline = dummy_binary_pipeline_class({})
-    expected_component_graph = expected_pipeline.component_graph
-    expected_name = expected_pipeline.name
-    expected_parameters = expected_pipeline.parameters
+    expected_component_graph = dummy_binary_pipeline.component_graph
+    expected_name = dummy_binary_pipeline.name
+    expected_parameters = dummy_binary_pipeline.parameters
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
     assert automl.allowed_pipelines[0].name == expected_name
     assert automl.allowed_pipelines[0].parameters == expected_parameters
@@ -767,7 +766,7 @@ def test_automl_component_graphs_specified_component_graphs_binary(
 def test_automl_component_graphs_specified_component_graphs_multi(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_multiclass_pipeline_class,
+    dummy_multiclass_pipeline,
     X_y_multi,
 ):
     X, y = X_y_multi
@@ -782,7 +781,7 @@ def test_automl_component_graphs_specified_component_graphs_multi(
         },
         allowed_model_families=None,
     )
-    expected_pipeline = dummy_multiclass_pipeline_class({})
+    expected_pipeline = dummy_multiclass_pipeline
     expected_component_graph = expected_pipeline.component_graph
     expected_name = expected_pipeline.name
     expected_parameters = expected_pipeline.parameters
@@ -960,7 +959,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_multi(
 def test_automl_component_graphs_init_allowed_both_specified_binary(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     X, y = X_y_binary
@@ -974,10 +973,9 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         optimize_thresholds=False,
     )
-    expected_pipeline = dummy_binary_pipeline_class({})
-    expected_component_graph = expected_pipeline.component_graph
-    expected_name = expected_pipeline.name
-    expected_parameters = expected_pipeline.parameters
+    expected_component_graph = dummy_binary_pipeline.component_graph
+    expected_name = dummy_binary_pipeline.name
+    expected_parameters = dummy_binary_pipeline.parameters
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
     assert automl.allowed_pipelines[0].name == expected_name
     assert automl.allowed_pipelines[0].parameters == expected_parameters
@@ -996,7 +994,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
 def test_automl_component_graphs_init_allowed_both_specified_multi(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_multiclass_pipeline_class,
+    dummy_multiclass_pipeline,
     X_y_multi,
 ):
     X, y = X_y_multi
@@ -1011,10 +1009,9 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
         },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
     )
-    expected_pipeline = dummy_multiclass_pipeline_class({})
-    expected_component_graph = expected_pipeline.component_graph
-    expected_name = expected_pipeline.name
-    expected_parameters = expected_pipeline.parameters
+    expected_component_graph = dummy_multiclass_pipeline.component_graph
+    expected_name = dummy_multiclass_pipeline.name
+    expected_parameters = dummy_multiclass_pipeline.parameters
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
     assert automl.allowed_pipelines[0].name == expected_name
     assert automl.allowed_pipelines[0].parameters == expected_parameters

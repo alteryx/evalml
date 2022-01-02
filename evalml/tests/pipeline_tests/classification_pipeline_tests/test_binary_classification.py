@@ -72,7 +72,7 @@ def test_binary_classification_pipeline_predict(
     mock_predict_proba,
     mock_obj_decision,
     X_y_binary,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
 ):
     proba = pd.DataFrame([[0.1, 0.2], [0.1, 0.2]])
     proba.ww.init()
@@ -81,37 +81,36 @@ def test_binary_classification_pipeline_predict(
     mock_predict_proba.return_value = proba
 
     X, y = X_y_binary
-    binary_pipeline = dummy_binary_pipeline_class(parameters={})
     # test no objective passed and no custom threshold uses underlying estimator's predict method
-    binary_pipeline.fit(X, y)
-    binary_pipeline.predict(X)
+    dummy_binary_pipeline.fit(X, y)
+    dummy_binary_pipeline.predict(X)
     mock_predict.assert_called()
     mock_predict.reset_mock()
 
     # test objective passed but no custom threshold uses underlying estimator's predict method
-    binary_pipeline.predict(X, "precision")
+    dummy_binary_pipeline.predict(X, "precision")
     mock_predict.assert_called()
     mock_predict.reset_mock()
 
     # test custom threshold set but no objective passed
-    binary_pipeline.threshold = 0.6
-    binary_pipeline.predict(X)
+    dummy_binary_pipeline.threshold = 0.6
+    dummy_binary_pipeline.predict(X)
     mock_predict_proba.assert_called()
     mock_predict_proba.reset_mock()
     mock_obj_decision.assert_not_called()
     mock_predict.assert_not_called()
 
     # test custom threshold set but no objective passed
-    binary_pipeline.threshold = 0.6
-    binary_pipeline.predict(X)
+    dummy_binary_pipeline.threshold = 0.6
+    dummy_binary_pipeline.predict(X)
     mock_predict_proba.assert_called()
     mock_predict_proba.reset_mock()
     mock_obj_decision.assert_not_called()
     mock_predict.assert_not_called()
 
     # test custom threshold set and objective passed
-    binary_pipeline.threshold = 0.6
-    binary_pipeline.predict(X, "precision")
+    dummy_binary_pipeline.threshold = 0.6
+    dummy_binary_pipeline.predict(X, "precision")
     mock_predict_proba.assert_called()
     mock_predict_proba.reset_mock()
     mock_predict.assert_not_called()
@@ -120,10 +119,10 @@ def test_binary_classification_pipeline_predict(
 
 @patch("evalml.pipelines.ComponentGraph._transform_features")
 def test_binary_predict_pipeline_objective_mismatch(
-    mock_transform, X_y_binary, dummy_binary_pipeline_class
+    mock_transform, X_y_binary, dummy_binary_pipeline
 ):
     X, y = X_y_binary
-    binary_pipeline = dummy_binary_pipeline_class(
+    binary_pipeline = dummy_binary_pipeline.new(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
     )
     binary_pipeline.fit(X, y)

@@ -60,7 +60,7 @@ def test_regression_init():
 
 @pytest.mark.parametrize("target_type", ["category", "string", "bool"])
 def test_invalid_targets_regression_pipeline(
-    breast_cancer_local, wine_local, target_type, dummy_regression_pipeline_class
+    breast_cancer_local, wine_local, target_type, dummy_regression_pipeline
 ):
     X, y = wine_local
     if target_type == "category":
@@ -68,11 +68,10 @@ def test_invalid_targets_regression_pipeline(
     if target_type == "bool":
         X, y = breast_cancer_local
         y = y.map({"malignant": False, "benign": True})
-    mock_regression_pipeline = dummy_regression_pipeline_class(parameters={})
     with pytest.raises(
         ValueError, match="Regression pipeline can only handle numeric target data"
     ):
-        mock_regression_pipeline.fit(X, y)
+        dummy_regression_pipeline.fit(X, y)
 
 
 def test_woodwork_regression_pipeline(diabetes_local, linear_regression_pipeline_class):

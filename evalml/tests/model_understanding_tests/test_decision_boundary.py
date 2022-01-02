@@ -88,28 +88,26 @@ def test_f1(val_list, expected_val):
 
 
 def test_find_confusion_matrix_per_threshold_errors(
-    dummy_binary_pipeline_class, dummy_multiclass_pipeline_class
+    dummy_binary_pipeline, dummy_multiclass_pipeline
 ):
-    bcp = dummy_binary_pipeline_class({})
-    mcp = dummy_multiclass_pipeline_class({})
     X = pd.DataFrame()
     y = pd.Series()
 
     with pytest.raises(
         ValueError, match="Expected a fitted binary classification pipeline"
     ):
-        find_confusion_matrix_per_thresholds(bcp, X, y)
+        find_confusion_matrix_per_thresholds(dummy_binary_pipeline, X, y)
 
     with pytest.raises(
         ValueError, match="Expected a fitted binary classification pipeline"
     ):
-        find_confusion_matrix_per_thresholds(mcp, X, y)
+        find_confusion_matrix_per_thresholds(dummy_multiclass_pipeline, X, y)
 
-    mcp._is_fitted = True
+    dummy_multiclass_pipeline._is_fitted = True
     with pytest.raises(
         ValueError, match="Expected a fitted binary classification pipeline"
     ):
-        find_confusion_matrix_per_thresholds(mcp, X, y)
+        find_confusion_matrix_per_thresholds(dummy_multiclass_pipeline, X, y)
 
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
@@ -119,12 +117,12 @@ def test_find_confusion_matrix_per_threshold_errors(
 )
 @patch("evalml.model_understanding.decision_boundary._find_data_between_ranges")
 def test_find_confusion_matrix_per_threshold_args_pass_through(
-    mock_ranges, mock_threshold, mock_pred_proba, mock_fit, dummy_binary_pipeline_class
+    mock_ranges, mock_threshold, mock_pred_proba, mock_fit, dummy_binary_pipeline
 ):
     n_bins = 100
     X = pd.DataFrame()
     y = pd.Series([0] * 500 + [1] * 500)
-    bcp = dummy_binary_pipeline_class({})
+    bcp = dummy_binary_pipeline
     bcp._is_fitted = True
 
     # set return predicted proba
@@ -183,11 +181,11 @@ def test_find_confusion_matrix_per_threshold_args_pass_through(
 @patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
 @pytest.mark.parametrize("n_bins", [100, 10, None])
 def test_find_confusion_matrix_per_threshold_n_bins(
-    mock_pred_proba, mock_fit, n_bins, dummy_binary_pipeline_class
+    mock_pred_proba, mock_fit, n_bins, dummy_binary_pipeline
 ):
     X = pd.DataFrame()
     y = pd.Series([0] * 1200 + [1] * 800)
-    bcp = dummy_binary_pipeline_class({})
+    bcp = dummy_binary_pipeline
     bcp._is_fitted = True
     top_k = 5
 
@@ -229,11 +227,11 @@ def test_find_confusion_matrix_per_threshold_n_bins(
 @pytest.mark.parametrize("top_k", [-1, 4])
 @pytest.mark.parametrize("n_bins", [100, None])
 def test_find_confusion_matrix_per_threshold_k_(
-    mock_pred_proba, mock_fit, n_bins, top_k, dummy_binary_pipeline_class
+    mock_pred_proba, mock_fit, n_bins, top_k, dummy_binary_pipeline
 ):
     X = pd.DataFrame()
     y = pd.Series([0] * 1200 + [1] * 800)
-    bcp = dummy_binary_pipeline_class({})
+    bcp = dummy_binary_pipeline
     bcp._is_fitted = True
 
     # set return predicted proba

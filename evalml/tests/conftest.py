@@ -657,55 +657,19 @@ def example_regression_graph():
 
 
 @pytest.fixture
-def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
-    MockEstimator = dummy_classifier_estimator_class
-
-    class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
-        custom_name = "Mock Binary Classification Pipeline"
-        estimator = MockEstimator
-        component_graph = [MockEstimator]
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return MockBinaryClassificationPipeline
+def dummy_binary_pipeline(dummy_classifier_estimator_class):
+    return BinaryClassificationPipeline(
+        component_graph=[dummy_classifier_estimator_class],
+        custom_name="Mock Binary Classification Pipeline",
+    )
 
 
 @pytest.fixture
-def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
-    MockEstimator = dummy_classifier_estimator_class
-
-    class MockMulticlassClassificationPipeline(MulticlassClassificationPipeline):
-        estimator = MockEstimator
-        component_graph = [MockEstimator]
-        custom_name = "Mock Multiclass Classification Pipeline"
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return MockMulticlassClassificationPipeline
+def dummy_multiclass_pipeline(dummy_classifier_estimator_class):
+    return MulticlassClassificationPipeline(
+        component_graph=[dummy_classifier_estimator_class],
+        custom_name="Mock Multiclass Classification Pipeline",
+    )
 
 
 @pytest.fixture
@@ -729,27 +693,10 @@ def dummy_regressor_estimator_class():
 
 @pytest.fixture
 def dummy_regression_pipeline_class(dummy_regressor_estimator_class):
-    MockRegressor = dummy_regressor_estimator_class
-
-    class MockRegressionPipeline(RegressionPipeline):
-        component_graph = [MockRegressor]
-        custom_name = "Mock Regression Pipeline"
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return MockRegressionPipeline
+    return RegressionPipeline(
+        component_graph=[dummy_regressor_estimator_class],
+        custom_name="Mock Regression Pipeline",
+    )
 
 
 @pytest.fixture
@@ -1015,41 +962,18 @@ def decision_tree_classification_pipeline_class(X_y_categorical_classification):
 
 
 @pytest.fixture
-def nonlinear_binary_pipeline_class(example_graph):
-    class NonLinearBinaryPipeline(BinaryClassificationPipeline):
-        custom_name = "Non Linear Binary Pipeline"
-        component_graph = example_graph
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return NonLinearBinaryPipeline
+def nonlinear_binary_pipeline(example_graph):
+    return BinaryClassificationPipeline(
+        component_graph=example_graph, custom_name="Non Linear Binary Pipeline"
+    )
 
 
 @pytest.fixture
-def nonlinear_binary_with_target_pipeline_class(example_pass_target_graph):
-    class NonLinearBinaryWithTargetPipeline(BinaryClassificationPipeline):
-        custom_name = "Non Linear Binary With Target Pipeline"
-        component_graph = example_pass_target_graph
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-            )
-
-    return NonLinearBinaryWithTargetPipeline
+def nonlinear_binary_with_target_pipeline(example_pass_target_graph):
+    return BinaryClassificationPipeline(
+        component_graph=example_pass_target_graph,
+        custom_name="Non Linear Binary With Target Pipeline",
+    )
 
 
 @pytest.fixture
