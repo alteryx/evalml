@@ -1600,3 +1600,8 @@ def load_daily_temp_local(n_rows=None):
 def daily_temp_local():
     X, y = load_daily_temp_local()
     return X, y
+
+
+@pytest.fixture
+def dummy_data_check_name():
+    return "dummy_data_check_name"

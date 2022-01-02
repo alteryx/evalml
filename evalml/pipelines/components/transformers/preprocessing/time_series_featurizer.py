@@ -4,11 +4,12 @@ import pandas as pd
 import woodwork as ww
 from featuretools.primitives import RollingMean
 from scipy.signal import find_peaks
-from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from sklearn.preprocessing import OrdinalEncoder
 from skopt.space import Real
 from statsmodels.tsa.stattools import acf
 from woodwork import logical_types
 
+from evalml.pipelines.components.transformers import LabelEncoder
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
 
@@ -130,7 +131,7 @@ class TimeSeriesFeaturizer(Transformer):
 
     @staticmethod
     def _encode_y_while_preserving_index(y):
-        y_encoded = LabelEncoder().fit_transform(y)
+        y_encoded = LabelEncoder().fit_transform(None, y)[1]
         y = pd.Series(y_encoded, index=y.index)
         return y
 
