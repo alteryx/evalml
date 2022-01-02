@@ -60,7 +60,6 @@ from evalml.pipelines import (
     PipelineBase,
     RegressionPipeline,
     StackedEnsembleClassifier,
-    component_graph,
 )
 from evalml.pipelines.components.utils import (
     allowed_model_families,
