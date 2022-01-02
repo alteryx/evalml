@@ -11,7 +11,7 @@ def test_new_unique_targets_in_score(
     X_y_binary,
     logistic_regression_binary_pipeline_class,
     X_y_multi,
-    logistic_regression_multiclass_pipeline_class,
+    logistic_regression_multiclass_pipeline,
     problem_type,
 ):
     if problem_type == "binary":
@@ -22,9 +22,7 @@ def test_new_unique_targets_in_score(
         objective = "Log Loss Binary"
     elif problem_type == "multi":
         X, y = X_y_multi
-        pipeline = logistic_regression_multiclass_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        pipeline = logistic_regression_multiclass_pipeline
         objective = "Log Loss Multiclass"
     pipeline.fit(X, y)
     with pytest.raises(ValueError, match="y contains previously unseen labels"):
@@ -38,7 +36,7 @@ def test_pipeline_has_classes_property(
     breast_cancer_local,
     wine_local,
     logistic_regression_binary_pipeline_class,
-    logistic_regression_multiclass_pipeline_class,
+    logistic_regression_multiclass_pipeline,
     problem_type,
     use_ints,
 ):
@@ -54,9 +52,7 @@ def test_pipeline_has_classes_property(
             answer = ["benign", "malignant"]
     elif problem_type == "multi":
         X, y = wine_local
-        pipeline = logistic_regression_multiclass_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        pipeline = logistic_regression_multiclass_pipeline
         if use_ints:
             y = y.map({"class_0": 0, "class_1": 1, "class_2": 2})
             answer = [0, 1, 2]
@@ -96,7 +92,7 @@ def test_pipeline_transform_and_predict_with_custom_index(
     index,
     problem_type,
     logistic_regression_binary_pipeline_class,
-    logistic_regression_multiclass_pipeline_class,
+    logistic_regression_multiclass_pipeline,
 ):
     X = pd.DataFrame(
         {"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
@@ -111,9 +107,7 @@ def test_pipeline_transform_and_predict_with_custom_index(
         )
     elif problem_type == "multi":
         y = pd.Series([0, 1, 2, 1, 0], index=index)
-        pipeline = logistic_regression_multiclass_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        pipeline = logistic_regression_multiclass_pipeline
     pipeline.fit(X, y)
 
     predictions = pipeline.predict(X)

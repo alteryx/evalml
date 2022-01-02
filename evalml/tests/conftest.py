@@ -793,23 +793,21 @@ def logistic_regression_component_graph():
 
 
 @pytest.fixture
-def logistic_regression_multiclass_pipeline_class(logistic_regression_component_graph):
-    class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
-        custom_name = "Logistic Regression Multiclass Pipeline"
-        component_graph = logistic_regression_component_graph
+def logistic_regression_multiclass_pipeline(logistic_regression_component_graph):
+    return MulticlassClassificationPipeline(
+        component_graph=logistic_regression_component_graph,
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+        custom_name="Logistic Regression Multiclass Pipeline",
+    )
 
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
 
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return LogisticRegressionMulticlassPipeline
+@pytest.fixture
+def logistic_regression_binary_pipeline(logistic_regression_component_graph):
+    return BinaryClassificationPipeline(
+        component_graph=logistic_regression_component_graph,
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+        custom_name="Logistic Regression Binary Pipeline",
+    )
 
 
 @pytest.fixture

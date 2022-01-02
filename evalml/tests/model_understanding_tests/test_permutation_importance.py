@@ -496,13 +496,11 @@ def test_get_permutation_importance_binary(
 
 
 def test_get_permutation_importance_multiclass(
-    X_y_multi, logistic_regression_multiclass_pipeline_class, multiclass_test_objectives
+    X_y_multi, logistic_regression_multiclass_pipeline, multiclass_test_objectives
 ):
     X, y = X_y_multi
     X = pd.DataFrame(X)
-    pipeline = logistic_regression_multiclass_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42
-    )
+    pipeline = logistic_regression_multiclass_pipeline
     pipeline.fit(X, y)
     for objective in multiclass_test_objectives:
         permutation_importance = calculate_permutation_importance(

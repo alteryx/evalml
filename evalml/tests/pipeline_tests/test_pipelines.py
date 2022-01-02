@@ -1366,7 +1366,7 @@ def test_pipeline_not_fitted_error(
     X_y_multi,
     X_y_regression,
     logistic_regression_binary_pipeline_class,
-    logistic_regression_multiclass_pipeline_class,
+    logistic_regression_multiclass_pipeline,
     linear_regression_pipeline_class,
 ):
     if problem_type == ProblemTypes.BINARY:
@@ -1376,9 +1376,7 @@ def test_pipeline_not_fitted_error(
         )
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
-        clf = logistic_regression_multiclass_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        clf = logistic_regression_multiclass_pipeline
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
         clf = linear_regression_pipeline_class(
@@ -1740,7 +1738,7 @@ def test_pipeline_equality_different_fitted_data(
     X_y_regression,
     linear_regression_pipeline_class,
     logistic_regression_binary_pipeline_class,
-    logistic_regression_multiclass_pipeline_class,
+    logistic_regression_multiclass_pipeline,
 ):
     # Test fitted on different data
     if problem_type == ProblemTypes.BINARY:
@@ -1749,9 +1747,7 @@ def test_pipeline_equality_different_fitted_data(
         )
         X, y = X_y_binary
     elif problem_type == ProblemTypes.MULTICLASS:
-        pipeline = logistic_regression_multiclass_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        pipeline = logistic_regression_multiclass_pipeline
         X, y = X_y_multi
     elif problem_type == ProblemTypes.REGRESSION:
         pipeline = linear_regression_pipeline_class(
@@ -1960,7 +1956,7 @@ def test_predict_has_input_target_name(
     ts_data_binary,
     ts_data_multi,
     logistic_regression_binary_pipeline_class,
-    logistic_regression_multiclass_pipeline_class,
+    logistic_regression_multiclass_pipeline,
     linear_regression_pipeline_class,
     time_series_regression_pipeline_class,
     time_series_binary_classification_pipeline_class,
@@ -1974,9 +1970,7 @@ def test_predict_has_input_target_name(
 
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
-        clf = logistic_regression_multiclass_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        clf = logistic_regression_multiclass_pipeline
 
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression

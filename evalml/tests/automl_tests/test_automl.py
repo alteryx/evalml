@@ -14,7 +14,7 @@ from joblib import hash as joblib_hash
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
-from evalml import AutoMLSearch
+from evalml import AutoMLSearch, problem_types
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.automl_algorithm.iterative_algorithm import (
     _ESTIMATOR_FAMILY_ORDER,
@@ -65,7 +65,10 @@ from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators,
 )
-from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
+from evalml.pipelines.utils import (
+    _get_pipeline_base_class,
+    _make_stacked_ensemble_pipeline,
+)
 from evalml.preprocessing import TimeSeriesSplit, TrainingValidationSplit
 from evalml.problem_types import (
     ProblemTypes,
@@ -1974,10 +1977,9 @@ def test_percent_better_than_baseline_in_rankings(
     pipeline_scores,
     baseline_score,
     problem_type_value,
-    dummy_binary_pipeline,
-    dummy_multiclass_pipeline,
-    dummy_regression_pipeline,
-    dummy_time_series_regression_pipeline_class,
+    dummy_classifier_estimator_class,
+    dummy_regressor_estimator_class,
+    dummy_time_series_regressor_estimator_class,
     ts_data_binary,
 ):
     if not objective.is_defined_for_problem_type(problem_type_value):
@@ -1986,11 +1988,11 @@ def test_percent_better_than_baseline_in_rankings(
     # Ok to only use binary labels since score and fit methods are mocked
     X, y = ts_data_binary
 
-    pipeline_class = {
-        ProblemTypes.BINARY: dummy_binary_pipeline.__class__,
-        ProblemTypes.MULTICLASS: dummy_multiclass_pipeline.__class__,
-        ProblemTypes.REGRESSION: dummy_regression_pipeline.__class__,
-        ProblemTypes.TIME_SERIES_REGRESSION: dummy_time_series_regression_pipeline_class,
+    estimator = {
+        ProblemTypes.BINARY: dummy_classifier_estimator_class,
+        ProblemTypes.MULTICLASS: dummy_classifier_estimator_class,
+        ProblemTypes.REGRESSION: dummy_regressor_estimator_class,
+        ProblemTypes.TIME_SERIES_REGRESSION: dummy_time_series_regressor_estimator_class,
     }[problem_type_value]
     baseline_pipeline_class = {
         ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
@@ -1998,12 +2000,17 @@ def test_percent_better_than_baseline_in_rankings(
         ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
         ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline",
     }[problem_type_value]
+    pipeline_class = _get_pipeline_base_class(problem_type_value)
 
     class DummyPipeline(pipeline_class):
         problem_type = problem_type_value
 
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(parameters=parameters)
+        def __init__(self, parameters, custom_name=None, random_seed=0):
+            super().__init__(
+                component_graph=[estimator],
+                parameters=parameters,
+                custom_name=custom_name,
+            )
 
         def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
@@ -2037,7 +2044,6 @@ def test_percent_better_than_baseline_in_rankings(
         if problem_type_value == ProblemTypes.TIME_SERIES_REGRESSION
         else {}
     )
-    # allowed_pipelines = [DummyPipeline(parameters=pipeline_parameters, custom_name="Pipeline1"), DummyPipeline(parameters=pipeline_parameters, custom_name="Pipeline2")]
     allowed_pipelines = [Pipeline1(pipeline_parameters), Pipeline2(pipeline_parameters)]
 
     if objective.name.lower() == "cost benefit matrix":
@@ -2161,7 +2167,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     dummy_binary_pipeline,
     dummy_multiclass_pipeline,
     dummy_regression_pipeline,
-    dummy_time_series_regression_pipeline_class,
+    dummy_time_series_regression_pipeline,
     ts_data_binary,
 ):
     X, y = ts_data_binary
@@ -2172,7 +2178,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         "binary": dummy_binary_pipeline.__class__,
         "multiclass": dummy_multiclass_pipeline.__class__,
         "regression": dummy_regression_pipeline.__class__,
-        "time series regression": dummy_time_series_regression_pipeline_class,
+        "time series regression": dummy_time_series_regression_pipeline.__class__,
     }[problem_type]
     baseline_pipeline_class = {
         ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
@@ -2619,7 +2625,6 @@ def test_early_stopping(
             "pipeline_class"
         ] = logistic_regression_binary_pipeline_class
     automl._results = mock_results
-
     assert not automl._should_continue()
     out = caplog.text
     assert (

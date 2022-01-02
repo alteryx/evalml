@@ -78,7 +78,7 @@ def test_partial_dependence_problem_types(
     X_y_multi,
     X_y_regression,
     logistic_regression_binary_pipeline_class,
-    logistic_regression_multiclass_pipeline_class,
+    logistic_regression_multiclass_pipeline,
     linear_regression_pipeline_class,
     make_data_type,
 ):
@@ -90,9 +90,7 @@ def test_partial_dependence_problem_types(
 
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
-        pipeline = logistic_regression_multiclass_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        pipeline = logistic_regression_multiclass_pipeline
 
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
@@ -356,12 +354,10 @@ def test_partial_dependence_xgboost_feature_names(
 
 
 def test_partial_dependence_multiclass(
-    wine_local, logistic_regression_multiclass_pipeline_class
+    wine_local, logistic_regression_multiclass_pipeline
 ):
     X, y = wine_local
-    pipeline = logistic_regression_multiclass_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    pipeline = logistic_regression_multiclass_pipeline
     pipeline.fit(X, y)
 
     num_classes = y.nunique()
@@ -413,14 +409,12 @@ def test_partial_dependence_multiclass(
 
 
 def test_partial_dependence_multiclass_numeric_labels(
-    logistic_regression_multiclass_pipeline_class, X_y_multi
+    logistic_regression_multiclass_pipeline, X_y_multi
 ):
     X, y = X_y_multi
     X = pd.DataFrame(X)
     y = pd.Series(y, dtype="int64")
-    pipeline = logistic_regression_multiclass_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    pipeline = logistic_regression_multiclass_pipeline
     pipeline.fit(X, y)
 
     num_classes = y.nunique()
@@ -804,13 +798,11 @@ def test_graph_two_way_partial_dependence_ww_categories(
 
 @pytest.mark.noncore_dependency
 def test_graph_partial_dependence_multiclass(
-    wine_local, logistic_regression_multiclass_pipeline_class, go
+    wine_local, logistic_regression_multiclass_pipeline, go
 ):
 
     X, y = wine_local
-    pipeline = logistic_regression_multiclass_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    pipeline = logistic_regression_multiclass_pipeline
     pipeline.fit(X, y)
 
     # Test one-way without class labels
@@ -1057,7 +1049,7 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
 @pytest.mark.noncore_dependency
 @pytest.mark.parametrize("class_label", [None, "class_1"])
 def test_partial_dependence_multiclass_categorical(
-    wine_local, class_label, logistic_regression_multiclass_pipeline_class
+    wine_local, class_label, logistic_regression_multiclass_pipeline
 ):
 
     X, y = wine_local
@@ -1070,10 +1062,7 @@ def test_partial_dependence_multiclass_categorical(
         logical_type="Categorical",
     )
 
-    pipeline = logistic_regression_multiclass_pipeline_class(
-        {"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
-
+    pipeline = logistic_regression_multiclass_pipeline
     pipeline.fit(X, y)
 
     fig = graph_partial_dependence(
@@ -1134,9 +1123,9 @@ def test_partial_dependence_multiclass_categorical(
 
 
 def test_partial_dependence_all_nan_value_error(
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
 ):
-    pl = logistic_regression_binary_pipeline_class({})
+    pl = logistic_regression_binary_pipeline
 
     X = pd.DataFrame({"a": [1, 2, 3], "b": [4, 5, 6], "c": [7, 8, 9]})
     y = pd.Series([0, 1, 0])
@@ -1361,14 +1350,12 @@ def test_graph_partial_dependence_ice_plot(
     wine_local,
     breast_cancer_local,
     test_pipeline,
-    logistic_regression_multiclass_pipeline_class,
+    logistic_regression_multiclass_pipeline,
 ):
     from plotly import graph_objects as go
 
     if problem_type == ProblemTypes.MULTICLASS:
-        test_pipeline = logistic_regression_multiclass_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        test_pipeline = logistic_regression_multiclass_pipeline
         X, y = wine_local
         feature = "ash"
     else:
