@@ -4307,7 +4307,7 @@ def test_train_batch_works(
     pipeline_fit_side_effect,
     AutoMLTestEnv,
     X_y_binary,
-    dummy_binary_pipeline,
+    dummy_classifier_estimator_class,
     stackable_classifiers,
     caplog,
 ):
@@ -4333,7 +4333,10 @@ def test_train_batch_works(
         class DummyPipeline(BinaryClassificationPipeline):
             custom_name = f"Pipeline {index}"
 
-        return DummyPipeline({"Mock Classifier": {"a": index}})
+        return DummyPipeline(
+            component_graph=[dummy_classifier_estimator_class],
+            parameters={"Mock Classifier": {"a": index}},
+        )
 
     pipelines = [
         make_pipeline_name(i) for i in range(len(pipeline_fit_side_effect) - 1)
