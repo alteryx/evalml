@@ -623,12 +623,11 @@ def test_score_regression_single(mock_predict, mock_fit, X_y_regression):
 @patch("evalml.pipelines.ComponentGraph.fit")
 @patch("evalml.pipelines.RegressionPipeline.predict")
 def test_score_nonlinear_regression(
-    mock_predict, mock_fit, nonlinear_regression_pipeline_class, X_y_regression
+    mock_predict, mock_fit, nonlinear_regression_pipeline, X_y_regression
 ):
     X, y = X_y_regression
     mock_predict.return_value = pd.Series(y)
-    clf = nonlinear_regression_pipeline_class({})
-    clf.fit(X, y)
+    nonlinear_regression_pipeline.fit(X, y)
     objective_names = ["r2"]
     scores = clf.score(X, y, objective_names)
     mock_predict.assert_called()
@@ -668,11 +667,11 @@ def test_score_multiclass_single(mock_schema, mock_predict, mock_fit, X_y_binary
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.ComponentGraph.predict")
 def test_score_nonlinear_multiclass(
-    mock_predict, mock_fit, nonlinear_multiclass_pipeline_class, X_y_multi
+    mock_predict, mock_fit, nonlinear_multiclass_pipeline, X_y_multi
 ):
     X, y = X_y_multi
     mock_predict.return_value = pd.Series(y)
-    clf = nonlinear_multiclass_pipeline_class({})
+    clf = nonlinear_multiclass_pipeline
     clf.fit(X, y)
     objective_names = ["f1 micro", "precision micro"]
     scores = clf.score(X, y, objective_names)
@@ -1046,19 +1045,19 @@ def test_pipeline_summary():
 
 def test_nonlinear_pipeline_summary(
     nonlinear_binary_pipeline,
-    nonlinear_multiclass_pipeline_class,
-    nonlinear_regression_pipeline_class,
+    nonlinear_multiclass_pipeline,
+    nonlinear_regression_pipeline,
 ):
     assert (
         nonlinear_binary_pipeline.summary
         == "Logistic Regression Classifier w/ Imputer + One Hot Encoder + One Hot Encoder + Random Forest Classifier + Elastic Net Classifier"
     )
     assert (
-        nonlinear_multiclass_pipeline_class({}).summary
+        nonlinear_multiclass_pipeline.summary
         == "Logistic Regression Classifier w/ Imputer + One Hot Encoder + One Hot Encoder + Random Forest Classifier + Elastic Net Classifier"
     )
     assert (
-        nonlinear_regression_pipeline_class({}).summary
+        nonlinear_regression_pipeline.summary
         == "Linear Regressor w/ Imputer + One Hot Encoder + Random Forest Regressor + Elastic Net Regressor"
     )
 
@@ -1089,12 +1088,12 @@ def test_drop_columns_in_pipeline():
 
 @pytest.mark.parametrize("is_linear", [True, False])
 def test_clone_init(
-    is_linear, linear_regression_pipeline_class, nonlinear_regression_pipeline_class
+    is_linear, linear_regression_pipeline_class, nonlinear_regression_pipeline
 ):
     if is_linear:
-        pipeline_class = linear_regression_pipeline_class
+        pipeline = linear_regression_pipeline_class
     else:
-        pipeline_class = nonlinear_regression_pipeline_class
+        pipeline = nonlinear_regression_pipeline
     parameters = {
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
@@ -1105,7 +1104,7 @@ def test_clone_init(
             "normalize": True,
         },
     }
-    pipeline = pipeline_class(parameters=parameters, random_seed=42)
+    pipeline = pipeline.new(parameters=parameters, random_seed=42)
     pipeline_clone = pipeline.clone()
     assert pipeline.parameters == pipeline_clone.parameters
     assert pipeline.random_seed == pipeline_clone.random_seed
@@ -1437,8 +1436,8 @@ def test_nonlinear_pipeline_not_fitted_error(
     X_y_multi,
     X_y_regression,
     nonlinear_binary_pipeline,
-    nonlinear_multiclass_pipeline_class,
-    nonlinear_regression_pipeline_class,
+    nonlinear_multiclass_pipeline,
+    nonlinear_regression_pipeline,
 ):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
@@ -1447,12 +1446,12 @@ def test_nonlinear_pipeline_not_fitted_error(
         )
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
-        clf = nonlinear_multiclass_pipeline_class(
+        clf = nonlinear_multiclass_pipeline.new(
             parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
         )
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
-        clf = nonlinear_regression_pipeline_class(
+        clf = nonlinear_regression_pipeline.new(
             parameters={"Linear Regressor": {"n_jobs": 1}}
         )
 

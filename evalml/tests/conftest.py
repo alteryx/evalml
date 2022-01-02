@@ -964,7 +964,9 @@ def decision_tree_classification_pipeline_class(X_y_categorical_classification):
 @pytest.fixture
 def nonlinear_binary_pipeline(example_graph):
     return BinaryClassificationPipeline(
-        component_graph=example_graph, custom_name="Non Linear Binary Pipeline"
+        component_graph=example_graph,
+        custom_name="Non Linear Binary Pipeline",
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
     )
 
 
@@ -977,37 +979,19 @@ def nonlinear_binary_with_target_pipeline(example_pass_target_graph):
 
 
 @pytest.fixture
-def nonlinear_multiclass_pipeline_class(example_graph):
-    class NonLinearMulticlassPipeline(MulticlassClassificationPipeline):
-        component_graph = example_graph
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, parameters=parameters)
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return NonLinearMulticlassPipeline
+def nonlinear_multiclass_pipeline(example_graph):
+    return MulticlassClassificationPipeline(
+        component_graph=example_graph,
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+    )
 
 
 @pytest.fixture
-def nonlinear_regression_pipeline_class(example_regression_graph):
-    class NonLinearRegressionPipeline(RegressionPipeline):
-        component_graph = example_regression_graph
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, parameters=parameters)
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return NonLinearRegressionPipeline
+def nonlinear_regression_pipeline(example_regression_graph):
+    return RegressionPipeline(
+        component_graph=example_regression_graph,
+        parameters={"Linear Regressor": {"n_jobs": 1}},
+    )
 
 
 @pytest.fixture

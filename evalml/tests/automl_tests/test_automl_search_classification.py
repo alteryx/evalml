@@ -985,7 +985,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
     with env.test_context(score_return_value={automl.objective.name: 1}):
         automl.search()
     assert set(automl.allowed_model_families) == set(
-        [p.model_family for p in expected_pipeline]
+        [p.model_family for p in [dummy_binary_pipeline]]
     )
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
@@ -1021,7 +1021,7 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
     with env.test_context(score_return_value={automl.objective.name: 1}):
         automl.search()
     assert set(automl.allowed_model_families) == set(
-        [p.model_family for p in expected_pipeline]
+        [p.model_family for p in [dummy_multiclass_pipeline]]
     )
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
