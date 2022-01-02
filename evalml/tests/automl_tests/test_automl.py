@@ -2594,7 +2594,7 @@ def test_early_stopping_negative(X_y_binary):
 
 @pytest.mark.parametrize("verbose", [True, False])
 def test_early_stopping(
-    verbose, caplog, logistic_regression_binary_pipeline_class, X_y_binary
+    verbose, caplog, logistic_regression_binary_pipeline, X_y_binary
 ):
     X, y = X_y_binary
     automl = AutoMLSearch(
@@ -2623,7 +2623,7 @@ def test_early_stopping(
         mock_results["pipeline_results"][id]["mean_cv_score"] = scores[id]
         mock_results["pipeline_results"][id][
             "pipeline_class"
-        ] = logistic_regression_binary_pipeline_class
+        ] = logistic_regression_binary_pipeline.__class__
     automl._results = mock_results
     assert not automl._should_continue()
     out = caplog.text

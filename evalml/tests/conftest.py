@@ -810,28 +810,6 @@ def logistic_regression_binary_pipeline(logistic_regression_component_graph):
     )
 
 
-@pytest.fixture
-def logistic_regression_binary_pipeline_class(logistic_regression_component_graph):
-    class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
-        component_graph = logistic_regression_component_graph
-        custom_name = "Logistic Regression Binary Pipeline"
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return LogisticRegressionBinaryPipeline
-
 
 @pytest.fixture
 def linear_regression_pipeline_class():
