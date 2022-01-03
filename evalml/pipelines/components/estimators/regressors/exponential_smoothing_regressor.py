@@ -30,14 +30,14 @@ class ExponentialSmoothingRegressor(Estimator):
         "damped_trend": [True, False],
         "seasonal": [None, "additive", "multiplicative"],
         "sp": Integer(1, 12),
-        "use_boxcox": [True, False, "log"],
+        "use_boxcox": [True, False],
     }
     """{
-        "trend": ["additive", "multiplicative"],
+        "trend": [None, "additive", "multiplicative"],
         "damped_trend": [True, False],
         "seasonal": ["additive", "multiplicative"],
         "sp": Integer(1, 12),
-        "use_boxcox": [True, False, "log"],
+        "use_boxcox": [True, False],
     }"""
     model_family = ModelFamily.EXPONENTIAL_SMOOTHING
     """ModelFamily.EXPONENTIAL_SMOOTHING"""
@@ -55,6 +55,9 @@ class ExponentialSmoothingRegressor(Estimator):
         random_seed=0,
         **kwargs,
     ):
+        if trend is None:
+            damped_trend = False
+
         parameters = {
             "trend": trend,
             "damped_trend": damped_trend,
