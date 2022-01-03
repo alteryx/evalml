@@ -1,19 +1,20 @@
 """Recommended action returned by a DataCheck."""
 
 from evalml.data_checks.data_check_action_code import DataCheckActionCode
+from evalml.data_checks.utils import handle_data_check_action_code
 
 
 class DataCheckAction:
     """A recommended action returned by a DataCheck.
 
     Args:
-        action_code (DataCheckActionCode): Action code associated with the action.
+        action_code (str, DataCheckActionCode): Action code associated with the action.
         data_check_name (str): Name of data check.
         metadata (dict, optional): Additional useful information associated with the action. Defaults to None.
     """
 
     def __init__(self, action_code, data_check_name, metadata=None):
-        self.action_code = action_code
+        self.action_code = handle_data_check_action_code(action_code)
         self.data_check_name = data_check_name
         self.metadata = {"columns": None, "rows": None}
         if metadata is not None:
@@ -30,7 +31,11 @@ class DataCheckAction:
         Returns:
             bool: True if the other object is considered an equivalent data check action, False otherwise.
         """
-        return self.action_code == other.action_code and self.metadata == other.metadata
+        attributes_to_check = ["action_code", "data_check_name", "metadata"]
+        for attribute in attributes_to_check:
+            if getattr(self, attribute) != getattr(other, attribute):
+                return False
+        return True
 
     def to_dict(self):
         """Return a dictionary form of the data check action."""
@@ -63,7 +68,7 @@ class DataCheckAction:
             or "rows" not in action_dict["metadata"]
         ):
             raise ValueError(
-                "The metadata dictionary should have the keys `columns` and `rows`. Set to None if not using."
+                "The metadata dictionary should have the keys `columns` or `rows`. Set to None if not using."
             )
 
         return DataCheckAction(
