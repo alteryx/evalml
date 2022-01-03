@@ -14,7 +14,7 @@ from joblib import hash as joblib_hash
 from sklearn.model_selection import KFold, StratifiedKFold
 from skopt.space import Categorical, Integer, Real
 
-from evalml import AutoMLSearch, problem_types
+from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.automl_algorithm.iterative_algorithm import (
     _ESTIMATOR_FAMILY_ORDER,
@@ -2164,21 +2164,20 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     mock_binary_fit,
     problem_type,
     custom_additional_objective,
-    dummy_binary_pipeline,
-    dummy_multiclass_pipeline,
-    dummy_regression_pipeline,
-    dummy_time_series_regression_pipeline,
+    dummy_classifier_estimator_class,
+    dummy_regressor_estimator_class,
+    dummy_time_series_regressor_estimator_class,
     ts_data_binary,
 ):
     X, y = ts_data_binary
 
     problem_type_enum = handle_problem_types(problem_type)
 
-    pipeline_class = {
-        "binary": dummy_binary_pipeline.__class__,
-        "multiclass": dummy_multiclass_pipeline.__class__,
-        "regression": dummy_regression_pipeline.__class__,
-        "time series regression": dummy_time_series_regression_pipeline.__class__,
+    estimator = {
+        "binary": dummy_classifier_estimator_class,
+        "multiclass": dummy_classifier_estimator_class,
+        "regression": dummy_regressor_estimator_class,
+        "time series regression": dummy_time_series_regressor_estimator_class,
     }[problem_type]
     baseline_pipeline_class = {
         ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
@@ -2186,13 +2185,14 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
         ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline",
     }[problem_type_enum]
+    pipeline_class = _get_pipeline_base_class(problem_type_enum)
 
     class DummyPipeline(pipeline_class):
         name = "Dummy 1"
         problem_type = problem_type_enum
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(parameters)
+            super().__init__(component_graph=[estimator], parameters=parameters)
 
         def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
@@ -4476,10 +4476,12 @@ def test_score_batch_works(
 
     def make_pipeline_name(index):
         class DummyPipeline(BinaryClassificationPipeline):
-            component_graph = [dummy_classifier_estimator_class]
             custom_name = f"Pipeline {index}"
 
-        return DummyPipeline({"Mock Classifier": {"a": index}})
+        return DummyPipeline(
+            component_graph=[dummy_classifier_estimator_class],
+            parameters={"Mock Classifier": {"a": index}},
+        )
 
     pipelines = [
         make_pipeline_name(i) for i in range(len(pipeline_score_side_effect) - 1)

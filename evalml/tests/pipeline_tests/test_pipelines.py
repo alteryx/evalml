@@ -629,7 +629,7 @@ def test_score_nonlinear_regression(
     mock_predict.return_value = pd.Series(y)
     nonlinear_regression_pipeline.fit(X, y)
     objective_names = ["r2"]
-    scores = clf.score(X, y, objective_names)
+    scores = nonlinear_regression_pipeline.score(X, y, objective_names)
     mock_predict.assert_called()
     assert scores == {"R2": 1.0}
 

@@ -810,7 +810,6 @@ def logistic_regression_binary_pipeline(logistic_regression_component_graph):
     )
 
 
-
 @pytest.fixture
 def linear_regression_pipeline_class():
     class LinearRegressionPipeline(RegressionPipeline):
