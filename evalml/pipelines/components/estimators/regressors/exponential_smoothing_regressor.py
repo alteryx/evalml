@@ -29,7 +29,7 @@ class ExponentialSmoothingRegressor(Estimator):
         "trend": [None, "additive", "multiplicative"],
         "damped_trend": [True, False],
         "seasonal": [None, "additive", "multiplicative"],
-        "sp": Integer(1, 12),
+        "sp": Integer(2, 12),
         "use_boxcox": [True, False],
     }
     """{
@@ -49,7 +49,7 @@ class ExponentialSmoothingRegressor(Estimator):
         trend=None,
         damped_trend=False,
         seasonal=None,
-        sp=1,
+        sp=2,
         use_boxcox=False,
         n_jobs=-1,
         random_seed=0,
