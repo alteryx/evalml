@@ -381,3 +381,95 @@ def test_select_cat_cols(
             assert value["columns"] == algo._selected_cols
         elif "Categorical Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cat_cols
+
+
+@pytest.mark.parametrize(
+    "automl_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_default_algorithm_time_series(
+    mock_get_names, automl_type, ts_data, ts_data_binary, ts_data_multi
+):
+    if automl_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = ts_data_binary
+    elif automl_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = ts_data_multi
+    elif automl_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        X, y = ts_data
+
+    mock_get_names.return_value = ["0", "1", "2"]
+    problem_type = ProblemTypes.TIME_SERIES_REGRESSION
+    sampler_name = None
+    pipeline_params = {
+        "pipeline": {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 3,
+            "delay_features": False,
+            "forecast_horizon": 10,
+        }
+    }
+
+    algo = DefaultAlgorithm(
+        X, y, problem_type, sampler_name, pipeline_params=pipeline_params
+    )
+    naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
+
+    first_batch = algo.next_batch()
+    assert len(first_batch) == 2
+    assert {p.model_family for p in first_batch} == naive_model_families
+    add_result(algo, first_batch)
+
+    second_batch = algo.next_batch()
+    assert len(second_batch) == 2
+    assert {p.model_family for p in second_batch} == naive_model_families
+    add_result(algo, second_batch)
+
+    final_batch = algo.next_batch()
+    for pipeline in final_batch:
+        if not isinstance(
+            pipeline.estimator, (ElasticNetClassifier, ElasticNetRegressor)
+        ):
+            assert pipeline.model_family not in naive_model_families
+        assert algo._tuners[pipeline.name]
+    add_result(algo, final_batch)
+
+    final_ensemble = algo.next_batch()
+    assert isinstance(
+        final_ensemble[0].estimator,
+        (StackedEnsembleClassifier, StackedEnsembleRegressor),
+    )
+    add_result(algo, final_ensemble)
+
+    long_explore = algo.next_batch()
+
+    long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
+    assert len(long_explore) == 150
+    assert len(long_estimators) == 3
+
+    long_first_ensemble = algo.next_batch()
+    assert isinstance(
+        long_first_ensemble[0].estimator,
+        (StackedEnsembleClassifier, StackedEnsembleRegressor),
+    )
+
+    long = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long])
+    assert len(long) == 30
+    assert len(long_estimators) == 3
+
+    long_second_ensemble = algo.next_batch()
+    assert isinstance(
+        long_second_ensemble[0].estimator,
+        (StackedEnsembleClassifier, StackedEnsembleRegressor),
+    )
+
+    long_2 = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long_2])
+    assert len(long_2) == 30
+    assert len(long_estimators) == 3

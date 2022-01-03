@@ -128,6 +128,7 @@ class AutoMLAlgorithm(ABC):
         ensemble = _make_stacked_ensemble_pipeline(
             input_pipelines,
             problem_type,
+            pipeline_params=self._pipeline_params,
             random_seed=self.random_seed,
             n_jobs=n_jobs_ensemble,
         )
