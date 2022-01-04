@@ -195,6 +195,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 extra_components=feature_selector,
                 extra_components_position="after_preprocessing",
                 parameters=self._pipeline_params,
+                known_in_advance=self._pipeline_params.get("pipeline", {}).get(
+                    "known_in_advance", None
+                ),
             )
             for estimator in estimators
         ]
@@ -271,6 +274,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     problem_type=self.problem_type,
                     sampler_name=self.sampler_name,
                     parameters=self._pipeline_params,
+                    known_in_advance=self._pipeline_params.get("pipeline", {}).get(
+                        "known_in_advance", None
+                    ),
                 )
                 for estimator in estimators
             ]
@@ -331,6 +337,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     problem_type=self.problem_type,
                     sampler_name=self.sampler_name,
                     parameters=self._pipeline_params,
+                    known_in_advance=self._pipeline_params.get("pipeline", {}).get(
+                        "known_in_advance", None
+                    ),
                 )
                 for estimator in estimators
             ]
