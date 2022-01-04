@@ -255,19 +255,18 @@ def test_reproducibility(X_y_binary, logistic_regression_binary_pipeline):
 
 def test_indexing(X_y_binary, logistic_regression_binary_pipeline):
     X, y = X_y_binary
-    clf = logistic_regression_binary_pipeline
-    clf.fit(X, y)
+    logistic_regression_binary_pipeline.fit(X, y)
 
-    assert isinstance(clf[2], OneHotEncoder)
-    assert isinstance(clf["Imputer"], Imputer)
+    assert isinstance(logistic_regression_binary_pipeline[2], OneHotEncoder)
+    assert isinstance(logistic_regression_binary_pipeline["Imputer"], Imputer)
 
     setting_err_msg = "Setting pipeline components is not supported."
     with pytest.raises(NotImplementedError, match=setting_err_msg):
-        clf[1] = OneHotEncoder()
+        logistic_regression_binary_pipeline[1] = OneHotEncoder()
 
     slicing_err_msg = "Slicing pipelines is currently not supported."
     with pytest.raises(NotImplementedError, match=slicing_err_msg):
-        clf[:1]
+        logistic_regression_binary_pipeline[:1]
 
 
 @pytest.mark.parametrize("is_linear", [True, False])
@@ -285,7 +284,7 @@ def test_describe_pipeline(
     X, y = X_y_binary
 
     if is_linear:
-        pipeline = logistic_regression_binary_pipeline
+        pipeline = logistic_regression_binary_pipeline.new({})
         name = "Logistic Regression Binary Pipeline"
         expected_pipeline_dict = {
             "name": name,
@@ -330,7 +329,7 @@ def test_describe_pipeline(
             },
         }
     else:
-        pipeline = nonlinear_binary_pipeline
+        pipeline = nonlinear_binary_pipeline.new({})
         name = "Non Linear Binary Pipeline"
         expected_pipeline_dict = {
             "name": name,
@@ -2023,7 +2022,7 @@ def test_linear_pipeline_iteration(logistic_regression_binary_pipeline):
         LogisticRegressionClassifier(),
     ]
 
-    pipeline = logistic_regression_binary_pipeline
+    pipeline = logistic_regression_binary_pipeline.new({})
     order = [c for c in pipeline]
     order_again = [c for c in pipeline]
 
@@ -2189,27 +2188,26 @@ def test_binary_pipeline_string_target_thresholding(
     X, y = X_y_binary
     X = make_data_type("ww", X)
     y = ww.init_series(pd.Series([f"String value {i}" for i in y]), "Categorical")
-    pipeline_class = logistic_regression_binary_pipeline
+    pipeline = logistic_regression_binary_pipeline
     if is_time_series:
-        pipeline_class = time_series_binary_classification_pipeline_class
+        pipeline = time_series_binary_classification_pipeline_class(
+            parameters={
+                "pipeline": {
+                    "gap": 0,
+                    "max_delay": 1,
+                    "time_index": "date",
+                    "forecast_horizon": 3,
+                },
+                "Time Series Featurizer": {"time_index": "date"},
+            }
+        )
+
         X.ww["date"] = pd.Series(pd.date_range("2021-01-10", periods=X.shape[0]))
 
     X_train, y_train = X.ww.iloc[:80], y.ww.iloc[:80]
     X_validation, y_validation = X.ww.iloc[80:83], y.ww.iloc[80:83]
     objective = get_objective("F1", return_instance=True)
 
-    pipeline = pipeline_class(
-        parameters={
-            "Logistic Regression Classifier": {"n_jobs": 1},
-            "pipeline": {
-                "gap": 0,
-                "max_delay": 1,
-                "time_index": "date",
-                "forecast_horizon": 3,
-            },
-            "Time Series Featurizer": {"time_index": "date"},
-        }
-    )
     pipeline.fit(X_train, y_train)
     assert pipeline.threshold is None
     pred_proba = (
