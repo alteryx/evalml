@@ -459,6 +459,21 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             # Inspects each component and adds the following parameters when needed
             if "n_jobs" in init_params:
                 component_parameters["n_jobs"] = self.n_jobs
+            names_to_check = [
+                "Drop Columns Transformer",
+                "Known In Advance Pipeline - Select Columns Transformer",
+                "Not Known In Advance Pipeline - Select Columns Transformer",
+            ]
+            if (
+                name in self._pipeline_params
+                and name in names_to_check
+                and self._batch_number > 0
+            ):
+                component_parameters["columns"] = self._pipeline_params[name]["columns"]
+            if "pipeline" in self._pipeline_params:
+                for param_name, value in self._pipeline_params["pipeline"].items():
+                    if param_name in init_params:
+                        component_parameters[param_name] = value
             parameters[name] = component_parameters
         return parameters
 

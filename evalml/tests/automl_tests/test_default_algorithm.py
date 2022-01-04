@@ -8,6 +8,7 @@ from skopt.space import Categorical, Integer
 from evalml.automl.automl_algorithm import DefaultAlgorithm
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
+    ARIMARegressor,
     ElasticNetClassifier,
     ElasticNetRegressor,
     LogisticRegressionClassifier,
@@ -423,20 +424,31 @@ def test_default_algorithm_time_series(
     first_batch = algo.next_batch()
     assert len(first_batch) == 2
     assert {p.model_family for p in first_batch} == naive_model_families
+    for pipeline in first_batch:
+        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert pipeline.parameters["DateTime Featurization Component"]["time_index"]
     add_result(algo, first_batch)
 
     second_batch = algo.next_batch()
     assert len(second_batch) == 2
     assert {p.model_family for p in second_batch} == naive_model_families
+    for pipeline in second_batch:
+        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert pipeline.parameters["DateTime Featurization Component"]["time_index"]
     add_result(algo, second_batch)
 
     final_batch = algo.next_batch()
     for pipeline in final_batch:
+        print(pipeline)
+        print(pipeline.parameters)
         if not isinstance(
             pipeline.estimator, (ElasticNetClassifier, ElasticNetRegressor)
         ):
             assert pipeline.model_family not in naive_model_families
         assert algo._tuners[pipeline.name]
+        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        if not isinstance(pipeline.estimator, ARIMARegressor):
+            assert pipeline.parameters["DateTime Featurization Component"]["time_index"]
     add_result(algo, final_batch)
 
     final_ensemble = algo.next_batch()
