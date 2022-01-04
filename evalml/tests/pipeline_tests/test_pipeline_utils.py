@@ -143,24 +143,12 @@ def test_make_pipeline(
                 else []
             )
             natural_language_featurizer = (
-                [NaturalLanguageFeaturizer]
-                if "text" in column_names and input_type == "ww"
-                else []
+                [NaturalLanguageFeaturizer] if "text" in column_names else []
             )
             email_featurizer = [EmailFeaturizer] if "email" in column_names else []
             url_featurizer = [URLFeaturizer] if "url" in column_names else []
-            imputer = (
-                []
-                if ((column_names in [["ip"]]) and input_type == "ww")
-                or ((column_names in [["ip"], ["text"]]) and input_type == "pd")
-                else [Imputer]
-            )
-            drop_col = (
-                [DropColumns]
-                if any(ltype in column_names for ltype in ["text"])
-                and input_type == "pd"
-                else []
-            )
+            imputer = [] if (column_names in [["ip"]]) else [Imputer]
+
             if is_time_series(problem_type):
                 expected_components = (
                     label_encoder
@@ -168,7 +156,6 @@ def test_make_pipeline(
                     + url_featurizer
                     + replace_null
                     + drop_null
-                    + drop_col
                     + natural_language_featurizer
                     + imputer
                     + delayed_features
@@ -184,7 +171,6 @@ def test_make_pipeline(
                     + url_featurizer
                     + replace_null
                     + drop_null
-                    + drop_col
                     + delayed_features
                     + natural_language_featurizer
                     + datetime
