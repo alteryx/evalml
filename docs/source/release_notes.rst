@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added string support for DataCheckActionCode :pr:`3167`
         * Added ``DataCheckActionOption`` class :pr:`3134`
+        * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
     * Fixes
     * Changes
         * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
