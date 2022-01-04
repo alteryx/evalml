@@ -26,7 +26,7 @@ from evalml.problem_types import ProblemTypes
 
 
 @pytest.fixture
-def test_pipeline():
+def test_pipeline_with_dummy_feature_importance():
     class TestPipeline(BinaryClassificationPipeline):
         component_graph = [
             "Simple Imputer",
@@ -636,12 +636,18 @@ def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regr
 
 
 @pytest.mark.noncore_dependency
-def test_graph_partial_dependence(breast_cancer_local, test_pipeline, go):
+def test_graph_partial_dependence(
+    breast_cancer_local, test_pipeline_with_dummy_feature_importance, go
+):
     X, y = breast_cancer_local
 
-    clf = test_pipeline
-    clf.fit(X, y)
-    fig = graph_partial_dependence(clf, X, features="mean radius", grid_resolution=5)
+    test_pipeline_with_dummy_feature_importance.fit(X, y)
+    fig = graph_partial_dependence(
+        test_pipeline_with_dummy_feature_importance,
+        X,
+        features="mean radius",
+        grid_resolution=5,
+    )
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert fig_dict["layout"]["title"]["text"] == "Partial Dependence of 'mean radius'"
@@ -649,7 +655,10 @@ def test_graph_partial_dependence(breast_cancer_local, test_pipeline, go):
     assert fig_dict["data"][0]["name"] == "Partial Dependence"
 
     part_dep_data = partial_dependence(
-        clf, X, features="mean radius", grid_resolution=5
+        test_pipeline_with_dummy_feature_importance,
+        X,
+        features="mean radius",
+        grid_resolution=5,
     )
     assert np.array_equal(fig_dict["data"][0]["x"], part_dep_data["feature_values"])
     assert np.array_equal(
@@ -696,14 +705,17 @@ def test_graph_partial_dependence_ww_categories(
 
 
 @pytest.mark.noncore_dependency
-def test_graph_two_way_partial_dependence(breast_cancer_local, test_pipeline, go):
+def test_graph_two_way_partial_dependence(
+    breast_cancer_local, test_pipeline_with_dummy_feature_importance, go
+):
 
     X, y = breast_cancer_local
-
-    clf = test_pipeline
-    clf.fit(X, y)
+    test_pipeline_with_dummy_feature_importance.fit(X, y)
     fig = graph_partial_dependence(
-        clf, X, features=("mean radius", "mean area"), grid_resolution=5
+        test_pipeline_with_dummy_feature_importance,
+        X,
+        features=("mean radius", "mean area"),
+        grid_resolution=5,
     )
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
@@ -715,7 +727,10 @@ def test_graph_two_way_partial_dependence(breast_cancer_local, test_pipeline, go
     assert fig_dict["data"][0]["name"] == "Partial Dependence"
 
     part_dep_data = partial_dependence(
-        clf, X, features=("mean radius", "mean area"), grid_resolution=5
+        test_pipeline_with_dummy_feature_importance,
+        X,
+        features=("mean radius", "mean area"),
+        grid_resolution=5,
     )
     part_dep_data.drop(columns=["class_label"], inplace=True)
     assert np.array_equal(fig_dict["data"][0]["x"], part_dep_data.columns)
@@ -1392,19 +1407,19 @@ def test_graph_partial_dependence_ice_plot(
     problem_type,
     wine_local,
     breast_cancer_local,
-    test_pipeline,
+    logistic_regression_binary_pipeline,
     logistic_regression_multiclass_pipeline,
 ):
     from plotly import graph_objects as go
 
     if problem_type == ProblemTypes.MULTICLASS:
-        test_pipeline = logistic_regression_multiclass_pipeline
+        clf = logistic_regression_multiclass_pipeline
         X, y = wine_local
         feature = "ash"
     else:
         X, y = breast_cancer_local
         feature = "mean radius"
-    clf = test_pipeline
+        clf = logistic_regression_binary_pipeline
     clf.fit(X, y)
 
     fig = graph_partial_dependence(
@@ -1507,11 +1522,10 @@ def test_graph_partial_dependence_ice_plot(
 
 
 def test_graph_partial_dependence_ice_plot_two_way_error(
-    breast_cancer_local, test_pipeline
+    breast_cancer_local, test_pipeline_with_dummy_feature_importance
 ):
     X, y = breast_cancer_local
-    clf = test_pipeline
-    clf.fit(X, y)
+    test_pipeline_with_dummy_feature_importance.fit(X, y)
     with pytest.raises(
         PartialDependenceError,
         match="Individual conditional expectation plot can only be created with a one-way partial dependence plot",
@@ -1532,7 +1546,7 @@ def test_graph_partial_dependence_ice_plot_two_way_error(
         match="Individual conditional expectation plot can only be created with a one-way partial dependence plot",
     ) as e:
         graph_partial_dependence(
-            clf,
+            test_pipeline_with_dummy_feature_importance,
             X,
             features=["mean radius", "mean area"],
             grid_resolution=5,

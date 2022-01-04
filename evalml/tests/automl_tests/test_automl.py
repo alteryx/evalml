@@ -4171,21 +4171,18 @@ def test_automl_raises_error_with_duplicate_pipeline_names(
 ):
     X, y = X_y_binary
 
-    class MyPipeline(BinaryClassificationPipeline):
-        estimator = dummy_classifier_estimator_class
-
-    pipeline_0 = MyPipeline(
+    pipeline_0 = BinaryClassificationPipeline(
         custom_name="Custom Pipeline",
         component_graph=[dummy_classifier_estimator_class],
     )
-    pipeline_1 = MyPipeline(
+    pipeline_1 = BinaryClassificationPipeline(
         custom_name="Custom Pipeline",
         component_graph=[dummy_classifier_estimator_class],
     )
-    pipeline_2 = MyPipeline(
+    pipeline_2 = BinaryClassificationPipeline(
         custom_name="My Pipeline 3", component_graph=[dummy_classifier_estimator_class]
     )
-    pipeline_3 = MyPipeline(
+    pipeline_3 = BinaryClassificationPipeline(
         custom_name="My Pipeline 3", component_graph=[dummy_classifier_estimator_class]
     )
 
