@@ -1804,7 +1804,7 @@ def test_explain_predictions_class_name_matches_class_name_in_y(
         algorithm="shap",
     )
     if problem_type == ProblemTypes.BINARY:
-        assert exp["explanations"][0]["explanations"][0]["class_name"]
+        assert exp["explanations"][0]["explanations"][0]["class_name"] == True
     else:
         for i in range(3):
             assert (
