@@ -328,11 +328,10 @@ def test_find_confusion_matrix_objective_threshold(pos_skew, neg_skew):
 def test_find_confusion_matrix_per_threshold(
     top_k, logistic_regression_binary_pipeline, X_y_binary
 ):
-    bcp = logistic_regression_binary_pipeline
     X, y = X_y_binary
-    bcp.fit(X, y)
+    logistic_regression_binary_pipeline.fit(X, y)
     res_df, obj_dict = find_confusion_matrix_per_thresholds(
-        bcp, X, y, n_bins=10, top_k=top_k
+        logistic_regression_binary_pipeline, X, y, n_bins=10, top_k=top_k
     )
     assert len(res_df) == 10
     if top_k == 3:
@@ -345,12 +344,14 @@ def test_find_confusion_matrix_per_threshold(
 
 def test_find_confusion_matrix_encode(logistic_regression_binary_pipeline, X_y_binary):
     bcp = logistic_regression_binary_pipeline
-    bcp_new = logistic_regression_binary_pipeline.new()
+    bcp_new = logistic_regression_binary_pipeline.new(parameters={})
     X, y = X_y_binary
     y_new = pd.Series(["Value_1" if s == 1 else "Value_0" for s in y])
     bcp.fit(X, y)
     bcp_new.fit(X, y_new)
-    res_df, obj_dict = find_confusion_matrix_per_thresholds(bcp, X, y)
+    res_df, obj_dict = find_confusion_matrix_per_thresholds(
+        logistic_regression_binary_pipeline, X, y
+    )
     res_df_new, obj_dict_new = find_confusion_matrix_per_thresholds(bcp_new, X, y_new)
     pd.testing.assert_frame_equal(res_df, res_df_new)
     assert obj_dict == obj_dict_new

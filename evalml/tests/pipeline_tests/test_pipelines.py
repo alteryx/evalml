@@ -659,10 +659,9 @@ def test_score_nonlinear_multiclass(
 ):
     X, y = X_y_multi
     mock_predict.return_value = pd.Series(y)
-    clf = nonlinear_multiclass_pipeline
-    clf.fit(X, y)
+    nonlinear_multiclass_pipeline.fit(X, y)
     objective_names = ["f1 micro", "precision micro"]
-    scores = clf.score(X, y, objective_names)
+    scores = nonlinear_multiclass_pipeline.score(X, y, objective_names)
     mock_predict.assert_called()
     assert scores == {"F1 Micro": 1.0, "Precision Micro": 1.0}
 
@@ -775,14 +774,13 @@ def test_score_nonlinear_binary_objective_error(
     X, y = X_y_binary
     mock_predict.return_value = pd.Series(y)
     mock_encode.return_value = y
-    clf = nonlinear_binary_pipeline
-    clf.fit(X, y)
+    nonlinear_binary_pipeline.fit(X, y)
     objective_names = ["f1", "precision"]
     # Using pytest.raises to make sure we error if an error is not thrown.
     with pytest.raises(PipelineScoreError):
-        _ = clf.score(X, y, objective_names)
+        _ = nonlinear_binary_pipeline.score(X, y, objective_names)
     try:
-        _ = clf.score(X, y, objective_names)
+        _ = nonlinear_binary_pipeline.score(X, y, objective_names)
     except PipelineScoreError as e:
         assert e.scored_successfully == {"Precision": 1.0}
         assert "finna kabooom 💣" in e.message
@@ -1420,19 +1418,13 @@ def test_nonlinear_pipeline_not_fitted_error(
 ):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
-        clf = nonlinear_binary_pipeline.new(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        clf = nonlinear_binary_pipeline
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
-        clf = nonlinear_multiclass_pipeline.new(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        clf = nonlinear_multiclass_pipeline
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
-        clf = nonlinear_regression_pipeline.new(
-            parameters={"Linear Regressor": {"n_jobs": 1}}
-        )
+        clf = nonlinear_regression_pipeline
 
     with pytest.raises(PipelineNotYetFittedError):
         clf.predict(X)
@@ -2069,9 +2061,8 @@ def test_nonlinear_pipeline_iteration(nonlinear_binary_pipeline):
         LogisticRegressionClassifier(),
     ]
 
-    pipeline = nonlinear_binary_pipeline.new({})
-    order = [c for c in pipeline]
-    order_again = [c for c in pipeline]
+    order = [c for c in nonlinear_binary_pipeline]
+    order_again = [c for c in nonlinear_binary_pipeline]
 
     assert order == expected_order
     assert order_again == expected_order

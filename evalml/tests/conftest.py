@@ -823,33 +823,6 @@ def linear_regression_pipeline():
         custom_name="Linear Regression Pipeline",
     )
 
-    class LinearRegressionPipeline(RegressionPipeline):
-        """Linear Regression Pipeline for regression problems."""
-
-        component_graph = [
-            "One Hot Encoder",
-            "Imputer",
-            "Standard Scaler",
-            "Linear Regressor",
-        ]
-        custom_name = "Linear Regression Pipeline"
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return LinearRegressionPipeline
-
 
 @pytest.fixture
 def time_series_regression_pipeline_class():
@@ -928,7 +901,7 @@ def time_series_multiclass_classification_pipeline_class(
 
 
 @pytest.fixture
-def decision_tree_classification_pipeline_class(X_y_categorical_classification):
+def fitted_decision_tree_classification_pipeline(X_y_categorical_classification):
     pipeline = BinaryClassificationPipeline(
         component_graph={
             "Imputer": ["Imputer", "X", "y"],
@@ -1030,7 +1003,7 @@ def time_series_objectives(
 
 
 @pytest.fixture
-def stackable_classifiers(helper_functions):
+def stackable_classifiers():
     stackable_classifiers = []
     for estimator_class in _all_estimators():
         supported_problem_types = [
@@ -1052,7 +1025,7 @@ def stackable_classifiers(helper_functions):
 
 
 @pytest.fixture
-def stackable_regressors(helper_functions):
+def stackable_regressors():
     stackable_regressors = []
     for estimator_class in _all_estimators():
         supported_problem_types = [

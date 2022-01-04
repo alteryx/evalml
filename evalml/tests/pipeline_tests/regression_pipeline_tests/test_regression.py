@@ -76,9 +76,8 @@ def test_invalid_targets_regression_pipeline(
 
 def test_woodwork_regression_pipeline(diabetes_local, linear_regression_pipeline):
     X, y = diabetes_local
-    regression_pipeline = linear_regression_pipeline
-    regression_pipeline.fit(X, y)
-    assert not pd.isnull(regression_pipeline.predict(X)).any()
+    linear_regression_pipeline.fit(X, y)
+    assert not pd.isnull(linear_regression_pipeline.predict(X)).any()
 
 
 @pytest.mark.parametrize(
@@ -101,7 +100,6 @@ def test_pipeline_transform_and_predict_with_custom_index(
     X.ww.init(logical_types={"categories": "categorical"})
 
     y = pd.Series([0, 1.0, 1, 1, 0], index=index)
-    pipeline = linear_regression_pipeline
-    pipeline.fit(X, y)
-    predictions = pipeline.predict(X)
+    linear_regression_pipeline.fit(X, y)
+    predictions = linear_regression_pipeline.predict(X)
     assert_index_equal(predictions.index, X.index)

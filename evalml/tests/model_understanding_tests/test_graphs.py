@@ -713,14 +713,15 @@ def test_cost_benefit_matrix_vs_threshold(
     cbm = CostBenefitMatrix(
         true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
     )
-    pipeline = logistic_regression_binary_pipeline.new()
-    pipeline.fit(X, y)
-    original_pipeline_threshold = pipeline.threshold
-    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm, steps=5)
+    logistic_regression_binary_pipeline.fit(X, y)
+    original_pipeline_threshold = logistic_regression_binary_pipeline.threshold
+    cost_benefit_df = binary_objective_vs_threshold(
+        logistic_regression_binary_pipeline, X, y, cbm, steps=5
+    )
     assert list(cost_benefit_df.columns) == ["threshold", "score"]
     assert cost_benefit_df.shape == (6, 2)
     assert not cost_benefit_df.isnull().all().all()
-    assert pipeline.threshold == original_pipeline_threshold
+    assert logistic_regression_binary_pipeline.threshold == original_pipeline_threshold
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])

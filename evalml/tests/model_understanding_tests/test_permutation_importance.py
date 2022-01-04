@@ -439,12 +439,13 @@ def test_get_permutation_importance_invalid_objective(
     X_y_regression, linear_regression_pipeline
 ):
     X, y = X_y_regression
-    pipeline = linear_regression_pipeline
     with pytest.raises(
         ValueError,
-        match=f"Given objective 'MCC Multiclass' cannot be used with '{pipeline.name}'",
+        match=f"Given objective 'MCC Multiclass' cannot be used with '{linear_regression_pipeline.name}'",
     ):
-        calculate_permutation_importance(pipeline, X, y, "mcc multiclass")
+        calculate_permutation_importance(
+            linear_regression_pipeline, X, y, "mcc multiclass"
+        )
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
@@ -498,11 +499,10 @@ def test_get_permutation_importance_multiclass(
 ):
     X, y = X_y_multi
     X = pd.DataFrame(X)
-    pipeline = logistic_regression_multiclass_pipeline
-    pipeline.fit(X, y)
+    logistic_regression_multiclass_pipeline.fit(X, y)
     for objective in multiclass_test_objectives:
         permutation_importance = calculate_permutation_importance(
-            pipeline, X, y, objective
+            logistic_regression_multiclass_pipeline, X, y, objective
         )
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
@@ -513,7 +513,12 @@ def test_get_permutation_importance_multiclass(
         for col in X.columns[:3]:
             permutation_importance_one_col = (
                 calculate_permutation_importance_one_column(
-                    pipeline, X, y, col, objective, fast=False
+                    logistic_regression_multiclass_pipeline,
+                    X,
+                    y,
+                    col,
+                    objective,
+                    fast=False,
                 )
             )
             np.testing.assert_almost_equal(
@@ -527,12 +532,11 @@ def test_get_permutation_importance_regression(
 ):
     X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
-    pipeline = linear_regression_pipeline
-    pipeline.fit(X, y)
+    linear_regression_pipeline.fit(X, y)
 
     for objective in regression_test_objectives:
         permutation_importance = calculate_permutation_importance(
-            pipeline, X, y, objective
+            linear_regression_pipeline, X, y, objective
         )
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
@@ -543,7 +547,7 @@ def test_get_permutation_importance_regression(
         for col in X.columns:
             permutation_importance_one_col = (
                 calculate_permutation_importance_one_column(
-                    pipeline, X, y, col, objective, fast=False
+                    linear_regression_pipeline, X, y, col, objective, fast=False
                 )
             )
             np.testing.assert_almost_equal(
