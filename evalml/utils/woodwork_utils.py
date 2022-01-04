@@ -10,6 +10,8 @@ numeric_and_boolean_ww = [
     ww.logical_types.Integer.type_string,
     ww.logical_types.Double.type_string,
     ww.logical_types.Boolean.type_string,
+    ww.logical_types.IntegerNullable.type_string,
+    ww.logical_types.BooleanNullable.type_string,
 ]
 
 
