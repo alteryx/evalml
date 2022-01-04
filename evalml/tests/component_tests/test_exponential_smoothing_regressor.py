@@ -90,8 +90,9 @@ def test_remove_datetime(
     clf = ExponentialSmoothingRegressor()
     clf.fit(X_train, y_train)
 
-    y_train_removed = mock_fit.call_args.kwargs["y"]
-    assert not isinstance(y_train_removed.index, pd.DatetimeIndex)
+    y_train_removed = mock_fit.call_args.kwargs.get("y", None)
+    if y_train_removed is not None:
+        assert not isinstance(y_train_removed.index, pd.DatetimeIndex)
 
 
 def test_set_forecast(get_ts_X_y):
