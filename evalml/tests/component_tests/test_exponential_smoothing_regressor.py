@@ -56,7 +56,9 @@ def test_fit_ts_without_y(ts_data):
         (False, False, False),
     ],
 )
+@patch("sktime.forecasting.exp_smoothing.ExponentialSmoothing.fit")
 def test_remove_datetime(
+    mock_fit,
     train_features_index_dt,
     train_target_index_dt,
     train_none,
@@ -86,19 +88,10 @@ def test_remove_datetime(
         assert not isinstance(y_train.index, pd.DatetimeIndex)
 
     clf = ExponentialSmoothingRegressor()
-    X_train_no_dt = clf._remove_datetime(X_train, features=True)
-    y_train_no_dt = clf._remove_datetime(y_train)
+    clf.fit(X_train, y_train)
 
-    if train_none:
-        assert X_train_no_dt is None
-    else:
-        assert not isinstance(X_train_no_dt.index, pd.DatetimeIndex)
-        if no_features:
-            assert X_train_no_dt.shape[1] == 0
-        if datetime_feature:
-            assert X_train_no_dt.select_dtypes(include=["datetime64"]).shape[1] == 0
-
-    assert not isinstance(y_train_no_dt.index, pd.DatetimeIndex)
+    y_train_removed = mock_fit.call_args.kwargs["y"]
+    assert not isinstance(y_train_removed.index, pd.DatetimeIndex)
 
 
 def test_set_forecast(get_ts_X_y):
