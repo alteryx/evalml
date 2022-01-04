@@ -1,13 +1,13 @@
 """An automl algorithm that consists of two modes: fast and long, where fast is a subset of long."""
 import inspect
 import logging
-from evalml import problem_types
 
 import numpy as np
 from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm
 
+from evalml import problem_types
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     RFClassifierSelectFromModel,
