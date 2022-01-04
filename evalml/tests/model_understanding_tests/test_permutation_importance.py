@@ -436,10 +436,10 @@ def test_supports_fast_permutation_importance():
 
 
 def test_get_permutation_importance_invalid_objective(
-    X_y_regression, linear_regression_pipeline_class
+    X_y_regression, linear_regression_pipeline
 ):
     X, y = X_y_regression
-    pipeline = linear_regression_pipeline_class(parameters={}, random_seed=42)
+    pipeline = linear_regression_pipeline
     with pytest.raises(
         ValueError,
         match=f"Given objective 'MCC Multiclass' cannot be used with '{pipeline.name}'",
@@ -454,7 +454,7 @@ def test_get_permutation_importance_binary(
     use_numerical_target,
     X_y_binary,
     fraud_100,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
     binary_test_objectives,
     make_data_type,
 ):
@@ -465,9 +465,7 @@ def test_get_permutation_importance_binary(
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
-    pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42
-    )
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     for objective in binary_test_objectives:
         permutation_importance = calculate_permutation_importance(
@@ -525,13 +523,11 @@ def test_get_permutation_importance_multiclass(
 
 
 def test_get_permutation_importance_regression(
-    linear_regression_pipeline_class, regression_test_objectives
+    linear_regression_pipeline, regression_test_objectives
 ):
     X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
-    pipeline = linear_regression_pipeline_class(
-        parameters={"Linear Regressor": {"n_jobs": 1}}, random_seed=42
-    )
+    pipeline = linear_regression_pipeline
     pipeline.fit(X, y)
 
     for objective in regression_test_objectives:
@@ -557,14 +553,14 @@ def test_get_permutation_importance_regression(
 
 
 def test_get_permutation_importance_correlated_features(
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
 ):
     y = pd.Series([1, 0, 1, 1])
     X = pd.DataFrame()
     X["correlated"] = y * 2
     X["not correlated"] = [-1, -1, -1, 0]
     y = y.astype(bool)
-    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_seed=42)
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     importance = calculate_permutation_importance(
         pipeline, X, y, objective="Log Loss Binary", random_seed=0
@@ -613,12 +609,10 @@ def test_permutation_importance_oversampler(fraud_100):
 
 
 def test_get_permutation_importance_one_column_fast_no_precomputed_features(
-    X_y_binary, logistic_regression_binary_pipeline_class
+    X_y_binary, logistic_regression_binary_pipeline
 ):
     X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42
-    )
+    pipeline = logistic_regression_binary_pipeline
     with pytest.raises(
         ValueError,
         match="Fast method of calculating permutation importance requires precomputed_features",
@@ -673,7 +667,7 @@ def test_permutation_importance_url_email(df_with_url_and_email):
 
 
 def test_permutation_importance_postalcode_countrycode_subregion(
-    fraud_100, logistic_regression_binary_pipeline_class
+    fraud_100, logistic_regression_binary_pipeline
 ):
     X, y = fraud_100
     X.ww.set_types(
@@ -684,7 +678,7 @@ def test_permutation_importance_postalcode_countrycode_subregion(
         }
     )
 
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     data = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary")
     assert not data.isnull().any().any()

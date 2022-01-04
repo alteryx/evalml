@@ -704,7 +704,7 @@ def test_graph_permutation_importance_threshold(mock_perm_importance, go):
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_cost_benefit_matrix_vs_threshold(
-    data_type, X_y_binary, logistic_regression_binary_pipeline_class, make_data_type
+    data_type, X_y_binary, logistic_regression_binary_pipeline, make_data_type
 ):
     X, y = X_y_binary
     X = make_data_type(data_type, X)
@@ -713,7 +713,7 @@ def test_cost_benefit_matrix_vs_threshold(
     cbm = CostBenefitMatrix(
         true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
     )
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline.new()
     pipeline.fit(X, y)
     original_pipeline_threshold = pipeline.threshold
     cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm, steps=5)
@@ -725,27 +725,32 @@ def test_cost_benefit_matrix_vs_threshold(
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_binary_objective_vs_threshold(
-    data_type, X_y_binary, logistic_regression_binary_pipeline_class, make_data_type
+    data_type, X_y_binary, logistic_regression_binary_pipeline, make_data_type
 ):
     X, y = X_y_binary
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
-    pipeline.fit(X, y)
+    logistic_regression_binary_pipeline.fit(X, y)
 
     # test objective with score_needs_proba == True
     with pytest.raises(ValueError, match="Objective `score_needs_proba` must be False"):
-        binary_objective_vs_threshold(pipeline, X, y, "Log Loss Binary")
+        binary_objective_vs_threshold(
+            logistic_regression_binary_pipeline, X, y, "Log Loss Binary"
+        )
 
     # test with non-binary objective
     with pytest.raises(
         ValueError, match="can only be calculated for binary classification objectives"
     ):
-        binary_objective_vs_threshold(pipeline, X, y, "f1 micro")
+        binary_objective_vs_threshold(
+            logistic_regression_binary_pipeline, X, y, "f1 micro"
+        )
 
     # test objective with score_needs_proba == False
-    results_df = binary_objective_vs_threshold(pipeline, X, y, "f1", steps=5)
+    results_df = binary_objective_vs_threshold(
+        logistic_regression_binary_pipeline, X, y, "f1", steps=5
+    )
     assert list(results_df.columns) == ["threshold", "score"]
     assert results_df.shape == (6, 2)
     assert not results_df.isnull().all().all()
@@ -753,16 +758,17 @@ def test_binary_objective_vs_threshold(
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 def test_binary_objective_vs_threshold_steps(
-    mock_score, X_y_binary, logistic_regression_binary_pipeline_class
+    mock_score, X_y_binary, logistic_regression_binary_pipeline
 ):
     X, y = X_y_binary
     cbm = CostBenefitMatrix(
         true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
     )
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
-    pipeline.fit(X, y)
+    logistic_regression_binary_pipeline.fit(X, y)
     mock_score.return_value = {"Cost Benefit Matrix": 0.2}
-    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm, steps=234)
+    cost_benefit_df = binary_objective_vs_threshold(
+        logistic_regression_binary_pipeline, X, y, cbm, steps=234
+    )
     mock_score.assert_called()
     assert list(cost_benefit_df.columns) == ["threshold", "score"]
     assert cost_benefit_df.shape == (235, 2)
@@ -775,7 +781,7 @@ def test_graph_binary_objective_vs_threshold(
     mock_cb_thresholds,
     data_type,
     X_y_binary,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
     make_data_type,
     go,
 ):
@@ -784,7 +790,6 @@ def test_graph_binary_objective_vs_threshold(
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
     cbm = CostBenefitMatrix(
         true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
     )
@@ -793,7 +798,9 @@ def test_graph_binary_objective_vs_threshold(
         {"threshold": [0, 0.5, 1.0], "score": [100, -20, 5]}
     )
 
-    figure = graph_binary_objective_vs_threshold(pipeline, X, y, cbm)
+    figure = graph_binary_objective_vs_threshold(
+        logistic_regression_binary_pipeline, X, y, cbm
+    )
     assert isinstance(figure, go.Figure)
     data = figure.data[0]
     assert not np.any(np.isnan(data["x"]))

@@ -136,12 +136,10 @@ def test_binary_predict_pipeline_objective_mismatch(
 
 @patch("evalml.objectives.FraudCost.decision_function")
 def test_binary_predict_pipeline_use_objective(
-    mock_decision_function, X_y_binary, logistic_regression_binary_pipeline_class
+    mock_decision_function, X_y_binary, logistic_regression_binary_pipeline
 ):
     X, y = X_y_binary
-    binary_pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    binary_pipeline = logistic_regression_binary_pipeline
     mock_decision_function.return_value = pd.Series([0] * 100)
 
     binary_pipeline.threshold = 0.7
@@ -152,12 +150,10 @@ def test_binary_predict_pipeline_use_objective(
 
 
 def test_binary_predict_pipeline_score_error(
-    X_y_binary, logistic_regression_binary_pipeline_class
+    X_y_binary, logistic_regression_binary_pipeline
 ):
     X, y = X_y_binary
-    binary_pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    binary_pipeline = logistic_regression_binary_pipeline
     binary_pipeline.fit(X, y)
     with pytest.raises(
         PipelineScoreError,
@@ -174,16 +170,14 @@ def test_pipeline_thresholding_errors(
     mock_binary_score,
     mock_binary_fit,
     make_data_type,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
     X_y_binary,
 ):
     X, y = X_y_binary
     X = make_data_type("ww", X)
     y = make_data_type("ww", pd.Series([f"String value {i}" for i in y]))
     objective = get_objective("Log Loss Binary", return_instance=True)
-    pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     pred_proba = pipeline.predict_proba(X).iloc[:, 1]
     with pytest.raises(

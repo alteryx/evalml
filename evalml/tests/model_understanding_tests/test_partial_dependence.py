@@ -77,26 +77,21 @@ def test_partial_dependence_problem_types(
     X_y_binary,
     X_y_multi,
     X_y_regression,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
     logistic_regression_multiclass_pipeline,
-    linear_regression_pipeline_class,
+    linear_regression_pipeline,
     make_data_type,
 ):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
-        pipeline = logistic_regression_binary_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
-
+        pipeline = logistic_regression_binary_pipeline
     elif problem_type == ProblemTypes.MULTICLASS:
         X, y = X_y_multi
         pipeline = logistic_regression_multiclass_pipeline
 
     elif problem_type == ProblemTypes.REGRESSION:
         X, y = X_y_regression
-        pipeline = linear_regression_pipeline_class(
-            parameters={"Linear Regressor": {"n_jobs": 1}}
-        )
+        pipeline = linear_regression_pipeline
 
     X = make_data_type(data_type, X)
     pipeline.fit(X, y)
@@ -107,12 +102,11 @@ def test_partial_dependence_problem_types(
 
 def test_partial_dependence_string_feature_name(
     breast_cancer_local,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
 ):
     X, y = breast_cancer_local
-    pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    pipeline = logistic_regression_binary_pipeline
+
     pipeline.fit(X, y)
     part_dep = partial_dependence(
         pipeline, X, features="mean radius", grid_resolution=5
@@ -130,8 +124,7 @@ def test_partial_dependence_string_feature_name(
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
 def test_partial_dependence_with_non_numeric_columns(
     data_type,
-    linear_regression_pipeline_class,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
 ):
     X = pd.DataFrame(
         {
@@ -144,10 +137,9 @@ def test_partial_dependence_with_non_numeric_columns(
     if data_type == "ww":
         X.ww.init()
     y = [0, 0.2, 1.4, 1] * 4
-    pipeline = linear_regression_pipeline_class(
-        parameters={"Linear Regressor": {"n_jobs": 1}}
-    )
-    pipeline.fit(X, y)
+    pipeline = logistic_regression_binary_pipeline
+
+    logistic_regression_binary_pipeline.fit(X, y)
     part_dep = partial_dependence(pipeline, X, features="numeric")
     assert list(part_dep.columns) == ["feature_values", "partial_dependence"]
     assert len(part_dep["partial_dependence"]) == 4
@@ -166,7 +158,7 @@ def test_partial_dependence_with_non_numeric_columns(
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_partial_dependence_with_ww_category_columns(
-    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class
+    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline
 ):
     X, y = fraud_100
     X.ww.set_types(
@@ -176,8 +168,7 @@ def test_partial_dependence_with_ww_category_columns(
             "region": "SubRegionCode",
         }
     )
-
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
 
     part_dep = partial_dependence(pipeline, X, features="store_id")
@@ -216,7 +207,7 @@ def test_partial_dependence_with_ww_category_columns(
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_two_way_partial_dependence_with_ww_category_columns(
-    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class
+    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline
 ):
     X, y = fraud_100
     X.ww.set_types(
@@ -227,7 +218,7 @@ def test_two_way_partial_dependence_with_ww_category_columns(
         }
     )
 
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
 
     part_dep = partial_dependence(pipeline, X, features=("store_id", "country"))
@@ -445,13 +436,9 @@ def test_partial_dependence_multiclass_numeric_labels(
     assert len(two_way_part_dep.columns) == grid_resolution + 1
 
 
-def test_partial_dependence_not_fitted(
-    X_y_binary, logistic_regression_binary_pipeline_class
-):
+def test_partial_dependence_not_fitted(X_y_binary, logistic_regression_binary_pipeline):
     X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    pipeline = logistic_regression_binary_pipeline
     with pytest.raises(
         PartialDependenceError,
         match="Pipeline to calculate partial dependence for must be fitted",
@@ -460,12 +447,10 @@ def test_partial_dependence_not_fitted(
     assert e.value.code == PartialDependenceErrorCode.UNFITTED_PIPELINE
 
 
-def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
+def test_partial_dependence_warning(logistic_regression_binary_pipeline):
     X = pd.DataFrame({"a": [1, 2, None, 2, 2], "b": [1, 1, 2, 2, 1]})
     y = pd.Series([0, 1, 0, 1, 0])
-    pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     with pytest.warns(
         NullsInColumnWarning,
@@ -484,12 +469,10 @@ def test_partial_dependence_warning(logistic_regression_binary_pipeline_class):
         partial_dependence(pipeline, X, features="a", grid_resolution=5)
 
 
-def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
+def test_partial_dependence_errors(logistic_regression_binary_pipeline):
     X = pd.DataFrame({"a": [2, None, 2, 2], "b": [1, 2, 2, 1], "c": [0, 0, 0, 0]})
     y = pd.Series([0, 1, 0, 1])
-    pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
 
     with pytest.raises(
@@ -508,8 +491,7 @@ def test_partial_dependence_errors(logistic_regression_binary_pipeline_class):
 
 
 def test_partial_dependence_more_categories_than_grid_resolution(
-    fraud_local,
-    logistic_regression_binary_pipeline_class,
+    fraud_local, logistic_regression_binary_pipeline
 ):
     def round_dict_keys(dictionary, places=6):
         """Function to round all keys of a dictionary that has floats as keys."""
@@ -522,7 +504,7 @@ def test_partial_dependence_more_categories_than_grid_resolution(
     X = X[:100]
     y = y[:100]
     X = X.drop(columns=["datetime", "expiration_date", "country", "region", "provider"])
-    pipeline = logistic_regression_binary_pipeline_class({})
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     num_cat_features = len(set(X["currency"]))
     assert num_cat_features == 73
@@ -565,12 +547,10 @@ def test_partial_dependence_more_categories_than_grid_resolution(
     assert part_dep_ans_rounded == round_dict_keys(part_dep_dict)
 
 
-def test_partial_dependence_ice_plot(logistic_regression_binary_pipeline_class):
+def test_partial_dependence_ice_plot(logistic_regression_binary_pipeline):
     X = pd.DataFrame({"a": [1, 2, None, 2, 2], "b": [1, 1, 2, 2, 1]})
     y = pd.Series([0, 1, 0, 1, 0])
-    pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
 
     avg_pred, ind_preds = partial_dependence(pipeline, X, features="a", kind="both")
@@ -586,12 +566,10 @@ def test_partial_dependence_ice_plot(logistic_regression_binary_pipeline_class):
     assert ind_preds.shape == (2, 7)
 
 
-def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline_class):
+def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline):
     X = pd.DataFrame({"a": [1, 2, None, 2, 2], "b": [1, 1, 2, 2, 1]})
     y = pd.Series([0, 1, 0, 1, 0])
-    pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
 
     avg_pred, ind_preds = partial_dependence(
@@ -668,7 +646,7 @@ def test_graph_partial_dependence(breast_cancer_local, test_pipeline, go):
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_graph_partial_dependence_ww_categories(
-    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class, go
+    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline, go
 ):
 
     X, y = fraud_100
@@ -679,7 +657,7 @@ def test_graph_partial_dependence_ww_categories(
             "region": "SubRegionCode",
         }
     )
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
 
     for feat in ["store_id", "country", "region"]:
@@ -734,7 +712,7 @@ def test_graph_two_way_partial_dependence(breast_cancer_local, test_pipeline, go
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_graph_two_way_partial_dependence_ww_categories(
-    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class, go
+    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline, go
 ):
 
     X, y = fraud_100
@@ -745,7 +723,7 @@ def test_graph_two_way_partial_dependence_ww_categories(
             "region": "SubRegionCode",
         }
     )
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
 
     # Two categorical columns
@@ -896,7 +874,7 @@ def test_graph_partial_dependence_multiclass(
 
 
 def test_partial_dependence_percentile_errors(
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
 ):
     # random_col will be 5% 0, 95% 1
     X = pd.DataFrame(
@@ -908,9 +886,7 @@ def test_partial_dependence_percentile_errors(
         }
     )
     y = pd.Series([i % 2 for i in range(1000)])
-    pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-    )
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     with pytest.raises(
         PartialDependenceError,
@@ -984,20 +960,18 @@ def test_partial_dependence_percentile_errors(
 @pytest.mark.parametrize("problem_type", ["binary", "regression"])
 def test_graph_partial_dependence_regression_and_binary_categorical(
     problem_type,
-    linear_regression_pipeline_class,
+    linear_regression_pipeline,
     X_y_regression,
     X_y_binary,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
 ):
 
     if problem_type == "binary":
         X, y = X_y_binary
-        pipeline = logistic_regression_binary_pipeline_class(
-            {"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        pipeline = logistic_regression_binary_pipeline
     else:
         X, y = X_y_regression
-        pipeline = linear_regression_pipeline_class({"Linear Regressor": {"n_jobs": 1}})
+        pipeline = linear_regression_pipeline
 
     X = pd.DataFrame(X, columns=[str(i) for i in range(X.shape[1])])
     y = pd.Series(y)

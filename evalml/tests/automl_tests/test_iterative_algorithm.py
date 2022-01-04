@@ -515,13 +515,13 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(
 @pytest.mark.parametrize("text_in_ensembling", [True, False])
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
 def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
-    n_jobs, text_in_ensembling, X_y_regression, linear_regression_pipeline_class
+    n_jobs, text_in_ensembling, X_y_regression, linear_regression_pipeline
 ):
     X, y = X_y_regression
 
     allowed_component_graphs = {
-        "graph_1": linear_regression_pipeline_class.component_graph,
-        "graph_2": linear_regression_pipeline_class.component_graph,
+        "graph_1": linear_regression_pipeline.component_graph,
+        "graph_2": linear_regression_pipeline.component_graph,
     }
     algo = IterativeAlgorithm(
         X=X,

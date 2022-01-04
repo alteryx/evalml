@@ -811,7 +811,18 @@ def logistic_regression_binary_pipeline(logistic_regression_component_graph):
 
 
 @pytest.fixture
-def linear_regression_pipeline_class():
+def linear_regression_pipeline():
+    return RegressionPipeline(
+        component_graph=[
+            "One Hot Encoder",
+            "Imputer",
+            "Standard Scaler",
+            "Linear Regressor",
+        ],
+        parameters={"Linear Regressor": {"n_jobs": 1}},
+        custom_name="Linear Regression Pipeline",
+    )
+
     class LinearRegressionPipeline(RegressionPipeline):
         """Linear Regression Pipeline for regression problems."""
 

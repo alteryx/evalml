@@ -74,11 +74,9 @@ def test_invalid_targets_regression_pipeline(
         dummy_regression_pipeline.fit(X, y)
 
 
-def test_woodwork_regression_pipeline(diabetes_local, linear_regression_pipeline_class):
+def test_woodwork_regression_pipeline(diabetes_local, linear_regression_pipeline):
     X, y = diabetes_local
-    regression_pipeline = linear_regression_pipeline_class(
-        parameters={"Linear Regressor": {"n_jobs": 1}}
-    )
+    regression_pipeline = linear_regression_pipeline
     regression_pipeline.fit(X, y)
     assert not pd.isnull(regression_pipeline.predict(X)).any()
 
@@ -94,7 +92,7 @@ def test_woodwork_regression_pipeline(diabetes_local, linear_regression_pipeline
 )
 def test_pipeline_transform_and_predict_with_custom_index(
     index,
-    linear_regression_pipeline_class,
+    linear_regression_pipeline,
 ):
     X = pd.DataFrame(
         {"categories": [f"cat_{i}" for i in range(5)], "numbers": np.arange(5)},
@@ -103,9 +101,7 @@ def test_pipeline_transform_and_predict_with_custom_index(
     X.ww.init(logical_types={"categories": "categorical"})
 
     y = pd.Series([0, 1.0, 1, 1, 0], index=index)
-    pipeline = linear_regression_pipeline_class(
-        parameters={"Linear Regressor": {"n_jobs": 1}}
-    )
+    pipeline = linear_regression_pipeline
     pipeline.fit(X, y)
     predictions = pipeline.predict(X)
     assert_index_equal(predictions.index, X.index)
