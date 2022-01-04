@@ -35,11 +35,13 @@ from evalml.utils import infer_feature_types
 )
 @pytest.mark.parametrize("gap", [0, 1, 5])
 @pytest.mark.parametrize("forecast_horizon", [1, 5, 10])
+@pytest.mark.parametrize("length_or_freq", ["length", "freq"])
 @patch("evalml.pipelines.components.LinearRegressor.fit")
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 def test_time_series_pipeline_validates_holdout_data(
     mock_fit_lr,
     mock_fit_linear,
+    length_or_freq,
     forecast_horizon,
     gap,
     pipeline_class,
@@ -58,9 +60,16 @@ def test_time_series_pipeline_validates_holdout_data(
         },
     )
     X, y = ts_data
+
     TRAIN_LENGTH = 15
     X_train, y_train = X.iloc[:TRAIN_LENGTH], y.iloc[:TRAIN_LENGTH]
-    X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon + 2]
+
+    if length_or_freq == "length":
+        X = X.iloc[TRAIN_LENGTH + gap: TRAIN_LENGTH + gap + forecast_horizon + 2]
+    elif length_or_freq == "freq":
+        dates = pd.date_range("2020-10-16", periods=16)
+        X = X.iloc[TRAIN_LENGTH + gap: TRAIN_LENGTH + gap + forecast_horizon]
+        X["date"] = dates[gap + 1: gap + 1 + len(X)]
 
     pl.fit(X_train, y_train)
 
