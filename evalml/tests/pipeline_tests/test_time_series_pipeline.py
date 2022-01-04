@@ -65,11 +65,11 @@ def test_time_series_pipeline_validates_holdout_data(
     X_train, y_train = X.iloc[:TRAIN_LENGTH], y.iloc[:TRAIN_LENGTH]
 
     if length_or_freq == "length":
-        X = X.iloc[TRAIN_LENGTH + gap: TRAIN_LENGTH + gap + forecast_horizon + 2]
+        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon + 2]
     elif length_or_freq == "freq":
         dates = pd.date_range("2020-10-16", periods=16)
-        X = X.iloc[TRAIN_LENGTH + gap: TRAIN_LENGTH + gap + forecast_horizon]
-        X["date"] = dates[gap + 1: gap + 1 + len(X)]
+        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon]
+        X["date"] = dates[gap + 1 : gap + 1 + len(X)]
 
     pl.fit(X_train, y_train)
 
