@@ -76,8 +76,6 @@ class ExponentialSmoothingRegressor(Estimator):
         )
 
     def _remove_datetime(self, data):
-        if data is None:
-            return None
         data_no_dt = data.copy()
         if isinstance(
             data_no_dt.index, (pd.DatetimeIndex, pd.PeriodIndex, pd.IntervalIndex)
