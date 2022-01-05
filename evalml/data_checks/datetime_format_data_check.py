@@ -52,23 +52,23 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> y = pd.Series([0] * 4)
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
             >>> assert datetime_format_dc.validate(X, y) == {
-            ...     'warnings': [],
-            ...     'errors': [{'message': 'Datetime information could not be found in the data, or was not in a supported datetime format.',
-            ...                 'data_check_name': 'DateTimeFormatDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': None, 'rows': None},
-            ...                 'code': 'DATETIME_INFORMATION_NOT_FOUND'}],
-            ...     "actions": {"action_list": [], "default_action": None}}
+            ...     "warnings": [],
+            ...     "errors": [{"message": "Datetime information could not be found in the data, or was not in a supported datetime format.",
+            ...                 "data_check_name": "DateTimeFormatDataCheck",
+            ...                 "level": "error",
+            ...                 "details": {"columns": None, "rows": None},
+            ...                 "code": "DATETIME_INFORMATION_NOT_FOUND"}],
+            ...     "actions": {"action_list":[], "default_action": None}}
 
             Converting that same integer data to datetime however is valid.
 
             >>> X = pd.DataFrame(pd.to_datetime([1, 2, 3, 4]), columns=["Weeks"])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
-            >>> assert datetime_format_dc.validate(X, y) == {'warnings': [], 'errors': [], "actions": {"action_list": [], "default_action": None}}
+            >>> assert datetime_format_dc.validate(X, y) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
 
-            >>> X = pd.DataFrame(pd.date_range("2021-01-01", freq='W', periods=10), columns=["Weeks"])
+            >>> X = pd.DataFrame(pd.date_range("2021-01-01", freq="W", periods=10), columns=["Weeks"])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
-            >>> assert datetime_format_dc.validate(X, y) == {'warnings': [], 'errors': [], "actions": {"action_list": [], "default_action": None}}
+            >>> assert datetime_format_dc.validate(X, y) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
 
             While the data passed in is of datetime type, time series requires the datetime information in datetime_column
             to be monotonically increasing (ascending).
@@ -76,18 +76,18 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> X = X.iloc[::-1]
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
             >>> assert datetime_format_dc.validate(X, y) == {
-            ...     'warnings': [],
-            ...     'errors': [{'message': 'Datetime values must be sorted in ascending order.',
-            ...                 'data_check_name': 'DateTimeFormatDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': None, 'rows': None},
-            ...                 'code': 'DATETIME_IS_NOT_MONOTONIC'}],
+            ...     "warnings": [],
+            ...     "errors": [{"message": "Datetime values must be sorted in ascending order.",
+            ...                 "data_check_name": "DateTimeFormatDataCheck",
+            ...                 "level": "error",
+            ...                 "details": {"columns": None, "rows": None},
+            ...                 "code": "DATETIME_IS_NOT_MONOTONIC"}],
             ...     "actions": {"action_list":[], "default_action": None}}
         """
         results = {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         }
 
         X = infer_feature_types(X)

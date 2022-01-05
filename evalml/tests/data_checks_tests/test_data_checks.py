@@ -42,7 +42,7 @@ def test_data_checks(X_y_binary):
             return {
                 "warnings": [],
                 "errors": [],
-                "actions": {"action_list": [], "default_action": None},
+                "actions": {"action_list":[], "default_action": None},
             }
 
     class MockDataCheckWarning(DataCheck):
@@ -56,7 +56,7 @@ def test_data_checks(X_y_binary):
                     ).to_dict()
                 ],
                 "errors": [],
-                "actions": {"action_list": [], "default_action": None},
+                "actions": {"action_list":[], "default_action": None},
             }
 
     class MockDataCheckError(DataCheck):
@@ -70,7 +70,7 @@ def test_data_checks(X_y_binary):
                         message_code=None,
                     ).to_dict()
                 ],
-                "actions": {"action_list": [], "default_action": None},
+                "actions": {"action_list":[], "default_action": None},
             }
 
     class MockDataCheckErrorAndWarning(DataCheck):
@@ -90,7 +90,7 @@ def test_data_checks(X_y_binary):
                         message_code=None,
                     ).to_dict()
                 ],
-                "actions": {"action_list": [], "default_action": None},
+                "actions": {"action_list":[], "default_action": None},
             }
 
     data_checks_list = [
@@ -117,7 +117,7 @@ def test_data_checks(X_y_binary):
                 message="error two", data_check_name="MockDataCheckErrorAndWarning"
             ).to_dict(),
         ],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
     }
 
 
@@ -730,7 +730,7 @@ def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
             assert check.validate(X, y) == {
                 "warnings": [],
                 "errors": [data_check_error],
-                "actions": {"action_list": [], "default_action": None},
+                "actions": {"action_list":[], "default_action": None},
             }
 
 
@@ -761,7 +761,7 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
             return {
                 "warnings": [],
                 "errors": [],
-                "actions": {"action_list": [], "default_action": None},
+                "actions": {"action_list":[], "default_action": None},
             }
 
     data_checks_list = [MockDataCheck, MockDataCheckWithSameAction]
@@ -795,7 +795,7 @@ def test_data_checks_drop_index(X_y_binary):
             return {
                 "warnings": [],
                 "errors": [],
-                "actions": {"action_list": [], "default_action": None},
+                "actions": {"action_list":[], "default_action": None},
             }
 
     assert MockDataCheck().validate(X, y)

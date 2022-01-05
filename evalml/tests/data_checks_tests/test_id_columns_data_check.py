@@ -171,7 +171,7 @@ def test_id_cols_data_check_input_formats():
     assert id_cols_check.validate(pd.DataFrame()) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
     }
 
     #  test Woodwork

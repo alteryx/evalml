@@ -97,7 +97,7 @@ class DataChecks:
         messages = {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         }
         X = infer_feature_types(X)
         X = X.ww.drop(list(X.ww.select("index", return_schema=True).columns))

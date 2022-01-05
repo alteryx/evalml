@@ -118,7 +118,7 @@ def test_target_leakage_data_check_empty(data_type, make_data_type):
     assert leakage_check.validate(X, y) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
     }
 
 
@@ -198,7 +198,7 @@ def test_target_leakage_none():
     expected = {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
     }
 
     assert leakage_check.validate(X, y) == expected
@@ -254,7 +254,7 @@ def test_target_leakage_multi():
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
     }
 
     y = pd.Series([1, 0, 2, 1, 2, 0])
@@ -304,7 +304,7 @@ def test_target_leakage_regression():
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
     }
 
     y = pd.Series(
@@ -388,7 +388,7 @@ def test_target_leakage_data_check_warnings_pearson():
     assert leakage_check.validate(X, y) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
     }
 
 
@@ -399,7 +399,7 @@ def test_target_leakage_data_check_input_formats_pearson():
     assert leakage_check.validate(pd.DataFrame(), pd.Series()) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
     }
 
     y = pd.Series([1, 0, 1, 1])
@@ -477,7 +477,7 @@ def test_target_leakage_none_pearson():
     expected = {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
     }
 
     assert leakage_check.validate(X, y) == expected

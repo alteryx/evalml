@@ -26,25 +26,25 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             Columns containing Natural Language data will raise an error if NaN values are present.
 
             >>> data = pd.DataFrame()
-            >>> data['A'] = [None, "string_that_is_long_enough_for_natural_language"]
-            >>> data['B'] = ['string_that_is_long_enough_for_natural_language', 'string_that_is_long_enough_for_natural_language']
-            >>> data['C'] = np.random.randint(0, 3, size=len(data))
-            >>> data.ww.init(logical_types={'A': 'NaturalLanguage', 'B': 'NaturalLanguage'})
+            >>> data["A"] = [None, "string_that_is_long_enough_for_natural_language"]
+            >>> data["B"] = ["string_that_is_long_enough_for_natural_language", "string_that_is_long_enough_for_natural_language"]
+            >>> data["C"] = np.random.randint(0, 3, size=len(data))
+            >>> data.ww.init(logical_types={"A": "NaturalLanguage", "B": "NaturalLanguage"})
             ...
             >>> nl_nan_check = NaturalLanguageNaNDataCheck()
             >>> assert nl_nan_check.validate(data) == {
             ...        "warnings": [],
             ...        "actions": {"action_list":[], "default_action": None},
-            ...        "errors": [DataCheckError(message='Input natural language column(s) (A) contains NaN values. Please impute NaN values or drop these rows or columns.',
+            ...        "errors": [DataCheckError(message="Input natural language column(s) (A) contains NaN values. Please impute NaN values or drop these rows or columns.",
             ...                      data_check_name=NaturalLanguageNaNDataCheck.name,
             ...                      message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-            ...                      details={"columns": ['A']}).to_dict()]
+            ...                      details={"columns": ["A"]}).to_dict()]
             ...    }
         """
         results = {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         }
 
         X = infer_feature_types(X)

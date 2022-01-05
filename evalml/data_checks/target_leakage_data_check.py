@@ -98,7 +98,8 @@ class TargetLeakageDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "TargetLeakageDataCheck",
-            ...                  "metadata": {"columns": ["leak"], "rows": None}}], "default_action": None}}
+            ...                  "metadata": {"columns": ["leak"], "rows": None}}],
+            ...                 "default_action": None}}
 
             The default method can be changed to pearson from mutual information.
 
@@ -113,12 +114,13 @@ class TargetLeakageDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "TargetLeakageDataCheck",
-            ...                  "metadata": {"columns": ["leak", "x"], "rows": None}}], "default_action": None}}
+            ...                  "metadata": {"columns": ["leak", "x"], "rows": None}}],
+            ...                 "default_action": None}}
         """
         results = {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         }
 
         X = infer_feature_types(X)

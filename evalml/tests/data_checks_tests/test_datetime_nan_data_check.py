@@ -15,7 +15,7 @@ def test_datetime_nan_data_check_error(ts_data):
     dt_nan_check = DateTimeNaNDataCheck()
     assert dt_nan_check.validate(data) == {
         "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
         "errors": [
             DataCheckError(
                 message="Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.",
@@ -33,7 +33,7 @@ def test_datetime_nan_data_check_error_numeric_columns_no_null():
         pd.DataFrame(np.random.randint(0, 10, size=(10, 4)))
     ) == {
         "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
         "errors": [],
     }
 
@@ -45,7 +45,7 @@ def test_datetime_nan_data_check_error_numeric_null_columns():
     dt_nan_check = DateTimeNaNDataCheck()
     assert dt_nan_check.validate(data) == {
         "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
         "errors": [],
     }
 
@@ -59,7 +59,7 @@ def test_datetime_nan_data_check_multiple_dt_no_nan():
     dt_nan_check = DateTimeNaNDataCheck()
     assert dt_nan_check.validate(data) == {
         "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
         "errors": [],
     }
 
@@ -75,7 +75,7 @@ def test_datetime_nan_data_check_multiple_nan_dt():
     dt_nan_check = DateTimeNaNDataCheck()
     assert dt_nan_check.validate(data) == {
         "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
         "errors": [
             DataCheckError(
                 message="Input datetime column(s) (A, B) contains NaN values. Please impute NaN values or drop these rows or columns.",
@@ -94,12 +94,12 @@ def test_datetime_nan_check_input_formats():
     assert dt_nan_check.validate(pd.DataFrame()) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
     }
 
     expected = {
         "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
         "errors": [
             DataCheckError(
                 message="Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.",
@@ -120,7 +120,7 @@ def test_datetime_nan_check_input_formats():
 
     expected = {
         "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
+        "actions": {"action_list":[], "default_action": None},
         "errors": [
             DataCheckError(
                 message="Input datetime column(s) (0) contains NaN values. Please impute NaN values or drop these rows or columns.",

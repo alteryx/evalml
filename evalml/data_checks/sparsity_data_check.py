@@ -52,8 +52,8 @@ class SparsityDataCheck(DataCheck):
             For multiclass problems, if a column doesn't have enough representation from unique values, it will be considered sparse.
 
             >>> df = pd.DataFrame({
-            ...    'sparse': [float(x) for x in range(100)],
-            ...    'not_sparse': [float(1) for x in range(100)]
+            ...    "sparse": [float(x) for x in range(100)],
+            ...    "not_sparse": [float(1) for x in range(100)]
             ... })
             ...
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=0.5, unique_count_threshold=10)
@@ -66,12 +66,13 @@ class SparsityDataCheck(DataCheck):
             ...                    "details": {"columns": ["sparse"], "sparsity_score": {"sparse": 0.0}, "rows": None}}],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "SparsityDataCheck",
-            ...                  "metadata": {"columns": ["sparse"], "rows": None}}], "default_action": None}}
+            ...                  "metadata": {"columns": ["sparse"], "rows": None}}],
+            ...                 "default_action": None}}
             ...
             ...
-            >>> df['sparse'] = [float(x % 10) for x in range(100)]
+            >>> df["sparse"] = [float(x % 10) for x in range(100)]
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=1, unique_count_threshold=5)
-            >>> assert sparsity_check.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list": [], "default_action": None}}
+            >>> assert sparsity_check.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
             ...
             ...
             >>> sparse_array = pd.Series([1, 1, 1, 2, 2, 3] * 3)
@@ -80,7 +81,7 @@ class SparsityDataCheck(DataCheck):
         results = {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         }
 
         X = infer_feature_types(X)

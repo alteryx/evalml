@@ -53,8 +53,8 @@ class UniquenessDataCheck(DataCheck):
             for having just one value.
 
             >>> df = pd.DataFrame({
-            ...    'regression_unique_enough': [float(x) for x in range(100)],
-            ...    'regression_not_unique_enough': [float(1) for x in range(100)]
+            ...    "regression_unique_enough": [float(x) for x in range(100)],
+            ...    "regression_not_unique_enough": [float(1) for x in range(100)]
             ... })
             ...
             >>> uniqueness_check = UniquenessDataCheck(problem_type="regression", threshold=0.8)
@@ -65,9 +65,9 @@ class UniquenessDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "NOT_UNIQUE_ENOUGH",
             ...                   "details": {"columns": ["regression_not_unique_enough"], "uniqueness_score": {"regression_not_unique_enough": 0.0}, "rows": None}}],
-            ...     "actions": {"action_list": [{'code': 'DROP_COL',
-            ...                                  'data_check_name': 'UniquenessDataCheck',
-            ...                                  'metadata': {'columns': ['regression_not_unique_enough'], 'rows': None}}],
+            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            ...                                  "data_check_name": "UniquenessDataCheck",
+            ...                                  "metadata": {"columns": ["regression_not_unique_enough"], "rows": None}}],
             ...                 "default_action": None
             ...                }
             ... }
@@ -77,17 +77,17 @@ class UniquenessDataCheck(DataCheck):
 
             >>> uniqueness_check = UniquenessDataCheck(problem_type="multiclass", threshold=0.8)
             >>> assert uniqueness_check.validate(df) == {
-            ...     "warnings": [{'message': "Input columns 'regression_unique_enough' for multiclass problem type are too unique.",
-            ...                   'data_check_name': 'UniquenessDataCheck',
-            ...                   'level': 'warning',
-            ...                   'details': {'columns': ['regression_unique_enough'],
-            ...                               'rows': None,
-            ...                               'uniqueness_score': {'regression_unique_enough': 0.99}},
-            ...                   'code': 'TOO_UNIQUE'}],
+            ...     "warnings": [{"message": "Input columns 'regression_unique_enough' for multiclass problem type are too unique.",
+            ...                   "data_check_name": "UniquenessDataCheck",
+            ...                   "level": "warning",
+            ...                   "details": {"columns": ["regression_unique_enough"],
+            ...                               "rows": None,
+            ...                               "uniqueness_score": {"regression_unique_enough": 0.99}},
+            ...                   "code": "TOO_UNIQUE"}],
             ...     "errors": [],
-            ...     "actions": {"action_list": [{'code': 'DROP_COL',
-            ...                                  'data_check_name': 'UniquenessDataCheck',
-            ...                                  'metadata': {'columns': ['regression_unique_enough'], 'rows': None}}],
+            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            ...                                  "data_check_name": "UniquenessDataCheck",
+            ...                                  "metadata": {"columns": ["regression_unique_enough"], "rows": None}}],
             ...                 "default_action": None
             ...                 }
             ... }
@@ -98,7 +98,7 @@ class UniquenessDataCheck(DataCheck):
         results = {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         }
 
         X = infer_feature_types(X)

@@ -74,5 +74,5 @@ def test_time_series_param_data_check(
         assert results == {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         }

@@ -67,7 +67,7 @@ cases = [
         {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         },
     ),
     (
@@ -77,7 +77,7 @@ cases = [
         {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         },
     ),
     (
@@ -87,7 +87,7 @@ cases = [
         {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         },
     ),
     (
@@ -136,7 +136,7 @@ cases = [
         {
             "warnings": [],
             "errors": [labels_1_unique],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         },
     ),
     (
@@ -146,7 +146,7 @@ cases = [
         {
             "warnings": [],
             "errors": [labels_0_unique],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         },
     ),
     (
@@ -204,7 +204,7 @@ cases = [
                     details={"columns": ["Labels"]},
                 ).to_dict()
             ],
-            "actions": {"action_list": [], "default_action": None},
+            "actions": {"action_list":[], "default_action": None},
         },
     ),
     (
