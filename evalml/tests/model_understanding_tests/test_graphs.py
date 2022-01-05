@@ -37,7 +37,6 @@ from evalml.model_understanding.graphs import (
 )
 from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
-    BinaryClassificationPipeline,
     DecisionTreeRegressor,
     ElasticNetRegressor,
     LinearRegressor,

@@ -1531,7 +1531,7 @@ def test_graph_partial_dependence_ice_plot_two_way_error(
         match="Individual conditional expectation plot can only be created with a one-way partial dependence plot",
     ) as e:
         graph_partial_dependence(
-            clf,
+            test_pipeline_with_dummy_feature_importance,
             X,
             features=["mean radius", "mean area"],
             grid_resolution=5,
