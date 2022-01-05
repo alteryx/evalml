@@ -11,7 +11,7 @@ Release Notes
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
     * Documentation Changes
     * Testing Changes
-
+        * Add workflow to auto-merge dependency PRs if status checks pass (:pr:`3184`)
 
 **v0.40.0 Dec. 22, 2021**
     * Enhancements
