@@ -152,7 +152,6 @@ class UniquenessDataCheck(DataCheck):
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
-                    parameters={},
                     metadata={"columns": too_unique_cols},
                 ).to_dict()
             )

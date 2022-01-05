@@ -115,7 +115,6 @@ class SparsityDataCheck(DataCheck):
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
-                    parameters={},
                     metadata={"columns": too_sparse_cols},
                 ).to_dict()
             )

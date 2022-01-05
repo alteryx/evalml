@@ -71,7 +71,6 @@ def test_target_leakage_data_check_warnings():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={},
                     metadata={"columns": ["a", "b", "c", "d"]},
                 ).to_dict()
             ],
@@ -103,7 +102,6 @@ def test_target_leakage_data_check_singular_warning():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={},
                     metadata={"columns": ["a"]},
                 ).to_dict()
             ],
@@ -150,7 +148,6 @@ def test_target_leakage_data_check_input_formats():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={},
                     metadata={"columns": ["a", "b", "c", "d"]},
                 ).to_dict()
             ],
@@ -182,7 +179,6 @@ def test_target_leakage_data_check_input_formats():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={},
                     metadata={"columns": [0, 1, 2, 3]},
                 ).to_dict()
             ],
@@ -241,7 +237,6 @@ def test_target_leakage_types():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={},
                     metadata={"columns": ["a", "b", "c", "d"]},
                 ).to_dict()
             ],
@@ -285,7 +280,6 @@ def test_target_leakage_multi():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={},
                     metadata={"columns": ["a", "b", "c"]},
                 ).to_dict()
             ],
@@ -339,7 +333,6 @@ def test_target_leakage_regression():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={},
                     metadata={"columns": ["a", "b", "c", "e"]},
                 ).to_dict()
             ],
@@ -383,7 +376,6 @@ def test_target_leakage_data_check_warnings_pearson():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={},
                     metadata={"columns": ["a", "b", "c", "d"]},
                 ).to_dict()
             ],
@@ -434,7 +426,6 @@ def test_target_leakage_data_check_input_formats_pearson():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={},
                     metadata={"columns": ["a", "b", "c", "d"]},
                 ).to_dict()
             ],
@@ -458,7 +449,6 @@ def test_target_leakage_data_check_input_formats_pearson():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={},
                     metadata={"columns": [0, 1, 2, 3]},
                 ).to_dict()
             ],

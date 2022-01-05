@@ -126,25 +126,12 @@ class TargetDistributionDataCheck(DataCheck):
                 DataCheckActionOption(
                     DataCheckActionCode.TRANSFORM_TARGET,
                     data_check_name=self.name,
-                    parameters={},
                     metadata={
                         "is_target": True,
                         "transformation_strategy": "lognormal",
                     },
                 ).to_dict()
             )
-
-            # results["actions"]["action_list"].append(
-            #     DataCheckAction(
-            #         DataCheckActionCode.TRANSFORM_TARGET,
-            #         data_check_name=self.name,
-            #         metadata={
-            #             "is_target": True,
-            #             "transformation_strategy": "lognormal",
-            #         },
-            #     ).to_dict()
-            # )
-
         return results
 
 
