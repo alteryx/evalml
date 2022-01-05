@@ -108,13 +108,16 @@ def _make_json_serializable(value):
 
     numpy.int64 or numpy.bool can't be serialized to json.
     """
-    if pd.api.types.is_number(value):
+    # Base boolean are identified as numbers by pandas
+    # so put the `is_bool` check prior
+    if pd.api.types.is_bool(value):
+        value = bool(value)
+    elif pd.api.types.is_number(value):
         if pd.api.types.is_integer(value):
             value = int(value)
         else:
             value = float(value)
-    elif pd.api.types.is_bool(value):
-        value = bool(value)
+
     return value
 
 
