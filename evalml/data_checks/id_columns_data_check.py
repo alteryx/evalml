@@ -43,8 +43,8 @@ class IDColumnsDataCheck(DataCheck):
             Columns that end in "_id" and are completely unique are likely to be ID columns.
 
             >>> df = pd.DataFrame({
-            ...     'customer_id': [123, 124, 125, 126, 127],
-            ...     'Sales': [10, 42, 31, 51, 61]
+            ...     "customer_id": [123, 124, 125, 126, 127],
+            ...     "Sales": [10, 42, 31, 51, 61]
             ... })
             ...
             >>> id_col_check = IDColumnsDataCheck()
@@ -55,9 +55,10 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "HAS_ID_COLUMN",
             ...                   "details": {"columns": ["customer_id"], "rows": None}}],
-            ...     "actions": {"action_list": [{"code": "DROP_COL", "parameters": {},
+            ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
-            ...                  "metadata": {"columns": ["customer_id"], "rows": None}}], "default_action": None}}
+            ...                  "metadata": {"columns": ["customer_id"], "rows": None}}],
+            ...                 "default_action": None}}
 
             Columns named "ID" with all unique values will also be identified as ID columns.
 
@@ -70,20 +71,21 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "HAS_ID_COLUMN",
             ...                   "details": {"columns": ["ID"], "rows": None}}],
-            ...     "actions": {"action_list": [{"code": "DROP_COL", "parameters": {},
+            ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
-            ...                  "metadata": {"columns": ["ID"], "rows": None}}], "default_action": None}}
+            ...                  "metadata": {"columns": ["ID"], "rows": None}}],
+            ...                 "default_action": None}}
 
             Despite being all unique, "Country_Rank" will not be identified as an ID column as id_threshold is set to 1.0
             by default and its name doesn't indicate that it's an ID.
 
             >>> df = pd.DataFrame({
-            ...    'Country_Rank': [1, 2, 3, 4, 5],
-            ...    'Sales': ["very high", "high", "high", "medium", "very low"]
+            ...    "Country_Rank": [1, 2, 3, 4, 5],
+            ...    "Sales": ["very high", "high", "high", "medium", "very low"]
             ... })
             ...
             >>> id_col_check = IDColumnsDataCheck()
-            >>> assert id_col_check.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list": [], "default_action": None}}
+            >>> assert id_col_check.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
 
 
             However lowering the threshold will cause this column to be identified as an ID.
@@ -91,15 +93,16 @@ class IDColumnsDataCheck(DataCheck):
             >>> id_col_check = IDColumnsDataCheck()
             >>> id_col_check = IDColumnsDataCheck(id_threshold=0.95)
             >>> assert id_col_check.validate(df) == {
-            ...     'warnings': [{'message': "Columns 'Country_Rank' are 95.0% or more likely to be an ID column",
-            ...                   'data_check_name': 'IDColumnsDataCheck',
-            ...                   'level': 'warning',
-            ...                   'details': {'columns': ['Country_Rank'], 'rows': None},
-            ...                   'code': 'HAS_ID_COLUMN'}],
-            ...     'errors': [],
-            ...     'actions': {"action_list": [{'code': 'DROP_COL', "parameters": {},
-            ...                  'data_check_name': 'IDColumnsDataCheck',
-            ...                  'metadata': {'columns': ['Country_Rank'], 'rows': None}}], "default_action": None}}
+            ...     "warnings": [{"message": "Columns 'Country_Rank' are 95.0% or more likely to be an ID column",
+            ...                   "data_check_name": "IDColumnsDataCheck",
+            ...                   "level": "warning",
+            ...                   "details": {"columns": ["Country_Rank"], "rows": None},
+            ...                   "code": "HAS_ID_COLUMN"}],
+            ...     "errors": [],
+            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            ...                  "data_check_name": "IDColumnsDataCheck",
+            ...                  "metadata": {"columns": ["Country_Rank"], "rows": None}}],
+            ...                 "default_action": None}}
         """
         results = {
             "warnings": [],

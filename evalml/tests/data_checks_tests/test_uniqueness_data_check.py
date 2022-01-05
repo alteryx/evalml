@@ -110,14 +110,7 @@ def test_uniqueness_data_check_warnings():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=uniqueness_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": ["regression_not_unique_enough"],
-                        #     "default_value": ["regression_not_unique_enough"],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": ["regression_not_unique_enough"]},
                 ).to_dict()
             ],
@@ -150,14 +143,7 @@ def test_uniqueness_data_check_warnings():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=uniqueness_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": ["multiclass_too_unique"],
-                        #     "default_value": ["multiclass_too_unique"],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": ["multiclass_too_unique"]},
                 ).to_dict()
             ],

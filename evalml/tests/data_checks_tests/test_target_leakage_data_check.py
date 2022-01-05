@@ -71,13 +71,7 @@ def test_target_leakage_data_check_warnings():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": ["a", "b", "c", "d"],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": ["a", "b", "c", "d"]},
                 ).to_dict()
             ],
@@ -109,13 +103,7 @@ def test_target_leakage_data_check_singular_warning():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": ["a"],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": ["a"]},
                 ).to_dict()
             ],
@@ -162,13 +150,7 @@ def test_target_leakage_data_check_input_formats():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": ["a", "b", "c", "d"],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": ["a", "b", "c", "d"]},
                 ).to_dict()
             ],
@@ -200,13 +182,7 @@ def test_target_leakage_data_check_input_formats():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": [0, 1, 2, 3],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": [0, 1, 2, 3]},
                 ).to_dict()
             ],
@@ -265,13 +241,7 @@ def test_target_leakage_types():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": ["a", "b", "c", "d"],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": ["a", "b", "c", "d"]},
                 ).to_dict()
             ],
@@ -315,13 +285,7 @@ def test_target_leakage_multi():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": ["a", "b", "c"],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": ["a", "b", "c"]},
                 ).to_dict()
             ],
@@ -375,13 +339,7 @@ def test_target_leakage_regression():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": ["a", "b", "c", "e"],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": ["a", "b", "c", "e"]},
                 ).to_dict()
             ],
@@ -425,14 +383,7 @@ def test_target_leakage_data_check_warnings_pearson():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": ["a", "b", "c", "d"],
-                        #     "default_value": ["a", "b", "c", "d"],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": ["a", "b", "c", "d"]},
                 ).to_dict()
             ],
@@ -483,14 +434,7 @@ def test_target_leakage_data_check_input_formats_pearson():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": ["a", "b", "c", "d"],
-                        #     "default_value": ["a", "b", "c", "d"],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": ["a", "b", "c", "d"]},
                 ).to_dict()
             ],
@@ -514,14 +458,7 @@ def test_target_leakage_data_check_input_formats_pearson():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=target_leakage_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": [0, 1, 2, 3],
-                        #     "default_value": [0, 1, 2, 3],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": [0, 1, 2, 3]},
                 ).to_dict()
             ],

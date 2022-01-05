@@ -89,10 +89,6 @@ def test_data_checks_impute_cols():
         DataCheckActionOption.convert_dict_to_action(option)
         for option in data_checks_output["actions"]["action_list"]
     )
-    # actions = [
-    #     DataCheckAction.convert_dict_to_action(action)
-    #     for action in data_checks_output["actions"]["action_list"]
-    # ]
     action_pipeline = make_pipeline_from_actions("binary", actions)
     assert action_pipeline == BinaryClassificationPipeline(
         component_graph={"Target Imputer": [TargetImputer, "X", "y"]},

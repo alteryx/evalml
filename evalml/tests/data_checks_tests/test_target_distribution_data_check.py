@@ -145,15 +145,6 @@ def test_target_distribution_data_check_warning_action(
                             "transformation_strategy": "lognormal",
                         },
                     ).to_dict()
-                    # DataCheckAction(
-                    #     DataCheckActionCode.TRANSFORM_TARGET,
-                    #     data_check_name=target_dist_check_name,
-                    #     metadata={
-                    #         "columns": None,
-                    #         "is_target": True,
-                    #         "transformation_strategy": "lognormal",
-                    #     },
-                    # ).to_dict()
                 ],
                 "default_action": None,
             },

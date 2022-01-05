@@ -761,8 +761,6 @@ def test_invalid_target_data_action_for_data_with_null(problem_type):
     invalid_targets_check = InvalidTargetDataCheck(
         problem_type, get_default_primary_search_objective(problem_type)
     )
-    impute_strategy = "mean" if is_regression(problem_type) else "most_frequent"
-
     expected = {
         "warnings": [],
         "errors": [

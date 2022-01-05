@@ -140,13 +140,7 @@ def test_sparsity_data_check_warnings():
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=sparsity_data_check_name,
-                    parameters={
-                        # "columns_to_drop": {
-                        #     "parameter_type": "global",
-                        #     "type": "list",
-                        #     "columns": ["most_sparse", "more_sparse", "sparse"],
-                        # }
-                    },
+                    parameters={},
                     metadata={"columns": ["most_sparse", "more_sparse", "sparse"]},
                 ).to_dict()
             ],
