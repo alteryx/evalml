@@ -1764,11 +1764,10 @@ def test_explain_predictions_oversampler(estimator, algorithm, fraud_100):
 def test_explain_predictions_class_name_matches_class_name_in_y(
     problem_type, fraud_100
 ):
+    X, y = fraud_100
     if problem_type == ProblemTypes.BINARY:
-        X, y = fraud_100
         pipeline_class = BinaryClassificationPipeline
     else:
-        X, y = fraud_100
         y = np.arange(X.shape[0]) % 3
         pipeline_class = MulticlassClassificationPipeline
     pipeline = pipeline_class(
