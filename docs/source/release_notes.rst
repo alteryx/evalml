@@ -6,6 +6,7 @@ Release Notes
         * Added ``DataCheckActionOption`` class :pr:`3134`
         * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
     * Fixes
+        * Fix bug where prediction explanations ``class_name`` was shown as float for boolean targets :pr:`3179`
     * Changes
         * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
