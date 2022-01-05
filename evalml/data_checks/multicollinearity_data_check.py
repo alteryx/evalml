@@ -41,14 +41,18 @@ class MulticollinearityDataCheck(DataCheck):
             >>> multicollinearity_check = MulticollinearityDataCheck(threshold=1.0)
             >>> assert multicollinearity_check.validate(X, y) == {
             ...     "errors": [],
-            ...     "warnings": [{'message': "Columns are likely to be correlated: [('col_1', 'col_2')]",
+            ...     "warnings": [{"message": "Columns are likely to be correlated: [('col_1', 'col_2')]",
             ...                   "data_check_name": "MulticollinearityDataCheck",
             ...                   "level": "warning",
             ...                   "code": "IS_MULTICOLLINEAR",
-            ...                   'details': {"columns": [('col_1', 'col_2')], "rows": None}}],
-            ...     "actions": []}
+            ...                   "details": {"columns": [("col_1", "col_2")], "rows": None}}],
+            ...     "actions": {"action_list":[], "default_action": None}}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         X = infer_feature_types(X)
         mutual_info_df = X.ww.mutual_information()

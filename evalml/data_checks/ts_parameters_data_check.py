@@ -46,8 +46,8 @@ class TimeSeriesParametersDataCheck(DataCheck):
             forecast_horizon) is greater than or equal to the split size, then an error will be raised.
 
             >>> X = pd.DataFrame({
-            ...    'dates': pd.date_range("1/1/21", periods=100),
-            ...    'first': [i for i in range(100)],
+            ...    "dates": pd.date_range("1/1/21", periods=100),
+            ...    "first": [i for i in range(100)],
             ... })
             >>> y = pd.Series([i for i in range(100)])
             ...
@@ -63,14 +63,18 @@ class TimeSeriesParametersDataCheck(DataCheck):
             ...                 "data_check_name": "TimeSeriesParametersDataCheck",
             ...                 "level": "error",
             ...                 "code": "TIMESERIES_PARAMETERS_NOT_COMPATIBLE_WITH_SPLIT",
-            ...                 "details": {'columns': None,
-            ...                             'rows': None,
-            ...                             'max_window_size': 21,
-            ...                             'min_split_size': 20}}],
-            ...     "actions": []}
+            ...                 "details": {"columns": None,
+            ...                             "rows": None,
+            ...                             "max_window_size": 21,
+            ...                             "min_split_size": 20}}],
+            ...     "actions": {"action_list":[], "default_action": None}}
 
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         validation = are_ts_parameters_valid_for_split(
             gap=self.gap,

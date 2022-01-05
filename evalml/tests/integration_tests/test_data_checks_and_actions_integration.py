@@ -28,7 +28,7 @@ def test_data_checks_with_healthy_data(X_y_binary):
     )
     data_check_output = data_check.validate(X, y)
     assert make_pipeline_from_actions(
-        "binary", data_check_output["actions"]
+        "binary", data_check_output["actions"]["action_list"]
     ) == BinaryClassificationPipeline(component_graph={}, parameters={}, random_seed=0)
 
 
@@ -46,7 +46,7 @@ def test_data_checks_suggests_drop_cols():
 
     actions = [
         DataCheckAction.convert_dict_to_action(action)
-        for action in data_checks_output["actions"]
+        for action in data_checks_output["actions"]["action_list"]
     ]
     action_pipeline = make_pipeline_from_actions("binary", actions)
     assert action_pipeline == BinaryClassificationPipeline(
@@ -83,7 +83,7 @@ def test_data_checks_impute_cols():
 
     actions = [
         DataCheckAction.convert_dict_to_action(action)
-        for action in data_checks_output["actions"]
+        for action in data_checks_output["actions"]["action_list"]
     ]
     action_pipeline = make_pipeline_from_actions("binary", actions)
     assert action_pipeline == BinaryClassificationPipeline(
@@ -118,7 +118,7 @@ def test_data_checks_suggests_drop_rows():
 
     actions = [
         DataCheckAction.convert_dict_to_action(action)
-        for action in data_checks_output["actions"]
+        for action in data_checks_output["actions"]["action_list"]
     ]
     action_pipeline = make_pipeline_from_actions("binary", actions)
     assert action_pipeline == BinaryClassificationPipeline(

@@ -23,54 +23,62 @@ class DateTimeNaNDataCheck(DataCheck):
             >>> import pandas as pd
             >>> import numpy as np
             ...
-            >>> dates = [['2-1-21', '3-1-21'],
-            ...         ['2-2-21', '3-2-21'],
-            ...         ['2-3-21', '3-3-21'],
-            ...         ['2-4-21', '3-4-21']]
-            >>> df = pd.DataFrame(dates, columns=['index', "days"])
+            >>> dates = [["2-1-21", "3-1-21"],
+            ...         ["2-2-21", "3-2-21"],
+            ...         ["2-3-21", "3-3-21"],
+            ...         ["2-4-21", "3-4-21"]]
+            >>> df = pd.DataFrame(dates, columns=["index", "days"])
             >>> dt_nan_dc = DateTimeNaNDataCheck()
-            >>> assert dt_nan_dc.validate(df) == {'warnings': [], 'errors': [], 'actions': []}
+            >>> assert dt_nan_dc.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
 
             The first value in the column "index" is replaced with NaT, which will raise an error in this data check.
 
-            >>> dates[0][0] = np.datetime64('NaT')
-            >>> df = pd.DataFrame(dates, columns=['index', "days"])
+            >>> dates[0][0] = np.datetime64("NaT")
+            >>> df = pd.DataFrame(dates, columns=["index", "days"])
             >>> assert dt_nan_dc.validate(df) == {
-            ...     'warnings': [],
-            ...     'errors': [{'message': 'Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.',
-            ...                 'data_check_name': 'DateTimeNaNDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': ['index'], 'rows': None},
-            ...                 'code': 'DATETIME_HAS_NAN'}],
-            ...     'actions': []}
+            ...     "warnings": [],
+            ...     "errors": [{"message": "Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            ...                 "data_check_name": "DateTimeNaNDataCheck",
+            ...                 "level": "error",
+            ...                 "details": {"columns": ["index"], "rows": None},
+            ...                 "code": "DATETIME_HAS_NAN"}],
+            ...     "actions": {"action_list":[], "default_action": None}}
+            ...
+            ...
 
             The value None will be treated the same way.
 
             >>> dates[0][1] = None
-            >>> df = pd.DataFrame(dates, columns=['index', "days"])
+            >>> df = pd.DataFrame(dates, columns=["index", "days"])
             >>> assert dt_nan_dc.validate(df) == {
-            ...     'warnings': [],
-            ...     'errors': [{'message': 'Input datetime column(s) (index, days) contains NaN values. Please impute NaN values or drop these rows or columns.',
-            ...                 'data_check_name': 'DateTimeNaNDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': ['index', 'days'], 'rows': None},
-            ...                 'code': 'DATETIME_HAS_NAN'}],
-            ...     'actions': []}
+            ...     "warnings": [],
+            ...     "errors": [{"message": "Input datetime column(s) (index, days) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            ...                 "data_check_name": "DateTimeNaNDataCheck",
+            ...                 "level": "error",
+            ...                 "details": {"columns": ["index", "days"], "rows": None},
+            ...                 "code": "DATETIME_HAS_NAN"}],
+            ...     "actions": {"action_list":[], "default_action": None}}
+            ...
+            ...
 
             As will pd.NA.
 
             >>> dates[0][1] = pd.NA
-            >>> df = pd.DataFrame(dates, columns=['index', "days"])
+            >>> df = pd.DataFrame(dates, columns=["index", "days"])
             >>> assert dt_nan_dc.validate(df) == {
-            ...     'warnings': [],
-            ...     'errors': [{'message': 'Input datetime column(s) (index, days) contains NaN values. Please impute NaN values or drop these rows or columns.',
-            ...                 'data_check_name': 'DateTimeNaNDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': ['index', 'days'], 'rows': None},
-            ...                 'code': 'DATETIME_HAS_NAN'}],
-            ...     'actions': []}
+            ...     "warnings": [],
+            ...     "errors": [{"message": "Input datetime column(s) (index, days) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            ...                 "data_check_name": "DateTimeNaNDataCheck",
+            ...                 "level": "error",
+            ...                 "details": {"columns": ["index", "days"], "rows": None},
+            ...                 "code": "DATETIME_HAS_NAN"}],
+            ...     "actions": {"action_list":[], "default_action": None}}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         X = infer_feature_types(X)
         datetime_cols = X.ww.select("datetime")

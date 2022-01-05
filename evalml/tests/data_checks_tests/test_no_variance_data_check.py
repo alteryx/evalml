@@ -64,19 +64,31 @@ cases = [
         all_distinct_X,
         all_distinct_y,
         True,
-        {"warnings": [], "errors": [], "actions": []},
+        {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        },
     ),
     (
         [[1], [2], [3], [4]],
         [1, 2, 3, 2],
         False,
-        {"warnings": [], "errors": [], "actions": []},
+        {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        },
     ),
     (
         np.arange(12).reshape(4, 3),
         [1, 2, 3],
         True,
-        {"warnings": [], "errors": [], "actions": []},
+        {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        },
     ),
     (
         all_null_X,
@@ -85,7 +97,10 @@ cases = [
         {
             "warnings": [],
             "errors": [feature_0_unique],
-            "actions": [drop_feature_action],
+            "actions": {
+                "action_list": [drop_feature_action],
+                "default_action": None,
+            },
         },
     ),
     (
@@ -95,7 +110,10 @@ cases = [
         {
             "warnings": [],
             "errors": [feature_0_unique, labels_1_unique],
-            "actions": [drop_feature_action],
+            "actions": {
+                "action_list": [drop_feature_action],
+                "default_action": None,
+            },
         },
     ),
     (
@@ -105,20 +123,31 @@ cases = [
         {
             "warnings": [],
             "errors": [feature_1_unique],
-            "actions": [drop_feature_action],
+            "actions": {
+                "action_list": [drop_feature_action],
+                "default_action": None,
+            },
         },
     ),
     (
         all_distinct_X,
         all_null_y,
         True,
-        {"warnings": [], "errors": [labels_1_unique], "actions": []},
+        {
+            "warnings": [],
+            "errors": [labels_1_unique],
+            "actions": {"action_list": [], "default_action": None},
+        },
     ),
     (
         all_distinct_X,
         all_null_y,
         False,
-        {"warnings": [], "errors": [labels_0_unique], "actions": []},
+        {
+            "warnings": [],
+            "errors": [labels_0_unique],
+            "actions": {"action_list": [], "default_action": None},
+        },
     ),
     (
         two_distinct_with_nulls_X,
@@ -142,7 +171,10 @@ cases = [
                 ).to_dict(),
             ],
             "errors": [],
-            "actions": [drop_feature_action],
+            "actions": {
+                "action_list": [drop_feature_action],
+                "default_action": None,
+            },
         },
     ),
     (
@@ -152,7 +184,10 @@ cases = [
         {
             "warnings": [],
             "errors": [feature_1_unique, labels_1_unique],
-            "actions": [drop_feature_action],
+            "actions": {
+                "action_list": [drop_feature_action],
+                "default_action": None,
+            },
         },
     ),
     (
@@ -169,7 +204,7 @@ cases = [
                     details={"columns": ["Labels"]},
                 ).to_dict()
             ],
-            "actions": [],
+            "actions": {"action_list": [], "default_action": None},
         },
     ),
     (
@@ -192,7 +227,10 @@ cases = [
                 ).to_dict(),
             ],
             "errors": [],
-            "actions": [drop_feature_action],
+            "actions": {
+                "action_list": [drop_feature_action],
+                "default_action": None,
+            },
         },
     ),
     (
@@ -202,7 +240,10 @@ cases = [
         {
             "warnings": [],
             "errors": [feature_1_unique, labels_1_unique],
-            "actions": [drop_feature_action],
+            "actions": {
+                "action_list": [drop_feature_action],
+                "default_action": None,
+            },
         },
     ),
 ]

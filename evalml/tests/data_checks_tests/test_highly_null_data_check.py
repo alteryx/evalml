@@ -104,18 +104,21 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=highly_null_data_check_name,
-                metadata={"rows": [0, 1, 2, 3, 4]},
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=highly_null_data_check_name,
-                metadata={"columns": ["lots_of_null", "all_null"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_ROWS,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={"rows": [0, 1, 2, 3, 4]},
+                ).to_dict(),
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={"columns": ["lots_of_null", "all_null"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
     some_null_check = HighlyNullDataCheck(
@@ -145,18 +148,21 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=highly_null_data_check_name,
-                metadata={"rows": [0, 1, 2, 3]},
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=highly_null_data_check_name,
-                metadata={"columns": ["lots_of_null", "all_null"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_ROWS,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={"rows": [0, 1, 2, 3]},
+                ).to_dict(),
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={"columns": ["lots_of_null", "all_null"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
     all_null_check = HighlyNullDataCheck(
@@ -175,13 +181,16 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
             ).to_dict()
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=highly_null_data_check_name,
-                metadata={"columns": ["all_null"]},
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={"columns": ["all_null"]},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
 
 
@@ -213,18 +222,21 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=highly_null_data_check_name,
-                metadata={"rows": [0, 1, 2, 3, 4]},
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=highly_null_data_check_name,
-                metadata={"columns": ["all_null"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_ROWS,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={"rows": [0, 1, 2, 3, 4]},
+                ).to_dict(),
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={"columns": ["all_null"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
     col_null_check = HighlyNullDataCheck(
@@ -244,13 +256,16 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=highly_null_data_check_name,
-                metadata={"columns": ["lots_of_null", "all_null"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={"columns": ["lots_of_null", "all_null"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
 
 
@@ -263,7 +278,7 @@ def test_highly_null_data_check_input_formats():
     assert highly_null_check.validate(pd.DataFrame()) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     highly_null_rows = SeriesWrap(pd.Series([0.8]))
@@ -286,18 +301,21 @@ def test_highly_null_data_check_input_formats():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=highly_null_data_check_name,
-                metadata={"rows": [0]},
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=highly_null_data_check_name,
-                metadata={"columns": [0, 1, 2]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_ROWS,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={"rows": [0]},
+                ).to_dict(),
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={"columns": [0, 1, 2]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
     #  test Woodwork
     ww_input = pd.DataFrame([[None, None, None, None, 0], [None, None, None, "hi", 5]])

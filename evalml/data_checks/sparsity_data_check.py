@@ -52,8 +52,8 @@ class SparsityDataCheck(DataCheck):
             For multiclass problems, if a column doesn't have enough representation from unique values, it will be considered sparse.
 
             >>> df = pd.DataFrame({
-            ...    'sparse': [float(x) for x in range(100)],
-            ...    'not_sparse': [float(1) for x in range(100)]
+            ...    "sparse": [float(x) for x in range(100)],
+            ...    "not_sparse": [float(1) for x in range(100)]
             ... })
             ...
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=0.5, unique_count_threshold=10)
@@ -64,18 +64,25 @@ class SparsityDataCheck(DataCheck):
             ...                    "level": "warning",
             ...                    "code": "TOO_SPARSE",
             ...                    "details": {"columns": ["sparse"], "sparsity_score": {"sparse": 0.0}, "rows": None}}],
-            ...     "actions": [{"code": "DROP_COL",
+            ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "SparsityDataCheck",
-            ...                  "metadata": {"columns": ["sparse"], "rows": None}}]}
-
-            >>> df['sparse'] = [float(x % 10) for x in range(100)]
+            ...                  "metadata": {"columns": ["sparse"], "rows": None}}],
+            ...                 "default_action": None}}
+            ...
+            ...
+            >>> df["sparse"] = [float(x % 10) for x in range(100)]
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=1, unique_count_threshold=5)
-            >>> assert sparsity_check.validate(df) == {'warnings': [], 'errors': [], 'actions': []}
-
+            >>> assert sparsity_check.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
+            ...
+            ...
             >>> sparse_array = pd.Series([1, 1, 1, 2, 2, 3] * 3)
             >>> assert SparsityDataCheck.sparsity_score(sparse_array, count_threshold=5) == 0.6666666666666666
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         X = infer_feature_types(X)
 
@@ -103,7 +110,7 @@ class SparsityDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-            results["actions"].append(
+            results["actions"]["action_list"].append(
                 DataCheckAction(
                     action_code=DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,

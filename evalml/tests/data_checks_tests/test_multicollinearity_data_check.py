@@ -70,7 +70,7 @@ def test_multicollinearity_returns_warning():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -116,7 +116,7 @@ def test_multicollinearity_nonnumeric_cols(data_type, make_data_type):
             ).to_dict()
         ],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -127,5 +127,5 @@ def test_multicollinearity_data_check_input_formats():
     assert multi_check.validate(pd.DataFrame()) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }

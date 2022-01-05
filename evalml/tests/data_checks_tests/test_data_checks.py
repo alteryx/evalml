@@ -39,7 +39,11 @@ def test_data_checks(X_y_binary):
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [], "errors": [], "actions": []}
+            return {
+                "warnings": [],
+                "errors": [],
+                "actions": {"action_list": [], "default_action": None},
+            }
 
     class MockDataCheckWarning(DataCheck):
         def validate(self, X, y):
@@ -52,7 +56,7 @@ def test_data_checks(X_y_binary):
                     ).to_dict()
                 ],
                 "errors": [],
-                "actions": [],
+                "actions": {"action_list": [], "default_action": None},
             }
 
     class MockDataCheckError(DataCheck):
@@ -66,7 +70,7 @@ def test_data_checks(X_y_binary):
                         message_code=None,
                     ).to_dict()
                 ],
-                "actions": [],
+                "actions": {"action_list": [], "default_action": None},
             }
 
     class MockDataCheckErrorAndWarning(DataCheck):
@@ -86,7 +90,7 @@ def test_data_checks(X_y_binary):
                         message_code=None,
                     ).to_dict()
                 ],
-                "actions": [],
+                "actions": {"action_list": [], "default_action": None},
             }
 
     data_checks_list = [
@@ -113,7 +117,7 @@ def test_data_checks(X_y_binary):
                 message="error two", data_check_name="MockDataCheckErrorAndWarning"
             ).to_dict(),
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -236,7 +240,10 @@ def test_default_data_checks_classification(input_type):
     assert data_checks.validate(X, y) == {
         "warnings": messages[:2],
         "errors": messages[2:] + imbalance,
-        "actions": expected_actions,
+        "actions": {
+            "action_list": expected_actions,
+            "default_action": None,
+        },
     }
 
     data_checks = DataChecks(
@@ -251,7 +258,10 @@ def test_default_data_checks_classification(input_type):
     assert data_checks.validate(X, y) == {
         "warnings": messages[:2],
         "errors": messages[2:],
-        "actions": expected_actions,
+        "actions": {
+            "action_list": expected_actions,
+            "default_action": None,
+        },
     }
 
     # multiclass
@@ -286,7 +296,10 @@ def test_default_data_checks_classification(input_type):
     assert data_checks.validate(X, y_multiclass) == {
         "warnings": messages[:2] + high_class_to_sample_ratio,
         "errors": [messages[2]] + min_2_class_count + messages[3:] + imbalance,
-        "actions": expected_actions,
+        "actions": {
+            "action_list": expected_actions,
+            "default_action": None,
+        },
     }
 
     data_checks = DataChecks(
@@ -301,7 +314,10 @@ def test_default_data_checks_classification(input_type):
     assert data_checks.validate(X, y_multiclass) == {
         "warnings": messages[:2] + high_class_to_sample_ratio,
         "errors": [messages[2]] + min_2_class_count + messages[3:],
-        "actions": expected_actions,
+        "actions": {
+            "action_list": expected_actions,
+            "default_action": None,
+        },
     }
 
 
@@ -379,7 +395,10 @@ def test_default_data_checks_regression(input_type):
     assert data_checks.validate(X, y) == {
         "warnings": messages[:2] + leakage_warning,
         "errors": messages[2:],
-        "actions": expected_actions_with_drop_and_impute,
+        "actions": {
+            "action_list": expected_actions_with_drop_and_impute,
+            "default_action": None,
+        },
     }
 
     # Skip Invalid Target
@@ -395,9 +414,12 @@ def test_default_data_checks_regression(input_type):
             ).to_dict()
         ]
         + messages[5:],
-        "actions": expected_actions[:2]
-        + [target_leakage_drop_action]
-        + expected_actions[3:],
+        "actions": {
+            "action_list": expected_actions[:2]
+            + [target_leakage_drop_action]
+            + expected_actions[3:],
+            "default_action": None,
+        },
     }
 
     data_checks = DataChecks(
@@ -412,7 +434,10 @@ def test_default_data_checks_regression(input_type):
     assert data_checks.validate(X, y) == {
         "warnings": messages[:2] + leakage_warning,
         "errors": messages[2:],
-        "actions": expected_actions_with_drop_and_impute,
+        "actions": {
+            "action_list": expected_actions_with_drop_and_impute,
+            "default_action": None,
+        },
     }
 
 
@@ -467,32 +492,35 @@ def test_default_data_checks_null_rows():
                 details={"columns": ["all_null", "also_all_null"]},
             ).to_dict(),
         ],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name="HighlyNullDataCheck",
-                metadata={"rows": [0, 1, 2, 3, 4]},
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name="HighlyNullDataCheck",
-                metadata={"columns": ["all_null", "also_all_null"]},
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.IMPUTE_COL,
-                data_check_name="InvalidTargetDataCheck",
-                metadata={
-                    "columns": None,
-                    "is_target": True,
-                    "impute_strategy": "mean",
-                },
-            ).to_dict(),
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name="NoVarianceDataCheck",
-                metadata={"columns": ["all_null", "also_all_null"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_ROWS,
+                    data_check_name="HighlyNullDataCheck",
+                    metadata={"rows": [0, 1, 2, 3, 4]},
+                ).to_dict(),
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name="HighlyNullDataCheck",
+                    metadata={"columns": ["all_null", "also_all_null"]},
+                ).to_dict(),
+                DataCheckAction(
+                    DataCheckActionCode.IMPUTE_COL,
+                    data_check_name="InvalidTargetDataCheck",
+                    metadata={
+                        "columns": None,
+                        "is_target": True,
+                        "impute_strategy": "mean",
+                    },
+                ).to_dict(),
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name="NoVarianceDataCheck",
+                    metadata={"columns": ["all_null", "also_all_null"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }
     validation_results = data_checks.validate(X, y)
     validation_results["warnings"][0]["details"]["pct_null_cols"] = SeriesWrap(
@@ -702,7 +730,7 @@ def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
             assert check.validate(X, y) == {
                 "warnings": [],
                 "errors": [data_check_error],
-                "actions": [],
+                "actions": {"action_list": [], "default_action": None},
             }
 
 
@@ -716,18 +744,25 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
             return {
                 "warnings": [],
                 "errors": [],
-                "actions": [
-                    DataCheckAction(
-                        DataCheckActionCode.DROP_COL,
-                        data_check_name=self.name,
-                        metadata={"column": "col_to_drop"},
-                    ).to_dict()
-                ],
+                "actions": {
+                    "action_list": [
+                        DataCheckAction(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"column": "col_to_drop"},
+                        ).to_dict()
+                    ],
+                    "default_action": None,
+                },
             }
 
     class MockDataCheckWithSameAction(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [], "errors": [], "actions": []}
+            return {
+                "warnings": [],
+                "errors": [],
+                "actions": {"action_list": [], "default_action": None},
+            }
 
     data_checks_list = [MockDataCheck, MockDataCheckWithSameAction]
     data_checks = DataChecks(data_checks=data_checks_list)
@@ -736,13 +771,16 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
     assert data_checks.validate(X, y) == {
         "warnings": [],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=MockDataCheck.name,
-                metadata={"column": "col_to_drop"},
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=MockDataCheck.name,
+                    metadata={"column": "col_to_drop"},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
 
 
@@ -754,7 +792,11 @@ def test_data_checks_drop_index(X_y_binary):
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
-            return {"warnings": [], "errors": [], "actions": []}
+            return {
+                "warnings": [],
+                "errors": [],
+                "actions": {"action_list": [], "default_action": None},
+            }
 
     assert MockDataCheck().validate(X, y)
 

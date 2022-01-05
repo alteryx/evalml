@@ -41,13 +41,16 @@ def test_outliers_data_check_warnings():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=outliers_data_check_name,
-                metadata={"rows": [0, 3, 5, 10]},
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_ROWS,
+                    data_check_name=outliers_data_check_name,
+                    metadata={"rows": [0, 3, 5, 10]},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
 
 
@@ -77,13 +80,16 @@ def test_outliers_data_check_warnings_with_duplicate_outlier_indices():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=outliers_data_check_name,
-                metadata={"rows": [0, 3]},
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_ROWS,
+                    data_check_name=outliers_data_check_name,
+                    metadata={"rows": [0, 3]},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
 
 
@@ -94,7 +100,7 @@ def test_outliers_data_check_input_formats():
     assert outliers_check.validate(pd.DataFrame()) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
     # test np.array
@@ -122,13 +128,16 @@ def test_outliers_data_check_input_formats():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=outliers_data_check_name,
-                metadata={"rows": [0, 3, 5, 10]},
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_ROWS,
+                    data_check_name=outliers_data_check_name,
+                    metadata={"rows": [0, 3, 5, 10]},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
 
     # test Woodwork
@@ -148,13 +157,16 @@ def test_outliers_data_check_input_formats():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=outliers_data_check_name,
-                metadata={"rows": [0, 3, 5, 10]},
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_ROWS,
+                    data_check_name=outliers_data_check_name,
+                    metadata={"rows": [0, 3, 5, 10]},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
 
 
@@ -183,13 +195,16 @@ def test_outliers_data_check_string_cols():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=outliers_data_check_name,
-                metadata={"rows": [0]},
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_ROWS,
+                    data_check_name=outliers_data_check_name,
+                    metadata={"rows": [0]},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
 
 
@@ -201,7 +216,7 @@ def test_outlier_score_all_nan():
     assert outliers_check.validate(all_nan) == {
         "warnings": [],
         "errors": [],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -231,13 +246,16 @@ def test_outliers_data_check_warnings_has_nan():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=outliers_data_check_name,
-                metadata={"rows": [3, 5, 10]},
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_ROWS,
+                    data_check_name=outliers_data_check_name,
+                    metadata={"rows": [3, 5, 10]},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
 
 

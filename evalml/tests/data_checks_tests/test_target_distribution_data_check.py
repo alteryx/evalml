@@ -32,7 +32,7 @@ def test_target_distribution_data_check_no_y(X_y_regression):
                 details={},
             ).to_dict()
         ],
-        "actions": [],
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -57,7 +57,7 @@ def test_target_distribution_data_check_unsupported_target_type(target_type):
         assert target_dist_check.validate(X, y) == {
             "warnings": [],
             "errors": [],
-            "actions": [],
+            "actions": {"action_list": [], "default_action": None},
         }
     else:
         assert target_dist_check.validate(X, y) == {
@@ -70,7 +70,7 @@ def test_target_distribution_data_check_unsupported_target_type(target_type):
                     details={"unsupported_type": y.ww.logical_type.type_string},
                 ).to_dict()
             ],
-            "actions": [],
+            "actions": {"action_list": [], "default_action": None},
         }
 
 
@@ -109,7 +109,7 @@ def test_target_distribution_data_check_warning_action(
         assert target_dist_check.validate(X, y) == {
             "warnings": [],
             "errors": [],
-            "actions": [],
+            "actions": {"action_list": [], "default_action": None},
         }
     else:
         target_dist_ = target_dist_check.validate(X, y)
@@ -134,15 +134,18 @@ def test_target_distribution_data_check_warning_action(
                 ).to_dict()
             ],
             "errors": [],
-            "actions": [
-                DataCheckAction(
-                    DataCheckActionCode.TRANSFORM_TARGET,
-                    data_check_name=target_dist_check_name,
-                    metadata={
-                        "columns": None,
-                        "is_target": True,
-                        "transformation_strategy": "lognormal",
-                    },
-                ).to_dict()
-            ],
+            "actions": {
+                "action_list": [
+                    DataCheckAction(
+                        DataCheckActionCode.TRANSFORM_TARGET,
+                        data_check_name=target_dist_check_name,
+                        metadata={
+                            "columns": None,
+                            "is_target": True,
+                            "transformation_strategy": "lognormal",
+                        },
+                    ).to_dict()
+                ],
+                "default_action": None,
+            },
         }

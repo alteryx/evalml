@@ -41,27 +41,34 @@ class TargetDistributionDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "TARGET_LOGNORMAL_DISTRIBUTION",
             ...                   "details": {"normalization_method": "shapiro", "statistic": 0.8, "p-value": 0.045, "columns": None, "rows": None}}],
-            ...     "actions": [{'code': 'TRANSFORM_TARGET',
+            ...     "actions": {"action_list": [{"code": "TRANSFORM_TARGET",
             ...                  "data_check_name": "TargetDistributionDataCheck",
-            ...                  'metadata': {'transformation_strategy': 'lognormal',
-            ...                               'is_target': True,
+            ...                  "metadata": {"transformation_strategy": "lognormal",
+            ...                               "is_target": True,
             ...                               "columns": None,
-            ...                               "rows": None}}]}
-
+            ...                               "rows": None}}],
+            ...                 "default_action": None}}
+            ...
+            ...
             >>> y = pd.Series([1, 1, 1, 2, 2, 3, 4, 4, 5, 5, 5])
-            >>> assert target_check.validate(None, y) == {'warnings': [], 'errors': [], 'actions': []}
-
-            >>> y = pd.Series(pd.date_range('1/1/21', periods=10))
+            >>> assert target_check.validate(None, y) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
+            ...
+            ...
+            >>> y = pd.Series(pd.date_range("1/1/21", periods=10))
             >>> assert target_check.validate(None, y) == {
-            ...     'warnings': [],
-            ...     'errors': [{'message': 'Target is unsupported datetime type. Valid Woodwork logical types include: integer, double',
-            ...                 'data_check_name': 'TargetDistributionDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': None, 'rows': None, 'unsupported_type': 'datetime'},
-            ...                 'code': 'TARGET_UNSUPPORTED_TYPE'}],
-            ...     'actions': []}
+            ...     "warnings": [],
+            ...     "errors": [{"message": "Target is unsupported datetime type. Valid Woodwork logical types include: integer, double",
+            ...                 "data_check_name": "TargetDistributionDataCheck",
+            ...                 "level": "error",
+            ...                 "details": {"columns": None, "rows": None, "unsupported_type": "datetime"},
+            ...                 "code": "TARGET_UNSUPPORTED_TYPE"}],
+            ...     "actions": {"action_list":[], "default_action": None}}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         if y is None:
             results["errors"].append(
@@ -114,7 +121,7 @@ class TargetDistributionDataCheck(DataCheck):
                     details=details,
                 ).to_dict()
             )
-            results["actions"].append(
+            results["actions"]["action_list"].append(
                 DataCheckAction(
                     DataCheckActionCode.TRANSFORM_TARGET,
                     data_check_name=self.name,

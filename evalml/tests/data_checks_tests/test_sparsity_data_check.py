@@ -135,11 +135,14 @@ def test_sparsity_data_check_warnings():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=sparsity_data_check_name,
-                metadata={"columns": ["most_sparse", "more_sparse", "sparse"]},
-            ).to_dict(),
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=sparsity_data_check_name,
+                    metadata={"columns": ["most_sparse", "more_sparse", "sparse"]},
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
     }

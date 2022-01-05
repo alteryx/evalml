@@ -105,13 +105,16 @@ def test_uniqueness_data_check_warnings():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=uniqueness_data_check_name,
-                metadata={"columns": ["regression_not_unique_enough"]},
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=uniqueness_data_check_name,
+                    metadata={"columns": ["regression_not_unique_enough"]},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }
 
     data = pd.DataFrame(
@@ -134,11 +137,14 @@ def test_uniqueness_data_check_warnings():
             ).to_dict()
         ],
         "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=uniqueness_data_check_name,
-                metadata={"columns": ["multiclass_too_unique"]},
-            ).to_dict()
-        ],
+        "actions": {
+            "action_list": [
+                DataCheckAction(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=uniqueness_data_check_name,
+                    metadata={"columns": ["multiclass_too_unique"]},
+                ).to_dict()
+            ],
+            "default_action": None,
+        },
     }

@@ -54,19 +54,23 @@ class TimeSeriesSplittingDataCheck(DataCheck):
             ...
             >>> ts_splitting_check = TimeSeriesSplittingDataCheck("time series binary", 3)
             >>> assert ts_splitting_check.validate(X, y) == {
-            ...     "errors": [{'message': 'Time Series Binary and Time Series Multiclass problem '
-            ...                             'types require every training and validation split to '
-            ...                             'have at least one instance of all the target classes. '
-            ...                             'The following splits are invalid: [1, 3]',
-            ...                  'data_check_name': 'TimeSeriesSplittingDataCheck',
-            ...                  'level': 'error',
-            ...                  'details': {'columns': None, 'rows': None, 'invalid_splits': {1: {"Training": [0, 25]},
+            ...     "errors": [{"message": "Time Series Binary and Time Series Multiclass problem "
+            ...                             "types require every training and validation split to "
+            ...                             "have at least one instance of all the target classes. "
+            ...                             "The following splits are invalid: [1, 3]",
+            ...                  "data_check_name": "TimeSeriesSplittingDataCheck",
+            ...                  "level": "error",
+            ...                  "details": {"columns": None, "rows": None, "invalid_splits": {1: {"Training": [0, 25]},
             ...                                                                                3: {"Validation": [75, 100]}}},
-            ...                  'code': 'TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT'}],
+            ...                  "code": "TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT"}],
             ...     "warnings": [],
-            ...     "actions": []}
+            ...     "actions": {"action_list":[], "default_action": None}}
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        results = {
+            "warnings": [],
+            "errors": [],
+            "actions": {"action_list": [], "default_action": None},
+        }
 
         y = infer_feature_types(y)
 
