@@ -1981,12 +1981,15 @@ def test_percent_better_than_baseline_in_rankings(
     dummy_regression_pipeline_class,
     dummy_time_series_regression_pipeline_class,
     ts_data_binary,
+    X_y_multi,
 ):
     if not objective.is_defined_for_problem_type(problem_type_value):
         pytest.skip("Skipping because objective is not defined for problem type")
 
     # Ok to only use binary labels since score and fit methods are mocked
     X, y = ts_data_binary
+    if problem_type_value == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
 
     pipeline_class = {
         ProblemTypes.BINARY: dummy_binary_pipeline_class,

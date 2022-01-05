@@ -51,6 +51,9 @@ class ClassificationPipeline(PipelineBase):
 
         Returns:
             self
+
+        Raises:
+            ValueError: If the number of unique classes in y are not appropriate for the type of pipeline.
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
