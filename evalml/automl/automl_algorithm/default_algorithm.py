@@ -7,7 +7,6 @@ from skopt.space import Categorical, Integer, Real
 
 from .automl_algorithm import AutoMLAlgorithm
 
-from evalml import problem_types
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
     RFClassifierSelectFromModel,
