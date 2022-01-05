@@ -584,7 +584,6 @@ def _make_stacked_ensemble_pipeline(
     component_graph[estimator.name] = (
         [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
     )
-    parameters.update(pipeline_params)
     return pipeline_class(
         component_graph,
         parameters=parameters,
