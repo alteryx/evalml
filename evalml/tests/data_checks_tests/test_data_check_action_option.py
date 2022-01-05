@@ -5,11 +5,6 @@ import pytest
 from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
 
 
-@pytest.fixture
-def dummy_data_check_name():
-    return "dummy_data_check_name"
-
-
 def test_data_check_action_option_attributes(dummy_data_check_name):
     data_check_action_option = DataCheckActionOption(
         DataCheckActionCode.DROP_COL, dummy_data_check_name
@@ -17,7 +12,7 @@ def test_data_check_action_option_attributes(dummy_data_check_name):
     assert data_check_action_option.data_check_name == dummy_data_check_name
     assert data_check_action_option.action_code == DataCheckActionCode.DROP_COL
     assert data_check_action_option.metadata == {"rows": None, "columns": None}
-    assert data_check_action_option.parameters == {}
+    assert data_check_action_option.parameters is None
 
     data_check_action_option = DataCheckActionOption(
         DataCheckActionCode.DROP_COL, None, metadata={}, parameters={}
@@ -170,19 +165,19 @@ def test_data_check_action_option_to_dict(dummy_data_check_name):
     assert data_check_action_option.to_dict() == {
         "code": DataCheckActionCode.DROP_COL.name,
         "data_check_name": dummy_data_check_name,
-        "parameters": {},
+        "parameters": None,
         "metadata": {"columns": None, "rows": None},
     }
     assert data_check_action_option_empty_metadata.to_dict() == {
         "code": DataCheckActionCode.DROP_COL.name,
         "data_check_name": dummy_data_check_name,
-        "parameters": {},
+        "parameters": None,
         "metadata": {"columns": None, "rows": None},
     }
     assert data_check_action_option_with_metadata.to_dict() == {
         "code": DataCheckActionCode.DROP_COL.name,
         "data_check_name": dummy_data_check_name,
-        "parameters": {},
+        "parameters": None,
         "metadata": {
             "some detail": ["some detail value"],
             "columns": None,
@@ -226,24 +221,13 @@ def test_convert_dict_to_action_bad_input():
 
     data_check_action_option_dict_no_columns = {
         "code": DataCheckActionCode.DROP_COL.name,
-        "metadata": {"rows": None},
+        "metadata": {"cow": None},
     }
     with pytest.raises(
         ValueError, match="The metadata dictionary should have the keys"
     ):
         DataCheckActionOption.convert_dict_to_action(
             data_check_action_option_dict_no_columns
-        )
-
-    data_check_action_option_dict_no_rows = {
-        "code": DataCheckActionCode.DROP_COL.name,
-        "metadata": {"columns": None},
-    }
-    with pytest.raises(
-        ValueError, match="The metadata dictionary should have the keys"
-    ):
-        DataCheckActionOption.convert_dict_to_action(
-            data_check_action_option_dict_no_rows
         )
 
 
@@ -262,6 +246,19 @@ def test_convert_dict_to_action_bad_parameter_input(dummy_data_check_name):
                 }
             },
         )
+    with pytest.raises(ValueError, match="Each global parameter must have a type key."):
+        DataCheckActionOption(
+            action_code=DataCheckActionCode.DROP_COL,
+            data_check_name=dummy_data_check_name,
+            metadata={"columns": None, "rows": None},
+            parameters={
+                "global_parameter_name": {
+                    "parameter_type": "global",
+                    "default_value": 0.0,
+                }
+            },
+        )
+
     with pytest.raises(
         ValueError,
         match=re.escape(

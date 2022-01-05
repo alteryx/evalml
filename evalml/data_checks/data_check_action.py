@@ -68,7 +68,7 @@ class DataCheckAction:
             or "rows" not in action_dict["metadata"]
         ):
             raise ValueError(
-                "The metadata dictionary should have the keys `columns` and `rows`. Set to None if not using."
+                "The metadata dictionary should have the keys `columns` or `rows`. Set to None if not using."
             )
 
         return DataCheckAction(

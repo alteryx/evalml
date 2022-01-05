@@ -3,8 +3,11 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added string support for DataCheckActionCode :pr:`3167`
+        * Added ``DataCheckActionOption`` class :pr:`3134`
     * Fixes
     * Changes
+        * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
+        * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
     * Documentation Changes
     * Testing Changes
 
