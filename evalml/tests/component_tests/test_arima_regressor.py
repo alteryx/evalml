@@ -1,8 +1,9 @@
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import ARIMARegressor
@@ -269,3 +270,35 @@ def test_different_time_units_out_of_sample(
 
     assert (y_pred_sk.values == y_pred.values).all()
     assert y_pred.index.equals(X[15:].index)
+
+
+def test_arima_supports_boolean_features():
+    X = pd.DataFrame({"dates": pd.date_range("2021-01-01", periods=10)})
+    X.ww.init()
+    X.ww["bool_1"] = (
+        pd.Series([True, False])
+        .sample(n=10, replace=True, random_state=0)
+        .reset_index(drop=True)
+    )
+    X.ww["bool_2"] = (
+        pd.Series([True, False])
+        .sample(n=10, replace=True, random_state=1)
+        .reset_index(drop=True)
+    )
+    y = pd.Series(range(10))
+
+    ar = ARIMARegressor(time_index="dates")
+
+    ar._component_obj = MagicMock()
+    ar.fit(X, y)
+
+    pd.testing.assert_series_equal(
+        ar._component_obj.fit.call_args[1]["X"]["bool_1"], X["bool_1"].astype(float)
+    )
+    pd.testing.assert_series_equal(
+        ar._component_obj.fit.call_args[1]["X"]["bool_2"], X["bool_2"].astype(float)
+    )
+
+    ar = ARIMARegressor(time_index="dates")
+    ar.fit(X, y)
+    ar.predict(X)
