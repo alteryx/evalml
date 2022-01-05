@@ -17,7 +17,8 @@ class ExponentialSmoothingRegressor(Estimator):
     Args:
         trend (str): Type of trend component. Defaults to None.
         damped_trend (bool): If the trend component should be damped. Defaults to False.
-        seasonal (str): Type of seasonal component. Takes one of {“additive”, “multiplicative”, None}. Defaults to None.
+        seasonal (str): Type of seasonal component. Takes one of {“additive”, None}. Can also be multiplicative if 
+        none of the target data is 0, but AutoMLSearch wiill not tune for this. Defaults to None.
         sp (int): The number of seasonal periods to consider. Defaults to 2.
         n_jobs (int or None): Non-negative integer describing level of parallelism used for pipelines. Defaults to -1.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -25,15 +26,15 @@ class ExponentialSmoothingRegressor(Estimator):
 
     name = "Exponential Smoothing Regressor"
     hyperparameter_ranges = {
-        "trend": [None, "additive", "multiplicative"],
+        "trend": [None, "additive"],
         "damped_trend": [True, False],
-        "seasonal": [None, "additive", "multiplicative"],
+        "seasonal": [None, "additive"],
         "sp": Integer(2, 8),
     }
     """{
-        "trend": [None, "additive", "multiplicative"],
+        "trend": [None, "additive"],
         "damped_trend": [True, False],
-        "seasonal": ["additive", "multiplicative"],
+        "seasonal": [None, "additive"],
         "sp": Integer(2, 8),
     }"""
     model_family = ModelFamily.EXPONENTIAL_SMOOTHING
