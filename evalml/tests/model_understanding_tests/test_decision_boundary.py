@@ -122,8 +122,7 @@ def test_find_confusion_matrix_per_threshold_args_pass_through(
     n_bins = 100
     X = pd.DataFrame()
     y = pd.Series([0] * 500 + [1] * 500)
-    bcp = dummy_binary_pipeline
-    bcp._is_fitted = True
+    dummy_binary_pipeline._is_fitted = True
 
     # set return predicted proba
     preds = [0.1] * 250 + [0.8] * 500 + [0.6] * 250
@@ -166,7 +165,9 @@ def test_find_confusion_matrix_per_threshold_args_pass_through(
         "balanced_accuracy": {"objective score": 0.5, "threshold value": 0.25},
     }
 
-    returned_result = find_confusion_matrix_per_thresholds(bcp, X, y, n_bins)
+    returned_result = find_confusion_matrix_per_thresholds(
+        dummy_binary_pipeline, X, y, n_bins
+    )
     call_args = mock_threshold.call_args
     assert all(call_args[0][0] == expected_pos_skew)
     assert all(call_args[0][1] == expected_neg_skew)
@@ -185,8 +186,7 @@ def test_find_confusion_matrix_per_threshold_n_bins(
 ):
     X = pd.DataFrame()
     y = pd.Series([0] * 1200 + [1] * 800)
-    bcp = dummy_binary_pipeline
-    bcp._is_fitted = True
+    dummy_binary_pipeline._is_fitted = True
     top_k = 5
 
     # set return predicted proba
@@ -196,7 +196,7 @@ def test_find_confusion_matrix_per_threshold_n_bins(
 
     # calculate the expected output results
     returned_result = find_confusion_matrix_per_thresholds(
-        bcp, X, y, n_bins, top_k=top_k
+        dummy_binary_pipeline, X, y, n_bins, top_k=top_k
     )
     assert isinstance(returned_result, tuple)
     if n_bins is not None:
@@ -231,8 +231,7 @@ def test_find_confusion_matrix_per_threshold_k_(
 ):
     X = pd.DataFrame()
     y = pd.Series([0] * 1200 + [1] * 800)
-    bcp = dummy_binary_pipeline
-    bcp._is_fitted = True
+    dummy_binary_pipeline._is_fitted = True
 
     # set return predicted proba
     preds = [0.1] * 400 + [0.8] * 400 + [0.6] * 400 + [0.4] * 400 + [0.5] * 400
@@ -241,7 +240,7 @@ def test_find_confusion_matrix_per_threshold_k_(
 
     # calculate the expected output results
     returned_result = find_confusion_matrix_per_thresholds(
-        bcp, X, y, n_bins=n_bins, top_k=top_k
+        dummy_binary_pipeline, X, y, n_bins=n_bins, top_k=top_k
     )
     assert isinstance(returned_result, tuple)
     if n_bins is not None:
