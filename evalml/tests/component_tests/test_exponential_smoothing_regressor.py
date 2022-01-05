@@ -30,19 +30,19 @@ def test_problem_types():
 
 def test_model_instance(ts_data):
     X, y = ts_data
-    clf = ExponentialSmoothingRegressor()
-    fitted = clf.fit(X, y)
+    regressor = ExponentialSmoothingRegressor()
+    fitted = regressor.fit(X, y)
     assert isinstance(fitted, ExponentialSmoothingRegressor)
 
 
 def test_fit_ts_without_y(ts_data):
     X, y = ts_data
 
-    clf = ExponentialSmoothingRegressor()
+    regressor = ExponentialSmoothingRegressor()
     with pytest.raises(
         ValueError, match="Exponential Smoothing Regressor requires y as input."
     ):
-        clf.fit(X=X)
+        regressor.fit(X=X)
 
 
 @pytest.mark.parametrize("train_features_index_dt", [True, False])
@@ -87,8 +87,8 @@ def test_remove_datetime(
     else:
         assert not isinstance(y_train.index, pd.DatetimeIndex)
 
-    clf = ExponentialSmoothingRegressor()
-    clf.fit(X_train, y_train)
+    regressor = ExponentialSmoothingRegressor()
+    regressor.fit(X_train, y_train)
 
     y_train_removed = mock_fit.call_args.kwargs.get("y", None)
     if y_train_removed is not None:
@@ -107,8 +107,8 @@ def test_set_forecast(get_ts_X_y):
         test_features_index_dt=False,
     )
 
-    clf = ExponentialSmoothingRegressor()
-    fh_ = clf._set_forecast(X_test)
+    regressor = ExponentialSmoothingRegressor()
+    fh_ = regressor._set_forecast(X_test)
     assert isinstance(fh_, ForecastingHorizon)
     assert len(fh_) == len(X_test)
     assert fh_.is_relative
@@ -116,10 +116,10 @@ def test_set_forecast(get_ts_X_y):
 
 def test_feature_importance(ts_data):
     X, y = ts_data
-    clf = ExponentialSmoothingRegressor()
-    with patch.object(clf, "_component_obj"):
-        clf.fit(X, y)
-        assert clf.feature_importance == np.zeros(1)
+    regressor = ExponentialSmoothingRegressor()
+    with patch.object(regressor, "_component_obj"):
+        regressor.fit(X, y)
+        assert regressor.feature_importance == np.zeros(1)
 
 
 @pytest.mark.parametrize(
@@ -157,8 +157,8 @@ def test_fit_predict(
     fh_ = ForecastingHorizon([i + 1 for i in range(len(X_test))], is_relative=True)
 
     sk_clf = ExponentialSmoothing()
-    clf = sk_clf.fit(X=X_train, y=y_train)
-    y_pred_sk = clf.predict(fh=fh_, X=X_test)
+    regressor = sk_clf.fit(X=X_train, y=y_train)
+    y_pred_sk = regressor.predict(fh=fh_, X=X_test)
 
     m_clf = ExponentialSmoothingRegressor()
     m_clf.fit(X=X_train, y=y_train)
@@ -186,8 +186,8 @@ def test_predict_no_X_in_fit(
     fh_ = ForecastingHorizon([i + 1 for i in range(len(X_test))], is_relative=True)
 
     sk_clf = ExponentialSmoothing()
-    clf = sk_clf.fit(X=X_train, y=y_train)
-    y_pred_sk = clf.predict(fh=fh_)
+    regressor = sk_clf.fit(X=X_train, y=y_train)
+    y_pred_sk = regressor.predict(fh=fh_)
 
     m_clf = ExponentialSmoothingRegressor()
     m_clf.fit(X=None, y=y_train)
