@@ -100,7 +100,7 @@ def test_outliers_data_check_input_formats():
     assert outliers_check.validate(pd.DataFrame()) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     # test np.array
@@ -216,7 +216,7 @@ def test_outlier_score_all_nan():
     assert outliers_check.validate(all_nan) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
 

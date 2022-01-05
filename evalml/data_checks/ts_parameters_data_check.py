@@ -73,7 +73,7 @@ class TimeSeriesParametersDataCheck(DataCheck):
         results = {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list":[], "default_action": None},
+            "actions": {"action_list": [], "default_action": None},
         }
 
         validation = are_ts_parameters_valid_for_split(

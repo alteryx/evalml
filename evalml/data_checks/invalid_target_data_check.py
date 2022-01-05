@@ -167,7 +167,7 @@ class InvalidTargetDataCheck(DataCheck):
         results = {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list":[], "default_action": None},
+            "actions": {"action_list": [], "default_action": None},
         }
 
         if y is None:

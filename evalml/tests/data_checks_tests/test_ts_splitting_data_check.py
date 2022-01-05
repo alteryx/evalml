@@ -59,5 +59,5 @@ def test_time_series_param_data_check(is_valid, problem_type):
         assert results == {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list":[], "default_action": None},
+            "actions": {"action_list": [], "default_action": None},
         }

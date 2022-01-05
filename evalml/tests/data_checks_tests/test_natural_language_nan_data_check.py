@@ -22,7 +22,7 @@ def test_nl_nan_data_check_error():
     nl_nan_check = NaturalLanguageNaNDataCheck()
     assert nl_nan_check.validate(data) == {
         "warnings": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
         "errors": [
             DataCheckError(
                 message="Input natural language column(s) (natural_language) contains NaN values. Please impute NaN values or drop these rows or columns.",
@@ -47,7 +47,7 @@ def test_nl_nan_data_check_error_no_nan():
     nl_nan_check = NaturalLanguageNaNDataCheck()
     assert nl_nan_check.validate(data) == {
         "warnings": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
         "errors": [],
     }
 
@@ -63,7 +63,7 @@ def test_nl_nan_data_check_error_other_cols_with_nan():
     nl_nan_check = NaturalLanguageNaNDataCheck()
     assert nl_nan_check.validate(data) == {
         "warnings": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
         "errors": [],
     }
 
@@ -84,7 +84,7 @@ def test_nl_nan_data_check_error_multiple_nl_no_nan():
     nl_nan_check = NaturalLanguageNaNDataCheck()
     assert nl_nan_check.validate(data) == {
         "warnings": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
         "errors": [],
     }
 
@@ -123,7 +123,7 @@ def test_nl_nan_data_check_error_multiple_nl_nan():
     nl_nan_check = NaturalLanguageNaNDataCheck()
     assert nl_nan_check.validate(data) == {
         "warnings": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
         "errors": [
             DataCheckError(
                 message="Input natural language column(s) (A, B) contains NaN values. Please impute NaN values or drop these rows or columns.",
@@ -142,12 +142,12 @@ def test_nl_nan_check_input_formats():
     assert nl_nan_check.validate(pd.DataFrame()) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     expected = {
         "warnings": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
         "errors": [
             DataCheckError(
                 message="Input natural language column(s) (nl) contains NaN values. Please impute NaN values or drop these rows or columns.",
@@ -171,7 +171,7 @@ def test_nl_nan_check_input_formats():
 
     expected = {
         "warnings": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
         "errors": [
             DataCheckError(
                 message="Input natural language column(s) (0) contains NaN values. Please impute NaN values or drop these rows or columns.",

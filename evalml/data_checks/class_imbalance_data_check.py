@@ -117,7 +117,7 @@ class ClassImbalanceDataCheck(DataCheck):
         results = {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list":[], "default_action": None},
+            "actions": {"action_list": [], "default_action": None},
         }
 
         y = infer_feature_types(y)

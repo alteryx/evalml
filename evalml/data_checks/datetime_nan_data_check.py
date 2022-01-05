@@ -77,7 +77,7 @@ class DateTimeNaNDataCheck(DataCheck):
         results = {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list":[], "default_action": None},
+            "actions": {"action_list": [], "default_action": None},
         }
 
         X = infer_feature_types(X)

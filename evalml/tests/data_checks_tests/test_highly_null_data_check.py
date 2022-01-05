@@ -278,7 +278,7 @@ def test_highly_null_data_check_input_formats():
     assert highly_null_check.validate(pd.DataFrame()) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     highly_null_rows = SeriesWrap(pd.Series([0.8]))

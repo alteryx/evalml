@@ -55,7 +55,7 @@ def test_class_imbalance_data_check_binary(input_type):
     assert class_imbalance_check.validate(X, y) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
     assert class_imbalance_check.validate(X, y_long) == {
         "warnings": [
@@ -67,7 +67,7 @@ def test_class_imbalance_data_check_binary(input_type):
             ).to_dict()
         ],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
     assert ClassImbalanceDataCheck(
         threshold=0.25, min_samples=1, num_cv_folds=0
@@ -81,7 +81,7 @@ def test_class_imbalance_data_check_binary(input_type):
             ).to_dict()
         ],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=1)
@@ -95,13 +95,13 @@ def test_class_imbalance_data_check_binary(input_type):
                 details={"target_values": [1]},
             ).to_dict()
         ],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     assert class_imbalance_check.validate(X, y_balanced) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     class_imbalance_check = ClassImbalanceDataCheck()
@@ -115,7 +115,7 @@ def test_class_imbalance_data_check_binary(input_type):
                 details={"target_values": [0, 1]},
             ).to_dict()
         ],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -150,7 +150,7 @@ def test_class_imbalance_data_check_multiclass(input_type):
     assert class_imbalance_check.validate(X, y) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
     assert class_imbalance_check.validate(X, y_imbalanced_default_threshold) == {
         "warnings": [
@@ -168,7 +168,7 @@ def test_class_imbalance_data_check_multiclass(input_type):
             ).to_dict(),
         ],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     assert ClassImbalanceDataCheck(
@@ -183,7 +183,7 @@ def test_class_imbalance_data_check_multiclass(input_type):
             ).to_dict()
         ],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=2)
@@ -197,7 +197,7 @@ def test_class_imbalance_data_check_multiclass(input_type):
                 details={"target_values": [0, 2]},
             ).to_dict()
         ],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     assert class_imbalance_check.validate(X, y_long) == {
@@ -210,7 +210,7 @@ def test_class_imbalance_data_check_multiclass(input_type):
                 details={"target_values": [0, 1]},
             ).to_dict()
         ],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     class_imbalance_check = ClassImbalanceDataCheck()
@@ -224,7 +224,7 @@ def test_class_imbalance_data_check_multiclass(input_type):
                 details={"target_values": [0, 1, 2, 3]},
             ).to_dict()
         ],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -248,7 +248,7 @@ def test_class_imbalance_empty_and_nan(input_type):
     assert class_imbalance_check.validate(X, y_empty) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
     assert ClassImbalanceDataCheck(
         threshold=0.5, min_samples=1, num_cv_folds=0
@@ -262,7 +262,7 @@ def test_class_imbalance_empty_and_nan(input_type):
             ).to_dict()
         ],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     assert ClassImbalanceDataCheck(threshold=0.5, num_cv_folds=0).validate(
@@ -283,14 +283,14 @@ def test_class_imbalance_empty_and_nan(input_type):
             ).to_dict(),
         ],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=1)
     assert class_imbalance_check.validate(X, y_empty) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
     assert ClassImbalanceDataCheck(threshold=0.5, num_cv_folds=1).validate(
         X, y_has_nan
@@ -317,7 +317,7 @@ def test_class_imbalance_empty_and_nan(input_type):
                 details={"target_values": [2.0]},
             ).to_dict()
         ],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -363,7 +363,7 @@ def test_class_imbalance_nonnumeric(input_type):
             ).to_dict()
         ],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     assert class_imbalance_check.validate(X, y_binary) == {
@@ -376,7 +376,7 @@ def test_class_imbalance_nonnumeric(input_type):
             ).to_dict()
         ],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     assert ClassImbalanceDataCheck(threshold=0.35, num_cv_folds=0).validate(
@@ -397,7 +397,7 @@ def test_class_imbalance_nonnumeric(input_type):
             ).to_dict(),
         ],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     class_imbalance_check = ClassImbalanceDataCheck(num_cv_folds=1)
@@ -411,12 +411,12 @@ def test_class_imbalance_nonnumeric(input_type):
                 details={"target_values": ["Yes"]},
             ).to_dict()
         ],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
     assert class_imbalance_check.validate(X, y_multiclass) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     class_imbalance_check = ClassImbalanceDataCheck()
@@ -430,7 +430,7 @@ def test_class_imbalance_nonnumeric(input_type):
                 details={"target_values": ["No", "Yes"]},
             ).to_dict()
         ],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     assert class_imbalance_check.validate(X, y_multiclass) == {
@@ -443,7 +443,7 @@ def test_class_imbalance_nonnumeric(input_type):
                 details={"target_values": ["blue", "green"]},
             ).to_dict()
         ],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -465,17 +465,17 @@ def test_class_imbalance_nonnumeric_balanced(input_type):
     assert class_imbalance_check.validate(X, y_multiclass_balanced) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
     assert class_imbalance_check.validate(X, y_binary_balanced) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
     assert class_imbalance_check.validate(X, y_multiclass_balanced) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -516,13 +516,13 @@ def test_class_imbalance_severe(min_samples, input_type):
     assert class_imbalance_check.validate(X, y_values_binary) == {
         "warnings": warnings,
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     assert class_imbalance_check.validate(X, y_values_multiclass) == {
         "warnings": warnings,
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
 
@@ -556,13 +556,13 @@ def test_class_imbalance_large_multiclass():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     assert class_imbalance_check.validate(X, y_multiclass_huge) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     assert class_imbalance_check.validate(X, y_imbalanced_multiclass_huge) == {
@@ -581,11 +581,11 @@ def test_class_imbalance_large_multiclass():
             ).to_dict(),
         ],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }
 
     assert class_imbalance_check.validate(X, y_imbalanced_multiclass_nan) == {
         "warnings": [],
         "errors": [],
-        "actions": {"action_list":[], "default_action": None},
+        "actions": {"action_list": [], "default_action": None},
     }

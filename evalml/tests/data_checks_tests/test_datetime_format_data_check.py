@@ -56,14 +56,14 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                 ).to_dict()
             ],
             "warnings": [],
-            "actions": {"action_list":[], "default_action": None},
+            "actions": {"action_list": [], "default_action": None},
         }
     else:
         if not uneven:
             assert datetime_format_check.validate(X, y) == {
                 "warnings": [],
                 "errors": [],
-                "actions": {"action_list":[], "default_action": None},
+                "actions": {"action_list": [], "default_action": None},
             }
         else:
             col_name = datetime_loc if datetime_loc == 1 else "either index"
@@ -76,7 +76,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                     ).to_dict()
                 ],
                 "warnings": [],
-                "actions": {"action_list":[], "default_action": None},
+                "actions": {"action_list": [], "default_action": None},
             }
 
 
@@ -106,7 +106,7 @@ def test_datetime_format_data_check_monotonic(datetime_loc, sort_order):
         assert datetime_format_check.validate(X, y) == {
             "warnings": [],
             "errors": [],
-            "actions": {"action_list":[], "default_action": None},
+            "actions": {"action_list": [], "default_action": None},
         }
     else:
         col_name = (
@@ -126,11 +126,11 @@ def test_datetime_format_data_check_monotonic(datetime_loc, sort_order):
             assert datetime_format_check.validate(X, y) == {
                 "errors": [mono_error],
                 "warnings": [],
-                "actions": {"action_list":[], "default_action": None},
+                "actions": {"action_list": [], "default_action": None},
             }
         else:
             assert datetime_format_check.validate(X, y) == {
                 "errors": [freq_error, mono_error],
                 "warnings": [],
-                "actions": {"action_list":[], "default_action": None},
+                "actions": {"action_list": [], "default_action": None},
             }
