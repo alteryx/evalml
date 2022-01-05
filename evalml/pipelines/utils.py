@@ -482,12 +482,7 @@ def generate_pipeline_code(element):
 
 
 def _make_stacked_ensemble_pipeline(
-    input_pipelines,
-    problem_type,
-    final_estimator=None,
-    pipeline_params={},
-    n_jobs=-1,
-    random_seed=0,
+    input_pipelines, problem_type, final_estimator=None, n_jobs=-1, random_seed=0
 ):
     """Creates a pipeline with a stacked ensemble estimator.
 
@@ -537,9 +532,6 @@ def _make_stacked_ensemble_pipeline(
         ProblemTypes.BINARY: BinaryClassificationPipeline,
         ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
         ProblemTypes.REGRESSION: RegressionPipeline,
-        ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesRegressionPipeline,
-        ProblemTypes.TIME_SERIES_BINARY: TimeSeriesBinaryClassificationPipeline,
-        ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesMulticlassClassificationPipeline,
     }[problem_type]
 
     for pipeline in input_pipelines:
@@ -584,6 +576,7 @@ def _make_stacked_ensemble_pipeline(
     component_graph[estimator.name] = (
         [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
     )
+
     return pipeline_class(
         component_graph,
         parameters=parameters,
