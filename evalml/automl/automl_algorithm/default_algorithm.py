@@ -111,6 +111,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.verbose = verbose
         self._selected_cat_cols = []
         self._split = False
+        self._ensembling = True if not is_time_series(self.problem_type) else False
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
         else:
@@ -356,22 +357,36 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
-        if self._batch_number == 0:
-            next_batch = self._create_naive_pipelines()
-        elif self._batch_number == 1:
-            next_batch = self._create_naive_pipelines(use_features=True)
-        elif self._batch_number == 2:
-            next_batch = self._create_fast_final()
-        elif self.batch_number == 3:
-            next_batch = self._create_ensemble()
-        elif self.batch_number == 4:
-            next_batch = self._create_long_exploration(n=self.top_n)
-        elif self.batch_number % 2 != 0:
-            next_batch = self._create_ensemble()
+        if self._ensembling:
+            if self._batch_number == 0:
+                next_batch = self._create_naive_pipelines()
+            elif self._batch_number == 1:
+                next_batch = self._create_naive_pipelines(use_features=True)
+            elif self._batch_number == 2:
+                next_batch = self._create_fast_final()
+            elif self.batch_number == 3:
+                next_batch = self._create_ensemble()
+            elif self.batch_number == 4:
+                next_batch = self._create_long_exploration(n=self.top_n)
+            elif self.batch_number % 2 != 0:
+                next_batch = self._create_ensemble()
+            else:
+                next_batch = self._create_n_pipelines(
+                    self._top_n_pipelines, self.num_long_pipelines_per_batch
+                )
         else:
-            next_batch = self._create_n_pipelines(
-                self._top_n_pipelines, self.num_long_pipelines_per_batch
-            )
+            if self._batch_number == 0:
+                next_batch = self._create_naive_pipelines()
+            elif self._batch_number == 1:
+                next_batch = self._create_naive_pipelines(use_features=True)
+            elif self._batch_number == 2:
+                next_batch = self._create_fast_final()
+            elif self.batch_number == 3:
+                next_batch = self._create_long_exploration(n=self.top_n)
+            else:
+                next_batch = self._create_n_pipelines(
+                    self._top_n_pipelines, self.num_long_pipelines_per_batch
+                )
 
         self._pipeline_number += len(next_batch)
         self._batch_number += 1

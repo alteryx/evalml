@@ -449,35 +449,15 @@ def test_default_algorithm_time_series(
             assert pipeline.parameters["DateTime Featurization Component"]["time_index"]
     add_result(algo, final_batch)
 
-    final_ensemble = algo.next_batch()
-    assert isinstance(
-        final_ensemble[0].estimator,
-        (StackedEnsembleClassifier, StackedEnsembleRegressor),
-    )
-    add_result(algo, final_ensemble)
-
     long_explore = algo.next_batch()
-
     long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
     assert len(long_explore) == 150
     assert len(long_estimators) == 3
-
-    long_first_ensemble = algo.next_batch()
-    assert isinstance(
-        long_first_ensemble[0].estimator,
-        (StackedEnsembleClassifier, StackedEnsembleRegressor),
-    )
 
     long = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long])
     assert len(long) == 30
     assert len(long_estimators) == 3
-
-    long_second_ensemble = algo.next_batch()
-    assert isinstance(
-        long_second_ensemble[0].estimator,
-        (StackedEnsembleClassifier, StackedEnsembleRegressor),
-    )
 
     long_2 = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long_2])
@@ -578,35 +558,15 @@ def test_default_algorithm_time_series_known_in_advance(
         ]["columns"] == ["features", "date"]
     add_result(algo, final_batch)
 
-    final_ensemble = algo.next_batch()
-    assert isinstance(
-        final_ensemble[0].estimator,
-        (StackedEnsembleClassifier, StackedEnsembleRegressor),
-    )
-    add_result(algo, final_ensemble)
-
     long_explore = algo.next_batch()
-
     long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
     assert len(long_explore) == 150
     assert len(long_estimators) == 3
-
-    long_first_ensemble = algo.next_batch()
-    assert isinstance(
-        long_first_ensemble[0].estimator,
-        (StackedEnsembleClassifier, StackedEnsembleRegressor),
-    )
 
     long = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long])
     assert len(long) == 30
     assert len(long_estimators) == 3
-
-    long_second_ensemble = algo.next_batch()
-    assert isinstance(
-        long_second_ensemble[0].estimator,
-        (StackedEnsembleClassifier, StackedEnsembleRegressor),
-    )
 
     long_2 = algo.next_batch()
     long_estimators = set([pipeline.estimator.name for pipeline in long_2])
