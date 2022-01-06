@@ -112,15 +112,11 @@ not_supported_in_windows_py39 = set(
         "ARIMA Regressor",
         "Polynomial Detrender",
         "Prophet Regressor",
-        "Exponential Smoothing Regressor"
+        "Exponential Smoothing Regressor",
     ]
 )
 not_supported_in_linux_py39 = set(
-    [
-        "ARIMA Regressor",
-        "Polynomial Detrender",
-        "Exponential Smoothing Regressor"
-    ]
+    ["ARIMA Regressor", "Polynomial Detrender", "Exponential Smoothing Regressor"]
 )
 
 
