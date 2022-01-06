@@ -165,19 +165,19 @@ def test_data_check_action_option_to_dict(dummy_data_check_name):
     assert data_check_action_option.to_dict() == {
         "code": DataCheckActionCode.DROP_COL.name,
         "data_check_name": dummy_data_check_name,
-        "parameters": {},
+        "parameters": None,
         "metadata": {"columns": None, "rows": None},
     }
     assert data_check_action_option_empty_metadata.to_dict() == {
         "code": DataCheckActionCode.DROP_COL.name,
         "data_check_name": dummy_data_check_name,
-        "parameters": {},
+        "parameters": None,
         "metadata": {"columns": None, "rows": None},
     }
     assert data_check_action_option_with_metadata.to_dict() == {
         "code": DataCheckActionCode.DROP_COL.name,
         "data_check_name": dummy_data_check_name,
-        "parameters": {},
+        "parameters": None,
         "metadata": {
             "some detail": ["some detail value"],
             "columns": None,
