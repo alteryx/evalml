@@ -292,7 +292,7 @@ def test_fit_drop_nans_before_estimator(
         train_index = pd.date_range(
             f"2020-10-{1 + forecast_horizon + gap + max_delay}", "2020-10-31"
         )
-        expected_target = y[gap + max_delay + forecast_horizon: 32]
+        expected_target = y[gap + max_delay + forecast_horizon : 32]
         component_graph = ["Time Series Featurizer", estimator_name]
     else:
         train_index = pd.date_range(f"2020-10-01", f"2020-10-31")
@@ -702,7 +702,7 @@ def test_ts_score(
     X_train, y_train = X.iloc[:last_train_date], y.iloc[:last_train_date]
     X_holdout, y_holdout = X.iloc[last_train_date:], y.iloc[last_train_date:]
 
-    expected_target = y[last_train_date: 32]
+    expected_target = y[last_train_date:32]
     target_index = pd.date_range(f"2020-10-{last_train_date + 1}", f"2020-10-31")
 
     pl = pipeline_class(
