@@ -1178,7 +1178,7 @@ def test_partial_dependence_datetime(
             component_graph=[
                 "Imputer",
                 "One Hot Encoder",
-                "DateTime Featurization Component",
+                "DateTime Featurizer",
                 "Standard Scaler",
                 "Logistic Regression Classifier",
             ]
@@ -1189,7 +1189,7 @@ def test_partial_dependence_datetime(
             component_graph=[
                 "Imputer",
                 "One Hot Encoder",
-                "DateTime Featurization Component",
+                "DateTime Featurizer",
                 "Standard Scaler",
                 "Logistic Regression Classifier",
             ]
@@ -1200,7 +1200,7 @@ def test_partial_dependence_datetime(
             component_graph=[
                 "Imputer",
                 "One Hot Encoder",
-                "DateTime Featurization Component",
+                "DateTime Featurizer",
                 "Standard Scaler",
                 "Linear Regressor",
             ]
@@ -1269,7 +1269,7 @@ def test_graph_partial_dependence_regression_and_binary_datetime(
             component_graph=[
                 "Imputer",
                 "One Hot Encoder",
-                "DateTime Featurization Component",
+                "DateTime Featurizer",
                 "Standard Scaler",
                 "Logistic Regression Classifier",
             ]
@@ -1280,7 +1280,7 @@ def test_graph_partial_dependence_regression_and_binary_datetime(
             component_graph=[
                 "Imputer",
                 "One Hot Encoder",
-                "DateTime Featurization Component",
+                "DateTime Featurizer",
                 "Standard Scaler",
                 "Linear Regressor",
             ]
@@ -1311,7 +1311,7 @@ def test_graph_partial_dependence_regression_date_order(X_y_binary):
         component_graph=[
             "Imputer",
             "One Hot Encoder",
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             "Standard Scaler",
             "Logistic Regression Classifier",
         ]
@@ -1338,7 +1338,7 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
     X, y = fraud_100
     pl = BinaryClassificationPipeline(
         component_graph=[
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             "One Hot Encoder",
             "Random Forest Classifier",
         ]
@@ -1601,7 +1601,7 @@ def test_partial_dependence_datetime_extra(
             component_graph=[
                 "Imputer",
                 "One Hot Encoder",
-                "DateTime Featurization Component",
+                "DateTime Featurizer",
                 "Standard Scaler",
                 "Logistic Regression Classifier",
             ]
@@ -1612,7 +1612,7 @@ def test_partial_dependence_datetime_extra(
             component_graph=[
                 "Imputer",
                 "One Hot Encoder",
-                "DateTime Featurization Component",
+                "DateTime Featurizer",
                 "Standard Scaler",
                 "Logistic Regression Classifier",
             ]
@@ -1623,7 +1623,7 @@ def test_partial_dependence_datetime_extra(
             component_graph=[
                 "Imputer",
                 "One Hot Encoder",
-                "DateTime Featurization Component",
+                "DateTime Featurizer",
                 "Standard Scaler",
                 "Linear Regressor",
             ]
@@ -1701,7 +1701,7 @@ def test_partial_dependence_categorical_nan(fraud_100):
     pl = BinaryClassificationPipeline(
         component_graph=[
             "Imputer",
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             "One Hot Encoder",
             "Random Forest Classifier",
         ]
@@ -1740,14 +1740,14 @@ def test_partial_dependence_preserves_woodwork_schema(mock_predict_proba, fraud_
     pl = BinaryClassificationPipeline(
         component_graph={
             "Label Encoder": ["Label Encoder", "X", "y"],
-            "Natural Language Featurization Component": [
-                "Natural Language Featurization Component",
+            "Natural Language Featurizer": [
+                "Natural Language Featurizer",
                 "X",
                 "Label Encoder.y",
             ],
             "Imputer": [
                 "Imputer",
-                "Natural Language Featurization Component.x",
+                "Natural Language Featurizer.x",
                 "Label Encoder.y",
             ],
             "Random Forest Classifier": [

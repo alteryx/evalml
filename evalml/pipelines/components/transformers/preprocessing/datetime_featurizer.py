@@ -84,7 +84,7 @@ class DateTimeFeaturizer(Transformer):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    name = "DateTime Featurization Component"
+    name = "DateTime Featurizer"
     hyperparameter_ranges = {}
     """{}"""
     _function_mappings = {

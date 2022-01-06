@@ -150,7 +150,7 @@ class DagTwoEncoders(BinaryClassificationPipeline):
         "SelectCategorical2": ["Select Columns Transformer", "Imputer.x", "y"],
         "OHE_1": ["One Hot Encoder", "SelectCategorical1.x", "y"],
         "OHE_2": ["One Hot Encoder", "SelectCategorical2.x", "y"],
-        "DT": ["DateTime Featurization Component", "SelectNumeric.x", "y"],
+        "DT": ["DateTime Featurizer", "SelectNumeric.x", "y"],
         "Estimator": ["Random Forest Classifier", "DT.x", "OHE_1.x", "OHE_2.x", "y"],
     }
 
@@ -163,7 +163,7 @@ class DagReuseFeatures(BinaryClassificationPipeline):
         "SelectCategorical2": ["Select Columns Transformer", "Imputer.x", "y"],
         "OHE_1": ["One Hot Encoder", "SelectCategorical1.x", "y"],
         "OHE_2": ["One Hot Encoder", "SelectCategorical2.x", "y"],
-        "DT": ["DateTime Featurization Component", "SelectDate.x", "y"],
+        "DT": ["DateTime Featurizer", "SelectDate.x", "y"],
         "OHE_3": ["One Hot Encoder", "DT.x", "y"],
         "Estimator": ["Random Forest Classifier", "OHE_3.x", "OHE_1.x", "OHE_2.x", "y"],
     }
@@ -208,7 +208,7 @@ test_cases = [
             "Select Columns Transformer": {
                 "columns": ["expiration_date", "datetime", "amount"]
             },
-            "DateTime Featurization Component": {"encode_as_categories": True},
+            "DateTime Featurizer": {"encode_as_categories": True},
         },
     ),
     (
@@ -410,8 +410,8 @@ class EnsembleDag(BinaryClassificationPipeline):
         "Imputer_2": ["Imputer", "X", "y"],
         "OHE_1": ["One Hot Encoder", "Imputer_1.x", "y"],
         "OHE_2": ["One Hot Encoder", "Imputer_2.x", "y"],
-        "DT_1": ["DateTime Featurization Component", "OHE_1.x", "y"],
-        "DT_2": ["DateTime Featurization Component", "OHE_2.x", "y"],
+        "DT_1": ["DateTime Featurizer", "OHE_1.x", "y"],
+        "DT_2": ["DateTime Featurizer", "OHE_2.x", "y"],
         "Estimator_1": ["Random Forest Classifier", "DT_1.x", "y"],
         "Estimator_2": ["Extra Trees Classifier", "DT_2.x", "y"],
         "Ensembler": [
@@ -621,14 +621,14 @@ def test_permutation_importance_oversampler(fraud_100):
         component_graph={
             "Imputer": ["Imputer", "X", "y"],
             "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
-            "DateTime Featurization Component": [
-                "DateTime Featurization Component",
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
                 "One Hot Encoder.x",
                 "y",
             ],
             "Oversampler": [
                 "Oversampler",
-                "DateTime Featurization Component.x",
+                "DateTime Featurizer.x",
                 "y",
             ],
             "Decision Tree Classifier": [
