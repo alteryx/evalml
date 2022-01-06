@@ -47,6 +47,7 @@ def test_time_series_pipeline_validates_holdout_data(
     pipeline_class,
     estimator,
     ts_data,
+    ts_data_binary,
 ):
     pl = pipeline_class(
         component_graph=[estimator],
@@ -60,6 +61,9 @@ def test_time_series_pipeline_validates_holdout_data(
         },
     )
     X, y = ts_data
+
+    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
+        X, y = ts_data_binary
 
     TRAIN_LENGTH = 15
     X_train, y_train = X.iloc[:TRAIN_LENGTH], y.iloc[:TRAIN_LENGTH]
@@ -275,19 +279,24 @@ def test_fit_drop_nans_before_estimator(
     max_delay,
     include_delayed_features,
     ts_data,
+    ts_data_binary,
 ):
 
     X, y = ts_data
+
+    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
+        print("binary")
+        X, y = ts_data_binary
 
     if include_delayed_features:
         train_index = pd.date_range(
             f"2020-10-{1 + forecast_horizon + gap + max_delay}", "2020-10-31"
         )
-        expected_target = np.arange(1 + gap + max_delay + forecast_horizon, 32)
+        expected_target = y[gap + max_delay + forecast_horizon: 32]
         component_graph = ["Time Series Featurizer", estimator_name]
     else:
         train_index = pd.date_range(f"2020-10-01", f"2020-10-31")
-        expected_target = np.arange(1, 32)
+        expected_target = y
         component_graph = [estimator_name]
 
     pl = pipeline_class(
@@ -677,6 +686,7 @@ def test_ts_score(
     include_delayed_features,
     only_use_y,
     ts_data,
+    ts_data_binary,
 ):
     if pipeline_class == TimeSeriesBinaryClassificationPipeline:
         mock_score = mock_binary_score
@@ -684,11 +694,15 @@ def test_ts_score(
         pytest.skip("This would result in an empty feature dataframe.")
 
     X, y = ts_data
+
+    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
+        X, y = ts_data_binary
+
     last_train_date = X.shape[0] - forecast_horizon - gap
     X_train, y_train = X.iloc[:last_train_date], y.iloc[:last_train_date]
     X_holdout, y_holdout = X.iloc[last_train_date:], y.iloc[last_train_date:]
 
-    expected_target = np.arange(last_train_date + 1, 32)
+    expected_target = y[last_train_date: 32]
     target_index = pd.date_range(f"2020-10-{last_train_date + 1}", f"2020-10-31")
 
     pl = pipeline_class(
@@ -756,8 +770,13 @@ def test_classification_pipeline_encodes_targets(
     mock_fit,
     pipeline_class,
     ts_data_binary,
+    ts_data_multi,
 ):
     X, y = ts_data_binary
+
+    if pipeline_class == TimeSeriesMulticlassClassificationPipeline:
+        X, y = ts_data_multi
+
     y_series = pd.Series(y)
     df = pd.DataFrame({"negative": y_series, "positive": y_series})
     df.ww.init()
@@ -1235,7 +1254,8 @@ def test_time_series_pipeline_fit_with_transformed_target(
             return infer_feature_types(X), infer_feature_types(y) + 2
 
     X, y = ts_data
-    y = y % 2
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        y = y % 2
 
     if is_classification(problem_type):
         estimator = "Logistic Regression Classifier"
@@ -1318,9 +1338,13 @@ def test_time_series_pipeline_with_detrender(ts_data):
     ],
 )
 def test_ts_pipeline_predict_without_final_estimator(
-    problem_type, make_data_type, X_y_binary
+    problem_type, make_data_type, ts_data_binary, ts_data_multi
 ):
-    X, y = X_y_binary
+    X, y = ts_data_multi
+
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = ts_data_binary
+
     X = make_data_type("ww", X)
     y = make_data_type("ww", y)
     X.ww["date"] = pd.Series(pd.date_range("2010-01-01", periods=X.shape[0]))
@@ -1379,8 +1403,13 @@ def test_ts_pipeline_transform(
     problem_type,
     make_data_type,
     X_y_binary,
+    X_y_multi,
 ):
-    X, y = X_y_binary
+    X, y = X_y_multi
+
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = X_y_binary
+
     X = make_data_type("ww", X)
     X.ww["date"] = pd.Series(pd.date_range("2010-01-01", periods=X.shape[0]))
     y = make_data_type("ww", y)
