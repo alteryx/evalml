@@ -11,5 +11,6 @@ from .decision_tree_regressor import DecisionTreeRegressor
 from .time_series_baseline_estimator import TimeSeriesBaselineEstimator
 from .prophet_regressor import ProphetRegressor
 from .svm_regressor import SVMRegressor
+from .exponential_smoothing_regressor import ExponentialSmoothingRegressor
 from .arima_regressor import ARIMARegressor
 from .vowpal_wabbit_regressor import VowpalWabbitRegressor
