@@ -6,7 +6,7 @@ Release Notes
         * Added ``DataCheckActionOption`` class :pr:`3134`
     * Fixes
         * Fix bug where prediction explanations ``class_name`` was shown as float for boolean targets :pr:`3179`
-        * Standardized names of featurization components :pr:``
+        * Standardized names of featurization components :pr:`3192`
     * Changes
         * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
@@ -18,7 +18,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
-        * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:``
+        * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
 
 
 **v0.40.0 Dec. 22, 2021**
