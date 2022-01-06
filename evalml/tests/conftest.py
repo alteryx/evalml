@@ -48,6 +48,185 @@ def pytest_configure(config):
         "markers",
         "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)",
     )
+    config.addinivalue_line(
+        "markers", "noncore_dependency: mark test as needing non-core dependencies"
+    )
+    config.addinivalue_line(
+        "markers",
+        "skip_during_conda: mark test to be skipped if running during conda build",
+    )
+    config.addinivalue_line(
+        "markers",
+        "skip_if_39: mark test to be skipped if running during conda build",
+    )
+
+
+@pytest.fixture(scope="session")
+def go():
+    from plotly import graph_objects as go
+
+    return go
+
+
+@pytest.fixture(scope="session")
+def im():
+    from imblearn import over_sampling as im
+
+    return im
+
+
+@pytest.fixture(scope="session")
+def lgbm():
+    import lightgbm as lgbm
+
+    return lgbm
+
+
+@pytest.fixture(scope="session")
+def vw():
+    from vowpalwabbit import sklearn_vw as vw
+
+    return vw
+
+
+@pytest.fixture(scope="session")
+def graphviz():
+    import graphviz
+
+    return graphviz
+
+
+@pytest.fixture
+def get_test_data_from_configuration():
+    def _get_test_data_from_configuration(
+        input_type, problem_type, column_names=None, nullable_target=False
+    ):
+        X_all = pd.DataFrame(
+            {
+                "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+                * 2,
+                "int_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
+                "age_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
+                "bool_null": [True, None, False, True, False, None, True] * 2,
+                "numerical": range(14),
+                "categorical": ["a", "b", "a", "b", "b", "a", "b"] * 2,
+                "dates": pd.date_range("2000-02-03", periods=14, freq="W"),
+                "text": [
+                    "this is a string",
+                    "this is another string",
+                    "this is just another string",
+                    "evalml should handle string input",
+                    "cats are gr8",
+                    "hello world",
+                    "evalml is gr8",
+                ]
+                * 2,
+                "email": [
+                    "abalone_0@gmail.com",
+                    "AbaloneRings@yahoo.com",
+                    "abalone_2@abalone.com",
+                    "titanic_data@hotmail.com",
+                    "fooEMAIL@email.org",
+                    "evalml@evalml.org",
+                    "evalml@alteryx.org",
+                ]
+                * 2,
+                "url": [
+                    "https://evalml.alteryx.com/en/stable/",
+                    "https://woodwork.alteryx.com/en/stable/guides/statistical_insights.html",
+                    "https://twitter.com/AlteryxOSS",
+                    "https://www.twitter.com/AlteryxOSS",
+                    "https://www.evalml.alteryx.com/en/stable/demos/text_input.html",
+                    "https://github.com/alteryx/evalml",
+                    "https://github.com/alteryx/featuretools",
+                ]
+                * 2,
+                "ip": [
+                    "0.0.0.0",
+                    "1.1.1.101",
+                    "1.1.101.1",
+                    "1.101.1.1",
+                    "101.1.1.1",
+                    "192.168.1.1",
+                    "255.255.255.255",
+                ]
+                * 2,
+            }
+        )
+        y = pd.Series([0, 0, 1, 0, 0, 1, 1] * 2)
+        if problem_type == ProblemTypes.MULTICLASS:
+            y = pd.Series([0, 2, 1, 2, 0, 2, 1] * 2)
+        elif is_regression(problem_type):
+            y = pd.Series([1, 2, 3, 3, 3, 4, 5] * 2)
+        if nullable_target:
+            y.iloc[2] = None
+            if input_type == "ww":
+                y = ww.init_series(y, logical_type="integer_nullable")
+        X = X_all[column_names]
+
+        if input_type == "ww":
+            logical_types = {}
+            if "text" in column_names:
+                logical_types.update({"text": "NaturalLanguage"})
+            if "categorical" in column_names:
+                logical_types.update({"categorical": "Categorical"})
+            if "url" in column_names:
+                logical_types.update({"url": "URL"})
+            if "email" in column_names:
+                logical_types.update({"email": "EmailAddress"})
+            if "int_null" in column_names:
+                logical_types.update({"int_null": "integer_nullable"})
+            if "age_null" in column_names:
+                logical_types.update({"age_null": "age_nullable"})
+            if "bool_null" in column_names:
+                logical_types.update({"bool_null": "boolean_nullable"})
+
+            X.ww.init(logical_types=logical_types)
+
+            y = ww.init_series(y)
+
+        return X, y
+
+    return _get_test_data_from_configuration
+
+
+@pytest.fixture
+def get_ts_X_y():
+    def _get_X_y(
+        train_features_index_dt,
+        train_target_index_dt,
+        train_none,
+        datetime_feature,
+        no_features,
+        test_features_index_dt,
+    ):
+        X = pd.DataFrame(index=[i + 1 for i in range(50)])
+        dates = pd.date_range("1/1/21", periods=50)
+        feature = [1, 5, 2] * 10 + [3, 1] * 10
+        y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
+
+        X_train = X[:40]
+        X_test = X[40:]
+        y_train = y[:40]
+
+        if train_features_index_dt:
+            X_train.index = dates[:40]
+        if train_target_index_dt:
+            y_train.index = dates[:40]
+        if test_features_index_dt:
+            X_test.index = dates[40:]
+        if not no_features:
+            X_train["Feature"] = feature[:40]
+            X_test["Feature"] = feature[40:]
+            if datetime_feature:
+                X_train["Dates"] = dates[:40]
+                X_test["Dates"] = dates[40:]
+        if train_none:
+            X_train = None
+
+        return X_train, X_test, y_train
+
+    return _get_X_y
 
 
 def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
@@ -259,6 +438,24 @@ def pytest_addoption(parser):
     )
 
 
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--has-minimal-dependencies"):
+        skip_noncore = pytest.mark.skip(reason="needs noncore dependency")
+        for item in items:
+            if "noncore_dependency" in item.keywords:
+                item.add_marker(skip_noncore)
+    if config.getoption("--is-using-conda"):
+        skip_conda = pytest.mark.skip(reason="Test does not run during conda")
+        for item in items:
+            if "skip_during_conda" in item.keywords:
+                item.add_marker(skip_conda)
+    if sys.version_info >= (3, 9):
+        skip_39 = pytest.mark.skip(reason="Test dependency not supported in python 3.9")
+        for item in items:
+            if "skip_if_39" in item.keywords:
+                item.add_marker(skip_39)
+
+
 @pytest.fixture
 def has_minimal_dependencies(pytestconfig):
     return pytestconfig.getoption("--has-minimal-dependencies")
@@ -388,9 +585,25 @@ def text_df():
 
 @pytest.fixture
 def ts_data():
-    X, y = pd.DataFrame({"features": range(101, 132)}), pd.Series(range(1, 32))
+    X, y = pd.DataFrame(
+        {"features": range(101, 132), "date": pd.date_range("2020-10-01", "2020-10-31")}
+    ), pd.Series(range(1, 32))
     y.index = pd.date_range("2020-10-01", "2020-10-31")
     X.index = pd.date_range("2020-10-01", "2020-10-31")
+    return X, y
+
+
+@pytest.fixture
+def ts_data_binary(ts_data):
+    X, y = ts_data
+    y = y % 2
+    return X, y
+
+
+@pytest.fixture
+def ts_data_multi(ts_data):
+    X, y = ts_data
+    y = y % 3
     return X, y
 
 
@@ -675,7 +888,27 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
         estimator = MockEstimator
         component_graph = [MockEstimator]
 
-        def __init__(self, parameters, random_seed=0):
+        def __init__(
+            self, parameters, custom_name=None, component_graph=None, random_seed=0
+        ):
+            super().__init__(
+                self.component_graph, parameters=parameters, random_seed=random_seed
+            )
+
+    return MockBinaryClassificationPipeline
+
+
+@pytest.fixture
+def dummy_ts_binary_tree_classifier_pipeline_class():
+    dec_tree_classifier = DecisionTreeClassifier
+
+    class MockBinaryClassificationPipeline(TimeSeriesBinaryClassificationPipeline):
+        estimator = dec_tree_classifier
+        component_graph = [estimator]
+
+        def __init__(
+            self, parameters, custom_name=None, component_graph=None, random_seed=0
+        ):
             super().__init__(
                 self.component_graph, parameters=parameters, random_seed=random_seed
             )
@@ -781,7 +1014,11 @@ def time_series_regression_pipeline_class():
     class TSRegressionPipeline(TimeSeriesRegressionPipeline):
         """Random Forest Regression Pipeline for time series regression problems."""
 
-        component_graph = ["Delayed Feature Transformer", "Random Forest Regressor"]
+        component_graph = [
+            "Time Series Featurizer",
+            "DateTime Featurization Component",
+            "Random Forest Regressor",
+        ]
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
@@ -795,14 +1032,19 @@ def time_series_regression_pipeline_class():
 def time_series_classification_component_graph():
     component_graph = {
         "Label Encoder": ["Label Encoder", "X", "y"],
-        "Delayed Feature Transformer": [
-            "Delayed Feature Transformer",
+        "Time Series Featurizer": [
+            "Time Series Featurizer",
             "Label Encoder.x",
+            "Label Encoder.y",
+        ],
+        "DateTime Featurization Component": [
+            "DateTime Featurization Component",
+            "Time Series Featurizer.x",
             "Label Encoder.y",
         ],
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
-            "Delayed Feature Transformer.x",
+            "DateTime Featurization Component.x",
             "Label Encoder.y",
         ],
     }
@@ -1259,6 +1501,7 @@ class _AutoMLTestEnv:
         self._mock_get_names = None
         self._mock_encode_targets = None
         self._mock_predict_proba = None
+        self._mock_predict_proba_in_sample = None
         self._mock_optimize_threshold = None
 
     @property
@@ -1291,6 +1534,7 @@ class _AutoMLTestEnv:
         self._mock_get_names = None
         self._mock_encode_targets = None
         self._mock_predict_proba = None
+        self._mock_predict_proba_in_sample = None
         self._mock_optimize_threshold = None
 
     def _get_mock(self, mock_name):
@@ -1323,6 +1567,10 @@ class _AutoMLTestEnv:
         return self._get_mock("predict_proba")
 
     @property
+    def mock_predict_proba_in_sample(self):
+        return self._get_mock("predict_proba_in_sample")
+
+    @property
     def mock_optimize_threshold(self):
         return self._get_mock("optimize_threshold")
 
@@ -1334,6 +1582,7 @@ class _AutoMLTestEnv:
         mock_fit_side_effect=None,
         mock_fit_return_value=None,
         predict_proba_return_value=None,
+        predict_proba_in_sample_return_value=None,
         optimize_threshold_return_value=0.2,
     ):
         """A context manager for creating an environment that patches time-consuming pipeline methods.
@@ -1377,6 +1626,18 @@ class _AutoMLTestEnv:
             return_value=predict_proba_return_value,
             pipeline_class_str=pipeline_to_mock,
         )
+        if handle_problem_types(self.problem_type) in [
+            ProblemTypes.TIME_SERIES_BINARY,
+            ProblemTypes.TIME_SERIES_MULTICLASS,
+        ]:
+            mock_predict_proba_in_sample = self._patch_method(
+                "predict_proba_in_sample",
+                side_effect=None,
+                return_value=predict_proba_in_sample_return_value,
+                pipeline_class_str=pipeline_to_mock,
+            )
+        else:
+            mock_predict_proba_in_sample = None
 
         mock_optimize = patch(
             "evalml.objectives.BinaryClassificationObjective.optimize_threshold",
@@ -1395,17 +1656,29 @@ class _AutoMLTestEnv:
         mock_sleep = patch(
             "evalml.automl.AutoMLSearch._sleep_time", new_callable=sleep_time
         )
-
-        with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
-            # Can think of `yield` as blocking this method until the computation finishes running
-            yield
-            self._mock_fit = fit
-            self._mock_tell = tell
-            self._mock_score = score
-            self._mock_get_names = get_names
-            self._mock_encode_targets = encode
-            self._mock_predict_proba = proba
-            self._mock_optimize_threshold = optimize
+        if mock_predict_proba_in_sample is None:
+            with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
+                # Can think of `yield` as blocking this method until the computation finishes running
+                yield
+                self._mock_fit = fit
+                self._mock_tell = tell
+                self._mock_score = score
+                self._mock_get_names = get_names
+                self._mock_encode_targets = encode
+                self._mock_predict_proba = proba
+                self._mock_optimize_threshold = optimize
+        else:
+            with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_predict_proba_in_sample as proba_in_sample, mock_tell as tell, mock_optimize as optimize:
+                # Can think of `yield` as blocking this method until the computation finishes running
+                yield
+                self._mock_fit = fit
+                self._mock_tell = tell
+                self._mock_score = score
+                self._mock_get_names = get_names
+                self._mock_encode_targets = encode
+                self._mock_predict_proba = proba
+                self._mock_predict_proba_in_sample = proba_in_sample
+                self._mock_optimize_threshold = optimize
 
 
 @pytest.fixture
@@ -1494,3 +1767,8 @@ def load_daily_temp_local(n_rows=None):
 def daily_temp_local():
     X, y = load_daily_temp_local()
     return X, y
+
+
+@pytest.fixture
+def dummy_data_check_name():
+    return "dummy_data_check_name"

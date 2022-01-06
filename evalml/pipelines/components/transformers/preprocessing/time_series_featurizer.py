@@ -1,17 +1,20 @@
 """Transformer that delays input features and target variable for time series problems."""
 import numpy as np
 import pandas as pd
+import woodwork as ww
+from featuretools.primitives import RollingMean
 from scipy.signal import find_peaks
-from sklearn.preprocessing import LabelEncoder, OrdinalEncoder
+from sklearn.preprocessing import OrdinalEncoder
 from skopt.space import Real
 from statsmodels.tsa.stattools import acf
 from woodwork import logical_types
 
+from evalml.pipelines.components.transformers import LabelEncoder
 from evalml.pipelines.components.transformers.transformer import Transformer
 from evalml.utils import infer_feature_types
 
 
-class DelayedFeatureTransformer(Transformer):
+class TimeSeriesFeaturizer(Transformer):
     """Transformer that delays input features and target variable for time series problems.
 
     This component uses an algorithm based on the autocorrelation values of the target variable
@@ -30,12 +33,14 @@ class DelayedFeatureTransformer(Transformer):
     Using conf_level value of 1 selects all possible lags.
 
     Args:
-        date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
+        time_index (str): Name of the column containing the datetime information used to order the data. Ignored.
         max_delay (int): Maximum number of time units to delay each feature. Defaults to 2.
         forecast_horizon (int): The number of time periods the pipeline is expected to forecast.
         conf_level (float): Float in range (0, 1] that determines the confidence interval size used to select
             which lags to compute from the set of [1, max_delay]. A delay of 1 will always be computed. If 1,
             selects all possible lags in the set of [1, max_delay], inclusive.
+        rolling_window_size (float): Float in range (0, 1] that determines the size of the window used for rolling
+            features. Size is computed as rolling_window_size * max_delay.
         delay_features (bool): Whether to delay the input features. Defaults to True.
         delay_target (bool): Whether to delay the target. Defaults to True.
         gap (int): The number of time units between when the features are collected and
@@ -45,31 +50,38 @@ class DelayedFeatureTransformer(Transformer):
         random_seed (int): Seed for the random number generator. This transformer performs the same regardless of the random seed provided.
     """
 
-    name = "Delayed Feature Transformer"
-    hyperparameter_ranges = {"conf_level": Real(0.001, 1.0)}
-    """{}"""
+    name = "Time Series Featurizer"
+    hyperparameter_ranges = {
+        "conf_level": Real(0.001, 1.0),
+        "rolling_window_size": Real(0.001, 1.0),
+    }
+    """{"conf_level": Real(0.001, 1.0),
+        "rolling_window_size": Real(0.001, 1.0)
+    }"""
     needs_fitting = True
     target_colname_prefix = "target_delay_{}"
     """target_delay_{}"""
 
     def __init__(
         self,
-        date_index=None,
+        time_index=None,
         max_delay=2,
         gap=0,
         forecast_horizon=1,
         conf_level=0.05,
+        rolling_window_size=0.25,
         delay_features=True,
         delay_target=True,
         random_seed=0,
         **kwargs,
     ):
-        self.date_index = date_index
+        self.time_index = time_index
         self.max_delay = max_delay
         self.delay_features = delay_features
         self.delay_target = delay_target
         self.forecast_horizon = forecast_horizon
         self.gap = gap
+        self.rolling_window_size = rolling_window_size
         self.statistically_significant_lags = None
 
         if conf_level is None:
@@ -85,13 +97,14 @@ class DelayedFeatureTransformer(Transformer):
         self.start_delay = self.forecast_horizon + self.gap
 
         parameters = {
-            "date_index": date_index,
+            "time_index": time_index,
             "max_delay": max_delay,
             "delay_target": delay_target,
             "delay_features": delay_features,
             "forecast_horizon": forecast_horizon,
             "conf_level": conf_level,
             "gap": gap,
+            "rolling_window_size": rolling_window_size,
         }
         parameters.update(kwargs)
         super().__init__(parameters=parameters, random_seed=random_seed)
@@ -105,7 +118,12 @@ class DelayedFeatureTransformer(Transformer):
 
         Returns:
             self
+
+        Raises:
+            ValueError: if self.time_index is None
         """
+        if self.time_index is None:
+            raise ValueError("time_index cannot be None!")
         self.statistically_significant_lags = self._find_significant_lags(
             y, conf_level=self.conf_level, max_delay=self.max_delay
         )
@@ -113,13 +131,13 @@ class DelayedFeatureTransformer(Transformer):
 
     @staticmethod
     def _encode_y_while_preserving_index(y):
-        y_encoded = LabelEncoder().fit_transform(y)
+        y_encoded = LabelEncoder().fit_transform(None, y)[1]
         y = pd.Series(y_encoded, index=y.index)
         return y
 
     @staticmethod
     def _get_categorical_columns(X):
-        return list(X.ww.select(["categorical"], return_schema=True).columns)
+        return list(X.ww.select(["categorical", "boolean"], return_schema=True).columns)
 
     @staticmethod
     def _encode_X_while_preserving_index(X_categorical):
@@ -155,58 +173,119 @@ class DelayedFeatureTransformer(Transformer):
             significant_lags = all_lags
         return significant_lags
 
-    def transform(self, X, y=None):
-        """Computes the delayed features for all features in X and y.
+    def _compute_rolling_transforms(self, X, y, original_features):
+        """Compute the rolling features from the original features.
 
-        For each feature in X, it will add a column to the output dataframe for each
-        delay in the (inclusive) range [1, max_delay]. The values of each delayed feature are simply the original
-        feature shifted forward in time by the delay amount. For example, a delay of 3 units means that the feature
-        value at row n will be taken from the n-3rd row of that feature
+        Args:
+            X (pd.DataFrame or None): Data to transform.
+            y (pd.Series, or None): Target.
+
+        Returns:
+            pd.DataFrame: Data with rolling features. All new features.
+        """
+        size = int(self.rolling_window_size * self.max_delay)
+        rolling_mean = RollingMean(
+            window_length=size + 1,
+            gap=self.start_delay,
+            min_periods=size + 1,
+        )
+        rolling_mean = rolling_mean.get_function()
+        numerics = set(
+            X.ww.select(["numeric"], return_schema=True).columns
+        ).intersection(original_features)
+        data = pd.DataFrame(
+            {f"{col}_rolling_mean": rolling_mean(X.index, X[col]) for col in numerics}
+        )
+        if y is not None and "numeric" in y.ww.semantic_tags:
+            data[f"target_rolling_mean"] = rolling_mean(y.index, y)
+        data.index = X.index
+        data.ww.init()
+        return data
+
+    def _compute_delays(self, X_ww, y):
+        """Computes the delayed features for numeric/categorical features in X and y.
+
+        Use the autocorrelation to determine delays.
+
+        Args:
+            X (pd.DataFrame): Data to transform.
+            y (pd.Series, or None): Target.
+
+        Returns:
+            pd.DataFrame: Data with original features and delays.
+        """
+        cols_to_delay = list(
+            X_ww.ww.select(
+                ["numeric", "category", "boolean"], return_schema=True
+            ).columns
+        )
+        categorical_columns = self._get_categorical_columns(X_ww)
+        cols_derived_from_categoricals = []
+        lagged_features = {}
+        if self.delay_features and len(X_ww) > 0:
+            X_categorical = self._encode_X_while_preserving_index(
+                X_ww[categorical_columns]
+            )
+            for col_name in cols_to_delay:
+
+                col = X_ww[col_name]
+                if col_name in categorical_columns:
+                    col = X_categorical[col_name]
+                for t in self.statistically_significant_lags:
+                    feature_name = f"{col_name}_delay_{self.start_delay + t}"
+                    lagged_features[
+                        f"{col_name}_delay_{self.start_delay + t}"
+                    ] = col.shift(self.start_delay + t)
+                    if col_name in categorical_columns:
+                        cols_derived_from_categoricals.append(feature_name)
+        # Handle cases where the target was passed in
+        if self.delay_target and y is not None:
+            if type(y.ww.logical_type) == logical_types.Categorical:
+                y = self._encode_y_while_preserving_index(y)
+            for t in self.statistically_significant_lags:
+                lagged_features[
+                    self.target_colname_prefix.format(t + self.start_delay)
+                ] = y.shift(self.start_delay + t)
+        # Features created from categorical columns should no longer be categorical
+        lagged_features = pd.DataFrame(lagged_features)
+        lagged_features.ww.init(
+            logical_types={col: "Double" for col in cols_derived_from_categoricals}
+        )
+        lagged_features.index = X_ww.index
+        return ww.concat_columns([X_ww, lagged_features])
+
+    def transform(self, X, y=None):
+        """Computes the delayed values and rolling means for X and y.
+
+        The chosen delays are determined by the autocorrelation function of the target variable. See the class docstring
+        for more information on how they are chosen. If y is None, all possible lags are chosen.
 
         If y is not None, it will also compute the delayed values for the target variable.
+
+        The rolling means for all numeric features in X and y, if y is numeric, are also returned.
 
         Args:
             X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
             y (pd.Series, or None): Target.
 
         Returns:
-            pd.DataFrame: Transformed X.
+            pd.DataFrame: Transformed X. No original features are returned.
         """
-        if X is None:
-            X = pd.DataFrame()
+        if y is not None:
+            y = infer_feature_types(y)
         # Normalize the data into pandas objects
         X_ww = infer_feature_types(X)
-        X_ww = X_ww.ww.copy()
-        categorical_columns = self._get_categorical_columns(X_ww)
-        original_features = list(X_ww.columns)
-        if self.delay_features and len(X) > 0:
-            X_categorical = self._encode_X_while_preserving_index(
-                X_ww[categorical_columns]
-            )
-            for col_name in X_ww:
-                col = X_ww[col_name]
-                if col_name in categorical_columns:
-                    col = X_categorical[col_name]
-                for t in self.statistically_significant_lags:
-                    X_ww.ww[f"{col_name}_delay_{self.start_delay + t}"] = col.shift(
-                        self.start_delay + t
-                    )
-        # Handle cases where the target was passed in
-        if self.delay_target and y is not None:
-            y = infer_feature_types(y)
-            if type(y.ww.logical_type) == logical_types.Categorical:
-                y = self._encode_y_while_preserving_index(y)
-            for t in self.statistically_significant_lags:
-                X_ww.ww[
-                    self.target_colname_prefix.format(t + self.start_delay)
-                ] = y.shift(self.start_delay + t)
-        return X_ww.ww.drop(original_features)
+        original_features = [col for col in X_ww.columns if col != self.time_index]
+        delayed_features = self._compute_delays(X_ww, y)
+        rolling_means = self._compute_rolling_transforms(X_ww, y, original_features)
+        features = ww.concat_columns([delayed_features, rolling_means])
+        return features.ww.drop(original_features)
 
-    def fit_transform(self, X, y):
+    def fit_transform(self, X, y=None):
         """Fit the component and transform the input data.
 
         Args:
-            X (pd.DataFrame or None): Data to transform. None is expected when only the target variable is being used.
+            X (pd.DataFrame): Data to transform.
             y (pd.Series, or None): Target.
 
         Returns:

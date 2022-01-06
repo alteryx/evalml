@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.automl import get_default_primary_search_objective
 from evalml.data_checks import (
@@ -221,6 +222,7 @@ def test_invalid_target_data_input_formats():
         "actions": [
             DataCheckAction(
                 DataCheckActionCode.IMPUTE_COL,
+                data_check_name=invalid_targets_data_check_name,
                 metadata={
                     "is_target": True,
                     "impute_strategy": "most_frequent",
@@ -625,7 +627,7 @@ def test_invalid_target_data_check_mismatched_indices():
     assert invalid_targets_check.validate(X, y_diff_index) == {
         "warnings": [
             DataCheckWarning(
-                message="Input target and features have mismatched indices",
+                message="Input target and features have mismatched indices. Details will include the first 10 mismatched indices.",
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.MISMATCHED_INDICES,
                 details={
@@ -640,7 +642,7 @@ def test_invalid_target_data_check_mismatched_indices():
     assert invalid_targets_check.validate(X, y_diff_index_order) == {
         "warnings": [
             DataCheckWarning(
-                message="Input target and features have mismatched indices order",
+                message="Input target and features have mismatched indices order.",
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
                 details={},
@@ -658,7 +660,7 @@ def test_invalid_target_data_check_mismatched_indices():
     assert invalid_targets_check.validate(X_large, y_more_than_ten_diff_indices) == {
         "warnings": [
             DataCheckWarning(
-                message="Input target and features have mismatched indices",
+                message="Input target and features have mismatched indices. Details will include the first 10 mismatched indices.",
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.MISMATCHED_INDICES,
                 details={
@@ -690,7 +692,7 @@ def test_invalid_target_data_check_different_lengths():
                 },
             ).to_dict(),
             DataCheckWarning(
-                message="Input target and features have mismatched indices",
+                message="Input target and features have mismatched indices. Details will include the first 10 mismatched indices.",
                 data_check_name=invalid_targets_data_check_name,
                 message_code=DataCheckMessageCode.MISMATCHED_INDICES,
                 details={"indices_not_in_features": [], "indices_not_in_target": [2]},
@@ -714,11 +716,17 @@ def test_invalid_target_data_check_numeric_binary_does_not_return_warnings():
     }
 
 
+@pytest.mark.parametrize("use_nullable_types", [True, False])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_invalid_target_data_action_for_data_with_null(problem_type):
+def test_invalid_target_data_action_for_data_with_null(
+    use_nullable_types, problem_type
+):
     if is_clustering(problem_type):
         return
     y = pd.Series([None, None, None, 0, 0, 0, 0, 0, 0, 0])
+    if use_nullable_types:
+        y = ww.init_series(y, logical_type="IntegerNullable")
+
     X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck(
         problem_type, get_default_primary_search_objective(problem_type)
@@ -738,6 +746,7 @@ def test_invalid_target_data_action_for_data_with_null(problem_type):
         "actions": [
             DataCheckAction(
                 DataCheckActionCode.IMPUTE_COL,
+                data_check_name=invalid_targets_data_check_name,
                 metadata={
                     "is_target": True,
                     "impute_strategy": impute_strategy,

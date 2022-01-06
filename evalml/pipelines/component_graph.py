@@ -15,7 +15,12 @@ from evalml.exceptions.exceptions import (
 )
 from evalml.pipelines.components import ComponentBase, Estimator, Transformer
 from evalml.pipelines.components.utils import handle_component_class
-from evalml.utils import get_logger, import_or_raise, infer_feature_types
+from evalml.utils import (
+    _schema_is_equal,
+    get_logger,
+    import_or_raise,
+    infer_feature_types,
+)
 
 logger = get_logger(__file__)
 
@@ -40,6 +45,9 @@ class ComponentGraph:
         ...                   'estimator_2': ['Decision Tree Classifier', 'OHE.x', 'y'],
         ...                   'final': ['Logistic Regression Classifier', 'estimator_1.x', 'estimator_2.x', 'y']}
         >>> component_graph = ComponentGraph(component_dict)
+
+        The default parameters for every component in the component graph.
+
         >>> assert component_graph.default_parameters == {
         ...     'Imputer': {'categorical_impute_strategy': 'most_frequent',
         ...                 'numeric_impute_strategy': 'mean',
@@ -88,6 +96,7 @@ class ComponentGraph:
         self._feature_provenance = {}
         self._i = 0
         self._compute_order = self.generate_order(self.component_dict)
+        self._input_types = {}
 
     def _validate_component_dict(self):
         for _, component_inputs in self.component_dict.items():
@@ -378,6 +387,14 @@ class ComponentGraph:
             dict: Outputs from each component.
         """
         X = infer_feature_types(X)
+        if not fit:
+            if not _schema_is_equal(X.ww.schema, self._input_types):
+                raise ValueError(
+                    "Input X data types are different from the input types the pipeline was fitted on."
+                )
+        else:
+            self._input_types = X.ww.schema
+
         if y is not None:
             y = infer_feature_types(y)
 

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.data_checks import (
     DataCheckAction,
@@ -20,12 +21,19 @@ two_distinct_with_nulls_X = pd.DataFrame(
 )
 two_distinct_with_nulls_X_ww = two_distinct_with_nulls_X.copy()
 two_distinct_with_nulls_X_ww.ww.init()
+two_distinct_with_nulls_X_ww_nullable_types = two_distinct_with_nulls_X.copy()
+two_distinct_with_nulls_X_ww_nullable_types.ww.init(
+    logical_types={"feature": "IntegerNullable"}
+)
 
 all_distinct_y = pd.Series([1, 2, 3, 4])
 all_null_y = pd.Series([None] * 4)
 two_distinct_with_nulls_y = pd.Series(([1] * 2) + ([None] * 2))
 two_distinct_with_nulls_y_ww = two_distinct_with_nulls_y.copy()
 two_distinct_with_nulls_y_ww.ww.init()
+two_distinct_with_nulls_y_ww_nullable_types = ww.init_series(
+    two_distinct_with_nulls_y.copy(), logical_type="IntegerNullable"
+)
 all_null_y_with_name = pd.Series([None] * 4)
 all_null_y_with_name.name = "Labels"
 
@@ -54,7 +62,9 @@ labels_1_unique = DataCheckError(
     details={"columns": ["Y"]},
 ).to_dict()
 drop_feature_action = DataCheckAction(
-    DataCheckActionCode.DROP_COL, metadata={"columns": ["feature"]}
+    DataCheckActionCode.DROP_COL,
+    data_check_name=no_variance_data_check_name,
+    metadata={"columns": ["feature"]},
 ).to_dict()
 
 cases = [
@@ -121,6 +131,31 @@ cases = [
     (
         two_distinct_with_nulls_X,
         two_distinct_with_nulls_y,
+        True,
+        {
+            "warnings": [
+                DataCheckWarning(
+                    message="'feature' has two unique values including nulls. Consider encoding the nulls for "
+                    "this column to be useful for machine learning.",
+                    data_check_name=no_variance_data_check_name,
+                    message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
+                    details={"columns": ["feature"]},
+                ).to_dict(),
+                DataCheckWarning(
+                    message="Y has two unique values including nulls. Consider encoding the nulls for "
+                    "this column to be useful for machine learning.",
+                    data_check_name=no_variance_data_check_name,
+                    message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
+                    details={"columns": ["Y"]},
+                ).to_dict(),
+            ],
+            "errors": [],
+            "actions": [drop_feature_action],
+        },
+    ),
+    (
+        two_distinct_with_nulls_X_ww_nullable_types,
+        two_distinct_with_nulls_y_ww_nullable_types,
         True,
         {
             "warnings": [

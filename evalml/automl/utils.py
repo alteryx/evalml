@@ -77,7 +77,7 @@ def make_data_splitter(
         y (pd.Series): The target training data of length [n_samples].
         problem_type (ProblemType): The type of machine learning problem.
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the date_index, gap, and max_delay variables. Defaults to None.
+            in time series problems, values should be passed in for the time_index, gap, and max_delay variables. Defaults to None.
         n_splits (int, None): The number of CV splits, if applicable. Defaults to 3.
         shuffle (bool): Whether or not to shuffle the data before splitting, if applicable. Defaults to True.
         random_seed (int): Seed for the random number generator. Defaults to 0.
@@ -101,7 +101,8 @@ def make_data_splitter(
             n_splits=n_splits,
             gap=problem_configuration.get("gap"),
             max_delay=problem_configuration.get("max_delay"),
-            date_index=problem_configuration.get("date_index"),
+            time_index=problem_configuration.get("time_index"),
+            forecast_horizon=problem_configuration.get("forecast_horizon"),
         )
     if X.shape[0] > _LARGE_DATA_ROW_THRESHOLD:
         return TrainingValidationSplit(
@@ -116,7 +117,13 @@ def make_data_splitter(
 
 
 def tune_binary_threshold(
-    pipeline, objective, problem_type, X_threshold_tuning, y_threshold_tuning
+    pipeline,
+    objective,
+    problem_type,
+    X_threshold_tuning,
+    y_threshold_tuning,
+    X=None,
+    y=None,
 ):
     """Tunes the threshold of a binary pipeline to the X and y thresholding data.
 
@@ -124,8 +131,10 @@ def tune_binary_threshold(
         pipeline (Pipeline): Pipeline instance to threshold.
         objective (ObjectiveBase): The objective we want to tune with. If not tuneable and best_pipeline is True, will use F1.
         problem_type (ProblemType): The problem type of the pipeline.
-        X_threshold_tuning (pd.DataFrame): Features to tune pipeline to.
-        y_threshold_tuning (pd.Series): Target data to tune pipeline to.
+        X_threshold_tuning (pd.DataFrame): Features to which the pipeline will be tuned.
+        y_threshold_tuning (pd.Series): Target data to which the pipeline will be tuned.
+        X (pd.DataFrame): Features to which the pipeline will be trained (used for time series binary). Defaults to None.
+        y (pd.Series): Target to which the pipeline will be trained (used for time series binary). Defaults to None.
     """
     if (
         is_binary(problem_type)
@@ -134,7 +143,12 @@ def tune_binary_threshold(
     ):
         pipeline.threshold = 0.5
         if X_threshold_tuning is not None:
-            y_predict_proba = pipeline.predict_proba(X_threshold_tuning)
+            if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+                y_predict_proba = pipeline.predict_proba_in_sample(
+                    X_threshold_tuning, y_threshold_tuning, X, y
+                )
+            else:
+                y_predict_proba = pipeline.predict_proba(X_threshold_tuning, X, y)
             y_predict_proba = y_predict_proba.iloc[:, 1]
             pipeline.optimize_threshold(
                 X_threshold_tuning, y_threshold_tuning, y_predict_proba, objective

@@ -595,11 +595,9 @@ def test_plot_disabled_missing_dependency(X_y_binary, has_minimal_dependencies):
         automl.plot.search_iteration_plot
 
 
-def test_plot_iterations_max_iterations(X_y_binary):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_plot_iterations_max_iterations(X_y_binary, go):
+
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -623,11 +621,8 @@ def test_plot_iterations_max_iterations(X_y_binary):
     assert len(y) == 3
 
 
-def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary, go):
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -654,16 +649,9 @@ def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary):
     assert len(y) > 0
 
 
+@pytest.mark.noncore_dependency
 @patch("IPython.display.display")
 def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
-    pytest.importorskip(
-        "IPython.display",
-        reason="Skipping plotting test because ipywidgets not installed",
-    )
-    pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -680,16 +668,11 @@ def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
     mock_ipython_display.assert_called_with(plot.best_score_by_iter_fig)
 
 
+@pytest.mark.noncore_dependency
 @patch("IPython.display.display")
-def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y_binary):
-    pytest.importorskip(
-        "IPython.display",
-        reason="Skipping plotting test because ipywidgets not installed",
-    )
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+def test_plot_iterations_ipython_mock_import_failure(
+    mock_ipython_display, X_y_binary, go
+):
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -1101,23 +1084,23 @@ def test_automl_component_graphs_search(
 )
 def test_automl_supports_time_series_classification(
     problem_type,
-    X_y_binary,
-    X_y_multi,
+    ts_data_binary,
+    ts_data_multi,
     AutoMLTestEnv,
 ):
     if problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = X_y_binary
+        X, y = ts_data_binary
         baseline = TimeSeriesBinaryClassificationPipeline(
             component_graph=["Time Series Baseline Estimator"],
             parameters={
                 "Time Series Baseline Estimator": {
-                    "date_index": None,
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 1,
                 },
                 "pipeline": {
-                    "date_index": None,
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 1,
@@ -1127,18 +1110,18 @@ def test_automl_supports_time_series_classification(
         score_return_value = {"Log Loss Binary": 0.2}
         problem_type = "time series binary"
     else:
-        X, y = X_y_multi
+        X, y = ts_data_multi
         baseline = TimeSeriesMulticlassClassificationPipeline(
             component_graph=["Time Series Baseline Estimator"],
             parameters={
                 "Time Series Baseline Estimator": {
-                    "date_index": None,
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 1,
                 },
                 "pipeline": {
-                    "date_index": None,
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 1,
@@ -1149,13 +1132,14 @@ def test_automl_supports_time_series_classification(
         problem_type = "time series multiclass"
 
     configuration = {
-        "date_index": None,
+        "time_index": "date",
         "gap": 0,
         "max_delay": 0,
         "forecast_horizon": 1,
         "delay_target": False,
         "delay_features": True,
         "conf_level": 0.05,
+        "rolling_window_size": 0.25,
     }
 
     automl = AutoMLSearch(
@@ -1175,7 +1159,7 @@ def test_automl_supports_time_series_classification(
             assert result["pipeline_class"] == baseline.__class__
             continue
 
-        assert result["parameters"]["Delayed Feature Transformer"] == configuration
+        assert result["parameters"]["Time Series Featurizer"] == configuration
         assert result["parameters"]["pipeline"] == configuration
 
 
@@ -1186,15 +1170,15 @@ def test_automl_time_series_classification_threshold(
     mock_split_data,
     optimize,
     objective,
-    X_y_binary,
+    ts_data_binary,
     AutoMLTestEnv,
 ):
-    X, y = X_y_binary
+    X, y = ts_data_binary
     score_return_value = {objective: 0.4}
     problem_type = "time series binary"
 
     configuration = {
-        "date_index": None,
+        "time_index": "date",
         "gap": 0,
         "forecast_horizon": 1,
         "max_delay": 0,
@@ -1430,6 +1414,7 @@ def test_automl_search_dictionary_undersampler(
     assert len(mock_est_fit.call_args[0][0]) == length
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "problem_type,sampling_ratio_dict,length",
     [
@@ -1456,9 +1441,6 @@ def test_automl_search_dictionary_oversampler(
     sampling_ratio_dict,
     length,
 ):
-    pytest.importorskip(
-        "imblearn", reason="Skipping tests since imblearn isn't installed"
-    )
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
     if problem_type == "binary":
@@ -1591,21 +1573,21 @@ def test_automl_search_sampler_k_neighbors_no_error(
     ],
 )
 def test_time_series_pipeline_parameter_warnings(
-    pipeline_parameters, set_values, AutoMLTestEnv, X_y_binary
+    pipeline_parameters, set_values, AutoMLTestEnv, ts_data_binary
 ):
     pipeline_parameters.update(
         {
             "pipeline": {
-                "date_index": None,
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 2,
             }
         }
     )
-    X, y = X_y_binary
+    X, y = ts_data_binary
     configuration = {
-        "date_index": None,
+        "time_index": "date",
         "gap": 0,
         "max_delay": 0,
         "delay_target": False,

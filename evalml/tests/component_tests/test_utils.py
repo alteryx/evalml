@@ -33,7 +33,7 @@ minimum_dependencies_set = set(
         "DateTime Featurization Component",
         "Decision Tree Classifier",
         "Decision Tree Regressor",
-        "Delayed Feature Transformer",
+        "Time Series Featurizer",
         "Drop Columns Transformer",
         "Drop Null Columns Transformer",
         "Drop Rows Transformer",
@@ -57,6 +57,7 @@ minimum_dependencies_set = set(
         "RF Regressor Select From Model",
         "Random Forest Classifier",
         "Random Forest Regressor",
+        "Replace Nullable Types Transformer",
         "SVM Classifier",
         "SVM Regressor",
         "Select Columns By Type Transformer",
@@ -66,7 +67,7 @@ minimum_dependencies_set = set(
         "Stacked Ensemble Regressor",
         "Standard Scaler",
         "Target Imputer",
-        "Text Featurization Component",
+        "Natural Language Featurization Component",
         "Time Series Baseline Estimator",
         "URL Featurizer",
         "Undersampler",
@@ -75,6 +76,7 @@ minimum_dependencies_set = set(
 additional_requirements_set = set(
     [
         "ARIMA Regressor",
+        "Exponential Smoothing Regressor",
         "CatBoost Classifier",
         "CatBoost Regressor",
         "LightGBM Classifier",

@@ -968,10 +968,20 @@ def test_explain_predictions_time_series(ts_data):
     X, y = ts_data
 
     ts_pipeline = TimeSeriesRegressionPipeline(
-        component_graph=["Delayed Feature Transformer", "Random Forest Regressor"],
+        component_graph=[
+            "Time Series Featurizer",
+            "DateTime Featurization Component",
+            "Random Forest Regressor",
+        ],
         parameters={
             "pipeline": {
-                "date_index": None,
+                "time_index": "date",
+                "gap": 0,
+                "max_delay": 2,
+                "forecast_horizon": 1,
+            },
+            "Time Series Featurizer": {
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
@@ -1009,22 +1019,32 @@ def test_explain_predictions_time_series(ts_data):
     ],
 )
 def test_explain_predictions_best_worst_time_series(
-    output_format, pipeline_class, estimator, ts_data
+    output_format, pipeline_class, estimator, ts_data, ts_data_binary
 ):
     X, y = ts_data
 
     if is_binary(pipeline_class.problem_type):
-        y = y % 2
+        X, y = ts_data_binary
 
     ts_pipeline = pipeline_class(
-        component_graph=["Delayed Feature Transformer", estimator],
+        component_graph=[
+            "Time Series Featurizer",
+            "DateTime Featurization Component",
+            estimator,
+        ],
         parameters={
             "pipeline": {
-                "date_index": None,
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-            }
+            },
+            "Time Series Featurizer": {
+                "gap": 0,
+                "max_delay": 2,
+                "forecast_horizon": 1,
+                "time_index": "date",
+            },
         },
     )
     X_train, y_train = X[:15], y[:15]
@@ -1164,6 +1184,8 @@ EXPECTED_PROVIDER_FEATURES_TEXT = {
     "LSA(provider)[0]",
     "LSA(provider)[1]",
     "MEAN_CHARACTERS_PER_WORD(provider)",
+    "NUM_CHARACTERS(provider)",
+    "NUM_WORDS(provider)",
     "POLARITY_SCORE(provider)",
 }
 
@@ -1179,13 +1201,10 @@ pipeline_test_cases = [
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_linear_pipeline(
-    pipeline_class_and_estimator, algorithm, fraud_100
+    pipeline_class_and_estimator, algorithm, fraud_100, has_minimal_dependencies
 ):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
 
@@ -1234,12 +1253,11 @@ def test_categories_aggregated_linear_pipeline(
     "pipeline_class_and_estimator,algorithm",
     product(pipeline_test_cases, algorithms),
 )
-def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fraud_100):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
+def test_categories_aggregated_text(
+    pipeline_class_and_estimator, algorithm, fraud_100, has_minimal_dependencies
+):
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
 
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
@@ -1252,7 +1270,7 @@ def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fra
     component_graph = [
         "Select Columns Transformer",
         "One Hot Encoder",
-        "Text Featurization Component",
+        "Natural Language Featurization Component",
         "DateTime Featurization Component",
         estimator,
     ]
@@ -1313,13 +1331,10 @@ def test_categories_aggregated_text(pipeline_class_and_estimator, algorithm, fra
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_date_ohe(
-    pipeline_class_and_estimator, algorithm, fraud_100
+    pipeline_class_and_estimator, algorithm, fraud_100, has_minimal_dependencies
 ):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
 
@@ -1384,13 +1399,11 @@ def test_categories_aggregated_date_ohe(
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_pca_dag(
-    pipeline_class_and_estimator, algorithm, fraud_100
+    pipeline_class_and_estimator, algorithm, fraud_100, has_minimal_dependencies
 ):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
+
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
 
@@ -1458,13 +1471,10 @@ def test_categories_aggregated_pca_dag(
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_but_not_those_that_are_dropped(
-    pipeline_class_and_estimator, algorithm, fraud_100
+    pipeline_class_and_estimator, algorithm, fraud_100, has_minimal_dependencies
 ):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
 
@@ -1515,13 +1525,11 @@ def test_categories_aggregated_but_not_those_that_are_dropped(
     product(pipeline_test_cases, algorithms),
 )
 def test_categories_aggregated_when_some_are_dropped(
-    pipeline_class_and_estimator, algorithm, fraud_100
+    pipeline_class_and_estimator, algorithm, fraud_100, has_minimal_dependencies
 ):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
+
     X, y = fraud_100
     pipeline_class, estimator = pipeline_class_and_estimator
 
@@ -1596,12 +1604,11 @@ def test_explain_predictions_stacked_ensemble(
     fraud_100,
     X_y_multi,
     X_y_regression,
+    has_minimal_dependencies,
 ):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
+
     if is_binary(problem_type):
         X, y = fraud_100
         pipeline = BinaryClassificationPipeline(
@@ -1700,6 +1707,7 @@ def test_explain_predictions_stacked_ensemble(
         assert set(entry["explanations"][0]["feature_names"]) == exp_feature_names
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "estimator,algorithm",
     product(
@@ -1718,15 +1726,6 @@ def test_explain_predictions_stacked_ensemble(
     ),
 )
 def test_explain_predictions_oversampler(estimator, algorithm, fraud_100):
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping test because imbalanced-learn not installed",
-    )
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(
         component_graph={
@@ -1758,6 +1757,60 @@ def test_explain_predictions_oversampler(estimator, algorithm, fraud_100):
     )
     assert report["feature_names"].isnull().sum() == 0
     assert report["feature_values"].isnull().sum() == 0
+
+
+@pytest.mark.noncore_dependency
+@pytest.mark.parametrize("problem_type", [ProblemTypes.MULTICLASS, ProblemTypes.BINARY])
+def test_explain_predictions_class_name_matches_class_name_in_y(
+    problem_type, fraud_100
+):
+    X, y = fraud_100
+    if problem_type == ProblemTypes.BINARY:
+        pipeline_class = BinaryClassificationPipeline
+    else:
+        y = np.arange(X.shape[0]) % 3
+        pipeline_class = MulticlassClassificationPipeline
+    pipeline = pipeline_class(
+        component_graph={
+            "Imputer": ["Imputer", "X", "y"],
+            "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
+            "DateTime Featurization Component": [
+                "DateTime Featurization Component",
+                "One Hot Encoder.x",
+                "y",
+            ],
+            "Oversampler": [
+                "Oversampler",
+                "DateTime Featurization Component.x",
+                "y",
+            ],
+            "Random Forest Classifier": [
+                "Random Forest Classifier",
+                "Oversampler.x",
+                "Oversampler.y",
+            ],
+        }
+    )
+
+    pipeline.fit(X, y)
+    exp = explain_predictions_best_worst(
+        pipeline,
+        X,
+        y,
+        num_to_explain=1,
+        output_format="dict",
+        top_k_features=2,
+        algorithm="shap",
+    )
+    if problem_type == ProblemTypes.BINARY:
+        assert exp["explanations"][0]["explanations"][0]["class_name"]
+        assert isinstance(exp["explanations"][0]["explanations"][0]["class_name"], bool)
+    else:
+        for i in range(3):
+            assert (
+                exp["explanations"][0]["explanations"][i]["class_name"]
+                == pipeline.classes_[i]
+            )
 
 
 @patch(
@@ -1819,12 +1872,11 @@ def test_explain_predictions_unknown(indices, X_y_binary):
 
 
 @pytest.mark.parametrize("algorithm", algorithms)
-def test_explain_predictions_url_email(df_with_url_and_email, algorithm):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
+def test_explain_predictions_url_email(
+    df_with_url_and_email, algorithm, has_minimal_dependencies
+):
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
     X = df_with_url_and_email.ww.select(["url", "EmailAddress"])
     y = pd.Series([0, 1, 1, 0, 1])
 
@@ -1876,13 +1928,13 @@ def test_explain_predictions_url_email(df_with_url_and_email, algorithm):
 
 @pytest.mark.parametrize("algorithm", algorithms)
 def test_explain_predictions_postalcodes(
-    algorithm, fraud_100, logistic_regression_binary_pipeline_class
+    algorithm,
+    fraud_100,
+    logistic_regression_binary_pipeline_class,
+    has_minimal_dependencies,
 ):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
     X, y = fraud_100
     X.ww.set_types(
         logical_types={
@@ -1963,20 +2015,18 @@ def test_explain_predictions_postalcodes(
     product(pipeline_test_cases, algorithms),
 )
 def test_explain_predictions_report_shows_original_value_if_possible(
-    pipeline_class_and_estimator, algorithm, fraud_100
+    pipeline_class_and_estimator, algorithm, fraud_100, has_minimal_dependencies
 ):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
+
     pipeline_class, estimator = pipeline_class_and_estimator
     X, y = fraud_100
     X.ww.set_types({"country": "NaturalLanguage"})
     component_graph = [
         "Imputer",
         "DateTime Featurization Component",
-        "Text Featurization Component",
+        "Natural Language Featurization Component",
         "One Hot Encoder",
         "Standard Scaler",
         estimator,
@@ -2028,20 +2078,16 @@ def test_explain_predictions_report_shows_original_value_if_possible(
 
 @pytest.mark.parametrize("algorithm", algorithms)
 def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
-    algorithm,
-    fraud_100,
+    algorithm, fraud_100, has_minimal_dependencies
 ):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
     X, y = fraud_100
     X.ww.set_types({"country": "NaturalLanguage"})
     component_graph = [
         "Imputer",
         "DateTime Featurization Component",
-        "Text Featurization Component",
+        "Natural Language Featurization Component",
         "One Hot Encoder",
         "Standard Scaler",
         "Random Forest Classifier",
@@ -2111,10 +2157,8 @@ def test_explain_predictions_invalid_algorithm():
         )
 
 
+@pytest.mark.noncore_dependency
 def test_explain_predictions_lime_catboost(X_y_binary):
-    pytest.importorskip(
-        "catboost", reason="Skipping test because catboost not installed"
-    )
     pl = BinaryClassificationPipeline(
         {
             "Label Encoder": ["Label Encoder", "X", "y"],

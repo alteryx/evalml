@@ -35,6 +35,9 @@ class ModelFamily(Enum):
     DECISION_TREE = "decision_tree"
     """Decision Tree model family."""
 
+    EXPONENTIAL_SMOOTHING = "exponential_smoothing"
+    """Exponential Smoothing model family."""
+
     ARIMA = "arima"
     """ARIMA model family."""
 
@@ -64,6 +67,7 @@ class ModelFamily(Enum):
             ModelFamily.DECISION_TREE.name: "Decision Tree",
             ModelFamily.BASELINE.name: "Baseline",
             ModelFamily.ENSEMBLE.name: "Ensemble",
+            ModelFamily.EXPONENTIAL_SMOOTHING.name: "Exponential Smoothing",
             ModelFamily.ARIMA.name: "ARIMA",
             ModelFamily.PROPHET.name: "Prophet",
             ModelFamily.NONE.name: "None",

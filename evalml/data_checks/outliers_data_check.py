@@ -30,7 +30,9 @@ class OutliersDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
-            ...
+
+            The column "z" has an outlier so a warning is added to alert the user of its location.
+
             >>> df = pd.DataFrame({
             ...     'x': [1, 2, 3, 4, 5],
             ...     'y': [6, 7, 8, 9, 10],
@@ -45,23 +47,9 @@ class OutliersDataCheck(DataCheck):
             ...                   "code": "HAS_OUTLIERS",
             ...                   "details": {"columns": ["z"], "rows": [3], "column_indices": {"z": [3]}}}],
             ...     "errors": [],
-            ...     "actions": [{"code": "DROP_ROWS", "metadata": {"rows": [3], "columns": None}}]}
-            ...
-            ...
-            >>> box_plot_data = OutliersDataCheck.get_boxplot_data(df['z'])
-            >>> box_plot_data["score"] = round(box_plot_data["score"], 2)
-            >>> assert box_plot_data == {
-            ...     'score': 0.89,
-            ...     'pct_outliers': 0.2,
-            ...     'values': {'q1': -4.0,
-            ...                'median': -3.0,
-            ...                'q3': -2.0,
-            ...                'low_bound': -7.0,
-            ...                'high_bound': 1.0,
-            ...                'low_values': [-1201],
-            ...                'high_values': [],
-            ...                'low_indices': [3],
-            ...                'high_indices': []}}
+            ...     "actions": [{"code": "DROP_ROWS",
+            ...                  "data_check_name": "OutliersDataCheck",
+            ...                  "metadata": {"rows": [3], "columns": None}}]}
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
@@ -113,6 +101,7 @@ class OutliersDataCheck(DataCheck):
         results["actions"].append(
             DataCheckAction(
                 DataCheckActionCode.DROP_ROWS,
+                data_check_name=self.name,
                 metadata={"rows": all_rows_with_indices},
             ).to_dict()
         )
@@ -127,8 +116,32 @@ class OutliersDataCheck(DataCheck):
 
         Returns:
             dict: A payload of box plot statistics.
+
+        Examples:
+            >>> import pandas as pd
+            ...
+            >>> df = pd.DataFrame({
+            ...     'x': [1, 2, 3, 4, 5],
+            ...     'y': [6, 7, 8, 9, 10],
+            ...     'z': [-1, -2, -3, -1201, -4]
+            ... })
+            >>> box_plot_data = OutliersDataCheck.get_boxplot_data(df['z'])
+            >>> box_plot_data["score"] = round(box_plot_data["score"], 2)
+            >>> assert box_plot_data == {
+            ...     'score': 0.89,
+            ...     'pct_outliers': 0.2,
+            ...     'values': {'q1': -4.0,
+            ...                'median': -3.0,
+            ...                'q3': -2.0,
+            ...                'low_bound': -7.0,
+            ...                'high_bound': 1.0,
+            ...                'low_values': [-1201],
+            ...                'high_values': [],
+            ...                'low_indices': [3],
+            ...                'high_indices': []}
+            ...     }
         """
-        data_ = infer_feature_types(data_, ignore_nullable_types=True)
+        data_ = infer_feature_types(data_)
         num_records = data_.count()
         box_plot_dict = data_.ww.box_plot_dict()
         quantiles = box_plot_dict["quantiles"]

@@ -1,4 +1,5 @@
 """Utility methods for EvalML pipelines."""
+import copy
 import logging
 
 from woodwork import logical_types
@@ -22,7 +23,6 @@ from evalml.pipelines.components import (  # noqa: F401
     CatBoostRegressor,
     ComponentBase,
     DateTimeFeaturizer,
-    DelayedFeatureTransformer,
     DropColumns,
     DropNullColumns,
     DropRowsTransformer,
@@ -30,14 +30,17 @@ from evalml.pipelines.components import (  # noqa: F401
     Estimator,
     Imputer,
     LogTransformer,
+    NaturalLanguageFeaturizer,
     OneHotEncoder,
     Oversampler,
     RandomForestClassifier,
+    ReplaceNullableTypes,
+    SelectColumns,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
     StandardScaler,
     TargetImputer,
-    TextFeaturizer,
+    TimeSeriesFeaturizer,
     Undersampler,
     URLFeaturizer,
 )
@@ -60,6 +63,165 @@ from evalml.utils import import_or_raise, infer_feature_types
 logger = logging.getLogger(__name__)
 
 
+def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):
+    component = []
+    if is_classification(problem_type):
+        component.append(LabelEncoder)
+    return component
+
+
+def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
+    component = []
+    all_null_cols = X.columns[X.isnull().all()]
+    if len(all_null_cols) > 0:
+        component.append(DropNullColumns)
+    return component
+
+
+def _get_replace_null(X, y, problem_type, estimator_class, sampler_name=None):
+    component = []
+    all_nullable_cols = X.ww.select(
+        ["IntegerNullable", "AgeNullable", "BooleanNullable"], return_schema=True
+    ).columns
+    nullable_target = isinstance(
+        y.ww.logical_type,
+        (
+            logical_types.AgeNullable,
+            logical_types.BooleanNullable,
+            logical_types.IntegerNullable,
+        ),
+    )
+    if len(all_nullable_cols) > 0 or nullable_target:
+        component.append(ReplaceNullableTypes)
+    return component
+
+
+def _get_drop_index_unknown(X, y, problem_type, estimator_class, sampler_name=None):
+    component = []
+    index_and_unknown_columns = list(
+        X.ww.select(["index", "unknown"], return_schema=True).columns
+    )
+    if len(index_and_unknown_columns) > 0:
+        component.append(DropColumns)
+    return component
+
+
+def _get_url_email(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    email_columns = list(X.ww.select("EmailAddress", return_schema=True).columns)
+    if len(email_columns) > 0:
+        components.append(EmailFeaturizer)
+
+    url_columns = list(X.ww.select("URL", return_schema=True).columns)
+    if len(url_columns) > 0:
+        components.append(URLFeaturizer)
+
+    return components
+
+
+def _get_datetime(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
+
+    add_datetime_featurizer = len(datetime_cols) > 0
+    if add_datetime_featurizer and estimator_class.model_family not in [
+        ModelFamily.ARIMA,
+        ModelFamily.PROPHET,
+    ]:
+        components.append(DateTimeFeaturizer)
+    return components
+
+
+def _get_natural_language(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
+    if len(text_columns) > 0:
+        components.append(NaturalLanguageFeaturizer)
+    return components
+
+
+def _get_imputer(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+
+    input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
+    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
+
+    types_imputer_handles = {
+        logical_types.AgeNullable,
+        logical_types.Boolean,
+        logical_types.BooleanNullable,
+        logical_types.Categorical,
+        logical_types.Double,
+        logical_types.Integer,
+        logical_types.IntegerNullable,
+        logical_types.URL,
+        logical_types.EmailAddress,
+        logical_types.Datetime,
+    }
+
+    if len(input_logical_types.intersection(types_imputer_handles)) or len(
+        text_columns
+    ):
+        components.append(Imputer)
+
+    return components
+
+
+def _get_ohe(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+
+    # The URL and EmailAddress Featurizers will create categorical columns
+    categorical_cols = list(
+        X.ww.select(
+            ["category", "URL", "EmailAddress", "BooleanNullable"], return_schema=True
+        ).columns
+    )
+    if len(categorical_cols) > 0 and estimator_class not in {
+        CatBoostClassifier,
+        CatBoostRegressor,
+    }:
+        components.append(OneHotEncoder)
+    return components
+
+
+def _get_sampler(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+
+    sampler_components = {
+        "Undersampler": Undersampler,
+        "Oversampler": Oversampler,
+    }
+    if sampler_name is not None:
+        try:
+            import_or_raise(
+                "imblearn.over_sampling", error_msg="imbalanced-learn is not installed"
+            )
+            components.append(sampler_components[sampler_name])
+        except ImportError:
+            logger.warning(
+                "Could not import imblearn.over_sampling, so defaulting to use Undersampler"
+            )
+            components.append(Undersampler)
+    return components
+
+
+def _get_standard_scaler(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    if estimator_class and estimator_class.model_family == ModelFamily.LINEAR_MODEL:
+        components.append(StandardScaler)
+    return components
+
+
+def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    if (
+        is_time_series(problem_type)
+        and estimator_class.model_family != ModelFamily.ARIMA
+    ):
+        components.append(TimeSeriesFeaturizer)
+    return components
+
+
 def _get_preprocessing_components(
     X, y, problem_type, estimator_class, sampler_name=None
 ):
@@ -75,94 +237,40 @@ def _get_preprocessing_components(
     Returns:
         list[Transformer]: A list of applicable preprocessing components to use with the estimator.
     """
-    pp_components = []
+    if is_time_series(problem_type):
+        components_functions = [
+            _get_label_encoder,
+            _get_drop_all_null,
+            _get_replace_null,
+            _get_drop_index_unknown,
+            _get_url_email,
+            _get_natural_language,
+            _get_imputer,
+            _get_time_series_featurizer,
+            _get_datetime,
+            _get_ohe,
+            _get_sampler,
+            _get_standard_scaler,
+        ]
+    else:
+        components_functions = [
+            _get_label_encoder,
+            _get_drop_all_null,
+            _get_replace_null,
+            _get_drop_index_unknown,
+            _get_url_email,
+            _get_datetime,
+            _get_natural_language,
+            _get_imputer,
+            _get_ohe,
+            _get_sampler,
+            _get_standard_scaler,
+        ]
+    components = []
+    for function in components_functions:
+        components.extend(function(X, y, problem_type, estimator_class, sampler_name))
 
-    if is_classification(problem_type):
-        pp_components.append(LabelEncoder)
-
-    all_null_cols = X.columns[X.isnull().all()]
-    if len(all_null_cols) > 0:
-        pp_components.append(DropNullColumns)
-
-    index_and_unknown_columns = list(
-        X.ww.select(["index", "unknown"], return_schema=True).columns
-    )
-    if len(index_and_unknown_columns) > 0:
-        pp_components.append(DropColumns)
-
-    email_columns = list(X.ww.select("EmailAddress", return_schema=True).columns)
-    if len(email_columns) > 0:
-        pp_components.append(EmailFeaturizer)
-
-    url_columns = list(X.ww.select("URL", return_schema=True).columns)
-    if len(url_columns) > 0:
-        pp_components.append(URLFeaturizer)
-
-    input_logical_types = {type(lt) for lt in X.ww.logical_types.values()}
-    types_imputer_handles = {
-        logical_types.Boolean,
-        logical_types.Categorical,
-        logical_types.Double,
-        logical_types.Integer,
-        logical_types.URL,
-        logical_types.EmailAddress,
-        logical_types.Datetime,
-    }
-
-    datetime_cols = list(X.ww.select(["Datetime"], return_schema=True).columns)
-
-    add_datetime_featurizer = len(datetime_cols) > 0
-    if add_datetime_featurizer and estimator_class.model_family not in [
-        ModelFamily.ARIMA,
-        ModelFamily.PROPHET,
-    ]:
-        pp_components.append(DateTimeFeaturizer)
-
-    text_columns = list(X.ww.select("NaturalLanguage", return_schema=True).columns)
-    if len(text_columns) > 0:
-        pp_components.append(TextFeaturizer)
-
-    if len(input_logical_types.intersection(types_imputer_handles)) or len(
-        text_columns
-    ):
-        pp_components.append(Imputer)
-
-    if (
-        is_time_series(problem_type)
-        and estimator_class.model_family != ModelFamily.ARIMA
-    ):
-        pp_components.append(DelayedFeatureTransformer)
-
-    # The URL and EmailAddress Featurizers will create categorical columns
-    categorical_cols = list(
-        X.ww.select(["category", "URL", "EmailAddress"], return_schema=True).columns
-    )
-    if len(categorical_cols) > 0 and estimator_class not in {
-        CatBoostClassifier,
-        CatBoostRegressor,
-    }:
-        pp_components.append(OneHotEncoder)
-
-    sampler_components = {
-        "Undersampler": Undersampler,
-        "Oversampler": Oversampler,
-    }
-    if sampler_name is not None:
-        try:
-            import_or_raise(
-                "imblearn.over_sampling", error_msg="imbalanced-learn is not installed"
-            )
-            pp_components.append(sampler_components[sampler_name])
-        except ImportError:
-            logger.warning(
-                "Could not import imblearn.over_sampling, so defaulting to use Undersampler"
-            )
-            pp_components.append(Undersampler)
-
-    if estimator_class and estimator_class.model_family == ModelFamily.LINEAR_MODEL:
-        pp_components.append(StandardScaler)
-
-    return pp_components
+    return components
 
 
 def _get_pipeline_base_class(problem_type):
@@ -182,6 +290,91 @@ def _get_pipeline_base_class(problem_type):
         return TimeSeriesMulticlassClassificationPipeline
 
 
+def _make_pipeline_time_series(
+    X,
+    y,
+    estimator,
+    problem_type,
+    parameters=None,
+    sampler_name=None,
+    known_in_advance=None,
+):
+    """Make a pipeline for time series problems.
+
+    If there are known-in-advance features, the pipeline will have two parallel subgraphs.
+    In the first part, the not known_in_advance features will be featurized with a TimeSeriesFeaturizer.
+    The known_in_advance features are treated like a non-time-series features since they don't change with time.
+
+    Args:
+         X (pd.DataFrame): The input data of shape [n_samples, n_features].
+         y (pd.Series): The target data of length [n_samples].
+         estimator (Estimator): Estimator for pipeline.
+         problem_type (ProblemTypes or str): Problem type for pipeline to generate.
+         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
+             An empty dictionary or None implies using all default values for component parameters.
+         sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
+             Defaults to None
+         known_in_advance (list[str], None): List of features that are known in advance.
+
+    Returns:
+        PipelineBase: TimeSeriesPipeline''
+    """
+    if known_in_advance:
+        not_known_in_advance = [c for c in X.columns if c not in known_in_advance]
+        X_not_known_in_advance = X.ww[not_known_in_advance]
+        X_known_in_advance = X.ww[known_in_advance]
+    else:
+        X_not_known_in_advance = X
+        X_known_in_advance = None
+
+    preprocessing_components = _get_preprocessing_components(
+        X_not_known_in_advance, y, problem_type, estimator, sampler_name
+    )
+
+    if known_in_advance:
+        preprocessing_components = [SelectColumns] + preprocessing_components
+    else:
+        preprocessing_components += [estimator]
+
+    component_graph = PipelineBase._make_component_dict_from_component_list(
+        preprocessing_components
+    )
+    base_class = _get_pipeline_base_class(problem_type)
+    pipeline = base_class(component_graph, parameters=parameters)
+    if X_known_in_advance is not None:
+        # We can't specify a time series problem type because then the known-in-advance
+        # pipeline will have a time series featurizer, which is not what we want.
+        # The pre-processing components do not depend on problem type so we
+        # are ok by specifying regression for the known-in-advance sub pipeline
+        # Since we specify the correct problem type for the not known-in-advance pipeline
+        # the label encoder and time series featurizer will be correctly added to the
+        # overall pipeline
+        kina_preprocessing = [SelectColumns] + _get_preprocessing_components(
+            X_known_in_advance, y, ProblemTypes.REGRESSION, estimator, sampler_name
+        )
+        kina_component_graph = PipelineBase._make_component_dict_from_component_list(
+            kina_preprocessing
+        )
+        # Give the known-in-advance pipeline a different name to ensure that it does not have the
+        # same name as the other pipeline. Otherwise there could be a clash in the sub_pipeline_names
+        # dict below for some estimators that don't have a lot of preprocessing steps, e.g ARIMA
+        kina_pipeline = base_class(
+            kina_component_graph, parameters=parameters, custom_name="Pipeline"
+        )
+        pipeline = _make_pipeline_from_multiple_graphs(
+            [pipeline, kina_pipeline],
+            estimator,
+            problem_type,
+            parameters=parameters,
+            sub_pipeline_names={
+                kina_pipeline.name: "Known In Advance",
+                pipeline.name: "Not Known In Advance",
+            },
+        )
+        pipeline = pipeline.new(parameters)
+    return pipeline
+
+
 def make_pipeline(
     X,
     y,
@@ -192,6 +385,7 @@ def make_pipeline(
     extra_components=None,
     extra_components_position="before_preprocessing",
     use_estimator=True,
+    known_in_advance=None,
 ):
     """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
@@ -207,6 +401,7 @@ def make_pipeline(
          extra_components (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
          extra_components_position (str): Where to put extra components. Defaults to "before_preprocessing" and any other value will put components after preprocessing components.
          use_estimator (bool): Whether to add the provided estimator to the pipeline or not. Defaults to True.
+         known_in_advance (list[str], None): List of features that are known in advance.
 
     Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
@@ -232,29 +427,33 @@ def make_pipeline(
                 f"Sampling is unsupported for problem_type {str(problem_type)}"
             )
 
-    preprocessing_components = _get_preprocessing_components(
-        X, y, problem_type, estimator, sampler_name
-    )
-    extra_components = extra_components or []
-    estimator = [estimator] if use_estimator else []
-
-    if extra_components_position == "before_preprocessing":
-        complete_component_list = (
-            extra_components + preprocessing_components + estimator
+    if is_time_series(problem_type):
+        pipeline = _make_pipeline_time_series(
+            X, y, estimator, problem_type, parameters, sampler_name, known_in_advance
         )
     else:
-        complete_component_list = (
-            preprocessing_components + extra_components + estimator
+        preprocessing_components = _get_preprocessing_components(
+            X, y, problem_type, estimator, sampler_name
         )
+        extra_components = extra_components or []
+        estimator_component = [estimator] if use_estimator else []
 
-    component_graph = PipelineBase._make_component_dict_from_component_list(
-        complete_component_list
-    )
-    base_class = _get_pipeline_base_class(problem_type)
-    return base_class(
-        component_graph,
-        parameters=parameters,
-    )
+        if extra_components_position == "before_preprocessing":
+            complete_component_list = (
+                extra_components + preprocessing_components + estimator_component
+            )
+        else:
+            complete_component_list = (
+                preprocessing_components + extra_components + estimator_component
+            )
+
+        component_graph = PipelineBase._make_component_dict_from_component_list(
+            complete_component_list
+        )
+        base_class = _get_pipeline_base_class(problem_type)
+        pipeline = base_class(component_graph, parameters=parameters)
+
+    return pipeline
 
 
 def generate_pipeline_code(element):
@@ -294,7 +493,6 @@ def _make_stacked_ensemble_pipeline(
 
     Args:
         input_pipelines (list(PipelineBase or subclass obj)): List of pipeline instances to use as the base estimators for the stacked ensemble.
-            This must not be None or an empty list or else EnsembleMissingPipelinesError will be raised.
         problem_type (ProblemType): Problem type of pipeline
         final_estimator (Estimator): Metalearner to use for the ensembler. Defaults to None.
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
@@ -422,7 +620,9 @@ def _make_pipeline_from_multiple_graphs(
             return f"{pipeline_name} Pipeline{idx} - {component_name}"
         return f"{str(name)} Pipeline{idx} - {component_name}"
 
-    parameters = parameters if parameters else {}
+    # Without this copy, the parameters will be modified in between
+    # invocations of this method.
+    parameters = copy.deepcopy(parameters) if parameters else {}
     final_components = []
     used_names = []
     component_graph = (
@@ -562,13 +762,14 @@ def _make_component_list_from_actions(actions):
     return components
 
 
-def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon):
+def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, time_index):
     """Make a baseline pipeline for time series regression problems.
 
     Args:
         problem_type: One of TIME_SERIES_REGRESSION, TIME_SERIES_MULTICLASS, TIME_SERIES_BINARY
         gap (int): Non-negative gap parameter.
         forecast_horizon (int): Positive forecast_horizon parameter.
+        time_index (str): Column name of time_index parameter.
 
     Returns:
         TimeSeriesPipelineBase, a time series pipeline corresponding to the problem type.
@@ -590,23 +791,24 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon):
     }[problem_type]
     baseline = pipeline_class(
         component_graph=[
-            "Delayed Feature Transformer",
+            "Time Series Featurizer",
             "Time Series Baseline Estimator",
         ],
         custom_name=pipeline_name,
         parameters={
             "pipeline": {
-                "date_index": None,
+                "time_index": time_index,
                 "gap": gap,
                 "max_delay": 0,
                 "forecast_horizon": forecast_horizon,
             },
-            "Delayed Feature Transformer": {
+            "Time Series Featurizer": {
                 "max_delay": 0,
                 "gap": gap,
                 "forecast_horizon": forecast_horizon,
                 "delay_target": True,
                 "delay_features": False,
+                "time_index": time_index,
             },
             "Time Series Baseline Estimator": {
                 "gap": gap,

@@ -2,7 +2,6 @@
 import copy
 
 import numpy as np
-import pandas as pd
 from skopt.space import Real
 
 from evalml.model_family import ModelFamily
@@ -38,7 +37,7 @@ class ProphetRegressor(Estimator):
 
     def __init__(
         self,
-        date_index=None,
+        time_index=None,
         changepoint_prior_scale=0.05,
         seasonality_prior_scale=10,
         holidays_prior_scale=10,
@@ -68,7 +67,9 @@ class ProphetRegressor(Estimator):
         prophet = import_or_raise("prophet", error_msg=p_error_msg)
 
         prophet_regressor = prophet.Prophet(**parameters)
-        parameters["date_index"] = date_index
+        parameters["time_index"] = time_index
+        self.time_index = time_index
+
         super().__init__(
             parameters=parameters,
             component_obj=prophet_regressor,
@@ -76,32 +77,21 @@ class ProphetRegressor(Estimator):
         )
 
     @staticmethod
-    def build_prophet_df(X, y=None, date_column="ds"):
+    def build_prophet_df(X, y=None, time_index="ds"):
         """Build the Prophet data to pass fit and predict on."""
-        if X is not None:
-            X = copy.deepcopy(X)
-        if y is not None:
-            y = copy.deepcopy(y)
+        X = copy.deepcopy(X)
+        y = copy.deepcopy(y)
+        if time_index is None:
+            raise ValueError("time_index cannot be None!")
 
-        if date_column in X.columns:
-            date_column = X.pop(date_column)
+        if time_index in X.columns:
+            date_column = X.pop(time_index)
         else:
-            if isinstance(X.index, pd.DatetimeIndex):
-                X = X.reset_index()
-                date_column = X.pop("index")
-            elif isinstance(y.index, pd.DatetimeIndex):
-                y = y.reset_index()
-                date_column = y.pop("index")
-                y = pd.Series(y.values.flatten())
-            else:
-                msg = "Prophet estimator requires input data X to have a datetime column specified by the 'date_index' parameter. If it doesn't find one, it will look for the datetime column in the index of X or y."
-                raise ValueError(msg)
+            raise ValueError(f"Column {time_index} was not found in X!")
 
         prophet_df = X
-
         if y is not None:
-            if not prophet_df.empty:
-                y.index = prophet_df.index
+            y.index = prophet_df.index
             prophet_df["y"] = y
         prophet_df["ds"] = date_column
 
@@ -117,12 +107,10 @@ class ProphetRegressor(Estimator):
         Returns:
             self
         """
-        if X is None:
-            X = pd.DataFrame()
         X, y = super()._manage_woodwork(X, y)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, date_column=self.parameters["date_index"]
+            X=X, y=y, time_index=self.time_index
         )
 
         self._component_obj.fit(prophet_df)
@@ -133,26 +121,23 @@ class ProphetRegressor(Estimator):
 
         Args:
             X (pd.DataFrame): Data of shape [n_samples, n_features].
-            y (pd.Series): Target data.
+            y (pd.Series): Target data. Ignored.
 
         Returns:
             pd.Series: Predicted values.
         """
-        if X is None:
-            X = pd.DataFrame()
         X = infer_feature_types(X)
 
         prophet_df = ProphetRegressor.build_prophet_df(
-            X=X, y=y, date_column=self.parameters["date_index"]
+            X=X, y=y, time_index=self.time_index
         )
 
         prophet_output = self._component_obj.predict(prophet_df)
         predictions = prophet_output["yhat"]
         predictions = infer_feature_types(predictions)
         predictions = predictions.rename(None)
+        predictions.index = X.index
 
-        if not X.empty:
-            predictions.index = X.index
         return predictions
 
     def get_params(self):
@@ -173,7 +158,7 @@ class ProphetRegressor(Estimator):
         """
         parameters = {
             "changepoint_prior_scale": 0.05,
-            "date_index": None,
+            "time_index": None,
             "seasonality_prior_scale": 10,
             "holidays_prior_scale": 10,
             "seasonality_mode": "additive",

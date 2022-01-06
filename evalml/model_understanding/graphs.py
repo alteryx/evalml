@@ -1394,7 +1394,7 @@ def visualize_decision_tree(
         path_and_name, graph_format = os.path.splitext(filepath)
         if graph_format:
             graph_format = graph_format[1:].lower()  # ignore the dot
-            supported_filetypes = graphviz.backend.FORMATS
+            supported_filetypes = graphviz.FORMATS
             if graph_format not in supported_filetypes:
                 raise ValueError(
                     (
@@ -1592,12 +1592,12 @@ def graph_t_sne(
 
     Args:
         X (np.ndarray, pd.DataFrame): Data to be transformed. Must be numeric.
-        n_components (int, optional): Dimension of the embedded space.
-        perplexity (float, optional): Related to the number of nearest neighbors that is used in other manifold learning algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50.
-        learning_rate (float, optional): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad local minimum, increasing the learning rate may help.
-        metric (str, optional): The metric to use when calculating distance between instances in a feature array.
-        marker_line_width (int, optional): Determines the line width of the marker boundary.
-        marker_size (int, optional): Determines the size of the marker.
+        n_components (int): Dimension of the embedded space. Defaults to 2.
+        perplexity (float): Related to the number of nearest neighbors that is used in other manifold learning algorithms. Larger datasets usually require a larger perplexity. Consider selecting a value between 5 and 50. Defaults to 30.
+        learning_rate (float): Usually in the range [10.0, 1000.0]. If the cost function gets stuck in a bad local minimum, increasing the learning rate may help. Must be positive. Defaults to 200.
+        metric (str): The metric to use when calculating distance between instances in a feature array. The default is "euclidean" which is interpreted as the squared euclidean distance.
+        marker_line_width (int): Determines the line width of the marker boundary. Defaults to 2.
+        marker_size (int): Determines the size of the marker. Defaults to 7.
         kwargs: Arbitrary keyword arguments.
 
     Returns:

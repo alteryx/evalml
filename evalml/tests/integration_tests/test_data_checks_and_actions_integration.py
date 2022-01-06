@@ -10,15 +10,14 @@ from evalml.data_checks import (
     OutliersDataCheck,
 )
 from evalml.data_checks.highly_null_data_check import HighlyNullDataCheck
-from evalml.data_checks.invalid_targets_data_check import (
-    InvalidTargetDataCheck,
-)
+from evalml.data_checks.invalid_target_data_check import InvalidTargetDataCheck
+from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import (
     DropColumns,
     DropRowsTransformer,
     TargetImputer,
 )
-from evalml.pipelines.utils import _make_component_list_from_actions
+from evalml.pipelines.utils import make_pipeline_from_actions
 
 
 def test_data_checks_with_healthy_data(X_y_binary):
@@ -28,7 +27,9 @@ def test_data_checks_with_healthy_data(X_y_binary):
         "binary", get_default_primary_search_objective("binary")
     )
     data_check_output = data_check.validate(X, y)
-    assert _make_component_list_from_actions(data_check_output["actions"]) == []
+    assert make_pipeline_from_actions(
+        "binary", data_check_output["actions"]
+    ) == BinaryClassificationPipeline(component_graph={}, parameters={}, random_seed=0)
 
 
 def test_data_checks_suggests_drop_cols():
@@ -47,9 +48,12 @@ def test_data_checks_suggests_drop_cols():
         DataCheckAction.convert_dict_to_action(action)
         for action in data_checks_output["actions"]
     ]
-
-    action_components = _make_component_list_from_actions(actions)
-    assert action_components == [DropColumns(columns=["all_null"])]
+    action_pipeline = make_pipeline_from_actions("binary", actions)
+    assert action_pipeline == BinaryClassificationPipeline(
+        component_graph={"Drop Columns Transformer": [DropColumns, "X", "y"]},
+        parameters={"Drop Columns Transformer": {"columns": ["all_null"]}},
+        random_seed=0,
+    )
 
     X_t = pd.DataFrame(
         {
@@ -64,12 +68,14 @@ def test_data_checks_suggests_drop_cols():
             "no_null": [1, 2, 3, 4, 5],
         }
     )
-    for component in action_components:
-        X_t = component.fit_transform(X_t)
+
+    action_pipeline.fit(X, y)
+    X_t = action_pipeline.transform(X, y)
     assert_frame_equal(X_expected, X_t)
 
 
 def test_data_checks_impute_cols():
+    X = pd.DataFrame()
     y = ww.init_series(pd.Series([0, 1, 1, None, None]))
 
     data_check = InvalidTargetDataCheck("binary", "Log Loss Binary")
@@ -79,16 +85,19 @@ def test_data_checks_impute_cols():
         DataCheckAction.convert_dict_to_action(action)
         for action in data_checks_output["actions"]
     ]
-
-    action_components = _make_component_list_from_actions(actions)
-    assert action_components == [
-        TargetImputer(impute_strategy="most_frequent", fill_value=None)
-    ]
+    action_pipeline = make_pipeline_from_actions("binary", actions)
+    assert action_pipeline == BinaryClassificationPipeline(
+        component_graph={"Target Imputer": [TargetImputer, "X", "y"]},
+        parameters={
+            "Target Imputer": {"impute_strategy": "most_frequent", "fill_value": None}
+        },
+        random_seed=0,
+    )
 
     y_expected = ww.init_series(pd.Series([0, 1, 1, 1, 1]), logical_type="double")
     y_t = ww.init_series(pd.Series([0, 1, 1, None, None]))
-    for component in action_components:
-        _, y_t = component.fit_transform(None, y_t)
+    action_pipeline.fit(X, y)
+    _, y_t = action_pipeline.transform(X, y)
     assert_series_equal(y_expected, y_t)
 
 
@@ -111,14 +120,18 @@ def test_data_checks_suggests_drop_rows():
         DataCheckAction.convert_dict_to_action(action)
         for action in data_checks_output["actions"]
     ]
-    action_components = _make_component_list_from_actions(actions)
-    assert action_components == [DropRowsTransformer(indices_to_drop=[0, 3, 5, 10])]
+    action_pipeline = make_pipeline_from_actions("binary", actions)
+    assert action_pipeline == BinaryClassificationPipeline(
+        component_graph={"Drop Rows Transformer": [DropRowsTransformer, "X", "y"]},
+        parameters={"Drop Rows Transformer": {"indices_to_drop": [0, 3, 5, 10]}},
+        random_seed=0,
+    )
 
     X_expected = X.drop([0, 3, 5, 10])
     X_expected.ww.init()
     y_expected = y.drop([0, 3, 5, 10])
 
-    for component in action_components:
-        X, y = component.fit_transform(X, y)
-    assert_frame_equal(X_expected, X)
-    assert_series_equal(y_expected, y)
+    action_pipeline.fit(X, y)
+    X_t, y_t = action_pipeline.transform(X, y)
+    assert_frame_equal(X_expected, X_t)
+    assert_series_equal(y_expected, y_t)

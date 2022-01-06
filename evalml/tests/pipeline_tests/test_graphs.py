@@ -41,10 +41,9 @@ def test_component_graph(example_graph):
     return component_graph
 
 
-def test_backend(test_pipeline):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
+@pytest.mark.noncore_dependency
+def test_backend(test_pipeline, graphviz):
+
     with patch("graphviz.Digraph.pipe") as mock_func:
         mock_func.side_effect = graphviz.backend.ExecutableNotFound("Not Found")
         clf = test_pipeline
@@ -52,19 +51,17 @@ def test_backend(test_pipeline):
             clf.graph()
 
 
-def test_returns_digraph_object(test_pipeline):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
+@pytest.mark.noncore_dependency
+def test_returns_digraph_object(test_pipeline, graphviz):
+
     clf = test_pipeline
     graph = clf.graph()
     assert isinstance(graph, graphviz.Digraph)
 
 
-def test_backend_comp_graph(test_component_graph):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
+@pytest.mark.noncore_dependency
+def test_backend_comp_graph(test_component_graph, graphviz):
+
     with patch("graphviz.Digraph.pipe") as mock_func:
         mock_func.side_effect = graphviz.backend.ExecutableNotFound("Not Found")
         comp = test_component_graph
@@ -72,29 +69,25 @@ def test_backend_comp_graph(test_component_graph):
             comp.graph()
 
 
+@pytest.mark.noncore_dependency
 def test_saving_png_file(tmpdir, test_pipeline):
-    pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
     filepath = os.path.join(str(tmpdir), "pipeline.png")
     pipeline = test_pipeline
     pipeline.graph(filepath=filepath)
     assert os.path.isfile(filepath)
 
 
-def test_returns_digraph_object_comp_graph(test_component_graph):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
+@pytest.mark.noncore_dependency
+def test_returns_digraph_object_comp_graph(test_component_graph, graphviz):
+
     comp = test_component_graph
     graph = comp.graph("test", "png")
     assert isinstance(graph, graphviz.Digraph)
 
 
-def test_returns_digraph_object_comp_graph_with_params(test_component_graph):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
+@pytest.mark.noncore_dependency
+def test_returns_digraph_object_comp_graph_with_params(test_component_graph, graphviz):
+
     comp = test_component_graph
     parameters = {
         "OneHot_RandomForest": {"top_n": 3},
@@ -109,30 +102,24 @@ def test_returns_digraph_object_comp_graph_with_params(test_component_graph):
     assert "max_iter : 100" in graph.source
 
 
+@pytest.mark.noncore_dependency
 def test_missing_file_extension(tmpdir, test_pipeline):
-    pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
     filepath = os.path.join(str(tmpdir), "test1")
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
 
 
+@pytest.mark.noncore_dependency
 def test_invalid_format(tmpdir, test_pipeline):
-    pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
     filepath = os.path.join(str(tmpdir), "test1.xyz")
     pipeline = test_pipeline
     with pytest.raises(ValueError, match="Unknown format"):
         pipeline.graph(filepath=filepath)
 
 
+@pytest.mark.noncore_dependency
 def test_invalid_path(tmpdir, test_pipeline):
-    pytest.importorskip(
-        "graphviz", reason="Skipping plotting test because graphviz not installed"
-    )
     filepath = os.path.join(str(tmpdir), "invalid", "path", "pipeline.png")
     assert not os.path.exists(filepath)
     pipeline = test_pipeline
@@ -141,22 +128,18 @@ def test_invalid_path(tmpdir, test_pipeline):
     assert not os.path.exists(filepath)
 
 
-def test_graph_feature_importance(X_y_binary, test_pipeline):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_feature_importance(X_y_binary, test_pipeline, go):
+
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
     assert isinstance(clf.graph_feature_importance(), go.Figure)
 
 
-def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline, go):
+
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
@@ -168,11 +151,9 @@ def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline):
     assert np.any(data["x"] == 0.0)
 
 
-def test_graph_feature_importance_threshold(X_y_binary, test_pipeline):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_feature_importance_threshold(X_y_binary, test_pipeline, go):
+
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
@@ -189,13 +170,10 @@ def test_graph_feature_importance_threshold(X_y_binary, test_pipeline):
     assert np.all(data["x"] >= 0.5)
 
 
+@pytest.mark.noncore_dependency
 @patch("evalml.pipelines.pipeline_base.jupyter_check")
 @patch("evalml.pipelines.pipeline_base.import_or_raise")
 def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipeline):
-    pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
@@ -227,29 +205,81 @@ def test_component_as_json(
     assert isinstance(dag_str, str)
     dag_json = json.loads(dag_str)
     assert isinstance(dag_json, dict)
-    assert dag_json["x_edges"][0][0] == "X"
+    assert dag_json["x_edges"][0]["from"] == "X"
     assert len(expected_nodes.keys()) == len(dag_json["Nodes"].keys()) - 2
     assert dag_json["Nodes"].keys() - expected_nodes.keys() == {"X", "y"}
-    x_edges_set = set()
-    y_edges_set = set()
+    x_edges_expected = []
+    y_edges_expected = []
     for node_, graph_ in expected_nodes.items():
         assert node_ in dag_json["Nodes"]
         comp_name = graph_[0].name if graph_type == "list" else graph_[0]
         assert comp_name == dag_json["Nodes"][node_]["Name"]
         for comp_ in graph_[1:]:
             if comp_ == "X":
-                x_edges_set.add(("X", node_))
+                x_edges_expected.append({"from": "X", "to": node_})
             elif comp_.endswith(".x"):
-                x_edges_set.add((comp_[:-2], node_))
+                x_edges_expected.append({"from": comp_[:-2], "to": node_})
             elif comp_ == "y":
-                y_edges_set.add(("y", node_))
+                y_edges_expected.append({"from": "y", "to": node_})
             else:
-                y_edges_set.add((comp_[:-2], node_))
+                y_edges_expected.append({"from": comp_[:-2], "to": node_})
     for node_, params_ in pipeline_parameters.items():
         for key_, val_ in params_.items():
             assert (
-                dag_json["Nodes"][node_]["Attributes"][key_]
+                dag_json["Nodes"][node_]["Parameters"][key_]
                 == pipeline_parameters[node_][key_]
             )
-    assert x_edges_set == set(tuple(edge_) for edge_ in dag_json["x_edges"])
-    assert y_edges_set == set(tuple(edge_) for edge_ in dag_json["y_edges"])
+    assert len(x_edges_expected) == len(dag_json["x_edges"])
+    assert [edge in dag_json["x_edges"] for edge in x_edges_expected]
+    assert len(y_edges_expected) == len(dag_json["y_edges"])
+    assert [edge in dag_json["y_edges"] for edge in y_edges_expected]
+
+
+def test_ensemble_as_json():
+    component_graph = {
+        "Label Encoder": ["Label Encoder", "X", "y"],
+        "Random Forest Pipeline - Label Encoder": [
+            "Label Encoder",
+            "X",
+            "Label Encoder.y",
+        ],
+        "Random Forest Pipeline - Imputer": [
+            "Imputer",
+            "X",
+            "Random Forest Pipeline - Label Encoder.y",
+        ],
+        "Random Forest Pipeline - Random Forest Classifier": [
+            "Random Forest Classifier",
+            "Random Forest Pipeline - Imputer.x",
+            "Random Forest Pipeline - Label Encoder.y",
+        ],
+        "Decision Tree Pipeline - Label Encoder": [
+            "Label Encoder",
+            "X",
+            "Label Encoder.y",
+        ],
+        "Decision Tree Pipeline - Imputer": [
+            "Imputer",
+            "X",
+            "Decision Tree Pipeline - Label Encoder.y",
+        ],
+        "Decision Tree Pipeline - Decision Tree Classifier": [
+            "Decision Tree Classifier",
+            "Decision Tree Pipeline - Imputer.x",
+            "Decision Tree Pipeline - Label Encoder.y",
+        ],
+        "Stacked Ensemble Classifier": [
+            "Stacked Ensemble Classifier",
+            "Random Forest Pipeline - Random Forest Classifier.x",
+            "Decision Tree Pipeline - Decision Tree Classifier.x",
+            "Decision Tree Pipeline - Label Encoder.y",
+        ],
+    }
+    parameters = {
+        "Random Forest Pipeline - Random Forest Classifier": {"max_depth": np.int64(7)}
+    }
+    pipeline = BinaryClassificationPipeline(component_graph, parameters=parameters)
+    dag_str = pipeline.graph_json()
+    dag_json = json.loads(dag_str)
+
+    assert list(dag_json["Nodes"].keys()) == list(component_graph.keys()) + ["X", "y"]

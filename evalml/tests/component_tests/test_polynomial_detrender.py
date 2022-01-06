@@ -7,9 +7,7 @@ from sklearn.preprocessing import PolynomialFeatures
 
 from evalml.pipelines.components import PolynomialDetrender
 
-pytest.importorskip(
-    "sktime", reason="Skipping polynomial detrending tests because sktime not installed"
-)
+pytestmark = [pytest.mark.noncore_dependency, pytest.mark.skip_if_39]
 
 
 def test_polynomial_detrender_init():

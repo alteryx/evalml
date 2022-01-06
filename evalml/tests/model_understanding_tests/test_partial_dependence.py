@@ -646,13 +646,10 @@ def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regr
     assert not part_dep.isnull().all().all()
 
 
-def test_graph_partial_dependence(breast_cancer_local, test_pipeline):
+@pytest.mark.noncore_dependency
+def test_graph_partial_dependence(breast_cancer_local, test_pipeline, go):
     X, y = breast_cancer_local
 
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
     clf = test_pipeline
     clf.fit(X, y)
     fig = graph_partial_dependence(clf, X, features="mean radius", grid_resolution=5)
@@ -671,17 +668,15 @@ def test_graph_partial_dependence(breast_cancer_local, test_pipeline):
     )
 
 
+@pytest.mark.noncore_dependency
 @patch(
     "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_graph_partial_dependence_ww_categories(
-    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class
+    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class, go
 ):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+
     X, y = fraud_100
     X.ww.set_types(
         logical_types={
@@ -711,13 +706,11 @@ def test_graph_partial_dependence_ww_categories(
         )
 
 
-def test_graph_two_way_partial_dependence(breast_cancer_local, test_pipeline):
+@pytest.mark.noncore_dependency
+def test_graph_two_way_partial_dependence(breast_cancer_local, test_pipeline, go):
+
     X, y = breast_cancer_local
 
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
     clf = test_pipeline
     clf.fit(X, y)
     fig = graph_partial_dependence(
@@ -741,17 +734,15 @@ def test_graph_two_way_partial_dependence(breast_cancer_local, test_pipeline):
     assert np.array_equal(fig_dict["data"][0]["z"], part_dep_data.values)
 
 
+@pytest.mark.noncore_dependency
 @patch(
     "evalml.pipelines.BinaryClassificationPipeline.predict_proba",
     side_effect=lambda X: np.array([[0.2, 0.8]] * X.shape[0]),
 )
 def test_graph_two_way_partial_dependence_ww_categories(
-    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class
+    mock_predict_proba, fraud_100, logistic_regression_binary_pipeline_class, go
 ):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+
     X, y = fraud_100
     X.ww.set_types(
         logical_types={
@@ -811,14 +802,11 @@ def test_graph_two_way_partial_dependence_ww_categories(
     assert np.array_equal(fig_dict["data"][0]["z"], part_dep_data.values)
 
 
+@pytest.mark.noncore_dependency
 def test_graph_partial_dependence_multiclass(
-    wine_local,
-    logistic_regression_multiclass_pipeline_class,
+    wine_local, logistic_regression_multiclass_pipeline_class, go
 ):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+
     X, y = wine_local
     pipeline = logistic_regression_multiclass_pipeline_class(
         parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
@@ -1000,6 +988,7 @@ def test_partial_dependence_percentile_errors(
     assert not part_dep.isnull().any(axis=None)
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("problem_type", ["binary", "regression"])
 def test_graph_partial_dependence_regression_and_binary_categorical(
     problem_type,
@@ -1008,10 +997,6 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
     X_y_binary,
     logistic_regression_binary_pipeline_class,
 ):
-    pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
 
     if problem_type == "binary":
         X, y = X_y_binary
@@ -1069,14 +1054,11 @@ def test_graph_partial_dependence_regression_and_binary_categorical(
     )
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("class_label", [None, "class_1"])
 def test_partial_dependence_multiclass_categorical(
     wine_local, class_label, logistic_regression_multiclass_pipeline_class
 ):
-    pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
 
     X, y = wine_local
     X.ww["categorical_column"] = ww.init_series(
@@ -1275,14 +1257,11 @@ def test_partial_dependence_datetime(
     assert e.value.code == PartialDependenceErrorCode.TWO_WAY_REQUESTED_FOR_DATES
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("problem_type", ["binary", "regression"])
 def test_graph_partial_dependence_regression_and_binary_datetime(
     problem_type, X_y_regression, X_y_binary
 ):
-    pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
 
     if problem_type == "binary":
         X, y = X_y_binary
@@ -1324,11 +1303,8 @@ def test_graph_partial_dependence_regression_and_binary_datetime(
     assert list(plot_data["x"]) == list(pd.date_range("20200101", periods=5))
 
 
+@pytest.mark.noncore_dependency
 def test_graph_partial_dependence_regression_date_order(X_y_binary):
-    pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
 
     X, y = X_y_binary
     pipeline = BinaryClassificationPipeline(
@@ -1378,6 +1354,7 @@ def test_partial_dependence_respect_grid_resolution(fraud_100):
     assert dep.shape[0] != max(X.ww.select("categorical").describe().loc["unique"]) + 1
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
 def test_graph_partial_dependence_ice_plot(
     problem_type,
@@ -1386,10 +1363,7 @@ def test_graph_partial_dependence_ice_plot(
     test_pipeline,
     logistic_regression_multiclass_pipeline_class,
 ):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+    from plotly import graph_objects as go
 
     if problem_type == ProblemTypes.MULTICLASS:
         test_pipeline = logistic_regression_multiclass_pipeline_class(
@@ -1766,12 +1740,16 @@ def test_partial_dependence_preserves_woodwork_schema(mock_predict_proba, fraud_
     pl = BinaryClassificationPipeline(
         component_graph={
             "Label Encoder": ["Label Encoder", "X", "y"],
-            "Text Featurization Component": [
-                "Text Featurization Component",
+            "Natural Language Featurization Component": [
+                "Natural Language Featurization Component",
                 "X",
                 "Label Encoder.y",
             ],
-            "Imputer": ["Imputer", "Text Featurization Component.x", "Label Encoder.y"],
+            "Imputer": [
+                "Imputer",
+                "Natural Language Featurization Component.x",
+                "Label Encoder.y",
+            ],
             "Random Forest Classifier": [
                 "Random Forest Classifier",
                 "Imputer.x",

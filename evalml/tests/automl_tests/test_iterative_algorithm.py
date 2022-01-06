@@ -364,20 +364,13 @@ def test_iterative_algorithm_passes_njobs(
                 algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
 
-@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("is_regression", [True, False])
 @pytest.mark.parametrize("estimator", ["XGBoost", "CatBoost"])
+@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
-    mock_opt_tell, X_y_binary, X_y_regression, is_regression, estimator
+    mock_opt_tell, is_regression, estimator, X_y_binary, X_y_regression
 ):
-    if estimator == "XGBoost":
-        pytest.importorskip(
-            "xgboost", reason="Skipping test because xgboost is not installed."
-        )
-    else:
-        pytest.importorskip(
-            "catboost", reason="Skipping test because catboost is not installed."
-        )
     if is_regression:
         X, y = X_y_regression
         component_graphs = {"graph": [f"{estimator} Regressor"]}

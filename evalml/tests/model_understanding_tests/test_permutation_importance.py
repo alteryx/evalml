@@ -17,8 +17,8 @@ from evalml.pipelines.components import (
     PCA,
     DateTimeFeaturizer,
     DFSTransformer,
+    NaturalLanguageFeaturizer,
     OneHotEncoder,
-    TextFeaturizer,
 )
 from evalml.utils import infer_feature_types
 
@@ -100,14 +100,16 @@ class LinearPipelineWithTextFeatures(BinaryClassificationPipeline):
     component_graph = [
         "Select Columns Transformer",
         "Imputer",
-        TextFeaturizer,
+        NaturalLanguageFeaturizer,
         OneHotEncoder,
         "Random Forest Classifier",
     ]
 
 
-class LinearPipelineWithTextFeaturizerNoTextFeatures(LinearPipelineWithTextFeatures):
-    """Testing a pipeline with TextFeaturizer but no text features."""
+class LinearPipelineWithNaturalLanguageFeaturizerNoTextFeatures(
+    LinearPipelineWithTextFeatures
+):
+    """Testing a pipeline with NaturalLanguageFeaturizer but no text features."""
 
 
 class LinearPipelineWithDoubling(BinaryClassificationPipeline):
@@ -235,7 +237,7 @@ test_cases = [
         {"Select Columns Transformer": {"columns": ["provider", "amount", "currency"]}},
     ),
     (
-        LinearPipelineWithTextFeaturizerNoTextFeatures,
+        LinearPipelineWithNaturalLanguageFeaturizerNoTextFeatures,
         {"Select Columns Transformer": {"columns": ["amount", "currency"]}},
     ),
     (
@@ -612,11 +614,8 @@ def test_get_permutation_importance_correlated_features(
     assert correlated_importance_val > not_correlated_importance_val
 
 
+@pytest.mark.noncore_dependency
 def test_permutation_importance_oversampler(fraud_100):
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping test because imbalanced-learn not installed",
-    )
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(
         component_graph={

@@ -3,7 +3,6 @@ from itertools import product
 import numpy as np
 import pandas as pd
 import pytest
-from sklearn.metrics import matthews_corrcoef as sk_matthews_corrcoef
 
 from evalml.objectives import (
     F1,
@@ -662,9 +661,6 @@ def test_mse_linear_model():
 def test_mcc_catches_warnings():
     y_true = [1, 0, 1, 1]
     y_predicted = [0, 0, 0, 0]
-    with pytest.warns(RuntimeWarning) as record:
-        sk_matthews_corrcoef(y_true, y_predicted)
-        assert "invalid value" in str(record[-1].message)
     with pytest.warns(None) as record:
         MCCBinary().objective_function(y_true, y_predicted)
         MCCMulticlass().objective_function(y_true, y_predicted)

@@ -152,3 +152,12 @@ class AutoMLAlgorithm(ABC):
                 self.logger.info(
                     f"Removing columns {unknown_columns} because they are of 'Unknown' type"
                 )
+        kina_columns = self._pipeline_params.get("pipeline", {}).get(
+            "known_in_advance", []
+        )
+        if kina_columns:
+            no_kin_columns = [c for c in self.X.columns if c not in kina_columns]
+            kin_name = "Known In Advance Pipeline - Select Columns Transformer"
+            no_kin_name = "Not Known In Advance Pipeline - Select Columns Transformer"
+            self._pipeline_params[kin_name] = {"columns": kina_columns}
+            self._pipeline_params[no_kin_name] = {"columns": no_kin_columns}

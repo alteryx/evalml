@@ -25,6 +25,7 @@ from .estimators import (
     ProphetRegressor,
     SVMClassifier,
     SVMRegressor,
+    ExponentialSmoothingRegressor,
     ARIMARegressor,
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
@@ -37,7 +38,7 @@ from .transformers import (
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     PerColumnImputer,
-    DelayedFeatureTransformer,
+    TimeSeriesFeaturizer,
     SimpleImputer,
     Imputer,
     StandardScaler,
@@ -47,7 +48,7 @@ from .transformers import (
     DateTimeFeaturizer,
     SelectColumns,
     SelectByType,
-    TextFeaturizer,
+    NaturalLanguageFeaturizer,
     LinearDiscriminantAnalysis,
     LSA,
     PCA,
@@ -61,6 +62,7 @@ from .transformers import (
     URLFeaturizer,
     DropRowsTransformer,
     LabelEncoder,
+    ReplaceNullableTypes,
 )
 from .ensemble import (
     StackedEnsembleClassifier,

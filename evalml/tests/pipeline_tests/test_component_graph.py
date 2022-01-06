@@ -26,15 +26,16 @@ from evalml.pipelines.components import (
     Estimator,
     Imputer,
     LogisticRegressionClassifier,
+    NaturalLanguageFeaturizer,
     OneHotEncoder,
     RandomForestClassifier,
     SelectColumns,
     StandardScaler,
     TargetImputer,
-    TextFeaturizer,
     Transformer,
     Undersampler,
 )
+from evalml.problem_types import is_classification
 from evalml.utils import infer_feature_types
 
 
@@ -1014,7 +1015,7 @@ def test_component_graph_dataset_with_different_types():
     # Also, column_4 will be treated as a datetime feature, but the identical column_5 set as natural language
     # should be treated as natural language, not as datetime.
     graph = {
-        "Text": [TextFeaturizer, "X", "y"],
+        "Text": [NaturalLanguageFeaturizer, "X", "y"],
         "Imputer": [Imputer, "Text.x", "y"],
         "OneHot": [OneHotEncoder, "Imputer.x", "y"],
         "DateTime": [DateTimeFeaturizer, "OneHot.x", "y"],
@@ -1068,6 +1069,8 @@ def test_component_graph_dataset_with_different_types():
         text_columns = [
             "DIVERSITY_SCORE(column_5)",
             "MEAN_CHARACTERS_PER_WORD(column_5)",
+            "NUM_CHARACTERS(column_5)",
+            "NUM_WORDS(column_5)",
             "POLARITY_SCORE(column_5)",
             "LSA(column_5)[0]",
             "LSA(column_5)[1]",
@@ -1334,7 +1337,7 @@ def test_component_graph_types_merge():
         "Select numeric": [SelectColumns, "X", "y"],
         "Imputer numeric": [Imputer, "Select numeric.x", "y"],
         "Select text": [SelectColumns, "X", "y"],
-        "Text": [TextFeaturizer, "Select text.x", "y"],
+        "Text": [NaturalLanguageFeaturizer, "Select text.x", "y"],
         "Imputer text": [Imputer, "Text.x", "y"],
         "Scaler": [StandardScaler, "Imputer numeric.x", "y"],
         "Select categorical": [SelectColumns, "X", "y"],
@@ -1403,6 +1406,8 @@ def test_component_graph_types_merge():
             "column_4_hour",
             "DIVERSITY_SCORE(column_5)",
             "MEAN_CHARACTERS_PER_WORD(column_5)",
+            "NUM_CHARACTERS(column_5)",
+            "NUM_WORDS(column_5)",
             "POLARITY_SCORE(column_5)",
             "LSA(column_5)[0]",
             "LSA(column_5)[1]",
@@ -1489,11 +1494,9 @@ def test_component_graph_dataset_with_target_imputer():
     assert not pd.isnull(predictions).any()
 
 
+@pytest.mark.noncore_dependency
 @patch("evalml.pipelines.components.estimators.LogisticRegressionClassifier.fit")
 def test_component_graph_sampler_y_passes(mock_estimator_fit):
-    pytest.importorskip(
-        "imblearn.over_sampling", reason="Cannot import imblearn, skipping tests"
-    )
     # makes sure the y value from oversampler gets passed to the estimator
     X = pd.DataFrame({"a": [i for i in range(100)], "b": [i % 3 for i in range(100)]})
     y = pd.Series([0] * 90 + [1] * 10)
@@ -2228,9 +2231,7 @@ def test_component_graph_transform_all_but_final_with_sampler(
     mock_estimator_fit, sampler, has_minimal_dependencies
 ):
     if sampler == "Oversampler" and has_minimal_dependencies:
-        pytest.importorskip(
-            "imblearn.over_sampling", reason="Cannot import imblearn, skipping tests"
-        )
+        pytest.skip("Skipping because imblearn is a non-core dependency.")
     expected_length = 750 if sampler == "Undersampler" else int(1.25 * 850)
     X = pd.DataFrame([[i] for i in range(1000)])
     y = pd.Series([0] * 150 + [1] * 850)
@@ -2414,3 +2415,59 @@ def test_training_only_component_in_component_graph_transform_all_but_final(
     component_graph.fit(X, y)
     transformed_X = component_graph.transform_all_but_final(X, y)
     assert len(transformed_X) == len(X)
+
+
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
+def test_fit_predict_different_types(
+    problem_type, X_y_binary, X_y_multi, X_y_regression
+):
+    if problem_type == "binary":
+        X, y = X_y_binary
+    elif problem_type == "multiclass":
+        X, y = X_y_multi
+    else:
+        X, y = X_y_regression
+
+    X = infer_feature_types(X)
+    X.ww.set_types({0: "Double"})
+    X2 = infer_feature_types(X.copy())
+    X2.ww.set_types({0: "Categorical"})
+    if is_classification(problem_type):
+        component_dict = {
+            "Imputer": ["Imputer", "X", "y"],
+            "RF": [
+                "Random Forest Classifier",
+                "Imputer.x",
+                "y",
+            ],
+        }
+    else:
+        component_dict = {
+            "Imputer": ["Imputer", "X", "y"],
+            "RF": [
+                "Random Forest Regressor",
+                "Imputer.x",
+                "y",
+            ],
+        }
+    component_graph = ComponentGraph(component_dict).instantiate({})
+    component_graph.fit(X, y)
+    with pytest.raises(
+        ValueError, match="Input X data types are different from the input types"
+    ):
+        component_graph.predict(X2)
+
+
+def test_fit_transform_different_types(X_y_binary):
+    X, y = X_y_binary
+    X = infer_feature_types(X)
+    X.ww.set_types({0: "Double"})
+    X2 = infer_feature_types(X.copy())
+    X2.ww.set_types({0: "Categorical"})
+    component_dict = {"Imputer": ["Imputer", "X", "y"]}
+    component_graph = ComponentGraph(component_dict).instantiate({})
+    component_graph.fit(X, y)
+    with pytest.raises(
+        ValueError, match="Input X data types are different from the input types"
+    ):
+        component_graph.transform(X2)

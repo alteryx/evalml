@@ -60,6 +60,7 @@ from evalml.problem_types import (
     is_multiclass,
     is_time_series,
 )
+from evalml.utils import infer_feature_types
 
 
 @pytest.mark.parametrize(
@@ -133,7 +134,7 @@ def test_all_estimators(
         if is_using_conda:
             n_estimators = 15
         else:
-            n_estimators = 16 if is_running_py_39_or_above or is_using_windows else 17
+            n_estimators = 17 if is_running_py_39_or_above or is_using_windows else 18
         assert len(_all_estimators_used_in_search()) == n_estimators
 
 
@@ -313,7 +314,10 @@ def test_describe_pipeline(
                         "numeric_fill_value": None,
                     },
                 },
-                "Label Encoder": {"name": "Label Encoder", "parameters": {}},
+                "Label Encoder": {
+                    "name": "Label Encoder",
+                    "parameters": {"positive_label": None},
+                },
                 "One Hot Encoder": {
                     "name": "One Hot Encoder",
                     "parameters": {
@@ -448,6 +452,7 @@ def test_parameters(logistic_regression_binary_pipeline_class):
     }
     lrp = logistic_regression_binary_pipeline_class(parameters=parameters)
     expected_parameters = {
+        "Label Encoder": {"positive_label": None},
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "median",
@@ -643,7 +648,8 @@ def test_score_nonlinear_regression(
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_binary_single(mock_predict, mock_fit, X_y_binary):
+@patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
+def test_score_binary_single(mock_schema, mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_binary_pipeline()
@@ -657,7 +663,8 @@ def test_score_binary_single(mock_predict, mock_fit, X_y_binary):
 
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_multiclass_single(mock_predict, mock_fit, X_y_binary):
+@patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
+def test_score_multiclass_single(mock_schema, mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_multiclass_pipeline()
@@ -699,7 +706,8 @@ def test_score_regression_list(mock_predict, mock_fit, X_y_binary):
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_binary_list(mock_predict, mock_fit, X_y_binary):
+@patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
+def test_score_binary_list(mock_schema, mock_predict, mock_fit, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     clf = make_mock_binary_pipeline()
@@ -714,7 +722,8 @@ def test_score_binary_list(mock_predict, mock_fit, X_y_binary):
 @patch("evalml.pipelines.MulticlassClassificationPipeline._encode_targets")
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
-def test_score_multi_list(mock_predict, mock_fit, mock_encode, X_y_binary):
+@patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
+def test_score_multi_list(mock_schema, mock_predict, mock_fit, mock_encode, X_y_binary):
     X, y = X_y_binary
     mock_predict.return_value = y
     mock_encode.return_value = y
@@ -753,8 +762,9 @@ def test_score_regression_objective_error(
 @patch("evalml.objectives.F1.score")
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
+@patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
 def test_score_binary_objective_error(
-    mock_predict, mock_fit, mock_objective_score, mock_encode, X_y_binary
+    mock_schema, mock_predict, mock_fit, mock_objective_score, mock_encode, X_y_binary
 ):
     mock_objective_score.side_effect = Exception("finna kabooom 💣")
     X, y = X_y_binary
@@ -806,8 +816,9 @@ def test_score_nonlinear_binary_objective_error(
 @patch("evalml.objectives.F1Micro.score")
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.components.Estimator.predict")
+@patch("evalml.pipelines.component_graph._schema_is_equal", return_value=True)
 def test_score_multiclass_objective_error(
-    mock_predict, mock_fit, mock_objective_score, mock_encode, X_y_binary
+    mock_schema, mock_predict, mock_fit, mock_objective_score, mock_encode, X_y_binary
 ):
     mock_objective_score.side_effect = Exception("finna kabooom 💣")
     X, y = X_y_binary
@@ -1246,6 +1257,7 @@ def test_component_not_found():
 
 def test_get_default_parameters(logistic_regression_binary_pipeline_class):
     expected_defaults = {
+        "Label Encoder": {"positive_label": None},
         "Imputer": {
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "mean",
@@ -1985,6 +1997,8 @@ def test_predict_has_input_target_name(
     X_y_multi,
     X_y_regression,
     ts_data,
+    ts_data_binary,
+    ts_data_multi,
     logistic_regression_binary_pipeline_class,
     logistic_regression_multiclass_pipeline_class,
     linear_regression_pipeline_class,
@@ -2021,54 +2035,55 @@ def test_predict_has_input_target_name(
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": None,
+                    "time_index": "date",
                     "forecast_horizon": 2,
                 },
-                "Delayed Feature Transformer": {
+                "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
+                    "time_index": "date",
                 },
             }
         )
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
-        X, y = X_y_binary
-        X, y = pd.DataFrame(X), pd.Series(y)
-        X_validation = X[50:52]
-        X, y = X[:50], y[:50]
+        X, y = ts_data_binary
+        X_validation = X[29:31]
+        X, y = X[:29], y[:29]
         clf = time_series_binary_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
-                "Delayed Feature Transformer": {
+                "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
+                    "time_index": "date",
                 },
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": None,
+                    "time_index": "date",
                     "forecast_horizon": 2,
                 },
             }
         )
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-        X, y = X_y_multi
-        X, y = pd.DataFrame(X), pd.Series(y)
-        X_validation = X[50:52]
-        X, y = X[:50], y[:50]
+        X, y = ts_data_multi
+        X_validation = X[29:31]
+        X, y = X[:29], y[:29]
         clf = time_series_multiclass_classification_pipeline_class(
             parameters={
                 "Logistic Regression Classifier": {"n_jobs": 1},
-                "Delayed Feature Transformer": {
+                "Time Series Featurizer": {
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 2,
+                    "time_index": "date",
                 },
                 "pipeline": {
                     "gap": 0,
                     "max_delay": 0,
-                    "date_index": None,
+                    "time_index": "date",
                     "forecast_horizon": 2,
                 },
             }
@@ -2260,14 +2275,14 @@ def test_binary_pipeline_string_target_thresholding(
     X, y = X_y_binary
     X = make_data_type("ww", X)
     y = ww.init_series(pd.Series([f"String value {i}" for i in y]), "Categorical")
+    pipeline_class = logistic_regression_binary_pipeline_class
+    if is_time_series:
+        pipeline_class = time_series_binary_classification_pipeline_class
+        X.ww["date"] = pd.Series(pd.date_range("2021-01-10", periods=X.shape[0]))
+
     X_train, y_train = X.ww.iloc[:80], y.ww.iloc[:80]
     X_validation, y_validation = X.ww.iloc[80:83], y.ww.iloc[80:83]
     objective = get_objective("F1", return_instance=True)
-    pipeline_class = (
-        time_series_binary_classification_pipeline_class
-        if is_time_series
-        else logistic_regression_binary_pipeline_class
-    )
 
     pipeline = pipeline_class(
         parameters={
@@ -2275,9 +2290,10 @@ def test_binary_pipeline_string_target_thresholding(
             "pipeline": {
                 "gap": 0,
                 "max_delay": 1,
-                "date_index": None,
+                "time_index": "date",
                 "forecast_horizon": 3,
             },
+            "Time Series Featurizer": {"time_index": "date"},
         }
     )
     pipeline.fit(X_train, y_train)
@@ -2338,12 +2354,9 @@ def test_undersampler_component_in_pipeline_predict():
     assert len(preds) == 1000
 
 
+@pytest.mark.noncore_dependency
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 def test_oversampler_component_in_pipeline_fit(mock_fit):
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping test because imbalanced-learn not installed",
-    )
 
     X = pd.DataFrame(
         {
@@ -2376,11 +2389,8 @@ def test_oversampler_component_in_pipeline_fit(mock_fit):
     assert len(mock_fit.call_args[0][0]) == 1000
 
 
+@pytest.mark.noncore_dependency
 def test_oversampler_component_in_pipeline_predict():
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping test because imbalanced-learn not installed",
-    )
     X = pd.DataFrame(
         {
             "a": [i for i in range(1000)],
@@ -2908,3 +2918,28 @@ def test_component_graph_pipeline_initialized():
         ]
         == "median"
     )
+
+
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
+def test_fit_predict_proba_types(problem_type, X_y_binary, X_y_multi):
+    component_graph = ["Imputer", "Random Forest Classifier"]
+    if problem_type == "binary":
+        pipeline = BinaryClassificationPipeline(component_graph)
+        X, y = X_y_binary
+    else:
+        pipeline = MulticlassClassificationPipeline(component_graph)
+        X, y = X_y_multi
+    X = infer_feature_types(X)
+    X.ww.set_types({0: "Double"})
+    X2 = infer_feature_types(X.copy())
+    X2.ww.set_types({0: "Categorical"})
+
+    pipeline.fit(X, y)
+    with pytest.raises(
+        ValueError, match="Input X data types are different from the input types"
+    ):
+        pipeline.predict(X2)
+    with pytest.raises(
+        ValueError, match="Input X data types are different from the input types"
+    ):
+        pipeline.predict_proba(X2)

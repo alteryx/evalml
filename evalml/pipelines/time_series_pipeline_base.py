@@ -19,8 +19,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
              An empty dictionary {} implies using all default values for component parameters. Pipeline-level
-             parameters such as date_index, gap, and max_delay must be specified with the "pipeline" key. For example:
-             Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
+             parameters such as time_index, gap, and max_delay must be specified with the "pipeline" key. For example:
+             Pipeline(parameters={"pipeline": {"time_index": "Date", "max_delay": 4, "gap": 2}}).
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -33,14 +33,16 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
     ):
         if not parameters or "pipeline" not in parameters:
             raise ValueError(
-                "date_index, gap, and max_delay parameters cannot be omitted from the parameters dict. "
+                "time_index, gap, max_delay, and forecast_horizon parameters cannot be omitted from the parameters dict. "
                 "Please specify them as a dictionary with the key 'pipeline'."
             )
         pipeline_params = parameters["pipeline"]
-        self.date_index = pipeline_params["date_index"]
         self.gap = pipeline_params["gap"]
         self.max_delay = pipeline_params["max_delay"]
         self.forecast_horizon = pipeline_params["forecast_horizon"]
+        self.time_index = pipeline_params["time_index"]
+        if self.time_index is None:
+            raise ValueError("Parameter time_index cannot be None!")
         super().__init__(
             component_graph,
             custom_name=custom_name,
@@ -78,20 +80,37 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         else:
             return index + gap
 
-    @staticmethod
-    def _are_datasets_separated_by_gap(train_index, test_index, gap):
-        """Determine if the train and test datasets are separated by gap number of units.
+    def _are_datasets_separated_by_gap_time_index(self, train, test, gap):
+        """Determine if the train and test datasets are separated by gap number of units using the time_index.
 
         This will be true when users are predicting on unseen data but not during cross
         validation since the target is known.
         """
         gap_difference = gap + 1
-        index_difference = test_index[0] - train_index[-1]
-        if isinstance(
-            train_index, (pd.DatetimeIndex, pd.PeriodIndex, pd.TimedeltaIndex)
-        ):
-            gap_difference *= test_index.freq
-        return index_difference == gap_difference
+
+        train_copy = train.copy()
+        test_copy = test.copy()
+        train_copy.ww.init(time_index=self.time_index)
+        test_copy.ww.init(time_index=self.time_index)
+
+        X_frequency_dict = train_copy.ww.infer_temporal_frequencies(
+            temporal_columns=[train_copy.ww.time_index]
+        )
+        freq = X_frequency_dict[test_copy.ww.time_index]
+        if freq is None:
+            raise ValueError(
+                "The training data must have an inferrable interval frequency!"
+            )
+
+        first_testing_date = test_copy[test_copy.ww.time_index].iloc[0]
+        last_training_date = train_copy[train_copy.ww.time_index].iloc[-1]
+        dt_difference = first_testing_date - last_training_date
+
+        try:
+            units_difference = dt_difference / freq
+        except ValueError:
+            units_difference = dt_difference / ("1" + freq)
+        return units_difference == gap_difference
 
     def _validate_holdout_datasets(self, X, X_train):
         """Validate the holdout datasets match out expectations.
@@ -104,17 +123,17 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             ValueError: If holdout data does not have forecast_horizon entries or if datasets
                 are not separated by gap.
         """
-        right_length = len(X) == self.forecast_horizon
-        X_separated_by_gap = self._are_datasets_separated_by_gap(
-            X_train.index, X.index, self.gap
+        right_length = len(X) <= self.forecast_horizon
+        X_separated_by_gap = self._are_datasets_separated_by_gap_time_index(
+            X_train, X, self.gap
         )
         if not (right_length and X_separated_by_gap):
             raise ValueError(
-                f"Holdout data X must have {self.forecast_horizon}  rows (value of forecast horizon) "
-                "and its index needs to "
-                f"start {self.gap + 1} values ahead of the training index. "
+                f"Holdout data X must have {self.forecast_horizon} rows (value of forecast horizon) "
+                f"and the first value indicated by the column {self.time_index} needs to "
+                f"start {self.gap + 1} units ahead of the training data. "
                 f"Data received - Length X: {len(X)}, "
-                f"X index start: {X.index[0]}, X_train index end {X.index[-1]}."
+                f"X value start: {X[self.time_index].iloc[0]}, X_train value end {X_train[self.time_index].iloc[-1]}."
             )
 
     def _add_training_data_to_X_Y(self, X, y, X_train, y_train):
@@ -126,7 +145,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         gap_features = pd.DataFrame()
         gap_target = pd.Series()
         if (
-            self._are_datasets_separated_by_gap(X_train.index, X.index, self.gap)
+            self._are_datasets_separated_by_gap_time_index(X_train, X, self.gap)
             and self.gap
         ):
             # The training data does not have the gap dates so don't need to include them
@@ -153,9 +172,8 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             gap_target,
             y,
         ]
-        padded_features = pd.concat(features_to_concat, axis=0)
-        padded_target = pd.concat(targets_to_concat, axis=0)
-
+        padded_features = pd.concat(features_to_concat, axis=0).fillna(method="ffill")
+        padded_target = pd.concat(targets_to_concat, axis=0).fillna(method="ffill")
         padded_features.ww.init(schema=X_train.ww.schema)
         padded_target = ww.init_series(
             padded_target, logical_type=y_train.ww.logical_type
@@ -212,15 +230,15 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             )
         target = infer_feature_types(y)
         features = self.transform_all_but_final(X, target, X_train, y_train)
-        predictions = self._estimator_predict(features, target)
+        predictions = self._estimator_predict(features)
         predictions.index = y.index
         predictions = self.inverse_transform(predictions)
         predictions = predictions.rename(self.input_target_name)
         return infer_feature_types(predictions)
 
-    def _create_empty_series(self, y_train):
+    def _create_empty_series(self, y_train, size):
         return ww.init_series(
-            pd.Series([y_train.iloc[0]] * self.forecast_horizon),
+            pd.Series([y_train.iloc[0]] * size),
             logical_type=y_train.ww.logical_type,
         )
 
@@ -245,8 +263,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 "Cannot call predict() on a component graph because the final component is not an Estimator."
             )
         X = infer_feature_types(X)
+        X.index = self._move_index_forward(
+            X_train.index[-X.shape[0] :], self.gap + X.shape[0]
+        )
         self._validate_holdout_datasets(X, X_train)
-        y_holdout = self._create_empty_series(y_train)
+        y_holdout = self._create_empty_series(y_train, X.shape[0])
         y_holdout = infer_feature_types(y_holdout)
         y_holdout.index = X.index
         return self.predict_in_sample(
@@ -265,12 +286,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
         self.input_feature_names = self.component_graph.input_feature_names
 
-    def _estimator_predict(self, features, y):
+    def _estimator_predict(self, features):
         """Get estimator predictions.
 
         This helper passes y as an argument if needed by the estimator.
         """
-        y_arg = None
-        if self.estimator.predict_uses_y:
-            y_arg = y
-        return self.estimator.predict(features, y=y_arg)
+        return self.estimator.predict(features)

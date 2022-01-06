@@ -1,40 +1,40 @@
 """Transformer that can automatically extract features from datetime columns."""
 import numpy as np
+import pandas as pd
 import woodwork as ww
+from featuretools.primitives import Hour, Month, Weekday, Year
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
 
 
 def _extract_year(col, encode_as_categories=False):
-    return col.dt.year, None
+    return Year()(col), None
 
 
-_month_to_int_mapping = {
-    "January": 0,
-    "February": 1,
-    "March": 2,
-    "April": 3,
-    "May": 4,
-    "June": 5,
-    "July": 6,
-    "August": 7,
-    "September": 8,
-    "October": 9,
-    "November": 10,
-    "December": 11,
+_int_to_month_mapping = {
+    0: "January",
+    1: "February",
+    2: "March",
+    3: "April",
+    4: "May",
+    5: "June",
+    6: "July",
+    7: "August",
+    8: "September",
+    9: "October",
+    10: "November",
+    11: "December",
 }
 
 
 def _extract_month(col, encode_as_categories=False):
-    months = col.dt.month_name()
-    months_unique = months.unique()
-    months_encoded = months.map(lambda m: _month_to_int_mapping.get(m, np.nan))
+    month = Month()
+    months = month(col) - 1
+    months_unique = pd.Series(months.unique())
     if encode_as_categories:
-        months_encoded = ww.init_series(months_encoded, logical_type="Categorical")
-    return months_encoded, {
-        m: _month_to_int_mapping.get(m, np.nan) for m in months_unique
-    }
+        months = ww.init_series(months, logical_type="Categorical")
+    return months, {_int_to_month_mapping.get(m, np.nan): m for m in months_unique}
 
 
 _day_to_int_mapping = {
@@ -48,17 +48,29 @@ _day_to_int_mapping = {
 }
 
 
+_int_to_day_mapping = {
+    0: "Sunday",
+    1: "Monday",
+    2: "Tuesday",
+    3: "Wednesday",
+    4: "Thursday",
+    5: "Friday",
+    6: "Saturday",
+}
+
+
 def _extract_day_of_week(col, encode_as_categories=False):
-    days = col.dt.day_name()
+    wd = Weekday()
+    days = wd(col) + 1
+    days = days.replace(7, 0)
     days_unique = days.unique()
-    days_encoded = days.map(lambda d: _day_to_int_mapping.get(d, np.nan))
     if encode_as_categories:
-        days_encoded = ww.init_series(days_encoded, logical_type="Categorical")
-    return days_encoded, {d: _day_to_int_mapping.get(d, np.nan) for d in days_unique}
+        days = ww.init_series(days, logical_type="Categorical")
+    return days, {_int_to_day_mapping.get(d, np.nan): d for d in days_unique}
 
 
 def _extract_hour(col, encode_as_categories=False):
-    return col.dt.hour, None
+    return Hour()(col), None
 
 
 class DateTimeFeaturizer(Transformer):
@@ -68,7 +80,7 @@ class DateTimeFeaturizer(Transformer):
         features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour". Defaults to None.
         encode_as_categories (bool): Whether day-of-week and month features should be encoded as pandas "category" dtype.
             This allows OneHotEncoders to encode these features. Defaults to False.
-        date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
+        time_index (str): Name of the column containing the datetime information used to order the data. Ignored.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -86,7 +98,7 @@ class DateTimeFeaturizer(Transformer):
         self,
         features_to_extract=None,
         encode_as_categories=False,
-        date_index=None,
+        time_index=None,
         random_seed=0,
         **kwargs,
     ):
@@ -105,7 +117,7 @@ class DateTimeFeaturizer(Transformer):
         parameters = {
             "features_to_extract": features_to_extract,
             "encode_as_categories": encode_as_categories,
-            "date_index": date_index,
+            "time_index": time_index,
         }
         parameters.update(kwargs)
         self._date_time_col_names = None

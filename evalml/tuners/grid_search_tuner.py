@@ -22,7 +22,9 @@ class GridSearchTuner(Tuner):
         ...
         >>> assert proposal.keys() == {'My Component'}
         >>> assert proposal['My Component'] == {'param a': 0.0, 'param b': 'a'}
-        ...
+
+        Determines points using a grid search approach.
+
         >>> for each in range(5):
         ...     print(tuner.propose())
         {'My Component': {'param a': 0.0, 'param b': 'b'}}

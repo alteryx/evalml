@@ -30,109 +30,87 @@ def skip_offline(request, check_online):
         pytest.skip("Cannot reach update server, skipping online tests")
 
 
-def test_fraud(fraud_local):
-    X, y = fraud_local
-    assert X.shape == (99992, 12)
-    assert y.shape == (99992,)
+@pytest.fixture
+def local_datasets(
+    fraud_local,
+    wine_local,
+    churn_local,
+    daily_temp_local,
+    breast_cancer_local,
+    diabetes_local,
+):
+    local_datasets = {
+        "fraud": fraud_local,
+        "wine": wine_local,
+        "churn": churn_local,
+        "daily_temp": daily_temp_local,
+        "breast_cancer": breast_cancer_local,
+        "diabetes": diabetes_local,
+    }
+    return local_datasets
+
+
+@pytest.mark.parametrize(
+    "dataset_name, expected_shape",
+    [
+        ("fraud", (99992, 12)),
+        ("wine", (178, 13)),
+        ("breast_cancer", (569, 30)),
+        ("diabetes", (442, 10)),
+        ("churn", (7043, 19)),
+        ("daily_temp", (3650, 1)),
+    ],
+)
+def test_datasets(dataset_name, expected_shape, local_datasets):
+    X, y = local_datasets[dataset_name]
+    assert X.shape == expected_shape
+    assert y.shape == (expected_shape[0],)
     assert isinstance(X, pd.DataFrame)
     assert isinstance(y, pd.Series)
     assert X.ww.schema is not None
     assert y.ww.schema is not None
 
 
+@pytest.mark.parametrize(
+    "dataset_name, demo_method",
+    [
+        ("fraud", demos.load_fraud()),
+        ("wine", demos.load_wine()),
+        ("breast_cancer", demos.load_breast_cancer()),
+        ("diabetes", demos.load_diabetes()),
+        ("churn", demos.load_churn()),
+        ("daily_temp", demos.load_weather()),
+    ],
+)
 @pytest.mark.skip_offline
-def test_fraud_data(fraud_local):
-    X, y = demos.load_fraud()
-    X_local, y_local = fraud_local
-    pd.testing.assert_frame_equal(X, X_local)
-    pd.testing.assert_series_equal(y, y_local)
+def test_datasets_match_local(dataset_name, demo_method, local_datasets):
+    X, y = demo_method
+    X_local, y_local = local_datasets[dataset_name]
 
+    if dataset_name == "daily_temp":
+        missing_date_1 = pd.DataFrame([pd.to_datetime("1984-12-31")], columns=["Date"])
+        missing_date_2 = pd.DataFrame([pd.to_datetime("1988-12-31")], columns=["Date"])
+        missing_y_1 = pd.Series([14.5], name="Temp")
+        missing_y_2 = pd.Series([14.5], name="Temp")
 
-def test_wine(wine_local):
-    X, y = wine_local
-    assert X.shape == (178, 13)
-    assert y.shape == (178,)
-    assert isinstance(X, pd.DataFrame)
-    assert isinstance(y, pd.Series)
-    assert X.ww.schema is not None
-    assert y.ww.schema is not None
+        X_local = pd.concat(
+            [
+                X_local.iloc[:1460],
+                missing_date_1,
+                X_local.iloc[1460:2920],
+                missing_date_2,
+                X_local.iloc[2920:],
+            ]
+        ).reset_index(drop=True)
+        y_local = pd.concat(
+            [
+                y_local.iloc[:1460],
+                missing_y_1,
+                y_local.iloc[1460:2920],
+                missing_y_2,
+                y_local.iloc[2920:],
+            ]
+        ).reset_index(drop=True)
 
-
-@pytest.mark.skip_offline
-def test_wine_data(wine_local):
-    X, y = demos.load_wine()
-    X_local, y_local = wine_local
-    pd.testing.assert_frame_equal(X, X_local)
-    pd.testing.assert_series_equal(y, y_local)
-
-
-def test_breast_cancer(breast_cancer_local):
-    X, y = breast_cancer_local
-    assert X.shape == (569, 30)
-    assert y.shape == (569,)
-    assert isinstance(X, pd.DataFrame)
-    assert isinstance(y, pd.Series)
-    assert X.ww.schema is not None
-    assert y.ww.schema is not None
-
-
-@pytest.mark.skip_offline
-def test_breast_cancer_data(breast_cancer_local):
-    X, y = demos.load_breast_cancer()
-    X_local, y_local = breast_cancer_local
-    pd.testing.assert_frame_equal(X, X_local)
-    pd.testing.assert_series_equal(y, y_local)
-
-
-def test_diabetes(diabetes_local):
-    X, y = diabetes_local
-    assert X.shape == (442, 10)
-    assert y.shape == (442,)
-    assert isinstance(X, pd.DataFrame)
-    assert isinstance(y, pd.Series)
-    assert X.ww.schema is not None
-    assert y.ww.schema is not None
-
-
-@pytest.mark.skip_offline
-def test_diabetes_data(diabetes_local):
-    X, y = demos.load_diabetes()
-    X_local, y_local = diabetes_local
-    pd.testing.assert_frame_equal(X, X_local)
-    pd.testing.assert_series_equal(y, y_local)
-
-
-def test_churn(churn_local):
-    X, y = churn_local
-    assert X.shape == (7043, 19)
-    assert y.shape == (7043,)
-    assert isinstance(X, pd.DataFrame)
-    assert isinstance(y, pd.Series)
-    assert X.ww.schema is not None
-    assert y.ww.schema is not None
-
-
-@pytest.mark.skip_offline
-def test_churn_data(churn_local):
-    X, y = demos.load_churn()
-    X_local, y_local = churn_local
-    pd.testing.assert_frame_equal(X, X_local)
-    pd.testing.assert_series_equal(y, y_local)
-
-
-def test_daily_temp(daily_temp_local):
-    X, y = daily_temp_local
-    assert X.shape == (3650, 1)
-    assert y.shape == (3650,)
-    assert isinstance(X, pd.DataFrame)
-    assert isinstance(y, pd.Series)
-    assert X.ww.schema is not None
-    assert y.ww.schema is not None
-
-
-@pytest.mark.skip_offline
-def test_daily_(daily_temp_local):
-    X, y = demos.load_weather()
-    X_local, y_local = daily_temp_local
     pd.testing.assert_frame_equal(X, X_local)
     pd.testing.assert_series_equal(y, y_local)

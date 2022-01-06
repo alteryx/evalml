@@ -66,7 +66,7 @@ from evalml.pipelines.components.utils import (
     get_estimators,
 )
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
-from evalml.preprocessing import TrainingValidationSplit
+from evalml.preprocessing import TimeSeriesSplit, TrainingValidationSplit
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -158,7 +158,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
         assert automl.get_pipeline(pipeline_id).parameters == results["parameters"]
         assert (
             results["validation_score"]
-            == pd.Series([fold["mean_cv_score"] for fold in results["cv_data"]])[0]
+            == pd.Series([fold["mean_cv_score"] for fold in results["cv_data"]]).mean()
         )
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
@@ -787,8 +787,9 @@ def test_large_dataset_binary(AutoMLTestEnv):
             == 1.234
         )
         assert (
-            automl.results["pipeline_results"][pipeline_id]["mean_cv_score"]
-            == automl.results["pipeline_results"][pipeline_id]["validation_score"]
+            np.isnan(automl.results["pipeline_results"][pipeline_id]["mean_cv_score"])
+            and automl.results["pipeline_results"][pipeline_id]["validation_score"]
+            == 1.234
         )
 
 
@@ -819,8 +820,9 @@ def test_large_dataset_multiclass(AutoMLTestEnv):
             == 1.234
         )
         assert (
-            automl.results["pipeline_results"][pipeline_id]["mean_cv_score"]
-            == automl.results["pipeline_results"][pipeline_id]["validation_score"]
+            np.isnan(automl.results["pipeline_results"][pipeline_id]["mean_cv_score"])
+            and automl.results["pipeline_results"][pipeline_id]["validation_score"]
+            == 1.234
         )
 
 
@@ -851,8 +853,9 @@ def test_large_dataset_regression(AutoMLTestEnv):
             == 1.234
         )
         assert (
-            automl.results["pipeline_results"][pipeline_id]["mean_cv_score"]
-            == automl.results["pipeline_results"][pipeline_id]["validation_score"]
+            np.isnan(automl.results["pipeline_results"][pipeline_id]["mean_cv_score"])
+            and automl.results["pipeline_results"][pipeline_id]["validation_score"]
+            == 1.234
         )
 
 
@@ -1185,7 +1188,7 @@ def test_add_to_rankings_regression_large(
         automl.add_to_rankings(dummy_regression_pipeline_class({}))
         assert isinstance(automl.data_splitter, TrainingValidationSplit)
         assert len(automl.rankings) == 1
-        assert 0.1234 in automl.rankings["mean_cv_score"].values
+        assert np.isnan(automl.rankings["mean_cv_score"].values[0])
 
 
 def test_add_to_rankings_new_pipeline(dummy_regression_pipeline_class):
@@ -1448,7 +1451,8 @@ def test_describe_pipeline(return_dict, verbose, caplog, X_y_binary, AutoMLTestE
         )
         assert automl_dict["pipeline_summary"] == "Baseline Classifier w/ Label Encoder"
         assert automl_dict["parameters"] == {
-            "Baseline Classifier": {"strategy": "mode"}
+            "Label Encoder": {"positive_label": None},
+            "Baseline Classifier": {"strategy": "mode"},
         }
         assert automl_dict["mean_cv_score"] == 1.0
         assert not automl_dict["high_variance_cv"]
@@ -1808,7 +1812,7 @@ def make_mock_rankings(scores):
     df = pd.DataFrame(
         {
             "id": range(len(scores)),
-            "mean_cv_score": scores,
+            "validation_score": scores,
             "pipeline_name": [f"Mock name {i}" for i in range(len(scores))],
         }
     )
@@ -1996,13 +2000,13 @@ def test_percent_better_than_baseline_in_rankings(
     dummy_multiclass_pipeline_class,
     dummy_regression_pipeline_class,
     dummy_time_series_regression_pipeline_class,
-    X_y_binary,
+    ts_data_binary,
 ):
     if not objective.is_defined_for_problem_type(problem_type_value):
         pytest.skip("Skipping because objective is not defined for problem type")
 
     # Ok to only use binary labels since score and fit methods are mocked
-    X, y = X_y_binary
+    X, y = ts_data_binary
 
     pipeline_class = {
         ProblemTypes.BINARY: dummy_binary_pipeline_class,
@@ -2046,7 +2050,7 @@ def test_percent_better_than_baseline_in_rankings(
     pipeline_parameters = (
         {
             "pipeline": {
-                "date_index": None,
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 2,
@@ -2077,7 +2081,7 @@ def test_percent_better_than_baseline_in_rankings(
             objective=objective,
             additional_objectives=[],
             problem_configuration={
-                "date_index": None,
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 2,
@@ -2179,9 +2183,9 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     dummy_multiclass_pipeline_class,
     dummy_regression_pipeline_class,
     dummy_time_series_regression_pipeline_class,
-    X_y_binary,
+    ts_data_binary,
 ):
-    X, y = X_y_binary
+    X, y = ts_data_binary
 
     problem_type_enum = handle_problem_types(problem_type)
 
@@ -2248,7 +2252,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     if problem_type_enum == ProblemTypes.TIME_SERIES_REGRESSION:
         parameters = {
             "pipeline": {
-                "date_index": None,
+                "time_index": "date",
                 "gap": 6,
                 "max_delay": 3,
                 "forecast_horizon": 3,
@@ -2262,7 +2266,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         max_iterations=2,
         objective="auto",
         problem_configuration={
-            "date_index": None,
+            "time_index": "date",
             "gap": 1,
             "max_delay": 1,
             "forecast_horizon": 3,
@@ -2283,7 +2287,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         text_in_ensembling=False,
         pipeline_params={
             "pipeline": {
-                "date_index": None,
+                "time_index": "date",
                 "gap": 1,
                 "max_delay": 1,
                 "forecast_horizon": 2,
@@ -2316,9 +2320,9 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
 
 def test_time_series_regression_with_parameters(ts_data):
     X, y = ts_data
-    X.index.name = "Date"
+    X.index.name = "date"
     problem_configuration = {
-        "date_index": "Date",
+        "time_index": "date",
         "gap": 1,
         "max_delay": 0,
         "forecast_horizon": 2,
@@ -3195,7 +3199,7 @@ def test_search_with_text(AutoMLTestEnv):
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
         automl.search()
-    assert automl.rankings["pipeline_name"][1:].str.contains("Text").all()
+    assert automl.rankings["pipeline_name"][1:].str.contains("Natural Language").all()
 
 
 @pytest.mark.parametrize(
@@ -3540,7 +3544,7 @@ def test_automl_validates_problem_configuration(ts_data):
         ).problem_configuration
         == {}
     )
-    msg = "user_parameters must be a dict containing values for at least the date_index, gap, max_delay, and forecast_horizon parameters"
+    msg = "problem_configuration must be a dict containing values for at least the time_index, gap, max_delay, and forecast_horizon parameters"
     with pytest.raises(ValueError, match=msg):
         AutoMLSearch(X_train=X, y_train=y, problem_type="time series regression")
     with pytest.raises(ValueError, match=msg):
@@ -3558,19 +3562,32 @@ def test_automl_validates_problem_configuration(ts_data):
             problem_configuration={"max_delay": 2, "gap": 3},
         )
 
+    with pytest.raises(ValueError, match="time_index cannot be None."):
+        AutoMLSearch(
+            X_train=X,
+            y_train=y,
+            problem_type="time series regression",
+            problem_configuration={
+                "time_index": None,
+                "max_delay": 2,
+                "gap": 3,
+                "forecast_horizon": 2,
+            },
+        )
+
     problem_config = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type="time series regression",
         problem_configuration={
-            "date_index": "Date",
+            "time_index": "Date",
             "max_delay": 2,
             "gap": 3,
             "forecast_horizon": 2,
         },
     ).problem_configuration
     assert problem_config == {
-        "date_index": "Date",
+        "time_index": "Date",
         "max_delay": 2,
         "gap": 3,
         "forecast_horizon": 2,
@@ -3700,20 +3717,18 @@ def test_automl_rerun(AutoMLTestEnv, X_y_binary, caplog):
     assert msg in caplog.text
 
 
-def test_timeseries_baseline_init_with_correct_gap_max_delay(
-    AutoMLTestEnv, X_y_regression
-):
+def test_timeseries_baseline_init_with_correct_gap_max_delay(AutoMLTestEnv, ts_data):
 
-    X, y = X_y_regression
+    X, y = ts_data
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type="time series regression",
         problem_configuration={
-            "date_index": None,
-            "gap": 6,
+            "time_index": "date",
+            "gap": 2,
             "max_delay": 3,
-            "forecast_horizon": 7,
+            "forecast_horizon": 1,
         },
         max_iterations=1,
     )
@@ -3724,21 +3739,22 @@ def test_timeseries_baseline_init_with_correct_gap_max_delay(
     # Best pipeline is baseline pipeline because we only run one iteration
     assert automl.best_pipeline.parameters == {
         "pipeline": {
-            "date_index": None,
-            "gap": 6,
+            "time_index": "date",
+            "gap": 2,
             "max_delay": 0,
-            "forecast_horizon": 7,
+            "forecast_horizon": 1,
         },
-        "Delayed Feature Transformer": {
-            "date_index": None,
+        "Time Series Featurizer": {
+            "time_index": "date",
             "delay_features": False,
             "delay_target": True,
             "max_delay": 0,
-            "gap": 6,
-            "forecast_horizon": 7,
+            "gap": 2,
+            "forecast_horizon": 1,
             "conf_level": 0.05,
+            "rolling_window_size": 0.25,
         },
-        "Time Series Baseline Estimator": {"forecast_horizon": 7, "gap": 6},
+        "Time Series Baseline Estimator": {"forecast_horizon": 1, "gap": 2},
     }
 
 
@@ -3768,7 +3784,7 @@ def test_automl_does_not_include_positive_only_objectives_by_default(
         y_train=y,
         problem_type=problem_type,
         problem_configuration={
-            "date_index": None,
+            "time_index": 0,
             "gap": 0,
             "max_delay": 0,
             "forecast_horizon": 2,
@@ -4643,7 +4659,7 @@ def test_automl_issues_beta_warning_for_time_series(problem_type, X_y_binary):
             y,
             problem_type=problem_type,
             problem_configuration={
-                "date_index": None,
+                "time_index": 0,
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 9,
@@ -4776,7 +4792,9 @@ def test_automl_baseline_pipeline_predictions_and_scores(problem_type):
     ],
 )
 def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_type):
-    X = pd.DataFrame({"a": [4, 5, 6, 7, 8]})
+    X = pd.DataFrame(
+        {"a": [4, 5, 6, 7, 8], "b": pd.date_range("2021-01-01", periods=5)}
+    )
     y = pd.Series([0, 1, 1, 0, 1])
     expected_predictions_proba = pd.DataFrame(
         {
@@ -4799,7 +4817,7 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
         y,
         problem_type=problem_type,
         problem_configuration={
-            "date_index": None,
+            "time_index": "b",
             "gap": 0,
             "max_delay": 1,
             "forecast_horizon": 1,
@@ -4822,9 +4840,7 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
             expected_predictions_proba,
             baseline.predict_proba(X_validation, X_train, y_train),
         )
-    np.testing.assert_allclose(
-        baseline.feature_importance.iloc[:, 1], np.array([0.0] * X_validation.shape[1])
-    )
+    np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], np.array([0.0]))
 
 
 @pytest.mark.parametrize(
@@ -4970,7 +4986,7 @@ def test_data_splitter_gives_pipelines_same_data(
         problem_configuration = {
             "gap": 1,
             "max_delay": 1,
-            "date_index": 0,
+            "time_index": 0,
             "forecast_horizon": 10,
         }
         X, y = X_y_regression
@@ -4978,7 +4994,7 @@ def test_data_splitter_gives_pipelines_same_data(
         problem_configuration = {
             "gap": 1,
             "max_delay": 1,
-            "date_index": 0,
+            "time_index": 0,
             "forecast_horizon": 10,
         }
         X, y = X_y_binary
@@ -5245,7 +5261,7 @@ def test_graph_automl(X_y_multi):
     for node_, params_ in automl_parameters_.items():
         for key_, val_ in params_.items():
             assert (
-                dag_json["Nodes"][node_]["Attributes"][key_]
+                dag_json["Nodes"][node_]["Parameters"][key_]
                 == automl_parameters_[node_][key_]
             )
 
@@ -5461,3 +5477,126 @@ def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
     error_text = "Pipeline ID 500 is not a valid ensemble pipeline"
     with pytest.raises(ValueError, match=error_text):
         automl.get_ensembler_input_pipelines(500)
+
+
+@pytest.mark.parametrize(
+    "problem_type",
+    [
+        ProblemTypes.TIME_SERIES_REGRESSION,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_BINARY,
+    ],
+)
+def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
+    problem_type, ts_data_binary, ts_data_multi, ts_data, AutoMLTestEnv
+):
+    if problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = ts_data_multi
+    elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = ts_data_binary
+    else:
+        X, y = ts_data
+
+    X.ww.init()
+    X.ww["email"] = pd.Series(["foo@foo.com"] * X.shape[0], index=X.index)
+    X.ww["category"] = pd.Series(["a"] * X.shape[0], index=X.index)
+    X.ww.set_types({"email": "EmailAddress", "category": "Categorical"})
+    known_in_advance = ["email", "category"]
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=problem_type,
+        max_batches=3,
+        problem_configuration={
+            "time_index": "date",
+            "max_delay": 3,
+            "forecast_horizon": 2,
+            "gap": 1,
+            "known_in_advance": known_in_advance,
+        },
+    )
+
+    test_env = AutoMLTestEnv(problem_type)
+    with test_env.test_context(score_return_value={automl.objective.name: 0.02}):
+        automl.search()
+
+    no_baseline = automl.full_rankings.loc[
+        ~automl.full_rankings.pipeline_name.str.contains("Baseline")
+    ]
+    assert no_baseline.parameters.map(
+        lambda d: d["Known In Advance Pipeline - Select Columns Transformer"]["columns"]
+        == known_in_advance
+    ).all()
+    assert no_baseline.parameters.map(
+        lambda d: d["Not Known In Advance Pipeline - Select Columns Transformer"][
+            "columns"
+        ]
+        == ["features", "date"]
+    ).all()
+
+
+@pytest.mark.parametrize(
+    "data_splitter,mean_cv_is_none",
+    [(TrainingValidationSplit, True), (StratifiedKFold, False)],
+)
+def test_cv_validation_scores(
+    data_splitter,
+    mean_cv_is_none,
+    X_y_binary,
+    dummy_classifier_estimator_class,
+    dummy_binary_pipeline_class,
+    AutoMLTestEnv,
+):
+    X, y = X_y_binary
+    data_splitter = data_splitter()
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_batches=3,
+        data_splitter=data_splitter,
+        allowed_component_graphs={"Name": [dummy_classifier_estimator_class]},
+        n_jobs=1,
+    )
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={"Log Loss Binary": 0.5}):
+        automl.search()
+    cv_vals = list(set(automl.full_rankings["mean_cv_score"].values))
+    validation_vals = list(set(automl.full_rankings["validation_score"].values))
+    assert len(validation_vals) == 1
+    assert validation_vals[0] == 0.5
+    if mean_cv_is_none:
+        assert np.isnan(cv_vals[0])
+    else:
+        assert cv_vals[0] == validation_vals[0]
+
+
+def test_cv_validation_scores_time_series(
+    ts_data_binary,
+    AutoMLTestEnv,
+):
+    X, y = ts_data_binary
+    problem_configuration = {
+        "time_index": "date",
+        "gap": 0,
+        "max_delay": 0,
+        "forecast_horizon": 1,
+    }
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="time series binary",
+        max_iterations=3,
+        data_splitter=TimeSeriesSplit(n_splits=3),
+        problem_configuration=problem_configuration,
+        n_jobs=1,
+    )
+    env = AutoMLTestEnv("time series binary")
+    with env.test_context(score_return_value={"Log Loss Binary": 0.5}):
+        automl.search()
+    cv_vals = list(set(automl.full_rankings["mean_cv_score"].values))
+    validation_vals = list(set(automl.full_rankings["validation_score"].values))
+    assert len(validation_vals) == 1
+    assert validation_vals[0] == 0.5
+    assert cv_vals[0] == validation_vals[0]

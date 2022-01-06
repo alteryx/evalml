@@ -12,7 +12,6 @@ from skopt.space import Categorical
 
 from evalml.exceptions import (
     ComponentNotYetFittedError,
-    EnsembleMissingPipelinesError,
     MethodPropertyNotFoundError,
 )
 from evalml.model_family import ModelFamily
@@ -20,13 +19,13 @@ from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import (
     LSA,
     PCA,
+    ARIMARegressor,
     BaselineClassifier,
     BaselineRegressor,
     CatBoostClassifier,
     CatBoostRegressor,
     ComponentBase,
     DateTimeFeaturizer,
-    DelayedFeatureTransformer,
     DFSTransformer,
     DropColumns,
     DropNullColumns,
@@ -42,6 +41,7 @@ from evalml.pipelines.components import (
     LinearDiscriminantAnalysis,
     LinearRegressor,
     LogisticRegressionClassifier,
+    NaturalLanguageFeaturizer,
     OneHotEncoder,
     Oversampler,
     PerColumnImputer,
@@ -49,6 +49,7 @@ from evalml.pipelines.components import (
     ProphetRegressor,
     RandomForestClassifier,
     RandomForestRegressor,
+    ReplaceNullableTypes,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
     SelectByType,
@@ -58,8 +59,8 @@ from evalml.pipelines.components import (
     SVMClassifier,
     SVMRegressor,
     TargetImputer,
-    TextFeaturizer,
     TimeSeriesBaselineEstimator,
+    TimeSeriesFeaturizer,
     Transformer,
     Undersampler,
     XGBoostClassifier,
@@ -192,7 +193,7 @@ def test_describe_component():
     drop_col_transformer = DropColumns(columns=["col_one", "col_two"])
     drop_null_transformer = DropNullColumns()
     datetime = DateTimeFeaturizer()
-    text_featurizer = TextFeaturizer()
+    natural_language_featurizer = NaturalLanguageFeaturizer()
     lsa = LSA()
     pca = PCA()
     lda = LinearDiscriminantAnalysis()
@@ -227,6 +228,7 @@ def test_describe_component():
         "parameters": {
             "impute_strategies": {"a": "mean", "b": ("constant", 100)},
             "default_impute_strategy": "most_frequent",
+            "impute_all": True,
         },
     }
     assert scaler.describe(return_dict=True) == {
@@ -268,11 +270,11 @@ def test_describe_component():
         "parameters": {
             "features_to_extract": ["year", "month", "day_of_week", "hour"],
             "encode_as_categories": False,
-            "date_index": None,
+            "time_index": None,
         },
     }
-    assert text_featurizer.describe(return_dict=True) == {
-        "name": "Text Featurization Component",
+    assert natural_language_featurizer.describe(return_dict=True) == {
+        "name": "Natural Language Featurization Component",
         "parameters": {},
     }
     assert lsa.describe(return_dict=True) == {
@@ -509,7 +511,7 @@ def test_describe_component():
             "name": "Prophet Regressor",
             "parameters": {
                 "changepoint_prior_scale": 0.05,
-                "date_index": None,
+                "time_index": None,
                 "holidays_prior_scale": 10,
                 "seasonality_mode": "additive",
                 "seasonality_prior_scale": 10,
@@ -792,10 +794,7 @@ def test_clone_fitted(X_y_binary):
 
 def test_components_init_kwargs():
     for component_class in all_components():
-        try:
-            component = component_class()
-        except EnsembleMissingPipelinesError:
-            continue
+        component = component_class()
         if component._component_obj is None:
             continue
         if isinstance(component, StackedEnsembleBase):
@@ -805,9 +804,6 @@ def test_components_init_kwargs():
         module = component._component_obj.__module__
         importlib.import_module(module, obj_class)
         patched = module + "." + obj_class + ".__init__"
-        if component_class == LabelEncoder:
-            # scikit-learn's LabelEncoder found in different module than where we import from
-            patched = module[: module.rindex(".")] + "." + obj_class + ".__init__"
 
         def all_init(self, *args, **kwargs):
             for k, v in kwargs.items():
@@ -830,7 +826,8 @@ def test_component_has_random_seed():
         assert "random_seed" in params
 
 
-def test_transformer_transform_output_type(X_y_binary):
+@pytest.mark.parametrize("component_class", _all_transformers())
+def test_transformer_transform_output_type(component_class, X_y_binary):
     X_np, y_np = X_y_binary
     assert isinstance(X_np, np.ndarray)
     assert isinstance(y_np, np.ndarray)
@@ -849,89 +846,91 @@ def test_transformer_transform_output_type(X_y_binary):
         (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns),
     ]
 
-    for component_class in _all_transformers():
-        if component_class in [PolynomialDetrender, LogTransformer, LabelEncoder]:
-            # Skipping because these tests are handled in their respective test files
-            continue
-        print("Testing transformer {}".format(component_class.name))
-        for X, y, X_cols_expected in datatype_combos:
-            print(
-                'Checking output of transform for transformer "{}" on X type {} cols {}, y type {} name {}'.format(
-                    component_class.name,
-                    type(X),
-                    X.columns if isinstance(X, pd.DataFrame) else None,
-                    type(y),
-                    y.name if isinstance(y, pd.Series) else None,
-                )
+    if component_class in [PolynomialDetrender, LogTransformer, LabelEncoder]:
+        pytest.skip(
+            "Skipping because these tests are handled in their respective test files"
+        )
+    print("Testing transformer {}".format(component_class.name))
+    for X, y, X_cols_expected in datatype_combos:
+        print(
+            'Checking output of transform for transformer "{}" on X type {} cols {}, y type {} name {}'.format(
+                component_class.name,
+                type(X),
+                X.columns if isinstance(X, pd.DataFrame) else None,
+                type(y),
+                y.name if isinstance(y, pd.Series) else None,
             )
+        )
 
-            component = component_class()
-            # SMOTE will throw an error if we pass a ratio lower than the current class balance
-            if "Oversampler" == component_class.name:
-                component = component_class(sampling_ratio=1)
-                # we cover this case in test_oversamplers
-                continue
+        component = component_class()
+        # SMOTE will throw an error if we pass a ratio lower than the current class balance
+        if "Oversampler" == component_class.name:
+            # we cover this case in test_oversamplers
+            continue
+        elif component_class == TimeSeriesFeaturizer:
+            # covered in test_delayed_feature_transformer.py
+            continue
 
-            component.fit(X, y=y)
-            transform_output = component.transform(X, y=y)
+        component.fit(X, y=y)
+        transform_output = component.transform(X, y=y)
 
-            if component.modifies_target:
-                assert isinstance(transform_output[0], pd.DataFrame)
-                assert isinstance(transform_output[1], pd.Series)
-            else:
-                assert isinstance(transform_output, pd.DataFrame)
+        if component.modifies_target:
+            assert isinstance(transform_output[0], pd.DataFrame)
+            assert isinstance(transform_output[1], pd.Series)
+        else:
+            assert isinstance(transform_output, pd.DataFrame)
 
-            if isinstance(component, SelectColumns) or isinstance(
-                component, SelectByType
-            ):
-                assert transform_output.shape == (X.shape[0], 0)
-            elif isinstance(component, PCA) or isinstance(
-                component, LinearDiscriminantAnalysis
-            ):
-                assert transform_output.shape[0] == X.shape[0]
-                assert transform_output.shape[1] <= X.shape[1]
-            elif isinstance(component, DFSTransformer):
-                assert transform_output.shape[0] == X.shape[0]
-                assert transform_output.shape[1] >= X.shape[1]
-            elif isinstance(component, DelayedFeatureTransformer):
-                # We just want to check that DelayedFeaturesTransformer outputs a DataFrame
-                # The dataframe shape and index are checked in test_delayed_features_transformer.py
-                continue
-            elif component.modifies_target:
-                assert transform_output[0].shape == X.shape
-                assert transform_output[1].shape[0] == X.shape[0]
-                assert len(transform_output[1].shape) == 1
-            else:
-                assert transform_output.shape == X.shape
-                assert list(transform_output.columns) == list(X_cols_expected)
+        if isinstance(component, SelectColumns) or isinstance(component, SelectByType):
+            assert transform_output.shape == (X.shape[0], 0)
+        elif isinstance(component, RFRegressorSelectFromModel):
+            assert transform_output.shape == (X.shape[0], 10)
+        elif isinstance(component, RFClassifierSelectFromModel):
+            assert transform_output.shape == (X.shape[0], 10)
+        elif isinstance(component, PCA) or isinstance(
+            component, LinearDiscriminantAnalysis
+        ):
+            assert transform_output.shape[0] == X.shape[0]
+            assert transform_output.shape[1] <= X.shape[1]
+        elif isinstance(component, DFSTransformer):
+            assert transform_output.shape[0] == X.shape[0]
+            assert transform_output.shape[1] >= X.shape[1]
+        elif component.modifies_target:
+            assert transform_output[0].shape == X.shape
+            assert transform_output[1].shape[0] == X.shape[0]
+            assert len(transform_output[1].shape) == 1
+        else:
+            assert transform_output.shape == X.shape
+            assert list(transform_output.columns) == list(X_cols_expected)
 
-            transform_output = component.fit_transform(X, y=y)
-            if component.modifies_target:
-                assert isinstance(transform_output[0], pd.DataFrame)
-                assert isinstance(transform_output[1], pd.Series)
-            else:
-                assert isinstance(transform_output, pd.DataFrame)
+        transform_output = component.fit_transform(X, y=y)
+        if component.modifies_target:
+            assert isinstance(transform_output[0], pd.DataFrame)
+            assert isinstance(transform_output[1], pd.Series)
+        else:
+            assert isinstance(transform_output, pd.DataFrame)
 
-            if isinstance(component, SelectColumns) or isinstance(
-                component, SelectByType
-            ):
-                assert transform_output.shape == (X.shape[0], 0)
-            elif isinstance(component, PCA) or isinstance(
-                component, LinearDiscriminantAnalysis
-            ):
-                assert transform_output.shape[0] == X.shape[0]
-                assert transform_output.shape[1] <= X.shape[1]
-            elif isinstance(component, DFSTransformer):
-                assert transform_output.shape[0] == X.shape[0]
-                assert transform_output.shape[1] >= X.shape[1]
-            elif component.modifies_target:
-                assert transform_output[0].shape == X.shape
-                assert transform_output[1].shape[0] == X.shape[0]
-                assert len(transform_output[1].shape) == 1
+        if isinstance(component, SelectColumns) or isinstance(component, SelectByType):
+            assert transform_output.shape == (X.shape[0], 0)
+        elif isinstance(component, RFRegressorSelectFromModel):
+            assert transform_output.shape == (X.shape[0], 10)
+        elif isinstance(component, RFClassifierSelectFromModel):
+            assert transform_output.shape == (X.shape[0], 10)
+        elif isinstance(component, PCA) or isinstance(
+            component, LinearDiscriminantAnalysis
+        ):
+            assert transform_output.shape[0] == X.shape[0]
+            assert transform_output.shape[1] <= X.shape[1]
+        elif isinstance(component, DFSTransformer):
+            assert transform_output.shape[0] == X.shape[0]
+            assert transform_output.shape[1] >= X.shape[1]
+        elif component.modifies_target:
+            assert transform_output[0].shape == X.shape
+            assert transform_output[1].shape[0] == X.shape[0]
+            assert len(transform_output[1].shape) == 1
 
-            else:
-                assert transform_output.shape == X.shape
-                assert list(transform_output.columns) == list(X_cols_expected)
+        else:
+            assert transform_output.shape == X.shape
+            assert list(transform_output.columns) == list(X_cols_expected)
 
 
 @pytest.mark.parametrize(
@@ -1096,9 +1095,9 @@ def test_all_transformers_needs_fitting():
             assert component_class.needs_fitting
 
 
-def test_all_transformers_check_fit(X_y_binary):
-    X, y = X_y_binary
+def test_all_transformers_check_fit(X_y_binary, ts_data_binary):
     for component_class in _all_transformers():
+        X, y = X_y_binary
         if not component_class.needs_fitting:
             continue
 
@@ -1106,6 +1105,9 @@ def test_all_transformers_check_fit(X_y_binary):
         # SMOTE will throw errors if we call it but cannot oversample
         if "Oversampler" == component_class.name:
             component = component_class(sampling_ratio=1)
+        elif component_class == TimeSeriesFeaturizer:
+            X, y = ts_data_binary
+            component = component_class(time_index="date")
 
         with pytest.raises(
             ComponentNotYetFittedError, match=f"You must fit {component_class.__name__}"
@@ -1118,6 +1120,8 @@ def test_all_transformers_check_fit(X_y_binary):
         component = component_class()
         if "Oversampler" == component_class.name:
             component = component_class(sampling_ratio=1)
+        elif component_class == TimeSeriesFeaturizer:
+            component = component_class(time_index="date")
         component.fit_transform(X, y)
         component.transform(X, y)
 
@@ -1150,7 +1154,12 @@ def test_all_estimators_check_fit(
         else:
             X, y = X_y_binary
 
-        component = helper_functions.safe_init_component_with_njobs_1(component_class)
+        if component_class.__name__ == "ProphetRegressor":
+            component = component_class(time_index="date")
+        else:
+            component = helper_functions.safe_init_component_with_njobs_1(
+                component_class
+            )
 
         with patch.object(component, "_component_obj") as mock_component_obj:
             with patch.object(
@@ -1197,16 +1206,23 @@ def test_all_estimators_check_fit(
 
 
 @pytest.mark.parametrize("data_type", ["li", "np", "pd", "ww"])
-def test_all_transformers_check_fit_input_type(data_type, X_y_binary, make_data_type):
-    X, y = X_y_binary
-    X = make_data_type(data_type, X)
-    y = make_data_type(data_type, y)
+def test_all_transformers_check_fit_input_type(
+    data_type, X_y_binary, make_data_type, ts_data_binary
+):
+
     for component_class in _all_transformers():
+        X, y = X_y_binary
+        X = make_data_type(data_type, X)
+        y = make_data_type(data_type, y)
+        kwargs = {}
         if not component_class.needs_fitting or "Oversampler" in component_class.name:
             # since SMOTE determines categorical columns through the logical type, it can only accept ww data
             continue
+        if component_class == TimeSeriesFeaturizer:
+            X, y = ts_data_binary
+            kwargs = {"time_index": "date"}
 
-        component = component_class()
+        component = component_class(**kwargs)
         component.fit(X, y)
 
 
@@ -1227,13 +1243,16 @@ def test_no_fitting_required_components(
 
 def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), "component.pkl")
+    requires_time_index = [
+        ARIMARegressor,
+        ProphetRegressor,
+        TimeSeriesFeaturizer,
+    ]
     for component_class in all_components():
         print("Testing serialization of component {}".format(component_class.name))
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
-        if (
-            isinstance(component, Estimator)
-            and ProblemTypes.TIME_SERIES_REGRESSION in component.supported_problem_types
-        ):
+        if component_class in requires_time_index:
+            component = component_class(time_index="date")
             X, y = ts_data
         else:
             X, y = X_y_binary
@@ -1527,7 +1546,7 @@ def test_generate_code_custom(test_classes):
 @pytest.mark.parametrize("transformer_class", _all_transformers())
 @pytest.mark.parametrize("use_custom_index", [True, False])
 def test_transformer_fit_and_transform_respect_custom_indices(
-    use_custom_index, transformer_class, X_y_binary
+    use_custom_index, transformer_class, X_y_binary, ts_data_binary
 ):
     check_names = True
     if transformer_class == DFSTransformer:
@@ -1542,6 +1561,11 @@ def test_transformer_fit_and_transform_respect_custom_indices(
 
     X, y = X_y_binary
 
+    kwargs = {}
+    if transformer_class == TimeSeriesFeaturizer:
+        kwargs.update({"time_index": "date"})
+        X, y = ts_data_binary
+
     X = pd.DataFrame(X)
     y = pd.Series(y)
 
@@ -1553,7 +1577,7 @@ def test_transformer_fit_and_transform_respect_custom_indices(
     X_original_index = X.index.copy()
     y_original_index = y.index.copy()
 
-    transformer = transformer_class()
+    transformer = transformer_class(**kwargs)
 
     transformer.fit(X, y)
     pd.testing.assert_index_equal(X.index, X_original_index)
@@ -1591,7 +1615,6 @@ def test_estimator_fit_respects_custom_indices(
     helper_functions,
 ):
 
-    input_pipelines = []
     supported_problem_types = estimator_class.supported_problem_types
 
     ts_problem = False
@@ -1617,9 +1640,12 @@ def test_estimator_fit_respects_custom_indices(
     X_original_index = X.index.copy()
     y_original_index = y.index.copy()
 
-    if input_pipelines:
-        estimator = estimator_class(n_jobs=1, input_pipelines=input_pipelines)
-    else:
+    try:
+        if estimator_class.__name__ == "ProphetRegressor":
+            estimator = estimator_class(time_index="date")
+        else:
+            estimator = estimator_class(n_jobs=1)
+    except TypeError:
         estimator = helper_functions.safe_init_component_with_njobs_1(estimator_class)
 
     estimator.fit(X, y)
@@ -1632,7 +1658,8 @@ def test_component_modifies_feature_or_target():
         if (
             issubclass(component_class, BaseSampler)
             or hasattr(component_class, "inverse_transform")
-            or component_class in [TargetImputer, DropRowsTransformer]
+            or component_class
+            in [TargetImputer, DropRowsTransformer, ReplaceNullableTypes]
         ):
             assert component_class.modifies_target
         else:
@@ -1650,7 +1677,8 @@ def test_component_parameters_supported_by_list_API():
         if (
             issubclass(component_class, BaseSampler)
             or hasattr(component_class, "inverse_transform")
-            or component_class in [TargetImputer, DropRowsTransformer]
+            or component_class
+            in [TargetImputer, DropRowsTransformer, ReplaceNullableTypes]
         ):
             assert not component_class._supported_by_list_API
         else:

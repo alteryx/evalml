@@ -181,14 +181,14 @@ def find_confusion_matrix_per_thresholds(
         raise ValueError("Expected a fitted binary classification pipeline")
     X = infer_feature_types(X)
     y = infer_feature_types(y)
-
+    pipeline_thresh = 0.5 if pipeline.threshold is None else pipeline.threshold
     proba = pipeline.predict_proba(X)
     pos_preds = proba.iloc[:, -1]
     pos_preds.index = y.index.tolist()
     neg_class, pos_class = 0, 1
     if pipeline._encoder is not None:
-        pos_class = pipeline._encoder._component_obj.classes_[1]
-        neg_class = pipeline._encoder._component_obj.classes_[0]
+        pos_class = pipeline._encoder.inverse_mapping[1]
+        neg_class = pipeline._encoder.inverse_mapping[0]
     true_pos = y[y == pos_class]
     true_neg = y[y == neg_class]
 
@@ -201,6 +201,9 @@ def find_confusion_matrix_per_thresholds(
         bins = [i / n_bins for i in range(n_bins + 1)]
     else:
         bins = np.histogram_bin_edges(pos_preds, bins="fd", range=(0, 1))
+    if pipeline_thresh not in bins:
+        bins = np.sort(np.append(bins, pipeline_thresh))
+
     pos_skew, _ = np.histogram(true_pos_preds, bins=bins)
     neg_skew, _ = np.histogram(true_neg_preds, bins=bins)
     data_ranges = _find_data_between_ranges(pos_preds, bins, top_k)

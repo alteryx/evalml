@@ -120,7 +120,9 @@ def test_target_distribution_data_check_warning_action(
         test_og = statistic(y)
 
         details = {
-            f"{name}-statistic/pvalue": f"{round(test_og.statistic, 1)}/{round(test_og.pvalue, 3)}"
+            "normalization_method": name,
+            "statistic": round(test_og.statistic, 1),
+            "p-value": round(test_og.pvalue, 3),
         }
         assert target_dist_ == {
             "warnings": [
@@ -135,6 +137,7 @@ def test_target_distribution_data_check_warning_action(
             "actions": [
                 DataCheckAction(
                     DataCheckActionCode.TRANSFORM_TARGET,
+                    data_check_name=target_dist_check_name,
                     metadata={
                         "columns": None,
                         "is_target": True,

@@ -77,7 +77,12 @@ def test_make_data_splitter_default(problem_type, large_data):
         ProblemTypes.TIME_SERIES_BINARY,
         ProblemTypes.TIME_SERIES_MULTICLASS,
     ]:
-        problem_configuration = {"gap": 1, "max_delay": 7, "date_index": None}
+        problem_configuration = {
+            "gap": 1,
+            "max_delay": 7,
+            "time_index": "foo",
+            "forecast_horizon": 4,
+        }
 
     data_splitter = make_data_splitter(
         X, y, problem_type, problem_configuration=problem_configuration
@@ -115,7 +120,8 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.n_splits == 3
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
-        assert data_splitter.date_index is None
+        assert data_splitter.forecast_horizon == 4
+        assert data_splitter.time_index == "foo"
 
     if problem_type is ProblemTypes.CLUSTERING:
         assert isinstance(data_splitter, NoSplit)
@@ -159,7 +165,7 @@ def test_make_data_splitter_parameters_time_series():
             X,
             y,
             problem_type,
-            problem_configuration={"gap": 1, "max_delay": 7, "date_index": None},
+            problem_configuration={"gap": 1, "max_delay": 7, "time_index": "foo"},
             n_splits=5,
             shuffle=False,
         )
@@ -167,7 +173,7 @@ def test_make_data_splitter_parameters_time_series():
         assert data_splitter.n_splits == 5
         assert data_splitter.gap == 1
         assert data_splitter.max_delay == 7
-        assert data_splitter.date_index is None
+        assert data_splitter.time_index == "foo"
 
 
 def test_make_data_splitter_error():
@@ -281,11 +287,8 @@ def test_get_best_sampler_for_data_sampler_method(
         assert name_output == "Oversampler"
 
 
+@pytest.mark.noncore_dependency
 def test_get_best_sampler_for_data_nonnumeric_noncategorical_columns(X_y_binary):
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping oversampling test because imbalanced-learn is not installed",
-    )
     X, y = X_y_binary
     X = pd.DataFrame(X)
     y = pd.Series([i % 5 == 0 for i in range(100)])
@@ -327,7 +330,9 @@ def test_get_pipelines_from_component_graphs(problem_type, estimator):
         },
     }
     if problem_type == "time series regression":
-        with pytest.raises(ValueError, match="date_index, gap, and max_delay"):
+        with pytest.raises(
+            ValueError, match="time_index, gap, max_delay, and forecast_horizon"
+        ):
             get_pipelines_from_component_graphs(component_graphs, problem_type)
     else:
         returned_pipelines = get_pipelines_from_component_graphs(

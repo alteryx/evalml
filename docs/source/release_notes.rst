@@ -2,6 +2,117 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added string support for DataCheckActionCode :pr:`3167`
+        * Added ``DataCheckActionOption`` class :pr:`3134`
+        * Added clustering as a problem type and removed requirement of ``y_train`` for clustering problem types :pr:`3022`
+    * Fixes
+        * Fix bug where prediction explanations ``class_name`` was shown as float for boolean targets :pr:`3179`
+    * Changes
+        * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
+        * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
+    * Documentation Changes
+    * Testing Changes
+
+
+**v0.40.0 Dec. 22, 2021**
+    * Enhancements
+        * Added ``TimeSeriesSplittingDataCheck`` to ``DefaultDataChecks`` to verify adequate class representation in time series classification problems :pr:`3141`
+        * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
+        * Added support for known-in-advance features :pr:`3149`
+        * Added Holt-Winters ``ExponentialSmoothingRegressor`` for time series regression problems :pr:`3157`
+        * Required the separation of training and test data by ``gap`` + 1 units to be verified by ``time_index`` for time series problems :pr:`3160`
+    * Fixes
+        * Fixed error caused when tuning threshold for time series binary classification :pr:`3140`
+    * Changes
+        * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
+        * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
+        * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
+        * Updated ``nlp-primitives`` minimum version to 2.1.0 :pr:`3166`
+        * Updated minimum version of ``woodwork`` to v0.11.0 :pr:`3171`
+    * Documentation Changes
+        * Added comments to provide clarity on doctests :pr:`3155`
+    * Testing Changes
+        * Parameterized tests in ``test_datasets.py`` :pr:`3145`
+
+
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
+
+
+**v0.39.0 Dec. 9, 2021**
+    * Enhancements
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
+        * Added ability to impute only specific columns in ``PerColumnImputer`` :pr:`3123`
+        * Added ``TimeSeriesParametersDataCheck`` to verify the time series parameters are valid given the number of splits in cross validation :pr:`3111`
+    * Fixes
+        * Default parameters for ``RFRegressorSelectFromModel`` and ``RFClassifierSelectFromModel`` has been fixed to avoid selecting all features :pr:`3110`
+    * Changes
+        * Removed reliance on a datetime index for ``ARIMARegressor`` and ``ProphetRegressor`` :pr:`3104`
+        * Included target leakage check when fitting ``ARIMARegressor`` to account for the lack of ``TimeSeriesFeaturizer`` in ``ARIMARegressor`` based pipelines :pr:`3104`
+        * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
+        * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
+        * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
+        * Updated ``make_pipeline`` for handling pandas nullable types in preprocessing pipeline. :pr:`3129`
+        * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
+    * Documentation Changes
+    * Testing Changes
+        * Refactored tests to avoid using ``importorskip`` :pr:`3126`
+        * Added ``skip_during_conda`` test marker to skip tests that are not supposed to run during conda build :pr:`3127`
+        * Added ``skip_if_39`` test marker to skip tests that are not supposed to run during python 3.9 :pr:`3133`
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` :pr:`3028`
+        * ``ProphetRegressor`` now requires a datetime column in ``X`` represented by the ``date_index`` parameter :pr:`3104`
+        * Renamed module ``evalml.data_checks.invalid_target_data_check`` to ``evalml.data_checks.invalid_targets_data_check`` :pr:`3122`
+        * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
+
+
+**v0.38.0 Nov. 27, 2021**
+    * Enhancements
+        * Added ``data_check_name`` attribute to the data check action class :pr:`3034`
+        * Added ``NumWords`` and ``NumCharacters`` primitives to ``TextFeaturizer`` and renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
+        * Added support for ``scikit-learn > 1.0.0`` :pr:`3051`
+        * Required the ``date_index`` parameter to be specified for time series problems  in ``AutoMLSearch`` :pr:`3041`
+        * Allowed time series pipelines to predict on test datasets whose length is less than or equal to the ``forecast_horizon``. Also allowed the test set index to start at 0. :pr:`3071`
+        * Enabled time series pipeline to predict on data with features that are not known-in-advanced :pr:`3094`
+    * Fixes
+        * Added in error message when fit and predict/predict_proba data types are different :pr:`3036`
+        * Fixed bug where ensembling components could not get converted to JSON format :pr:`3049`
+        * Fixed bug where components with tuned integer hyperparameters could not get converted to JSON format :pr:`3049`
+        * Fixed bug where force plots were not displaying correct feature values :pr:`3044`
+        * Included confusion matrix at the pipeline threshold for ``find_confusion_matrix_per_threshold`` :pr:`3080`
+        * Fixed bug where One Hot Encoder would error out if a non-categorical feature had a missing value :pr:`3083`
+        * Fixed bug where features created from categorical columns by ``Delayed Feature Transformer`` would be inferred as categorical :pr:`3083`
+    * Changes
+        * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
+        * Change ``DateTimeFeaturizer`` to use corresponding Featuretools primitives :pr:`3081`
+        * Updated ``TargetDistributionDataCheck`` to return metadata details as floats rather strings :pr:`3085`
+        * Removed dependency on ``psutil`` package :pr:`3093`
+    * Documentation Changes
+        * Updated docs to use data check action methods rather than manually cleaning data :pr:`3050`
+    * Testing Changes
+        * Updated integration tests to use ``make_pipeline_from_actions`` instead of private method :pr:`3047`
+
+
+.. warning::
+
+    **Breaking Changes**
+        * Added ``data_check_name`` attribute to the data check action class :pr:`3034`
+        * Renamed ``TextFeaturizer` to ``NaturalLanguageFeaturizer`` :pr:`3030`
+        * Updated the ``Pipeline.graph_json`` function to return a dictionary of "from" and "to" edges instead of tuples :pr:`3049`
+        * Delete ``predict_uses_y`` estimator attribute :pr:`3069`
+        * Changed time series problems in ``AutoMLSearch`` to need a not-``None`` ``date_index`` :pr:`3041`
+        * Changed the ``DelayedFeatureTransformer`` to throw a ``ValueError`` during fit if the ``date_index`` is ``None`` :pr:`3041`
+        * Passing ``X=None`` to ``DelayedFeatureTransformer`` is deprecated :pr:`3041`
+
+
+**v0.37.0 Nov. 9, 2021**
+    * Enhancements
         * Added ``find_confusion_matrix_per_threshold`` to Model Understanding :pr:`2972`
         * Limit computationally-intensive models during ``AutoMLSearch`` for certain multiclass problems, allow for opt-in with parameter ``allow_long_running_models`` :pr:`2982`
         * Added support for stacked ensemble pipelines to prediction explanations module :pr:`2971`
@@ -10,7 +121,7 @@ Release Notes
         * Added an algorithm to ``DelayedFeatureTransformer`` to select better lags :pr:`3005`
         * Added test to ensure pickling pipelines preserves thresholds :pr:`3027`
         * Added AutoML function to access ensemble pipeline's input pipelines IDs :pr:`3011`
-        * Added clustering as a problem type and removed requirement of ``y_train`` for clustering problem types :pr:`3022`
+        * Added ability to define which class is "positive" for label encoder in binary classification case :pr:`3033`
     * Fixes
         * Fixed bug where ``Oversampler`` didn't consider boolean columns to be categorical :pr:`2980`
         * Fixed permutation importance failing when target is categorical :pr:`3017`
@@ -22,11 +133,7 @@ Release Notes
         * Fixed cost benefit matrix demo formatting :pr:`2990`
         * Update ReadMe.md with new badge links and updated installation instructions for conda :pr:`2998`
         * Added more comprehensive doctests :pr:`3002`
-    * Testing Changes
 
-.. warning::
-
-    **Breaking Changes**
 
 **v0.36.0 Oct. 27, 2021**
     * Enhancements
