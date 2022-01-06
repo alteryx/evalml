@@ -25,30 +25,6 @@ from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import ProblemTypes
 
 
-@pytest.fixture
-def test_pipeline_with_dummy_feature_importance():
-    class TestPipeline(BinaryClassificationPipeline):
-        component_graph = [
-            "Simple Imputer",
-            "One Hot Encoder",
-            "Standard Scaler",
-            "Logistic Regression Classifier",
-        ]
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, parameters=parameters)
-
-        @property
-        def feature_importance(self):
-            importance = [1.0, 0.2, 0.0002, 0.0, 0.0, -1.0]
-            feature_names = range(len(importance))
-            f_i = list(zip(feature_names, importance))
-            df = pd.DataFrame(f_i, columns=["feature", "importance"])
-            return df
-
-    return TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
-
-
 def check_partial_dependence_dataframe(pipeline, part_dep, grid_size=5):
     columns = ["feature_values", "partial_dependence"]
     if isinstance(pipeline, ClassificationPipeline):
@@ -637,13 +613,13 @@ def test_partial_dependence_ensemble_pipeline(problem_type, X_y_binary, X_y_regr
 
 @pytest.mark.noncore_dependency
 def test_graph_partial_dependence(
-    breast_cancer_local, test_pipeline_with_dummy_feature_importance, go
+    breast_cancer_local, logistic_regression_binary_pipeline, go
 ):
     X, y = breast_cancer_local
 
-    test_pipeline_with_dummy_feature_importance.fit(X, y)
+    logistic_regression_binary_pipeline.fit(X, y)
     fig = graph_partial_dependence(
-        test_pipeline_with_dummy_feature_importance,
+        logistic_regression_binary_pipeline,
         X,
         features="mean radius",
         grid_resolution=5,
@@ -655,7 +631,7 @@ def test_graph_partial_dependence(
     assert fig_dict["data"][0]["name"] == "Partial Dependence"
 
     part_dep_data = partial_dependence(
-        test_pipeline_with_dummy_feature_importance,
+        logistic_regression_binary_pipeline,
         X,
         features="mean radius",
         grid_resolution=5,
@@ -706,13 +682,13 @@ def test_graph_partial_dependence_ww_categories(
 
 @pytest.mark.noncore_dependency
 def test_graph_two_way_partial_dependence(
-    breast_cancer_local, test_pipeline_with_dummy_feature_importance, go
+    breast_cancer_local, logistic_regression_binary_pipeline, go
 ):
 
     X, y = breast_cancer_local
-    test_pipeline_with_dummy_feature_importance.fit(X, y)
+    logistic_regression_binary_pipeline.fit(X, y)
     fig = graph_partial_dependence(
-        test_pipeline_with_dummy_feature_importance,
+        logistic_regression_binary_pipeline,
         X,
         features=("mean radius", "mean area"),
         grid_resolution=5,
@@ -727,7 +703,7 @@ def test_graph_two_way_partial_dependence(
     assert fig_dict["data"][0]["name"] == "Partial Dependence"
 
     part_dep_data = partial_dependence(
-        test_pipeline_with_dummy_feature_importance,
+        logistic_regression_binary_pipeline,
         X,
         features=("mean radius", "mean area"),
         grid_resolution=5,
@@ -1522,16 +1498,16 @@ def test_graph_partial_dependence_ice_plot(
 
 
 def test_graph_partial_dependence_ice_plot_two_way_error(
-    breast_cancer_local, test_pipeline_with_dummy_feature_importance
+    breast_cancer_local, logistic_regression_binary_pipeline
 ):
     X, y = breast_cancer_local
-    test_pipeline_with_dummy_feature_importance.fit(X, y)
+    logistic_regression_binary_pipeline.fit(X, y)
     with pytest.raises(
         PartialDependenceError,
         match="Individual conditional expectation plot can only be created with a one-way partial dependence plot",
     ) as e:
         graph_partial_dependence(
-            test_pipeline_with_dummy_feature_importance,
+            logistic_regression_binary_pipeline,
             X,
             features=["mean radius", "mean area"],
             grid_resolution=5,
@@ -1546,7 +1522,7 @@ def test_graph_partial_dependence_ice_plot_two_way_error(
         match="Individual conditional expectation plot can only be created with a one-way partial dependence plot",
     ) as e:
         graph_partial_dependence(
-            test_pipeline_with_dummy_feature_importance,
+            logistic_regression_binary_pipeline,
             X,
             features=["mean radius", "mean area"],
             grid_resolution=5,
