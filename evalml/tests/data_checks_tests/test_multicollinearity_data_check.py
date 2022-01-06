@@ -1,5 +1,6 @@
 import pandas as pd
 import pytest
+import woodwork
 
 from evalml.data_checks import (
     DataCheckMessageCode,
@@ -33,8 +34,10 @@ def test_multicollinearity_data_check_init():
         MulticollinearityDataCheck(threshold=1.1)
 
 
-def test_multicollinearity_returns_warning():
-    col = pd.Series([1, 0, 2, 3, 4])
+@pytest.mark.parametrize("use_nullable_types", [True, False])
+def test_multicollinearity_returns_warning(use_nullable_types):
+    data = [1, 0, 2, 3, 4]
+    col = pd.Series(data)
     X = pd.DataFrame(
         {
             "col_1": col,
@@ -45,28 +48,30 @@ def test_multicollinearity_returns_warning():
             "not_collinear": [0, 1, 0, 0, 0],
         }
     )
+    if use_nullable_types:
+        data[1] = None
+        X["col_nullable"] = woodwork.init_series(
+            pd.Series(data), logical_type="IntegerNullable"
+        )
+        X.ww.init()
+
+    collinear_cols = [c for c in X.columns if "not" not in c]
+    msg_list = []
+    for idx, col_1 in enumerate(collinear_cols):
+        for col_2 in collinear_cols[idx + 1 : :]:
+            if col_1 != col_2:
+                msg_list.append((col_1, col_2))
+
+    message = str(msg_list)
 
     multi_check = MulticollinearityDataCheck(threshold=0.95)
     assert multi_check.validate(X) == {
         "warnings": [
             DataCheckWarning(
-                message="Columns are likely to be correlated: [('col_1', 'col_2'), ('col_1', 'col_3'), ('col_1', 'col_4'), ('col_1', 'col_5'), ('col_2', 'col_3'), ('col_2', 'col_4'), ('col_2', 'col_5'), ('col_3', 'col_4'), ('col_3', 'col_5'), ('col_4', 'col_5')]",
+                message="Columns are likely to be correlated: %s" % message,
                 data_check_name=multi_data_check_name,
                 message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
-                details={
-                    "columns": [
-                        ("col_1", "col_2"),
-                        ("col_1", "col_3"),
-                        ("col_1", "col_4"),
-                        ("col_1", "col_5"),
-                        ("col_2", "col_3"),
-                        ("col_2", "col_4"),
-                        ("col_2", "col_5"),
-                        ("col_3", "col_4"),
-                        ("col_3", "col_5"),
-                        ("col_4", "col_5"),
-                    ]
-                },
+                details={"columns": msg_list},
             ).to_dict()
         ],
         "errors": [],
