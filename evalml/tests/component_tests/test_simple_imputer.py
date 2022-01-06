@@ -443,7 +443,7 @@ def test_component_handles_pre_init_ww():
     df = pd.DataFrame(
         {"part_null": [0, 1, 2, None], "all_null": [None, None, None, None]}
     )
-    df.ww.init(logical_types={'all_null': "Double"})
+    df.ww.init(logical_types={"all_null": "Double"})
     imputed = SimpleImputer().fit_transform(df)
 
     assert "all_null" not in imputed.columns

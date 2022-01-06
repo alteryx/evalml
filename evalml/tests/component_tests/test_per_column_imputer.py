@@ -213,7 +213,7 @@ def test_fit_transform_drop_all_nan_columns():
         pd.DataFrame(
             {
                 "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [0., 1., 0.],
+                "some_nan": [0.0, 1.0, 0.0],
                 "another_col": [0, 1, 2],
             }
         ),
@@ -245,7 +245,7 @@ def test_transform_drop_all_nan_columns():
         pd.DataFrame(
             {
                 "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [0., 1., 0.],
+                "some_nan": [0.0, 1.0, 0.0],
                 "another_col": [0, 1, 2],
             }
         ),
@@ -338,8 +338,9 @@ def test_per_column_imputer_impute_all_is_false():
             "column_with_nan_included": "double",
         }
     )
-    X.ww.init(logical_types={"all_nan_included": "Double",
-                             "all_nan_not_included": "Double"})
+    X.ww.init(
+        logical_types={"all_nan_included": "Double", "all_nan_not_included": "Double"}
+    )
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t)
     assert_frame_equal(
@@ -350,7 +351,7 @@ def test_per_column_imputer_impute_all_is_false():
                 "all_nan_included": [np.nan, np.nan, np.nan],
                 "column_with_nan_not_included": [np.nan, 1, 0],
                 # Because of https://github.com/alteryx/evalml/issues/2055
-                "column_with_nan_included": [0., 1., 0.],
+                "column_with_nan_included": [0.0, 1.0, 0.0],
             }
         ),
     )

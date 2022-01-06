@@ -2,7 +2,6 @@
 import numpy as np
 import pandas as pd
 import woodwork as ww
-from woodwork.logical_types import Unknown
 
 from evalml.utils.gen_utils import is_all_numeric
 
@@ -48,24 +47,6 @@ def infer_feature_types(data, feature_types=None):
     elif isinstance(data, np.ndarray):
         data = _numpy_to_pandas(data)
 
-    def convert_all_nan_unknown_to_double(data):
-        # def is_column_pd_na(data, col):
-        #     return data[col].isna().all()
-        #
-        # def is_column_unknown(data, col):
-        #     return isinstance(data.ww.logical_types[col], Unknown)
-        #
-        # if isinstance(data, pd.DataFrame):
-        #     all_null_unk_cols = [
-        #         col
-        #         for col in data.columns
-        #         if (is_column_unknown(data, col) and is_column_pd_na(data, col))
-        #     ]
-        #     if len(all_null_unk_cols):
-        #         for col in all_null_unk_cols:
-        #             data.ww.set_types({col: "Double"})
-        return data
-
     if data.ww.schema is not None:
         if isinstance(data, pd.DataFrame) and not ww.is_schema_valid(
             data, data.ww.schema
@@ -81,7 +62,7 @@ def infer_feature_types(data, feature_types=None):
                 ww_error = f"{ww_error}. Please initialize ww with df.ww.init() to get rid of this message."
             raise ValueError(ww_error)
         data.ww.init(schema=data.ww.schema)
-        return convert_all_nan_unknown_to_double(data)
+        return data
 
     if isinstance(data, pd.Series):
         if all(data.isna()):
@@ -91,7 +72,7 @@ def infer_feature_types(data, feature_types=None):
     else:
         ww_data = data.copy()
         ww_data.ww.init(logical_types=feature_types)
-        return convert_all_nan_unknown_to_double(ww_data)
+        return ww_data
 
 
 def _convert_numeric_dataset_pandas(X, y):

@@ -14,7 +14,6 @@ from evalml.pipelines import (
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
     DropColumns,
-    DropNullColumns,
     DropRowsTransformer,
     EmailFeaturizer,
     Estimator,
