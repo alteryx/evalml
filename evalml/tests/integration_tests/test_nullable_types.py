@@ -2,7 +2,7 @@ import pytest
 
 from evalml.automl import AutoMLSearch
 from evalml.pipelines.components.transformers import ReplaceNullableTypes
-from evalml.problem_types import ProblemTypes, is_time_series
+from evalml.problem_types import ProblemTypes, is_clustering, is_time_series
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -30,6 +30,9 @@ def test_nullable_types_builds_pipelines(
     column_names,
     get_test_data_from_configuration,
 ):
+    if is_clustering(problem_type):
+        pytest.skip("Skipping test since clustering is not supported in AutoML yet")
+
     parameters = {}
     if is_time_series(problem_type):
         parameters = {

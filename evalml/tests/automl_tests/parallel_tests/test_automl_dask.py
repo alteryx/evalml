@@ -295,7 +295,7 @@ def test_score_pipelines_passes_X_train_y_train(
     ts_data,
 ):
     if is_clustering(problem_type):
-        return
+        pytest.skip("Skipping test since clustering is not supported in AutoML yet")
     if is_binary(problem_type):
         if is_time_series(problem_type):
             X, y = ts_data_binary

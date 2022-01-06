@@ -2007,7 +2007,7 @@ def test_predict_has_input_target_name(
     time_series_multiclass_classification_pipeline_class,
 ):
     if is_clustering(problem_type):
-        return
+        pytest.skip("Skipping test since there are no clustering classifiers yet")
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         clf = logistic_regression_binary_pipeline_class(

@@ -722,7 +722,9 @@ def test_invalid_target_data_action_for_data_with_null(
     use_nullable_types, problem_type
 ):
     if is_clustering(problem_type):
-        return
+        pytest.skip(
+            "Skipping test since clustering is not supported for data checks yet"
+        )
     y = pd.Series([None, None, None, 0, 0, 0, 0, 0, 0, 0])
     if use_nullable_types:
         y = ww.init_series(y, logical_type="IntegerNullable")
@@ -788,7 +790,9 @@ def test_invalid_target_data_action_for_data_with_null(
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
 def test_invalid_target_data_action_for_all_null(problem_type):
     if is_clustering(problem_type):
-        return
+        pytest.skip(
+            "Skipping test since clustering is not supported for data checks yet"
+        )
     invalid_targets_check = InvalidTargetDataCheck(
         problem_type, get_default_primary_search_objective(problem_type)
     )
