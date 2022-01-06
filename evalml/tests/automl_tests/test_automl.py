@@ -3313,9 +3313,7 @@ def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
 
 
 def test_automl_respects_random_seed(X_y_binary, dummy_classifier_estimator_class):
-
     X, y = X_y_binary
-
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -3325,27 +3323,11 @@ def test_automl_respects_random_seed(X_y_binary, dummy_classifier_estimator_clas
         random_seed=42,
         max_iterations=10,
     )
-
-    class DummyPipeline(BinaryClassificationPipeline):
-        component_graph = [dummy_classifier_estimator_class]
-        num_pipelines_different_seed = 0
-        num_pipelines_init = 0
-
-        def __init__(self, parameters, random_seed=0):
-            is_diff_random_seed = not (random_seed == 42)
-            self.__class__.num_pipelines_init += 1
-            self.__class__.num_pipelines_different_seed += is_diff_random_seed
-            super().__init__(
-                self.component_graph, parameters=parameters, random_seed=random_seed
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    pipelines = [DummyPipeline({}, random_seed=42)]
+    pipelines = [
+        BinaryClassificationPipeline(
+            component_graph=[dummy_classifier_estimator_class], random_seed=42
+        )
+    ]
     automl._automl_algorithm = IterativeAlgorithm(
         X=X,
         y=y,
@@ -3362,10 +3344,6 @@ def test_automl_respects_random_seed(X_y_binary, dummy_classifier_estimator_clas
     )
     automl._automl_algorithm.allowed_pipelines = pipelines
     assert automl.allowed_pipelines[0].random_seed == 42
-    assert (
-        DummyPipeline.num_pipelines_different_seed == 0
-        and DummyPipeline.num_pipelines_init
-    )
 
 
 @pytest.mark.parametrize(
@@ -4331,17 +4309,13 @@ def test_train_batch_works(
         n_jobs=1,
     )
 
-    def make_pipeline_name(index):
-        class DummyPipeline(BinaryClassificationPipeline):
-            custom_name = f"Pipeline {index}"
-
-        return DummyPipeline(
+    pipelines = [
+        BinaryClassificationPipeline(
             component_graph=[dummy_classifier_estimator_class],
+            custom_name=f"Pipeline {index}",
             parameters={"Mock Classifier": {"a": index}},
         )
-
-    pipelines = [
-        make_pipeline_name(i) for i in range(len(pipeline_fit_side_effect) - 1)
+        for index in range(len(pipeline_fit_side_effect) - 1)
     ]
     input_pipelines = [
         BinaryClassificationPipeline([classifier])
@@ -4439,7 +4413,6 @@ def test_score_batch_works(
     X_y_binary,
     dummy_classifier_estimator_class,
     AutoMLTestEnv,
-    dummy_binary_pipeline,
     stackable_classifiers,
     caplog,
 ):
@@ -4471,17 +4444,13 @@ def test_score_batch_works(
     )
     env = AutoMLTestEnv("binary")
 
-    def make_pipeline_name(index):
-        class DummyPipeline(BinaryClassificationPipeline):
-            custom_name = f"Pipeline {index}"
-
-        return DummyPipeline(
+    pipelines = [
+        BinaryClassificationPipeline(
             component_graph=[dummy_classifier_estimator_class],
+            custom_name=f"Pipeline {index}",
             parameters={"Mock Classifier": {"a": index}},
         )
-
-    pipelines = [
-        make_pipeline_name(i) for i in range(len(pipeline_score_side_effect) - 1)
+        for index in range(len(pipeline_score_side_effect) - 1)
     ]
     input_pipelines = [
         BinaryClassificationPipeline([classifier])
@@ -5218,7 +5187,7 @@ def test_graph_automl(X_y_multi):
         "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
         "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
         "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Random Forest.x",
             "Elastic Net.x",

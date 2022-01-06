@@ -600,7 +600,7 @@ def example_graph():
         "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
         "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
         "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Random Forest.x",
             "Elastic Net.x",
@@ -629,7 +629,7 @@ def example_pass_target_graph():
         "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
         "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
         "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Random Forest.x",
             "Elastic Net.x",

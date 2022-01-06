@@ -113,7 +113,7 @@ def test_init(example_graph):
         "Elastic Net",
         "OneHot_RandomForest",
         "Random Forest",
-        "Logistic Regression",
+        "Logistic Regression Classifier",
     ]
     assert comp_graph.compute_order == expected_order
 
@@ -125,7 +125,7 @@ def test_init_str_components():
         "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
         "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
         "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Random Forest.x",
             "Elastic Net.x",
@@ -141,7 +141,7 @@ def test_init_str_components():
         "Elastic Net",
         "OneHot_RandomForest",
         "Random Forest",
-        "Logistic Regression",
+        "Logistic Regression Classifier",
     ]
     assert comp_graph.compute_order == expected_order
 
@@ -206,7 +206,7 @@ def test_init_bad_graphs():
         "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
         "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
         "Elastic Net": ["Elastic Net Classifier", "X", "y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Random Forest.x",
             "Elastic Net.x",
@@ -270,7 +270,7 @@ def test_instantiate_with_parameters(example_graph):
         "Elastic Net",
         "OneHot_RandomForest",
         "Random Forest",
-        "Logistic Regression",
+        "Logistic Regression Classifier",
     ]
     assert component_graph.compute_order == expected_order
 
@@ -279,7 +279,7 @@ def test_instantiate_with_parameters(example_graph):
         component_graph.get_component("Random Forest"), RandomForestClassifier
     )
     assert isinstance(
-        component_graph.get_component("Logistic Regression"),
+        component_graph.get_component("Logistic Regression Classifier"),
         LogisticRegressionClassifier,
     )
     assert component_graph.get_component("OneHot_RandomForest").parameters["top_n"] == 3
@@ -309,7 +309,7 @@ def test_instantiate_without_parameters(parameters, example_graph):
         "Elastic Net",
         "OneHot_RandomForest",
         "Random Forest",
-        "Logistic Regression",
+        "Logistic Regression Classifier",
     ]
     assert component_graph.compute_order == expected_order
 
@@ -338,7 +338,7 @@ def test_get_component(example_graph):
 
     assert component_graph.get_component("OneHot_ElasticNet") == OneHotEncoder
     assert (
-        component_graph.get_component("Logistic Regression")
+        component_graph.get_component("Logistic Regression Classifier")
         == LogisticRegressionClassifier
     )
 
@@ -386,7 +386,7 @@ def test_parents(example_graph):
     assert component_graph.get_inputs("OneHot_ElasticNet") == ["Imputer.x", "y"]
     assert component_graph.get_inputs("Random Forest") == ["OneHot_RandomForest.x", "y"]
     assert component_graph.get_inputs("Elastic Net") == ["OneHot_ElasticNet.x", "y"]
-    assert component_graph.get_inputs("Logistic Regression") == [
+    assert component_graph.get_inputs("Logistic Regression Classifier") == [
         "Random Forest.x",
         "Elastic Net.x",
         "y",
@@ -401,7 +401,7 @@ def test_parents(example_graph):
     assert component_graph.get_inputs("OneHot_ElasticNet") == ["Imputer.x", "y"]
     assert component_graph.get_inputs("Random Forest") == ["OneHot_RandomForest.x", "y"]
     assert component_graph.get_inputs("Elastic Net") == ["OneHot_ElasticNet.x", "y"]
-    assert component_graph.get_inputs("Logistic Regression") == [
+    assert component_graph.get_inputs("Logistic Regression Classifier") == [
         "Random Forest.x",
         "Elastic Net.x",
         "y",
@@ -598,7 +598,11 @@ def test_predict_repeat_estimator(
         "OneHot_RandomForest": [OneHotEncoder, "Imputer.x", "y"],
         "OneHot_Logistic": [OneHotEncoder, "Imputer.x", "y"],
         "Random Forest": [RandomForestClassifier, "OneHot_RandomForest.x", "y"],
-        "Logistic Regression": [LogisticRegressionClassifier, "OneHot_Logistic.x", "y"],
+        "Logistic Regression Classifier": [
+            LogisticRegressionClassifier,
+            "OneHot_Logistic.x",
+            "y",
+        ],
         "Final Estimator": [
             LogisticRegressionClassifier,
             "Random Forest.x",
@@ -611,7 +615,9 @@ def test_predict_repeat_estimator(
     component_graph.fit(X, y)
 
     assert (
-        not component_graph.get_component("Logistic Regression")._component_obj
+        not component_graph.get_component(
+            "Logistic Regression Classifier"
+        )._component_obj
         == component_graph.get_component("Final Estimator")._component_obj
     )
 
@@ -735,7 +741,7 @@ def test_component_graph_order(example_graph):
         "Elastic Net",
         "OneHot_RandomForest",
         "Random Forest",
-        "Logistic Regression",
+        "Logistic Regression Classifier",
     ]
     assert expected_order == component_graph.compute_order
 
@@ -934,7 +940,7 @@ def test_input_feature_names(example_graph):
         "column_1_b",
         "column_1_c",
     ]
-    assert input_feature_names["Logistic Regression"] == [
+    assert input_feature_names["Logistic Regression Classifier"] == [
         "Col 1 Random Forest.x",
         "Col 1 Elastic Net.x",
     ]
@@ -1002,7 +1008,7 @@ def test_custom_input_feature_types(example_graph):
         "column_2_4",
         "column_2_5",
     ]
-    assert input_feature_names["Logistic Regression"] == [
+    assert input_feature_names["Logistic Regression Classifier"] == [
         "Col 1 Random Forest.x",
         "Col 1 Elastic Net.x",
     ]
@@ -1022,7 +1028,7 @@ def test_component_graph_dataset_with_different_types():
         "Scaler": [StandardScaler, "DateTime.x", "y"],
         "Random Forest": [RandomForestClassifier, "Scaler.x", "y"],
         "Elastic Net": [ElasticNetClassifier, "Scaler.x", "y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             LogisticRegressionClassifier,
             "Random Forest.x",
             "Elastic Net.x",
@@ -1179,7 +1185,7 @@ def test_component_graph_dataset_with_different_types():
                 + text_columns
             )
         )
-        assert input_feature_names["Logistic Regression"] == [
+        assert input_feature_names["Logistic Regression Classifier"] == [
             "Col 1 Random Forest.x",
             "Col 1 Elastic Net.x",
         ]
@@ -1423,7 +1429,7 @@ def test_component_graph_get_inputs_with_sampler():
         "Undersampler": [Undersampler, "OneHot.x", "y"],
         "Random Forest": [RandomForestClassifier, "Undersampler.x", "Undersampler.y"],
         "Elastic Net": [ElasticNetClassifier, "Undersampler.x", "Undersampler.y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             LogisticRegressionClassifier,
             "Random Forest.x",
             "Elastic Net.x",
@@ -1444,7 +1450,7 @@ def test_component_graph_get_inputs_with_sampler():
         "Undersampler.x",
         "Undersampler.y",
     ]
-    assert component_graph.get_inputs("Logistic Regression") == [
+    assert component_graph.get_inputs("Logistic Regression Classifier") == [
         "Random Forest.x",
         "Elastic Net.x",
         "Undersampler.y",
@@ -1465,7 +1471,7 @@ def test_component_graph_dataset_with_target_imputer():
         "OneHot": [OneHotEncoder, "Target Imputer.x", "Target Imputer.y"],
         "Random Forest": [RandomForestClassifier, "OneHot.x", "Target Imputer.y"],
         "Elastic Net": [ElasticNetClassifier, "OneHot.x", "Target Imputer.y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             LogisticRegressionClassifier,
             "Random Forest.x",
             "Elastic Net.x",
@@ -1530,7 +1536,7 @@ def test_component_graph_equality(example_graph):
         "OneHot": [OneHotEncoder, "Target Imputer.x", "Target Imputer.y"],
         "Random Forest": [RandomForestClassifier, "OneHot.x", "Target Imputer.y"],
         "Elastic Net": [ElasticNetClassifier, "OneHot.x", "Target Imputer.y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             LogisticRegressionClassifier,
             "Random Forest.x",
             "Elastic Net.x",
@@ -1544,7 +1550,7 @@ def test_component_graph_equality(example_graph):
         "OneHot_RandomForest": [OneHotEncoder, "Imputer.x", "y"],
         "Random Forest": [RandomForestClassifier, "OneHot_RandomForest.x", "y"],
         "Elastic Net": [ElasticNetClassifier, "OneHot_ElasticNet.x", "y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             LogisticRegressionClassifier,
             "Random Forest.x",
             "Elastic Net.x",
@@ -1846,7 +1852,7 @@ class SubsetData(Transformer):
                         "DateTime 3.x",
                         "Double 4.y",
                     ],
-                    "Logistic Regression": [
+                    "Logistic Regression Classifier": [
                         "Linear Regressor",
                         "Catboost.x",
                         "RandomForest.x",
@@ -1930,7 +1936,7 @@ class SubsetData(Transformer):
                     ],
                     "Double 4": [DoubleTransform, "X", "y"],
                     "Linear": ["Linear Regressor", "DateTime 3.x", "Double 4.y"],
-                    "Logistic Regression": [
+                    "Logistic Regression Classifier": [
                         "Linear Regressor",
                         "Linear.x",
                         "RandomForest.x",
@@ -1972,7 +1978,7 @@ def test_final_component_features_does_not_have_target():
             "Imputer": ["Imputer", "X", "y"],
             "OneHot": ["One Hot Encoder", "Imputer.x", "y"],
             "TargetImputer": ["Target Imputer", "OneHot.x", "y"],
-            "Logistic Regression": [
+            "Logistic Regression Classifier": [
                 "Logistic Regression Classifier",
                 "TargetImputer.x",
                 "TargetImputer.y",
@@ -2160,7 +2166,10 @@ def test_component_graph_defines_edge_with_invalid_syntax():
     "pipeline_parameters,set_values",
     [
         ({"Logistic Regression Classifier": {"penalty": "l1"}}, {}),
-        ({"Logistic Regression": {"penalty": "l1"}}, {"Logistic Regression"}),
+        (
+            {"Logistic Regression Classifier": {"penalty": "l1"}},
+            {"Logistic Regression Classifier"},
+        ),
         (
             {"Random Forest Classifier": {"n_estimators": 10}},
             {"Random Forest Classifier"},

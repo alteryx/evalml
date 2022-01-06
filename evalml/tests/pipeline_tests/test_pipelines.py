@@ -460,7 +460,7 @@ def test_parameters_nonlinear(nonlinear_binary_pipeline):
             "categorical_impute_strategy": "most_frequent",
             "numeric_impute_strategy": "median",
         },
-        "Logistic Regression": {
+        "Logistic Regression Classifier": {
             "penalty": "l2",
             "C": 3.0,
         },
@@ -498,7 +498,7 @@ def test_parameters_nonlinear(nonlinear_binary_pipeline):
             "n_jobs": -1,
             "penalty": "elasticnet",
         },
-        "Logistic Regression": {
+        "Logistic Regression Classifier": {
             "penalty": "l2",
             "C": 3.0,
             "n_jobs": -1,
@@ -538,7 +538,11 @@ def test_multi_format_creation(X_y_binary):
         "Imputer": ["Imputer", "X", "y"],
         "OneHot": ["One Hot Encoder", "Imputer.x", "y"],
         "Scaler": [StandardScaler, "OneHot.x", "y"],
-        "Logistic Regression": ["Logistic Regression Classifier", "Scaler.x", "y"],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            "Scaler.x",
+            "y",
+        ],
     }
     parameters = {
         "Imputer": {
@@ -957,7 +961,7 @@ def test_correct_nonlinear_parameters(nonlinear_binary_pipeline):
             "numeric_impute_strategy": "mean",
         },
         "OneHot_RandomForest": {"top_n": 4},
-        "Logistic Regression": {
+        "Logistic Regression Classifier": {
             "penalty": "l2",
             "C": 3.0,
         },
@@ -2019,12 +2023,11 @@ def test_linear_pipeline_iteration(logistic_regression_binary_pipeline):
         Imputer(),
         OneHotEncoder(),
         StandardScaler(),
-        LogisticRegressionClassifier(),
+        LogisticRegressionClassifier(n_jobs=1),
     ]
 
-    pipeline = logistic_regression_binary_pipeline.new({})
-    order = [c for c in pipeline]
-    order_again = [c for c in pipeline]
+    order = [c for c in logistic_regression_binary_pipeline]
+    order_again = [c for c in logistic_regression_binary_pipeline]
 
     assert order == expected_order
     assert order_again == expected_order
@@ -2118,7 +2121,7 @@ def test_nonlinear_getitem(nonlinear_binary_pipeline):
     assert pipeline["Elastic Net"] == ElasticNetClassifier()
     assert pipeline["OneHot_RandomForest"] == OneHotEncoder(top_n=4)
     assert pipeline["Random Forest"] == RandomForestClassifier()
-    assert pipeline["Logistic Regression"] == LogisticRegressionClassifier()
+    assert pipeline["Logistic Regression Classifier"] == LogisticRegressionClassifier()
 
 
 def test_get_component(logistic_regression_binary_pipeline, nonlinear_binary_pipeline):
@@ -2142,7 +2145,8 @@ def test_get_component(logistic_regression_binary_pipeline, nonlinear_binary_pip
     assert pipeline.get_component("OneHot_RandomForest") == OneHotEncoder(top_n=4)
     assert pipeline.get_component("Random Forest") == RandomForestClassifier()
     assert (
-        pipeline.get_component("Logistic Regression") == LogisticRegressionClassifier()
+        pipeline.get_component("Logistic Regression Classifier")
+        == LogisticRegressionClassifier()
     )
 
 
