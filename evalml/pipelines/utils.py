@@ -408,8 +408,8 @@ def make_pipeline(
     Raises:
         ValueError: If estimator is not valid for the given problem type, or sampling is not supported for the given problem type.
     """
-    X = infer_feature_types(X, ignore_nullable_types=True)
-    y = infer_feature_types(y, ignore_nullable_types=True)
+    X = infer_feature_types(X)
+    y = infer_feature_types(y)
 
     if estimator:
         problem_type = handle_problem_types(problem_type)

@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 import pytest
+import woodwork as ww
 
 from evalml.automl import get_default_primary_search_objective
 from evalml.data_checks import (
@@ -714,9 +715,15 @@ def test_invalid_target_data_check_numeric_binary_does_not_return_warnings():
     }
 
 
+@pytest.mark.parametrize("use_nullable_types", [True, False])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_invalid_target_data_action_for_data_with_null(problem_type):
+def test_invalid_target_data_action_for_data_with_null(
+    use_nullable_types, problem_type
+):
     y = pd.Series([None, None, None, 0, 0, 0, 0, 0, 0, 0])
+    if use_nullable_types:
+        y = ww.init_series(y, logical_type="IntegerNullable")
+
     X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck(
         problem_type, get_default_primary_search_objective(problem_type)
