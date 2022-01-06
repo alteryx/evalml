@@ -772,19 +772,32 @@ def test_classification_pipeline_encodes_targets(
     ts_data_binary,
     ts_data_multi,
 ):
-    X, y = ts_data_binary
 
     if pipeline_class == TimeSeriesMulticlassClassificationPipeline:
         X, y = ts_data_multi
+        y_series = pd.Series(y)
+        df = pd.DataFrame(
+            {"negative": y_series, "positive": y_series, "neither": y_series}
+        )
+        y_encoded = y_series.map(
+            lambda label: "positive"
+            if label == 1
+            else "neither"
+            if label == 2
+            else "negative"
+        ).astype("category")
+    else:
+        X, y = ts_data_binary
+        y_series = pd.Series(y)
+        df = pd.DataFrame({"negative": y_series, "positive": y_series})
+        y_encoded = y_series.map(
+            lambda label: "positive" if label == 1 else "negative"
+        ).astype("category")
 
-    y_series = pd.Series(y)
-    df = pd.DataFrame({"negative": y_series, "positive": y_series})
     df.ww.init()
     mock_predict.side_effect = lambda data: ww.init_series(y_series[: data.shape[0]])
     mock_predict_proba.side_effect = lambda data: df.ww.iloc[: len(data)]
-    y_encoded = y_series.map(
-        lambda label: "positive" if label == 1 else "negative"
-    ).astype("category")
+
     X_train, y_encoded_train = X.iloc[:29], y_encoded.iloc[:29]
     X_holdout, y_encoded_holdout = X.iloc[29:], y_encoded.iloc[29:]
     pl = pipeline_class(
@@ -834,23 +847,27 @@ def test_classification_pipeline_encodes_targets(
 
     # Check predict encodes target
     predictions = pl.predict(X_holdout.iloc[:1], None, X_train, y_encoded_train)
-    assert set(predictions.unique()).issubset({"positive", "negative"})
+
+    valid_set = (
+        {"positive", "negative", "neither"}
+        if pipeline_class == TimeSeriesMulticlassClassificationPipeline
+        else {"positive", "negative"}
+    )
+    assert set(predictions.unique()).issubset(valid_set)
 
     predictions_in_sample = pl.predict_in_sample(
         X_holdout, y_encoded_holdout, X_train, y_encoded_train, objective=None
     )
-    assert set(predictions_in_sample.unique()).issubset({"positive", "negative"})
+    assert set(predictions_in_sample.unique()).issubset(valid_set)
 
     # Check predict proba column names are correct
     predict_proba = pl.predict_proba(X_holdout.iloc[:1], X_train, y_encoded_train)
-    assert set(predict_proba.columns.unique()).issubset({"positive", "negative"})
+    assert set(predict_proba.columns.unique()).issubset(valid_set)
 
     predict_proba_in_sample = pl.predict_proba_in_sample(
         X_holdout, y_encoded_holdout, X_train, y_encoded_train
     )
-    assert set(predict_proba_in_sample.columns.unique()).issubset(
-        {"positive", "negative"}
-    )
+    assert set(predict_proba_in_sample.columns.unique()).issubset(valid_set)
 
 
 @pytest.mark.parametrize(
