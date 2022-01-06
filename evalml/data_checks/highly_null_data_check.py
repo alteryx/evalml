@@ -112,7 +112,7 @@ class HighlyNullDataCheck(DataCheck):
         """
         results = {"warnings": [], "errors": [], "actions": []}
 
-        X = infer_feature_types(X, ignore_nullable_types=True)
+        X = infer_feature_types(X)
 
         highly_null_rows = HighlyNullDataCheck.get_null_row_information(
             X, pct_null_row_threshold=self.pct_null_row_threshold

@@ -1753,6 +1753,60 @@ def test_explain_predictions_oversampler(estimator, algorithm, fraud_100):
     assert report["feature_values"].isnull().sum() == 0
 
 
+@pytest.mark.noncore_dependency
+@pytest.mark.parametrize("problem_type", [ProblemTypes.MULTICLASS, ProblemTypes.BINARY])
+def test_explain_predictions_class_name_matches_class_name_in_y(
+    problem_type, fraud_100
+):
+    X, y = fraud_100
+    if problem_type == ProblemTypes.BINARY:
+        pipeline_class = BinaryClassificationPipeline
+    else:
+        y = np.arange(X.shape[0]) % 3
+        pipeline_class = MulticlassClassificationPipeline
+    pipeline = pipeline_class(
+        component_graph={
+            "Imputer": ["Imputer", "X", "y"],
+            "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
+            "DateTime Featurization Component": [
+                "DateTime Featurization Component",
+                "One Hot Encoder.x",
+                "y",
+            ],
+            "Oversampler": [
+                "Oversampler",
+                "DateTime Featurization Component.x",
+                "y",
+            ],
+            "Random Forest Classifier": [
+                "Random Forest Classifier",
+                "Oversampler.x",
+                "Oversampler.y",
+            ],
+        }
+    )
+
+    pipeline.fit(X, y)
+    exp = explain_predictions_best_worst(
+        pipeline,
+        X,
+        y,
+        num_to_explain=1,
+        output_format="dict",
+        top_k_features=2,
+        algorithm="shap",
+    )
+    if problem_type == ProblemTypes.BINARY:
+        assert exp["explanations"][0]["explanations"][0]["class_name"]
+        assert isinstance(exp["explanations"][0]["explanations"][0]["class_name"], bool)
+    else:
+        for i in range(3):
+            assert (
+                exp["explanations"][0]["explanations"][i]["class_name"]
+                == pipeline.classes_[i]
+            )
+
+
 @patch(
     "evalml.model_understanding.prediction_explanations._user_interface._make_single_prediction_explanation_table"
 )

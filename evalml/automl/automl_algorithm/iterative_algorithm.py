@@ -89,8 +89,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         allow_long_running_models=False,
         verbose=False,
     ):
-        self.X = infer_feature_types(X, ignore_nullable_types=True)
-        self.y = infer_feature_types(y, ignore_nullable_types=True)
+        self.X = infer_feature_types(X)
+        self.y = infer_feature_types(y)
         self.problem_type = problem_type
         self.random_seed = random_seed
         self.sampler_name = sampler_name
