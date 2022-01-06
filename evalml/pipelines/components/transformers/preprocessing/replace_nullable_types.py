@@ -35,7 +35,7 @@ class ReplaceNullableTypes(Transformer):
         Returns:
             self
         """
-        X_t = infer_feature_types(X, ignore_nullable_types=True)
+        X_t = infer_feature_types(X)
         self._nullable_int_cols = list(
             X_t.ww.select(
                 ["IntegerNullable", "AgeNullable"], return_schema=True
@@ -48,7 +48,7 @@ class ReplaceNullableTypes(Transformer):
         if y is None:
             self._nullable_target = None
         else:
-            y = infer_feature_types(y, ignore_nullable_types=True)
+            y = infer_feature_types(y)
             if isinstance(y.ww.logical_type, IntegerNullable):
                 self._nullable_target = "nullable_int"
             elif isinstance(y.ww.logical_type, BooleanNullable):
@@ -68,14 +68,14 @@ class ReplaceNullableTypes(Transformer):
             pd.DataFrame: Transformed X
             pd.Series: Transformed y
         """
-        X_t = infer_feature_types(X, ignore_nullable_types=True)
+        X_t = infer_feature_types(X)
         for col in self._nullable_int_cols:
             X_t.ww[col] = init_series(X_t[col], logical_type="double")
         for col in self._nullable_bool_cols:
             X_t.ww[col] = init_series(X_t[col], logical_type="categorical")
 
         if y is not None:
-            y_t = infer_feature_types(y, ignore_nullable_types=True)
+            y_t = infer_feature_types(y)
             if self._nullable_target is not None:
                 if self._nullable_target == "nullable_int":
                     y_t = init_series(y_t, logical_type="double")
@@ -96,9 +96,9 @@ class ReplaceNullableTypes(Transformer):
         Returns:
             tuple of pd.DataFrame, pd.Series: The input features and target data with the non-nullable types set.
         """
-        X_ww = infer_feature_types(X, ignore_nullable_types=True)
+        X_ww = infer_feature_types(X)
         if y is not None:
-            y_ww = infer_feature_types(y, ignore_nullable_types=True)
+            y_ww = infer_feature_types(y)
         else:
             y_ww = y
         return self.fit(X_ww, y_ww).transform(X_ww, y_ww)

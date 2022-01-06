@@ -199,6 +199,8 @@ def test_default_data_checks_classification(input_type):
             "lots_of_null": [None, None, None, None, "some data"],
             "all_null": [None, None, None, None, None],
             "also_all_null": [None, None, None, None, None],
+            "nullable_integer": [None, 2, 3, 4, 5],
+            "nullable_bool": [None, True, False, True, True],
             "no_null": [1, 2, 3, 4, 5],
             "id": [0, 1, 2, 3, 4],
             "has_label_leakage": [100, 200, 100, 200, 100],
@@ -216,7 +218,13 @@ def test_default_data_checks_classification(input_type):
 
     y = pd.Series([0, 1, np.nan, 1, 0])
     y_multiclass = pd.Series([0, 1, np.nan, 2, 0])
-    X.ww.init(logical_types={"natural_language_nan": "NaturalLanguage"})
+    X.ww.init(
+        logical_types={
+            "natural_language_nan": "NaturalLanguage",
+            "nullable_integer": "IntegerNullable",
+            "nullable_bool": "BooleanNullable",
+        }
+    )
     if input_type == "ww":
         y = ww.init_series(y)
         y_multiclass = ww.init_series(y_multiclass)
