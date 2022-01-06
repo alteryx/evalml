@@ -878,6 +878,26 @@ def dummy_ts_binary_linear_classifier_pipeline_class():
 
 
 @pytest.fixture
+def dummy_ts_multi_pipeline_class(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
+
+    class MockMultiClassificationClassificationPipeline(
+        TimeSeriesMulticlassClassificationPipeline
+    ):
+        estimator = MockEstimator
+        component_graph = [MockEstimator]
+
+        def __init__(
+            self, parameters, custom_name=None, component_graph=None, random_seed=0
+        ):
+            super().__init__(
+                self.component_graph, parameters=parameters, random_seed=random_seed
+            )
+
+    return MockMultiClassificationClassificationPipeline
+
+
+@pytest.fixture
 def logistic_regression_component_graph():
     component_graph = {
         "Label Encoder": ["Label Encoder", "X", "y"],

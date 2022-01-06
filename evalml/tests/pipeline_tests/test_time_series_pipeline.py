@@ -76,6 +76,89 @@ def test_time_series_pipeline_validates_holdout_data(
             pl.predict_proba(X, X_train, y_train)
 
 
+@pytest.mark.parametrize("num_unique", [1, 2, 3])
+@pytest.mark.parametrize("pipeline", ["ts_binary", "ts_multiclass"])
+def test_invalid_targets_time_series_classification_pipeline(
+    num_unique,
+    pipeline,
+    dummy_ts_binary_pipeline_class,
+    dummy_ts_multi_pipeline_class,
+    dummy_time_series_regression_pipeline_class,
+):
+    X = pd.DataFrame(pd.date_range("1/1/21", periods=30), columns=["Date"])
+
+    if num_unique == 1:
+        y = pd.Series([1 for i in range(30)])
+    elif num_unique == 2:
+        y = pd.Series([i % 2 for i in range(30)])
+    elif num_unique == 3:
+        y = pd.Series([i % 3 for i in range(30)])
+
+    parameters = {
+        "pipeline": {
+            "max_delay": 0,
+            "gap": 2,
+            "forecast_horizon": 2,
+            "time_index": "Date",
+        }
+    }
+
+    if pipeline == "ts_binary":
+        mock_binary_pipeline = dummy_ts_binary_pipeline_class(parameters=parameters)
+        if num_unique in [1, 3]:
+            with pytest.raises(
+                ValueError,
+                match="Time Series Binary pipelines require y to have 2 unique classes!",
+            ):
+                mock_binary_pipeline.fit(X, y)
+        else:
+            assert mock_binary_pipeline.fit(X, y)
+    elif pipeline == "ts_multiclass":
+        mock_multi_pipeline = dummy_ts_multi_pipeline_class(parameters=parameters)
+        if num_unique in [1, 2]:
+            with pytest.raises(
+                ValueError,
+                match="Time Series Multiclass pipelines require y to have 3 or more unique classes!",
+            ):
+                mock_multi_pipeline.fit(X, y)
+        else:
+            assert mock_multi_pipeline.fit(X, y)
+
+
+@pytest.mark.parametrize("target_type", ["category", "string", "bool"])
+def test_invalid_targets_time_series_regression_pipeline(
+    wine_local, target_type, dummy_time_series_regression_pipeline_class
+):
+    X = pd.DataFrame(pd.date_range("1/1/21", periods=30), columns=["Date"])
+    _, y = wine_local
+    y = pd.Series(y).astype("string")
+
+    if target_type == "category":
+        y = pd.Series([1 % 3 for i in range(30)])
+        y = pd.Series(y).astype("category")
+    if target_type == "bool":
+        y = pd.Series([1 % 2 for i in range(30)])
+        y = y.map({0: False, 1: True})
+
+    parameters = {
+        "pipeline": {
+            "max_delay": 0,
+            "gap": 2,
+            "forecast_horizon": 2,
+            "time_index": "Date",
+        }
+    }
+
+    mock_regression_pipeline = dummy_time_series_regression_pipeline_class(
+        parameters=parameters
+    )
+    with pytest.raises(
+        ValueError,
+        match="Regression pipeline can only handle numeric target data!",
+    ):
+        mock_regression_pipeline.fit(X, y)
+
+
 @pytest.mark.parametrize(
     "pipeline_class,estimator",
     [

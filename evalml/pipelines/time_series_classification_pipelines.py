@@ -42,6 +42,19 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             self
         """
         X, y = self._convert_to_woodwork(X, y)
+
+        if self.problem_type == ProblemTypes.TIME_SERIES_BINARY and y.nunique() != 2:
+            raise ValueError(
+                f"Time Series Binary pipelines require y to have 2 unique classes!"
+            )
+        elif (
+            self.problem_type == ProblemTypes.TIME_SERIES_MULTICLASS
+            and y.nunique() in [1, 2]
+        ):
+            raise ValueError(
+                "Time Series Multiclass pipelines require y to have 3 or more unique classes!"
+            )
+
         self._fit(X, y)
         self._classes_ = list(ww.init_series(np.unique(y)))
         return self

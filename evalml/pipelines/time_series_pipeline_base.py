@@ -4,6 +4,7 @@ import woodwork as ww
 
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
+from evalml.problem_types import ProblemTypes
 from evalml.utils import drop_rows_with_nans, infer_feature_types
 
 
@@ -69,6 +70,13 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             self
         """
         X, y = self._convert_to_woodwork(X, y)
+
+        if self.problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
+            if "numeric" not in y.ww.semantic_tags:
+                raise ValueError(
+                    f"Regression pipeline can only handle numeric target data!"
+                )
+
         self._fit(X, y)
         return self
 
