@@ -40,6 +40,9 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
 
         Returns:
             self
+        
+        Raises:
+            ValueError: If the number of unique classes in y are not appropriate for the type of pipeline.
         """
         X, y = self._convert_to_woodwork(X, y)
 

@@ -68,6 +68,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
         Returns:
             self
+
+        Raises:
+            ValueError: If the target is not numeric.
         """
         X, y = self._convert_to_woodwork(X, y)
 
