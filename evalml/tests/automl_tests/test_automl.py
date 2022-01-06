@@ -66,7 +66,7 @@ from evalml.pipelines.components.utils import (
     get_estimators,
 )
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
-from evalml.preprocessing import TrainingValidationSplit
+from evalml.preprocessing import TimeSeriesSplit, TrainingValidationSplit
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
@@ -157,7 +157,7 @@ def test_search_results(X_y_regression, X_y_binary, X_y_multi, automl_type, obje
         assert automl.get_pipeline(pipeline_id).parameters == results["parameters"]
         assert (
             results["validation_score"]
-            == pd.Series([fold["mean_cv_score"] for fold in results["cv_data"]])[0]
+            == pd.Series([fold["mean_cv_score"] for fold in results["cv_data"]]).mean()
         )
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.full_rankings, pd.DataFrame)
@@ -786,8 +786,9 @@ def test_large_dataset_binary(AutoMLTestEnv):
             == 1.234
         )
         assert (
-            automl.results["pipeline_results"][pipeline_id]["mean_cv_score"]
-            == automl.results["pipeline_results"][pipeline_id]["validation_score"]
+            np.isnan(automl.results["pipeline_results"][pipeline_id]["mean_cv_score"])
+            and automl.results["pipeline_results"][pipeline_id]["validation_score"]
+            == 1.234
         )
 
 
@@ -818,8 +819,9 @@ def test_large_dataset_multiclass(AutoMLTestEnv):
             == 1.234
         )
         assert (
-            automl.results["pipeline_results"][pipeline_id]["mean_cv_score"]
-            == automl.results["pipeline_results"][pipeline_id]["validation_score"]
+            np.isnan(automl.results["pipeline_results"][pipeline_id]["mean_cv_score"])
+            and automl.results["pipeline_results"][pipeline_id]["validation_score"]
+            == 1.234
         )
 
 
@@ -850,8 +852,9 @@ def test_large_dataset_regression(AutoMLTestEnv):
             == 1.234
         )
         assert (
-            automl.results["pipeline_results"][pipeline_id]["mean_cv_score"]
-            == automl.results["pipeline_results"][pipeline_id]["validation_score"]
+            np.isnan(automl.results["pipeline_results"][pipeline_id]["mean_cv_score"])
+            and automl.results["pipeline_results"][pipeline_id]["validation_score"]
+            == 1.234
         )
 
 
@@ -1165,7 +1168,7 @@ def test_add_to_rankings_regression_large(
         automl.add_to_rankings(dummy_regression_pipeline_class({}))
         assert isinstance(automl.data_splitter, TrainingValidationSplit)
         assert len(automl.rankings) == 1
-        assert 0.1234 in automl.rankings["mean_cv_score"].values
+        assert np.isnan(automl.rankings["mean_cv_score"].values[0])
 
 
 def test_add_to_rankings_new_pipeline(dummy_regression_pipeline_class):
@@ -1789,7 +1792,7 @@ def make_mock_rankings(scores):
     df = pd.DataFrame(
         {
             "id": range(len(scores)),
-            "mean_cv_score": scores,
+            "validation_score": scores,
             "pipeline_name": [f"Mock name {i}" for i in range(len(scores))],
         }
     )
@@ -5511,3 +5514,69 @@ def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
         ]
         == ["features", "date"]
     ).all()
+
+
+@pytest.mark.parametrize(
+    "data_splitter,mean_cv_is_none",
+    [(TrainingValidationSplit, True), (StratifiedKFold, False)],
+)
+def test_cv_validation_scores(
+    data_splitter,
+    mean_cv_is_none,
+    X_y_binary,
+    dummy_classifier_estimator_class,
+    dummy_binary_pipeline_class,
+    AutoMLTestEnv,
+):
+    X, y = X_y_binary
+    data_splitter = data_splitter()
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_batches=3,
+        data_splitter=data_splitter,
+        allowed_component_graphs={"Name": [dummy_classifier_estimator_class]},
+        n_jobs=1,
+    )
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={"Log Loss Binary": 0.5}):
+        automl.search()
+    cv_vals = list(set(automl.full_rankings["mean_cv_score"].values))
+    validation_vals = list(set(automl.full_rankings["validation_score"].values))
+    assert len(validation_vals) == 1
+    assert validation_vals[0] == 0.5
+    if mean_cv_is_none:
+        assert np.isnan(cv_vals[0])
+    else:
+        assert cv_vals[0] == validation_vals[0]
+
+
+def test_cv_validation_scores_time_series(
+    ts_data_binary,
+    AutoMLTestEnv,
+):
+    X, y = ts_data_binary
+    problem_configuration = {
+        "time_index": "date",
+        "gap": 0,
+        "max_delay": 0,
+        "forecast_horizon": 1,
+    }
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="time series binary",
+        max_iterations=3,
+        data_splitter=TimeSeriesSplit(n_splits=3),
+        problem_configuration=problem_configuration,
+        n_jobs=1,
+    )
+    env = AutoMLTestEnv("time series binary")
+    with env.test_context(score_return_value={"Log Loss Binary": 0.5}):
+        automl.search()
+    cv_vals = list(set(automl.full_rankings["mean_cv_score"].values))
+    validation_vals = list(set(automl.full_rankings["validation_score"].values))
+    assert len(validation_vals) == 1
+    assert validation_vals[0] == 0.5
+    assert cv_vals[0] == validation_vals[0]

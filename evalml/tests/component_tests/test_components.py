@@ -804,9 +804,6 @@ def test_components_init_kwargs():
         module = component._component_obj.__module__
         importlib.import_module(module, obj_class)
         patched = module + "." + obj_class + ".__init__"
-        if component_class == LabelEncoder:
-            # scikit-learn's LabelEncoder found in different module than where we import from
-            patched = module[: module.rindex(".")] + "." + obj_class + ".__init__"
 
         def all_init(self, *args, **kwargs):
             for k, v in kwargs.items():
@@ -1246,7 +1243,11 @@ def test_no_fitting_required_components(
 
 def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), "component.pkl")
-    requires_time_index = [ARIMARegressor, ProphetRegressor, TimeSeriesFeaturizer]
+    requires_time_index = [
+        ARIMARegressor,
+        ProphetRegressor,
+        TimeSeriesFeaturizer,
+    ]
     for component_class in all_components():
         print("Testing serialization of component {}".format(component_class.name))
         component = helper_functions.safe_init_component_with_njobs_1(component_class)

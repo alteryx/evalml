@@ -31,7 +31,11 @@ class DataCheckAction:
         Returns:
             bool: True if the other object is considered an equivalent data check action, False otherwise.
         """
-        return self.action_code == other.action_code and self.metadata == other.metadata
+        attributes_to_check = ["action_code", "data_check_name", "metadata"]
+        for attribute in attributes_to_check:
+            if getattr(self, attribute) != getattr(other, attribute):
+                return False
+        return True
 
     def to_dict(self):
         """Return a dictionary form of the data check action."""
@@ -64,7 +68,7 @@ class DataCheckAction:
             or "rows" not in action_dict["metadata"]
         ):
             raise ValueError(
-                "The metadata dictionary should have the keys `columns` and `rows`. Set to None if not using."
+                "The metadata dictionary should have the keys `columns` or `rows`. Set to None if not using."
             )
 
         return DataCheckAction(

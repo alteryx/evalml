@@ -6,7 +6,7 @@ on:
   push:
     branches:
       - main
-
+  workflow_dispatch:
 jobs:
   unit_tests:
     name: ${{ matrix.python_version }} unit ${{matrix.command}} tests, Core Dependencies (${{ matrix.core_dependencies }})

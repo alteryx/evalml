@@ -3,12 +3,11 @@ import copy
 import warnings
 
 import numpy as np
-import pandas as pd
-from sklearn.preprocessing import LabelEncoder
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
+from evalml.pipelines.components.transformers import LabelEncoder
 from evalml.problem_types import ProblemTypes
 from evalml.utils import import_or_raise, infer_feature_types
 
@@ -116,7 +115,7 @@ class CatBoostClassifier(Estimator):
         # For binary classification, catboost expects numeric values, so encoding before.
         if y.nunique() <= 2:
             self._label_encoder = LabelEncoder()
-            y = pd.Series(self._label_encoder.fit_transform(y))
+            y = self._label_encoder.fit_transform(None, y)[1]
         self._component_obj.fit(X, y, silent=True, cat_features=cat_cols)
         return self
 

@@ -27,6 +27,7 @@ from .regressors import (
     TimeSeriesBaselineEstimator,
     DecisionTreeRegressor,
     SVMRegressor,
+    ExponentialSmoothingRegressor,
     ARIMARegressor,
     ProphetRegressor,
     VowpalWabbitRegressor,
