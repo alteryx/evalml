@@ -49,21 +49,21 @@ def infer_feature_types(data, feature_types=None):
         data = _numpy_to_pandas(data)
 
     def convert_all_nan_unknown_to_double(data):
-        def is_column_pd_na(data, col):
-            return data[col].isna().all()
-
-        def is_column_unknown(data, col):
-            return isinstance(data.ww.logical_types[col], Unknown)
-
-        if isinstance(data, pd.DataFrame):
-            all_null_unk_cols = [
-                col
-                for col in data.columns
-                if (is_column_unknown(data, col) and is_column_pd_na(data, col))
-            ]
-            if len(all_null_unk_cols):
-                for col in all_null_unk_cols:
-                    data.ww.set_types({col: "Double"})
+        # def is_column_pd_na(data, col):
+        #     return data[col].isna().all()
+        #
+        # def is_column_unknown(data, col):
+        #     return isinstance(data.ww.logical_types[col], Unknown)
+        #
+        # if isinstance(data, pd.DataFrame):
+        #     all_null_unk_cols = [
+        #         col
+        #         for col in data.columns
+        #         if (is_column_unknown(data, col) and is_column_pd_na(data, col))
+        #     ]
+        #     if len(all_null_unk_cols):
+        #         for col in all_null_unk_cols:
+        #             data.ww.set_types({col: "Double"})
         return data
 
     if data.ww.schema is not None:

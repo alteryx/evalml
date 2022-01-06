@@ -131,7 +131,7 @@ def test_make_pipeline(
                 if estimator_class.model_family == ModelFamily.LINEAR_MODEL
                 else []
             )
-            drop_null = [DropNullColumns] if "all_null" in column_names else []
+            drop_null = [DropColumns] if "all_null" in column_names else []
             replace_null = (
                 [ReplaceNullableTypes]
                 if (
@@ -147,7 +147,7 @@ def test_make_pipeline(
             )
             email_featurizer = [EmailFeaturizer] if "email" in column_names else []
             url_featurizer = [URLFeaturizer] if "url" in column_names else []
-            imputer = [] if (column_names in [["ip"]]) else [Imputer]
+            imputer = [] if (column_names in [["ip"], ["all_null"]]) else [Imputer]
 
             if is_time_series(problem_type):
                 expected_components = (

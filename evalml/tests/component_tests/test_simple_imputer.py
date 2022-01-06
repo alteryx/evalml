@@ -165,7 +165,7 @@ def test_simple_imputer_fit_transform_drop_all_nan_columns():
             "another_col": [0, 1, 2],
         }
     )
-
+    X.ww.init(logical_types={"all_nan": "Double"})
     transformer = SimpleImputer(impute_strategy="most_frequent")
     X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
     X_t = transformer.fit_transform(X)
@@ -190,6 +190,7 @@ def test_simple_imputer_transform_drop_all_nan_columns():
             "another_col": [0, 1, 2],
         }
     )
+    X.ww.init(logical_types={"all_nan": "Double"})
     transformer = SimpleImputer(impute_strategy="most_frequent")
     transformer.fit(X)
     X_expected_arr = pd.DataFrame({"some_nan": [0, 1, 0], "another_col": [0, 1, 2]})
@@ -208,6 +209,7 @@ def test_simple_imputer_transform_drop_all_nan_columns():
 
 def test_simple_imputer_transform_drop_all_nan_columns_empty():
     X = pd.DataFrame([[np.nan, np.nan, np.nan]])
+    X.ww.init(logical_types={0: "Double", 1: "Double", 2: "Double"})
     transformer = SimpleImputer(impute_strategy="most_frequent")
     assert transformer.fit_transform(X).empty
     assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
@@ -219,12 +221,12 @@ def test_simple_imputer_transform_drop_all_nan_columns_empty():
 
 
 def test_simple_imputer_numpy_input():
-    X = np.array([[np.nan, 0, 1, np.nan], [np.nan, 2, 3, 2], [np.nan, 2, 3, 0]])
+    X = np.array([[1, 0, 1, np.nan], [np.nan, 2, 3, 2], [np.nan, 2, 3, 0]])
     transformer = SimpleImputer(impute_strategy="mean")
-    X_expected_arr = np.array([[0, 1, 1], [2, 3, 2], [2, 3, 0]])
+    X_expected_arr = np.array([[1, 0, 1, 1], [1, 2, 3, 2], [1, 2, 3, 0]])
     assert np.allclose(X_expected_arr, transformer.fit_transform(X))
     np.testing.assert_almost_equal(
-        X, np.array([[np.nan, 0, 1, np.nan], [np.nan, 2, 3, 2], [np.nan, 2, 3, 0]])
+        X, np.array([[1, 0, 1, np.nan], [np.nan, 2, 3, 2], [np.nan, 2, 3, 0]])
     )
 
 
@@ -305,11 +307,12 @@ def test_simple_imputer_does_not_reset_index():
 
 
 def test_simple_imputer_with_none():
+    # No all none here because ww default inference will treat
+    # it as unknown which is not a supported feature.
     X = pd.DataFrame(
         {
             "int with None": [1, 0, 5, None],
             "float with None": [0.1, 0.0, 0.5, None],
-            "all None": [None, None, None, None],
         }
     )
     y = pd.Series([0, 0, 1, 0, 1])
@@ -440,7 +443,7 @@ def test_component_handles_pre_init_ww():
     df = pd.DataFrame(
         {"part_null": [0, 1, 2, None], "all_null": [None, None, None, None]}
     )
-    df.ww.init()
+    df.ww.init(logical_types={'all_null': "Double"})
     imputed = SimpleImputer().fit_transform(df)
 
     assert "all_null" not in imputed.columns
