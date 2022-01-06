@@ -606,7 +606,7 @@ def test_predict_repeat_estimator(
         "Final Estimator": [
             LogisticRegressionClassifier,
             "Random Forest.x",
-            "Logistic Regression.x",
+            "Logistic Regression Classifier.x",
             "y",
         ],
     }
@@ -2167,8 +2167,8 @@ def test_component_graph_defines_edge_with_invalid_syntax():
     [
         ({"Logistic Regression Classifier": {"penalty": "l1"}}, {}),
         (
-            {"Logistic Regression Classifier": {"penalty": "l1"}},
-            {"Logistic Regression Classifier"},
+            {"Logistic Regression": {"penalty": "l1"}},
+            {"Logistic Regression"},
         ),
         (
             {"Random Forest Classifier": {"n_estimators": 10}},

@@ -2060,7 +2060,7 @@ def test_nonlinear_pipeline_iteration(nonlinear_binary_pipeline):
         ElasticNetClassifier(),
         OneHotEncoder(),
         RandomForestClassifier(),
-        LogisticRegressionClassifier(),
+        LogisticRegressionClassifier(n_jobs=1),
     ]
 
     order = [c for c in nonlinear_binary_pipeline]
