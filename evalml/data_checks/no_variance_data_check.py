@@ -56,7 +56,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 "code": "NO_VARIANCE"}],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "NoVarianceDataCheck",
-            ...                  "parameters": {},
+            ...                  "parameters": None,
             ...                  "metadata": {"columns": ["First_Column"], "rows": None}}],
             ...                 "default_action": None}}
 
@@ -96,7 +96,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 "code": "NO_VARIANCE"}],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "NoVarianceDataCheck",
-            ...                  "parameters": {},
+            ...                  "parameters": None,
             ...                  "metadata": {"columns": ["First_Column"], "rows": None}}],
             ...                 "default_action": None}}
 
@@ -119,7 +119,7 @@ class NoVarianceDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "NoVarianceDataCheck",
-            ...                  "parameters": {},
+            ...                  "parameters": None,
             ...                  "metadata": {"columns": ["First_Column"], "rows": None}}],
             ...                 "default_action": None}}
 

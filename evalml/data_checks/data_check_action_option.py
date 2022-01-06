@@ -46,7 +46,7 @@ class DataCheckActionOption:
     def __init__(self, action_code, data_check_name, parameters=None, metadata=None):
         self.action_code = action_code
         self.data_check_name = data_check_name
-        self.parameters = parameters or {}
+        self.parameters = parameters
         self.metadata = {"columns": None, "rows": None}
         if metadata is not None:
             self.metadata.update(metadata)

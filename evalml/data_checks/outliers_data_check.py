@@ -49,7 +49,7 @@ class OutliersDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_ROWS",
             ...                  "data_check_name": "OutliersDataCheck",
-            ...                  "parameters": {},
+            ...                  "parameters": None,
             ...                  "metadata": {"rows": [3], "columns": None}}],
             ...                 "default_action": None}}
         """
