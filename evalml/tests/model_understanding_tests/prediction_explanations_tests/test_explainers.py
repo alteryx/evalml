@@ -1774,14 +1774,14 @@ def test_explain_predictions_class_name_matches_class_name_in_y(
         component_graph={
             "Imputer": ["Imputer", "X", "y"],
             "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
-            "DateTime Featurization Component": [
-                "DateTime Featurization Component",
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
                 "One Hot Encoder.x",
                 "y",
             ],
             "Oversampler": [
                 "Oversampler",
-                "DateTime Featurization Component.x",
+                "DateTime Featurizer.x",
                 "y",
             ],
             "Random Forest Classifier": [
