@@ -167,7 +167,7 @@ def test_invalid_targets_time_series_regression_pipeline(
     )
     with pytest.raises(
         ValueError,
-        match="Regression pipeline can only handle numeric target data!",
+        match="Time Series Regression pipeline can only handle numeric target data!",
     ):
         mock_regression_pipeline.fit(X, y)
 
