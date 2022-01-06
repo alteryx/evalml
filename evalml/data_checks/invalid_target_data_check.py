@@ -118,10 +118,10 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 "code": "TARGET_HAS_NULL"}],
             ...     "actions": {"action_list": [{"code": "IMPUTE_COL",
             ...                  "data_check_name": "InvalidTargetDataCheck",
+            ...                  "parameters": {"impute_strategy": {"parameter_type": "global", "type": "category", "categories": ["mean", "most_frequent"], "default_value": "mean"}},
             ...                  "metadata": {"columns": None,
             ...                               "rows": None,
-            ...                               "is_target": True,
-            ...                               "impute_strategy": "mean"}}],
+            ...                               "is_target": True}}],
             ...                 "default_action": None}}
 
             If the target values don't match the problem type passed, an error will be raised.

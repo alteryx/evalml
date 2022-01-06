@@ -98,6 +98,7 @@ class TargetLeakageDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "TargetLeakageDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["leak"], "rows": None}}],
             ...                 "default_action": None}}
 
@@ -114,6 +115,7 @@ class TargetLeakageDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "TargetLeakageDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["leak", "x"], "rows": None}}],
             ...                 "default_action": None}}
         """

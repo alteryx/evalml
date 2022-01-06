@@ -75,6 +75,7 @@ class HighlyNullDataCheck(DataCheck):
             ...     "actions": {
             ...         "action_list": [{"code": "DROP_COL",
             ...                         "data_check_name": "HighlyNullDataCheck",
+            ...                         "parameters": {},
             ...                         "metadata": {"columns": ["all_null", "lots_of_null"], "rows": None}}],
             ...         "default_action": None
             ...     }
@@ -107,11 +108,13 @@ class HighlyNullDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_ROWS",
             ...                  "data_check_name": "HighlyNullDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": None, "rows": [0, 1, 2, 3]}},
-            ...                   {"code": "DROP_COL",
+            ...                  {"code": "DROP_COL",
             ...                  "data_check_name": "HighlyNullDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["all_null"], "rows": None}}],
-            ...                 "default_action": None}}
+            ...                  "default_action": None}}
 
         """
         results = {

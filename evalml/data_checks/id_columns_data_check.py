@@ -57,6 +57,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "details": {"columns": ["customer_id"], "rows": None}}],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["customer_id"], "rows": None}}],
             ...                 "default_action": None}}
 
@@ -73,6 +74,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "details": {"columns": ["ID"], "rows": None}}],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["ID"], "rows": None}}],
             ...                 "default_action": None}}
 
@@ -101,6 +103,7 @@ class IDColumnsDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["Country_Rank"], "rows": None}}],
             ...                 "default_action": None}}
         """
