@@ -65,7 +65,7 @@ class UniquenessDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "NOT_UNIQUE_ENOUGH",
             ...                   "details": {"columns": ["regression_not_unique_enough"], "uniqueness_score": {"regression_not_unique_enough": 0.0}, "rows": None}}],
-            ...     "actions": {"action_list": [{"code": "DROP_COL", "parameters": None,
+            ...     "actions": {"action_list": [{"code": "DROP_COL", "parameters": {},
             ...                                  "data_check_name": "UniquenessDataCheck",
             ...                                  "metadata": {"columns": ["regression_not_unique_enough"], "rows": None}}],
             ...                 "default_action": None
@@ -84,7 +84,7 @@ class UniquenessDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                                  "data_check_name": "UniquenessDataCheck",
-            ...                                  "parameters": None,
+            ...                                  "parameters": {},
             ...                                  "metadata": {"columns": ["regression_unique_enough"], "rows": None}}],
             ...                 "default_action": None
             ...                 }
