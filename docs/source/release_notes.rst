@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added string support for DataCheckActionCode :pr:`3167`
         * Added ``DataCheckActionOption`` class :pr:`3134`
+        * Add issue templates for bugs, feature requests and documentation improvements for GitHub :pr:`3199`
     * Fixes
         * Fix bug where prediction explanations ``class_name`` was shown as float for boolean targets :pr:`3179`
         * Fixed bug in nightly linux tests :pr:`3189`
