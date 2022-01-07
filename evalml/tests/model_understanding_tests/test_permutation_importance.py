@@ -56,289 +56,275 @@ class DoubleColumns(Transformer):
         return self._provenance
 
 
-class LinearPipelineWithDropCols(BinaryClassificationPipeline):
-    component_graph = [
-        "Drop Columns Transformer",
-        OneHotEncoder,
-        DateTimeFeaturizer,
-        "Random Forest Classifier",
-    ]
-
-
-class LinearPipelineWithImputer(BinaryClassificationPipeline):
-    component_graph = [
-        "Imputer",
-        OneHotEncoder,
-        DateTimeFeaturizer,
-        "Random Forest Classifier",
-    ]
-
-
-class LinearPipelineSameFeatureUsedByTwoComponents(BinaryClassificationPipeline):
-    component_graph = [
-        "Select Columns Transformer",
-        "Imputer",
-        DateTimeFeaturizer,
-        OneHotEncoder,
-        "Random Forest Classifier",
-    ]
-
-
-class LinearPipelineTwoEncoders(BinaryClassificationPipeline):
-    component_graph = [
-        "Select Columns Transformer",
-        "Imputer",
-        DateTimeFeaturizer,
-        OneHotEncoder,
-        OneHotEncoder,
-        "Random Forest Classifier",
-    ]
-
-
-class LinearPipelineWithTextFeatures(BinaryClassificationPipeline):
-    component_graph = [
-        "Select Columns Transformer",
-        "Imputer",
-        NaturalLanguageFeaturizer,
-        OneHotEncoder,
-        "Random Forest Classifier",
-    ]
-
-
-class LinearPipelineWithNaturalLanguageFeaturizerNoTextFeatures(
-    LinearPipelineWithTextFeatures
-):
-    """Testing a pipeline with NaturalLanguageFeaturizer but no text features."""
-
-
-class LinearPipelineWithDoubling(BinaryClassificationPipeline):
-    component_graph = [
-        "Select Columns Transformer",
-        DoubleColumns,
-        DoubleColumns,
-        DoubleColumns,
-        "Random Forest Classifier",
-    ]
-
-
-class LinearPipelineWithTargetEncoderAndOHE(BinaryClassificationPipeline):
-    component_graph = [
-        "Select Columns Transformer",
-        "Imputer",
-        DateTimeFeaturizer,
-        OneHotEncoder,
-        "Target Encoder",
-        "Random Forest Classifier",
-    ]
-
-
-class LinearPipelineCreateFeatureThenDropIt(BinaryClassificationPipeline):
-    component_graph = [
-        "Select Columns Transformer",
-        DoubleColumns,
-        "Drop Columns Transformer",
-        "Random Forest Classifier",
-    ]
-
-
-class DagTwoEncoders(BinaryClassificationPipeline):
-    component_graph = {
-        "Imputer": ["Imputer", "X", "y"],
-        "SelectNumeric": ["Select Columns Transformer", "Imputer.x", "y"],
-        "SelectCategorical1": ["Select Columns Transformer", "Imputer.x", "y"],
-        "SelectCategorical2": ["Select Columns Transformer", "Imputer.x", "y"],
-        "OHE_1": ["One Hot Encoder", "SelectCategorical1.x", "y"],
-        "OHE_2": ["One Hot Encoder", "SelectCategorical2.x", "y"],
-        "DT": ["DateTime Featurization Component", "SelectNumeric.x", "y"],
-        "Estimator": ["Random Forest Classifier", "DT.x", "OHE_1.x", "OHE_2.x", "y"],
-    }
-
-
-class DagReuseFeatures(BinaryClassificationPipeline):
-    component_graph = {
-        "Imputer": ["Imputer", "X", "y"],
-        "SelectDate": ["Select Columns Transformer", "Imputer.x", "y"],
-        "SelectCategorical1": ["Select Columns Transformer", "Imputer.x", "y"],
-        "SelectCategorical2": ["Select Columns Transformer", "Imputer.x", "y"],
-        "OHE_1": ["One Hot Encoder", "SelectCategorical1.x", "y"],
-        "OHE_2": ["One Hot Encoder", "SelectCategorical2.x", "y"],
-        "DT": ["DateTime Featurization Component", "SelectDate.x", "y"],
-        "OHE_3": ["One Hot Encoder", "DT.x", "y"],
-        "Estimator": ["Random Forest Classifier", "OHE_3.x", "OHE_1.x", "OHE_2.x", "y"],
-    }
-
-
-class PipelineWithTargetTransformer(RegressionPipeline):
-    component_graph = {
-        "Log": ["Log Transformer", "X", "y"],
-        "SelectNumeric": ["Select Columns Transformer", "X", "y"],
-        "Estimator": ["Random Forest Regressor", "SelectNumeric.x", "Log.y"],
-    }
-
-
-test_cases = [
-    (
-        LinearPipelineWithDropCols,
-        {
-            "Drop Columns Transformer": {
-                "columns": [
-                    "country",
-                    "customer_present",
-                    "provider",
-                    "region",
-                    "expiration_date",
-                    "lat",
-                    "card_id",
-                ]
-            }
-        },
-    ),
-    (
-        LinearPipelineWithImputer,
-        {
-            "Select Columns Transformer": {
-                "columns": ["provider", "lng", "datetime", "card_id", "country"]
-            }
-        },
-    ),
-    (
-        LinearPipelineSameFeatureUsedByTwoComponents,
-        {
-            "Select Columns Transformer": {
-                "columns": ["expiration_date", "datetime", "amount"]
+@pytest.mark.noncore_dependency
+@pytest.mark.parametrize(
+    "pipeline",
+    [
+        BinaryClassificationPipeline(
+            component_graph=[
+                "Drop Columns Transformer",
+                OneHotEncoder,
+                DateTimeFeaturizer,
+                "Random Forest Classifier",
+            ],
+            parameters={
+                "Drop Columns Transformer": {
+                    "columns": [
+                        "country",
+                        "customer_present",
+                        "provider",
+                        "region",
+                        "expiration_date",
+                        "lat",
+                        "card_id",
+                    ]
+                }
             },
-            "DateTime Featurization Component": {"encode_as_categories": True},
-        },
-    ),
-    (
-        LinearPipelineTwoEncoders,
-        {
-            "Select Columns Transformer": {
-                "columns": [
-                    "currency",
-                    "expiration_date",
-                    "region",
-                    "country",
-                    "amount",
-                ]
+            custom_name="Linear Pipeline with Drop Column Component",
+        ),
+        BinaryClassificationPipeline(
+            component_graph=[
+                "Imputer",
+                OneHotEncoder,
+                DateTimeFeaturizer,
+                "Random Forest Classifier",
+            ],
+            parameters={
+                "Select Columns Transformer": {
+                    "columns": ["provider", "lng", "datetime", "card_id", "country"]
+                }
             },
-            "One Hot Encoder": {
-                "features_to_encode": [
-                    "currency",
-                    "expiration_date",
-                ]
+            custom_name="Linear Pipeline with Imputer",
+        ),
+        BinaryClassificationPipeline(
+            component_graph=[
+                "Select Columns Transformer",
+                "Imputer",
+                DateTimeFeaturizer,
+                OneHotEncoder,
+                "Random Forest Classifier",
+            ],
+            parameters={
+                "Select Columns Transformer": {
+                    "columns": ["expiration_date", "datetime", "amount"]
+                },
+                "DateTime Featurization Component": {"encode_as_categories": True},
             },
-            "One Hot Encoder_2": {"features_to_encode": ["region", "country"]},
-        },
-    ),
-    (
-        LinearPipelineWithTextFeatures,
-        {"Select Columns Transformer": {"columns": ["provider", "amount", "currency"]}},
-    ),
-    (
-        LinearPipelineWithNaturalLanguageFeaturizerNoTextFeatures,
-        {"Select Columns Transformer": {"columns": ["amount", "currency"]}},
-    ),
-    (
-        LinearPipelineWithDoubling,
-        {"Select Columns Transformer": {"columns": ["amount"]}},
-    ),
-    (
-        LinearPipelineWithDoubling,
-        {
-            "Select Columns Transformer": {"columns": ["amount"]},
-            "DoubleColumns": {"drop_old_columns": False},
-        },
-    ),
-    (
-        DagTwoEncoders,
-        {
-            "SelectNumeric": {
-                "columns": [
-                    "card_id",
-                    "store_id",
-                    "datetime",
-                ]
+            custom_name="Linear Pipeline with Same Feature Used By Two Components",
+        ),
+        BinaryClassificationPipeline(
+            component_graph=[
+                "Select Columns Transformer",
+                "Imputer",
+                DateTimeFeaturizer,
+                OneHotEncoder,
+                OneHotEncoder,
+                "Random Forest Classifier",
+            ],
+            parameters={
+                "Select Columns Transformer": {
+                    "columns": [
+                        "currency",
+                        "expiration_date",
+                        "region",
+                        "country",
+                        "amount",
+                    ]
+                },
+                "One Hot Encoder": {
+                    "features_to_encode": [
+                        "currency",
+                        "expiration_date",
+                    ]
+                },
+                "One Hot Encoder_2": {"features_to_encode": ["region", "country"]},
             },
-            "SelectCategorical1": {"columns": ["currency", "provider"]},
-            "SelectCategorical2": {"columns": ["region", "country"]},
-            "OHE_1": {"features_to_encode": ["currency", "provider"]},
-            "OHE_2": {"features_to_encode": ["region", "country"]},
-        },
-    ),
-    (
-        DagReuseFeatures,
-        {
-            "SelectDate": {
-                "columns": [
-                    "datetime",
-                ]
+            custom_name="Linear Pipeline with Two One Hot Encoders",
+        ),
+        BinaryClassificationPipeline(
+            component_graph=[
+                "Select Columns Transformer",
+                "Imputer",
+                NaturalLanguageFeaturizer,
+                OneHotEncoder,
+                "Random Forest Classifier",
+            ],
+            parameters={
+                "Select Columns Transformer": {
+                    "columns": ["provider", "amount", "currency"]
+                }
             },
-            "SelectCategorical1": {"columns": ["currency", "provider"]},
-            "SelectCategorical2": {"columns": ["region"]},
-            "OHE_1": {"features_to_encode": ["currency", "provider"]},
-            "OHE_2": {"features_to_encode": ["region"]},
-            "DT": {"encode_as_categories": True},
-        },
-    ),
-    (
-        LinearPipelineWithTargetEncoderAndOHE,
-        {
-            "Select Columns Transformer": {
-                "columns": ["currency", "provider", "region", "country"]
+            custom_name="Linear Pipeline with Text Features",
+        ),
+        BinaryClassificationPipeline(
+            component_graph=[
+                "Select Columns Transformer",
+                "Imputer",
+                NaturalLanguageFeaturizer,
+                OneHotEncoder,
+                "Random Forest Classifier",
+            ],
+            parameters={
+                "Select Columns Transformer": {"columns": ["amount", "currency"]}
             },
-            "One Hot Encoder": {"features_to_encode": ["currency", "provider"]},
-            "Target Encoder": {"cols": ["region", "country"]},
-        },
-    ),
-    (
-        LinearPipelineCreateFeatureThenDropIt,
-        {
-            "Select Columns Transformer": {"columns": ["amount"]},
-            "DoubleColumns": {"drop_old_columns": False},
-            "Drop Columns Transformer": {"columns": ["amount_doubled"]},
-        },
-    ),
-    (
-        PipelineWithTargetTransformer,
-        {"SelectNumeric": {"columns": ["card_id", "store_id", "lat", "lng"]}},
-    ),
-]
-
-
-@pytest.mark.parametrize("pipeline_class, parameters", test_cases)
+            custom_name="Linear Pipeline with With Natural Language Featurizer but no text features",
+        ),
+        BinaryClassificationPipeline(
+            component_graph=[
+                "Select Columns Transformer",
+                DoubleColumns,
+                DoubleColumns,
+                DoubleColumns,
+                "Random Forest Classifier",
+            ],
+            parameters={"Select Columns Transformer": {"columns": ["amount"]}},
+            custom_name="Linear Pipeline with Double Columns Component",
+        ),
+        BinaryClassificationPipeline(
+            component_graph=[
+                "Select Columns Transformer",
+                DoubleColumns,
+                DoubleColumns,
+                DoubleColumns,
+                "Random Forest Classifier",
+            ],
+            parameters={
+                "Select Columns Transformer": {"columns": ["amount"]},
+                "DoubleColumns": {"drop_old_columns": False},
+            },
+            custom_name="Linear Pipeline with Double Columns Component and Drop Old Columns False",
+        ),
+        BinaryClassificationPipeline(
+            component_graph={
+                "Imputer": ["Imputer", "X", "y"],
+                "SelectNumeric": ["Select Columns Transformer", "Imputer.x", "y"],
+                "SelectCategorical1": ["Select Columns Transformer", "Imputer.x", "y"],
+                "SelectCategorical2": ["Select Columns Transformer", "Imputer.x", "y"],
+                "OHE_1": ["One Hot Encoder", "SelectCategorical1.x", "y"],
+                "OHE_2": ["One Hot Encoder", "SelectCategorical2.x", "y"],
+                "DT": ["DateTime Featurization Component", "SelectNumeric.x", "y"],
+                "Estimator": [
+                    "Random Forest Classifier",
+                    "DT.x",
+                    "OHE_1.x",
+                    "OHE_2.x",
+                    "y",
+                ],
+            },
+            parameters={
+                "SelectNumeric": {
+                    "columns": [
+                        "card_id",
+                        "store_id",
+                        "datetime",
+                    ]
+                },
+                "SelectCategorical1": {"columns": ["currency", "provider"]},
+                "SelectCategorical2": {"columns": ["region", "country"]},
+                "OHE_1": {"features_to_encode": ["currency", "provider"]},
+                "OHE_2": {"features_to_encode": ["region", "country"]},
+                "Estimator": {"n_jobs": 1},
+            },
+            custom_name="DAG with Two Encoders",
+        ),
+        BinaryClassificationPipeline(
+            component_graph={
+                "Imputer": ["Imputer", "X", "y"],
+                "SelectDate": ["Select Columns Transformer", "Imputer.x", "y"],
+                "SelectCategorical1": ["Select Columns Transformer", "Imputer.x", "y"],
+                "SelectCategorical2": ["Select Columns Transformer", "Imputer.x", "y"],
+                "OHE_1": ["One Hot Encoder", "SelectCategorical1.x", "y"],
+                "OHE_2": ["One Hot Encoder", "SelectCategorical2.x", "y"],
+                "DT": ["DateTime Featurization Component", "SelectDate.x", "y"],
+                "OHE_3": ["One Hot Encoder", "DT.x", "y"],
+                "Estimator": [
+                    "Random Forest Classifier",
+                    "OHE_3.x",
+                    "OHE_1.x",
+                    "OHE_2.x",
+                    "y",
+                ],
+            },
+            parameters={
+                "SelectDate": {
+                    "columns": [
+                        "datetime",
+                    ]
+                },
+                "SelectCategorical1": {"columns": ["currency", "provider"]},
+                "SelectCategorical2": {"columns": ["region"]},
+                "OHE_1": {"features_to_encode": ["currency", "provider"]},
+                "OHE_2": {"features_to_encode": ["region"]},
+                "DT": {"encode_as_categories": True},
+                "Estimator": {"n_jobs": 1},
+            },
+            custom_name="DAG that reuses features",
+        ),
+        BinaryClassificationPipeline(
+            component_graph=[
+                "Select Columns Transformer",
+                "Imputer",
+                DateTimeFeaturizer,
+                OneHotEncoder,
+                "Target Encoder",
+                "Random Forest Classifier",
+            ],
+            parameters={
+                "Select Columns Transformer": {
+                    "columns": ["currency", "provider", "region", "country"]
+                },
+                "One Hot Encoder": {"features_to_encode": ["currency", "provider"]},
+                "Target Encoder": {"cols": ["region", "country"]},
+            },
+            custom_name="Linear Pipeline with Target Encoder and OHE",
+        ),
+        BinaryClassificationPipeline(
+            component_graph=[
+                "Select Columns Transformer",
+                DoubleColumns,
+                "Drop Columns Transformer",
+                "Random Forest Classifier",
+            ],
+            parameters={
+                "Select Columns Transformer": {"columns": ["amount"]},
+                "DoubleColumns": {"drop_old_columns": False},
+                "Drop Columns Transformer": {"columns": ["amount_doubled"]},
+            },
+            custom_name="Linear Pipeline that creates feature and then drops it",
+        ),
+        RegressionPipeline(
+            component_graph={
+                "Log": ["Log Transformer", "X", "y"],
+                "SelectNumeric": ["Select Columns Transformer", "X", "y"],
+                "Estimator": ["Random Forest Regressor", "SelectNumeric.x", "Log.y"],
+            },
+            parameters={
+                "SelectNumeric": {"columns": ["card_id", "store_id", "lat", "lng"]},
+                "Estimator": {"n_jobs": 1},
+            },
+            custom_name="Pipeline with Target Transformer",
+        ),
+    ],
+)
 @patch(
     "evalml.pipelines.PipelineBase._supports_fast_permutation_importance",
     new_callable=PropertyMock,
 )
 def test_fast_permutation_importance_matches_slow_output(
-    mock_supports_fast_importance,
-    pipeline_class,
-    parameters,
-    has_minimal_dependencies,
-    fraud_100,
+    mock_supports_fast_importance, pipeline, fraud_100
 ):
-    if (
-        has_minimal_dependencies
-        and pipeline_class == LinearPipelineWithTargetEncoderAndOHE
-    ):
-        pytest.skip(
-            "Skipping test_fast_permutation_importance_matches_sklearn_output for target encoder cause "
-            "dependency not installed."
-        )
     X, y = fraud_100
 
     objective = "Log Loss Binary"
-    if pipeline_class == LinearPipelineWithTextFeatures:
+    if pipeline.custom_name == "Linear Pipeline with Text Features":
         X.ww.set_types(logical_types={"provider": "NaturalLanguage"})
-    elif pipeline_class == PipelineWithTargetTransformer:
+    elif pipeline.custom_name == "Pipeline with Target Transformer":
         y = X.ww.pop("amount")
         objective = "R2"
 
     mock_supports_fast_importance.return_value = True
-    parameters["Estimator"] = {"n_jobs": 1}
+    # parameters["Estimator"] = {"n_jobs": 1}
 
-    pipeline = pipeline_class(pipeline_class.component_graph, parameters=parameters)
     pipeline.fit(X, y)
     fast_scores = calculate_permutation_importance(
         pipeline, X, y, objective=objective, random_seed=0
@@ -365,7 +351,10 @@ def test_fast_permutation_importance_matches_slow_output(
         "region",
         "amount",
     ]:
-        if col == "amount" and pipeline_class == PipelineWithTargetTransformer:
+        if (
+            col == "amount"
+            and pipeline.custom_name == "Pipeline with Target Transformer"
+        ):
             # amount is the target for this pipeline
             continue
         mock_supports_fast_importance.return_value = True
