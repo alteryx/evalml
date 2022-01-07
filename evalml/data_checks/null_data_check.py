@@ -153,6 +153,14 @@ class NullDataCheck(DataCheck):
         highly_null_cols, _ = NullDataCheck.get_null_column_information(
             X, pct_null_col_threshold=self.pct_null_col_threshold
         )
+
+        cols_with_any_nulls = NullDataCheck.get_null_column_information(
+            X, pct_null_col_threshold=0.0
+        )
+        below_highly_null_cols = [
+            col for col in cols_with_any_nulls if col not in highly_null_cols
+        ]
+
         warning_msg = "Columns {} are {}% or more null"
         if highly_null_cols:
             results["warnings"].append(
@@ -177,6 +185,37 @@ class NullDataCheck(DataCheck):
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
                     metadata={"columns": list(highly_null_cols)},
+                ).to_dict()
+            )
+
+        if below_highly_null_cols:
+            results["warnings"].append(
+                DataCheckWarning(
+                    message="Columns {} have null values".format(
+                        (", ").join(
+                            ["'{}'".format(str(col)) for col in below_highly_null_cols]
+                        )
+                    ),
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.COLS_WITH_NULL,
+                    details={
+                        "columns": list(below_highly_null_cols),
+                    },
+                ).to_dict()
+            )
+            results["actions"]["action_list"].append(
+                DataCheckActionOption(
+                    DataCheckActionCode.IMPUTE_COL,
+                    data_check_name=self.name,
+                    parameters={
+                        "impute_strategy": {  # todo: update to make per-column...
+                            "parameter_type": "global",
+                            "type": "category",
+                            "categories": ["mean", "most_frequent"],
+                            "default_value": "most_frequent",
+                        }
+                    },
+                    metadata={"columns": list(highly_null_cols), "is_target": False},
                 ).to_dict()
             )
 

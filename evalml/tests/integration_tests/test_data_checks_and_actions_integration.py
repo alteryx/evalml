@@ -10,8 +10,8 @@ from evalml.data_checks import (
     OutliersDataCheck,
 )
 from evalml.data_checks.data_check_action_option import DataCheckActionOption
-from evalml.data_checks.null_data_check import NullDataCheck
 from evalml.data_checks.invalid_target_data_check import InvalidTargetDataCheck
+from evalml.data_checks.null_data_check import NullDataCheck
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import (
     DropColumns,
