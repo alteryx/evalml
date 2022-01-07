@@ -19,6 +19,7 @@ from evalml.pipelines.components import (
     DFSTransformer,
     NaturalLanguageFeaturizer,
     OneHotEncoder,
+    TargetEncoder
 )
 from evalml.utils import infer_feature_types
 
@@ -266,7 +267,7 @@ class DoubleColumns(Transformer):
                 "Imputer",
                 DateTimeFeaturizer,
                 OneHotEncoder,
-                "Target Encoder",
+                TargetEncoder,
                 "Random Forest Classifier",
             ],
             parameters={
