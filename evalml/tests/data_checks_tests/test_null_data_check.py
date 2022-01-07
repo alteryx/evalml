@@ -7,10 +7,10 @@ from evalml.data_checks import (
     DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
-    HighlyNullDataCheck,
+    NullDataCheck,
 )
 
-highly_null_data_check_name = HighlyNullDataCheck.name
+highly_null_data_check_name = NullDataCheck.name
 
 
 @pytest.fixture
@@ -33,19 +33,19 @@ class SeriesWrap:
 
 
 def test_highly_null_data_check_init():
-    highly_null_check = HighlyNullDataCheck()
+    highly_null_check = NullDataCheck()
     assert highly_null_check.pct_null_col_threshold == 0.95
     assert highly_null_check.pct_null_row_threshold == 0.95
 
-    highly_null_check = HighlyNullDataCheck(pct_null_col_threshold=0.0)
+    highly_null_check = NullDataCheck(pct_null_col_threshold=0.0)
     assert highly_null_check.pct_null_col_threshold == 0
     assert highly_null_check.pct_null_row_threshold == 0.95
 
-    highly_null_check = HighlyNullDataCheck(pct_null_row_threshold=0.5)
+    highly_null_check = NullDataCheck(pct_null_row_threshold=0.5)
     assert highly_null_check.pct_null_col_threshold == 0.95
     assert highly_null_check.pct_null_row_threshold == 0.5
 
-    highly_null_check = HighlyNullDataCheck(
+    highly_null_check = NullDataCheck(
         pct_null_col_threshold=1.0, pct_null_row_threshold=1.0
     )
     assert highly_null_check.pct_null_col_threshold == 1.0
@@ -55,26 +55,26 @@ def test_highly_null_data_check_init():
         ValueError,
         match="pct null column threshold must be a float between 0 and 1, inclusive.",
     ):
-        HighlyNullDataCheck(pct_null_col_threshold=-0.1)
+        NullDataCheck(pct_null_col_threshold=-0.1)
     with pytest.raises(
         ValueError,
         match="pct null column threshold must be a float between 0 and 1, inclusive.",
     ):
-        HighlyNullDataCheck(pct_null_col_threshold=1.1)
+        NullDataCheck(pct_null_col_threshold=1.1)
     with pytest.raises(
         ValueError,
         match="pct null row threshold must be a float between 0 and 1, inclusive.",
     ):
-        HighlyNullDataCheck(pct_null_row_threshold=-0.5)
+        NullDataCheck(pct_null_row_threshold=-0.5)
     with pytest.raises(
         ValueError,
         match="pct null row threshold must be a float between 0 and 1, inclusive.",
     ):
-        HighlyNullDataCheck(pct_null_row_threshold=2.1)
+        NullDataCheck(pct_null_row_threshold=2.1)
 
 
 def test_highly_null_data_check_warnings(highly_null_dataframe):
-    no_null_check = HighlyNullDataCheck(
+    no_null_check = NullDataCheck(
         pct_null_col_threshold=0.0, pct_null_row_threshold=0.0
     )
     highly_null_rows = SeriesWrap(pd.Series([2 / 3, 2 / 3, 2 / 3, 2 / 3, 1 / 3]))
@@ -121,7 +121,7 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
         },
     }
 
-    some_null_check = HighlyNullDataCheck(
+    some_null_check = NullDataCheck(
         pct_null_col_threshold=0.5, pct_null_row_threshold=0.5
     )
     highly_null_rows = SeriesWrap(pd.Series([2 / 3, 2 / 3, 2 / 3, 2 / 3]))
@@ -165,7 +165,7 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
         },
     }
 
-    all_null_check = HighlyNullDataCheck(
+    all_null_check = NullDataCheck(
         pct_null_col_threshold=1.0, pct_null_row_threshold=1.0
     )
     assert all_null_check.validate(highly_null_dataframe) == {
@@ -195,7 +195,7 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
 
 
 def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
-    row_null_check = HighlyNullDataCheck(
+    row_null_check = NullDataCheck(
         pct_null_col_threshold=0.9, pct_null_row_threshold=0.0
     )
     highly_null_rows = SeriesWrap(pd.Series([2 / 3, 2 / 3, 2 / 3, 2 / 3, 1 / 3]))
@@ -239,7 +239,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
         },
     }
 
-    col_null_check = HighlyNullDataCheck(
+    col_null_check = NullDataCheck(
         pct_null_col_threshold=0.0, pct_null_row_threshold=0.9
     )
     validate_results = col_null_check.validate(highly_null_dataframe)
@@ -270,7 +270,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
 
 
 def test_highly_null_data_check_input_formats():
-    highly_null_check = HighlyNullDataCheck(
+    highly_null_check = NullDataCheck(
         pct_null_col_threshold=0.8, pct_null_row_threshold=0.8
     )
 
@@ -349,7 +349,7 @@ def test_get_null_column_information(highly_null_dataframe):
     (
         highly_null_cols,
         highly_null_cols_indices,
-    ) = HighlyNullDataCheck.get_null_column_information(
+    ) = NullDataCheck.get_null_column_information(
         highly_null_dataframe, pct_null_col_threshold=0.8
     )
     assert highly_null_cols == {"lots_of_null": 0.8, "all_null": 1.0}
@@ -361,7 +361,7 @@ def test_get_null_column_information(highly_null_dataframe):
 
 def test_get_null_row_information(highly_null_dataframe):
     expected_highly_null_rows = SeriesWrap(pd.Series([2 / 3, 2 / 3, 2 / 3, 2 / 3]))
-    highly_null_rows = HighlyNullDataCheck.get_null_row_information(
+    highly_null_rows = NullDataCheck.get_null_row_information(
         highly_null_dataframe, pct_null_row_threshold=0.5
     )
     highly_null_rows = SeriesWrap(highly_null_rows)

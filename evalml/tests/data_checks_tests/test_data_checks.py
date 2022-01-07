@@ -125,7 +125,7 @@ def test_data_checks(X_y_binary):
 messages = [
     DataCheckWarning(
         message="Columns 'all_null', 'also_all_null' are 95.0% or more null",
-        data_check_name="HighlyNullDataCheck",
+        data_check_name="NullDataCheck",
         message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
         details={
             "columns": ["all_null", "also_all_null"],
@@ -176,7 +176,7 @@ def get_expected_action_options(problem_type):
     expected_actions = [
         DataCheckActionOption(
             DataCheckActionCode.DROP_COL,
-            data_check_name="HighlyNullDataCheck",
+            data_check_name="NullDataCheck",
             metadata={"columns": ["all_null", "also_all_null"]},
         ).to_dict(),
         DataCheckActionOption(
@@ -491,13 +491,13 @@ def test_default_data_checks_null_rows():
         "warnings": [
             DataCheckWarning(
                 message="5 out of 5 rows are 95.0% or more null",
-                data_check_name="HighlyNullDataCheck",
+                data_check_name="NullDataCheck",
                 message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
                 details={"pct_null_cols": highly_null_rows, "rows": [0, 1, 2, 3, 4]},
             ).to_dict(),
             DataCheckWarning(
                 message="Columns 'all_null', 'also_all_null' are 95.0% or more null",
-                data_check_name="HighlyNullDataCheck",
+                data_check_name="NullDataCheck",
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
                 details={
                     "columns": ["all_null", "also_all_null"],
@@ -523,12 +523,12 @@ def test_default_data_checks_null_rows():
             "action_list": [
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
-                    data_check_name="HighlyNullDataCheck",
+                    data_check_name="NullDataCheck",
                     metadata={"rows": [0, 1, 2, 3, 4]},
                 ).to_dict(),
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
-                    data_check_name="HighlyNullDataCheck",
+                    data_check_name="NullDataCheck",
                     metadata={"columns": ["all_null", "also_all_null"]},
                 ).to_dict(),
                 DataCheckActionOption(

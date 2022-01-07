@@ -10,7 +10,7 @@ from evalml.data_checks import (
     OutliersDataCheck,
 )
 from evalml.data_checks.data_check_action_option import DataCheckActionOption
-from evalml.data_checks.highly_null_data_check import HighlyNullDataCheck
+from evalml.data_checks.null_data_check import NullDataCheck
 from evalml.data_checks.invalid_target_data_check import InvalidTargetDataCheck
 from evalml.pipelines import BinaryClassificationPipeline
 from evalml.pipelines.components import (
@@ -45,7 +45,7 @@ def test_data_checks_suggests_drop_cols():
         }
     )
     y = pd.Series([1, 0, 0, 1, 1])
-    data_check = HighlyNullDataCheck()
+    data_check = NullDataCheck()
     data_checks_output = data_check.validate(X, y)
 
     actions = [

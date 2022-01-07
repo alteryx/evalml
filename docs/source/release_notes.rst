@@ -50,7 +50,7 @@ Release Notes
         * Removed reliance on a datetime index for ``ARIMARegressor`` and ``ProphetRegressor`` :pr:`3104`
         * Included target leakage check when fitting ``ARIMARegressor`` to account for the lack of ``TimeSeriesFeaturizer`` in ``ARIMARegressor`` based pipelines :pr:`3104`
         * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
-        * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
+        * Removed indices information from the output of ``NullDataCheck``'s ``validate()`` method :pr:`3092`
         * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
         * Updated ``make_pipeline`` for handling pandas nullable types in preprocessing pipeline. :pr:`3129`
         * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
@@ -152,7 +152,7 @@ Release Notes
         * Fixed bug where ``Oversampler`` selected ww logical categorical instead of ww semantic category :pr:`2946`
     * Changes
         * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
-        * Refactored ``OutliersDataCheck`` and ``HighlyNullDataCheck`` to add more descriptive metadata :pr:`2907`
+        * Refactored ``OutliersDataCheck`` and ``NullDataCheck`` to add more descriptive metadata :pr:`2907`
         * Bumped minimum version of ``dask`` from 2021.2.0 to 2021.10.0 :pr:`2978`
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
@@ -404,7 +404,7 @@ Release Notes
         * Added components to extract features from ``URL`` and ``EmailAddress`` Logical Types :pr:`2550`
         * Added support for `NaN` values in ``TextFeaturizer`` :pr:`2532`
         * Added ``SelectByType`` transformer :pr:`2531`
-        * Added separate thresholds for percent null rows and columns in ``HighlyNullDataCheck`` :pr:`2562`
+        * Added separate thresholds for percent null rows and columns in ``NullDataCheck`` :pr:`2562`
         * Added support for `NaN` natural language values :pr:`2577`
     * Fixes
         * Raised error message for types ``URL``, ``NaturalLanguage``, and ``EmailAddress`` in ``partial_dependence`` :pr:`2573`
@@ -590,7 +590,7 @@ Release Notes
 **v0.24.1 May. 16, 2021**
     * Enhancements
         * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
-        * Updated ``HighlyNullDataCheck`` to also perform a null row check :pr:`2222`
+        * Updated ``NullDataCheck`` to also perform a null row check :pr:`2222`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
     * Fixes
         * Removed data splitter sampler calls during training :pr:`2253`
@@ -616,7 +616,7 @@ Release Notes
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
         * Added partial dependence for datetime columns :pr:`2180`
         * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
-        * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
+        * Add pct_null_rows to ``NullDataCheck`` :pr:`2211`
         * Added a standalone AutoML `search` method for convenience, which runs data checks and then runs automl :pr:`2152`
         * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223` :pr:`2225`
         * Added sampling dictionary support to ``BalancedClassficationSampler`` :pr:`2235`
