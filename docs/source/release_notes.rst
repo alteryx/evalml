@@ -5,32 +5,35 @@ Release Notes
         * Added string support for DataCheckActionCode :pr:`3167`
         * Added ``DataCheckActionOption`` class :pr:`3134`
     * Fixes
+        * Fix bug where prediction explanations ``class_name`` was shown as float for boolean targets :pr:`3179`
+        * Fixed bug in nightly linux tests :pr:`3189`
     * Changes
         * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
-        * Updated ``DataCheck`` ``validate()`` output to return a dictionary instead of list for actions :pr:`3142`
-        * Updated validate() API to use the new ``DataCheckActionOption`` class instead of ``DataCheckAction`` :pr:`3152`
     * Documentation Changes
     * Testing Changes
-
+        * Add workflow to auto-merge dependency PRs if status checks pass :pr:`3184`
 
 **v0.40.0 Dec. 22, 2021**
     * Enhancements
         * Added ``TimeSeriesSplittingDataCheck`` to ``DefaultDataChecks`` to verify adequate class representation in time series classification problems :pr:`3141`
         * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
         * Added support for known-in-advance features :pr:`3149`
+        * Added Holt-Winters ``ExponentialSmoothingRegressor`` for time series regression problems :pr:`3157`
+        * Required the separation of training and test data by ``gap`` + 1 units to be verified by ``time_index`` for time series problems :pr:`3160`
     * Fixes
         * Fixed error caused when tuning threshold for time series binary classification :pr:`3140`
     * Changes
         * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
         * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
+        * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
         * Updated ``nlp-primitives`` minimum version to 2.1.0 :pr:`3166`
         * Updated minimum version of ``woodwork`` to v0.11.0 :pr:`3171`
     * Documentation Changes
         * Added comments to provide clarity on doctests :pr:`3155`
     * Testing Changes
         * Parameterized tests in ``test_datasets.py`` :pr:`3145`
-        
+
 
 
 .. warning::
@@ -50,7 +53,7 @@ Release Notes
         * Removed reliance on a datetime index for ``ARIMARegressor`` and ``ProphetRegressor`` :pr:`3104`
         * Included target leakage check when fitting ``ARIMARegressor`` to account for the lack of ``TimeSeriesFeaturizer`` in ``ARIMARegressor`` based pipelines :pr:`3104`
         * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
-        * Removed indices information from the output of ``NullDataCheck``'s ``validate()`` method :pr:`3092`
+        * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
         * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
         * Updated ``make_pipeline`` for handling pandas nullable types in preprocessing pipeline. :pr:`3129`
         * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
@@ -152,7 +155,7 @@ Release Notes
         * Fixed bug where ``Oversampler`` selected ww logical categorical instead of ww semantic category :pr:`2946`
     * Changes
         * Changed ``make_pipeline`` function to place the ``DateTimeFeaturizer`` prior to the ``Imputer`` so that ``NaN`` dates can be imputed :pr:`2909`
-        * Refactored ``OutliersDataCheck`` and ``NullDataCheck`` to add more descriptive metadata :pr:`2907`
+        * Refactored ``OutliersDataCheck`` and ``HighlyNullDataCheck`` to add more descriptive metadata :pr:`2907`
         * Bumped minimum version of ``dask`` from 2021.2.0 to 2021.10.0 :pr:`2978`
     * Documentation Changes
         * Added back Future Release section to release notes :pr:`2927`
@@ -404,7 +407,7 @@ Release Notes
         * Added components to extract features from ``URL`` and ``EmailAddress`` Logical Types :pr:`2550`
         * Added support for `NaN` values in ``TextFeaturizer`` :pr:`2532`
         * Added ``SelectByType`` transformer :pr:`2531`
-        * Added separate thresholds for percent null rows and columns in ``NullDataCheck`` :pr:`2562`
+        * Added separate thresholds for percent null rows and columns in ``HighlyNullDataCheck`` :pr:`2562`
         * Added support for `NaN` natural language values :pr:`2577`
     * Fixes
         * Raised error message for types ``URL``, ``NaturalLanguage``, and ``EmailAddress`` in ``partial_dependence`` :pr:`2573`
@@ -590,7 +593,7 @@ Release Notes
 **v0.24.1 May. 16, 2021**
     * Enhancements
         * Integrated ``ARIMARegressor`` into AutoML :pr:`2009`
-        * Updated ``NullDataCheck`` to also perform a null row check :pr:`2222`
+        * Updated ``HighlyNullDataCheck`` to also perform a null row check :pr:`2222`
         * Set ``max_depth`` to 1 in calls to featuretools dfs :pr:`2231`
     * Fixes
         * Removed data splitter sampler calls during training :pr:`2253`
@@ -616,7 +619,7 @@ Release Notes
         * Updated prediction explanations functions to allow pipelines with XGBoost estimators :pr:`2162`
         * Added partial dependence for datetime columns :pr:`2180`
         * Update precision-recall curve with positive label index argument, and fix for 2d predicted probabilities :pr:`2090`
-        * Add pct_null_rows to ``NullDataCheck`` :pr:`2211`
+        * Add pct_null_rows to ``HighlyNullDataCheck`` :pr:`2211`
         * Added a standalone AutoML `search` method for convenience, which runs data checks and then runs automl :pr:`2152`
         * Make the first batch of AutoML have a predefined order, with linear models first and complex models last :pr:`2223` :pr:`2225`
         * Added sampling dictionary support to ``BalancedClassficationSampler`` :pr:`2235`
