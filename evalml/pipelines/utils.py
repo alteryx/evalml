@@ -757,31 +757,18 @@ def _make_component_list_from_actions(actions):
     return components
 
 
-def _get_default_actions_from_options(action_options):
-    """Creates a list of components from the input DataCheckAction list.
-
-    TODO: Still a work in progress for this PR. For now, store in metadata of action?
+def _get_actions_from_option_defaults(action_options):
+    """Returns a list of actions based on the defaults parameters of each option in the input DataCheckActionOption list.
 
     Args:
-        action_options (list(DataCheckActionOption)): List of DataCheckAction objects used to create list of components
+        action_options (list(DataCheckActionOption)): List of DataCheckActionOption objects
 
     Returns:
-        list(ComponentBase): List of components used to address the input actions
+        list(DataCheckAction): List of actions based on the defaults parameters of each option in the input list.
     """
     actions = []
-    for (
-        option
-    ) in action_options:  # for now, use all. later, get default list of options
-        parameters = option.parameters
-        actions_metadata = {}
-        for parameter, parameter_info in parameters.items():
-            actions_metadata[parameter] = parameter_info["default_value"]
-        actions_metadata.update(option.metadata)
-        actions.append(
-            DataCheckAction(
-                option.action_code, option.data_check_name, metadata=actions_metadata
-            )
-        )
+    for option in action_options:
+        actions.append(option._get_action_from_defaults())
     return actions
 
 

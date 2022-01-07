@@ -19,7 +19,7 @@ from evalml.pipelines.components import (
     TargetImputer,
 )
 from evalml.pipelines.utils import (
-    _get_default_actions_from_options,
+    _get_actions_from_option_defaults,
     make_pipeline_from_actions,
 )
 
@@ -85,8 +85,8 @@ def test_data_checks_impute_cols():
     data_check = InvalidTargetDataCheck("binary", "Log Loss Binary")
     data_checks_output = data_check.validate(None, y)
 
-    actions = _get_default_actions_from_options(
-        DataCheckActionOption.convert_dict_to_action(option)
+    actions = _get_actions_from_option_defaults(
+        DataCheckActionOption.convert_dict_to_option(option)
         for option in data_checks_output["actions"]["action_list"]
     )
     action_pipeline = make_pipeline_from_actions("binary", actions)

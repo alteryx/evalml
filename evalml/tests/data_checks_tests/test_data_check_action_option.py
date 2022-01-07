@@ -207,7 +207,7 @@ def test_convert_dict_to_action_bad_input():
         "metadata": {"columns": None, "rows": None},
     }
     with pytest.raises(ValueError, match="The input dictionary should have the keys"):
-        DataCheckActionOption.convert_dict_to_action(
+        DataCheckActionOption.convert_dict_to_option(
             data_check_action_option_dict_no_code
         )
 
@@ -215,7 +215,7 @@ def test_convert_dict_to_action_bad_input():
         "code": DataCheckActionCode.DROP_COL.name,
     }
     with pytest.raises(ValueError, match="The input dictionary should have the keys"):
-        DataCheckActionOption.convert_dict_to_action(
+        DataCheckActionOption.convert_dict_to_option(
             data_check_action_option_dict_no_metadata
         )
 
@@ -226,7 +226,7 @@ def test_convert_dict_to_action_bad_input():
     with pytest.raises(
         ValueError, match="The metadata dictionary should have the keys"
     ):
-        DataCheckActionOption.convert_dict_to_action(
+        DataCheckActionOption.convert_dict_to_option(
             data_check_action_option_dict_no_columns
         )
 
@@ -336,7 +336,7 @@ def test_convert_dict_to_action(dummy_data_check_name):
     expected_data_check_action_option = DataCheckActionOption(
         DataCheckActionCode.DROP_COL, None
     )
-    data_check_action_option = DataCheckActionOption.convert_dict_to_action(
+    data_check_action_option = DataCheckActionOption.convert_dict_to_option(
         data_check_action_option_dict
     )
     assert data_check_action_option == expected_data_check_action_option
@@ -356,7 +356,7 @@ def test_convert_dict_to_action(dummy_data_check_name):
         dummy_data_check_name,
         metadata={"some detail": ["this is different"]},
     )
-    data_check_action_option = DataCheckActionOption.convert_dict_to_action(
+    data_check_action_option = DataCheckActionOption.convert_dict_to_option(
         data_check_action_option_dict_with_other_metadata
     )
     assert data_check_action_option == expected_data_check_action_option

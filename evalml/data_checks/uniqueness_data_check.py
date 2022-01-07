@@ -71,7 +71,9 @@ class UniquenessDataCheck(DataCheck):
             ...                 "default_action": None
             ...                }
             ... }
-            ...
+
+            For multiclass, the column "regression_unique_enough" has too many unique values and will raise
+            an appropriate warning.
             >>> uniqueness_check = UniquenessDataCheck(problem_type="multiclass", threshold=0.8)
             >>> assert uniqueness_check.validate(df) == {
             ...     "warnings": [{"message": "Input columns 'regression_unique_enough' for multiclass problem type are too unique.",

@@ -171,7 +171,8 @@ messages = [
 ]
 
 
-def get_expected_actions(problem_type):
+def get_expected_action_options(problem_type):
+    """Helper method to return the expected action options for a given problem type."""
     expected_actions = [
         DataCheckActionOption(
             DataCheckActionCode.DROP_COL,
@@ -254,7 +255,7 @@ def test_default_data_checks_classification(input_type):
         "warnings": messages[:2],
         "errors": messages[2:] + imbalance,
         "actions": {
-            "action_list": get_expected_actions("binary"),
+            "action_list": get_expected_action_options("binary"),
             "default_action": None,
         },
     }
@@ -272,7 +273,7 @@ def test_default_data_checks_classification(input_type):
         "warnings": messages[:2],
         "errors": messages[2:],
         "actions": {
-            "action_list": get_expected_actions("binary"),
+            "action_list": get_expected_action_options("binary"),
             "default_action": None,
         },
     }
@@ -310,7 +311,7 @@ def test_default_data_checks_classification(input_type):
         "warnings": messages[:2] + high_class_to_sample_ratio,
         "errors": [messages[2]] + min_2_class_count + messages[3:] + imbalance,
         "actions": {
-            "action_list": get_expected_actions("multiclass"),
+            "action_list": get_expected_action_options("multiclass"),
             "default_action": None,
         },
     }
@@ -328,7 +329,7 @@ def test_default_data_checks_classification(input_type):
         "warnings": messages[:2] + high_class_to_sample_ratio,
         "errors": [messages[2]] + min_2_class_count + messages[3:],
         "actions": {
-            "action_list": get_expected_actions("multiclass"),
+            "action_list": get_expected_action_options("multiclass"),
             "default_action": None,
         },
     }
@@ -412,7 +413,7 @@ def test_default_data_checks_regression(input_type):
         metadata={"columns": ["lots_of_null"]},
     ).to_dict()
 
-    expected_actions = get_expected_actions("regression")
+    expected_actions = get_expected_action_options("regression")
     expected_actions_with_drop_and_impute = (
         expected_actions[:2]
         + [leakage_drop_action, impute_action]

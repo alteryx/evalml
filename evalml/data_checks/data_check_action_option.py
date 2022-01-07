@@ -1,5 +1,5 @@
 """Recommended action returned by a DataCheck."""
-
+from evalml.data_checks.data_check_action import DataCheckAction
 from evalml.data_checks.data_check_action_code import DataCheckActionCode
 
 
@@ -85,11 +85,11 @@ class DataCheckActionOption:
         return action_option_dict
 
     @staticmethod
-    def convert_dict_to_action(action_dict):
+    def convert_dict_to_option(action_dict):
         """Convert a dictionary into a DataCheckActionOption.
 
         Args:
-            action_dict: Dictionary to convert into action. Should have keys "code", "data_check_name", and "metadata".
+            action_dict: Dictionary to convert into an action option. Should have keys "code", "data_check_name", and "metadata".
 
         Raises:
             ValueError: If input dictionary does not have keys `code` and `metadata` and if the `metadata` dictionary does not have keys `columns` and `rows`.
@@ -150,3 +150,18 @@ class DataCheckActionOption:
                             raise ValueError(
                                 "Each column parameter must have a default_value key."
                             )
+
+    def _get_action_from_defaults(self):
+        """Returns an action based on the defaults parameters.
+
+        Returns:
+            DataCheckAction: An based on the defaults parameters the option.
+        """
+        parameters = self.parameters
+        actions_metadata = {}
+        for parameter, parameter_info in parameters.items():
+            actions_metadata[parameter] = parameter_info["default_value"]
+        actions_metadata.update(self.metadata)
+        return DataCheckAction(
+            self.action_code, self.data_check_name, metadata=actions_metadata
+        )
