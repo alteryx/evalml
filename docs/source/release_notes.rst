@@ -19,6 +19,7 @@ Release Notes
         * Added ``TimeSeriesSplittingDataCheck`` to ``DefaultDataChecks`` to verify adequate class representation in time series classification problems :pr:`3141`
         * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
         * Added support for known-in-advance features :pr:`3149`
+        * Added Holt-Winters ``ExponentialSmoothingRegressor`` for time series regression problems :pr:`3157`
         * Required the separation of training and test data by ``gap`` + 1 units to be verified by ``time_index`` for time series problems :pr:`3160`
     * Fixes
         * Fixed error caused when tuning threshold for time series binary classification :pr:`3140`
@@ -28,6 +29,7 @@ Release Notes
         * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
         * Updated ``nlp-primitives`` minimum version to 2.1.0 :pr:`3166`
         * Updated minimum version of ``woodwork`` to v0.11.0 :pr:`3171`
+        * Revert `3160` until uninferrable frequency can be addressed earlier in the process :pr:`3198`
     * Documentation Changes
         * Added comments to provide clarity on doctests :pr:`3155`
     * Testing Changes
