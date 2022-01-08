@@ -13,8 +13,7 @@ from evalml.data_checks import (
 highly_null_data_check_name = HighlyNullDataCheck.name
 
 
-@pytest.fixture
-def highly_null_dataframe():
+def get_dataframe():
     return pd.DataFrame(
         {
             "lots_of_null": [None, None, None, None, 5],
@@ -22,6 +21,20 @@ def highly_null_dataframe():
             "no_null": [1, 2, 3, 4, 5],
         }
     )
+
+
+@pytest.fixture
+def highly_null_dataframe():
+    return get_dataframe()
+
+
+@pytest.fixture
+def highly_null_dataframe_nullable_types(highly_null_dataframe):
+    df = get_dataframe()
+    df.ww.init(
+        logical_types={"lots_of_null": "IntegerNullable", "all_null": "IntegerNullable"}
+    )
+    return df
 
 
 class SeriesWrap:
@@ -73,12 +86,20 @@ def test_highly_null_data_check_init():
         HighlyNullDataCheck(pct_null_row_threshold=2.1)
 
 
-def test_highly_null_data_check_warnings(highly_null_dataframe):
+@pytest.mark.parametrize("nullable_type", [True, False])
+def test_highly_null_data_check_warnings(
+    nullable_type, highly_null_dataframe_nullable_types, highly_null_dataframe
+):
+    # Test the data check with nullable types being used.
+    if nullable_type:
+        df = highly_null_dataframe_nullable_types
+    else:
+        df = highly_null_dataframe
     no_null_check = HighlyNullDataCheck(
         pct_null_col_threshold=0.0, pct_null_row_threshold=0.0
     )
     highly_null_rows = SeriesWrap(pd.Series([2 / 3, 2 / 3, 2 / 3, 2 / 3, 1 / 3]))
-    validate_results = no_null_check.validate(highly_null_dataframe)
+    validate_results = no_null_check.validate(df)
     validate_results["warnings"][0]["details"]["pct_null_cols"] = SeriesWrap(
         validate_results["warnings"][0]["details"]["pct_null_cols"]
     )
@@ -125,7 +146,7 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
         pct_null_col_threshold=0.5, pct_null_row_threshold=0.5
     )
     highly_null_rows = SeriesWrap(pd.Series([2 / 3, 2 / 3, 2 / 3, 2 / 3]))
-    validate_results = some_null_check.validate(highly_null_dataframe)
+    validate_results = some_null_check.validate(df)
     validate_results["warnings"][0]["details"]["pct_null_cols"] = SeriesWrap(
         validate_results["warnings"][0]["details"]["pct_null_cols"]
     )
@@ -168,7 +189,7 @@ def test_highly_null_data_check_warnings(highly_null_dataframe):
     all_null_check = HighlyNullDataCheck(
         pct_null_col_threshold=1.0, pct_null_row_threshold=1.0
     )
-    assert all_null_check.validate(highly_null_dataframe) == {
+    assert all_null_check.validate(df) == {
         "warnings": [
             DataCheckWarning(
                 message="Columns 'all_null' are 100.0% or more null",

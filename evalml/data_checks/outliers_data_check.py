@@ -146,7 +146,7 @@ class OutliersDataCheck(DataCheck):
             ...                "high_indices": []}
             ...     }
         """
-        data_ = infer_feature_types(data_, ignore_nullable_types=True)
+        data_ = infer_feature_types(data_)
         num_records = data_.count()
         box_plot_dict = data_.ww.box_plot_dict()
         quantiles = box_plot_dict["quantiles"]

@@ -91,7 +91,6 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 "code": "TARGET_UNSUPPORTED_TYPE"}],
             ...     "actions": {"action_list":[], "default_action": None}}
 
-
             The target cannot have null values.
 
             >>> y = pd.Series([None, pd.NA, pd.NaT, None])
