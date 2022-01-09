@@ -35,7 +35,6 @@ from evalml.pipelines.components.transformers.encoders.label_encoder import (
 )
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import (
-    _get_actions_from_option_defaults,
     _get_pipeline_base_class,
     _get_preprocessing_components,
     _make_pipeline_from_multiple_graphs,
@@ -936,6 +935,3 @@ def test_make_pipeline_from_multiple_graphs_with_sampler(X_y_binary):
         combined_pipeline.component_graph.get_inputs("Random Forest Classifier")[2]
         == second_pipeline_sampler
     )
-
-
-# def test_get_actions_from_option_defaults():

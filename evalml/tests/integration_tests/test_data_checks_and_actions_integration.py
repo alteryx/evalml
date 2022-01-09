@@ -5,11 +5,7 @@ import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.automl import get_default_primary_search_objective
-from evalml.data_checks import (
-    DataCheckAction,
-    DefaultDataChecks,
-    OutliersDataCheck,
-)
+from evalml.data_checks import DefaultDataChecks, OutliersDataCheck
 from evalml.data_checks.data_check_action_option import DataCheckActionOption
 from evalml.data_checks.highly_null_data_check import HighlyNullDataCheck
 from evalml.data_checks.invalid_target_data_check import InvalidTargetDataCheck
@@ -24,7 +20,7 @@ from evalml.pipelines.multiclass_classification_pipeline import (
 )
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.pipelines.utils import (
-    _get_actions_from_option_defaults,
+    get_actions_from_option_defaults,
     make_pipeline_from_actions,
 )
 
@@ -37,7 +33,7 @@ def test_data_checks_with_healthy_data(X_y_binary):
     )
     data_checks_output = data_check.validate(X, y)
 
-    actions = _get_actions_from_option_defaults(
+    actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
         for option in data_checks_output["actions"]["action_list"]
     )
@@ -58,7 +54,7 @@ def test_data_checks_suggests_drop_cols():
     data_check = HighlyNullDataCheck()
     data_checks_output = data_check.validate(X, y)
 
-    actions = _get_actions_from_option_defaults(
+    actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
         for option in data_checks_output["actions"]["action_list"]
     )
@@ -113,7 +109,7 @@ def test_data_checks_impute_cols(problem_type):
     data_check = InvalidTargetDataCheck(problem_type, objective)
     data_checks_output = data_check.validate(None, y)
 
-    actions = _get_actions_from_option_defaults(
+    actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
         for option in data_checks_output["actions"]["action_list"]
     )
@@ -152,7 +148,7 @@ def test_data_checks_suggests_drop_rows():
     outliers_check = OutliersDataCheck()
     data_checks_output = outliers_check.validate(X)
 
-    actions = _get_actions_from_option_defaults(
+    actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
         for option in data_checks_output["actions"]["action_list"]
     )
