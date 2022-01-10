@@ -2,23 +2,42 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Added string support for DataCheckActionCode :pr:`3167`
-        * Added ``DataCheckActionOption`` class :pr:`3134`
     * Fixes
     * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.41.0 Jan. 06, 2022**
+    * Enhancements
+        * Added string support for DataCheckActionCode :pr:`3167`
+        * Added ``DataCheckActionOption`` class :pr:`3134`
+        * Add issue templates for bugs, feature requests and documentation improvements for GitHub :pr:`3199`
+    * Fixes
+        * Fix bug where prediction explanations ``class_name`` was shown as float for boolean targets :pr:`3179`
+        * Fixed bug in nightly linux tests :pr:`3189`
+    * Changes
         * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
+        * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
         * Updated ``DataCheck`` ``validate()`` output to return a dictionary instead of list for actions :pr:`3142`
         * Updated validate() API to use the new ``DataCheckActionOption`` class instead of ``DataCheckAction`` :pr:`3152`
     * Documentation Changes
     * Testing Changes
-
+        * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
+        * Add workflow to auto-merge dependency PRs if status checks pass :pr:`3184`
 
 **v0.40.0 Dec. 22, 2021**
     * Enhancements
         * Added ``TimeSeriesSplittingDataCheck`` to ``DefaultDataChecks`` to verify adequate class representation in time series classification problems :pr:`3141`
         * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
         * Added support for known-in-advance features :pr:`3149`
+        * Added Holt-Winters ``ExponentialSmoothingRegressor`` for time series regression problems :pr:`3157`
+        * Required the separation of training and test data by ``gap`` + 1 units to be verified by ``time_index`` for time series problems :pr:`3160`
     * Fixes
         * Fixed error caused when tuning threshold for time series binary classification :pr:`3140`
     * Changes
@@ -26,12 +45,11 @@ Release Notes
         * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
         * Updated ``nlp-primitives`` minimum version to 2.1.0 :pr:`3166`
         * Updated minimum version of ``woodwork`` to v0.11.0 :pr:`3171`
+        * Revert `3160` until uninferrable frequency can be addressed earlier in the process :pr:`3198`
     * Documentation Changes
         * Added comments to provide clarity on doctests :pr:`3155`
     * Testing Changes
         * Parameterized tests in ``test_datasets.py`` :pr:`3145`
-        
-
 
 .. warning::
 
