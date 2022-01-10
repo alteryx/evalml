@@ -13,6 +13,7 @@ from evalml.pipelines.components import (
     RFRegressorSelectFromModel,
 )
 from evalml.pipelines.components.transformers.column_selectors import (
+    SelectByType,
     SelectColumns,
 )
 from evalml.pipelines.components.utils import (
@@ -191,8 +192,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 estimator=estimator,
                 problem_type=self.problem_type,
                 sampler_name=self.sampler_name,
-                extra_components=feature_selector,
-                extra_components_position="after_preprocessing",
+                extra_components_after=feature_selector,
                 parameters=self._pipeline_params,
             )
             for estimator in estimators
@@ -214,6 +214,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         parameters = {
             "Categorical Pipeline - Select Columns Transformer": {
                 "columns": self._selected_cat_cols
+            },
+            "Numeric Pipeline - Select Columns By Type Transformer": {
+                "column_types": ["numeric"]
             },
             "Numeric Pipeline - Select Columns Transformer": {
                 "columns": self._selected_cols
@@ -427,34 +430,33 @@ class DefaultAlgorithm(AutoMLAlgorithm):
 
     def _make_split_pipeline(self, estimator, pipeline_name=None):
         numeric_pipeline_parameters = {
-            "Select Columns Transformer": {"columns": self._selected_cols}
+            "Select Columns Transformer": {"columns": self._selected_cols},
+            "Select Columns By Type Transformer": {"column_types": ["numeric"]},
         }
         numeric_pipeline = make_pipeline(
-            self.X,
+            self.X.ww.select(exclude="category"),
             self.y,
             estimator,
             self.problem_type,
             sampler_name=self.sampler_name,
             parameters=numeric_pipeline_parameters,
-            extra_components=[SelectColumns],
-            extra_components_position="before_estimator",
+            extra_components_before=[SelectByType],
+            extra_components_after=[SelectColumns],
             use_estimator=False if self._selected_cat_cols else True,
         )
-
         if self._selected_cat_cols:
             self._split = True
             categorical_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cat_cols}
             }
             categorical_pipeline = make_pipeline(
-                self.X,
+                self.X.ww.select(include=["category"]),
                 self.y,
                 estimator,
                 self.problem_type,
                 sampler_name=self.sampler_name,
                 parameters=categorical_pipeline_parameters,
-                extra_components=[SelectColumns],
-                extra_components_position="before_preprocessing",
+                extra_components_before=[SelectColumns],
                 use_estimator=False,
             )
             input_pipelines = [numeric_pipeline, categorical_pipeline]

@@ -329,7 +329,7 @@ def test_make_split_pipeline(X_y_binary):
         "Label Encoder",
         "Categorical Pipeline - Select Columns Transformer",
         "Categorical Pipeline - Label Encoder",
-        "Categorical Pipeline - Imputer",
+        "Numeric Pipeline - Select Columns By Type Transformer",
         "Numeric Pipeline - Label Encoder",
         "Numeric Pipeline - Imputer",
         "Numeric Pipeline - Select Columns Transformer",
@@ -337,6 +337,9 @@ def test_make_split_pipeline(X_y_binary):
     ]
     assert pipeline.component_graph.compute_order == compute_order
     assert pipeline.name == "test_pipeline"
+    assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
+        "column_types"
+    ] == ["numeric"]
     assert pipeline.parameters["Numeric Pipeline - Select Columns Transformer"][
         "columns"
     ] == ["1", "2", "3"]
@@ -373,11 +376,20 @@ def test_select_cat_cols(
 
     batch = algo.next_batch()
     add_result(algo, batch)
+    for component, value in batch[0].parameters.items():
+        if "Numeric Pipeline - Select Columns Transformer" in component:
+            assert value["columns"] == algo._selected_cols
+        elif "Numeric Pipeline - Drop Columns By Type Transformer" in component:
+            assert value["column_types"] == ["numeric"]
+        elif "Categorical Pipeline - Select Columns Transformer" in component:
+            assert value["columns"] == algo._selected_cat_cols
 
     batch = algo.next_batch()
     add_result(algo, batch)
     for component, value in batch[0].parameters.items():
         if "Numeric Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cols
+        elif "Numeric Pipeline - Drop Columns By Type Transformer" in component:
+            assert value["column_types"] == ["numeric"]
         elif "Categorical Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cat_cols
