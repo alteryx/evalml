@@ -9,6 +9,7 @@ Release Notes
         * Standardized names of featurization components :pr:`3192`
     * Changes
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
+        * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
     * Documentation Changes
     * Testing Changes
 
@@ -30,7 +31,6 @@ Release Notes
         * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
         * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
-        * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
     * Documentation Changes
     * Testing Changes
         * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
