@@ -444,6 +444,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             extra_components_after=[SelectColumns],
             use_estimator=False if self._selected_cat_cols else True,
         )
+
         if self._selected_cat_cols:
             self._split = True
             categorical_pipeline_parameters = {

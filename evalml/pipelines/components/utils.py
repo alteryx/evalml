@@ -137,8 +137,8 @@ def handle_component_class(component_class):
         raise MissingComponentError(
             'Component "{}" was not found'.format(component_class)
         )
-    component_class = component_classes[component_class]
-    return component_class
+    new_component_class = component_classes[component_class]
+    return new_component_class
 
 
 class WrappedSKClassifier(BaseEstimator, ClassifierMixin):

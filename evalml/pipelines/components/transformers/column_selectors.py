@@ -136,7 +136,7 @@ class SelectColumns(ColumnSelector):
         return X.ww[column_intersection]
 
 
-class SelectByType(ColumnSelector):
+class SelectByType(Transformer):
     """Selects columns by specified Woodwork logical type or semantic tag in input data.
 
     Args:
@@ -152,8 +152,7 @@ class SelectByType(ColumnSelector):
     def __init__(self, column_types=None, random_seed=0, **kwargs):
         parameters = {"column_types": column_types}
         parameters.update(kwargs)
-        Transformer.__init__(
-            Transformer,
+        super().__init__(
             parameters=parameters,
             component_obj=None,
             random_seed=random_seed,
@@ -166,6 +165,20 @@ class SelectByType(ColumnSelector):
 
     def _modify_columns(self, cols, X, y=None):
         return X.ww.select(cols)
+
+    def fit(self, X, y=None):
+        """Fits the transformer by checking if column names are present in the dataset.
+
+        Args:
+            X (pd.DataFrame): Data to check.
+            y (pd.Series, optional): Targets.
+
+        Returns:
+            self
+        """
+        X = infer_feature_types(X)
+        self._check_input_for_columns(X)
+        return self
 
     def transform(self, X, y=None):
         """Transforms data X by selecting columns.
