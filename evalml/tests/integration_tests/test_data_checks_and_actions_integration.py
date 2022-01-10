@@ -1,14 +1,11 @@
 import numpy as np
 import pandas as pd
+import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.automl import get_default_primary_search_objective
-from evalml.data_checks import (
-    DataCheckAction,
-    DefaultDataChecks,
-    OutliersDataCheck,
-)
+from evalml.data_checks import DefaultDataChecks, OutliersDataCheck
 from evalml.data_checks.data_check_action_option import DataCheckActionOption
 from evalml.data_checks.invalid_target_data_check import InvalidTargetDataCheck
 from evalml.data_checks.null_data_check import NullDataCheck
@@ -18,8 +15,12 @@ from evalml.pipelines.components import (
     DropRowsTransformer,
     TargetImputer,
 )
+from evalml.pipelines.multiclass_classification_pipeline import (
+    MulticlassClassificationPipeline,
+)
+from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.pipelines.utils import (
-    _get_actions_from_option_defaults,
+    get_actions_from_option_defaults,
     make_pipeline_from_actions,
 )
 
@@ -30,9 +31,14 @@ def test_data_checks_with_healthy_data(X_y_binary):
     data_check = DefaultDataChecks(
         "binary", get_default_primary_search_objective("binary")
     )
-    data_check_output = data_check.validate(X, y)
+    data_checks_output = data_check.validate(X, y)
+
+    actions = get_actions_from_option_defaults(
+        DataCheckActionOption.convert_dict_to_option(option)
+        for option in data_checks_output["actions"]["action_list"]
+    )
     assert make_pipeline_from_actions(
-        "binary", data_check_output["actions"]["action_list"]
+        "binary", actions
     ) == BinaryClassificationPipeline(component_graph={}, parameters={}, random_seed=0)
 
 
@@ -48,10 +54,10 @@ def test_data_checks_suggests_drop_cols():
     data_check = NullDataCheck()
     data_checks_output = data_check.validate(X, y)
 
-    actions = [
-        DataCheckAction.convert_dict_to_action(action)
-        for action in data_checks_output["actions"]["action_list"]
-    ]
+    actions = get_actions_from_option_defaults(
+        DataCheckActionOption.convert_dict_to_option(option)
+        for option in data_checks_output["actions"]["action_list"]
+    )
     action_pipeline = make_pipeline_from_actions("binary", actions)
     assert action_pipeline == BinaryClassificationPipeline(
         component_graph={"Drop Columns Transformer": [DropColumns, "X", "y"]},
@@ -78,27 +84,49 @@ def test_data_checks_suggests_drop_cols():
     assert_frame_equal(X_expected, X_t)
 
 
-def test_data_checks_impute_cols():
+@pytest.mark.parametrize("problem_type", ["binary", "multiclass", "regression"])
+def test_data_checks_impute_cols(problem_type):
     X = pd.DataFrame()
-    y = ww.init_series(pd.Series([0, 1, 1, None, None]))
+    if problem_type == "binary":
+        y = ww.init_series(pd.Series([0, 1, 1, None, None]))
+        objective = "Log Loss Binary"
+        expected_pipeline_class = BinaryClassificationPipeline
+        y_expected = ww.init_series(pd.Series([0, 1, 1, 1, 1]), logical_type="double")
 
-    data_check = InvalidTargetDataCheck("binary", "Log Loss Binary")
+    elif problem_type == "multiclass":
+        y = ww.init_series(pd.Series([0, 1, 2, 2, None]))
+        objective = "Log Loss Multiclass"
+        expected_pipeline_class = MulticlassClassificationPipeline
+        y_expected = ww.init_series(pd.Series([0, 1, 2, 2, 2]), logical_type="double")
+
+    else:
+        y = ww.init_series(pd.Series([0, 0.1, 0.2, None, None]))
+        objective = "R2"
+        expected_pipeline_class = RegressionPipeline
+        y_expected = ww.init_series(
+            pd.Series([0, 0.1, 0.2, 0.1, 0.1]), logical_type="double"
+        )
+    data_check = InvalidTargetDataCheck(problem_type, objective)
     data_checks_output = data_check.validate(None, y)
 
-    actions = _get_actions_from_option_defaults(
+    actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
         for option in data_checks_output["actions"]["action_list"]
     )
-    action_pipeline = make_pipeline_from_actions("binary", actions)
-    assert action_pipeline == BinaryClassificationPipeline(
-        component_graph={"Target Imputer": [TargetImputer, "X", "y"]},
-        parameters={
+    action_pipeline = make_pipeline_from_actions(problem_type, actions)
+    expected_parameters = (
+        {"Target Imputer": {"impute_strategy": "mean", "fill_value": None}}
+        if problem_type == "regression"
+        else {
             "Target Imputer": {"impute_strategy": "most_frequent", "fill_value": None}
-        },
+        }
+    )
+    assert action_pipeline == expected_pipeline_class(
+        component_graph={"Target Imputer": [TargetImputer, "X", "y"]},
+        parameters=expected_parameters,
         random_seed=0,
     )
 
-    y_expected = ww.init_series(pd.Series([0, 1, 1, 1, 1]), logical_type="double")
     y_t = ww.init_series(pd.Series([0, 1, 1, None, None]))
     action_pipeline.fit(X, y)
     _, y_t = action_pipeline.transform(X, y)
@@ -120,10 +148,10 @@ def test_data_checks_suggests_drop_rows():
     outliers_check = OutliersDataCheck()
     data_checks_output = outliers_check.validate(X)
 
-    actions = [
-        DataCheckAction.convert_dict_to_action(action)
-        for action in data_checks_output["actions"]["action_list"]
-    ]
+    actions = get_actions_from_option_defaults(
+        DataCheckActionOption.convert_dict_to_option(option)
+        for option in data_checks_output["actions"]["action_list"]
+    )
     action_pipeline = make_pipeline_from_actions("binary", actions)
     assert action_pipeline == BinaryClassificationPipeline(
         component_graph={"Drop Rows Transformer": [DropRowsTransformer, "X", "y"]},

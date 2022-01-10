@@ -741,9 +741,10 @@ def _make_component_list_from_actions(actions):
             cols_to_drop.extend(action.metadata["columns"])
         elif action.action_code == DataCheckActionCode.IMPUTE_COL:
             metadata = action.metadata
+            parameters = metadata.get("parameters", {})
             if metadata["is_target"]:
                 components.append(
-                    TargetImputer(impute_strategy=metadata["impute_strategy"])
+                    TargetImputer(impute_strategy=parameters["impute_strategy"])
                 )
         elif action.action_code == DataCheckActionCode.DROP_ROWS:
             indices_to_drop.extend(action.metadata["rows"])
@@ -757,18 +758,18 @@ def _make_component_list_from_actions(actions):
     return components
 
 
-def _get_actions_from_option_defaults(action_options):
+def get_actions_from_option_defaults(action_options):
     """Returns a list of actions based on the defaults parameters of each option in the input DataCheckActionOption list.
 
     Args:
-        action_options (list(DataCheckActionOption)): List of DataCheckActionOption objects
+        action_options (list[DataCheckActionOption]): List of DataCheckActionOption objects
 
     Returns:
-        list(DataCheckAction): List of actions based on the defaults parameters of each option in the input list.
+        list[DataCheckAction]: List of actions based on the defaults parameters of each option in the input list.
     """
     actions = []
     for option in action_options:
-        actions.append(option._get_action_from_defaults())
+        actions.append(option.get_action_from_defaults())
     return actions
 
 

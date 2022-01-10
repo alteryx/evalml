@@ -3,6 +3,7 @@ import re
 import pytest
 
 from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
+from evalml.data_checks.data_check_action import DataCheckAction
 
 
 def test_data_check_action_option_attributes(dummy_data_check_name):
@@ -202,7 +203,7 @@ def test_data_check_action_option_to_dict(dummy_data_check_name):
     }
 
 
-def test_convert_dict_to_action_bad_input():
+def test_convert_dict_to_option_bad_input():
     data_check_action_option_dict_no_code = {
         "metadata": {"columns": None, "rows": None},
     }
@@ -231,7 +232,7 @@ def test_convert_dict_to_action_bad_input():
         )
 
 
-def test_convert_dict_to_action_bad_parameter_input(dummy_data_check_name):
+def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
     with pytest.raises(
         ValueError, match="Each parameter must have a parameter_type key."
     ):
@@ -328,7 +329,7 @@ def test_convert_dict_to_action_bad_parameter_input(dummy_data_check_name):
         )
 
 
-def test_convert_dict_to_action(dummy_data_check_name):
+def test_convert_dict_to_option(dummy_data_check_name):
     data_check_action_option_dict = {
         "code": DataCheckActionCode.DROP_COL.name,
         "metadata": {"columns": None, "rows": None},
@@ -360,3 +361,147 @@ def test_convert_dict_to_action(dummy_data_check_name):
         data_check_action_option_dict_with_other_metadata
     )
     assert data_check_action_option == expected_data_check_action_option
+
+
+def test_get_action_from_defaults(dummy_data_check_name):
+    data_check_action_option_with_no_parameters = DataCheckActionOption(
+        DataCheckActionCode.DROP_COL,
+        dummy_data_check_name,
+        metadata={"columns": None, "rows": None},
+        parameters={},
+    )
+    assert (
+        data_check_action_option_with_no_parameters.get_action_from_defaults()
+        == DataCheckAction(
+            DataCheckActionCode.DROP_COL.name,
+            dummy_data_check_name,
+            metadata={"columns": None, "rows": None, "parameters": {}},
+        )
+    )
+
+    data_check_action_option_with_one_column_parameter = DataCheckActionOption(
+        DataCheckActionCode.DROP_COL,
+        dummy_data_check_name,
+        metadata={"columns": None, "rows": None},
+        parameters={
+            "impute_strategies": {
+                "parameter_type": "column",
+                "columns": {
+                    "some_column": {
+                        "impute_strategy": {
+                            "categories": ["mean", "mode"],
+                            "type": "category",
+                            "default_value": "mode",
+                        },
+                        "fill_value": {"type": "float", "default_value": 0.0},
+                    },
+                    "some_other_column": {
+                        "impute_strategy": {
+                            "categories": ["mean", "mode"],
+                            "type": "category",
+                            "default_value": "mean",
+                        },
+                        "fill_value": {"type": "float", "default_value": 1.0},
+                    },
+                },
+            }
+        },
+    )
+    assert (
+        data_check_action_option_with_one_column_parameter.get_action_from_defaults()
+        == DataCheckAction(
+            DataCheckActionCode.DROP_COL.name,
+            dummy_data_check_name,
+            metadata={
+                "columns": None,
+                "rows": None,
+                "parameters": {
+                    "impute_strategies": {
+                        "some_column": {"impute_strategy": "mode", "fill_value": 0.0},
+                        "some_other_column": {
+                            "impute_strategy": "mean",
+                            "fill_value": 1.0,
+                        },
+                    }
+                },
+            },
+        )
+    )
+
+    data_check_action_option_with_global_parameter = DataCheckActionOption(
+        DataCheckActionCode.DROP_COL,
+        dummy_data_check_name,
+        parameters={
+            "global_parameter_name": {
+                "parameter_type": "global",
+                "type": "float",
+                "default_value": 0.0,
+            }
+        },
+    )
+    assert (
+        data_check_action_option_with_global_parameter.get_action_from_defaults()
+        == DataCheckAction(
+            DataCheckActionCode.DROP_COL.name,
+            dummy_data_check_name,
+            metadata={
+                "columns": None,
+                "rows": None,
+                "parameters": {"global_parameter_name": 0.0},
+            },
+        )
+    )
+
+    data_check_action_option_with_multiple_parameters = DataCheckActionOption(
+        DataCheckActionCode.DROP_COL,
+        dummy_data_check_name,
+        parameters={
+            "global_parameter_name": {
+                "parameter_type": "global",
+                "type": "float",
+                "default_value": 0.0,
+            },
+            "impute_strategies": {
+                "parameter_type": "column",
+                "columns": {
+                    "some_column": {
+                        "impute_strategy": {
+                            "categories": ["mean", "mode"],
+                            "type": "category",
+                            "default_value": "mode",
+                        },
+                        "fill_value": {"type": "float", "default_value": 0.0},
+                    },
+                    "some_other_column": {
+                        "impute_strategy": {
+                            "categories": ["mean", "mode"],
+                            "type": "category",
+                            "default_value": "mean",
+                        },
+                        "fill_value": {"type": "float", "default_value": 1.0},
+                    },
+                },
+            },
+        },
+    )
+    assert (
+        data_check_action_option_with_multiple_parameters.get_action_from_defaults()
+        == DataCheckAction(
+            DataCheckActionCode.DROP_COL.name,
+            dummy_data_check_name,
+            metadata={
+                "columns": None,
+                "rows": None,
+                "parameters": {
+                    "global_parameter_name": 0.0,
+                    "impute_strategies": {
+                        "some_column": {"impute_strategy": "mode", "fill_value": 0.0},
+                        "some_other_column": {
+                            "impute_strategy": "mean",
+                            "fill_value": 1.0,
+                        },
+                    },
+                },
+            },
+        )
+    )

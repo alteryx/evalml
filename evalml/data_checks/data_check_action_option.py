@@ -151,17 +151,40 @@ class DataCheckActionOption:
                                 "Each column parameter must have a default_value key."
                             )
 
-    def _get_action_from_defaults(self):
+    def get_action_from_defaults(self):
         """Returns an action based on the defaults parameters.
 
         Returns:
             DataCheckAction: An based on the defaults parameters the option.
         """
         parameters = self.parameters
-        actions_metadata = {}
+        actions_parameters = {}
         for parameter, parameter_info in parameters.items():
-            actions_metadata[parameter] = parameter_info["default_value"]
-        actions_metadata.update(self.metadata)
+            if parameter_info["parameter_type"] == "global":
+                actions_parameters[parameter] = parameter_info["default_value"]
+            elif parameter_info["parameter_type"] == "column":
+                actions_parameters[parameter] = {}
+                column_parameters = parameter_info["columns"]
+                for (
+                    column_parameter_name,
+                    column_parameter_values,
+                ) in column_parameters.items():
+                    if isinstance(column_parameter_values, dict):
+                        actions_parameters[parameter][column_parameter_name] = {}
+                        for (
+                            column_specific_parameter,
+                            column_specific_parameter_value,
+                        ) in column_parameter_values.items():
+                            actions_parameters[parameter][column_parameter_name][
+                                column_specific_parameter
+                            ] = column_specific_parameter_value["default_value"]
+                    else:
+                        actions_parameters[parameter][
+                            column_parameter_name
+                        ] = column_parameter_values["default_value"]
+
+        metadata = self.metadata
+        metadata.update({"parameters": actions_parameters})
         return DataCheckAction(
-            self.action_code, self.data_check_name, metadata=actions_metadata
+            self.action_code, self.data_check_name, metadata=metadata
         )
