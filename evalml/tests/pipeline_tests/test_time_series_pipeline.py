@@ -277,7 +277,6 @@ def test_fit_drop_nans_before_estimator(
     X, y = ts_data
 
     if pipeline_class == TimeSeriesBinaryClassificationPipeline:
-        print("binary")
         X, y = ts_data_binary
 
     if include_delayed_features:

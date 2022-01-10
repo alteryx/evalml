@@ -563,6 +563,36 @@ def X_y_categorical_classification():
     return X, y
 
 
+@pytest.fixture
+def X_y_based_on_pipeline_or_problem_type(X_y_binary, X_y_multi, X_y_regression):
+    def _X_y_based_on_pipeline(pipeline_or_type):
+        problem_types = {
+            ProblemTypes.BINARY: "binary",
+            ProblemTypes.MULTICLASS: "multiclass",
+            ProblemTypes.REGRESSION: "regression",
+        }
+        pipeline_classes = {
+            BinaryClassificationPipeline: "binary",
+            MulticlassClassificationPipeline: "multiclass",
+            RegressionPipeline: "regression",
+        }
+
+        if pipeline_or_type in problem_types:
+            problem_type = problem_types[pipeline_or_type]
+        elif pipeline_or_type in pipeline_classes:
+            problem_type = pipeline_classes[pipeline_or_type]
+
+        if problem_type == "binary":
+            X, y = X_y_binary
+        elif problem_type == "multiclass":
+            X, y = X_y_multi
+        else:
+            X, y = X_y_regression
+        return X, y
+
+    return _X_y_based_on_pipeline
+
+
 @pytest.fixture()
 def text_df():
     df = pd.DataFrame(

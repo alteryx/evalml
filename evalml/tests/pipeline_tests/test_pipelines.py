@@ -1584,7 +1584,7 @@ def test_pipeline_equality_subclasses(pipeline_class):
 )
 @patch("evalml.pipelines.ComponentGraph.fit")
 def test_pipeline_equality(
-    mock_fit, pipeline_class, X_y_binary, X_y_multi, X_y_regression
+    mock_fit, pipeline_class, X_y_based_on_pipeline_or_problem_type
 ):
     if pipeline_class in [
         BinaryClassificationPipeline,
@@ -1641,12 +1641,7 @@ def test_pipeline_equality(
     )
 
     # Test fitted equality
-    if pipeline_class == BinaryClassificationPipeline:
-        X, y = X_y_binary
-    elif pipeline_class == MulticlassClassificationPipeline:
-        X, y = X_y_multi
-    else:
-        X, y = X_y_regression
+    X, y = X_y_based_on_pipeline_or_problem_type(pipeline_class)
 
     mock_pipeline.fit(X, y)
     assert mock_pipeline != MockPipeline(parameters={})
@@ -2680,14 +2675,10 @@ def test_get_hyperparameter_ranges():
     ],
 )
 def test_pipeline_predict_without_final_estimator(
-    problem_type, make_data_type, X_y_binary, X_y_multi, X_y_regression
+    problem_type, make_data_type, X_y_based_on_pipeline_or_problem_type
 ):
-    if is_binary(problem_type):
-        X, y = X_y_binary
-    elif is_multiclass(problem_type):
-        X, y = X_y_multi
-    else:
-        X, y = X_y_regression
+    X, y = X_y_based_on_pipeline_or_problem_type(problem_type)
+
     X = make_data_type("ww", X)
     y = make_data_type("ww", y)
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -2730,21 +2721,15 @@ def test_pipeline_transform(
     mock_ohe_transform,
     mock_imputer_transform,
     problem_type,
-    X_y_binary,
-    X_y_multi,
-    X_y_regression,
+    X_y_based_on_pipeline_or_problem_type,
     make_data_type,
 ):
     component_graph = {
         "Imputer": ["Imputer", "X", "y"],
         "OHE": ["One Hot Encoder", "Imputer.x", "y"],
     }
-    if is_binary(problem_type):
-        X, y = X_y_binary
-    elif is_multiclass(problem_type):
-        X, y = X_y_multi
-    else:
-        X, y = X_y_regression
+    X, y = X_y_based_on_pipeline_or_problem_type(problem_type)
+
     X = make_data_type("ww", X)
     y = make_data_type("ww", y)
     mock_imputer_transform.return_value = X
