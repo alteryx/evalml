@@ -169,19 +169,14 @@ class DataCheckActionOption:
                     column_parameter_name,
                     column_parameter_values,
                 ) in column_parameters.items():
-                    if isinstance(column_parameter_values, dict):
-                        actions_parameters[parameter][column_parameter_name] = {}
-                        for (
-                            column_specific_parameter,
-                            column_specific_parameter_value,
-                        ) in column_parameter_values.items():
-                            actions_parameters[parameter][column_parameter_name][
-                                column_specific_parameter
-                            ] = column_specific_parameter_value["default_value"]
-                    else:
-                        actions_parameters[parameter][
-                            column_parameter_name
-                        ] = column_parameter_values["default_value"]
+                    actions_parameters[parameter][column_parameter_name] = {}
+                    for (
+                        column_specific_parameter,
+                        column_specific_parameter_value,
+                    ) in column_parameter_values.items():
+                        actions_parameters[parameter][column_parameter_name][
+                            column_specific_parameter
+                        ] = column_specific_parameter_value["default_value"]
 
         metadata = self.metadata
         metadata.update({"parameters": actions_parameters})
