@@ -266,7 +266,7 @@ def test_describe_component():
         "parameters": {"pct_null_threshold": 1.0},
     }
     assert datetime.describe(return_dict=True) == {
-        "name": "DateTime Featurization Component",
+        "name": "DateTime Featurizer",
         "parameters": {
             "features_to_extract": ["year", "month", "day_of_week", "hour"],
             "encode_as_categories": False,
@@ -274,7 +274,7 @@ def test_describe_component():
         },
     }
     assert natural_language_featurizer.describe(return_dict=True) == {
-        "name": "Natural Language Featurization Component",
+        "name": "Natural Language Featurizer",
         "parameters": {},
     }
     assert lsa.describe(return_dict=True) == {
@@ -1241,11 +1241,7 @@ def test_no_fitting_required_components(
 
 def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), "component.pkl")
-    requires_time_index = [
-        ARIMARegressor,
-        ProphetRegressor,
-        TimeSeriesFeaturizer,
-    ]
+    requires_time_index = [ARIMARegressor, ProphetRegressor, TimeSeriesFeaturizer]
     for component_class in all_components():
         print("Testing serialization of component {}".format(component_class.name))
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
