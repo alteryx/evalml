@@ -250,7 +250,7 @@ def test_automl_component_graphs_no_allowed_component_graphs(X_y_regression):
 def test_automl_allowed_component_graphs_specified_component_graphs(
     AutoMLTestEnv,
     dummy_regressor_estimator_class,
-    dummy_regression_pipeline_class,
+    dummy_regression_pipeline,
     X_y_regression,
 ):
     X, y = X_y_regression
@@ -265,10 +265,9 @@ def test_automl_allowed_component_graphs_specified_component_graphs(
         allowed_model_families=None,
     )
     env = AutoMLTestEnv("regression")
-    expected_pipeline = dummy_regression_pipeline_class({})
-    expected_component_graph = expected_pipeline.component_graph
-    expected_name = expected_pipeline.name
-    expected_oarameters = expected_pipeline.parameters
+    expected_component_graph = dummy_regression_pipeline.component_graph
+    expected_name = dummy_regression_pipeline.name
+    expected_oarameters = dummy_regression_pipeline.parameters
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
     assert automl.allowed_pipelines[0].name == expected_name
     assert automl.allowed_pipelines[0].parameters == expected_oarameters
@@ -357,7 +356,7 @@ def test_automl_allowed_component_graphs_init_allowed_both_not_specified(
 def test_automl_allowed_component_graphs_init_allowed_both_specified(
     AutoMLTestEnv,
     dummy_regressor_estimator_class,
-    dummy_regression_pipeline_class,
+    dummy_regression_pipeline,
     X_y_regression,
     assert_allowed_pipelines_equal_helper,
 ):
@@ -371,7 +370,7 @@ def test_automl_allowed_component_graphs_init_allowed_both_specified(
         },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
     )
-    expected_pipelines = [dummy_regression_pipeline_class({})]
+    expected_pipelines = [dummy_regression_pipeline]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
     assert set(automl.allowed_model_families) == set(
         [p.model_family for p in expected_pipelines]

@@ -515,13 +515,13 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(
 @pytest.mark.parametrize("text_in_ensembling", [True, False])
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
 def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
-    n_jobs, text_in_ensembling, X_y_regression, linear_regression_pipeline_class
+    n_jobs, text_in_ensembling, X_y_regression, linear_regression_pipeline
 ):
     X, y = X_y_regression
 
     allowed_component_graphs = {
-        "graph_1": linear_regression_pipeline_class.component_graph,
-        "graph_2": linear_regression_pipeline_class.component_graph,
+        "graph_1": linear_regression_pipeline.component_graph,
+        "graph_2": linear_regression_pipeline.component_graph,
     }
     algo = IterativeAlgorithm(
         X=X,
@@ -756,17 +756,16 @@ def test_iterative_algorithm_pipeline_params_kwargs(
 def test_iterative_algorithm_results_best_pipeline_info_id(
     X_y_binary,
     dummy_binary_pipeline_classes,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_component_graph,
 ):
     X, y = X_y_binary
-    LogisticRegressionBinaryPipeline = logistic_regression_binary_pipeline_class
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
     ) = dummy_binary_pipeline_classes()
     allowed_component_graphs = {
         "graph_1": allowed_component_graphs["graph_1"],
-        "graph_2": LogisticRegressionBinaryPipeline.component_graph,
+        "graph_2": logistic_regression_component_graph,
     }
     algo = IterativeAlgorithm(
         X=X,
