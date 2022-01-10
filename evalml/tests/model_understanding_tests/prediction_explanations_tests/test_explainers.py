@@ -1077,31 +1077,25 @@ def test_explain_predictions_best_worst_time_series(
 def test_json_serialization(
     problem_type,
     X_y_regression,
-    linear_regression_pipeline_class,
+    linear_regression_pipeline,
     X_y_binary,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
     X_y_multi,
-    logistic_regression_multiclass_pipeline_class,
+    logistic_regression_multiclass_pipeline,
 ):
 
     if problem_type == problem_type.REGRESSION:
         X, y = X_y_regression
         y = pd.Series(y)
-        pipeline = linear_regression_pipeline_class(
-            parameters={"Linear Regressor": {"n_jobs": 1}}
-        )
+        pipeline = linear_regression_pipeline
     elif problem_type == problem_type.BINARY:
         X, y = X_y_binary
         y = pd.Series(y).astype("str")
-        pipeline = logistic_regression_binary_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        pipeline = logistic_regression_binary_pipeline
     else:
         X, y = X_y_multi
         y = pd.Series(y).astype("str")
-        pipeline = logistic_regression_multiclass_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        pipeline = logistic_regression_multiclass_pipeline
 
     pipeline.fit(X, y)
 
@@ -1930,7 +1924,7 @@ def test_explain_predictions_url_email(
 def test_explain_predictions_postalcodes(
     algorithm,
     fraud_100,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
     has_minimal_dependencies,
 ):
     if has_minimal_dependencies and algorithm == "lime":
@@ -1944,7 +1938,7 @@ def test_explain_predictions_postalcodes(
         }
     )
 
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     explanations = explain_predictions_best_worst(
         pipeline,

@@ -751,9 +751,7 @@ def test_component_parameters_getter(test_classes):
     assert component.parameters == {"test": "parameter"}
 
 
-def test_component_parameters_init(
-    logistic_regression_binary_pipeline_class, linear_regression_pipeline_class
-):
+def test_component_parameters_init():
     for component_class in all_components():
         print("Testing component {}".format(component_class.name))
         component = component_class()
@@ -1299,11 +1297,7 @@ def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
 
 
 @pytest.mark.parametrize("estimator_class", _all_estimators())
-def test_estimators_accept_all_kwargs(
-    estimator_class,
-    logistic_regression_binary_pipeline_class,
-    linear_regression_pipeline_class,
-):
+def test_estimators_accept_all_kwargs(estimator_class):
     estimator = estimator_class()
     if estimator._component_obj is None:
         pytest.skip(
@@ -1393,11 +1387,7 @@ def test_component_equality():
 
 
 @pytest.mark.parametrize("component_class", all_components())
-def test_component_equality_all_components(
-    component_class,
-    logistic_regression_binary_pipeline_class,
-    linear_regression_pipeline_class,
-):
+def test_component_equality_all_components(component_class):
     component = component_class()
     parameters = component.parameters
     equal_component = component_class(**parameters)
@@ -1445,11 +1435,7 @@ def test_mock_component_repr():
 
 
 @pytest.mark.parametrize("component_class", all_components())
-def test_component_str(
-    component_class,
-    logistic_regression_binary_pipeline_class,
-    linear_regression_pipeline_class,
-):
+def test_component_str(component_class):
     component = component_class()
     assert str(component) == component.name
 

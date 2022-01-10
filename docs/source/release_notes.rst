@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Standardized names of featurization components :pr:`3192`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -10,6 +11,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
 
 
 **v0.41.0 Jan. 06, 2022**
@@ -19,7 +21,6 @@ Release Notes
         * Add issue templates for bugs, feature requests and documentation improvements for GitHub :pr:`3199`
     * Fixes
         * Fix bug where prediction explanations ``class_name`` was shown as float for boolean targets :pr:`3179`
-        * Standardized names of featurization components :pr:`3192`
         * Fixed bug in nightly linux tests :pr:`3189`
     * Changes
         * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
@@ -27,13 +28,8 @@ Release Notes
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
     * Documentation Changes
     * Testing Changes
+        * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
         * Add workflow to auto-merge dependency PRs if status checks pass :pr:`3184`
-
-
-.. warning::
-
-    **Breaking Changes**
-        * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
 
 
 **v0.40.0 Dec. 22, 2021**
