@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:``
     * Documentation Changes
     * Testing Changes
 
