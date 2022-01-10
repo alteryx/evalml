@@ -379,7 +379,7 @@ def test_select_cat_cols(
     for component, value in batch[0].parameters.items():
         if "Numeric Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cols
-        elif "Numeric Pipeline - Drop Columns By Type Transformer" in component:
+        elif "Numeric Pipeline - Select Columns By Type Transformer" in component:
             assert value["column_types"] == ["numeric"]
         elif "Categorical Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cat_cols
@@ -389,7 +389,7 @@ def test_select_cat_cols(
     for component, value in batch[0].parameters.items():
         if "Numeric Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cols
-        elif "Numeric Pipeline - Drop Columns By Type Transformer" in component:
+        elif "Numeric Pipeline - Select Columns By Type Transformer" in component:
             assert value["column_types"] == ["numeric"]
         elif "Categorical Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cat_cols
