@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
     * Fixes
         * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
         * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
@@ -22,7 +23,6 @@ Release Notes
         * Added string support for DataCheckActionCode :pr:`3167`
         * Added ``DataCheckActionOption`` class :pr:`3134`
         * Add issue templates for bugs, feature requests and documentation improvements for GitHub :pr:`3199`
-        * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
     * Fixes
         * Fix bug where prediction explanations ``class_name`` was shown as float for boolean targets :pr:`3179`
         * Fixed bug in nightly linux tests :pr:`3189`
