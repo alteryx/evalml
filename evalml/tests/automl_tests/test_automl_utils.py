@@ -15,10 +15,10 @@ from evalml.automl.utils import (
 )
 from evalml.objectives import (
     F1,
+    R2,
     LogLossBinary,
     LogLossMulticlass,
     MedianAE,
-    R2,
 )
 from evalml.pipelines import (
     BinaryClassificationPipeline,
