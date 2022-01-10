@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fully split numeric and categorical data for split pipelines in ``DefaultAlgorithm`` :pr:`3209`
     * Changes
     * Documentation Changes
     * Testing Changes
