@@ -741,7 +741,7 @@ def _make_component_list_from_actions(actions):
             cols_to_drop.extend(action.metadata["columns"])
         elif action.action_code == DataCheckActionCode.IMPUTE_COL:
             metadata = action.metadata
-            parameters = metadata["parameters"] or {}
+            parameters = metadata.get("parameters", {})
             if metadata["is_target"]:
                 components.append(
                     TargetImputer(impute_strategy=parameters["impute_strategy"])
