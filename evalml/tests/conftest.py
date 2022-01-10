@@ -794,11 +794,11 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
 
 
 @pytest.fixture
-def dummy_ts_binary_tree_classifier_pipeline_class():
-    dec_tree_classifier = DecisionTreeClassifier
+def dummy_ts_binary_linear_classifier_pipeline_class():
+    log_reg_classifier = LogisticRegressionClassifier
 
     class MockBinaryClassificationPipeline(TimeSeriesBinaryClassificationPipeline):
-        estimator = dec_tree_classifier
+        estimator = log_reg_classifier
         component_graph = [estimator]
 
         def __init__(
