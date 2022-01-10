@@ -27,6 +27,7 @@ Release Notes
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
     * Documentation Changes
     * Testing Changes
+        * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
         * Add workflow to auto-merge dependency PRs if status checks pass :pr:`3184`
 
 **v0.40.0 Dec. 22, 2021**

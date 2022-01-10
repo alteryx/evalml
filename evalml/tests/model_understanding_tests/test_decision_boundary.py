@@ -88,28 +88,26 @@ def test_f1(val_list, expected_val):
 
 
 def test_find_confusion_matrix_per_threshold_errors(
-    dummy_binary_pipeline_class, dummy_multiclass_pipeline_class
+    dummy_binary_pipeline, dummy_multiclass_pipeline
 ):
-    bcp = dummy_binary_pipeline_class({})
-    mcp = dummy_multiclass_pipeline_class({})
     X = pd.DataFrame()
     y = pd.Series()
 
     with pytest.raises(
         ValueError, match="Expected a fitted binary classification pipeline"
     ):
-        find_confusion_matrix_per_thresholds(bcp, X, y)
+        find_confusion_matrix_per_thresholds(dummy_binary_pipeline, X, y)
 
     with pytest.raises(
         ValueError, match="Expected a fitted binary classification pipeline"
     ):
-        find_confusion_matrix_per_thresholds(mcp, X, y)
+        find_confusion_matrix_per_thresholds(dummy_multiclass_pipeline, X, y)
 
-    mcp._is_fitted = True
+    dummy_multiclass_pipeline._is_fitted = True
     with pytest.raises(
         ValueError, match="Expected a fitted binary classification pipeline"
     ):
-        find_confusion_matrix_per_thresholds(mcp, X, y)
+        find_confusion_matrix_per_thresholds(dummy_multiclass_pipeline, X, y)
 
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.fit")
@@ -119,13 +117,12 @@ def test_find_confusion_matrix_per_threshold_errors(
 )
 @patch("evalml.model_understanding.decision_boundary._find_data_between_ranges")
 def test_find_confusion_matrix_per_threshold_args_pass_through(
-    mock_ranges, mock_threshold, mock_pred_proba, mock_fit, dummy_binary_pipeline_class
+    mock_ranges, mock_threshold, mock_pred_proba, mock_fit, dummy_binary_pipeline
 ):
     n_bins = 100
     X = pd.DataFrame()
     y = pd.Series([0] * 500 + [1] * 500)
-    bcp = dummy_binary_pipeline_class({})
-    bcp._is_fitted = True
+    dummy_binary_pipeline._is_fitted = True
 
     # set return predicted proba
     preds = [0.1] * 250 + [0.8] * 500 + [0.6] * 250
@@ -168,7 +165,9 @@ def test_find_confusion_matrix_per_threshold_args_pass_through(
         "balanced_accuracy": {"objective score": 0.5, "threshold value": 0.25},
     }
 
-    returned_result = find_confusion_matrix_per_thresholds(bcp, X, y, n_bins)
+    returned_result = find_confusion_matrix_per_thresholds(
+        dummy_binary_pipeline, X, y, n_bins
+    )
     call_args = mock_threshold.call_args
     assert all(call_args[0][0] == expected_pos_skew)
     assert all(call_args[0][1] == expected_neg_skew)
@@ -183,12 +182,11 @@ def test_find_confusion_matrix_per_threshold_args_pass_through(
 @patch("evalml.pipelines.BinaryClassificationPipeline.predict_proba")
 @pytest.mark.parametrize("n_bins", [100, 10, None])
 def test_find_confusion_matrix_per_threshold_n_bins(
-    mock_pred_proba, mock_fit, n_bins, dummy_binary_pipeline_class
+    mock_pred_proba, mock_fit, n_bins, dummy_binary_pipeline
 ):
     X = pd.DataFrame()
     y = pd.Series([0] * 1200 + [1] * 800)
-    bcp = dummy_binary_pipeline_class({})
-    bcp._is_fitted = True
+    dummy_binary_pipeline._is_fitted = True
     top_k = 5
 
     # set return predicted proba
@@ -198,7 +196,7 @@ def test_find_confusion_matrix_per_threshold_n_bins(
 
     # calculate the expected output results
     returned_result = find_confusion_matrix_per_thresholds(
-        bcp, X, y, n_bins, top_k=top_k
+        dummy_binary_pipeline, X, y, n_bins, top_k=top_k
     )
     assert isinstance(returned_result, tuple)
     if n_bins is not None:
@@ -229,12 +227,11 @@ def test_find_confusion_matrix_per_threshold_n_bins(
 @pytest.mark.parametrize("top_k", [-1, 4])
 @pytest.mark.parametrize("n_bins", [100, None])
 def test_find_confusion_matrix_per_threshold_k_(
-    mock_pred_proba, mock_fit, n_bins, top_k, dummy_binary_pipeline_class
+    mock_pred_proba, mock_fit, n_bins, top_k, dummy_binary_pipeline
 ):
     X = pd.DataFrame()
     y = pd.Series([0] * 1200 + [1] * 800)
-    bcp = dummy_binary_pipeline_class({})
-    bcp._is_fitted = True
+    dummy_binary_pipeline._is_fitted = True
 
     # set return predicted proba
     preds = [0.1] * 400 + [0.8] * 400 + [0.6] * 400 + [0.4] * 400 + [0.5] * 400
@@ -243,7 +240,7 @@ def test_find_confusion_matrix_per_threshold_k_(
 
     # calculate the expected output results
     returned_result = find_confusion_matrix_per_thresholds(
-        bcp, X, y, n_bins=n_bins, top_k=top_k
+        dummy_binary_pipeline, X, y, n_bins=n_bins, top_k=top_k
     )
     assert isinstance(returned_result, tuple)
     if n_bins is not None:
@@ -328,13 +325,12 @@ def test_find_confusion_matrix_objective_threshold(pos_skew, neg_skew):
 
 @pytest.mark.parametrize("top_k", [3, -1])
 def test_find_confusion_matrix_per_threshold(
-    top_k, logistic_regression_binary_pipeline_class, X_y_binary
+    top_k, logistic_regression_binary_pipeline, X_y_binary
 ):
-    bcp = logistic_regression_binary_pipeline_class({})
     X, y = X_y_binary
-    bcp.fit(X, y)
+    logistic_regression_binary_pipeline.fit(X, y)
     res_df, obj_dict = find_confusion_matrix_per_thresholds(
-        bcp, X, y, n_bins=10, top_k=top_k
+        logistic_regression_binary_pipeline, X, y, n_bins=10, top_k=top_k
     )
     assert len(res_df) == 10
     if top_k == 3:
@@ -345,16 +341,16 @@ def test_find_confusion_matrix_per_threshold(
     assert len(obj_dict) == 4
 
 
-def test_find_confusion_matrix_encode(
-    logistic_regression_binary_pipeline_class, X_y_binary
-):
-    bcp = logistic_regression_binary_pipeline_class({})
-    bcp_new = logistic_regression_binary_pipeline_class({})
+def test_find_confusion_matrix_encode(logistic_regression_binary_pipeline, X_y_binary):
+    bcp = logistic_regression_binary_pipeline
+    bcp_new = logistic_regression_binary_pipeline.new(parameters={})
     X, y = X_y_binary
     y_new = pd.Series(["Value_1" if s == 1 else "Value_0" for s in y])
     bcp.fit(X, y)
     bcp_new.fit(X, y_new)
-    res_df, obj_dict = find_confusion_matrix_per_thresholds(bcp, X, y)
+    res_df, obj_dict = find_confusion_matrix_per_thresholds(
+        logistic_regression_binary_pipeline, X, y
+    )
     res_df_new, obj_dict_new = find_confusion_matrix_per_thresholds(bcp_new, X, y_new)
     pd.testing.assert_frame_equal(res_df, res_df_new)
     assert obj_dict == obj_dict_new
@@ -389,14 +385,15 @@ def test_find_confusion_matrix_values():
         assert v[1] == expected_objective_dic[k][1]
 
 
-def test_find_confusion_matrix_json(
-    logistic_regression_binary_pipeline_class, X_y_binary
-):
-    bcp = logistic_regression_binary_pipeline_class({})
+def test_find_confusion_matrix_json(logistic_regression_binary_pipeline, X_y_binary):
     X, y = X_y_binary
-    bcp.fit(X, y)
-    res_df, obj_dict = find_confusion_matrix_per_thresholds(bcp, X, y)
-    json_result = find_confusion_matrix_per_thresholds(bcp, X, y, to_json=True)
+    logistic_regression_binary_pipeline.fit(X, y)
+    res_df, obj_dict = find_confusion_matrix_per_thresholds(
+        logistic_regression_binary_pipeline, X, y
+    )
+    json_result = find_confusion_matrix_per_thresholds(
+        logistic_regression_binary_pipeline, X, y, to_json=True
+    )
 
     result = json.loads(json_result)
     df = pd.DataFrame(result["results"], index=result["thresholds"])
@@ -409,13 +406,14 @@ def test_find_confusion_matrix_json(
     "threshold,expected_len", [(0.5, 20), (None, 20), (0.6789012, 21)]
 )
 def test_find_confusion_matrix_pipeline_threshold(
-    threshold, expected_len, logistic_regression_binary_pipeline_class, X_y_binary
+    threshold, expected_len, logistic_regression_binary_pipeline, X_y_binary
 ):
-    bcp = logistic_regression_binary_pipeline_class({})
     X, y = X_y_binary
-    bcp.fit(X, y)
-    bcp.threshold = threshold
-    res_df, _ = find_confusion_matrix_per_thresholds(bcp, X, y, n_bins=20)
+    logistic_regression_binary_pipeline.fit(X, y)
+    logistic_regression_binary_pipeline.threshold = threshold
+    res_df, _ = find_confusion_matrix_per_thresholds(
+        logistic_regression_binary_pipeline, X, y, n_bins=20
+    )
     assert len(res_df) == expected_len
     if threshold is not None:
         assert threshold in res_df.index
