@@ -143,9 +143,6 @@ class DataCheckActionOption:
                 for column_parameters in columns.values():
                     for column_parameter_values in column_parameters.values():
                         if "type" not in column_parameter_values:
-                            import pdb
-
-                            pdb.set_trace()
                             raise ValueError(
                                 "Each column parameter must have a type key."
                             )

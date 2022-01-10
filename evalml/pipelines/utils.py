@@ -16,7 +16,7 @@ from .multiclass_classification_pipeline import (
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
-from evalml.data_checks import DataCheckAction, DataCheckActionCode
+from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
@@ -741,9 +741,10 @@ def _make_component_list_from_actions(actions):
             cols_to_drop.extend(action.metadata["columns"])
         elif action.action_code == DataCheckActionCode.IMPUTE_COL:
             metadata = action.metadata
+            parameters = metadata["parameters"] or {}
             if metadata["is_target"]:
                 components.append(
-                    TargetImputer(impute_strategy=metadata["impute_strategy"])
+                    TargetImputer(impute_strategy=parameters["impute_strategy"])
                 )
         elif action.action_code == DataCheckActionCode.DROP_ROWS:
             indices_to_drop.extend(action.metadata["rows"])
