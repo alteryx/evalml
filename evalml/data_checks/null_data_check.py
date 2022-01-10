@@ -154,7 +154,7 @@ class NullDataCheck(DataCheck):
             X, pct_null_col_threshold=self.pct_null_col_threshold
         )
 
-        cols_with_any_nulls = NullDataCheck.get_null_column_information(
+        cols_with_any_nulls, _ = NullDataCheck.get_null_column_information(
             X, pct_null_col_threshold=0.0
         )
         below_highly_null_cols = [
