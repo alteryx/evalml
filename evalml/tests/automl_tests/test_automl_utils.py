@@ -218,7 +218,7 @@ def test_tune_binary_threshold(
     mock_score,
     mock_predict_proba,
     mock_optimize_threshold,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     mock_optimize_threshold.return_value = 0.42
@@ -227,15 +227,15 @@ def test_tune_binary_threshold(
     X = infer_feature_types(X)
     y = infer_feature_types(y)
 
-    pipeline = dummy_binary_pipeline_class({})
+    pipeline = dummy_binary_pipeline.new({})
     tune_binary_threshold(pipeline, F1(), "binary", X, y)
     assert pipeline.threshold == 0.42
 
-    pipeline = dummy_binary_pipeline_class({})
+    pipeline = dummy_binary_pipeline.new({})
     tune_binary_threshold(pipeline, F1(), "binary", None, None)
     assert pipeline.threshold == 0.5
 
-    pipeline = dummy_binary_pipeline_class({})
+    pipeline = dummy_binary_pipeline.new({})
     tune_binary_threshold(pipeline, F1(), "multiclass", X, y)
     assert pipeline.threshold is None
 
