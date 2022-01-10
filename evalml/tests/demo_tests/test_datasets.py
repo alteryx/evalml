@@ -86,31 +86,5 @@ def test_datasets(dataset_name, expected_shape, local_datasets):
 def test_datasets_match_local(dataset_name, demo_method, local_datasets):
     X, y = demo_method
     X_local, y_local = local_datasets[dataset_name]
-
-    if dataset_name == "daily_temp":
-        missing_date_1 = pd.DataFrame([pd.to_datetime("1984-12-31")], columns=["Date"])
-        missing_date_2 = pd.DataFrame([pd.to_datetime("1988-12-31")], columns=["Date"])
-        missing_y_1 = pd.Series([14.5], name="Temp")
-        missing_y_2 = pd.Series([14.5], name="Temp")
-
-        X_local = pd.concat(
-            [
-                X_local.iloc[:1460],
-                missing_date_1,
-                X_local.iloc[1460:2920],
-                missing_date_2,
-                X_local.iloc[2920:],
-            ]
-        ).reset_index(drop=True)
-        y_local = pd.concat(
-            [
-                y_local.iloc[:1460],
-                missing_y_1,
-                y_local.iloc[1460:2920],
-                missing_y_2,
-                y_local.iloc[2920:],
-            ]
-        ).reset_index(drop=True)
-
     pd.testing.assert_frame_equal(X, X_local)
     pd.testing.assert_series_equal(y, y_local)

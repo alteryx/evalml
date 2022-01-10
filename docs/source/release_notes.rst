@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Added string support for DataCheckActionCode :pr:`3167`
         * Added ``DataCheckActionOption`` class :pr:`3134`
+        * Add issue templates for bugs, feature requests and documentation improvements for GitHub :pr:`3199`
     * Fixes
         * Fix bug where prediction explanations ``class_name`` was shown as float for boolean targets :pr:`3179`
         * Standardized names of featurization components :pr:`3192`
@@ -37,6 +38,7 @@ Release Notes
         * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
         * Updated ``nlp-primitives`` minimum version to 2.1.0 :pr:`3166`
         * Updated minimum version of ``woodwork`` to v0.11.0 :pr:`3171`
+        * Revert `3160` until uninferrable frequency can be addressed earlier in the process :pr:`3198`
     * Documentation Changes
         * Added comments to provide clarity on doctests :pr:`3155`
     * Testing Changes
