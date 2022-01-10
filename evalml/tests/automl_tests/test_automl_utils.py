@@ -13,7 +13,13 @@ from evalml.automl.utils import (
     make_data_splitter,
     tune_binary_threshold,
 )
-from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass, MedianAE
+from evalml.objectives import (
+    F1,
+    LogLossBinary,
+    LogLossMulticlass,
+    MedianAE,
+    R2,
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
