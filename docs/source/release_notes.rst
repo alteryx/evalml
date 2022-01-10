@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
     * Changes
+        * Raised lowest compatible numpy version to 1.21.0 to address security concerns :pr:`3207`
     * Documentation Changes
     * Testing Changes
 
