@@ -13,7 +13,13 @@ from evalml.automl.utils import (
     make_data_splitter,
     tune_binary_threshold,
 )
-from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
+from evalml.objectives import (
+    F1,
+    R2,
+    LogLossBinary,
+    LogLossMulticlass,
+    MedianAE,
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -40,6 +46,13 @@ def test_get_default_primary_search_objective():
     )
     assert isinstance(get_default_primary_search_objective("regression"), R2)
     assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
+    assert isinstance(
+        get_default_primary_search_objective("time series regression"), MedianAE
+    )
+    assert isinstance(
+        get_default_primary_search_objective(ProblemTypes.TIME_SERIES_REGRESSION),
+        MedianAE,
+    )
     assert isinstance(
         get_default_primary_search_objective("time series binary"), LogLossBinary
     )
