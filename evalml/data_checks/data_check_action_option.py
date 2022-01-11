@@ -1,6 +1,7 @@
 """Recommended action returned by a DataCheck."""
 from evalml.data_checks.data_check_action import DataCheckAction
 from evalml.data_checks.data_check_action_code import DataCheckActionCode
+from enum import Enum
 
 
 class DataCheckActionOption:
@@ -183,3 +184,24 @@ class DataCheckActionOption:
         return DataCheckAction(
             self.action_code, self.data_check_name, metadata=metadata
         )
+
+
+
+
+class DCAOParameterType(Enum):
+    """Enum for data check action option parameter type."""
+    GLOBAL = "global"
+    """Global parameter type. Parameters that apply to the entire data set."""
+
+    COLUMN = "column"
+    """Column parameter type. Parameters that apply to a specific column in the data set."""
+
+
+
+class DCAOParameterAllowedValuesType(Enum):
+    """Enum for data check action option parameter allowed values type."""
+    CATEGORICAL = "categorical"
+    """Categorical allowed values type. Parameters that have a set of allowed values."""
+
+    NUMERICAL = "numerical"
+    """Numerical allowed values type. Parameters that have a range of allowed values."""
