@@ -2,6 +2,9 @@ name: Dependency update checker
 on:
   schedule:
       - cron: '0 * * * *'
+  push:	
+    branches:	
+      - update_latest_dep_contributing	
   workflow_dispatch:
 jobs:
   update-deps:
@@ -31,4 +34,5 @@ jobs:
           delete-branch: true
           base: update_latest_dep_contributing
           assignees: machineFL
+          reviewers: machineAYX, angela97lin
           team-reviewers: "@alteryx/evalml"
