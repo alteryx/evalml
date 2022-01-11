@@ -20,6 +20,7 @@ from evalml.data_checks import (
     TargetDistributionDataCheck,
     TimeSeriesParametersDataCheck,
     TimeSeriesSplittingDataCheck,
+    DCAOParameterType
 )
 from evalml.exceptions import DataCheckInitError
 from evalml.problem_types import (
@@ -189,7 +190,7 @@ def get_expected_action_options(problem_type):
             data_check_name="InvalidTargetDataCheck",
             parameters={
                 "impute_strategy": {
-                    "parameter_type": "global",
+                    "parameter_type": DCAOParameterType.GLOBAL,
                     "type": "category",
                     "categories": ["mean", "most_frequent"]
                     if is_regression(problem_type)
@@ -400,7 +401,7 @@ def test_default_data_checks_regression(input_type):
         data_check_name="InvalidTargetDataCheck",
         parameters={
             "impute_strategy": {
-                "parameter_type": "global",
+                "parameter_type": DCAOParameterType.GLOBAL,
                 "type": "category",
                 "categories": ["mean", "most_frequent"],
                 "default_value": "mean",
@@ -544,7 +545,7 @@ def test_default_data_checks_null_rows():
                     data_check_name="InvalidTargetDataCheck",
                     parameters={
                         "impute_strategy": {
-                            "parameter_type": "global",
+                            "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "category",
                             "categories": ["mean", "most_frequent"],
                             "default_value": "mean",

@@ -167,9 +167,10 @@ class DataCheckActionOption:
         parameters = self.parameters
         actions_parameters = {}
         for parameter, parameter_info in parameters.items():
-            if parameter_info["parameter_type"] == "global":
+            parameter_type = DCAOParameterType.handle_dcao_parameter_type(parameter_info["parameter_type"])
+            if parameter_type == DCAOParameterType.GLOBAL:
                 actions_parameters[parameter] = parameter_info["default_value"]
-            elif parameter_info["parameter_type"] == "column":
+            elif parameter_type == DCAOParameterType.COLUMN:
                 actions_parameters[parameter] = {}
                 column_parameters = parameter_info["columns"]
                 for (

@@ -8,6 +8,7 @@ from evalml.data_checks import (
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
+    DCAOParameterType
 )
 from evalml.objectives import get_objective
 from evalml.problem_types import (
@@ -251,7 +252,7 @@ class InvalidTargetDataCheck(DataCheck):
                     data_check_name=self.name,
                     parameters={
                         "impute_strategy": {
-                            "parameter_type": "global",
+                            "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "category",
                             "categories": ["mean", "most_frequent"]
                             if is_regression(self.problem_type)

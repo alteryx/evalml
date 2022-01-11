@@ -2,7 +2,7 @@ import re
 
 import pytest
 
-from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
+from evalml.data_checks import DataCheckActionCode, DataCheckActionOption, DCAOParameterType
 from evalml.data_checks.data_check_action import DataCheckAction
 
 
@@ -25,7 +25,7 @@ def test_data_check_action_option_attributes(dummy_data_check_name):
 
     parameters = {
         "global_parameter_name": {
-            "parameter_type": "global",
+            "parameter_type": DCAOParameterType.GLOBAL,
             "type": "float",
             "default_value": 0.0,
         },
@@ -72,7 +72,7 @@ def test_data_check_action_option_equality(dummy_data_check_name):
         metadata={"same detail": "same same same"},
         parameters={
             "global_parameter_name": {
-                "parameter_type": "global",
+                "parameter_type": DCAOParameterType.GLOBAL,
                 "type": "float",
                 "default_value": 0.0,
             },
@@ -84,7 +84,7 @@ def test_data_check_action_option_equality(dummy_data_check_name):
         metadata={"same detail": "same same same"},
         parameters={
             "global_parameter_name": {
-                "parameter_type": "global",
+                "parameter_type": DCAOParameterType.GLOBAL,
                 "type": "float",
                 "default_value": 0.0,
             },
@@ -110,7 +110,7 @@ def test_data_check_action_option_inequality():
         metadata={"metadata": ["same metadata"]},
         parameters={
             "global_parameter_name": {
-                "parameter_type": "global",
+                "parameter_type": DCAOParameterType.GLOBAL,
                 "type": "float",
                 "default_value": 0.0,
             }
@@ -122,7 +122,7 @@ def test_data_check_action_option_inequality():
         metadata={"metadata": ["same metadata"]},
         parameters={
             "different_global_parameter_name": {
-                "parameter_type": "global",
+                "parameter_type": DCAOParameterType.GLOBAL,
                 "type": "float",
                 "default_value": 0.0,
             }
@@ -156,7 +156,7 @@ def test_data_check_action_option_to_dict(dummy_data_check_name):
         metadata={"some detail": ["some detail value"]},
         parameters={
             "global_parameter_name": {
-                "parameter_type": "global",
+                "parameter_type": DCAOParameterType.GLOBAL,
                 "type": "float",
                 "default_value": 0.0,
             }
@@ -195,7 +195,7 @@ def test_data_check_action_option_to_dict(dummy_data_check_name):
         },
         "parameters": {
             "global_parameter_name": {
-                "parameter_type": "global",
+                "parameter_type": DCAOParameterType.GLOBAL,
                 "type": "float",
                 "default_value": 0.0,
             }
@@ -254,7 +254,7 @@ def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
             metadata={"columns": None, "rows": None},
             parameters={
                 "global_parameter_name": {
-                    "parameter_type": "global",
+                    "parameter_type": DCAOParameterType.GLOBAL,
                     "default_value": 0.0,
                 }
             },
@@ -433,7 +433,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
         dummy_data_check_name,
         parameters={
             "global_parameter_name": {
-                "parameter_type": "global",
+                "parameter_type": DCAOParameterType.GLOBAL,
                 "type": "float",
                 "default_value": 0.0,
             }
@@ -457,7 +457,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
         dummy_data_check_name,
         parameters={
             "global_parameter_name": {
-                "parameter_type": "global",
+                "parameter_type": DCAOParameterType.GLOBAL,
                 "type": "float",
                 "default_value": 0.0,
             },
