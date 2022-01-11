@@ -2,7 +2,11 @@ import re
 
 import pytest
 
-from evalml.data_checks import DataCheckActionCode, DataCheckActionOption, DCAOParameterType
+from evalml.data_checks import (
+    DataCheckActionCode,
+    DataCheckActionOption,
+    DCAOParameterType,
+)
 from evalml.data_checks.data_check_action import DataCheckAction
 
 
@@ -247,6 +251,23 @@ def test_convert_dict_to_option_bad_parameter_input(dummy_data_check_name):
                 }
             },
         )
+    with pytest.raises(
+        ValueError,
+        match="Each parameter must have a parameter_type key with a value of `global` or `column`.",
+    ):
+        DataCheckActionOption(
+            action_code=DataCheckActionCode.DROP_COL,
+            data_check_name=dummy_data_check_name,
+            metadata={"columns": None, "rows": None},
+            parameters={
+                "global_parameter_name": {
+                    "parameter_type": "invalid_parameter_type",
+                    "type": "float",
+                    "default_value": 0.0,
+                }
+            },
+        )
+
     with pytest.raises(ValueError, match="Each global parameter must have a type key."):
         DataCheckActionOption(
             action_code=DataCheckActionCode.DROP_COL,

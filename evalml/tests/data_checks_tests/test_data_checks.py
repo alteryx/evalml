@@ -16,11 +16,11 @@ from evalml.data_checks import (
     DataChecks,
     DataCheckWarning,
     DateTimeFormatDataCheck,
+    DCAOParameterType,
     DefaultDataChecks,
     TargetDistributionDataCheck,
     TimeSeriesParametersDataCheck,
     TimeSeriesSplittingDataCheck,
-    DCAOParameterType
 )
 from evalml.exceptions import DataCheckInitError
 from evalml.problem_types import (

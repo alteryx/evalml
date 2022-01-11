@@ -11,8 +11,8 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataChecks,
     DataCheckWarning,
+    DCAOParameterType,
     InvalidTargetDataCheck,
-    DCAOParameterType
 )
 from evalml.exceptions import DataCheckInitError
 from evalml.objectives import (

@@ -8,7 +8,7 @@ from evalml.data_checks import (
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
-    DCAOParameterType
+    DCAOParameterType,
 )
 from evalml.objectives import get_objective
 from evalml.problem_types import (

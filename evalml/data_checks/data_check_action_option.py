@@ -131,13 +131,20 @@ class DataCheckActionOption:
             if "parameter_type" not in parameter_value:
                 raise ValueError("Each parameter must have a parameter_type key.")
 
-            parameter_type = DCAOParameterType.handle_dcao_parameter_type(
-                parameter_value["parameter_type"]
-            )
+            try:
+                parameter_type = DCAOParameterType.handle_dcao_parameter_type(
+                    parameter_value["parameter_type"]
+                )
+            except KeyError as ke:
+                raise ValueError(
+                    "Each parameter must have a parameter_type key with a value of `global` or `column`. "
+                    + str(ke)
+                )
+
             if parameter_type == DCAOParameterType.GLOBAL:
                 if "type" not in parameter_value:
                     raise ValueError("Each global parameter must have a type key.")
-            elif parameter_type == DCAOParameterType.GLOBAL:
+            elif parameter_type == DCAOParameterType.COLUMN:
                 if "columns" not in parameter_value:
                     raise ValueError(
                         "Each `column` parameter type must also have a `columns` key indicating which columns the parameter should address."
@@ -167,7 +174,9 @@ class DataCheckActionOption:
         parameters = self.parameters
         actions_parameters = {}
         for parameter, parameter_info in parameters.items():
-            parameter_type = DCAOParameterType.handle_dcao_parameter_type(parameter_info["parameter_type"])
+            parameter_type = DCAOParameterType.handle_dcao_parameter_type(
+                parameter_info["parameter_type"]
+            )
             if parameter_type == DCAOParameterType.GLOBAL:
                 actions_parameters[parameter] = parameter_info["default_value"]
             elif parameter_type == DCAOParameterType.COLUMN:
@@ -212,10 +221,10 @@ class DCAOParameterType(Enum):
 
     @classproperty
     def _all_values(cls):
-        return {pt.value.upper(): pt for pt in cls.all_problem_types}
+        return {pt.value.upper(): pt for pt in cls.all_parameter_types}
 
     @classproperty
-    def all_problem_types(cls):
+    def all_parameter_types(cls):
         """Get a list of all defined parameter types.
 
         Returns:
@@ -243,7 +252,7 @@ class DCAOParameterType(Enum):
                 tpe = DCAOParameterType._all_values[dcao_parameter_type.upper()]
             except KeyError:
                 raise KeyError(
-                    "Problem type '{}' does not exist".format(dcao_parameter_type)
+                    "Parameter type '{}' does not exist".format(dcao_parameter_type)
                 )
             return tpe
         if isinstance(dcao_parameter_type, DCAOParameterType):
