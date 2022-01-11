@@ -1,0 +1,35 @@
+name: Dependency update checker
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - update_latest_dep_contributing
+  workflow_dispatch:
+jobs:
+  update-deps:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-python@v1
+        with:
+          python-version: '3.8.x'
+      - name: Update dependencies
+        id: vars
+        run: |
+          make installdeps
+          cat evalml/tests/dependency_update_check/latest_dependency_versions.txt
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          token: ${{ secrets.MACHINEFL_DEPENDENCY_CHECKER_TOKEN }}
+          commit-message: Update latest dependencies
+          title: Automated Latest Dependency Updates
+          author: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          body: "This is an auto-generated PR with **latest** dependency updates."
+          branch: latest-dep-update
+          branch-suffix: short-commit-hash
+          delete-branch: true
+          base: update_latest_dep_contributing
+          assignees: machineFL
+          reviewers: machineAYX, "alteryx/evalml"
