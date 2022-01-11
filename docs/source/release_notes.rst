@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Standardized names of featurization components :pr:`3192`
     * Changes
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
     * Documentation Changes
@@ -11,6 +12,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
 
 
 **v0.41.0 Jan. 06, 2022**
@@ -27,6 +29,7 @@ Release Notes
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
     * Documentation Changes
     * Testing Changes
+        * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
         * Add workflow to auto-merge dependency PRs if status checks pass :pr:`3184`
 
 **v0.40.0 Dec. 22, 2021**

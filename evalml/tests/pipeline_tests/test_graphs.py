@@ -130,7 +130,6 @@ def test_invalid_path(tmpdir, test_pipeline):
 
 @pytest.mark.noncore_dependency
 def test_graph_feature_importance(X_y_binary, test_pipeline, go):
-
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
@@ -139,7 +138,6 @@ def test_graph_feature_importance(X_y_binary, test_pipeline, go):
 
 @pytest.mark.noncore_dependency
 def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline, go):
-
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
@@ -153,7 +151,6 @@ def test_graph_feature_importance_show_all_features(X_y_binary, test_pipeline, g
 
 @pytest.mark.noncore_dependency
 def test_graph_feature_importance_threshold(X_y_binary, test_pipeline, go):
-
     X, y = X_y_binary
     clf = test_pipeline
     clf.fit(X, y)
@@ -191,12 +188,12 @@ def test_jupyter_graph_check(import_check, jupyter_check, X_y_binary, test_pipel
 @pytest.mark.parametrize("graph_type", ["graph", "list"])
 def test_component_as_json(
     graph_type,
-    linear_regression_pipeline_class,
-    nonlinear_binary_with_target_pipeline_class,
+    linear_regression_pipeline,
+    nonlinear_binary_with_target_pipeline,
 ):
-    pipeline_ = linear_regression_pipeline_class({})
+    pipeline_ = linear_regression_pipeline
     if graph_type == "graph":
-        pipeline_ = nonlinear_binary_with_target_pipeline_class({})
+        pipeline_ = nonlinear_binary_with_target_pipeline
 
     pipeline_parameters = pipeline_.parameters
     expected_nodes = pipeline_.component_graph.component_dict
