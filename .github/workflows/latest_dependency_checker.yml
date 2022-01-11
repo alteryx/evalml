@@ -32,3 +32,4 @@ jobs:
           base: update_latest_dep_contributing
           assignees: machineFL
           reviewers: machineAYX, @alteryx/evalml
+          team-reviewers: alteryx/evalml
