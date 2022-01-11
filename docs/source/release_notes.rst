@@ -6,6 +6,7 @@ Release Notes
     * Fixes
         * Standardized names of featurization components :pr:`3192`
     * Changes
+        * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
     * Documentation Changes
     * Testing Changes
 
