@@ -35,13 +35,11 @@ from evalml.utils import infer_feature_types
 )
 @pytest.mark.parametrize("gap", [0, 1, 5])
 @pytest.mark.parametrize("forecast_horizon", [1, 5, 10])
-@pytest.mark.parametrize("length_or_freq", ["length", "freq"])
 @patch("evalml.pipelines.components.LinearRegressor.fit")
 @patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 def test_time_series_pipeline_validates_holdout_data(
     mock_fit_lr,
     mock_fit_linear,
-    length_or_freq,
     forecast_horizon,
     gap,
     pipeline_class,
@@ -60,16 +58,9 @@ def test_time_series_pipeline_validates_holdout_data(
         },
     )
     X, y = ts_data
-
     TRAIN_LENGTH = 15
     X_train, y_train = X.iloc[:TRAIN_LENGTH], y.iloc[:TRAIN_LENGTH]
-
-    if length_or_freq == "length":
-        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon + 2]
-    elif length_or_freq == "freq":
-        dates = pd.date_range("2020-10-16", periods=16)
-        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon]
-        X["date"] = dates[gap + 1 : gap + 1 + len(X)]
+    X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon + 2]
 
     pl.fit(X_train, y_train)
 
@@ -270,7 +261,7 @@ def test_transform_all_but_final_for_time_series(
     pipeline = TimeSeriesRegressionPipeline(
         [
             "Time Series Featurizer",
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             "Random Forest Regressor",
         ],
         parameters={
@@ -377,7 +368,7 @@ def test_predict_and_predict_in_sample(
         mock_to_check = mock_regressor_predict
     mock_to_check.side_effect = lambda x: x.iloc[: x.shape[0], 0]
 
-    component_graph = ["DateTime Featurization Component", estimator_name]
+    component_graph = ["DateTime Featurizer", estimator_name]
 
     def predict_proba(X):
         X2 = X.iloc[: X.shape[0]]
@@ -493,7 +484,7 @@ def test_predict_and_predict_in_sample_with_time_index(
 
     component_graph = [
         "Time Series Featurizer",
-        "DateTime Featurization Component",
+        "DateTime Featurizer",
         estimator_name,
     ]
     delayer_params = {
@@ -518,7 +509,7 @@ def test_predict_and_predict_in_sample_with_time_index(
     }
 
     feature_pipeline = pipeline_class(
-        ["Time Series Featurizer", "DateTime Featurization Component"],
+        ["Time Series Featurizer", "DateTime Featurizer"],
         parameters=parameters,
     )
     feature_pipeline.fit(X, target)
@@ -694,7 +685,7 @@ def test_classification_pipeline_encodes_targets(
                 "Label Encoder.y",
             ],
             "DT": [
-                "DateTime Featurization Component",
+                "DateTime Featurizer",
                 "Time Series Featurizer.x",
                 "Label Encoder.y",
             ],
@@ -1187,7 +1178,7 @@ def test_time_series_pipeline_with_detrender(ts_data):
     component_graph = {
         "Polynomial Detrender": ["Polynomial Detrender", "X", "y"],
         "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
-        "Dt": ["DateTime Featurization Component", "Time Series Featurizer.x", "y"],
+        "Dt": ["DateTime Featurizer", "Time Series Featurizer.x", "y"],
         "Regressor": [
             "Linear Regressor",
             "Dt.x",
@@ -1437,59 +1428,3 @@ def test_time_index_cannot_be_none(time_series_regression_pipeline_class):
                 }
             }
         )
-
-
-@pytest.mark.parametrize(
-    "gap,reset_index,freq",
-    [
-        (0, False, "1D"),
-        (0, True, "3D"),
-        (1, False, "1D"),
-        (1, True, "1D"),
-        (5, False, "1D"),
-        (5, True, "1D"),
-        (5, False, None),
-    ],
-)
-@pytest.mark.parametrize(
-    "pipeline_class,estimator_name",
-    [
-        (TimeSeriesRegressionPipeline, "Random Forest Regressor"),
-        (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
-        (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier"),
-    ],
-)
-def test_noninferrable_data(pipeline_class, estimator_name, gap, reset_index, freq):
-    date_range_ = pd.date_range("1/1/21", freq=freq, periods=100)
-    training_date_range = date_range_[:80]
-    if freq is None:
-        training_date_range = pd.DatetimeIndex(["12/12/1984"]).append(date_range_[1:])
-    testing_date_range = date_range_[80 + gap : 85 + gap]
-
-    X_train = pd.DataFrame(training_date_range, columns=["date"])
-    X = pd.DataFrame(testing_date_range, columns=["date"])
-
-    if not reset_index:
-        X.index = [i for i in range(80, 85)]
-
-    pl = pipeline_class(
-        component_graph=[estimator_name],
-        parameters={
-            "pipeline": {
-                "time_index": "date",
-                "gap": gap,
-                "max_delay": 1,
-                "forecast_horizon": 5,
-            },
-        },
-    )
-
-    if freq is None:
-        with pytest.raises(
-            ValueError,
-            match="The training data must have an inferrable interval frequency!",
-        ):
-            pl._are_datasets_separated_by_gap_time_index(X_train, X, gap)
-    else:
-        are_equal = pl._are_datasets_separated_by_gap_time_index(X_train, X, gap)
-        assert are_equal
