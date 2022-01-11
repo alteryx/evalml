@@ -1,7 +1,9 @@
 """Recommended action returned by a DataCheck."""
+from enum import Enum
+
 from evalml.data_checks.data_check_action import DataCheckAction
 from evalml.data_checks.data_check_action_code import DataCheckActionCode
-from enum import Enum
+from evalml.utils import classproperty
 
 
 class DataCheckActionOption:
@@ -128,10 +130,14 @@ class DataCheckActionOption:
         for _, parameter_value in self.parameters.items():
             if "parameter_type" not in parameter_value:
                 raise ValueError("Each parameter must have a parameter_type key.")
-            if parameter_value["parameter_type"] == "global":
+
+            parameter_type = DCAOParameterType.handle_dcao_parameter_type(
+                parameter_value["parameter_type"]
+            )
+            if parameter_type == DCAOParameterType.GLOBAL:
                 if "type" not in parameter_value:
                     raise ValueError("Each global parameter must have a type key.")
-            elif parameter_value["parameter_type"] == "column":
+            elif parameter_type == DCAOParameterType.GLOBAL:
                 if "columns" not in parameter_value:
                     raise ValueError(
                         "Each `column` parameter type must also have a `columns` key indicating which columns the parameter should address."
@@ -186,20 +192,69 @@ class DataCheckActionOption:
         )
 
 
-
-
 class DCAOParameterType(Enum):
     """Enum for data check action option parameter type."""
+
     GLOBAL = "global"
     """Global parameter type. Parameters that apply to the entire data set."""
 
     COLUMN = "column"
     """Column parameter type. Parameters that apply to a specific column in the data set."""
 
+    def __str__(self):
+        """String representation of the DCAOParameterType enum."""
+        parameter_type_dict = {
+            DCAOParameterType.GLOBAL.name: "global",
+            DCAOParameterType.COLUMN.name: "column",
+        }
+        return parameter_type_dict[self.name]
+
+    @classproperty
+    def _all_values(cls):
+        return {pt.value.upper(): pt for pt in cls.all_problem_types}
+
+    @classproperty
+    def all_problem_types(cls):
+        """Get a list of all defined parameter types.
+
+        Returns:
+            list(DCAOParameterType): List of all defined parameter types.
+        """
+        return list(cls)
+
+    @staticmethod
+    def handle_dcao_parameter_type(dcao_parameter_type):
+        """Handles the data check action option parameter type by either returning the DCAOParameterType enum or converting from a str.
+
+        Args:
+            dcao_parameter_type (str or DCAOParameterType): Data check action option parameter type that needs to be handled.
+
+        Returns:
+            DCAOParameterType enum
+
+        Raises:
+            KeyError: If input is not a valid DCAOParameterType enum value.
+            ValueError: If input is not a string or DCAOParameterType object.
+
+        """
+        if isinstance(dcao_parameter_type, str):
+            try:
+                tpe = DCAOParameterType._all_values[dcao_parameter_type.upper()]
+            except KeyError:
+                raise KeyError(
+                    "Problem type '{}' does not exist".format(dcao_parameter_type)
+                )
+            return tpe
+        if isinstance(dcao_parameter_type, DCAOParameterType):
+            return dcao_parameter_type
+        raise ValueError(
+            "`handle_dcao_parameter_type` was not passed a str or DCAOParameterType object"
+        )
 
 
 class DCAOParameterAllowedValuesType(Enum):
     """Enum for data check action option parameter allowed values type."""
+
     CATEGORICAL = "categorical"
     """Categorical allowed values type. Parameters that have a set of allowed values."""
 

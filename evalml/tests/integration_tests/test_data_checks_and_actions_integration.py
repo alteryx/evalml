@@ -127,7 +127,6 @@ def test_data_checks_impute_cols(problem_type):
         random_seed=0,
     )
 
-    y_t = ww.init_series(pd.Series([0, 1, 1, None, None]))
     action_pipeline.fit(X, y)
     _, y_t = action_pipeline.transform(X, y)
     assert_series_equal(y_expected, y_t)
