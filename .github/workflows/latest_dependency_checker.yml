@@ -31,4 +31,4 @@ jobs:
           delete-branch: true
           base: update_latest_dep_contributing
           assignees: machineFL
-          reviewers: machineAYX, alteryx/evalml
+          reviewers: machineAYX, @alteryx/evalml
