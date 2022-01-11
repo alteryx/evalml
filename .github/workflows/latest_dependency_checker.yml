@@ -29,5 +29,5 @@ jobs:
           branch: latest-dep-update
           branch-suffix: short-commit-hash
           delete-branch: true
-          base: main
+          base: update_latest_dep_contributing
           reviewers: angela97lin, dsherry, jeremyliweishih, freddyaboulton, bchen1116, chukarsten, ParthivNaresh
