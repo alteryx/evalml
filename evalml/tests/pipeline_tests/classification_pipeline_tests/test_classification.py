@@ -30,7 +30,7 @@ def test_new_unique_targets_in_score(
 @pytest.mark.parametrize("num_unique", [1, 2, 3])
 @pytest.mark.parametrize("pipeline", ["binary", "multiclass"])
 def test_invalid_targets_classification_pipeline(
-    num_unique, pipeline, dummy_binary_pipeline_class, dummy_multiclass_pipeline_class
+    num_unique, pipeline, dummy_binary_pipeline, dummy_multiclass_pipeline
 ):
     X = pd.DataFrame([i for i in range(30)])
 
@@ -42,7 +42,7 @@ def test_invalid_targets_classification_pipeline(
         y = pd.Series([i % 3 for i in range(30)])
 
     if pipeline == "binary":
-        mock_binary_pipeline = dummy_binary_pipeline_class(parameters={})
+        mock_binary_pipeline = dummy_binary_pipeline
         if num_unique in [1, 3]:
             with pytest.raises(
                 ValueError, match="Binary pipelines require y to have 2 unique classes!"
@@ -51,7 +51,7 @@ def test_invalid_targets_classification_pipeline(
         else:
             assert mock_binary_pipeline.fit(X, y)
     elif pipeline == "multiclass":
-        mock_multi_pipeline = dummy_multiclass_pipeline_class(parameters={})
+        mock_multi_pipeline = dummy_multiclass_pipeline
         if num_unique in [1, 2]:
             with pytest.raises(
                 ValueError,

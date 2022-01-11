@@ -513,7 +513,7 @@ def X_y_categorical_classification():
 
 @pytest.fixture
 def X_y_based_on_pipeline_or_problem_type(X_y_binary, X_y_multi, X_y_regression):
-    def _X_y_based_on_pipeline(pipeline_or_type):
+    def _X_y_based_on_pipeline_or_problem_type(pipeline_or_type):
         problem_types = {
             ProblemTypes.BINARY: "binary",
             ProblemTypes.MULTICLASS: "multiclass",
@@ -538,7 +538,7 @@ def X_y_based_on_pipeline_or_problem_type(X_y_binary, X_y_multi, X_y_regression)
             X, y = X_y_regression
         return X, y
 
-    return _X_y_based_on_pipeline
+    return _X_y_based_on_pipeline_or_problem_type
 
 
 @pytest.fixture()
