@@ -3,14 +3,17 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Standardized names of featurization components :pr:`3192`
         * Fully split numeric and categorical data for split pipelines in ``DefaultAlgorithm`` :pr:`3209`
     * Changes
+        * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
 
 
 **v0.41.0 Jan. 06, 2022**

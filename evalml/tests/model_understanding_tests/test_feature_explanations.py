@@ -16,7 +16,7 @@ def elasticnet_component_graph():
     return [
         "Imputer",
         "One Hot Encoder",
-        "DateTime Featurization Component",
+        "DateTime Featurizer",
         "Elastic Net Classifier",
     ]
 
