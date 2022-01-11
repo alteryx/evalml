@@ -44,7 +44,7 @@ def get_default_primary_search_objective(problem_type):
         "binary": "Log Loss Binary",
         "multiclass": "Log Loss Multiclass",
         "regression": "R2",
-        "time series regression": "R2",
+        "time series regression": "MedianAE",
         "time series binary": "Log Loss Binary",
         "time series multiclass": "Log Loss Multiclass",
     }[problem_type.value]
