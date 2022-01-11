@@ -20,6 +20,10 @@ Release Notes
     * Enhancements
         * Added string support for DataCheckActionCode :pr:`3167`
         * Added ``DataCheckActionOption`` class :pr:`3134`
+<<<<<<< HEAD
+=======
+        * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
+>>>>>>> 702f3222bb74e924c1ce2f6e538f1a04ee93550d
         * Add issue templates for bugs, feature requests and documentation improvements for GitHub :pr:`3199`
     * Fixes
         * Fix bug where prediction explanations ``class_name`` was shown as float for boolean targets :pr:`3179`
