@@ -218,7 +218,7 @@ def test_init_bad_graphs():
 
     graph_with_unconnected_imputer = {
         "Imputer": ["Imputer", "X", "y"],
-        "DateTime": ["DateTime Featurization Component", "X", "y"],
+        "DateTime": ["DateTime Featurizer", "X", "y"],
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "DateTime.x",
@@ -1824,14 +1824,14 @@ class SubsetData(Transformer):
                     "Imputer": ["Imputer", "X", "y"],
                     "Double": [DoubleTransform, "X", "y"],
                     "DateTime 1": [
-                        "DateTime Featurization Component",
+                        "DateTime Featurizer",
                         "Imputer.x",
                         "y",
                     ],
                     "ET": ["Extra Trees Regressor", "DateTime 1.x", "Double.y"],
                     "Double 2": [DoubleTransform, "X", "y"],
                     "DateTime 2": [
-                        "DateTime Featurization Component",
+                        "DateTime Featurizer",
                         "Imputer.x",
                         "y",
                     ],
@@ -1842,7 +1842,7 @@ class SubsetData(Transformer):
                         "Double 3.y",
                     ],
                     "DateTime 3": [
-                        "DateTime Featurization Component",
+                        "DateTime Featurizer",
                         "Imputer.x",
                         "y",
                     ],
@@ -1912,14 +1912,14 @@ class SubsetData(Transformer):
                     "Imputer": ["Imputer", "X", "y"],
                     "Double": [DoubleTransform, "X", "y"],
                     "DateTime 1": [
-                        "DateTime Featurization Component",
+                        "DateTime Featurizer",
                         "Imputer.x",
                         "y",
                     ],
                     "ET": ["Extra Trees Regressor", "DateTime 1.x", "Double.y"],
                     "Double 2": [DoubleTransform, "X", "y"],
                     "DateTime 2": [
-                        "DateTime Featurization Component",
+                        "DateTime Featurizer",
                         "Imputer.x",
                         "y",
                     ],
@@ -1930,7 +1930,7 @@ class SubsetData(Transformer):
                         "Double 3.y",
                     ],
                     "DateTime 3": [
-                        "DateTime Featurization Component",
+                        "DateTime Featurizer",
                         "Imputer.x",
                         "y",
                     ],
