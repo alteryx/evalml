@@ -1,4 +1,4 @@
-name: Dependency update checker
+name: Dummy dependency flow
 on:
   pull_request:
     types: [opened, synchronize]
@@ -18,6 +18,8 @@ jobs:
         id: vars
         run: |
           make installdeps
+          export DEPENDENCY_FILE_PATH=evalml/tests/dependency_update_check/latest_dependency_versions.txt
+          evalml/tests/dependency_update_check/make_deps_diff.sh
           cat evalml/tests/dependency_update_check/latest_dependency_versions.txt
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v3
@@ -32,4 +34,4 @@ jobs:
           delete-branch: true
           base: update_latest_dep_contributing
           assignees: machineFL
-          reviewers: machineAYX, "alteryx/evalml"
+          reviewers: machineAYX, @alteryx/evalml
