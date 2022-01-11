@@ -113,7 +113,7 @@ def test_invalid_targets_time_series_classification_pipeline(
         if num_unique in [1, 3]:
             with pytest.raises(
                 ValueError,
-                match="Time Series Binary pipelines require y to have 2 unique classes!",
+                match="Binary pipelines require y to have 2 unique classes!",
             ):
                 mock_binary_pipeline.fit(X, y)
         else:
@@ -123,7 +123,7 @@ def test_invalid_targets_time_series_classification_pipeline(
         if num_unique in [1, 2]:
             with pytest.raises(
                 ValueError,
-                match="Time Series Multiclass pipelines require y to have 3 or more unique classes!",
+                match="Multiclass pipelines require y to have 3 or more unique classes!",
             ):
                 mock_multi_pipeline.fit(X, y)
         else:

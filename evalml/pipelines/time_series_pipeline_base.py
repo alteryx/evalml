@@ -59,30 +59,6 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         y = infer_feature_types(y)
         return X, y
 
-    def fit(self, X, y):
-        """Fit a time series pipeline.
-
-        Args:
-            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
-            y (pd.Series, np.ndarray): The target training targets of length [n_samples].
-
-        Returns:
-            self
-
-        Raises:
-            ValueError: If the target is not numeric.
-        """
-        X, y = self._convert_to_woodwork(X, y)
-
-        if self.problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
-            if "numeric" not in y.ww.semantic_tags:
-                raise ValueError(
-                    f"Time Series Regression pipeline can only handle numeric target data!"
-                )
-
-        self._fit(X, y)
-        return self
-
     @staticmethod
     def _move_index_forward(index, gap):
         """Fill in the index of the gap features and values with the right values."""
