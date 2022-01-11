@@ -59,7 +59,7 @@ class ClassificationPipeline(PipelineBase):
         y = infer_feature_types(y)
 
         if is_binary(self.problem_type) and y.nunique() != 2:
-            raise ValueError(f"Binary pipelines require y to have 2 unique classes!")
+            raise ValueError("Binary pipelines require y to have 2 unique classes!")
         elif is_multiclass(self.problem_type) and y.nunique() in [1, 2]:
             raise ValueError(
                 "Multiclass pipelines require y to have 3 or more unique classes!"

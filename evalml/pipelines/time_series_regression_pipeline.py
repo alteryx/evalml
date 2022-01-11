@@ -57,7 +57,7 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
 
         if "numeric" not in y.ww.semantic_tags:
             raise ValueError(
-                f"Time Series Regression pipeline can only handle numeric target data!"
+                "Time Series Regression pipeline can only handle numeric target data!"
             )
 
         self._fit(X, y)
