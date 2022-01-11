@@ -427,7 +427,7 @@ def test_default_algorithm_time_series(
     assert {p.model_family for p in first_batch} == naive_model_families
     for pipeline in first_batch:
         assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
-        assert pipeline.parameters["DateTime Featurization Component"]["time_index"]
+        assert pipeline.parameters["DateTime Featurizer"]["time_index"]
     add_result(algo, first_batch)
 
     second_batch = algo.next_batch()
@@ -435,7 +435,7 @@ def test_default_algorithm_time_series(
     assert {p.model_family for p in second_batch} == naive_model_families
     for pipeline in second_batch:
         assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
-        assert pipeline.parameters["DateTime Featurization Component"]["time_index"]
+        assert pipeline.parameters["DateTime Featurizer"]["time_index"]
     add_result(algo, second_batch)
 
     final_batch = algo.next_batch()
@@ -447,7 +447,7 @@ def test_default_algorithm_time_series(
         assert algo._tuners[pipeline.name]
         assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
         if not isinstance(pipeline.estimator, (ARIMARegressor, ProphetRegressor)):
-            assert pipeline.parameters["DateTime Featurization Component"]["time_index"]
+            assert pipeline.parameters["DateTime Featurizer"]["time_index"]
     add_result(algo, final_batch)
 
     long_explore = algo.next_batch()
