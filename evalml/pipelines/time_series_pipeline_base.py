@@ -2,6 +2,7 @@
 import pandas as pd
 import woodwork as ww
 
+from evalml.exceptions import PartialDependenceError, PartialDependenceErrorCode
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.utils import drop_rows_with_nans, infer_feature_types
@@ -98,8 +99,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         )
         freq = X_frequency_dict[test_copy.ww.time_index]
         if freq is None:
-            raise ValueError(
-                "The training data must have an inferrable interval frequency!"
+            raise PartialDependenceError(
+                "The training data must have an inferrable interval frequency!",
+                PartialDependenceErrorCode.NO_FREQUENCY_INFERRED
             )
 
         first_testing_date = test_copy[test_copy.ww.time_index].iloc[0]
@@ -128,12 +130,13 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             X_train, X, self.gap
         )
         if not (right_length and X_separated_by_gap):
-            raise ValueError(
+            raise PartialDependenceError(
                 f"Holdout data X must have {self.forecast_horizon} rows (value of forecast horizon) "
                 f"and the first value indicated by the column {self.time_index} needs to "
                 f"start {self.gap + 1} units ahead of the training data. "
                 f"Data received - Length X: {len(X)}, "
-                f"X value start: {X[self.time_index].iloc[0]}, X_train value end {X_train[self.time_index].iloc[-1]}."
+                f"X value start: {X[self.time_index].iloc[0]}, X_train value end {X_train[self.time_index].iloc[-1]}.",
+                PartialDependenceErrorCode.INVALID_HOLDOUT_SET
             )
 
     def _add_training_data_to_X_Y(self, X, y, X_train, y_train):

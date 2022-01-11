@@ -7,7 +7,7 @@ import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from evalml.exceptions import PipelineNotYetFittedError
+from evalml.exceptions import PipelineNotYetFittedError, PartialDependenceError
 from evalml.objectives import FraudCost, get_objective
 from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
@@ -74,13 +74,13 @@ def test_time_series_pipeline_validates_holdout_data(
     pl.fit(X_train, y_train)
 
     with pytest.raises(
-        ValueError, match=f"Holdout data X must have {forecast_horizon}"
+        PartialDependenceError, match=f"Holdout data X must have {forecast_horizon}"
     ):
         pl.predict(X, None, X_train, y_train)
 
     if hasattr(pl, "predict_proba"):
         with pytest.raises(
-            ValueError, match=f"Holdout data X must have {forecast_horizon}"
+            PartialDependenceError, match=f"Holdout data X must have {forecast_horizon}"
         ):
             pl.predict_proba(X, X_train, y_train)
 
