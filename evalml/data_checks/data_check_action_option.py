@@ -87,8 +87,12 @@ class DataCheckActionOption:
 
         parameters_dict = self.parameters.copy()
         for parameter_dict in parameters_dict.values():
-            parameter_dict["parameter_type"] = DCAOParameterType.handle_dcao_parameter_type(parameter_dict["parameter_type"]).value
-        
+            parameter_dict[
+                "parameter_type"
+            ] = DCAOParameterType.handle_dcao_parameter_type(
+                parameter_dict["parameter_type"]
+            ).value
+
         action_option_dict.update({"parameters": parameters_dict})
         return action_option_dict
 
