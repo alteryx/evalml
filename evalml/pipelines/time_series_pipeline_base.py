@@ -4,7 +4,6 @@ import woodwork as ww
 
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
-from evalml.problem_types import ProblemTypes
 from evalml.utils import drop_rows_with_nans, infer_feature_types
 
 

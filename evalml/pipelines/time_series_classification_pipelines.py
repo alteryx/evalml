@@ -1,7 +1,5 @@
 """Pipeline base class for time-series classification problems."""
-import numpy as np
 import pandas as pd
-import woodwork as ww
 
 from .binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,

@@ -4,7 +4,7 @@ import pandas as pd
 import woodwork as ww
 
 from evalml.pipelines import PipelineBase
-from evalml.problem_types import ProblemTypes, is_binary, is_multiclass
+from evalml.problem_types import is_binary, is_multiclass
 from evalml.utils import infer_feature_types
 
 
