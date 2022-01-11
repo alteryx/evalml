@@ -264,29 +264,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             for estimator in get_estimators(self.problem_type)
             if estimator not in self._naive_estimators()
         ]
-
-        if is_time_series(self.problem_type):
-            pipelines = [
-                make_pipeline(
-                    X=self.X,
-                    y=self.y,
-                    estimator=estimator,
-                    problem_type=self.problem_type,
-                    sampler_name=self.sampler_name,
-                    parameters=self._pipeline_params,
-                    known_in_advance=self._pipeline_params.get("pipeline", {}).get(
-                        "known_in_advance", None
-                    ),
-                )
-                for estimator in estimators
-            ]
-        else:
-            pipelines = [
-                self._make_split_pipeline(
-                    estimator,
-                )
-                for estimator in estimators
-            ]
+        pipelines = self._make_pipelines_helper(estimators)
 
         if self._split:
             self._rename_pipeline_parameters_custom_hyperparameters(pipelines)
@@ -328,6 +306,12 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         estimators.sort(key=lambda x: x[1])
         estimators = estimators[:n]
         estimators = [estimator[0].__class__ for estimator in estimators]
+        pipelines = self._make_pipelines_helper(estimators)
+        self._top_n_pipelines = pipelines
+        return self._create_n_pipelines(pipelines, self.num_long_explore_pipelines)
+
+    def _make_pipelines_helper(self, estimators):
+        pipelines = []
         if is_time_series(self.problem_type):
             pipelines = [
                 make_pipeline(
@@ -347,8 +331,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             pipelines = [
                 self._make_split_pipeline(estimator) for estimator in estimators
             ]
-        self._top_n_pipelines = pipelines
-        return self._create_n_pipelines(pipelines, self.num_long_explore_pipelines)
+        return pipelines
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate.
