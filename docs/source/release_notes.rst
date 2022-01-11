@@ -6,6 +6,7 @@ Release Notes
         * Standardized names of featurization components :pr:`3192`
     * Changes
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
+        * Updated dependency bot workflow to remove outdated description and add new configuration to delete branches automatically :pr:`3212`
     * Documentation Changes
     * Testing Changes
 
