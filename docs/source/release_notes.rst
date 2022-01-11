@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Standardized names of featurization components :pr:`3192`
+        * Removed potential prediction explanations failure when pipelines predicted a class with probability 1 :pr:`3221`
     * Changes
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
     * Documentation Changes
