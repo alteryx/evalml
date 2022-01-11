@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
         * Required the separation of training and test data by ``gap`` + 1 units to be verified by ``time_index`` for time series problems :pr:`3208`
     * Fixes
+        * Standardized names of featurization components :pr:`3192`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -11,6 +12,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
 
 
 **v0.41.0 Jan. 06, 2022**
