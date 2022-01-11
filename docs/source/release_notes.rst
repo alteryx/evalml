@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
+        * Standardized names of featurization components :pr:`3192`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -11,6 +12,7 @@ Release Notes
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
 
 
 **v0.41.0 Jan. 06, 2022**

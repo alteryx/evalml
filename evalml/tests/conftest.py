@@ -920,7 +920,7 @@ def time_series_regression_pipeline_class():
 
         component_graph = [
             "Time Series Featurizer",
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             "Random Forest Regressor",
         ]
 
@@ -941,14 +941,14 @@ def time_series_classification_component_graph():
             "Label Encoder.x",
             "Label Encoder.y",
         ],
-        "DateTime Featurization Component": [
-            "DateTime Featurization Component",
+        "DateTime Featurizer": [
+            "DateTime Featurizer",
             "Time Series Featurizer.x",
             "Label Encoder.y",
         ],
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
-            "DateTime Featurization Component.x",
+            "DateTime Featurizer.x",
             "Label Encoder.y",
         ],
     }

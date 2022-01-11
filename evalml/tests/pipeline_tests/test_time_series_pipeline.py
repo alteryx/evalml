@@ -353,7 +353,7 @@ def test_transform_all_but_final_for_time_series(
     pipeline = TimeSeriesRegressionPipeline(
         [
             "Time Series Featurizer",
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             "Random Forest Regressor",
         ],
         parameters={
@@ -460,7 +460,7 @@ def test_predict_and_predict_in_sample(
         mock_to_check = mock_regressor_predict
     mock_to_check.side_effect = lambda x: x.iloc[: x.shape[0], 0]
 
-    component_graph = ["DateTime Featurization Component", estimator_name]
+    component_graph = ["DateTime Featurizer", estimator_name]
 
     def predict_proba(X):
         X2 = X.iloc[: X.shape[0]]
@@ -576,7 +576,7 @@ def test_predict_and_predict_in_sample_with_time_index(
 
     component_graph = [
         "Time Series Featurizer",
-        "DateTime Featurization Component",
+        "DateTime Featurizer",
         estimator_name,
     ]
     delayer_params = {
@@ -601,7 +601,7 @@ def test_predict_and_predict_in_sample_with_time_index(
     }
 
     feature_pipeline = pipeline_class(
-        ["Time Series Featurizer", "DateTime Featurization Component"],
+        ["Time Series Featurizer", "DateTime Featurizer"],
         parameters=parameters,
     )
     feature_pipeline.fit(X, target)
@@ -800,7 +800,7 @@ def test_classification_pipeline_encodes_targets(
                 "Label Encoder.y",
             ],
             "DT": [
-                "DateTime Featurization Component",
+                "DateTime Featurizer",
                 "Time Series Featurizer.x",
                 "Label Encoder.y",
             ],
@@ -1298,7 +1298,7 @@ def test_time_series_pipeline_with_detrender(ts_data):
     component_graph = {
         "Polynomial Detrender": ["Polynomial Detrender", "X", "y"],
         "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
-        "Dt": ["DateTime Featurization Component", "Time Series Featurizer.x", "y"],
+        "Dt": ["DateTime Featurizer", "Time Series Featurizer.x", "y"],
         "Regressor": [
             "Linear Regressor",
             "Dt.x",
