@@ -2,6 +2,7 @@ name: Dependency update checker
 on:
   schedule:
       - cron: '0 * * * *'
+  workflow_dispatch:
 jobs:
   update-deps:
     runs-on: ubuntu-latest
@@ -18,7 +19,7 @@ jobs:
           evalml/tests/dependency_update_check/make_deps_diff.sh
           cat evalml/tests/dependency_update_check/latest_dependency_versions.txt
       - name: Create Pull Request
-        uses: FeatureLabs/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.MACHINEFL_DEPENDENCY_CHECKER_TOKEN }}
           commit-message: Update latest dependencies
