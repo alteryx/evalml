@@ -5,11 +5,6 @@ import logging
 from woodwork import logical_types
 
 from ..exceptions import PartialDependenceError, PartialDependenceErrorCode
-from . import (
-    TimeSeriesBinaryClassificationPipeline,
-    TimeSeriesMulticlassClassificationPipeline,
-    TimeSeriesRegressionPipeline,
-)
 from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
@@ -19,6 +14,11 @@ from .regression_pipeline import RegressionPipeline
 
 from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
+from evalml.pipelines import (
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline,
+    TimeSeriesRegressionPipeline,
+)
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
