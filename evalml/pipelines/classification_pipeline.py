@@ -4,6 +4,7 @@ import pandas as pd
 import woodwork as ww
 
 from evalml.pipelines import PipelineBase
+from evalml.problem_types import is_binary, is_multiclass
 from evalml.utils import infer_feature_types
 
 
@@ -50,9 +51,20 @@ class ClassificationPipeline(PipelineBase):
 
         Returns:
             self
+
+        Raises:
+            ValueError: If the number of unique classes in y are not appropriate for the type of pipeline.
         """
         X = infer_feature_types(X)
         y = infer_feature_types(y)
+
+        if is_binary(self.problem_type) and y.nunique() != 2:
+            raise ValueError("Binary pipelines require y to have 2 unique classes!")
+        elif is_multiclass(self.problem_type) and y.nunique() in [1, 2]:
+            raise ValueError(
+                "Multiclass pipelines require y to have 3 or more unique classes!"
+            )
+
         self._fit(X, y)
         self._classes_ = list(ww.init_series(np.unique(y)))
         return self
