@@ -550,8 +550,8 @@ def test_partial_dependence_ice_plot(logistic_regression_binary_pipeline):
     assert isinstance(avg_pred, pd.DataFrame)
     assert isinstance(ind_preds, pd.DataFrame)
 
-    assert avg_pred.shape == (3, 3)
-    assert ind_preds.shape == (3, 7)
+    assert avg_pred.shape == (2, 3)
+    assert ind_preds.shape == (2, 7)
 
     ind_preds = partial_dependence(pipeline, X, features="b", kind="individual")
     assert isinstance(ind_preds, pd.DataFrame)
@@ -572,10 +572,10 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
     assert isinstance(ind_preds, list)
     assert isinstance(ind_preds[0], pd.DataFrame)
 
-    assert avg_pred.shape == (3, 3)
+    assert avg_pred.shape == (2, 3)
     assert len(ind_preds) == 5
     for ind_df in ind_preds:
-        assert ind_df.shape == (3, 3)
+        assert ind_df.shape == (2, 3)
 
     ind_preds = partial_dependence(
         pipeline, X, features=["a", "b"], grid_resolution=5, kind="individual"
@@ -585,7 +585,7 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
 
     assert len(ind_preds) == 5
     for ind_df in ind_preds:
-        assert ind_df.shape == (3, 3)
+        assert ind_df.shape == (2, 3)
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
