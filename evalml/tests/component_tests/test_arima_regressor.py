@@ -298,6 +298,8 @@ def test_arima_supports_boolean_features():
         ar._component_obj.fit.call_args[1]["X"]["bool_2"], X["bool_2"].astype(float)
     )
 
+    # Test that non-mocked predict does not error or produce NaNs
     ar = ARIMARegressor(time_index="dates")
     ar.fit(X, y)
-    ar.predict(X)
+    preds = ar.predict(X)
+    assert not preds.isna().any()
