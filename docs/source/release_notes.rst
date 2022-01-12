@@ -10,6 +10,7 @@
 	* Removed empty cell in text_input.ipynb :pr:`3234`
     * Changes
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
+        * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
     * Documentation Changes
     * Testing Changes
 

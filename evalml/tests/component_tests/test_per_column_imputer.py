@@ -198,6 +198,7 @@ def test_fit_transform_drop_all_nan_columns():
             "another_col": [0, 1, 2],
         }
     )
+    X.ww.init(logical_types={"all_nan": "Double"})
     strategies = {
         "all_nan": {"impute_strategy": "most_frequent"},
         "some_nan": {"impute_strategy": "most_frequent"},
@@ -212,7 +213,7 @@ def test_fit_transform_drop_all_nan_columns():
         pd.DataFrame(
             {
                 "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [np.nan, 1, 0],
+                "some_nan": [0.0, 1.0, 0.0],
                 "another_col": [0, 1, 2],
             }
         ),
@@ -227,6 +228,7 @@ def test_transform_drop_all_nan_columns():
             "another_col": [0, 1, 2],
         }
     )
+    X.ww.init(logical_types={"all_nan": "Double"})
     strategies = {
         "all_nan": {"impute_strategy": "most_frequent"},
         "some_nan": {"impute_strategy": "most_frequent"},
@@ -243,7 +245,7 @@ def test_transform_drop_all_nan_columns():
         pd.DataFrame(
             {
                 "all_nan": [np.nan, np.nan, np.nan],
-                "some_nan": [np.nan, 1, 0],
+                "some_nan": [0.0, 1.0, 0.0],
                 "another_col": [0, 1, 2],
             }
         ),
@@ -255,6 +257,7 @@ def test_transform_drop_all_nan_columns_empty():
     strategies = {
         "0": {"impute_strategy": "most_frequent"},
     }
+    X.ww.init(logical_types={0: "Double", 1: "Double", 2: "Double"})
     transformer = PerColumnImputer(impute_strategies=strategies)
     assert transformer.fit_transform(X).empty
     assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
@@ -335,6 +338,9 @@ def test_per_column_imputer_impute_all_is_false():
             "column_with_nan_included": "double",
         }
     )
+    X.ww.init(
+        logical_types={"all_nan_included": "Double", "all_nan_not_included": "Double"}
+    )
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t)
     assert_frame_equal(
@@ -344,7 +350,8 @@ def test_per_column_imputer_impute_all_is_false():
                 "all_nan_not_included": [np.nan, np.nan, np.nan],
                 "all_nan_included": [np.nan, np.nan, np.nan],
                 "column_with_nan_not_included": [np.nan, 1, 0],
-                "column_with_nan_included": [0, 1, np.nan],
+                # Because of https://github.com/alteryx/evalml/issues/2055
+                "column_with_nan_included": [0.0, 1.0, 0.0],
             }
         ),
     )
