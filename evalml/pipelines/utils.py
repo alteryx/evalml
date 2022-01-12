@@ -14,11 +14,6 @@ from .regression_pipeline import RegressionPipeline
 
 from evalml.data_checks import DataCheckActionCode
 from evalml.model_family import ModelFamily
-from evalml.pipelines import (
-    TimeSeriesBinaryClassificationPipeline,
-    TimeSeriesMulticlassClassificationPipeline,
-    TimeSeriesRegressionPipeline,
-)
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
@@ -51,6 +46,13 @@ from evalml.pipelines.components.transformers.encoders.label_encoder import (
 from evalml.pipelines.components.utils import (
     get_estimators,
     handle_component_class,
+)
+from evalml.pipelines.time_series_classification_pipelines import (
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline,
+)
+from evalml.pipelines.time_series_regression_pipeline import (
+    TimeSeriesRegressionPipeline,
 )
 from evalml.problem_types import (
     ProblemTypes,
@@ -865,8 +867,7 @@ def validate_holdout_datasets(X, X_train, pipeline_params):
         pipeline_params (dict): Dictionary of time series parameters.
 
     Raises:
-        PartialDependenceError: If holdout data does not have forecast_horizon entries or if datasets
-        are not separated by gap.
+        PartialDependenceError: If holdout data does not have forecast_horizon entries or if datasets are not separated by gap.
     """
     forecast_horizon = pipeline_params["forecast_horizon"]
     gap = pipeline_params["gap"]
