@@ -3,11 +3,6 @@ on:
   schedule:
     - cron: '*/5 * * * *'
   workflow_dispatch:
-  workflow_run:
-    workflows: ["Lint"]
-    branches: ['latest-dep-update-[a-f0-9]+']
-    types:
-      - completed
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -16,7 +11,7 @@ jobs:
         id: find_prs
         run: |
           gh auth status
-          gh pr list --repo "${{ github.repository }}" --assignee "machineFL" --base update_latest_dep_contributing --state open --search "status:success review:required" --limit 1 --json number > dep_PRs_waiting_approval.json
+          gh pr list --repo "${{ github.repository }}" --author "machineFL" --base main --state open --search "status:success review:required" --limit 1 --json number > dep_PRs_waiting_approval.json
           dep_pull_request=$(cat dep_PRs_waiting_approval.json | grep -Eo "[0-9]*")
           echo ::set-output name=dep_pull_request::${dep_pull_request}
         env:
