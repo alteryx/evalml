@@ -1789,3 +1789,31 @@ def test_partial_dependence_preserves_woodwork_schema(mock_predict_proba, fraud_
         call_args[0][0].ww.schema == X_test.ww.schema
         for call_args in mock_predict_proba.call_args_list
     )
+
+
+def test_partial_dependence_does_not_return_all_nan_grid():
+    # In this case, the 95th percentile of "a" if we included all values
+    # would be NaN, so the resulting grid by np.linspace would be all NaN
+    # This tests verifies that the grid is not all NaN
+    X = pd.DataFrame({"a": [1, 2, None, 3, 3.2, 4.5, 2.3, 1.2], "b": [4, 5, 6, 7] * 2})
+    y = pd.Series([1, 0, 0, 1] * 2)
+    X_holdout = pd.DataFrame(
+        {"a": [1, 2, None, 3, 3.2, 4.5, 2.3, 1.2], "b": [4, 5, 6, 7] * 2}
+    )
+
+    pipeline = BinaryClassificationPipeline(
+        component_graph={
+            "Label Encoder": ["Label Encoder", "X", "y"],
+            "Imputer": ["Imputer", "X", "Label Encoder.y"],
+            "Random Forest Classifier": [
+                "Random Forest Classifier",
+                "Imputer.x",
+                "Label Encoder.y",
+            ],
+        }
+    )
+    pipeline.fit(X, y)
+
+    dep = partial_dependence(pipeline, X_holdout, "a", grid_resolution=4)
+    assert not dep.feature_values.isna().any()
+    assert not dep.partial_dependence.isna().any()
