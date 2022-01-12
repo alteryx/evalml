@@ -5,8 +5,8 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks import (
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
     OutliersDataCheck,
@@ -43,7 +43,7 @@ def test_outliers_data_check_warnings():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     metadata={"rows": [0, 3, 5, 10]},
@@ -82,7 +82,7 @@ def test_outliers_data_check_warnings_with_duplicate_outlier_indices():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     metadata={"rows": [0, 3]},
@@ -130,7 +130,7 @@ def test_outliers_data_check_input_formats():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     metadata={"rows": [0, 3, 5, 10]},
@@ -159,7 +159,7 @@ def test_outliers_data_check_input_formats():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     metadata={"rows": [0, 3, 5, 10]},
@@ -197,7 +197,7 @@ def test_outliers_data_check_string_cols():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     metadata={"rows": [0]},
@@ -248,7 +248,7 @@ def test_outliers_data_check_warnings_has_nan():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
                     metadata={"rows": [3, 5, 10]},

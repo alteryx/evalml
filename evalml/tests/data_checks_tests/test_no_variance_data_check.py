@@ -4,8 +4,8 @@ import pytest
 import woodwork as ww
 
 from evalml.data_checks import (
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
@@ -61,11 +61,12 @@ labels_1_unique = DataCheckError(
     message_code=DataCheckMessageCode.NO_VARIANCE,
     details={"columns": ["Y"]},
 ).to_dict()
-drop_feature_action = DataCheckAction(
+drop_feature_action_option = DataCheckActionOption(
     DataCheckActionCode.DROP_COL,
     data_check_name=no_variance_data_check_name,
     metadata={"columns": ["feature"]},
 ).to_dict()
+
 
 cases = [
     (
@@ -106,7 +107,7 @@ cases = [
             "warnings": [],
             "errors": [feature_0_unique],
             "actions": {
-                "action_list": [drop_feature_action],
+                "action_list": [drop_feature_action_option],
                 "default_action": None,
             },
         },
@@ -119,7 +120,7 @@ cases = [
             "warnings": [],
             "errors": [feature_0_unique, labels_1_unique],
             "actions": {
-                "action_list": [drop_feature_action],
+                "action_list": [drop_feature_action_option],
                 "default_action": None,
             },
         },
@@ -132,7 +133,7 @@ cases = [
             "warnings": [],
             "errors": [feature_1_unique],
             "actions": {
-                "action_list": [drop_feature_action],
+                "action_list": [drop_feature_action_option],
                 "default_action": None,
             },
         },
@@ -180,7 +181,7 @@ cases = [
             ],
             "errors": [],
             "actions": {
-                "action_list": [drop_feature_action],
+                "action_list": [drop_feature_action_option],
                 "default_action": None,
             },
         },
@@ -207,7 +208,10 @@ cases = [
                 ).to_dict(),
             ],
             "errors": [],
-            "actions": {"action_list": [drop_feature_action], "default_action": None},
+            "actions": {
+                "action_list": [drop_feature_action_option],
+                "default_action": None,
+            },
         },
     ),
     (
@@ -218,7 +222,7 @@ cases = [
             "warnings": [],
             "errors": [feature_1_unique, labels_1_unique],
             "actions": {
-                "action_list": [drop_feature_action],
+                "action_list": [drop_feature_action_option],
                 "default_action": None,
             },
         },
@@ -261,7 +265,7 @@ cases = [
             ],
             "errors": [],
             "actions": {
-                "action_list": [drop_feature_action],
+                "action_list": [drop_feature_action_option],
                 "default_action": None,
             },
         },
@@ -274,7 +278,7 @@ cases = [
             "warnings": [],
             "errors": [feature_1_unique, labels_1_unique],
             "actions": {
-                "action_list": [drop_feature_action],
+                "action_list": [drop_feature_action_option],
                 "default_action": None,
             },
         },

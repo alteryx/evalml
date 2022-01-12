@@ -344,7 +344,7 @@ def test_make_pipeline_from_actions(problem_type):
             metadata={
                 "columns": None,
                 "is_target": True,
-                "impute_strategy": "most_frequent",
+                "parameters": {"impute_strategy": "most_frequent"},
             },
         ),
         DataCheckAction(DataCheckActionCode.DROP_ROWS, None, metadata={"rows": [1, 2]}),

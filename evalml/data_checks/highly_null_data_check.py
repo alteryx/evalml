@@ -1,9 +1,8 @@
 """Data check that checks if there are any highly-null columns and rows in the input."""
-
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
 )
@@ -76,6 +75,7 @@ class HighlyNullDataCheck(DataCheck):
             ...     "actions": {
             ...         "action_list": [{"code": "DROP_COL",
             ...                         "data_check_name": "HighlyNullDataCheck",
+            ...                         "parameters": {},
             ...                         "metadata": {"columns": ["all_null", "lots_of_null"], "rows": None}}],
             ...         "default_action": None
             ...     }
@@ -108,11 +108,13 @@ class HighlyNullDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_ROWS",
             ...                  "data_check_name": "HighlyNullDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": None, "rows": [0, 1, 2, 3]}},
-            ...                   {"code": "DROP_COL",
+            ...                  {"code": "DROP_COL",
             ...                  "data_check_name": "HighlyNullDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["all_null"], "rows": None}}],
-            ...                 "default_action": None}}
+            ...                  "default_action": None}}
 
         """
         results = {
@@ -139,11 +141,12 @@ class HighlyNullDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
+            rows_to_drop = highly_null_rows.index.tolist()
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=self.name,
-                    metadata={"rows": highly_null_rows.index.tolist()},
+                    metadata={"rows": rows_to_drop},
                 ).to_dict()
             )
 
@@ -168,13 +171,15 @@ class HighlyNullDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
+
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
                     metadata={"columns": list(highly_null_cols)},
                 ).to_dict()
             )
+
         return results
 
     @staticmethod

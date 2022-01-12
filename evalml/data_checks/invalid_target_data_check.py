@@ -3,11 +3,12 @@ import woodwork as ww
 
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
+    DCAOParameterType,
 )
 from evalml.objectives import get_objective
 from evalml.problem_types import (
@@ -117,10 +118,10 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 "code": "TARGET_HAS_NULL"}],
             ...     "actions": {"action_list": [{"code": "IMPUTE_COL",
             ...                  "data_check_name": "InvalidTargetDataCheck",
+            ...                  "parameters": {"impute_strategy": {"parameter_type": "global", "type": "category", "categories": ["mean", "most_frequent"], "default_value": "mean"}},
             ...                  "metadata": {"columns": None,
             ...                               "rows": None,
-            ...                               "is_target": True,
-            ...                               "impute_strategy": "mean"}}],
+            ...                               "is_target": True}}],
             ...                 "default_action": None}}
 
             If the target values don't match the problem type passed, an error will be raised.
@@ -244,17 +245,24 @@ class InvalidTargetDataCheck(DataCheck):
                 ),
                 results,
             )
-            impute_strategy = (
-                "mean" if is_regression(self.problem_type) else "most_frequent"
-            )
+
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=self.name,
-                    metadata={
-                        "is_target": True,
-                        "impute_strategy": impute_strategy,
+                    parameters={
+                        "impute_strategy": {
+                            "parameter_type": DCAOParameterType.GLOBAL,
+                            "type": "category",
+                            "categories": ["mean", "most_frequent"]
+                            if is_regression(self.problem_type)
+                            else ["most_frequent"],
+                            "default_value": "mean"
+                            if is_regression(self.problem_type)
+                            else "most_frequent",
+                        }
                     },
+                    metadata={"is_target": True},
                 ).to_dict()
             )
         return results

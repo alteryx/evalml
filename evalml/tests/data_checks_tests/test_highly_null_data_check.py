@@ -3,8 +3,8 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks import (
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
     HighlyNullDataCheck,
@@ -127,12 +127,12 @@ def test_highly_null_data_check_warnings(
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
                     metadata={"rows": [0, 1, 2, 3, 4]},
                 ).to_dict(),
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["lots_of_null", "all_null"]},
@@ -171,12 +171,12 @@ def test_highly_null_data_check_warnings(
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
                     metadata={"rows": [0, 1, 2, 3]},
                 ).to_dict(),
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["lots_of_null", "all_null"]},
@@ -204,7 +204,7 @@ def test_highly_null_data_check_warnings(
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["all_null"]},
@@ -245,12 +245,12 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
                     metadata={"rows": [0, 1, 2, 3, 4]},
                 ).to_dict(),
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["all_null"]},
@@ -279,11 +279,11 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["lots_of_null", "all_null"]},
-                ).to_dict(),
+                ).to_dict()
             ],
             "default_action": None,
         },
@@ -324,12 +324,12 @@ def test_highly_null_data_check_input_formats():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
                     metadata={"rows": [0]},
                 ).to_dict(),
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": [0, 1, 2]},

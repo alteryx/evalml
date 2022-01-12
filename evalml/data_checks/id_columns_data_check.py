@@ -1,8 +1,8 @@
 """Data check that checks if any of the features are likely to be ID columns."""
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
 )
@@ -57,6 +57,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "details": {"columns": ["customer_id"], "rows": None}}],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["customer_id"], "rows": None}}],
             ...                 "default_action": None}}
 
@@ -73,6 +74,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "details": {"columns": ["ID"], "rows": None}}],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["ID"], "rows": None}}],
             ...                 "default_action": None}}
 
@@ -101,6 +103,7 @@ class IDColumnsDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["Country_Rank"], "rows": None}}],
             ...                 "default_action": None}}
         """
@@ -159,8 +162,9 @@ class IDColumnsDataCheck(DataCheck):
                     details={"columns": list(id_cols_above_threshold)},
                 ).to_dict()
             )
+
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
                     metadata={"columns": list(id_cols_above_threshold)},

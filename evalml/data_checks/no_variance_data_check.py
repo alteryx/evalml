@@ -1,8 +1,8 @@
 """Data check that checks if the target or any of the features have no variance."""
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
@@ -56,6 +56,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 "code": "NO_VARIANCE"}],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "NoVarianceDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["First_Column"], "rows": None}}],
             ...                 "default_action": None}}
 
@@ -95,6 +96,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 "code": "NO_VARIANCE"}],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "NoVarianceDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["First_Column"], "rows": None}}],
             ...                 "default_action": None}}
 
@@ -117,6 +119,7 @@ class NoVarianceDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "NoVarianceDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["First_Column"], "rows": None}}],
             ...                 "default_action": None}}
 
@@ -189,7 +192,7 @@ class NoVarianceDataCheck(DataCheck):
         all_cols = zero_unique + one_unique + one_unique_with_null
         if all_cols:
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
                     metadata={"columns": all_cols},

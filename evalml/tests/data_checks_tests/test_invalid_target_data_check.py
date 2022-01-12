@@ -5,12 +5,13 @@ import woodwork as ww
 
 from evalml.automl import get_default_primary_search_objective
 from evalml.data_checks import (
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckError,
     DataCheckMessageCode,
     DataChecks,
     DataCheckWarning,
+    DCAOParameterType,
     InvalidTargetDataCheck,
 )
 from evalml.exceptions import DataCheckInitError
@@ -220,13 +221,18 @@ def test_invalid_target_data_input_formats():
         ],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=invalid_targets_data_check_name,
-                    metadata={
-                        "is_target": True,
-                        "impute_strategy": "most_frequent",
+                    parameters={
+                        "impute_strategy": {
+                            "parameter_type": DCAOParameterType.GLOBAL,
+                            "type": "category",
+                            "categories": ["most_frequent"],
+                            "default_value": "most_frequent",
+                        }
                     },
+                    metadata={"is_target": True},
                 ).to_dict()
             ],
             "default_action": None,
@@ -763,8 +769,6 @@ def test_invalid_target_data_action_for_data_with_null(
     invalid_targets_check = InvalidTargetDataCheck(
         problem_type, get_default_primary_search_objective(problem_type)
     )
-    impute_strategy = "mean" if is_regression(problem_type) else "most_frequent"
-
     expected = {
         "warnings": [],
         "errors": [
@@ -777,13 +781,22 @@ def test_invalid_target_data_action_for_data_with_null(
         ],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=invalid_targets_data_check_name,
-                    metadata={
-                        "is_target": True,
-                        "impute_strategy": impute_strategy,
+                    parameters={
+                        "impute_strategy": {
+                            "parameter_type": DCAOParameterType.GLOBAL,
+                            "type": "category",
+                            "categories": ["mean", "most_frequent"]
+                            if is_regression(problem_type)
+                            else ["most_frequent"],
+                            "default_value": "mean"
+                            if is_regression(problem_type)
+                            else "most_frequent",
+                        }
                     },
+                    metadata={"is_target": True},
                 ).to_dict()
             ],
             "default_action": None,

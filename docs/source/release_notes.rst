@@ -28,6 +28,7 @@ Release Notes
         * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
         * Updated ``DataCheck`` ``validate()`` output to return a dictionary instead of list for actions :pr:`3142`
+        * Updated validate() API to use the new ``DataCheckActionOption`` class instead of ``DataCheckAction`` :pr:`3152`
     * Documentation Changes
     * Testing Changes
         * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`

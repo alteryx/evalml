@@ -3,8 +3,8 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks import (
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
     UniquenessDataCheck,
@@ -107,7 +107,7 @@ def test_uniqueness_data_check_warnings():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=uniqueness_data_check_name,
                     metadata={"columns": ["regression_not_unique_enough"]},
@@ -139,7 +139,7 @@ def test_uniqueness_data_check_warnings():
         "errors": [],
         "actions": {
             "action_list": [
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=uniqueness_data_check_name,
                     metadata={"columns": ["multiclass_too_unique"]},

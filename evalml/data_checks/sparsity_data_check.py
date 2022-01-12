@@ -1,8 +1,8 @@
 """Data check that checks if there are any columns with sparsely populated values in the input."""
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
 )
@@ -66,6 +66,7 @@ class SparsityDataCheck(DataCheck):
             ...                    "details": {"columns": ["sparse"], "sparsity_score": {"sparse": 0.0}, "rows": None}}],
             ...     "actions": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "SparsityDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"columns": ["sparse"], "rows": None}}],
             ...                 "default_action": None}}
             ...
@@ -110,13 +111,15 @@ class SparsityDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
+
             results["actions"]["action_list"].append(
-                DataCheckAction(
-                    action_code=DataCheckActionCode.DROP_COL,
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
                     metadata={"columns": too_sparse_cols},
                 ).to_dict()
             )
+
         return results
 
     @staticmethod

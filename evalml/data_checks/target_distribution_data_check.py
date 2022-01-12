@@ -5,8 +5,8 @@ from scipy.stats import jarque_bera, shapiro
 
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
@@ -43,6 +43,7 @@ class TargetDistributionDataCheck(DataCheck):
             ...                   "details": {"normalization_method": "shapiro", "statistic": 0.8, "p-value": 0.045, "columns": None, "rows": None}}],
             ...     "actions": {"action_list": [{"code": "TRANSFORM_TARGET",
             ...                  "data_check_name": "TargetDistributionDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"transformation_strategy": "lognormal",
             ...                               "is_target": True,
             ...                               "columns": None,
@@ -121,8 +122,9 @@ class TargetDistributionDataCheck(DataCheck):
                     details=details,
                 ).to_dict()
             )
+
             results["actions"]["action_list"].append(
-                DataCheckAction(
+                DataCheckActionOption(
                     DataCheckActionCode.TRANSFORM_TARGET,
                     data_check_name=self.name,
                     metadata={
@@ -131,7 +133,6 @@ class TargetDistributionDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-
         return results
 
 

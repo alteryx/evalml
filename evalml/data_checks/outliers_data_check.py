@@ -4,8 +4,8 @@ from scipy.stats import gamma
 
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
 )
@@ -49,6 +49,7 @@ class OutliersDataCheck(DataCheck):
             ...     "errors": [],
             ...     "actions": {"action_list": [{"code": "DROP_ROWS",
             ...                  "data_check_name": "OutliersDataCheck",
+            ...                  "parameters": {},
             ...                  "metadata": {"rows": [3], "columns": None}}],
             ...                 "default_action": None}}
         """
@@ -104,7 +105,7 @@ class OutliersDataCheck(DataCheck):
         )
 
         results["actions"]["action_list"].append(
-            DataCheckAction(
+            DataCheckActionOption(
                 DataCheckActionCode.DROP_ROWS,
                 data_check_name=self.name,
                 metadata={"rows": all_rows_with_indices},
