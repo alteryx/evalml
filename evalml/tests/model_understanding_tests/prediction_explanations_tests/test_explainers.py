@@ -970,7 +970,7 @@ def test_explain_predictions_time_series(ts_data):
     ts_pipeline = TimeSeriesRegressionPipeline(
         component_graph=[
             "Time Series Featurizer",
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             "Random Forest Regressor",
         ],
         parameters={
@@ -1029,7 +1029,7 @@ def test_explain_predictions_best_worst_time_series(
     ts_pipeline = pipeline_class(
         component_graph=[
             "Time Series Featurizer",
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             estimator,
         ],
         parameters={
@@ -1077,31 +1077,25 @@ def test_explain_predictions_best_worst_time_series(
 def test_json_serialization(
     problem_type,
     X_y_regression,
-    linear_regression_pipeline_class,
+    linear_regression_pipeline,
     X_y_binary,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
     X_y_multi,
-    logistic_regression_multiclass_pipeline_class,
+    logistic_regression_multiclass_pipeline,
 ):
 
     if problem_type == problem_type.REGRESSION:
         X, y = X_y_regression
         y = pd.Series(y)
-        pipeline = linear_regression_pipeline_class(
-            parameters={"Linear Regressor": {"n_jobs": 1}}
-        )
+        pipeline = linear_regression_pipeline
     elif problem_type == problem_type.BINARY:
         X, y = X_y_binary
         y = pd.Series(y).astype("str")
-        pipeline = logistic_regression_binary_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        pipeline = logistic_regression_binary_pipeline
     else:
         X, y = X_y_multi
         y = pd.Series(y).astype("str")
-        pipeline = logistic_regression_multiclass_pipeline_class(
-            parameters={"Logistic Regression Classifier": {"n_jobs": 1}}
-        )
+        pipeline = logistic_regression_multiclass_pipeline
 
     pipeline.fit(X, y)
 
@@ -1212,7 +1206,7 @@ def test_categories_aggregated_linear_pipeline(
         component_graph=[
             "Select Columns Transformer",
             "One Hot Encoder",
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             estimator,
         ],
         parameters={
@@ -1270,8 +1264,8 @@ def test_categories_aggregated_text(
     component_graph = [
         "Select Columns Transformer",
         "One Hot Encoder",
-        "Natural Language Featurization Component",
-        "DateTime Featurization Component",
+        "Natural Language Featurizer",
+        "DateTime Featurizer",
         estimator,
     ]
 
@@ -1341,7 +1335,7 @@ def test_categories_aggregated_date_ohe(
     pipeline = pipeline_class(
         component_graph=[
             "Select Columns Transformer",
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             "One Hot Encoder",
             estimator,
         ],
@@ -1349,7 +1343,7 @@ def test_categories_aggregated_date_ohe(
             "Select Columns Transformer": {
                 "columns": ["datetime", "amount", "provider", "currency"]
             },
-            "DateTime Featurization Component": {"encode_as_categories": True},
+            "DateTime Featurizer": {"encode_as_categories": True},
             estimator: {"n_jobs": 1},
         },
     )
@@ -1412,7 +1406,7 @@ def test_categories_aggregated_pca_dag(
         "SelectCategorical": ["Select Columns Transformer", "X", "y"],
         "SelectDate": ["Select Columns Transformer", "X", "y"],
         "OHE": ["One Hot Encoder", "SelectCategorical.x", "y"],
-        "DT": ["DateTime Featurization Component", "SelectDate.x", "y"],
+        "DT": ["DateTime Featurizer", "SelectDate.x", "y"],
         "PCA": ["PCA Transformer", "SelectNumeric.x", "y"],
         "Estimator": [estimator, "PCA.x", "DT.x", "OHE.x", "y"],
     }
@@ -1481,7 +1475,7 @@ def test_categories_aggregated_but_not_those_that_are_dropped(
     component_graph = [
         "Select Columns Transformer",
         "One Hot Encoder",
-        "DateTime Featurization Component",
+        "DateTime Featurizer",
         "Drop Columns Transformer",
         estimator,
     ]
@@ -1536,7 +1530,7 @@ def test_categories_aggregated_when_some_are_dropped(
     component_graph = [
         "Select Columns Transformer",
         "One Hot Encoder",
-        "DateTime Featurization Component",
+        "DateTime Featurizer",
         "Drop Columns Transformer",
         estimator,
     ]
@@ -1613,7 +1607,7 @@ def test_explain_predictions_stacked_ensemble(
         X, y = fraud_100
         pipeline = BinaryClassificationPipeline(
             {
-                "DT": ["DateTime Featurization Component", "X", "y"],
+                "DT": ["DateTime Featurizer", "X", "y"],
                 "Imputer": ["Imputer", "DT.x", "y"],
                 "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
                 "Drop Columns Transformer": [
@@ -1731,14 +1725,14 @@ def test_explain_predictions_oversampler(estimator, algorithm, fraud_100):
         component_graph={
             "Imputer": ["Imputer", "X", "y"],
             "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
-            "DateTime Featurization Component": [
-                "DateTime Featurization Component",
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
                 "One Hot Encoder.x",
                 "y",
             ],
             "Oversampler": [
                 "Oversampler",
-                "DateTime Featurization Component.x",
+                "DateTime Featurizer.x",
                 "y",
             ],
             estimator: [estimator, "Oversampler.x", "Oversampler.y"],
@@ -1774,14 +1768,14 @@ def test_explain_predictions_class_name_matches_class_name_in_y(
         component_graph={
             "Imputer": ["Imputer", "X", "y"],
             "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
-            "DateTime Featurization Component": [
-                "DateTime Featurization Component",
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
                 "One Hot Encoder.x",
                 "y",
             ],
             "Oversampler": [
                 "Oversampler",
-                "DateTime Featurization Component.x",
+                "DateTime Featurizer.x",
                 "y",
             ],
             "Random Forest Classifier": [
@@ -1930,7 +1924,7 @@ def test_explain_predictions_url_email(
 def test_explain_predictions_postalcodes(
     algorithm,
     fraud_100,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
     has_minimal_dependencies,
 ):
     if has_minimal_dependencies and algorithm == "lime":
@@ -1944,7 +1938,7 @@ def test_explain_predictions_postalcodes(
         }
     )
 
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     explanations = explain_predictions_best_worst(
         pipeline,
@@ -2025,8 +2019,8 @@ def test_explain_predictions_report_shows_original_value_if_possible(
     X.ww.set_types({"country": "NaturalLanguage"})
     component_graph = [
         "Imputer",
-        "DateTime Featurization Component",
-        "Natural Language Featurization Component",
+        "DateTime Featurizer",
+        "Natural Language Featurizer",
         "One Hot Encoder",
         "Standard Scaler",
         estimator,
@@ -2086,8 +2080,8 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
     X.ww.set_types({"country": "NaturalLanguage"})
     component_graph = [
         "Imputer",
-        "DateTime Featurization Component",
-        "Natural Language Featurization Component",
+        "DateTime Featurizer",
+        "Natural Language Featurizer",
         "One Hot Encoder",
         "Standard Scaler",
         "Random Forest Classifier",

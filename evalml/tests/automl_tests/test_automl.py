@@ -65,7 +65,10 @@ from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators,
 )
-from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
+from evalml.pipelines.utils import (
+    _get_pipeline_base_class,
+    _make_stacked_ensemble_pipeline,
+)
 from evalml.preprocessing import TimeSeriesSplit, TrainingValidationSplit
 from evalml.problem_types import (
     ProblemTypes,
@@ -1068,7 +1071,7 @@ def test_default_objective(X_y_binary):
 
 def test_add_to_rankings(
     AutoMLTestEnv,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     X, y = X_y_binary
@@ -1088,24 +1091,29 @@ def test_add_to_rankings(
     assert original_best_pipeline is not None
 
     with env.test_context(score_return_value={"Log Loss Binary": 0.1234}):
-        test_pipeline = dummy_binary_pipeline_class(parameters={})
-        automl.add_to_rankings(test_pipeline)
-        assert automl.best_pipeline.name == test_pipeline.name
-        assert automl.best_pipeline.parameters == test_pipeline.parameters
-        assert automl.best_pipeline.component_graph == test_pipeline.component_graph
+        automl.add_to_rankings(dummy_binary_pipeline)
+        assert automl.best_pipeline.name == dummy_binary_pipeline.name
+        assert automl.best_pipeline.parameters == dummy_binary_pipeline.parameters
+        assert (
+            automl.best_pipeline.component_graph
+            == dummy_binary_pipeline.component_graph
+        )
 
         assert len(automl.rankings) == 2
         assert len(automl.full_rankings) == 2
         assert 0.1234 in automl.rankings["mean_cv_score"].values
 
     with env.test_context(score_return_value={"Log Loss Binary": 0.5678}):
-        test_pipeline_2 = dummy_binary_pipeline_class(
+        test_pipeline_2 = dummy_binary_pipeline.new(
             parameters={"Mock Classifier": {"a": 1.234}}
         )
         automl.add_to_rankings(test_pipeline_2)
-        assert automl.best_pipeline.name == test_pipeline.name
-        assert automl.best_pipeline.parameters == test_pipeline.parameters
-        assert automl.best_pipeline.component_graph == test_pipeline.component_graph
+        assert automl.best_pipeline.name == dummy_binary_pipeline.name
+        assert automl.best_pipeline.parameters == dummy_binary_pipeline.parameters
+        assert (
+            automl.best_pipeline.component_graph
+            == dummy_binary_pipeline.component_graph
+        )
         assert len(automl.rankings) == 2
         assert len(automl.full_rankings) == 3
         assert 0.5678 not in automl.rankings["mean_cv_score"].values
@@ -1114,7 +1122,7 @@ def test_add_to_rankings(
 
 def test_add_to_rankings_no_search(
     AutoMLTestEnv,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     X, y = X_y_binary
@@ -1126,9 +1134,7 @@ def test_add_to_rankings_no_search(
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.5234}):
-        test_pipeline = dummy_binary_pipeline_class(parameters={})
-
-        automl.add_to_rankings(test_pipeline)
+        automl.add_to_rankings(dummy_binary_pipeline)
         best_pipeline = automl.best_pipeline
         assert best_pipeline is not None
         assert isinstance(automl.data_splitter, StratifiedKFold)
@@ -1147,7 +1153,7 @@ def test_add_to_rankings_no_search(
 
 def test_add_to_rankings_regression_large(
     AutoMLTestEnv,
-    dummy_regression_pipeline_class,
+    dummy_regression_pipeline,
     example_regression_graph,
 ):
     X = pd.DataFrame({"col_0": [i for i in range(101000)]})
@@ -1165,13 +1171,13 @@ def test_add_to_rankings_regression_large(
     assert isinstance(automl.data_splitter, TrainingValidationSplit)
     env = AutoMLTestEnv("regression")
     with env.test_context(score_return_value={automl.objective.name: 0.1234}):
-        automl.add_to_rankings(dummy_regression_pipeline_class({}))
+        automl.add_to_rankings(dummy_regression_pipeline)
         assert isinstance(automl.data_splitter, TrainingValidationSplit)
         assert len(automl.rankings) == 1
         assert np.isnan(automl.rankings["mean_cv_score"].values[0])
 
 
-def test_add_to_rankings_new_pipeline(dummy_regression_pipeline_class):
+def test_add_to_rankings_new_pipeline(dummy_regression_pipeline):
     X = pd.DataFrame({"col_0": [i for i in range(100)]})
     y = pd.Series([i for i in range(100)])
 
@@ -1183,13 +1189,12 @@ def test_add_to_rankings_new_pipeline(dummy_regression_pipeline_class):
         max_iterations=1,
         n_jobs=1,
     )
-    test_pipeline = dummy_regression_pipeline_class(parameters={})
-    automl.add_to_rankings(test_pipeline)
+    automl.add_to_rankings(dummy_regression_pipeline)
 
 
 def test_add_to_rankings_regression(
     example_regression_graph,
-    dummy_regression_pipeline_class,
+    dummy_regression_pipeline,
     X_y_regression,
     AutoMLTestEnv,
 ):
@@ -1206,7 +1211,7 @@ def test_add_to_rankings_regression(
     )
     env = AutoMLTestEnv("regression")
     with env.test_context(score_return_value={automl.objective.name: 0.1234}):
-        automl.add_to_rankings(dummy_regression_pipeline_class({}))
+        automl.add_to_rankings(dummy_regression_pipeline)
 
     assert isinstance(automl.data_splitter, KFold)
     assert len(automl.rankings) == 1
@@ -1215,7 +1220,7 @@ def test_add_to_rankings_regression(
 
 def test_add_to_rankings_duplicate(
     AutoMLTestEnv,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     X, y = X_y_binary
@@ -1231,25 +1236,20 @@ def test_add_to_rankings_duplicate(
     with env.test_context(score_return_value={"Log Loss Binary": 0.1234}):
         automl.search()
     best_pipeline = automl.best_pipeline
-    test_pipeline = dummy_binary_pipeline_class(parameters={})
     assert automl.best_pipeline == best_pipeline
-    automl.add_to_rankings(test_pipeline)
+    automl.add_to_rankings(dummy_binary_pipeline)
 
-    test_pipeline_duplicate = dummy_binary_pipeline_class(parameters={})
+    test_pipeline_duplicate = dummy_binary_pipeline.new({})
     assert automl.add_to_rankings(test_pipeline_duplicate) is None
 
 
 def test_add_to_rankings_trained(
     dummy_classifier_estimator_class,
     AutoMLTestEnv,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     X, y = X_y_binary
-
-    class CoolBinaryClassificationPipeline(dummy_binary_pipeline_class):
-        custom_name = "Cool Binary Classification Pipeline"
-
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -1267,8 +1267,7 @@ def test_add_to_rankings_trained(
     assert len(automl.full_rankings) == 1
 
     with env.test_context(score_return_value={"Log Loss Binary": 0.1234}):
-        test_pipeline = dummy_binary_pipeline_class(parameters={})
-        automl.add_to_rankings(test_pipeline)
+        automl.add_to_rankings(dummy_binary_pipeline)
         assert len(automl.rankings) == 2
         assert len(automl.full_rankings) == 2
         assert list(automl.rankings["mean_cv_score"].values).count(0.1234) == 1
@@ -1276,11 +1275,13 @@ def test_add_to_rankings_trained(
 
     with env.test_context(
         score_return_value={"Log Loss Binary": 0.1234},
-        mock_fit_return_value=CoolBinaryClassificationPipeline(parameters={}),
+        mock_fit_return_value=BinaryClassificationPipeline(
+            component_graph=dummy_binary_pipeline.component_graph, parameters={}
+        ),
     ):
-        test_pipeline_trained = CoolBinaryClassificationPipeline(parameters={}).fit(
-            X, y
-        )
+        test_pipeline_trained = BinaryClassificationPipeline(
+            component_graph=dummy_binary_pipeline.component_graph, parameters={}
+        ).fit(X, y)
         automl.add_to_rankings(test_pipeline_trained)
         assert len(automl.rankings) == 3
         assert len(automl.full_rankings) == 3
@@ -1808,7 +1809,7 @@ def test_pipelines_in_batch_return_nan(
     mock_next_batch,
     X_y_binary,
     dummy_classifier_estimator_class,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     AutoMLTestEnv,
 ):
     X, y = X_y_binary
@@ -1824,8 +1825,8 @@ def test_pipelines_in_batch_return_nan(
     ]  # third batch, should raise error
     mock_next_batch.side_effect = [
         [
-            dummy_binary_pipeline_class(parameters={}),
-            dummy_binary_pipeline_class(parameters={}),
+            dummy_binary_pipeline,
+            dummy_binary_pipeline,
         ]
         for i in range(3)
     ]
@@ -1855,7 +1856,7 @@ def test_pipelines_in_batch_return_none(
     mock_next_batch,
     X_y_binary,
     dummy_classifier_estimator_class,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     AutoMLTestEnv,
 ):
     X, y = X_y_binary
@@ -1871,8 +1872,8 @@ def test_pipelines_in_batch_return_none(
     ]  # third batch, should raise error
     mock_next_batch.side_effect = [
         [
-            dummy_binary_pipeline_class(parameters={}),
-            dummy_binary_pipeline_class(parameters={}),
+            dummy_binary_pipeline,
+            dummy_binary_pipeline,
         ]
         for i in range(3)
     ]
@@ -1976,23 +1977,24 @@ def test_percent_better_than_baseline_in_rankings(
     pipeline_scores,
     baseline_score,
     problem_type_value,
-    dummy_binary_pipeline_class,
-    dummy_multiclass_pipeline_class,
-    dummy_regression_pipeline_class,
-    dummy_time_series_regression_pipeline_class,
+    dummy_classifier_estimator_class,
+    dummy_regressor_estimator_class,
+    dummy_time_series_regressor_estimator_class,
     ts_data_binary,
+    X_y_multi,
 ):
     if not objective.is_defined_for_problem_type(problem_type_value):
         pytest.skip("Skipping because objective is not defined for problem type")
 
-    # Ok to only use binary labels since score and fit methods are mocked
     X, y = ts_data_binary
+    if problem_type_value == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
 
-    pipeline_class = {
-        ProblemTypes.BINARY: dummy_binary_pipeline_class,
-        ProblemTypes.MULTICLASS: dummy_multiclass_pipeline_class,
-        ProblemTypes.REGRESSION: dummy_regression_pipeline_class,
-        ProblemTypes.TIME_SERIES_REGRESSION: dummy_time_series_regression_pipeline_class,
+    estimator = {
+        ProblemTypes.BINARY: dummy_classifier_estimator_class,
+        ProblemTypes.MULTICLASS: dummy_classifier_estimator_class,
+        ProblemTypes.REGRESSION: dummy_regressor_estimator_class,
+        ProblemTypes.TIME_SERIES_REGRESSION: dummy_time_series_regressor_estimator_class,
     }[problem_type_value]
     baseline_pipeline_class = {
         ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
@@ -2000,12 +2002,17 @@ def test_percent_better_than_baseline_in_rankings(
         ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
         ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline",
     }[problem_type_value]
+    pipeline_class = _get_pipeline_base_class(problem_type_value)
 
     class DummyPipeline(pipeline_class):
         problem_type = problem_type_value
 
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(parameters=parameters)
+        def __init__(self, parameters, custom_name=None, random_seed=0):
+            super().__init__(
+                component_graph=[estimator],
+                parameters=parameters,
+                custom_name=custom_name,
+            )
 
         def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
@@ -2159,21 +2166,20 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
     mock_binary_fit,
     problem_type,
     custom_additional_objective,
-    dummy_binary_pipeline_class,
-    dummy_multiclass_pipeline_class,
-    dummy_regression_pipeline_class,
-    dummy_time_series_regression_pipeline_class,
+    dummy_classifier_estimator_class,
+    dummy_regressor_estimator_class,
+    dummy_time_series_regressor_estimator_class,
     ts_data_binary,
 ):
     X, y = ts_data_binary
 
     problem_type_enum = handle_problem_types(problem_type)
 
-    pipeline_class = {
-        "binary": dummy_binary_pipeline_class,
-        "multiclass": dummy_multiclass_pipeline_class,
-        "regression": dummy_regression_pipeline_class,
-        "time series regression": dummy_time_series_regression_pipeline_class,
+    estimator = {
+        "binary": dummy_classifier_estimator_class,
+        "multiclass": dummy_classifier_estimator_class,
+        "regression": dummy_regressor_estimator_class,
+        "time series regression": dummy_time_series_regressor_estimator_class,
     }[problem_type]
     baseline_pipeline_class = {
         ProblemTypes.BINARY: "evalml.pipelines.BinaryClassificationPipeline",
@@ -2181,13 +2187,14 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         ProblemTypes.REGRESSION: "evalml.pipelines.RegressionPipeline",
         ProblemTypes.TIME_SERIES_REGRESSION: "evalml.pipelines.TimeSeriesRegressionPipeline",
     }[problem_type_enum]
+    pipeline_class = _get_pipeline_base_class(problem_type_enum)
 
     class DummyPipeline(pipeline_class):
         name = "Dummy 1"
         problem_type = problem_type_enum
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(parameters)
+            super().__init__(component_graph=[estimator], parameters=parameters)
 
         def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
@@ -2367,19 +2374,19 @@ def test_automl_accepts_component_graphs(graph_type, X_y_binary):
 @pytest.mark.parametrize("fold_scores", [[2, 4, 6], [np.nan, 4, 6]])
 def test_percent_better_than_baseline_scores_different_folds(
     fold_scores,
-    dummy_binary_pipeline_class,
+    dummy_classifier_estimator_class,
     X_y_binary,
     AutoMLTestEnv,
 ):
     # Test that percent-better-than-baseline is correctly computed when scores differ across folds
     X, y = X_y_binary
 
-    class DummyPipeline(dummy_binary_pipeline_class):
+    class DummyPipeline(BinaryClassificationPipeline):
         name = "Dummy 1"
         problem_type = ProblemTypes.BINARY
 
         def __init__(self, parameters, random_seed=0):
-            super().__init__(parameters)
+            super().__init__([dummy_classifier_estimator_class], parameters)
 
         def new(self, parameters, random_seed=0):
             return self.__class__(parameters, random_seed=random_seed)
@@ -2589,7 +2596,7 @@ def test_early_stopping_negative(X_y_binary):
 
 @pytest.mark.parametrize("verbose", [True, False])
 def test_early_stopping(
-    verbose, caplog, logistic_regression_binary_pipeline_class, X_y_binary
+    verbose, caplog, logistic_regression_binary_pipeline, X_y_binary
 ):
     X, y = X_y_binary
     automl = AutoMLSearch(
@@ -2618,9 +2625,8 @@ def test_early_stopping(
         mock_results["pipeline_results"][id]["mean_cv_score"] = scores[id]
         mock_results["pipeline_results"][id][
             "pipeline_class"
-        ] = logistic_regression_binary_pipeline_class
+        ] = logistic_regression_binary_pipeline.__class__
     automl._results = mock_results
-
     assert not automl._should_continue()
     out = caplog.text
     assert (
@@ -3309,9 +3315,7 @@ def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
 
 
 def test_automl_respects_random_seed(X_y_binary, dummy_classifier_estimator_class):
-
     X, y = X_y_binary
-
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
@@ -3321,27 +3325,11 @@ def test_automl_respects_random_seed(X_y_binary, dummy_classifier_estimator_clas
         random_seed=42,
         max_iterations=10,
     )
-
-    class DummyPipeline(BinaryClassificationPipeline):
-        component_graph = [dummy_classifier_estimator_class]
-        num_pipelines_different_seed = 0
-        num_pipelines_init = 0
-
-        def __init__(self, parameters, random_seed=0):
-            is_diff_random_seed = not (random_seed == 42)
-            self.__class__.num_pipelines_init += 1
-            self.__class__.num_pipelines_different_seed += is_diff_random_seed
-            super().__init__(
-                self.component_graph, parameters=parameters, random_seed=random_seed
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    pipelines = [DummyPipeline({}, random_seed=42)]
+    pipelines = [
+        BinaryClassificationPipeline(
+            component_graph=[dummy_classifier_estimator_class], random_seed=42
+        )
+    ]
     automl._automl_algorithm = IterativeAlgorithm(
         X=X,
         y=y,
@@ -3358,10 +3346,6 @@ def test_automl_respects_random_seed(X_y_binary, dummy_classifier_estimator_clas
     )
     automl._automl_algorithm.allowed_pipelines = pipelines
     assert automl.allowed_pipelines[0].random_seed == 42
-    assert (
-        DummyPipeline.num_pipelines_different_seed == 0
-        and DummyPipeline.num_pipelines_init
-    )
 
 
 @pytest.mark.parametrize(
@@ -4102,9 +4086,7 @@ def test_automl_pipeline_random_seed(AutoMLTestEnv, random_seed, X_y_multi):
 @pytest.mark.parametrize(
     "ranges", [0, [float("-inf"), float("inf")], [float("-inf"), 0], [0, float("inf")]]
 )
-def test_automl_check_for_high_variance(
-    ranges, X_y_binary, dummy_binary_pipeline_class
-):
+def test_automl_check_for_high_variance(ranges, X_y_binary, dummy_binary_pipeline):
     X, y = X_y_binary
     if ranges == 0:
         objectives = "Log Loss Binary"
@@ -4114,7 +4096,7 @@ def test_automl_check_for_high_variance(
         X_train=X, y_train=y, problem_type="binary", objective=objectives
     )
     cv_scores = pd.Series([1, 1, 1])
-    pipeline = dummy_binary_pipeline_class(parameters={})
+    pipeline = dummy_binary_pipeline
     assert not automl._check_for_high_variance(pipeline, cv_scores)
 
     cv_scores = pd.Series([0, 0, 0])
@@ -4169,21 +4151,18 @@ def test_automl_raises_error_with_duplicate_pipeline_names(
 ):
     X, y = X_y_binary
 
-    class MyPipeline(BinaryClassificationPipeline):
-        estimator = dummy_classifier_estimator_class
-
-    pipeline_0 = MyPipeline(
+    pipeline_0 = BinaryClassificationPipeline(
         custom_name="Custom Pipeline",
         component_graph=[dummy_classifier_estimator_class],
     )
-    pipeline_1 = MyPipeline(
+    pipeline_1 = BinaryClassificationPipeline(
         custom_name="Custom Pipeline",
         component_graph=[dummy_classifier_estimator_class],
     )
-    pipeline_2 = MyPipeline(
+    pipeline_2 = BinaryClassificationPipeline(
         custom_name="My Pipeline 3", component_graph=[dummy_classifier_estimator_class]
     )
-    pipeline_3 = MyPipeline(
+    pipeline_3 = BinaryClassificationPipeline(
         custom_name="My Pipeline 3", component_graph=[dummy_classifier_estimator_class]
     )
 
@@ -4230,15 +4209,15 @@ def test_automl_raises_error_with_duplicate_pipeline_names(
 
 
 def test_train_batch_score_batch(
-    AutoMLTestEnv, dummy_binary_pipeline_class, X_y_binary
+    AutoMLTestEnv, dummy_classifier_estimator_class, X_y_binary
 ):
-    def make_dummy_pipeline(index):
-        class Pipeline(dummy_binary_pipeline_class):
-            custom_name = f"Pipeline {index}"
-
-        return Pipeline({})
-
-    pipelines = [make_dummy_pipeline(i) for i in range(3)]
+    custom_names = [f"Pipeline {i}" for i in range(3)]
+    pipelines = [
+        BinaryClassificationPipeline(
+            component_graph=[dummy_classifier_estimator_class], custom_name=custom_name
+        )
+        for custom_name in custom_names
+    ]
 
     X, y = X_y_binary
 
@@ -4310,7 +4289,7 @@ def test_train_batch_works(
     pipeline_fit_side_effect,
     AutoMLTestEnv,
     X_y_binary,
-    dummy_binary_pipeline_class,
+    dummy_classifier_estimator_class,
     stackable_classifiers,
     caplog,
 ):
@@ -4332,14 +4311,13 @@ def test_train_batch_works(
         n_jobs=1,
     )
 
-    def make_pipeline_name(index):
-        class DummyPipeline(dummy_binary_pipeline_class):
-            custom_name = f"Pipeline {index}"
-
-        return DummyPipeline({"Mock Classifier": {"a": index}})
-
     pipelines = [
-        make_pipeline_name(i) for i in range(len(pipeline_fit_side_effect) - 1)
+        BinaryClassificationPipeline(
+            component_graph=[dummy_classifier_estimator_class],
+            custom_name=f"Pipeline {index}",
+            parameters={"Mock Classifier": {"a": index}},
+        )
+        for index in range(len(pipeline_fit_side_effect) - 1)
     ]
     input_pipelines = [
         BinaryClassificationPipeline([classifier])
@@ -4437,7 +4415,6 @@ def test_score_batch_works(
     X_y_binary,
     dummy_classifier_estimator_class,
     AutoMLTestEnv,
-    dummy_binary_pipeline_class,
     stackable_classifiers,
     caplog,
 ):
@@ -4469,14 +4446,13 @@ def test_score_batch_works(
     )
     env = AutoMLTestEnv("binary")
 
-    def make_pipeline_name(index):
-        class DummyPipeline(dummy_binary_pipeline_class):
-            custom_name = f"Pipeline {index}"
-
-        return DummyPipeline({"Mock Classifier": {"a": index}})
-
     pipelines = [
-        make_pipeline_name(i) for i in range(len(pipeline_score_side_effect) - 1)
+        BinaryClassificationPipeline(
+            component_graph=[dummy_classifier_estimator_class],
+            custom_name=f"Pipeline {index}",
+            parameters={"Mock Classifier": {"a": index}},
+        )
+        for index in range(len(pipeline_score_side_effect) - 1)
     ]
     input_pipelines = [
         BinaryClassificationPipeline([classifier])
@@ -4508,15 +4484,15 @@ def test_score_batch_works(
 
 
 def test_train_pipelines_score_pipelines_raise_exception_with_duplicate_names(
-    X_y_binary, dummy_classifier_estimator_class, dummy_binary_pipeline_class
+    X_y_binary, dummy_classifier_estimator_class
 ):
-    class Pipeline1(dummy_binary_pipeline_class):
-        custom_name = "My Pipeline"
-
-    class Pipeline2(dummy_binary_pipeline_class):
-        custom_name = "My Pipeline"
-
     X, y = X_y_binary
+    pipeline_1 = BinaryClassificationPipeline(
+        component_graph=[dummy_classifier_estimator_class], custom_name="Mock Pipeline"
+    )
+    pipeline_2 = BinaryClassificationPipeline(
+        component_graph=[dummy_classifier_estimator_class], custom_name="Mock Pipeline"
+    )
 
     automl = AutoMLSearch(
         X_train=X,
@@ -4530,19 +4506,19 @@ def test_train_pipelines_score_pipelines_raise_exception_with_duplicate_names(
 
     with pytest.raises(
         ValueError,
-        match="All pipeline names must be unique. The name 'My Pipeline' was repeated.",
+        match="All pipeline names must be unique. The name 'Mock Pipeline' was repeated.",
     ):
-        automl.train_pipelines([Pipeline2({}), Pipeline1({})])
+        automl.train_pipelines([pipeline_1, pipeline_2])
 
     with pytest.raises(
         ValueError,
-        match="All pipeline names must be unique. The name 'My Pipeline' was repeated.",
+        match="All pipeline names must be unique. The name 'Mock Pipeline' was repeated.",
     ):
-        automl.score_pipelines([Pipeline2({}), Pipeline1({})], X, y, None)
+        automl.score_pipelines([pipeline_1, pipeline_2], X, y, None)
 
 
 def test_score_batch_before_fitting_yields_error_nan_scores(
-    X_y_binary, dummy_classifier_estimator_class, dummy_binary_pipeline_class, caplog
+    X_y_binary, dummy_classifier_estimator_class, dummy_binary_pipeline, caplog
 ):
     X, y = X_y_binary
 
@@ -4557,7 +4533,7 @@ def test_score_batch_before_fitting_yields_error_nan_scores(
     )
 
     scored_pipelines = automl.score_pipelines(
-        [dummy_binary_pipeline_class({})], X, y, objectives=["Log Loss Binary", F1()]
+        [dummy_binary_pipeline], X, y, objectives=["Log Loss Binary", F1()]
     )
     assert scored_pipelines == {
         "Mock Binary Classification Pipeline": {"Log Loss Binary": np.nan, "F1": np.nan}
@@ -4566,15 +4542,13 @@ def test_score_batch_before_fitting_yields_error_nan_scores(
     assert "Score error for Mock Binary Classification Pipeline" in caplog.text
 
 
-def test_high_cv_check_no_warning_for_divide_by_zero(
-    X_y_binary, dummy_binary_pipeline_class
-):
+def test_high_cv_check_no_warning_for_divide_by_zero(X_y_binary, dummy_binary_pipeline):
     X, y = X_y_binary
     automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
     with pytest.warns(None) as warnings:
         # mean is 0 but std is not
         automl._check_for_high_variance(
-            dummy_binary_pipeline_class({}), cv_scores=[0.0, 1.0, -1.0]
+            dummy_binary_pipeline, cv_scores=[0.0, 1.0, -1.0]
         )
     assert len(warnings) == 0
 
@@ -4589,18 +4563,18 @@ def test_automl_supports_float_targets_for_classification(
     automl_type,
     X_y_binary,
     X_y_multi,
-    dummy_binary_pipeline_class,
-    dummy_multiclass_pipeline_class,
+    dummy_binary_pipeline,
+    dummy_multiclass_pipeline,
     AutoMLTestEnv,
 ):
     if automl_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         y = pd.Series(y).map({0: -5.19, 1: 6.7})
-        mock_train.return_value = dummy_binary_pipeline_class({})
+        mock_train.return_value = dummy_binary_pipeline
     else:
         X, y = X_y_multi
         y = pd.Series(y).map({0: -5.19, 1: 6.7, 2: 2.03})
-        mock_train.return_value = dummy_multiclass_pipeline_class({})
+        mock_train.return_value = dummy_multiclass_pipeline
 
     automl = AutoMLSearch(
         X_train=X,
@@ -4683,7 +4657,7 @@ def test_automl_drop_index_columns(AutoMLTestEnv, X_y_binary):
 
 
 def test_automl_validates_data_passed_in_to_allowed_component_graphs(
-    X_y_binary, dummy_classifier_estimator_class, dummy_binary_pipeline_class
+    X_y_binary, dummy_classifier_estimator_class
 ):
     X, y = X_y_binary
 
@@ -5215,7 +5189,7 @@ def test_graph_automl(X_y_multi):
         "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
         "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
         "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Random Forest.x",
             "Elastic Net.x",
@@ -5525,7 +5499,6 @@ def test_cv_validation_scores(
     mean_cv_is_none,
     X_y_binary,
     dummy_classifier_estimator_class,
-    dummy_binary_pipeline_class,
     AutoMLTestEnv,
 ):
     X, y = X_y_binary

@@ -266,7 +266,7 @@ def test_describe_component():
         "parameters": {"pct_null_threshold": 1.0},
     }
     assert datetime.describe(return_dict=True) == {
-        "name": "DateTime Featurization Component",
+        "name": "DateTime Featurizer",
         "parameters": {
             "features_to_extract": ["year", "month", "day_of_week", "hour"],
             "encode_as_categories": False,
@@ -274,7 +274,7 @@ def test_describe_component():
         },
     }
     assert natural_language_featurizer.describe(return_dict=True) == {
-        "name": "Natural Language Featurization Component",
+        "name": "Natural Language Featurizer",
         "parameters": {},
     }
     assert lsa.describe(return_dict=True) == {
@@ -751,9 +751,7 @@ def test_component_parameters_getter(test_classes):
     assert component.parameters == {"test": "parameter"}
 
 
-def test_component_parameters_init(
-    logistic_regression_binary_pipeline_class, linear_regression_pipeline_class
-):
+def test_component_parameters_init():
     for component_class in all_components():
         print("Testing component {}".format(component_class.name))
         component = component_class()
@@ -1243,11 +1241,7 @@ def test_no_fitting_required_components(
 
 def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
     path = os.path.join(str(tmpdir), "component.pkl")
-    requires_time_index = [
-        ARIMARegressor,
-        ProphetRegressor,
-        TimeSeriesFeaturizer,
-    ]
+    requires_time_index = [ARIMARegressor, ProphetRegressor, TimeSeriesFeaturizer]
     for component_class in all_components():
         print("Testing serialization of component {}".format(component_class.name))
         component = helper_functions.safe_init_component_with_njobs_1(component_class)
@@ -1303,11 +1297,7 @@ def test_serialization_protocol(mock_cloudpickle_dump, tmpdir):
 
 
 @pytest.mark.parametrize("estimator_class", _all_estimators())
-def test_estimators_accept_all_kwargs(
-    estimator_class,
-    logistic_regression_binary_pipeline_class,
-    linear_regression_pipeline_class,
-):
+def test_estimators_accept_all_kwargs(estimator_class):
     estimator = estimator_class()
     if estimator._component_obj is None:
         pytest.skip(
@@ -1397,11 +1387,7 @@ def test_component_equality():
 
 
 @pytest.mark.parametrize("component_class", all_components())
-def test_component_equality_all_components(
-    component_class,
-    logistic_regression_binary_pipeline_class,
-    linear_regression_pipeline_class,
-):
+def test_component_equality_all_components(component_class):
     component = component_class()
     parameters = component.parameters
     equal_component = component_class(**parameters)
@@ -1449,11 +1435,7 @@ def test_mock_component_repr():
 
 
 @pytest.mark.parametrize("component_class", all_components())
-def test_component_str(
-    component_class,
-    logistic_regression_binary_pipeline_class,
-    linear_regression_pipeline_class,
-):
+def test_component_str(component_class):
     component = component_class()
     assert str(component) == component.name
 

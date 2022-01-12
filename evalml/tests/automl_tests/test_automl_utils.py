@@ -13,7 +13,13 @@ from evalml.automl.utils import (
     make_data_splitter,
     tune_binary_threshold,
 )
-from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
+from evalml.objectives import (
+    F1,
+    R2,
+    LogLossBinary,
+    LogLossMulticlass,
+    MedianAE,
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -40,6 +46,13 @@ def test_get_default_primary_search_objective():
     )
     assert isinstance(get_default_primary_search_objective("regression"), R2)
     assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
+    assert isinstance(
+        get_default_primary_search_objective("time series regression"), MedianAE
+    )
+    assert isinstance(
+        get_default_primary_search_objective(ProblemTypes.TIME_SERIES_REGRESSION),
+        MedianAE,
+    )
     assert isinstance(
         get_default_primary_search_objective("time series binary"), LogLossBinary
     )
@@ -218,7 +231,7 @@ def test_tune_binary_threshold(
     mock_score,
     mock_predict_proba,
     mock_optimize_threshold,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     mock_optimize_threshold.return_value = 0.42
@@ -227,15 +240,15 @@ def test_tune_binary_threshold(
     X = infer_feature_types(X)
     y = infer_feature_types(y)
 
-    pipeline = dummy_binary_pipeline_class({})
+    pipeline = dummy_binary_pipeline.new({})
     tune_binary_threshold(pipeline, F1(), "binary", X, y)
     assert pipeline.threshold == 0.42
 
-    pipeline = dummy_binary_pipeline_class({})
+    pipeline = dummy_binary_pipeline.new({})
     tune_binary_threshold(pipeline, F1(), "binary", None, None)
     assert pipeline.threshold == 0.5
 
-    pipeline = dummy_binary_pipeline_class({})
+    pipeline = dummy_binary_pipeline.new({})
     tune_binary_threshold(pipeline, F1(), "multiclass", X, y)
     assert pipeline.threshold is None
 

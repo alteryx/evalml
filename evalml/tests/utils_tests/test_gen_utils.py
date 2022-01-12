@@ -335,12 +335,12 @@ def test_save_plotly_static_default_format(
     file_name,
     format,
     interactive,
-    decision_tree_classification_pipeline_class,
+    fitted_decision_tree_classification_pipeline,
     tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
-        pipeline = decision_tree_classification_pipeline_class
+        pipeline = fitted_decision_tree_classification_pipeline
         feat_fig_ = pipeline.graph_feature_importance()
 
         filepath = os.path.join(str(tmpdir), f"{file_name}")
@@ -370,13 +370,14 @@ def test_save_plotly_static_different_format(
     file_name,
     format,
     interactive,
-    decision_tree_classification_pipeline_class,
+    fitted_decision_tree_classification_pipeline,
     tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
-        pipeline = decision_tree_classification_pipeline_class
-        feat_fig_ = pipeline.graph_feature_importance()
+        feat_fig_ = (
+            fitted_decision_tree_classification_pipeline.graph_feature_importance()
+        )
 
         filepath = os.path.join(str(tmpdir), f"{file_name}")
         no_output_ = save_plot(
@@ -405,13 +406,14 @@ def test_save_plotly_static_no_filepath(
     file_name,
     format,
     interactive,
-    decision_tree_classification_pipeline_class,
+    fitted_decision_tree_classification_pipeline,
     tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
-        pipeline = decision_tree_classification_pipeline_class
-        feat_fig_ = pipeline.graph_feature_importance()
+        feat_fig_ = (
+            fitted_decision_tree_classification_pipeline.graph_feature_importance()
+        )
 
         filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
         output_ = save_plot(
@@ -443,13 +445,14 @@ def test_save_plotly_interactive(
     file_name,
     format,
     interactive,
-    decision_tree_classification_pipeline_class,
+    fitted_decision_tree_classification_pipeline,
     tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
-        pipeline = decision_tree_classification_pipeline_class
-        feat_fig_ = pipeline.graph_feature_importance()
+        feat_fig_ = (
+            fitted_decision_tree_classification_pipeline.graph_feature_importance()
+        )
 
         filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
         no_output_ = save_plot(

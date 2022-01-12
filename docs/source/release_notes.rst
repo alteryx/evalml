@@ -2,15 +2,21 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
     * Fixes
+        * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
+        * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
+        * Standardized names of featurization components :pr:`3192`
     * Changes
         * Raised lowest compatible numpy version to 1.21.0 to address security concerns :pr:`3207`
+        * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
 
 
 **v0.41.0 Jan. 06, 2022**
@@ -27,6 +33,7 @@ Release Notes
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
     * Documentation Changes
     * Testing Changes
+        * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
         * Add workflow to auto-merge dependency PRs if status checks pass :pr:`3184`
 
 **v0.40.0 Dec. 22, 2021**

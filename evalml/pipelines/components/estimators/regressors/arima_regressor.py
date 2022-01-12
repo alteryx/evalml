@@ -99,13 +99,13 @@ class ARIMARegressor(Estimator):
     def _remove_datetime(self, data, features=False):
         if data is None:
             return None
-        data_no_dt = data.copy()
+        data_no_dt = data.ww.copy()
         if isinstance(
             data_no_dt.index, (pd.DatetimeIndex, pd.PeriodIndex, pd.IntervalIndex)
         ):
-            data_no_dt = data_no_dt.reset_index(drop=True)
+            data_no_dt = data_no_dt.ww.reset_index(drop=True)
         if features:
-            data_no_dt = data_no_dt.select_dtypes(exclude=["datetime64"])
+            data_no_dt = data_no_dt.ww.select(exclude=["Datetime"])
 
         return data_no_dt
 
@@ -141,6 +141,13 @@ class ARIMARegressor(Estimator):
             raise ValueError("ARIMA Regressor requires y as input.")
 
         X = self._remove_datetime(X, features=True)
+        if X is not None:
+            X.ww.set_types(
+                {
+                    col: "Double"
+                    for col in X.ww.select(["Boolean"], return_schema=True).columns
+                }
+            )
         y = self._remove_datetime(y)
         X, y = self._match_indices(X, y)
 
@@ -165,7 +172,13 @@ class ARIMARegressor(Estimator):
         """
         X, y = self._manage_woodwork(X, y)
         fh_ = self._set_forecast(X)
-        X = X.select_dtypes(exclude=["datetime64"])
+        X = X.ww.select(exclude=["Datetime"])
+        X.ww.set_types(
+            {
+                col: "Double"
+                for col in X.ww.select(["Boolean"], return_schema=True).columns
+            }
+        )
 
         if not X.empty:
             y_pred = self._component_obj.predict(fh=fh_, X=X)
