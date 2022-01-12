@@ -4,6 +4,7 @@ import logging
 
 from woodwork import logical_types
 
+from ..exceptions import PartialDependenceError, PartialDependenceErrorCode
 from . import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
@@ -812,6 +813,64 @@ def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, time_
         },
     )
     return baseline
+
+
+def are_datasets_separated_by_gap_time_index(train, test, pipeline_params):
+    """Determine if the train and test datasets are separated by gap number of units using the time_index.
+
+    This will be true when users are predicting on unseen data but not during cross
+    validation since the target is known.
+    """
+    gap_difference = pipeline_params["gap"] + 1
+
+    train_copy = train.copy()
+    test_copy = test.copy()
+    train_copy.ww.init(time_index=pipeline_params["time_index"])
+    test_copy.ww.init(time_index=pipeline_params["time_index"])
+
+    X_frequency_dict = train_copy.ww.infer_temporal_frequencies(
+        temporal_columns=[train_copy.ww.time_index]
+    )
+    freq = X_frequency_dict[test_copy.ww.time_index]
+    if freq is None:
+        return True
+
+    first_testing_date = test_copy[test_copy.ww.time_index].iloc[0]
+    last_training_date = train_copy[train_copy.ww.time_index].iloc[-1]
+    dt_difference = first_testing_date - last_training_date
+
+    try:
+        units_difference = dt_difference / freq
+    except ValueError:
+        units_difference = dt_difference / ("1" + freq)
+    return units_difference == gap_difference
+
+
+def validate_holdout_datasets(X, X_train, pipeline_params):
+    """Validate the holdout datasets match out expectations.
+
+    Args:
+        X (pd.DataFrame): Data of shape [n_samples, n_features].
+        X_train (pd.DataFrame): Training data.
+        pipeline_params (dict): Dictionary of time series parameters.
+
+    Raises:
+        PartialDependenceError: If holdout data does not have forecast_horizon entries or if datasets
+        are not separated by gap.
+    """
+    right_length = len(X) <= pipeline_params["forecast_horizon"]
+    X_separated_by_gap = are_datasets_separated_by_gap_time_index(
+        X_train, X, pipeline_params
+    )
+    if not (right_length and X_separated_by_gap):
+        raise PartialDependenceError(
+            f"Holdout data X must have {pipeline_params['forecast_horizon']} rows (value of forecast horizon) "
+            f"and the first value indicated by the column {pipeline_params['time_index']} needs to "
+            f"start {pipeline_params['gap'] + 1} units ahead of the training data. "
+            f"Data received - Length X: {len(X)}, "
+            f"X value start: {X[pipeline_params['time_index']].iloc[0]}, X_train value end {X_train[pipeline_params['time_index']].iloc[-1]}.",
+            PartialDependenceErrorCode.INVALID_HOLDOUT_SET,
+        )
 
 
 def rows_of_interest(
