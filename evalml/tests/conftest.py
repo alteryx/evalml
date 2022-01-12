@@ -203,12 +203,14 @@ def get_ts_X_y():
     ):
         X = pd.DataFrame(index=[i + 1 for i in range(50)])
         dates = pd.date_range("1/1/21", periods=50)
-        feature = [1, 5, 2] * 10 + [3, 1] * 10
+        feature = pd.Series([1, 5, 2] * 10 + [3, 1] * 10, index=X.index)
         y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
+        X.ww.init()
+        y = ww.init_series(y)
 
-        X_train = X[:40]
-        X_test = X[40:]
-        y_train = y[:40]
+        X_train = X.ww.iloc[:40]
+        X_test = X.ww.iloc[40:]
+        y_train = y.ww.iloc[:40]
 
         if train_features_index_dt:
             X_train.index = dates[:40]
@@ -217,11 +219,11 @@ def get_ts_X_y():
         if test_features_index_dt:
             X_test.index = dates[40:]
         if not no_features:
-            X_train["Feature"] = feature[:40]
-            X_test["Feature"] = feature[40:]
+            X_train.ww["Feature"] = pd.Series(feature[:40].values, index=X_train.index)
+            X_test.ww["Feature"] = pd.Series(feature[40:].values, index=X_test.index)
             if datetime_feature:
-                X_train["Dates"] = dates[:40]
-                X_test["Dates"] = dates[40:]
+                X_train.ww["Dates"] = pd.Series(dates[:40].values, index=X_train.index)
+                X_test.ww["Dates"] = pd.Series(dates[40:].values, index=X_test.index)
         if train_none:
             X_train = None
 
