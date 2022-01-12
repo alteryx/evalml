@@ -134,8 +134,6 @@ class DataCheckActionOption:
 
     def _validate_parameters(self):
         """Validate parameters associated with the action option."""
-        if self.parameters is None:
-            return
         for _, parameter_value in self.parameters.items():
             if "parameter_type" not in parameter_value:
                 raise ValueError("Each parameter must have a parameter_type key.")
