@@ -2,10 +2,6 @@
 import pandas as pd
 import woodwork as ww
 
-from evalml.exceptions import (
-    PartialDependenceError,
-    PartialDependenceErrorCode,
-)
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.pipelines.utils import are_datasets_separated_by_gap_time_index

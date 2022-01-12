@@ -124,8 +124,6 @@ class PartialDependenceErrorCode(Enum):
     """ice_plot_requested_for_two_way_partial_dependence_plot"""
     INVALID_CLASS_LABEL = "invalid_class_label_requested_for_plot"
     """invalid_class_label_requested_for_plot"""
-    NO_FREQUENCY_INFERRED = "no_interval_frequency_inferred_in_training_data"
-    """no_interval_frequency_inferred_in_training_data"""
     INVALID_HOLDOUT_SET = "invalid_holdout_set"
     """invalid_holdout_set"""
     ALL_OTHER_ERRORS = "all_other_errors"

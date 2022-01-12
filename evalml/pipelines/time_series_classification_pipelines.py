@@ -4,7 +4,6 @@ import pandas as pd
 from .binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,
 )
-from .utils import validate_holdout_datasets
 
 from evalml.objectives import get_objective
 from evalml.pipelines.classification_pipeline import ClassificationPipeline

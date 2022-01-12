@@ -821,6 +821,15 @@ def are_datasets_separated_by_gap_time_index(train, test, pipeline_params):
 
     This will be true when users are predicting on unseen data but not during cross
     validation since the target is known.
+
+    Args:
+        train (pd.DataFrame): Training data.
+        test (pd.DataFrame): Data of shape [n_samples, n_features].
+        pipeline_params (dict): Dictionary of time series parameters.
+
+    Returns:
+        bool: True if the difference in time units is equal to gap + 1.
+
     """
     gap_difference = pipeline_params["gap"] + 1
 
@@ -859,17 +868,20 @@ def validate_holdout_datasets(X, X_train, pipeline_params):
         PartialDependenceError: If holdout data does not have forecast_horizon entries or if datasets
         are not separated by gap.
     """
-    right_length = len(X) <= pipeline_params["forecast_horizon"]
+    forecast_horizon = pipeline_params["forecast_horizon"]
+    gap = pipeline_params["gap"]
+    time_index = pipeline_params["time_index"]
+    right_length = len(X) <= forecast_horizon
     X_separated_by_gap = are_datasets_separated_by_gap_time_index(
         X_train, X, pipeline_params
     )
     if not (right_length and X_separated_by_gap):
         raise PartialDependenceError(
-            f"Holdout data X must have {pipeline_params['forecast_horizon']} rows (value of forecast horizon) "
-            f"and the first value indicated by the column {pipeline_params['time_index']} needs to "
-            f"start {pipeline_params['gap'] + 1} units ahead of the training data. "
+            f"Holdout data X must have {forecast_horizon} rows (value of forecast horizon) "
+            f"and the first value indicated by the column {time_index} needs to "
+            f"start {gap + 1} units ahead of the training data. "
             f"Data received - Length X: {len(X)}, "
-            f"X value start: {X[pipeline_params['time_index']].iloc[0]}, X_train value end {X_train[pipeline_params['time_index']].iloc[-1]}.",
+            f"X value start: {X[time_index].iloc[0]}, X_train value end {X_train[time_index].iloc[-1]}.",
             PartialDependenceErrorCode.INVALID_HOLDOUT_SET,
         )
 
