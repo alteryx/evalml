@@ -1,7 +1,5 @@
 """Pipeline base class for time-series classification problems."""
-import numpy as np
 import pandas as pd
-import woodwork as ww
 
 from .binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,
@@ -30,21 +28,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
              Pipeline(parameters={"pipeline": {"time_index": "Date", "max_delay": 4, "gap": 2}}).
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
-
-    def fit(self, X, y):
-        """Fit a time series classification pipeline.
-
-        Args:
-            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
-            y (pd.Series, np.ndarray): The target training targets of length [n_samples].
-
-        Returns:
-            self
-        """
-        X, y = self._convert_to_woodwork(X, y)
-        self._fit(X, y)
-        self._classes_ = list(ww.init_series(np.unique(y)))
-        return self
 
     def _estimator_predict_proba(self, features):
         """Get estimator predicted probabilities.

@@ -24,7 +24,7 @@ from evalml.pipelines.utils import (
     _make_pipeline_from_multiple_graphs,
     make_pipeline,
 )
-from evalml.problem_types import is_regression
+from evalml.problem_types import is_regression, is_time_series
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
@@ -112,7 +112,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self._selected_cat_cols = []
         self._split = False
         self._X_with_cat_cols = None
-        self.f_X_without_cat_cols = None
+        self._X_without_cat_cols = None
+        self._ensembling = True if not is_time_series(self.problem_type) else False
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
         else:
@@ -196,6 +197,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 sampler_name=self.sampler_name,
                 extra_components_after=feature_selector,
                 parameters=self._pipeline_params,
+                known_in_advance=self._pipeline_params.get("pipeline", {}).get(
+                    "known_in_advance", None
+                ),
             )
             for estimator in estimators
         ]
@@ -227,7 +231,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return parameters
 
     def _create_select_parameters(self):
-        parameters = {"Select Columns Transformer": {"columns": self._selected_cols}}
+        parameters = {}
+        if self._selected_cols:
+            parameters = {
+                "Select Columns Transformer": {"columns": self._selected_cols}
+            }
         if self._split:
             parameters = self._create_split_select_parameters()
         return parameters
@@ -261,13 +269,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             for estimator in get_estimators(self.problem_type)
             if estimator not in self._naive_estimators()
         ]
-
-        pipelines = [
-            self._make_split_pipeline(
-                estimator,
-            )
-            for estimator in estimators
-        ]
+        pipelines = self._make_pipelines_helper(estimators)
 
         if self._split:
             self._rename_pipeline_parameters_custom_hyperparameters(pipelines)
@@ -309,9 +311,32 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         estimators.sort(key=lambda x: x[1])
         estimators = estimators[:n]
         estimators = [estimator[0].__class__ for estimator in estimators]
-        pipelines = [self._make_split_pipeline(estimator) for estimator in estimators]
+        pipelines = self._make_pipelines_helper(estimators)
         self._top_n_pipelines = pipelines
         return self._create_n_pipelines(pipelines, self.num_long_explore_pipelines)
+
+    def _make_pipelines_helper(self, estimators):
+        pipelines = []
+        if is_time_series(self.problem_type):
+            pipelines = [
+                make_pipeline(
+                    X=self.X,
+                    y=self.y,
+                    estimator=estimator,
+                    problem_type=self.problem_type,
+                    sampler_name=self.sampler_name,
+                    parameters=self._pipeline_params,
+                    known_in_advance=self._pipeline_params.get("pipeline", {}).get(
+                        "known_in_advance", None
+                    ),
+                )
+                for estimator in estimators
+            ]
+        else:
+            pipelines = [
+                self._make_split_pipeline(estimator) for estimator in estimators
+            ]
+        return pipelines
 
     def next_batch(self):
         """Get the next batch of pipelines to evaluate.
@@ -319,22 +344,36 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         Returns:
             list(PipelineBase): a list of instances of PipelineBase subclasses, ready to be trained and evaluated.
         """
-        if self._batch_number == 0:
-            next_batch = self._create_naive_pipelines()
-        elif self._batch_number == 1:
-            next_batch = self._create_naive_pipelines(use_features=True)
-        elif self._batch_number == 2:
-            next_batch = self._create_fast_final()
-        elif self.batch_number == 3:
-            next_batch = self._create_ensemble()
-        elif self.batch_number == 4:
-            next_batch = self._create_long_exploration(n=self.top_n)
-        elif self.batch_number % 2 != 0:
-            next_batch = self._create_ensemble()
+        if self._ensembling:
+            if self._batch_number == 0:
+                next_batch = self._create_naive_pipelines()
+            elif self._batch_number == 1:
+                next_batch = self._create_naive_pipelines(use_features=True)
+            elif self._batch_number == 2:
+                next_batch = self._create_fast_final()
+            elif self.batch_number == 3:
+                next_batch = self._create_ensemble()
+            elif self.batch_number == 4:
+                next_batch = self._create_long_exploration(n=self.top_n)
+            elif self.batch_number % 2 != 0:
+                next_batch = self._create_ensemble()
+            else:
+                next_batch = self._create_n_pipelines(
+                    self._top_n_pipelines, self.num_long_pipelines_per_batch
+                )
         else:
-            next_batch = self._create_n_pipelines(
-                self._top_n_pipelines, self.num_long_pipelines_per_batch
-            )
+            if self._batch_number == 0:
+                next_batch = self._create_naive_pipelines()
+            elif self._batch_number == 1:
+                next_batch = self._create_naive_pipelines(use_features=True)
+            elif self._batch_number == 2:
+                next_batch = self._create_fast_final()
+            elif self.batch_number == 3:
+                next_batch = self._create_long_exploration(n=self.top_n)
+            else:
+                next_batch = self._create_n_pipelines(
+                    self._top_n_pipelines, self.num_long_pipelines_per_batch
+                )
 
         self._pipeline_number += len(next_batch)
         self._batch_number += 1
@@ -354,7 +393,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     score_to_minimize, pipeline, trained_pipeline_results
                 )
 
-        if self.batch_number == 2 and self._selected_cols is None:
+        if (
+            self.batch_number == 2
+            and self._selected_cols is None
+            and not is_time_series(self.problem_type)
+        ):
             if is_regression(self.problem_type):
                 self._selected_cols = pipeline.get_component(
                     "RF Regressor Select From Model"
@@ -427,6 +470,21 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             # Inspects each component and adds the following parameters when needed
             if "n_jobs" in init_params:
                 component_parameters["n_jobs"] = self.n_jobs
+            names_to_check = [
+                "Drop Columns Transformer",
+                "Known In Advance Pipeline - Select Columns Transformer",
+                "Not Known In Advance Pipeline - Select Columns Transformer",
+            ]
+            if (
+                name in self._pipeline_params
+                and name in names_to_check
+                and self._batch_number > 0
+            ):
+                component_parameters["columns"] = self._pipeline_params[name]["columns"]
+            if "pipeline" in self._pipeline_params:
+                for param_name, value in self._pipeline_params["pipeline"].items():
+                    if param_name in init_params:
+                        component_parameters[param_name] = value
             parameters[name] = component_parameters
         return parameters
 

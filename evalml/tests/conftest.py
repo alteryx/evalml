@@ -203,12 +203,14 @@ def get_ts_X_y():
     ):
         X = pd.DataFrame(index=[i + 1 for i in range(50)])
         dates = pd.date_range("1/1/21", periods=50)
-        feature = [1, 5, 2] * 10 + [3, 1] * 10
+        feature = pd.Series([1, 5, 2] * 10 + [3, 1] * 10, index=X.index)
         y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
+        X.ww.init()
+        y = ww.init_series(y)
 
-        X_train = X[:40]
-        X_test = X[40:]
-        y_train = y[:40]
+        X_train = X.ww.iloc[:40]
+        X_test = X.ww.iloc[40:]
+        y_train = y.ww.iloc[:40]
 
         if train_features_index_dt:
             X_train.index = dates[:40]
@@ -217,11 +219,11 @@ def get_ts_X_y():
         if test_features_index_dt:
             X_test.index = dates[40:]
         if not no_features:
-            X_train["Feature"] = feature[:40]
-            X_test["Feature"] = feature[40:]
+            X_train.ww["Feature"] = pd.Series(feature[:40].values, index=X_train.index)
+            X_test.ww["Feature"] = pd.Series(feature[40:].values, index=X_test.index)
             if datetime_feature:
-                X_train["Dates"] = dates[:40]
-                X_test["Dates"] = dates[40:]
+                X_train.ww["Dates"] = pd.Series(dates[:40].values, index=X_train.index)
+                X_test.ww["Dates"] = pd.Series(dates[40:].values, index=X_test.index)
         if train_none:
             X_train = None
 
@@ -509,6 +511,36 @@ def X_y_categorical_classification():
     y = titanic["Survived"]
     X = titanic.drop(["Survived", "Name"], axis=1)
     return X, y
+
+
+@pytest.fixture
+def X_y_based_on_pipeline_or_problem_type(X_y_binary, X_y_multi, X_y_regression):
+    def _X_y_based_on_pipeline_or_problem_type(pipeline_or_type):
+        problem_types = {
+            ProblemTypes.BINARY: "binary",
+            ProblemTypes.MULTICLASS: "multiclass",
+            ProblemTypes.REGRESSION: "regression",
+        }
+        pipeline_classes = {
+            BinaryClassificationPipeline: "binary",
+            MulticlassClassificationPipeline: "multiclass",
+            RegressionPipeline: "regression",
+        }
+
+        if pipeline_or_type in problem_types:
+            problem_type = problem_types[pipeline_or_type]
+        elif pipeline_or_type in pipeline_classes:
+            problem_type = pipeline_classes[pipeline_or_type]
+
+        if problem_type == "binary":
+            X, y = X_y_binary
+        elif problem_type == "multiclass":
+            X, y = X_y_multi
+        else:
+            X, y = X_y_regression
+        return X, y
+
+    return _X_y_based_on_pipeline_or_problem_type
 
 
 @pytest.fixture()
@@ -809,6 +841,26 @@ def dummy_ts_binary_linear_classifier_pipeline_class():
             )
 
     return MockBinaryClassificationPipeline
+
+
+@pytest.fixture
+def dummy_ts_multi_pipeline_class(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
+
+    class MockMultiClassificationClassificationPipeline(
+        TimeSeriesMulticlassClassificationPipeline
+    ):
+        estimator = MockEstimator
+        component_graph = [MockEstimator]
+
+        def __init__(
+            self, parameters, custom_name=None, component_graph=None, random_seed=0
+        ):
+            super().__init__(
+                self.component_graph, parameters=parameters, random_seed=random_seed
+            )
+
+    return MockMultiClassificationClassificationPipeline
 
 
 @pytest.fixture
