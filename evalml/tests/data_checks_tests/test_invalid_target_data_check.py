@@ -11,6 +11,7 @@ from evalml.data_checks import (
     DataCheckMessageCode,
     DataChecks,
     DataCheckWarning,
+    DCAOParameterType,
     InvalidTargetDataCheck,
 )
 from evalml.exceptions import DataCheckInitError
@@ -225,7 +226,7 @@ def test_invalid_target_data_input_formats():
                     data_check_name=invalid_targets_data_check_name,
                     parameters={
                         "impute_strategy": {
-                            "parameter_type": "global",
+                            "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "category",
                             "categories": ["most_frequent"],
                             "default_value": "most_frequent",
@@ -785,7 +786,7 @@ def test_invalid_target_data_action_for_data_with_null(
                     data_check_name=invalid_targets_data_check_name,
                     parameters={
                         "impute_strategy": {
-                            "parameter_type": "global",
+                            "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "category",
                             "categories": ["mean", "most_frequent"]
                             if is_regression(problem_type)

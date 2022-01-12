@@ -8,6 +8,7 @@ from evalml.data_checks import (
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
+    DCAOParameterType,
 )
 from evalml.objectives import get_objective
 from evalml.problem_types import (
@@ -79,7 +80,7 @@ class InvalidTargetDataCheck(DataCheck):
             >>> target_check = InvalidTargetDataCheck("regression", "R2")
             >>> assert target_check.validate(X, y) == {
             ...     "warnings": [],
-            ...     "errors": [{"message": "Target is unsupported Unknown type. Valid Woodwork logical types include: integer, double, boolean",
+            ...     "errors": [{"message": "Target is unsupported Unknown type. Valid Woodwork logical types include: integer, double, boolean, integer_nullable, boolean_nullable, age_nullable",
             ...                 "data_check_name": "InvalidTargetDataCheck",
             ...                 "level": "error",
             ...                 "details": {"columns": None, "rows": None, "unsupported_type": "unknown"},
@@ -251,7 +252,7 @@ class InvalidTargetDataCheck(DataCheck):
                     data_check_name=self.name,
                     parameters={
                         "impute_strategy": {
-                            "parameter_type": "global",
+                            "parameter_type": DCAOParameterType.GLOBAL,
                             "type": "category",
                             "categories": ["mean", "most_frequent"]
                             if is_regression(self.problem_type)

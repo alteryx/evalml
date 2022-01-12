@@ -208,7 +208,10 @@ cases = [
                 ).to_dict(),
             ],
             "errors": [],
-            "actions": [drop_feature_action],
+            "actions": {
+                "action_list": [drop_feature_action_option],
+                "default_action": None,
+            },
         },
     ),
     (

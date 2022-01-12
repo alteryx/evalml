@@ -245,13 +245,13 @@ def test_categories_aggregated_date_ohe(pipeline_class, estimator, fraud_100):
     pipeline = pipeline_class(
         component_graph=[
             "Select Columns Transformer",
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             "One Hot Encoder",
             estimator,
         ],
         parameters={
             "Select Columns Transformer": {"columns": columns_to_select},
-            "DateTime Featurization Component": {"encode_as_categories": True},
+            "DateTime Featurizer": {"encode_as_categories": True},
             estimator: {"n_jobs": 1},
         },
     )
@@ -280,8 +280,8 @@ def test_categories_aggregated_text(pipeline_class, estimator, fraud_100):
     component_graph = [
         "Select Columns Transformer",
         "One Hot Encoder",
-        "Natural Language Featurization Component",
-        "DateTime Featurization Component",
+        "Natural Language Featurizer",
+        "DateTime Featurizer",
         estimator,
     ]
 
