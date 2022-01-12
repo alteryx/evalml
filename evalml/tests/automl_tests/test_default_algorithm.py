@@ -113,6 +113,14 @@ def test_default_algorithm(
         X, y = X_y_regression
         fs = "RF Regressor Select From Model"
 
+    X = pd.DataFrame(X)
+    X["1"] = 0
+    X["2"] = 0
+    X["3"] = 0
+    X["A"] = "a"
+    X["B"] = "b"
+    X["C"] = "c"
+
     mock_get_names.return_value = ["0", "1", "2"]
     problem_type = automl_type
     sampler_name = None
@@ -323,6 +331,15 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
 
 def test_make_split_pipeline(X_y_binary):
     X, y = X_y_binary
+
+    X = pd.DataFrame(X)
+    X["1"] = 0
+    X["2"] = 0
+    X["3"] = 0
+    X["A"] = "a"
+    X["B"] = "b"
+    X["C"] = "c"
+
     algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
     algo._selected_cols = ["1", "2", "3"]
     algo._selected_cat_cols = ["A", "B", "C"]
@@ -331,6 +348,8 @@ def test_make_split_pipeline(X_y_binary):
         "Label Encoder",
         "Categorical Pipeline - Select Columns Transformer",
         "Categorical Pipeline - Label Encoder",
+        "Categorical Pipeline - Imputer",
+        "Categorical Pipeline - One Hot Encoder",
         "Numeric Pipeline - Select Columns By Type Transformer",
         "Numeric Pipeline - Label Encoder",
         "Numeric Pipeline - Imputer",
