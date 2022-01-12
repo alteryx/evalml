@@ -3,6 +3,8 @@ Release Notes
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
+        * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
         * Standardized names of featurization components :pr:`3192`
         * Removed potential prediction explanations failure when pipelines predicted a class with probability 1 :pr:`3221`
     * Changes
