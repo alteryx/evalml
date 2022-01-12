@@ -160,7 +160,7 @@ def test_data_check_action_option_to_dict(dummy_data_check_name):
         metadata={"some detail": ["some detail value"]},
         parameters={
             "global_parameter_name": {
-                "parameter_type": DCAOParameterType.GLOBAL,
+                "parameter_type": DCAOParameterType.GLOBAL.value,
                 "type": "float",
                 "default_value": 0.0,
             }
@@ -199,7 +199,7 @@ def test_data_check_action_option_to_dict(dummy_data_check_name):
         },
         "parameters": {
             "global_parameter_name": {
-                "parameter_type": DCAOParameterType.GLOBAL,
+                "parameter_type": DCAOParameterType.GLOBAL.value,
                 "type": "float",
                 "default_value": 0.0,
             }
