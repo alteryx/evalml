@@ -4,6 +4,7 @@ Release Notes
     * Enhancements
     * Fixes
         * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
+        * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
         * Standardized names of featurization components :pr:`3192`
     * Changes
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
