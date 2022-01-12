@@ -1144,6 +1144,7 @@ class AutoMLSearch:
         training_time = evaluation_results["training_time"]
         cv_data = evaluation_results["cv_data"]
         cv_scores = evaluation_results["cv_scores"]
+        cached_data = evaluation_results["cached_data"]
         is_baseline = pipeline.model_family == ModelFamily.BASELINE
         if len(cv_scores) == 1:
             validation_score = cv_scores[0]
@@ -1213,6 +1214,7 @@ class AutoMLSearch:
                     score_to_minimize,
                     pipeline,
                     self._results["pipeline_results"][pipeline_id],
+                    cached_data,
                 )
             except PipelineNotFoundError:
                 pass

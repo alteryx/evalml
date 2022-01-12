@@ -5,6 +5,7 @@ import traceback
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
+import joblib
 import numpy as np
 import pandas as pd
 import woodwork as ww
@@ -244,6 +245,9 @@ def train_and_score_pipeline(
                 f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
             )
             score = scores[automl_config.objective.name]
+            pipeline_cache = {}
+            pipeline_cache[joblib.hash(X_train)] = cv_pipeline.component_graph
+            pipeline_cache[joblib.hash(X_valid)] = cv_pipeline.component_graph
         except Exception as e:
             if automl_config.error_callback is not None:
                 automl_config.error_callback(
@@ -303,6 +307,7 @@ def train_and_score_pipeline(
             "training_time": training_time,
             "cv_scores": cv_scores,
             "cv_score_mean": cv_score_mean,
+            "cached_data": pipeline_cache,
         },
         "pipeline": cv_pipeline,
         "logger": logger,

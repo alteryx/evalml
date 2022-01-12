@@ -2,6 +2,7 @@
 import inspect
 import warnings
 
+import joblib
 import networkx as nx
 import pandas as pd
 import woodwork as ww
@@ -75,7 +76,7 @@ class ComponentGraph:
 
     """
 
-    def __init__(self, component_dict=None, random_seed=0):
+    def __init__(self, component_dict=None, cached_data=None, random_seed=0):
         self.random_seed = random_seed
         self.component_dict = component_dict or {}
         if not isinstance(self.component_dict, dict):
@@ -83,7 +84,7 @@ class ComponentGraph:
                 "component_dict must be a dictionary which specifies the components and edges between components"
             )
         self._validate_component_dict()
-
+        self.cached_data = cached_data
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
@@ -401,6 +402,12 @@ class ComponentGraph:
         if len(component_list) == 0:
             return X
 
+        hashes = joblib.hash(X)
+        if self.cached_data is not None and hashes in list(self.cached_data.keys()):
+            return self._get_stacked_ensemble_results(
+                hashes, X, y, component_list, fit, evaluate_training_only_components
+            )
+
         output_cache = {}
         for component_name in component_list:
             component_instance = self.get_component(component_name)
@@ -455,6 +462,69 @@ class ComponentGraph:
                 else:
                     output = component_instance.predict(x_inputs)
                 output_cache[f"{component_name}.x"] = output
+        return output_cache
+
+    def _get_stacked_ensemble_results(
+        self, hashes, X, y, component_list, fit, evaluate_training_only_components
+    ):
+        output_cache = {}
+        for component_name in component_list:
+            x_inputs, y_input = self._consolidate_inputs_for_component(
+                output_cache, component_name, X, y
+            )
+            if component_name == "Label Encoder":
+                component_instance = self.get_component(component_name)
+                if fit:
+                    output_x, output_y = component_instance.fit_transform(
+                        x_inputs, y_input
+                    )
+                else:
+                    output_x, output_y = component_instance.transform(x_inputs, y_input)
+                output_cache[f"{component_name}.x"] = output_x
+                output_cache[f"{component_name}.y"] = output_y
+            elif "stacked" in component_name.lower():
+                if fit:
+                    # train the metalearner
+                    component_instance.fit(x_inputs, y_input)
+                    output = None
+                else:
+                    output = component_instance.predict(x_inputs)
+                output_cache[f"{component_name}.x"] = output
+            else:
+                component_instance = self.cached_data[hashes][component_name]
+                if component_name.split(" ")[-1].lower() not in {
+                    "classifier",
+                    "regressor",
+                }:
+                    if (
+                        component_instance.training_only
+                        and evaluate_training_only_components is False
+                    ):
+                        output = x_inputs, y_input
+                    else:
+                        output = component_instance.transform(x_inputs, y_input)
+                else:
+                    try:
+                        output = component_instance.predict_proba(x_inputs)
+                        if isinstance(output, pd.DataFrame):
+                            if len(output.columns) == 2:
+                                # If it is a binary problem, drop the first column since both columns are colinear
+                                output = output.ww.drop(output.columns[0])
+                            output = output.ww.rename(
+                                {
+                                    col: f"Col {str(col)} {component_name}.x"
+                                    for col in output.columns
+                                }
+                            )
+                    except MethodPropertyNotFoundError:
+                        output = component_instance.predict(x_inputs)
+                if isinstance(output, tuple):
+                    output_x, output_y = output[0], output[1]
+                else:
+                    output_x = output
+                    output_y = None
+                output_cache[f"{component_name}.x"] = output_x
+                output_cache[f"{component_name}.y"] = output_y
         return output_cache
 
     def _get_feature_provenance(self, input_feature_names):

@@ -350,7 +350,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         self._batch_number += 1
         return next_batch
 
-    def add_result(self, score_to_minimize, pipeline, trained_pipeline_results):
+    def add_result(
+        self, score_to_minimize, pipeline, trained_pipeline_results, cached_data
+    ):
         """Register results from evaluating a pipeline.
 
         Args:
@@ -397,6 +399,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         "pipeline": pipeline,
                         "parameters": pipeline.parameters,
                         "id": trained_pipeline_results["id"],
+                        "cached_data": cached_data,
                     }
                 }
             )

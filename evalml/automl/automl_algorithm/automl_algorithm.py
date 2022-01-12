@@ -104,6 +104,9 @@ class AutoMLAlgorithm(ABC):
         problem_type = best_pipelines[0]["pipeline"].problem_type
         n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
         input_pipelines = []
+        cached_data = {
+            mf: x["cached_data"] for mf, x in self._best_pipeline_info.items()
+        }
         for pipeline_dict in best_pipelines:
             pipeline = pipeline_dict["pipeline"]
             pipeline_params = self._transform_parameters(
@@ -121,15 +124,14 @@ class AutoMLAlgorithm(ABC):
                 pipeline_params.update(
                     {"Select Columns Transformer": {"columns": self._selected_cols}}
                 )
-            input_pipelines.append(
-                pipeline.new(parameters=pipeline_params, random_seed=self.random_seed)
-            )
+            input_pipelines.append(pipeline)
 
         ensemble = _make_stacked_ensemble_pipeline(
             input_pipelines,
             problem_type,
             random_seed=self.random_seed,
             n_jobs=n_jobs_ensemble,
+            cached_data=cached_data,
         )
         next_batch.append(ensemble)
         return next_batch
