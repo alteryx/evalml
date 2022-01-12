@@ -526,3 +526,31 @@ def test_get_action_from_defaults(dummy_data_check_name):
             },
         )
     )
+
+
+def test_dcao_parameter_type_to_str():
+    assert str(DCAOParameterType.GLOBAL) == "global"
+    assert str(DCAOParameterType.COLUMN) == "column"
+
+
+def test_handle_dcao_parameter_type():
+    DCAOParameterType.handle_dcao_parameter_type("global") == DCAOParameterType.GLOBAL
+    DCAOParameterType.handle_dcao_parameter_type("column") == DCAOParameterType.COLUMN
+
+    DCAOParameterType.handle_dcao_parameter_type("GLOBAL") == DCAOParameterType.GLOBAL
+    DCAOParameterType.handle_dcao_parameter_type("COLUMN") == DCAOParameterType.COLUMN
+
+    DCAOParameterType.handle_dcao_parameter_type(
+        DCAOParameterType.GLOBAL
+    ) == DCAOParameterType.GLOBAL
+    DCAOParameterType.handle_dcao_parameter_type(
+        DCAOParameterType.COLUMN
+    ) == DCAOParameterType.COLUMN
+
+
+def test_handle_dcao_parameter_type_invalid():
+    with pytest.raises(
+        ValueError,
+        match="`handle_dcao_parameter_type` was not passed a str or DCAOParameterType object",
+    ):
+        DCAOParameterType.handle_dcao_parameter_type(None)
