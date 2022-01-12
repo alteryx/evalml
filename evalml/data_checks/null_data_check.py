@@ -157,6 +157,7 @@ class NullDataCheck(DataCheck):
         cols_with_any_nulls, _ = NullDataCheck.get_null_column_information(
             X, pct_null_col_threshold=0.0
         )
+
         below_highly_null_cols = [
             col for col in cols_with_any_nulls if col not in highly_null_cols
         ]
@@ -215,7 +216,10 @@ class NullDataCheck(DataCheck):
                             "default_value": "most_frequent",
                         }
                     },
-                    metadata={"columns": list(highly_null_cols), "is_target": False},
+                    metadata={
+                        "columns": list(below_highly_null_cols),
+                        "is_target": False,
+                    },
                 ).to_dict()
             )
 
