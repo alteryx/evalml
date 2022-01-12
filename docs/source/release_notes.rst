@@ -53,11 +53,7 @@ Release Notes
         * Added comments to provide clarity on doctests :pr:`3155`
     * Testing Changes
         * Parameterized tests in ``test_datasets.py`` :pr:`3145`
-<<<<<<< HEAD
 
-
-=======
->>>>>>> 3116_update_actions_to_actions
 
 .. warning::
 
