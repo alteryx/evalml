@@ -42,7 +42,7 @@ class ColumnSelector(Transformer):
 
         Args:
             X (pd.DataFrame): Data to check.
-            y (pd.Series, optional): Targets.
+            y (pd.Series, ignored): Targets.
 
         Returns:
             self
@@ -171,7 +171,7 @@ class SelectByType(Transformer):
 
         Args:
             X (pd.DataFrame): Data to check.
-            y (pd.Series, optional): Targets.
+            y (pd.Series, ignored): Targets.
 
         Returns:
             self

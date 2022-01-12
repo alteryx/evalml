@@ -399,7 +399,7 @@ def make_pipeline(
          sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
              Defaults to None
          extra_components_before (list[ComponentBase]): List of extra components to be added before preprocessing components. Defaults to None.
-         extra_components_after (list[ComponentBase]): List of extra components to be added before preprocessing components. Defaults to None.
+         extra_components_after (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
          use_estimator (bool): Whether to add the provided estimator to the pipeline or not. Defaults to True.
          known_in_advance (list[str], None): List of features that are known in advance.
 
