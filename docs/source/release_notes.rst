@@ -7,7 +7,7 @@
         * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
         * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
         * Standardized names of featurization components :pr:`3192`
-	* Removed empty cell :pr:`3234`
+	* Removed empty cell in text_input.ipynb :pr:`3234`
     * Changes
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
     * Documentation Changes
