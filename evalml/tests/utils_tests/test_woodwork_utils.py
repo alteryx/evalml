@@ -221,8 +221,7 @@ def test_infer_feature_types_NA_to_nan(null_col, already_inited):
         df.ww.init()
     inferred_df = infer_feature_types(df)
     if all(df["unknown"].isnull()):
-        assert isinstance(inferred_df.ww.logical_types["unknown"], Double)
-        assert all([isinstance(x, type(np.nan)) for x in inferred_df["unknown"]])
+        assert all([isinstance(x, type(pd.NA)) for x in inferred_df["unknown"]])
     else:
         assert all([isinstance(x, str) for x in df["unknown"]])
 
