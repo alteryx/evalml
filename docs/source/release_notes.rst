@@ -2,11 +2,14 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
+
     * Fixes
+        * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
         * Standardized names of featurization components :pr:`3192`
     * Changes
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
-        * Updated dependency bot workflow to remove outdated description and add new configuration to delete branches automatically :pr:`3212`
+        * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
     * Documentation Changes
     * Testing Changes
 
@@ -14,6 +17,7 @@ Release Notes
 
     **Breaking Changes**
         * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
+        * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
 
 
 **v0.41.0 Jan. 06, 2022**
