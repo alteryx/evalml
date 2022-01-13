@@ -5,8 +5,10 @@ Release Notes
     * Fixes
         * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
         * Standardized names of featurization components :pr:`3192`
+        * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
     * Changes
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
+        * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
     * Documentation Changes
     * Testing Changes
         * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
@@ -16,6 +18,7 @@ Release Notes
 
     **Breaking Changes**
         * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
+        * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
 
 
 **v0.41.0 Jan. 06, 2022**
