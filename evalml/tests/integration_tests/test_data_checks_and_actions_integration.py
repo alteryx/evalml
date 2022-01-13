@@ -1,3 +1,4 @@
+from evalml.pipelines.components.transformers.imputers.per_column_imputer import PerColumnImputer
 import numpy as np
 import pandas as pd
 import pytest
@@ -45,7 +46,7 @@ def test_data_checks_with_healthy_data(X_y_binary):
 def test_data_checks_suggests_drop_cols():
     X = pd.DataFrame(
         {
-            "lots_of_null": [None, 2, None, 3, 5],
+            "lots_of_null": [None, 7, None, 3, 5],
             "all_null": [None, None, None, None, None],
             "no_null": [1, 2, 3, 4, 5],
         }
@@ -60,24 +61,31 @@ def test_data_checks_suggests_drop_cols():
     )
     action_pipeline = make_pipeline_from_actions("binary", actions)
     assert action_pipeline == BinaryClassificationPipeline(
-        component_graph={"Drop Columns Transformer": [DropColumns, "X", "y"]},
-        parameters={"Drop Columns Transformer": {"columns": ["all_null"]}},
+        component_graph={
+            "Per Column Imputer": [PerColumnImputer, "X", "y"],
+            "Drop Columns Transformer": [
+                 DropColumns,
+                "Per Column Imputer.x",
+                "y",
+            ],
+        },
+        parameters={
+            "Per Column Imputer": {
+                "impute_strategies": {"lots_of_null": {"impute_strategy": "mean"}},
+                "default_impute_strategy": "most_frequent",
+                "impute_all": False,
+            },
+            "Drop Columns Transformer": {"columns": ["all_null"]},
+        },
         random_seed=0,
-    )
-
-    X_t = pd.DataFrame(
-        {
-            "lots_of_null": [None, 2, None, 3, 5],
-            "all_null": [None, None, None, None, None],
-            "no_null": [1, 2, 3, 4, 5],
-        }
     )
     X_expected = pd.DataFrame(
         {
-            "lots_of_null": [None, 2, None, 3, 5],
+            "lots_of_null": [5, 7, 5, 3, 5],
             "no_null": [1, 2, 3, 4, 5],
         }
     )
+    X_expected.ww.init(logical_types={"lots_of_null": "double"})
 
     action_pipeline.fit(X, y)
     X_t = action_pipeline.transform(X, y)
