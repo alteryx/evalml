@@ -2,17 +2,19 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
+        * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
     * Fixes
+        * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
         * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
         * Standardized names of featurization components :pr:`3192`
-        * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
+        * Removed potential prediction explanations failure when pipelines predicted a class with probability 1 :pr:`3221`
     * Changes
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
+        * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
         * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
     * Documentation Changes
     * Testing Changes
-        * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
-
 
 .. warning::
 
@@ -37,6 +39,7 @@ Release Notes
         * Updated validate() API to use the new ``DataCheckActionOption`` class instead of ``DataCheckAction`` :pr:`3152`
     * Documentation Changes
     * Testing Changes
+        * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
         * Add workflow to auto-merge dependency PRs if status checks pass :pr:`3184`
 
 **v0.40.0 Dec. 22, 2021**
@@ -51,7 +54,6 @@ Release Notes
     * Changes
         * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
         * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
-        * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
         * Updated ``nlp-primitives`` minimum version to 2.1.0 :pr:`3166`
         * Updated minimum version of ``woodwork`` to v0.11.0 :pr:`3171`
         * Revert `3160` until uninferrable frequency can be addressed earlier in the process :pr:`3198`
@@ -59,7 +61,6 @@ Release Notes
         * Added comments to provide clarity on doctests :pr:`3155`
     * Testing Changes
         * Parameterized tests in ``test_datasets.py`` :pr:`3145`
-
 
 .. warning::
 
