@@ -10,7 +10,7 @@ from evalml.utils import infer_feature_types
 
 
 class NullDataCheck(DataCheck):
-    """Check if there are any highly-null columns and rows in the input.
+    """Check if there are any highly-null numerical and categorical columns and rows in the input.
 
     Args:
         pct_null_col_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
@@ -178,9 +178,19 @@ class NullDataCheck(DataCheck):
         }
 
         X = infer_feature_types(X)
+        X_to_validate = X.ww.select(
+            [
+                "category",
+                "boolean",
+                "numeric",
+                "IntegerNullable",
+                "BooleanNullable",
+                "unknown",
+            ]
+        )
 
         highly_null_rows = NullDataCheck.get_null_row_information(
-            X, pct_null_row_threshold=self.pct_null_row_threshold
+            X_to_validate, pct_null_row_threshold=self.pct_null_row_threshold
         )
         if len(highly_null_rows) > 0:
             warning_msg = f"{len(highly_null_rows)} out of {len(X)} rows are {self.pct_null_row_threshold*100}% or more null"
@@ -205,11 +215,11 @@ class NullDataCheck(DataCheck):
             )
 
         highly_null_cols, _ = NullDataCheck.get_null_column_information(
-            X, pct_null_col_threshold=self.pct_null_col_threshold
+            X_to_validate, pct_null_col_threshold=self.pct_null_col_threshold
         )
 
         cols_with_any_nulls, _ = NullDataCheck.get_null_column_information(
-            X, pct_null_col_threshold=0.0
+            X_to_validate, pct_null_col_threshold=0.0
         )
 
         below_highly_null_cols = [

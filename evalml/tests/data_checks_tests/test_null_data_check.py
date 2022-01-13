@@ -417,7 +417,7 @@ def test_highly_null_data_check_input_formats():
     }
     #  test Woodwork
     ww_input = pd.DataFrame([[None, None, None, None, 0], [None, None, None, "hi", 5]])
-    ww_input.ww.init()
+    ww_input.ww.init(logical_types={1: "categorical"})
     validate_results = highly_null_check.validate(ww_input)
     validate_results["warnings"][0]["details"]["pct_null_cols"] = SeriesWrap(
         validate_results["warnings"][0]["details"]["pct_null_cols"]
@@ -475,6 +475,12 @@ def test_has_null_but_not_highly_null():
             "few_null_2": [1, None, 3, 0, 5],
             "no_null": [1, 2, 3, 4, 5],
             "no_null_categorical": ["a", "b", "a", "d", "e"],
+        }
+    )
+    X.ww.init(
+        logical_types={
+            "few_null_categorical": "categorical",
+            "few_null_categorical_2": "categorical",
         }
     )
 

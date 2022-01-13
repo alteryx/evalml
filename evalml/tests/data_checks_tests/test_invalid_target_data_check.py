@@ -758,7 +758,7 @@ def test_invalid_target_data_check_numeric_binary_does_not_return_warnings():
 
 @pytest.mark.parametrize("use_nullable_types", [True, False])
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_invalid_target_data_action_for_data_with_null(
+def test_invalid_target_data_check_action_for_data_with_null(
     use_nullable_types, problem_type
 ):
     y = pd.Series([None, None, None, 0, 0, 0, 0, 0, 0, 0])
@@ -834,7 +834,7 @@ def test_invalid_target_data_action_for_data_with_null(
 
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)
-def test_invalid_target_data_action_for_all_null(problem_type):
+def test_invalid_target_data_check_action_for_all_null(problem_type):
     invalid_targets_check = InvalidTargetDataCheck(
         problem_type, get_default_primary_search_objective(problem_type)
     )
