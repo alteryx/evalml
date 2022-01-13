@@ -1545,7 +1545,9 @@ def test_pipeline_equality_subclasses(pipeline_class):
     ],
 )
 @patch("evalml.pipelines.ComponentGraph.fit")
-def test_pipeline_equality(mock_fit, pipeline_class):
+def test_pipeline_equality(
+    mock_fit, pipeline_class, X_y_based_on_pipeline_or_problem_type
+):
     if pipeline_class in [
         BinaryClassificationPipeline,
         MulticlassClassificationPipeline,
@@ -1601,8 +1603,8 @@ def test_pipeline_equality(mock_fit, pipeline_class):
     )
 
     # Test fitted equality
-    X = pd.DataFrame({})
-    y = pd.Series([])
+    X, y = X_y_based_on_pipeline_or_problem_type(pipeline_class)
+
     mock_pipeline.fit(X, y)
     assert mock_pipeline != MockPipeline(parameters={})
 
@@ -1613,7 +1615,7 @@ def test_pipeline_equality(mock_fit, pipeline_class):
     # Test fitted equality: same data but different target names are not equal
     mock_pipeline_different_target_name = MockPipeline(parameters={})
     mock_pipeline_different_target_name.fit(
-        X, y=pd.Series([], name="target with a name")
+        X, y=pd.Series(y, name="target with a name")
     )
     assert mock_pipeline != mock_pipeline_different_target_name
 
@@ -2157,14 +2159,16 @@ def test_score_error_when_custom_objective_not_instantiated(
     dummy_multiclass_pipeline,
     dummy_regression_pipeline,
     X_y_binary,
+    X_y_multi,
 ):
+    X, y = X_y_binary
     pipeline = dummy_regression_pipeline
     if is_binary(problem_type):
         pipeline = logistic_regression_binary_pipeline
     elif is_multiclass(problem_type):
+        X, y = X_y_multi
         pipeline = dummy_multiclass_pipeline
 
-    X, y = X_y_binary
     pipeline.fit(X, y)
     msg = "Cannot pass cost benefit matrix as a string in pipeline.score. Instantiate first and then add it to the list of objectives."
     with pytest.raises(ObjectiveCreationError, match=msg):
@@ -2590,9 +2594,10 @@ def test_get_hyperparameter_ranges():
     ],
 )
 def test_pipeline_predict_without_final_estimator(
-    problem_type, make_data_type, X_y_binary
+    problem_type, make_data_type, X_y_based_on_pipeline_or_problem_type
 ):
-    X, y = X_y_binary
+    X, y = X_y_based_on_pipeline_or_problem_type(problem_type)
+
     X = make_data_type("ww", X)
     y = make_data_type("ww", y)
     pipeline_class = _get_pipeline_base_class(problem_type)
@@ -2632,13 +2637,18 @@ def test_pipeline_predict_without_final_estimator(
     ],
 )
 def test_pipeline_transform(
-    mock_ohe_transform, mock_imputer_transform, problem_type, X_y_binary, make_data_type
+    mock_ohe_transform,
+    mock_imputer_transform,
+    problem_type,
+    X_y_based_on_pipeline_or_problem_type,
+    make_data_type,
 ):
     component_graph = {
         "Imputer": ["Imputer", "X", "y"],
         "OHE": ["One Hot Encoder", "Imputer.x", "y"],
     }
-    X, y = X_y_binary
+    X, y = X_y_based_on_pipeline_or_problem_type(problem_type)
+
     X = make_data_type("ww", X)
     y = make_data_type("ww", y)
     mock_imputer_transform.return_value = X

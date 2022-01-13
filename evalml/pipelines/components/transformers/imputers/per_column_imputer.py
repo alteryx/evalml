@@ -88,7 +88,7 @@ class PerColumnImputer(Transformer):
             )
 
         for column, imputer in self.imputers.items():
-            imputer.fit(X[[column]])
+            imputer.fit(X.ww[[column]])
 
         return self
 
@@ -107,7 +107,7 @@ class PerColumnImputer(Transformer):
 
         cols_to_drop = []
         for column, imputer in self.imputers.items():
-            transformed = imputer.transform(X_ww[[column]])
+            transformed = imputer.transform(X_ww.ww[[column]])
             if transformed.empty:
                 cols_to_drop.append(column)
             else:

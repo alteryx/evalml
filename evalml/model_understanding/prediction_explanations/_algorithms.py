@@ -168,14 +168,14 @@ def _compute_shap_values(pipeline, features, training_data=None):
         sampled_training_data_features = shap.sample(training_data, 100)
         sampled_training_data_features = check_array(sampled_training_data_features)
         if is_regression(pipeline.problem_type):
-            link_function = "identity"
             decision_function = estimator._component_obj.predict
         else:
-            link_function = "logit"
             decision_function = estimator._component_obj.predict_proba
         with warnings.catch_warnings(record=True) as ws:
             explainer = shap.KernelExplainer(
-                decision_function, sampled_training_data_features, link_function
+                decision_function,
+                sampled_training_data_features,
+                link_function="identity",
             )
             shap_values = explainer.shap_values(features)
         if ws:
