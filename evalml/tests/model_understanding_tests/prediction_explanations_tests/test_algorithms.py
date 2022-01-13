@@ -323,6 +323,23 @@ def test_compute_shap_values_catches_shap_tree_warnings(
     )
 
 
+@patch("sklearn.linear_model.LogisticRegression.predict_proba")
+def test_compute_shap_values_absolute_probs(mock_predict_proba, X_y_binary):
+    X, y = X_y_binary
+    pipeline = BinaryClassificationPipeline(["Logistic Regression Classifier"])
+    mock_predict_proba.side_effect = [
+        pd.DataFrame({0: [0.0] + [0.4] * 99, 1: [1.0] + [0.6] * 99}),
+        pd.DataFrame({0: [0.0] + [0.4] * 99, 1: [1.0] + [0.6] * 99}),
+        pd.DataFrame({0: [0.0] + [0.4] * 208799, 1: [1.0] + [0.6] * 208799}),
+    ]
+
+    shap_values = calculate_shap_for_test(X, y, pipeline, 1)
+    mock_predict_proba.assert_called()
+
+    for feat in shap_values[0].values():
+        assert not np.isnan(feat).any()
+
+
 def test_normalize_values_exceptions():
 
     with pytest.raises(
