@@ -159,9 +159,7 @@ class SelectByType(Transformer):
         )
 
     def _check_input_for_columns(self, X):
-        col_types = self.parameters.get("column_types")
-        if col_types and X.ww.select(col_types).empty:
-            raise ValueError("Columns of type {column_types} not found in input data.")
+        pass
 
     def _modify_columns(self, cols, X, y=None):
         return X.ww.select(cols)
