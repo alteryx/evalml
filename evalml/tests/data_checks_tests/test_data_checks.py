@@ -160,7 +160,7 @@ messages = [
         },
     ).to_dict(),
     DataCheckWarning(
-        message="Column(s) 'lots_of_null', 'nullable_integer', 'nullable_bool', 'natural_language_nan', 'nan_dt_col' have null values",
+        message="Column(s) 'lots_of_null', 'nullable_integer', 'nullable_bool', 'natural_language_nan' have null values",
         data_check_name="NullDataCheck",
         message_code=DataCheckMessageCode.COLS_WITH_NULL,
         details={
@@ -169,7 +169,6 @@ messages = [
                 "nullable_integer",
                 "nullable_bool",
                 "natural_language_nan",
-                "nan_dt_col",
             ],
         },
     ).to_dict(),
@@ -229,7 +228,6 @@ def get_expected_action_options(problem_type):
                     "nullable_integer",
                     "nullable_bool",
                     "natural_language_nan",
-                    "nan_dt_col",
                 ],
                 "is_target": False,
             },
@@ -259,13 +257,6 @@ def get_expected_action_options(problem_type):
                             }
                         },
                         "natural_language_nan": {
-                            "impute_strategy": {
-                                "categories": ["most_frequent"],
-                                "type": "category",
-                                "default_value": "most_frequent",
-                            }
-                        },
-                        "nan_dt_col": {
                             "impute_strategy": {
                                 "categories": ["most_frequent"],
                                 "type": "category",
