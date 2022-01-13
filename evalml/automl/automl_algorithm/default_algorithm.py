@@ -492,7 +492,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         if self._selected_cat_cols:
             self._split = True
 
-            if self._X_with_cat_cols is None or self._X_with_cat_cols is None:
+            if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
                 self._X_without_cat_cols = self.X.drop(self._selected_cat_cols, axis=1)
                 self._X_with_cat_cols = self.X[self._selected_cat_cols]
 
