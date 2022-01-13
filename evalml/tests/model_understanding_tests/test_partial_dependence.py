@@ -1147,6 +1147,7 @@ def test_partial_dependence_all_nan_value_error(
     logistic_regression_binary_pipeline.fit(X, y)
 
     pred_df = pd.DataFrame({"a": [None] * 5, "b": [1, 2, 3, 4, 4], "c": [None] * 5})
+    pred_df.ww.init(logical_types={"a": "Double", "c": "Double", "b": "Integer"})
     message = "The following features have all NaN values and so the partial dependence cannot be computed: {}"
     with pytest.raises(PartialDependenceError, match=message.format("'a'")) as e:
         partial_dependence(
@@ -1181,7 +1182,7 @@ def test_partial_dependence_all_nan_value_error(
         )
     assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_ALL_NANS
 
-    pred_df = pred_df.rename(columns={"a": 0})
+    pred_df = pred_df.ww.rename(columns={"a": 0})
     with pytest.raises(PartialDependenceError, match=message.format("'0'")) as e:
         partial_dependence(
             logistic_regression_binary_pipeline, pred_df, features=0, grid_resolution=10

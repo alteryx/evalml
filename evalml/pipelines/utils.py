@@ -71,7 +71,8 @@ def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):
 
 def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
     component = []
-    all_null_cols = X.columns[X.isnull().all()]
+    non_index_unknown = X.ww.select(exclude=["index", "unknown"])
+    all_null_cols = non_index_unknown.columns[non_index_unknown.isnull().all()]
     if len(all_null_cols) > 0:
         component.append(DropNullColumns)
     return component
