@@ -223,7 +223,7 @@ def test_highly_null_data_check_warnings(
                             "columns": {
                                 "lots_of_null": {
                                     "impute_strategy": {
-                                        "categories": ["mean", "mode"],
+                                        "categories": ["mean", "most_frequent"],
                                         "type": "category",
                                         "default_value": "mean",
                                     }
@@ -296,7 +296,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
                             "columns": {
                                 "lots_of_null": {
                                     "impute_strategy": {
-                                        "categories": ["mean", "mode"],
+                                        "categories": ["mean", "most_frequent"],
                                         "type": "category",
                                         "default_value": "mean",
                                     }
@@ -402,9 +402,9 @@ def test_highly_null_data_check_input_formats():
                             "columns": {
                                 3: {
                                     "impute_strategy": {
-                                        "categories": ["mode"],
+                                        "categories": ["most_frequent"],
                                         "type": "category",
-                                        "default_value": "mode",
+                                        "default_value": "most_frequent",
                                     }
                                 }
                             },
@@ -517,28 +517,28 @@ def test_has_null_but_not_highly_null():
                             "columns": {
                                 "few_null_categorical": {
                                     "impute_strategy": {
-                                        "categories": ["mode"],
+                                        "categories": ["most_frequent"],
                                         "type": "category",
-                                        "default_value": "mode",
+                                        "default_value": "most_frequent",
                                     }
                                 },
                                 "few_null": {
                                     "impute_strategy": {
-                                        "categories": ["mean", "mode"],
+                                        "categories": ["mean", "most_frequent"],
                                         "type": "category",
                                         "default_value": "mean",
                                     }
                                 },
                                 "few_null_categorical_2": {
                                     "impute_strategy": {
-                                        "categories": ["mode"],
+                                        "categories": ["most_frequent"],
                                         "type": "category",
-                                        "default_value": "mode",
+                                        "default_value": "most_frequent",
                                     }
                                 },
                                 "few_null_2": {
                                     "impute_strategy": {
-                                        "categories": ["mean", "mode"],
+                                        "categories": ["mean", "most_frequent"],
                                         "type": "category",
                                         "default_value": "mean",
                                     }

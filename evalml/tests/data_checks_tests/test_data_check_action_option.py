@@ -38,7 +38,7 @@ def test_data_check_action_option_attributes(dummy_data_check_name):
             "columns": {
                 "a": {
                     "impute_strategy": {
-                        "categories": ["mean", "mode"],
+                        "categories": ["mean", "most_frequent"],
                         "type": "category",
                         "default_value": "mean",
                     },
@@ -410,15 +410,15 @@ def test_get_action_from_defaults(dummy_data_check_name):
                 "columns": {
                     "some_column": {
                         "impute_strategy": {
-                            "categories": ["mean", "mode"],
+                            "categories": ["mean", "most_frequent"],
                             "type": "category",
-                            "default_value": "mode",
+                            "default_value": "most_frequent",
                         },
                         "fill_value": {"type": "float", "default_value": 0.0},
                     },
                     "some_other_column": {
                         "impute_strategy": {
-                            "categories": ["mean", "mode"],
+                            "categories": ["mean", "most_frequent"],
                             "type": "category",
                             "default_value": "mean",
                         },
@@ -438,7 +438,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
                 "rows": None,
                 "parameters": {
                     "impute_strategies": {
-                        "some_column": {"impute_strategy": "mode", "fill_value": 0.0},
+                        "some_column": {"impute_strategy": "most_frequent", "fill_value": 0.0},
                         "some_other_column": {
                             "impute_strategy": "mean",
                             "fill_value": 1.0,
@@ -487,15 +487,15 @@ def test_get_action_from_defaults(dummy_data_check_name):
                 "columns": {
                     "some_column": {
                         "impute_strategy": {
-                            "categories": ["mean", "mode"],
+                            "categories": ["mean", "most_frequent"],
                             "type": "category",
-                            "default_value": "mode",
+                            "default_value": "most_frequent",
                         },
                         "fill_value": {"type": "float", "default_value": 0.0},
                     },
                     "some_other_column": {
                         "impute_strategy": {
-                            "categories": ["mean", "mode"],
+                            "categories": ["mean", "most_frequent"],
                             "type": "category",
                             "default_value": "mean",
                         },
@@ -516,7 +516,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
                 "parameters": {
                     "global_parameter_name": 0.0,
                     "impute_strategies": {
-                        "some_column": {"impute_strategy": "mode", "fill_value": 0.0},
+                        "some_column": {"impute_strategy": "most_frequent", "fill_value": 0.0},
                         "some_other_column": {
                             "impute_strategy": "mean",
                             "fill_value": 1.0,

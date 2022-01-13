@@ -32,7 +32,7 @@ class DataCheckActionOption:
         ...         "columns": {
         ...             "a": {
         ...                 "impute_strategy": {
-        ...                     "categories": ["mean", "mode"],
+        ...                     "categories": ["mean", "most_frequent"],
         ...                     "type": "category",
         ...                     "default_value": "mean",
         ...                 },

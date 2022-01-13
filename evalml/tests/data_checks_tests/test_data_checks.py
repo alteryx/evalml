@@ -239,37 +239,37 @@ def get_expected_action_options(problem_type):
                     "columns": {
                         "lots_of_null": {
                             "impute_strategy": {
-                                "categories": ["mode"],
+                                "categories": ["most_frequent"],
                                 "type": "category",
-                                "default_value": "mode",
+                                "default_value": "most_frequent",
                             }
                         },
                         "nullable_integer": {
                             "impute_strategy": {
-                                "categories": ["mean", "mode"],
+                                "categories": ["mean", "most_frequent"],
                                 "type": "category",
                                 "default_value": "mean",
                             }
                         },
                         "nullable_bool": {
                             "impute_strategy": {
-                                "categories": ["mode"],
+                                "categories": ["most_frequent"],
                                 "type": "category",
-                                "default_value": "mode",
+                                "default_value": "most_frequent",
                             }
                         },
                         "natural_language_nan": {
                             "impute_strategy": {
-                                "categories": ["mode"],
+                                "categories": ["most_frequent"],
                                 "type": "category",
-                                "default_value": "mode",
+                                "default_value": "most_frequent",
                             }
                         },
                         "nan_dt_col": {
                             "impute_strategy": {
-                                "categories": ["mode"],
+                                "categories": ["most_frequent"],
                                 "type": "category",
-                                "default_value": "mode",
+                                "default_value": "most_frequent",
                             }
                         },
                     },

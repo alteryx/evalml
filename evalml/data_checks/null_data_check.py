@@ -97,7 +97,7 @@ class NullDataCheck(DataCheck):
             ...                     "impute_strategies": {
             ...                         "parameter_type": "column",
             ...                         "columns": {
-            ...                             "few_null": {"impute_strategy": {"categories": ["mode"], "type": "category", "default_value": "mode"}}
+            ...                             "few_null": {"impute_strategy": {"categories": ["most_frequent"], "type": "category", "default_value": "most_frequent"}}
             ...                         }
             ...                     }
             ...                 }
@@ -263,9 +263,9 @@ class NullDataCheck(DataCheck):
             for col in below_highly_null_cols:
                 col_in_df = X.ww[col]
                 categories = (
-                    ["mean", "mode"] if col_in_df.ww.schema.is_numeric else ["mode"]
+                    ["mean", "most_frequent"] if col_in_df.ww.schema.is_numeric else ["most_frequent"]
                 )
-                default_value = "mean" if col_in_df.ww.schema.is_numeric else "mode"
+                default_value = "mean" if col_in_df.ww.schema.is_numeric else "most_frequent"
                 impute_strategies_dict[col] = {
                     "impute_strategy": {
                         "categories": categories,
