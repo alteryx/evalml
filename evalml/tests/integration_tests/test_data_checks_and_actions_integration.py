@@ -1,4 +1,3 @@
-from evalml.pipelines.components.transformers.imputers.per_column_imputer import PerColumnImputer
 import numpy as np
 import pandas as pd
 import pytest
@@ -15,6 +14,9 @@ from evalml.pipelines.components import (
     DropColumns,
     DropRowsTransformer,
     TargetImputer,
+)
+from evalml.pipelines.components.transformers.imputers.per_column_imputer import (
+    PerColumnImputer,
 )
 from evalml.pipelines.multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
@@ -43,14 +45,16 @@ def test_data_checks_with_healthy_data(X_y_binary):
     ) == BinaryClassificationPipeline(component_graph={}, parameters={}, random_seed=0)
 
 
-def test_data_checks_suggests_drop_cols():
+def test_data_checks_suggests_drop_and_impute_cols():
     X = pd.DataFrame(
         {
+            "null_with_categorical": ["a", None, "b", "c", "c"],
             "lots_of_null": [None, 7, None, 3, 5],
             "all_null": [None, None, None, None, None],
             "no_null": [1, 2, 3, 4, 5],
         }
     )
+    X.ww.init(logical_types={"null_with_categorical": "categorical"})
     y = pd.Series([1, 0, 0, 1, 1])
     data_check = NullDataCheck()
     data_checks_output = data_check.validate(X, y)
@@ -64,14 +68,17 @@ def test_data_checks_suggests_drop_cols():
         component_graph={
             "Per Column Imputer": [PerColumnImputer, "X", "y"],
             "Drop Columns Transformer": [
-                 DropColumns,
+                DropColumns,
                 "Per Column Imputer.x",
                 "y",
             ],
         },
         parameters={
             "Per Column Imputer": {
-                "impute_strategies": {"lots_of_null": {"impute_strategy": "mean"}},
+                "impute_strategies": {
+                    "null_with_categorical": {"impute_strategy": "most_frequent"},
+                    "lots_of_null": {"impute_strategy": "mean"},
+                },
                 "default_impute_strategy": "most_frequent",
                 "impute_all": False,
             },
@@ -81,12 +88,14 @@ def test_data_checks_suggests_drop_cols():
     )
     X_expected = pd.DataFrame(
         {
+            "null_with_categorical": ["a", "c", "b", "c", "c"],
             "lots_of_null": [5, 7, 5, 3, 5],
             "no_null": [1, 2, 3, 4, 5],
         }
     )
-    X_expected.ww.init(logical_types={"lots_of_null": "double"})
-
+    X_expected.ww.init(
+        logical_types={"lots_of_null": "double", "null_with_categorical": "categorical"}
+    )
     action_pipeline.fit(X, y)
     X_t = action_pipeline.transform(X, y)
     assert_frame_equal(X_expected, X_t)

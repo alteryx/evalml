@@ -359,7 +359,10 @@ def test_make_pipeline_from_actions(problem_type):
                 "parameters": {
                     "global_parameter_name": 0.0,
                     "impute_strategies": {
-                        "some_column": {"impute_strategy": "mode", "fill_value": 0.0},
+                        "some_column": {
+                            "impute_strategy": "most_frequent",
+                            "fill_value": 0.0,
+                        },
                         "some_other_column": {
                             "impute_strategy": "mean",
                             "fill_value": 1.0,
@@ -391,7 +394,10 @@ def test_make_pipeline_from_actions(problem_type):
             "Drop Rows Transformer": {"indices_to_drop": [1, 2]},
             "Per Column Imputer": {
                 "impute_strategies": {
-                    "some_column": {"impute_strategy": "mode", "fill_value": 0.0},
+                    "some_column": {
+                        "impute_strategy": "most_frequent",
+                        "fill_value": 0.0,
+                    },
                     "some_other_column": {
                         "impute_strategy": "mean",
                         "fill_value": 1.0,
