@@ -31,7 +31,33 @@ from evalml.problem_types import (
 )
 
 
-def test_data_checks_not_list_error(X_y_binary):
+@pytest.fixture
+def data_checks_input_dataframe():
+    X = pd.DataFrame(
+        {
+            "lots_of_null": [None, None, None, None, "some data"],
+            "all_null": [None, None, None, None, None],
+            "also_all_null": [None, None, None, None, None],
+            "nullable_integer": [None, 2, 3, 4, 5],
+            "nullable_bool": [None, True, False, True, True],
+            "no_null": [1, 2, 3, 4, 5],
+            "id": [0, 1, 2, 3, 4],
+            "has_label_leakage": [100, 200, 100, 200, 100],
+            "natural_language_nan": [
+                None,
+                "string_that_is_long_enough_for_natural_language_1",
+                "string_that_is_long_enough_for_natural_language_2",
+                "string_that_is_long_enough_for_natural_language_3",
+                "string_that_is_long_enough_for_natural_language_4",
+            ],
+            "nan_dt_col": pd.Series(pd.date_range("20200101", periods=5)),
+        }
+    )
+    X["nan_dt_col"][0] = None
+    return X
+
+
+def test_data_checks_not_list_error():
     with pytest.raises(ValueError, match="Parameter data_checks must be a list."):
         DataChecks(data_checks=1)
 
@@ -282,28 +308,8 @@ def get_expected_action_options(problem_type):
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-def test_default_data_checks_classification(input_type):
-    X = pd.DataFrame(
-        {
-            "lots_of_null": [None, None, None, None, "some data"],
-            "all_null": [None, None, None, None, None],
-            "also_all_null": [None, None, None, None, None],
-            "nullable_integer": [None, 2, 3, 4, 5],
-            "nullable_bool": [None, True, False, True, True],
-            "no_null": [1, 2, 3, 4, 5],
-            "id": [0, 1, 2, 3, 4],
-            "has_label_leakage": [100, 200, 100, 200, 100],
-            "natural_language_nan": [
-                None,
-                "string_that_is_long_enough_for_natural_language_1",
-                "string_that_is_long_enough_for_natural_language_2",
-                "string_that_is_long_enough_for_natural_language_3",
-                "string_that_is_long_enough_for_natural_language_4",
-            ],
-            "nan_dt_col": pd.Series(pd.date_range("20200101", periods=5)),
-        }
-    )
-    X["nan_dt_col"][0] = None
+def test_default_data_checks_classification(input_type, data_checks_input_dataframe):
+    X = data_checks_input_dataframe
 
     y = pd.Series([0, 1, np.nan, 1, 0])
     y_multiclass = pd.Series([0, 1, np.nan, 2, 0])
@@ -415,29 +421,9 @@ def test_default_data_checks_classification(input_type):
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
-def test_default_data_checks_regression(input_type):
-    X = pd.DataFrame(
-        {
-            "lots_of_null": [None, None, None, None, "some data"],
-            "all_null": [None, None, None, None, None],
-            "also_all_null": [None, None, None, None, None],
-            "nullable_integer": [None, 2, 3, 4, 5],
-            "nullable_bool": [None, True, False, True, True],
-            "no_null": [1, 2, 3, 4, 5],
-            "id": [0, 1, 2, 3, 4],
-            "has_label_leakage": [100, 200, 100, 200, 100],
-            "natural_language_nan": [
-                None,
-                "string_that_is_long_enough_for_natural_language_1",
-                "string_that_is_long_enough_for_natural_language_2",
-                "string_that_is_long_enough_for_natural_language_3",
-                "string_that_is_long_enough_for_natural_language_4",
-            ],
-            "nan_dt_col": pd.Series(pd.date_range("20200101", periods=5)),
-        }
-    )
+def test_default_data_checks_regression(input_type, data_checks_input_dataframe):
+    X = data_checks_input_dataframe
 
-    X["nan_dt_col"][0] = None
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
     y_no_variance = pd.Series([5] * 5)
     X.ww.init(

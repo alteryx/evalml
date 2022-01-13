@@ -13,7 +13,8 @@ from evalml.data_checks import (
 highly_null_data_check_name = NullDataCheck.name
 
 
-def get_dataframe():
+@pytest.fixture
+def highly_null_dataframe():
     return pd.DataFrame(
         {
             "lots_of_null": [None, None, None, None, 5],
@@ -24,13 +25,8 @@ def get_dataframe():
 
 
 @pytest.fixture
-def highly_null_dataframe():
-    return get_dataframe()
-
-
-@pytest.fixture
 def highly_null_dataframe_nullable_types(highly_null_dataframe):
-    df = get_dataframe()
+    df = highly_null_dataframe
     df.ww.init(
         logical_types={"lots_of_null": "IntegerNullable", "all_null": "IntegerNullable"}
     )
@@ -189,8 +185,7 @@ def test_highly_null_data_check_warnings(
     all_null_check = NullDataCheck(
         pct_null_col_threshold=1.0, pct_null_row_threshold=1.0
     )
-
-    all_null_check.validate(df) == {
+    assert all_null_check.validate(df) == {
         "warnings": [
             DataCheckWarning(
                 message="Columns 'all_null' are 100.0% or more null",
@@ -223,11 +218,17 @@ def test_highly_null_data_check_warnings(
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["lots_of_null"], "is_target": False},
                     parameters={
-                        "impute_strategy": {
-                            "parameter_type": "global",
-                            "type": "category",
-                            "categories": ["mean", "most_frequent"],
-                            "default_value": "most_frequent",
+                        "impute_strategies": {
+                            "parameter_type": "column",
+                            "columns": {
+                                "lots_of_null": {
+                                    "impute_strategy": {
+                                        "categories": ["mean", "mode"],
+                                        "type": "category",
+                                        "default_value": "mean",
+                                    }
+                                }
+                            },
                         }
                     },
                 ).to_dict(),
@@ -463,3 +464,90 @@ def test_get_null_row_information(highly_null_dataframe):
     )
     highly_null_rows = SeriesWrap(highly_null_rows)
     assert highly_null_rows == expected_highly_null_rows
+
+
+def test_has_null_but_not_highly_null():
+    X = pd.DataFrame(
+        {
+            "few_null_categorical": [None, "a", "b", "c", "d"],
+            "few_null": [1, None, 3, 4, 5],
+            "few_null_categorical_2": [None, "a", "b", "c", "d"],
+            "few_null_2": [1, None, 3, 0, 5],
+            "no_null": [1, 2, 3, 4, 5],
+            "no_null_categorical": ["a", "b", "a", "d", "e"],
+        }
+    )
+
+    null_check = NullDataCheck(pct_null_col_threshold=0.5, pct_null_row_threshold=1.0)
+    validate_results = null_check.validate(X)
+    assert validate_results == {
+        "warnings": [
+            DataCheckWarning(
+                message="Columns 'few_null_categorical', 'few_null', 'few_null_categorical_2', 'few_null_2' have null values",
+                data_check_name=highly_null_data_check_name,
+                message_code=DataCheckMessageCode.COLS_WITH_NULL,
+                details={
+                    "columns": [
+                        "few_null_categorical",
+                        "few_null",
+                        "few_null_categorical_2",
+                        "few_null_2",
+                    ],
+                },
+            ).to_dict(),
+        ],
+        "errors": [],
+        "actions": {
+            "action_list": [
+                DataCheckActionOption(
+                    DataCheckActionCode.IMPUTE_COL,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={
+                        "columns": [
+                            "few_null_categorical",
+                            "few_null",
+                            "few_null_categorical_2",
+                            "few_null_2",
+                        ],
+                        "is_target": False,
+                    },
+                    parameters={
+                        "impute_strategies": {
+                            "parameter_type": "column",
+                            "columns": {
+                                "few_null_categorical": {
+                                    "impute_strategy": {
+                                        "categories": ["mode"],
+                                        "type": "category",
+                                        "default_value": "mode",
+                                    }
+                                },
+                                "few_null": {
+                                    "impute_strategy": {
+                                        "categories": ["mean", "mode"],
+                                        "type": "category",
+                                        "default_value": "mean",
+                                    }
+                                },
+                                "few_null_categorical_2": {
+                                    "impute_strategy": {
+                                        "categories": ["mode"],
+                                        "type": "category",
+                                        "default_value": "mode",
+                                    }
+                                },
+                                "few_null_2": {
+                                    "impute_strategy": {
+                                        "categories": ["mean", "mode"],
+                                        "type": "category",
+                                        "default_value": "mean",
+                                    }
+                                },
+                            },
+                        }
+                    },
+                ).to_dict(),
+            ],
+            "default_action": None,
+        },
+    }

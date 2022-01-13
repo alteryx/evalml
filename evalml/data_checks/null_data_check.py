@@ -64,19 +64,45 @@ class NullDataCheck(DataCheck):
             ...
             >>> highly_null_dc = NullDataCheck(pct_null_col_threshold=0.50)
             >>> assert highly_null_dc.validate(df) == {
-            ...     "warnings": [{"message": "Columns 'all_null', 'lots_of_null' are 50.0% or more null",
-            ...                   "data_check_name": "NullDataCheck",
-            ...                   "level": "warning",
-            ...                   "details": {"columns": ["all_null", "lots_of_null"],
-            ...                               "rows": None,
-            ...                               "pct_null_rows": {"all_null": 1.0, "lots_of_null": 0.8}},
-            ...                   "code": "HIGHLY_NULL_COLS"}],
+            ...     "warnings": [
+            ...         {
+            ...             "message": "Columns 'all_null', 'lots_of_null' are 50.0% or more null",
+            ...             "data_check_name": "NullDataCheck",
+            ...             "level": "warning",
+            ...             "details": {"columns": ["all_null", "lots_of_null"], "rows": None, "pct_null_rows": {"all_null": 1.0, "lots_of_null": 0.8}},
+            ...             "code": "HIGHLY_NULL_COLS"
+            ...         },
+            ...         {
+            ...             "message": "Columns 'few_null' have null values",
+            ...             "data_check_name": "NullDataCheck",
+            ...             "level": "warning",
+            ...             "details": {"columns": ["few_null"], "rows": None},
+            ...             "code": "COLS_WITH_NULL"
+            ...         }
+            ...     ],
             ...     "errors": [],
             ...     "actions": {
-            ...         "action_list": [{"code": "DROP_COL",
-            ...                         "data_check_name": "NullDataCheck",
-            ...                         "parameters": {},
-            ...                         "metadata": {"columns": ["all_null", "lots_of_null"], "rows": None}}],
+            ...         "action_list": [
+            ...             {
+            ...                 "code": "DROP_COL",
+            ...                 "data_check_name": "NullDataCheck",
+            ...                 "parameters": {},
+            ...                 "metadata": {"columns": ["all_null", "lots_of_null"], "rows": None}
+            ...             },
+            ...             {
+            ...                 "code": "IMPUTE_COL",
+            ...                 "data_check_name": "NullDataCheck",
+            ...                 "metadata": {"columns": ["few_null"], "rows": None, "is_target": False},
+            ...                 "parameters": {
+            ...                     "impute_strategies": {
+            ...                         "parameter_type": "column",
+            ...                         "columns": {
+            ...                             "few_null": {"impute_strategy": {"categories": ["mode"], "type": "category", "default_value": "mode"}}
+            ...                         }
+            ...                     }
+            ...                 }
+            ...             }
+            ...         ],
             ...         "default_action": None
             ...     }
             ... }
@@ -104,17 +130,45 @@ class NullDataCheck(DataCheck):
             ...                   "details": {"columns": ["all_null"],
             ...                               "rows": None,
             ...                               "pct_null_rows": {"all_null": 1.0}},
-            ...                   "code": "HIGHLY_NULL_COLS"}],
+            ...                   "code": "HIGHLY_NULL_COLS"},
+            ...                 {"message": "Columns 'lots_of_null', 'few_null' have null values",
+            ...                  "data_check_name": "NullDataCheck",
+            ...                  "level": "warning",
+            ...                  "details": {"columns": ["lots_of_null", "few_null"], "rows": None},
+            ...                  "code": "COLS_WITH_NULL"}],
             ...     "errors": [],
-            ...     "actions": {"action_list": [{"code": "DROP_ROWS",
+            ...     "actions": {
+            ...         "action_list": [
+            ...             {
+            ...                 "code": "DROP_ROWS",
             ...                  "data_check_name": "NullDataCheck",
             ...                  "parameters": {},
-            ...                  "metadata": {"columns": None, "rows": [0, 1, 2, 3]}},
-            ...                  {"code": "DROP_COL",
+            ...                  "metadata": {"columns": None, "rows": [0, 1, 2, 3]}
+            ...              },
+            ...             {
+            ...                 "code": "DROP_COL",
             ...                  "data_check_name": "NullDataCheck",
             ...                  "parameters": {},
-            ...                  "metadata": {"columns": ["all_null"], "rows": None}}],
-            ...                  "default_action": None}}
+            ...                  "metadata": {"columns": ["all_null"], "rows": None}
+            ...              },
+            ...              {
+            ...                 'code': 'IMPUTE_COL',
+            ...                 'data_check_name': 'NullDataCheck',
+            ...                 'metadata': {'columns': ['lots_of_null', 'few_null'], 'rows': None, 'is_target': False},
+            ...                 'parameters': {
+            ...                     'impute_strategies': {
+            ...                         'parameter_type': 'column',
+            ...                         'columns': {
+            ...                             'lots_of_null': {'impute_strategy': {'categories': ['mean', 'mode'], 'type': 'category', 'default_value': 'mean'}},
+            ...                             'few_null': {'impute_strategy': {'categories': ['mode'], 'type': 'category', 'default_value': 'mode'}}
+            ...                         }
+            ...                     }
+            ...                 }
+            ...              }
+            ...         ],
+            ...         "default_action": None
+            ...     }
+            ... }
 
         """
         results = {
