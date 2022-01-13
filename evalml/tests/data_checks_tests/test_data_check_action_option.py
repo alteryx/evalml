@@ -474,7 +474,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
     )
 
     data_check_action_option_with_multiple_parameters = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL,
+        DataCheckActionCode.IMPUTE_COL,
         dummy_data_check_name,
         parameters={
             "global_parameter_name": {
