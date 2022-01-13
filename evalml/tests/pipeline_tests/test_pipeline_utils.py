@@ -357,23 +357,12 @@ def test_make_pipeline_from_actions(problem_type):
                 "columns": None,
                 "is_target": False,
                 "parameters": {
+                    "global_parameter_name": 0.0,
                     "impute_strategies": {
-                        "parameter_type": "column",
-                        "columns": {
-                            "some_column": {
-                                "impute_strategy": {
-                                    "categories": ["mean", "mode"],
-                                    "type": "category",
-                                    "default_value": "mode",
-                                },
-                            },
-                            "some_other_column": {
-                                "impute_strategy": {
-                                    "categories": ["mean", "mode"],
-                                    "type": "category",
-                                    "default_value": "mean",
-                                },
-                            },
+                        "some_column": {"impute_strategy": "mode", "fill_value": 0.0},
+                        "some_other_column": {
+                            "impute_strategy": "mean",
+                            "fill_value": 1.0,
                         },
                     },
                 },
@@ -402,19 +391,10 @@ def test_make_pipeline_from_actions(problem_type):
             "Drop Rows Transformer": {"indices_to_drop": [1, 2]},
             "Per Column Imputer": {
                 "impute_strategies": {
-                    "some_column": {
-                        "impute_strategy": {
-                            "categories": ["mean", "mode"],
-                            "type": "category",
-                            "default_value": "mode",
-                        }
-                    },
+                    "some_column": {"impute_strategy": "mode", "fill_value": 0.0},
                     "some_other_column": {
-                        "impute_strategy": {
-                            "categories": ["mean", "mode"],
-                            "type": "category",
-                            "default_value": "mean",
-                        }
+                        "impute_strategy": "mean",
+                        "fill_value": 1.0,
                     },
                 },
                 "default_impute_strategy": "most_frequent",

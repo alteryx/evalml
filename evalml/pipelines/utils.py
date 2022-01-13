@@ -749,7 +749,7 @@ def _make_component_list_from_actions(actions):
                     TargetImputer(impute_strategy=parameters["impute_strategy"])
                 )
             else:
-                impute_strategies = parameters["impute_strategies"]["columns"]
+                impute_strategies = parameters["impute_strategies"]
                 components.append(
                     PerColumnImputer(
                         impute_strategies=impute_strategies, impute_all=False
