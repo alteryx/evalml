@@ -13,6 +13,7 @@ Release Notes
     * Changes
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
         * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
+        * Checking the validity of holdout data for time series problems can be performed by calling ``pipelines.utils.validate_holdout_datasets`` prior to calling ``predict`` :pr:`3208`
     * Documentation Changes
     * Testing Changes
 
