@@ -111,7 +111,7 @@ def test_highly_null_data_check_warnings(
                 },
             ).to_dict(),
             DataCheckWarning(
-                message="Columns 'lots_of_null', 'all_null' are 0.0% or more null",
+                message="Column(s) 'lots_of_null', 'all_null' are 0.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
                 details={
@@ -155,7 +155,7 @@ def test_highly_null_data_check_warnings(
                 details={"pct_null_cols": highly_null_rows, "rows": [0, 1, 2, 3]},
             ).to_dict(),
             DataCheckWarning(
-                message="Columns 'lots_of_null', 'all_null' are 50.0% or more null",
+                message="Column(s) 'lots_of_null', 'all_null' are 50.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
                 details={
@@ -188,7 +188,7 @@ def test_highly_null_data_check_warnings(
     assert all_null_check.validate(df) == {
         "warnings": [
             DataCheckWarning(
-                message="Columns 'all_null' are 100.0% or more null",
+                message="Column(s) 'all_null' are 100.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
                 details={
@@ -197,7 +197,7 @@ def test_highly_null_data_check_warnings(
                 },
             ).to_dict(),
             DataCheckWarning(
-                message="Columns 'lots_of_null' have null values",
+                message="Column(s) 'lots_of_null' have null values",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.COLS_WITH_NULL,
                 details={
@@ -256,7 +256,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
                 details={"pct_null_cols": highly_null_rows, "rows": [0, 1, 2, 3, 4]},
             ).to_dict(),
             DataCheckWarning(
-                message="Columns 'all_null' are 90.0% or more null",
+                message="Column(s) 'all_null' are 90.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
                 details={
@@ -265,7 +265,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
                 },
             ).to_dict(),
             DataCheckWarning(
-                message="Columns 'lots_of_null' have null values",
+                message="Column(s) 'lots_of_null' have null values",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.COLS_WITH_NULL,
                 details={
@@ -317,7 +317,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
     assert validate_results == {
         "warnings": [
             DataCheckWarning(
-                message="Columns 'lots_of_null', 'all_null' are 0.0% or more null",
+                message="Column(s) 'lots_of_null', 'all_null' are 0.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
                 details={
@@ -362,7 +362,7 @@ def test_highly_null_data_check_input_formats():
                 details={"pct_null_cols": highly_null_rows, "rows": [0]},
             ).to_dict(),
             DataCheckWarning(
-                message="Columns '0', '1', '2' are 80.0% or more null",
+                message="Column(s) '0', '1', '2' are 80.0% or more null",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
                 details={
@@ -371,7 +371,7 @@ def test_highly_null_data_check_input_formats():
                 },
             ).to_dict(),
             DataCheckWarning(
-                message="Columns '3' have null values",
+                message="Column(s) '3' have null values",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.COLS_WITH_NULL,
                 details={
@@ -483,7 +483,7 @@ def test_has_null_but_not_highly_null():
     assert validate_results == {
         "warnings": [
             DataCheckWarning(
-                message="Columns 'few_null_categorical', 'few_null', 'few_null_categorical_2', 'few_null_2' have null values",
+                message="Column(s) 'few_null_categorical', 'few_null', 'few_null_categorical_2', 'few_null_2' have null values",
                 data_check_name=highly_null_data_check_name,
                 message_code=DataCheckMessageCode.COLS_WITH_NULL,
                 details={

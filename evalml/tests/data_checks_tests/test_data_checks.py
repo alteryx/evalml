@@ -151,7 +151,7 @@ def test_data_checks(X_y_binary):
 
 messages = [
     DataCheckWarning(
-        message="Columns 'all_null', 'also_all_null' are 95.0% or more null",
+        message="Column(s) 'all_null', 'also_all_null' are 95.0% or more null",
         data_check_name="NullDataCheck",
         message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
         details={
@@ -160,7 +160,7 @@ messages = [
         },
     ).to_dict(),
     DataCheckWarning(
-        message="Columns 'lots_of_null', 'nullable_integer', 'nullable_bool', 'natural_language_nan', 'nan_dt_col' have null values",
+        message="Column(s) 'lots_of_null', 'nullable_integer', 'nullable_bool', 'natural_language_nan', 'nan_dt_col' have null values",
         data_check_name="NullDataCheck",
         message_code=DataCheckMessageCode.COLS_WITH_NULL,
         details={
@@ -565,7 +565,7 @@ def test_default_data_checks_null_rows():
                 details={"pct_null_cols": highly_null_rows, "rows": [0, 1, 2, 3, 4]},
             ).to_dict(),
             DataCheckWarning(
-                message="Columns 'all_null', 'also_all_null' are 95.0% or more null",
+                message="Column(s) 'all_null', 'also_all_null' are 95.0% or more null",
                 data_check_name="NullDataCheck",
                 message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
                 details={
