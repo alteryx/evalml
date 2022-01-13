@@ -3,6 +3,7 @@ Release Notes
 **Future Releases**
     * Enhancements
         * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
+        * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
     * Fixes
         * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
         * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
@@ -11,6 +12,7 @@ Release Notes
     * Changes
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
         * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
+        * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
     * Documentation Changes
     * Testing Changes
 
@@ -18,6 +20,7 @@ Release Notes
 
     **Breaking Changes**
         * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
+        * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
 
 
 **v0.41.0 Jan. 06, 2022**

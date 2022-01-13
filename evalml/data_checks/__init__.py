@@ -13,7 +13,7 @@ from .data_check_message import DataCheckMessage, DataCheckWarning, DataCheckErr
 from .data_check_message_type import DataCheckMessageType
 from .default_data_checks import DefaultDataChecks
 from .invalid_target_data_check import InvalidTargetDataCheck
-from .highly_null_data_check import HighlyNullDataCheck
+from .null_data_check import NullDataCheck
 from .id_columns_data_check import IDColumnsDataCheck
 from .target_leakage_data_check import TargetLeakageDataCheck
 from .outliers_data_check import OutliersDataCheck

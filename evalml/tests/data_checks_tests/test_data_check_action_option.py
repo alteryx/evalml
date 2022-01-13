@@ -38,7 +38,7 @@ def test_data_check_action_option_attributes(dummy_data_check_name):
             "columns": {
                 "a": {
                     "impute_strategy": {
-                        "categories": ["mean", "mode"],
+                        "categories": ["mean", "most_frequent"],
                         "type": "category",
                         "default_value": "mean",
                     },
@@ -401,7 +401,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
     )
 
     data_check_action_option_with_one_column_parameter = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL,
+        DataCheckActionCode.IMPUTE_COL,
         dummy_data_check_name,
         metadata={"columns": None, "rows": None},
         parameters={
@@ -410,15 +410,15 @@ def test_get_action_from_defaults(dummy_data_check_name):
                 "columns": {
                     "some_column": {
                         "impute_strategy": {
-                            "categories": ["mean", "mode"],
+                            "categories": ["mean", "most_frequent"],
                             "type": "category",
-                            "default_value": "mode",
+                            "default_value": "most_frequent",
                         },
                         "fill_value": {"type": "float", "default_value": 0.0},
                     },
                     "some_other_column": {
                         "impute_strategy": {
-                            "categories": ["mean", "mode"],
+                            "categories": ["mean", "most_frequent"],
                             "type": "category",
                             "default_value": "mean",
                         },
@@ -431,14 +431,17 @@ def test_get_action_from_defaults(dummy_data_check_name):
     assert (
         data_check_action_option_with_one_column_parameter.get_action_from_defaults()
         == DataCheckAction(
-            DataCheckActionCode.DROP_COL.name,
+            DataCheckActionCode.IMPUTE_COL.name,
             dummy_data_check_name,
             metadata={
                 "columns": None,
                 "rows": None,
                 "parameters": {
                     "impute_strategies": {
-                        "some_column": {"impute_strategy": "mode", "fill_value": 0.0},
+                        "some_column": {
+                            "impute_strategy": "most_frequent",
+                            "fill_value": 0.0,
+                        },
                         "some_other_column": {
                             "impute_strategy": "mean",
                             "fill_value": 1.0,
@@ -474,7 +477,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
     )
 
     data_check_action_option_with_multiple_parameters = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL,
+        DataCheckActionCode.IMPUTE_COL,
         dummy_data_check_name,
         parameters={
             "global_parameter_name": {
@@ -487,15 +490,15 @@ def test_get_action_from_defaults(dummy_data_check_name):
                 "columns": {
                     "some_column": {
                         "impute_strategy": {
-                            "categories": ["mean", "mode"],
+                            "categories": ["mean", "most_frequent"],
                             "type": "category",
-                            "default_value": "mode",
+                            "default_value": "most_frequent",
                         },
                         "fill_value": {"type": "float", "default_value": 0.0},
                     },
                     "some_other_column": {
                         "impute_strategy": {
-                            "categories": ["mean", "mode"],
+                            "categories": ["mean", "most_frequent"],
                             "type": "category",
                             "default_value": "mean",
                         },
@@ -508,7 +511,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
     assert (
         data_check_action_option_with_multiple_parameters.get_action_from_defaults()
         == DataCheckAction(
-            DataCheckActionCode.DROP_COL.name,
+            DataCheckActionCode.IMPUTE_COL.name,
             dummy_data_check_name,
             metadata={
                 "columns": None,
@@ -516,7 +519,10 @@ def test_get_action_from_defaults(dummy_data_check_name):
                 "parameters": {
                     "global_parameter_name": 0.0,
                     "impute_strategies": {
-                        "some_column": {"impute_strategy": "mode", "fill_value": 0.0},
+                        "some_column": {
+                            "impute_strategy": "most_frequent",
+                            "fill_value": 0.0,
+                        },
                         "some_other_column": {
                             "impute_strategy": "mean",
                             "fill_value": 1.0,
