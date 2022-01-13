@@ -595,11 +595,9 @@ def test_plot_disabled_missing_dependency(X_y_binary, has_minimal_dependencies):
         automl.plot.search_iteration_plot
 
 
-def test_plot_iterations_max_iterations(X_y_binary):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_plot_iterations_max_iterations(X_y_binary, go):
+
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -623,11 +621,8 @@ def test_plot_iterations_max_iterations(X_y_binary):
     assert len(y) == 3
 
 
-def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary, go):
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -654,16 +649,9 @@ def test_plot_iterations_max_time(AutoMLTestEnv, X_y_binary):
     assert len(y) > 0
 
 
+@pytest.mark.noncore_dependency
 @patch("IPython.display.display")
 def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
-    pytest.importorskip(
-        "IPython.display",
-        reason="Skipping plotting test because ipywidgets not installed",
-    )
-    pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -680,16 +668,11 @@ def test_plot_iterations_ipython_mock(mock_ipython_display, X_y_binary):
     mock_ipython_display.assert_called_with(plot.best_score_by_iter_fig)
 
 
+@pytest.mark.noncore_dependency
 @patch("IPython.display.display")
-def test_plot_iterations_ipython_mock_import_failure(mock_ipython_display, X_y_binary):
-    pytest.importorskip(
-        "IPython.display",
-        reason="Skipping plotting test because ipywidgets not installed",
-    )
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+def test_plot_iterations_ipython_mock_import_failure(
+    mock_ipython_display, X_y_binary, go
+):
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -747,7 +730,7 @@ def test_automl_allowed_component_graphs_no_component_graphs(
 def test_automl_component_graphs_specified_component_graphs_binary(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     X, y = X_y_binary
@@ -761,10 +744,9 @@ def test_automl_component_graphs_specified_component_graphs_binary(
         optimize_thresholds=False,
         allowed_model_families=None,
     )
-    expected_pipeline = dummy_binary_pipeline_class({})
-    expected_component_graph = expected_pipeline.component_graph
-    expected_name = expected_pipeline.name
-    expected_parameters = expected_pipeline.parameters
+    expected_component_graph = dummy_binary_pipeline.component_graph
+    expected_name = dummy_binary_pipeline.name
+    expected_parameters = dummy_binary_pipeline.parameters
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
     assert automl.allowed_pipelines[0].name == expected_name
     assert automl.allowed_pipelines[0].parameters == expected_parameters
@@ -784,7 +766,7 @@ def test_automl_component_graphs_specified_component_graphs_binary(
 def test_automl_component_graphs_specified_component_graphs_multi(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_multiclass_pipeline_class,
+    dummy_multiclass_pipeline,
     X_y_multi,
 ):
     X, y = X_y_multi
@@ -799,7 +781,7 @@ def test_automl_component_graphs_specified_component_graphs_multi(
         },
         allowed_model_families=None,
     )
-    expected_pipeline = dummy_multiclass_pipeline_class({})
+    expected_pipeline = dummy_multiclass_pipeline
     expected_component_graph = expected_pipeline.component_graph
     expected_name = expected_pipeline.name
     expected_parameters = expected_pipeline.parameters
@@ -977,7 +959,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_multi(
 def test_automl_component_graphs_init_allowed_both_specified_binary(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     X, y = X_y_binary
@@ -991,10 +973,9 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         optimize_thresholds=False,
     )
-    expected_pipeline = dummy_binary_pipeline_class({})
-    expected_component_graph = expected_pipeline.component_graph
-    expected_name = expected_pipeline.name
-    expected_parameters = expected_pipeline.parameters
+    expected_component_graph = dummy_binary_pipeline.component_graph
+    expected_name = dummy_binary_pipeline.name
+    expected_parameters = dummy_binary_pipeline.parameters
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
     assert automl.allowed_pipelines[0].name == expected_name
     assert automl.allowed_pipelines[0].parameters == expected_parameters
@@ -1004,7 +985,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
     with env.test_context(score_return_value={automl.objective.name: 1}):
         automl.search()
     assert set(automl.allowed_model_families) == set(
-        [p.model_family for p in expected_pipeline]
+        [p.model_family for p in [dummy_binary_pipeline]]
     )
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
@@ -1013,7 +994,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
 def test_automl_component_graphs_init_allowed_both_specified_multi(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_multiclass_pipeline_class,
+    dummy_multiclass_pipeline,
     X_y_multi,
 ):
     X, y = X_y_multi
@@ -1028,10 +1009,9 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
         },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
     )
-    expected_pipeline = dummy_multiclass_pipeline_class({})
-    expected_component_graph = expected_pipeline.component_graph
-    expected_name = expected_pipeline.name
-    expected_parameters = expected_pipeline.parameters
+    expected_component_graph = dummy_multiclass_pipeline.component_graph
+    expected_name = dummy_multiclass_pipeline.name
+    expected_parameters = dummy_multiclass_pipeline.parameters
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
     assert automl.allowed_pipelines[0].name == expected_name
     assert automl.allowed_pipelines[0].parameters == expected_parameters
@@ -1041,7 +1021,7 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
     with env.test_context(score_return_value={automl.objective.name: 1}):
         automl.search()
     assert set(automl.allowed_model_families) == set(
-        [p.model_family for p in expected_pipeline]
+        [p.model_family for p in [dummy_multiclass_pipeline]]
     )
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
@@ -1111,13 +1091,13 @@ def test_automl_supports_time_series_classification(
             component_graph=["Time Series Baseline Estimator"],
             parameters={
                 "Time Series Baseline Estimator": {
-                    "date_index": "date",
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 1,
                 },
                 "pipeline": {
-                    "date_index": "date",
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 1,
@@ -1132,13 +1112,13 @@ def test_automl_supports_time_series_classification(
             component_graph=["Time Series Baseline Estimator"],
             parameters={
                 "Time Series Baseline Estimator": {
-                    "date_index": "date",
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 1,
                 },
                 "pipeline": {
-                    "date_index": "date",
+                    "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
                     "forecast_horizon": 1,
@@ -1149,7 +1129,7 @@ def test_automl_supports_time_series_classification(
         problem_type = "time series multiclass"
 
     configuration = {
-        "date_index": "date",
+        "time_index": "date",
         "gap": 0,
         "max_delay": 0,
         "forecast_horizon": 1,
@@ -1195,7 +1175,7 @@ def test_automl_time_series_classification_threshold(
     problem_type = "time series binary"
 
     configuration = {
-        "date_index": "date",
+        "time_index": "date",
         "gap": 0,
         "forecast_horizon": 1,
         "max_delay": 0,
@@ -1431,6 +1411,7 @@ def test_automl_search_dictionary_undersampler(
     assert len(mock_est_fit.call_args[0][0]) == length
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "problem_type,sampling_ratio_dict,length",
     [
@@ -1457,9 +1438,6 @@ def test_automl_search_dictionary_oversampler(
     sampling_ratio_dict,
     length,
 ):
-    pytest.importorskip(
-        "imblearn", reason="Skipping tests since imblearn isn't installed"
-    )
     # split this from the undersampler since the dictionaries are formatted differently
     X = pd.DataFrame({"a": [i for i in range(1200)], "b": [i % 3 for i in range(1200)]})
     if problem_type == "binary":
@@ -1597,7 +1575,7 @@ def test_time_series_pipeline_parameter_warnings(
     pipeline_parameters.update(
         {
             "pipeline": {
-                "date_index": "date",
+                "time_index": "date",
                 "gap": 0,
                 "max_delay": 0,
                 "forecast_horizon": 2,
@@ -1606,7 +1584,7 @@ def test_time_series_pipeline_parameter_warnings(
     )
     X, y = ts_data_binary
     configuration = {
-        "date_index": "date",
+        "time_index": "date",
         "gap": 0,
         "max_delay": 0,
         "delay_target": False,

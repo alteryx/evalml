@@ -25,7 +25,6 @@ from evalml.utils import infer_feature_types
 
 class DoubleColumns(Transformer):
     """Custom transformer for testing permutation importance implementation.
-
     We don't have any transformers that create features that you can repeatedly "stack" on the previous output.
     That being said, I want to test that our implementation can handle that case in the event we add a transformer like
     that in the future.
@@ -150,7 +149,7 @@ class DagTwoEncoders(BinaryClassificationPipeline):
         "SelectCategorical2": ["Select Columns Transformer", "Imputer.x", "y"],
         "OHE_1": ["One Hot Encoder", "SelectCategorical1.x", "y"],
         "OHE_2": ["One Hot Encoder", "SelectCategorical2.x", "y"],
-        "DT": ["DateTime Featurization Component", "SelectNumeric.x", "y"],
+        "DT": ["DateTime Featurizer", "SelectNumeric.x", "y"],
         "Estimator": ["Random Forest Classifier", "DT.x", "OHE_1.x", "OHE_2.x", "y"],
     }
 
@@ -163,7 +162,7 @@ class DagReuseFeatures(BinaryClassificationPipeline):
         "SelectCategorical2": ["Select Columns Transformer", "Imputer.x", "y"],
         "OHE_1": ["One Hot Encoder", "SelectCategorical1.x", "y"],
         "OHE_2": ["One Hot Encoder", "SelectCategorical2.x", "y"],
-        "DT": ["DateTime Featurization Component", "SelectDate.x", "y"],
+        "DT": ["DateTime Featurizer", "SelectDate.x", "y"],
         "OHE_3": ["One Hot Encoder", "DT.x", "y"],
         "Estimator": ["Random Forest Classifier", "OHE_3.x", "OHE_1.x", "OHE_2.x", "y"],
     }
@@ -208,7 +207,7 @@ test_cases = [
             "Select Columns Transformer": {
                 "columns": ["expiration_date", "datetime", "amount"]
             },
-            "DateTime Featurization Component": {"encode_as_categories": True},
+            "DateTime Featurizer": {"encode_as_categories": True},
         },
     ),
     (
@@ -393,90 +392,59 @@ def test_fast_permutation_importance_matches_slow_output(
         )
 
 
-class PipelineWithDimReduction(BinaryClassificationPipeline):
-    component_graph = [PCA, "Logistic Regression Classifier"]
+def pipelines_that_do_not_support_fast_permutation_importance():
+    pipeline_with_dfs = BinaryClassificationPipeline(
+        [DFSTransformer, "Logistic Regression Classifier"]
+    )
+    pipeline_with_custom_component = BinaryClassificationPipeline(
+        [DoubleColumns, "Logistic Regression Classifier"]
+    )
+    pipeline_with_ensemble_dag = BinaryClassificationPipeline(
+        component_graph={
+            "Imputer_1": ["Imputer", "X", "y"],
+            "Imputer_2": ["Imputer", "X", "y"],
+            "OHE_1": ["One Hot Encoder", "Imputer_1.x", "y"],
+            "OHE_2": ["One Hot Encoder", "Imputer_2.x", "y"],
+            "DT_1": ["DateTime Featurizer", "OHE_1.x", "y"],
+            "DT_2": ["DateTime Featurizer", "OHE_2.x", "y"],
+            "Estimator_1": ["Random Forest Classifier", "DT_1.x", "y"],
+            "Estimator_2": ["Extra Trees Classifier", "DT_2.x", "y"],
+            "Ensembler": [
+                "Stacked Ensemble Classifier",
+                "Estimator_1.x",
+                "Estimator_2.x",
+                "y",
+            ],
+        }
+    )
+    pipeline_with_dim_reduction = BinaryClassificationPipeline(
+        [PCA, "Logistic Regression Classifier"]
+    )
 
-    def __init__(self, parameters, random_seed=0):
-        super().__init__(
-            self.component_graph,
-            parameters=parameters,
-            random_seed=random_seed,
-        )
-
-
-class EnsembleDag(BinaryClassificationPipeline):
-    component_graph = {
-        "Imputer_1": ["Imputer", "X", "y"],
-        "Imputer_2": ["Imputer", "X", "y"],
-        "OHE_1": ["One Hot Encoder", "Imputer_1.x", "y"],
-        "OHE_2": ["One Hot Encoder", "Imputer_2.x", "y"],
-        "DT_1": ["DateTime Featurization Component", "OHE_1.x", "y"],
-        "DT_2": ["DateTime Featurization Component", "OHE_2.x", "y"],
-        "Estimator_1": ["Random Forest Classifier", "DT_1.x", "y"],
-        "Estimator_2": ["Extra Trees Classifier", "DT_2.x", "y"],
-        "Ensembler": [
-            "Stacked Ensemble Classifier",
-            "Estimator_1.x",
-            "Estimator_2.x",
-            "y",
-        ],
-    }
-
-    def __init__(self, parameters, random_seed=0):
-        super().__init__(
-            self.component_graph,
-            parameters=parameters,
-            random_seed=random_seed,
-        )
-
-
-class PipelineWithDFS(BinaryClassificationPipeline):
-    component_graph = [DFSTransformer, "Logistic Regression Classifier"]
-
-    def __init__(self, parameters, random_seed=0):
-        super().__init__(
-            self.component_graph,
-            parameters=parameters,
-            random_seed=random_seed,
-        )
+    return [
+        pipeline_with_dfs,
+        pipeline_with_custom_component,
+        pipeline_with_ensemble_dag,
+        pipeline_with_dim_reduction,
+    ]
 
 
-class PipelineWithCustomComponent(BinaryClassificationPipeline):
-    component_graph = [DoubleColumns, "Logistic Regression Classifier"]
-
-    def __init__(self, parameters, random_seed=0):
-        super().__init__(
-            self.component_graph,
-            parameters=parameters,
-            random_seed=random_seed,
-        )
-
-
-pipelines_that_do_not_support_fast_permutation_importance = [
-    PipelineWithDimReduction,
-    PipelineWithDFS,
-    PipelineWithCustomComponent,
-    EnsembleDag,
-]
-
-
-@pytest.mark.parametrize(
-    "pipeline_class", pipelines_that_do_not_support_fast_permutation_importance
-)
-def test_supports_fast_permutation_importance(pipeline_class):
-    assert not pipeline_class({})._supports_fast_permutation_importance
+def test_supports_fast_permutation_importance():
+    for pipeline in pipelines_that_do_not_support_fast_permutation_importance():
+        assert not pipeline._supports_fast_permutation_importance
 
 
 def test_get_permutation_importance_invalid_objective(
-    X_y_regression, linear_regression_pipeline_class
+    X_y_regression, linear_regression_pipeline
 ):
     X, y = X_y_regression
-    pipeline = linear_regression_pipeline_class(parameters={}, random_seed=42)
     with pytest.raises(
         ValueError,
-        match=f"Given objective 'MCC Multiclass' cannot be used with '{pipeline.name}'",
+        match=f"Given objective 'MCC Multiclass' cannot be used with '{linear_regression_pipeline.name}'",
     ):
-        calculate_permutation_importance(pipeline, X, y, "mcc multiclass")
+        calculate_permutation_importance(
+            linear_regression_pipeline, X, y, "mcc multiclass"
+        )
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
@@ -486,7 +454,7 @@ def test_get_permutation_importance_binary(
     use_numerical_target,
     X_y_binary,
     fraud_100,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
     binary_test_objectives,
     make_data_type,
 ):
@@ -497,9 +465,7 @@ def test_get_permutation_importance_binary(
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
-    pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42
-    )
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     for objective in binary_test_objectives:
         permutation_importance = calculate_permutation_importance(
@@ -528,17 +494,14 @@ def test_get_permutation_importance_binary(
 
 
 def test_get_permutation_importance_multiclass(
-    X_y_multi, logistic_regression_multiclass_pipeline_class, multiclass_test_objectives
+    X_y_multi, logistic_regression_multiclass_pipeline, multiclass_test_objectives
 ):
     X, y = X_y_multi
     X = pd.DataFrame(X)
-    pipeline = logistic_regression_multiclass_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42
-    )
-    pipeline.fit(X, y)
+    logistic_regression_multiclass_pipeline.fit(X, y)
     for objective in multiclass_test_objectives:
         permutation_importance = calculate_permutation_importance(
-            pipeline, X, y, objective
+            logistic_regression_multiclass_pipeline, X, y, objective
         )
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
@@ -549,7 +512,12 @@ def test_get_permutation_importance_multiclass(
         for col in X.columns[:3]:
             permutation_importance_one_col = (
                 calculate_permutation_importance_one_column(
-                    pipeline, X, y, col, objective, fast=False
+                    logistic_regression_multiclass_pipeline,
+                    X,
+                    y,
+                    col,
+                    objective,
+                    fast=False,
                 )
             )
             np.testing.assert_almost_equal(
@@ -559,18 +527,15 @@ def test_get_permutation_importance_multiclass(
 
 
 def test_get_permutation_importance_regression(
-    linear_regression_pipeline_class, regression_test_objectives
+    linear_regression_pipeline, regression_test_objectives
 ):
     X = pd.DataFrame([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
     y = pd.Series([1, 2, 1, 2, 1, 2, 1, 2, 1, 2])
-    pipeline = linear_regression_pipeline_class(
-        parameters={"Linear Regressor": {"n_jobs": 1}}, random_seed=42
-    )
-    pipeline.fit(X, y)
+    linear_regression_pipeline.fit(X, y)
 
     for objective in regression_test_objectives:
         permutation_importance = calculate_permutation_importance(
-            pipeline, X, y, objective
+            linear_regression_pipeline, X, y, objective
         )
         assert list(permutation_importance.columns) == ["feature", "importance"]
         assert not permutation_importance.isnull().all().all()
@@ -581,7 +546,7 @@ def test_get_permutation_importance_regression(
         for col in X.columns:
             permutation_importance_one_col = (
                 calculate_permutation_importance_one_column(
-                    pipeline, X, y, col, objective, fast=False
+                    linear_regression_pipeline, X, y, col, objective, fast=False
                 )
             )
             np.testing.assert_almost_equal(
@@ -591,14 +556,14 @@ def test_get_permutation_importance_regression(
 
 
 def test_get_permutation_importance_correlated_features(
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
 ):
     y = pd.Series([1, 0, 1, 1])
     X = pd.DataFrame()
     X["correlated"] = y * 2
     X["not correlated"] = [-1, -1, -1, 0]
     y = y.astype(bool)
-    pipeline = logistic_regression_binary_pipeline_class(parameters={}, random_seed=42)
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     importance = calculate_permutation_importance(
         pipeline, X, y, objective="Log Loss Binary", random_seed=0
@@ -614,24 +579,21 @@ def test_get_permutation_importance_correlated_features(
     assert correlated_importance_val > not_correlated_importance_val
 
 
+@pytest.mark.noncore_dependency
 def test_permutation_importance_oversampler(fraud_100):
-    pytest.importorskip(
-        "imblearn.over_sampling",
-        reason="Skipping test because imbalanced-learn not installed",
-    )
     X, y = fraud_100
     pipeline = BinaryClassificationPipeline(
         component_graph={
             "Imputer": ["Imputer", "X", "y"],
             "One Hot Encoder": ["One Hot Encoder", "Imputer.x", "y"],
-            "DateTime Featurization Component": [
-                "DateTime Featurization Component",
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
                 "One Hot Encoder.x",
                 "y",
             ],
             "Oversampler": [
                 "Oversampler",
-                "DateTime Featurization Component.x",
+                "DateTime Featurizer.x",
                 "y",
             ],
             "Decision Tree Classifier": [
@@ -650,12 +612,10 @@ def test_permutation_importance_oversampler(fraud_100):
 
 
 def test_get_permutation_importance_one_column_fast_no_precomputed_features(
-    X_y_binary, logistic_regression_binary_pipeline_class
+    X_y_binary, logistic_regression_binary_pipeline
 ):
     X, y = X_y_binary
-    pipeline = logistic_regression_binary_pipeline_class(
-        parameters={"Logistic Regression Classifier": {"n_jobs": 1}}, random_seed=42
-    )
+    pipeline = logistic_regression_binary_pipeline
     with pytest.raises(
         ValueError,
         match="Fast method of calculating permutation importance requires precomputed_features",
@@ -665,21 +625,18 @@ def test_get_permutation_importance_one_column_fast_no_precomputed_features(
         )
 
 
-@pytest.mark.parametrize(
-    "pipeline_class", pipelines_that_do_not_support_fast_permutation_importance
-)
 def test_get_permutation_importance_one_column_pipeline_does_not_support_fast(
-    X_y_binary, pipeline_class
+    X_y_binary,
 ):
     X, y = X_y_binary
-    assert not pipeline_class({})._supports_fast_permutation_importance
-    with pytest.raises(
-        ValueError,
-        match="Pipeline does not support fast permutation importance calculation",
-    ):
-        calculate_permutation_importance_one_column(
-            pipeline_class({}), X, y, 0, "log loss binary", fast=True
-        )
+    for pipeline in pipelines_that_do_not_support_fast_permutation_importance():
+        with pytest.raises(
+            ValueError,
+            match="Pipeline does not support fast permutation importance calculation",
+        ):
+            calculate_permutation_importance_one_column(
+                pipeline, X, y, 0, "log loss binary", fast=True
+            )
 
 
 def test_permutation_importance_unknown(X_y_binary):
@@ -713,7 +670,7 @@ def test_permutation_importance_url_email(df_with_url_and_email):
 
 
 def test_permutation_importance_postalcode_countrycode_subregion(
-    fraud_100, logistic_regression_binary_pipeline_class
+    fraud_100, logistic_regression_binary_pipeline
 ):
     X, y = fraud_100
     X.ww.set_types(
@@ -724,7 +681,7 @@ def test_permutation_importance_postalcode_countrycode_subregion(
         }
     )
 
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
+    pipeline = logistic_regression_binary_pipeline
     pipeline.fit(X, y)
     data = calculate_permutation_importance(pipeline, X, y, objective="Log Loss Binary")
     assert not data.isnull().any().any()

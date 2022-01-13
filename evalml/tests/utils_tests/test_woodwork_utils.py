@@ -124,37 +124,6 @@ def test_convert_numeric_dataset_pandas(datatype, value, error, make_data_type):
         pd.testing.assert_series_equal(y_ww, y_transformed)
 
 
-def test_infer_feature_types_value_error():
-
-    df = pd.DataFrame(
-        {
-            "a": pd.Series([1, 2, 3]),
-            "b": pd.Series([4, 5, 6]),
-            "c": pd.Series([True, False, True]),
-        }
-    )
-    df.ww.init(logical_types={"a": "IntegerNullable", "c": "BooleanNullable"})
-    msg = "These are the columns with nullable types: \\[\\('a', 'Int64'\\), \\('c', 'boolean'\\)\\]"
-    with pytest.raises(ValueError, match=msg):
-        infer_feature_types(df)
-
-    y = pd.Series([1, 2, 3], name="series")
-    y = ww.init_series(y, logical_type="IntegerNullable")
-
-    with pytest.raises(
-        ValueError,
-        match="These are the columns with nullable types: \\[\\('series', 'Int64'\\)]",
-    ):
-        infer_feature_types(y)
-
-    df = pd.DataFrame({"A": pd.Series([4, 5, 6], dtype="Float64"), "b": [1, 2, 3]})
-    with pytest.raises(
-        ValueError,
-        match="These are the columns with nullable types: \\[\\('A', 'Float64'\\)]",
-    ):
-        infer_feature_types(df)
-
-
 def test_infer_feature_types_preserves_semantic_tags():
     df = pd.DataFrame(
         {
@@ -252,8 +221,7 @@ def test_infer_feature_types_NA_to_nan(null_col, already_inited):
         df.ww.init()
     inferred_df = infer_feature_types(df)
     if all(df["unknown"].isnull()):
-        assert isinstance(inferred_df.ww.logical_types["unknown"], Double)
-        assert all([isinstance(x, type(np.nan)) for x in inferred_df["unknown"]])
+        assert all([isinstance(x, type(pd.NA)) for x in inferred_df["unknown"]])
     else:
         assert all([isinstance(x, str) for x in df["unknown"]])
 

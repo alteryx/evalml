@@ -63,6 +63,12 @@ class ClassImbalanceDataCheck(DataCheck):
             ...
             >>> X = pd.DataFrame()
             >>> y = pd.Series([0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1])
+
+            In this binary example, the target class 0 is present in fewer than 10% (threshold=0.10) of instances, and fewer than 2 * the number
+            of cross folds (2 * 3 = 6). Therefore, both a warning and an error are returned as part of the Class Imbalance Data Check.
+            In addition, if a target is present with fewer than `min_samples` occurrences (default is 100) and is under the threshold,
+            a severe class imbalance warning will be raised.
+
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.10)
             >>> assert class_imb_dc.validate(X, y) == {
             ...     "errors": [{"message": "The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]",
@@ -81,8 +87,10 @@ class ClassImbalanceDataCheck(DataCheck):
             ...                   "code": "CLASS_IMBALANCE_SEVERE",
             ...                   "details": {"target_values": [0], "rows": None, "columns": None}}],
             ...      "actions": []}
-            ...
-            ...
+
+            In this multiclass example, the target class 0 is present in fewer than 30% of observations, however with 1 cv fold, the minimum
+            number of instances required is 2 * 1 = 2. Therefore a warning, but not an error, is raised.
+
             >>> y = pd.Series([0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2])
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.30, min_samples=5, num_cv_folds=1)
             >>> assert class_imb_dc.validate(X, y) == {

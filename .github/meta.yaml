@@ -38,9 +38,9 @@ outputs:
         - requirements-parser >=0.2.0
         - shap >=0.36.0
         - texttable >=1.6.2
-        - woodwork >=0.8.2
+        - woodwork >=0.11.0
         - featuretools>=1.2.0
-        - nlp-primitives>=2.0.0
+        - nlp-primitives>=2.1.0
         - python >=3.7.*
         - networkx >=2.5,<2.6
         - category_encoders >=2.2.2
@@ -56,7 +56,7 @@ outputs:
         - requirements.txt
         - core-requirements.txt
       commands:
-        - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --has-minimal-dependencies
+        - pytest evalml/tests -n 8 --ignore evalml/tests/automl_tests/parallel_tests/ --has-minimal-dependencies --is-using-conda
 
   - name: evalml
     build:

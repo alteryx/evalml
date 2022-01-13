@@ -1,7 +1,5 @@
 """Pipeline base class for time-series classification problems."""
-import numpy as np
 import pandas as pd
-import woodwork as ww
 
 from .binary_classification_pipeline_mixin import (
     BinaryClassificationPipelineMixin,
@@ -26,25 +24,10 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
             ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
              An empty dictionary {} implies using all default values for component parameters. Pipeline-level
-             parameters such as date_index, gap, and max_delay must be specified with the "pipeline" key. For example:
-             Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
+             parameters such as time_index, gap, and max_delay must be specified with the "pipeline" key. For example:
+             Pipeline(parameters={"pipeline": {"time_index": "Date", "max_delay": 4, "gap": 2}}).
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
-
-    def fit(self, X, y):
-        """Fit a time series classification pipeline.
-
-        Args:
-            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
-            y (pd.Series, np.ndarray): The target training targets of length [n_samples].
-
-        Returns:
-            self
-        """
-        X, y = self._convert_to_woodwork(X, y)
-        self._fit(X, y)
-        self._classes_ = list(ww.init_series(np.unique(y)))
-        return self
 
     def _estimator_predict_proba(self, features):
         """Get estimator predicted probabilities.
@@ -200,15 +183,15 @@ class TimeSeriesBinaryClassificationPipeline(
             ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
              An empty dictionary {} implies using all default values for component parameters. Pipeline-level
-             parameters such as date_index, gap, and max_delay must be specified with the "pipeline" key. For example:
-             Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
+             parameters such as time_index, gap, and max_delay must be specified with the "pipeline" key. For example:
+             Pipeline(parameters={"pipeline": {"time_index": "Date", "max_delay": 4, "gap": 2}}).
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Example:
         >>> pipeline = TimeSeriesBinaryClassificationPipeline(component_graph=["Simple Imputer", "Logistic Regression Classifier"],
         ...                                                   parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
         ...                                                                                                  "solver": "liblinear"},
-        ...                                                               "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "date"}},
+        ...                                                               "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "time_index": "date"}},
         ...                                                   custom_name="My TimeSeriesBinary Pipeline")
         ...
         >>> assert pipeline.custom_name == "My TimeSeriesBinary Pipeline"
@@ -221,7 +204,7 @@ class TimeSeriesBinaryClassificationPipeline(
         ...                                         'n_jobs': -1,
         ...                                         'multi_class': 'auto',
         ...                                         'solver': 'liblinear'},
-        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': "date"}}
+        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'time_index': "date"}}
     """
 
     problem_type = ProblemTypes.TIME_SERIES_BINARY
@@ -294,15 +277,15 @@ class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipelin
             ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
              An empty dictionary {} implies using all default values for component parameters. Pipeline-level
-             parameters such as date_index, gap, and max_delay must be specified with the "pipeline" key. For example:
-             Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
+             parameters such as time_index, gap, and max_delay must be specified with the "pipeline" key. For example:
+             Pipeline(parameters={"pipeline": {"time_index": "Date", "max_delay": 4, "gap": 2}}).
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Example:
         >>> pipeline = TimeSeriesMulticlassClassificationPipeline(component_graph=["Simple Imputer", "Logistic Regression Classifier"],
         ...                                                       parameters={"Logistic Regression Classifier": {"penalty": "elasticnet",
         ...                                                                                                      "solver": "liblinear"},
-        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "date"}},
+        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "time_index": "date"}},
         ...                                                       custom_name="My TimeSeriesMulticlass Pipeline")
         >>> assert pipeline.custom_name == "My TimeSeriesMulticlass Pipeline"
         >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Logistic Regression Classifier'}
@@ -313,7 +296,7 @@ class TimeSeriesMulticlassClassificationPipeline(TimeSeriesClassificationPipelin
         ...                                     'n_jobs': -1,
         ...                                     'multi_class': 'auto',
         ...                                     'solver': 'liblinear'},
-        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': "date"}}
+        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'time_index': "date"}}
     """
 
     problem_type = ProblemTypes.TIME_SERIES_MULTICLASS

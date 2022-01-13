@@ -108,3 +108,13 @@ class DataCheckMessageCode(Enum):
 
     DATETIME_IS_NOT_MONOTONIC = "datetime_is_not_monotonic"
     """Message code for when the datetime values are not monotonically increasing."""
+
+    TIMESERIES_PARAMETERS_NOT_COMPATIBLE_WITH_SPLIT = (
+        "timeseries_parameters_not_compatible_with_split"
+    )
+    """Message code when the time series parameters are too large for the smallest data split."""
+
+    TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT = (
+        "timeseries_target_not_compatible_with_split"
+    )
+    """Message code when any training and validation split of the time series target doesn't contain all classes."""

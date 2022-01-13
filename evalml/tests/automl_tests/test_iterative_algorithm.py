@@ -351,20 +351,13 @@ def test_iterative_algorithm_passes_njobs(
                 algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
 
-@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("is_regression", [True, False])
 @pytest.mark.parametrize("estimator", ["XGBoost", "CatBoost"])
+@patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_iterative_algorithm_passes_n_jobs_catboost_xgboost(
-    mock_opt_tell, X_y_binary, X_y_regression, is_regression, estimator
+    mock_opt_tell, is_regression, estimator, X_y_binary, X_y_regression
 ):
-    if estimator == "XGBoost":
-        pytest.importorskip(
-            "xgboost", reason="Skipping test because xgboost is not installed."
-        )
-    else:
-        pytest.importorskip(
-            "catboost", reason="Skipping test because catboost is not installed."
-        )
     if is_regression:
         X, y = X_y_regression
         component_graphs = {"graph": [f"{estimator} Regressor"]}
@@ -522,13 +515,13 @@ def test_iterative_algorithm_stacked_ensemble_n_jobs_binary(
 @pytest.mark.parametrize("text_in_ensembling", [True, False])
 @pytest.mark.parametrize("n_jobs", [-1, 0, 1, 2, 3])
 def test_iterative_algorithm_stacked_ensemble_n_jobs_regression(
-    n_jobs, text_in_ensembling, X_y_regression, linear_regression_pipeline_class
+    n_jobs, text_in_ensembling, X_y_regression, linear_regression_pipeline
 ):
     X, y = X_y_regression
 
     allowed_component_graphs = {
-        "graph_1": linear_regression_pipeline_class.component_graph,
-        "graph_2": linear_regression_pipeline_class.component_graph,
+        "graph_1": linear_regression_pipeline.component_graph,
+        "graph_2": linear_regression_pipeline.component_graph,
     }
     algo = IterativeAlgorithm(
         X=X,
@@ -763,17 +756,16 @@ def test_iterative_algorithm_pipeline_params_kwargs(
 def test_iterative_algorithm_results_best_pipeline_info_id(
     X_y_binary,
     dummy_binary_pipeline_classes,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_component_graph,
 ):
     X, y = X_y_binary
-    LogisticRegressionBinaryPipeline = logistic_regression_binary_pipeline_class
     (
         dummy_binary_pipeline_classes,
         allowed_component_graphs,
     ) = dummy_binary_pipeline_classes()
     allowed_component_graphs = {
         "graph_1": allowed_component_graphs["graph_1"],
-        "graph_2": LogisticRegressionBinaryPipeline.component_graph,
+        "graph_2": logistic_regression_component_graph,
     }
     algo = IterativeAlgorithm(
         X=X,

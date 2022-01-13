@@ -65,4 +65,4 @@ jobs:
           mention: channel
           if_mention: failure,cancelled
           text: ':elmofire:'
-        if: failure() 
+        if: failure()

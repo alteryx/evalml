@@ -132,18 +132,15 @@ data_message = "You must pass in a value for parameter 'training_data' when the 
     "evalml.model_understanding.prediction_explanations._algorithms.shap.TreeExplainer"
 )
 def test_explainer_value_errors_raised(
-    mock_tree_explainer, pipeline, exception, match, algorithm
+    mock_tree_explainer, pipeline, exception, match, algorithm, has_minimal_dependencies
 ):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping lime value errors test because lime not installed",
-        )
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
 
     pipeline = pipeline(
         {
             "pipeline": {
-                "date_index": "foo",
+                "time_index": "foo",
                 "gap": 1,
                 "max_delay": 1,
                 "forecast_horizon": 1,
@@ -217,12 +214,10 @@ def test_explainers(
     X_y_multi,
     X_y_regression,
     helper_functions,
+    has_minimal_dependencies,
 ):
-    if algorithm == "lime":
-        pytest.importorskip(
-            "lime.lime_tabular",
-            reason="Skipping LIME test because lime not installed",
-        )
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
 
     if problem_type not in estimator.supported_problem_types:
         pytest.skip("Skipping because estimator and pipeline are not compatible.")
@@ -293,11 +288,8 @@ def test_explainers(
             ), f"A SHAP value must be computed for every data point to explain!"
 
 
+@pytest.mark.noncore_dependency
 def test_lime_xgboost(X_y_multi):
-    pytest.importorskip("xgboost", reason="Skipping test because xgboost not installed")
-    pytest.importorskip(
-        "lime.lime_tabular", reason="Skipping test because lime not installed"
-    )
 
     from evalml.pipelines.components import XGBoostClassifier
 
@@ -329,6 +321,23 @@ def test_compute_shap_values_catches_shap_tree_warnings(
     mock_debug.debug.assert_called_with(
         "_compute_shap_values TreeExplainer: Shap raised a warning!"
     )
+
+
+@patch("sklearn.linear_model.LogisticRegression.predict_proba")
+def test_compute_shap_values_absolute_probs(mock_predict_proba, X_y_binary):
+    X, y = X_y_binary
+    pipeline = BinaryClassificationPipeline(["Logistic Regression Classifier"])
+    mock_predict_proba.side_effect = [
+        pd.DataFrame({0: [0.0] + [0.4] * 99, 1: [1.0] + [0.6] * 99}),
+        pd.DataFrame({0: [0.0] + [0.4] * 99, 1: [1.0] + [0.6] * 99}),
+        pd.DataFrame({0: [0.0] + [0.4] * 208799, 1: [1.0] + [0.6] * 208799}),
+    ]
+
+    shap_values = calculate_shap_for_test(X, y, pipeline, 1)
+    mock_predict_proba.assert_called()
+
+    for feat in shap_values[0].values():
+        assert not np.isnan(feat).any()
 
 
 def test_normalize_values_exceptions():

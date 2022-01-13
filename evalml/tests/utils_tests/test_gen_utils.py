@@ -12,7 +12,9 @@ from evalml.pipelines.components import ComponentBase
 from evalml.utils.gen_utils import (
     SEED_BOUNDS,
     _rename_column_names_to_numeric,
+    are_ts_parameters_valid_for_split,
     classproperty,
+    contains_all_ts_parameters,
     convert_to_seconds,
     deprecate_arg,
     get_importable_subclasses,
@@ -333,12 +335,12 @@ def test_save_plotly_static_default_format(
     file_name,
     format,
     interactive,
-    decision_tree_classification_pipeline_class,
+    fitted_decision_tree_classification_pipeline,
     tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
-        pipeline = decision_tree_classification_pipeline_class
+        pipeline = fitted_decision_tree_classification_pipeline
         feat_fig_ = pipeline.graph_feature_importance()
 
         filepath = os.path.join(str(tmpdir), f"{file_name}")
@@ -368,13 +370,14 @@ def test_save_plotly_static_different_format(
     file_name,
     format,
     interactive,
-    decision_tree_classification_pipeline_class,
+    fitted_decision_tree_classification_pipeline,
     tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
-        pipeline = decision_tree_classification_pipeline_class
-        feat_fig_ = pipeline.graph_feature_importance()
+        feat_fig_ = (
+            fitted_decision_tree_classification_pipeline.graph_feature_importance()
+        )
 
         filepath = os.path.join(str(tmpdir), f"{file_name}")
         no_output_ = save_plot(
@@ -403,13 +406,14 @@ def test_save_plotly_static_no_filepath(
     file_name,
     format,
     interactive,
-    decision_tree_classification_pipeline_class,
+    fitted_decision_tree_classification_pipeline,
     tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
-        pipeline = decision_tree_classification_pipeline_class
-        feat_fig_ = pipeline.graph_feature_importance()
+        feat_fig_ = (
+            fitted_decision_tree_classification_pipeline.graph_feature_importance()
+        )
 
         filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
         output_ = save_plot(
@@ -441,13 +445,14 @@ def test_save_plotly_interactive(
     file_name,
     format,
     interactive,
-    decision_tree_classification_pipeline_class,
+    fitted_decision_tree_classification_pipeline,
     tmpdir,
     has_minimal_dependencies,
 ):
     if not has_minimal_dependencies:
-        pipeline = decision_tree_classification_pipeline_class
-        feat_fig_ = pipeline.graph_feature_importance()
+        feat_fig_ = (
+            fitted_decision_tree_classification_pipeline.graph_feature_importance()
+        )
 
         filepath = os.path.join(str(tmpdir), f"{file_name}") if file_name else None
         no_output_ = save_plot(
@@ -613,6 +618,7 @@ def test_save_graphviz_different_filename_output(
         assert os.path.basename(output_) == "example_plot.png"
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "file_name,format,interactive",
     [
@@ -625,7 +631,7 @@ def test_save_graphviz_different_filename_output(
 def test_save_matplotlib_default_format(
     file_name, format, interactive, fitted_tree_estimators, tmpdir
 ):
-    plt = pytest.importorskip("matplotlib.pyplot")
+    from matplotlib import pyplot as plt
 
     def setup_plt():
         fig_ = plt.figure(figsize=(4.5, 4.5))
@@ -655,6 +661,7 @@ def test_save_matplotlib_default_format(
     assert os.path.basename(output_) == "test_plot.png"
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize(
     "file_name,format,interactive",
     [
@@ -670,9 +677,8 @@ def test_save_seaborn_default_format(
     interactive,
     fitted_tree_estimators,
     tmpdir,
-    has_minimal_dependencies,
 ):
-    sns = pytest.importorskip("seaborn")
+    import seaborn as sns
 
     def setup_plt():
         data_ = [0, 1, 2, 3, 4]
@@ -715,3 +721,31 @@ def test_deprecate_arg():
         assert str(warn[0].message).startswith(
             "Argument 'foo' has been deprecated in favor of 'bar'"
         )
+
+
+def test_contains_all_ts_parameters():
+    is_valid, msg = contains_all_ts_parameters(
+        {"time_index": "date", "max_delay": 1, "forecast_horizon": 3, "gap": 7}
+    )
+    assert is_valid and not msg
+
+    is_valid, msg = contains_all_ts_parameters(
+        {"time_index": None, "max_delay": 1, "forecast_horizon": 3, "gap": 7}
+    )
+    assert not is_valid and msg
+
+    is_valid, msg = contains_all_ts_parameters({"time_index": "date"})
+
+    assert not is_valid and msg
+
+
+def test_are_ts_parameters_valid():
+    result = are_ts_parameters_valid_for_split(
+        gap=1, max_delay=4, forecast_horizon=2, n_obs=20, n_splits=3
+    )
+    assert not result.is_valid and result.msg
+
+    result = are_ts_parameters_valid_for_split(
+        gap=1, max_delay=4, forecast_horizon=2, n_obs=200, n_splits=3
+    )
+    assert result.is_valid and not result.msg

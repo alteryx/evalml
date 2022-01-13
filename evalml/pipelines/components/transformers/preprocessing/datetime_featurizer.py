@@ -80,11 +80,11 @@ class DateTimeFeaturizer(Transformer):
         features_to_extract (list): List of features to extract. Valid options include "year", "month", "day_of_week", "hour". Defaults to None.
         encode_as_categories (bool): Whether day-of-week and month features should be encoded as pandas "category" dtype.
             This allows OneHotEncoders to encode these features. Defaults to False.
-        date_index (str): Name of the column containing the datetime information used to order the data. Ignored.
+        time_index (str): Name of the column containing the datetime information used to order the data. Ignored.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    name = "DateTime Featurization Component"
+    name = "DateTime Featurizer"
     hyperparameter_ranges = {}
     """{}"""
     _function_mappings = {
@@ -98,7 +98,7 @@ class DateTimeFeaturizer(Transformer):
         self,
         features_to_extract=None,
         encode_as_categories=False,
-        date_index=None,
+        time_index=None,
         random_seed=0,
         **kwargs,
     ):
@@ -117,7 +117,7 @@ class DateTimeFeaturizer(Transformer):
         parameters = {
             "features_to_extract": features_to_extract,
             "encode_as_categories": encode_as_categories,
-            "date_index": date_index,
+            "time_index": time_index,
         }
         parameters.update(kwargs)
         self._date_time_col_names = None

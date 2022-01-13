@@ -15,27 +15,53 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
             ["Imputer", "One Hot Encoder", "Imputer_2", "Logistic Regression Classifier"]
         parameters (dict): Dictionary with component names as keys and dictionary of that component's parameters as values.
              An empty dictionary {} implies using all default values for component parameters. Pipeline-level
-             parameters such as date_index, gap, and max_delay must be specified with the "pipeline" key. For example:
-             Pipeline(parameters={"pipeline": {"date_index": "Date", "max_delay": 4, "gap": 2}}).
+             parameters such as time_index, gap, and max_delay must be specified with the "pipeline" key. For example:
+             Pipeline(parameters={"pipeline": {"time_index": "Date", "max_delay": 4, "gap": 2}}).
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Example:
         >>> pipeline = TimeSeriesRegressionPipeline(component_graph=["Simple Imputer", "Linear Regressor"],
         ...                                                       parameters={"Linear Regressor": {"normalize": True},
-        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "date_index": "date"}},
+        ...                                                                   "pipeline": {"gap": 1, "max_delay": 1, "forecast_horizon": 1, "time_index": "date"}},
         ...                                                       custom_name="My TimeSeriesRegression Pipeline")
         ...
         >>> assert pipeline.custom_name == "My TimeSeriesRegression Pipeline"
         >>> assert pipeline.component_graph.component_dict.keys() == {'Simple Imputer', 'Linear Regressor'}
-        ...
+
+        The pipeline parameters will be chosen from the default parameters for every component, unless specific parameters
+        were passed in as they were above.
+
         >>> assert pipeline.parameters == {
         ...     'Simple Imputer': {'impute_strategy': 'most_frequent', 'fill_value': None},
         ...     'Linear Regressor': {'fit_intercept': True, 'normalize': True, 'n_jobs': -1},
-        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'date_index': "date"}}
+        ...     'pipeline': {'gap': 1, 'max_delay': 1, 'forecast_horizon': 1, 'time_index': "date"}}
     """
 
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
     """ProblemTypes.TIME_SERIES_REGRESSION"""
+
+    def fit(self, X, y):
+        """Fit a time series pipeline.
+
+        Args:
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
+            y (pd.Series, np.ndarray): The target training targets of length [n_samples].
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If the target is not numeric.
+        """
+        X, y = self._convert_to_woodwork(X, y)
+
+        if "numeric" not in y.ww.semantic_tags:
+            raise ValueError(
+                "Time Series Regression pipeline can only handle numeric target data!"
+            )
+
+        self._fit(X, y)
+        return self
 
     def score(self, X, y, objectives, X_train=None, y_train=None):
         """Evaluate model performance on current and additional objectives.

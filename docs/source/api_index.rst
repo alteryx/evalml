@@ -42,7 +42,6 @@ Exceptions
     evalml.exceptions.ComponentNotYetFittedError
     evalml.exceptions.PipelineNotYetFittedError
     evalml.exceptions.AutoMLSearchException
-    evalml.exceptions.EnsembleMissingPipelinesError
     evalml.exceptions.PipelineScoreError
     evalml.exceptions.DataCheckInitError
     evalml.exceptions.NullsInColumnWarning
@@ -218,6 +217,7 @@ Regressors are components that output a predicted target value.
     evalml.pipelines.components.ARIMARegressor
     evalml.pipelines.components.CatBoostRegressor
     evalml.pipelines.components.ElasticNetRegressor
+    evalml.pipelines.components.ExponentialSmoothingRegressor
     evalml.pipelines.components.LinearRegressor
     evalml.pipelines.components.ExtraTreesRegressor
     evalml.pipelines.components.RandomForestRegressor
@@ -417,6 +417,7 @@ Data Check Classes
     evalml.data_checks.DateTimeNaNDataCheck
     evalml.data_checks.NaturalLanguageNaNDataCheck
     evalml.data_checks.DateTimeFormatDataCheck
+    evalml.data_checks.TimeSeriesParametersDataCheck
     evalml.data_checks.DataChecks
     evalml.data_checks.DefaultDataChecks
 

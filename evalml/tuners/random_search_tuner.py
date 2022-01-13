@@ -22,7 +22,9 @@ class RandomSearchTuner(Tuner):
         ...
         >>> assert proposal.keys() == {'My Component'}
         >>> assert proposal['My Component'] == {'param a': 3.7454011884736254, 'param b': 'c'}
-        ...
+
+        Determines points using a random search approach.
+
         >>> for each in range(7):
         ...     print(tuner.propose())
         {'My Component': {'param a': 7.3199394181140525, 'param b': 'b'}}

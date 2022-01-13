@@ -37,7 +37,6 @@ from evalml.model_understanding.graphs import (
 )
 from evalml.objectives import CostBenefitMatrix
 from evalml.pipelines import (
-    BinaryClassificationPipeline,
     DecisionTreeRegressor,
     ElasticNetRegressor,
     LinearRegressor,
@@ -47,22 +46,6 @@ from evalml.pipelines import (
 )
 from evalml.problem_types import ProblemTypes
 from evalml.utils import get_random_state, infer_feature_types
-
-
-@pytest.fixture
-def test_pipeline():
-    class TestPipeline(BinaryClassificationPipeline):
-        component_graph = [
-            "Simple Imputer",
-            "One Hot Encoder",
-            "Standard Scaler",
-            "Logistic Regression Classifier",
-        ]
-
-        def __init__(self, parameters):
-            super().__init__(self.component_graph, parameters=parameters)
-
-    return TestPipeline(parameters={"Logistic Regression Classifier": {"n_jobs": 1}})
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
@@ -292,12 +275,10 @@ def test_precision_recall_curve_pos_label_idx_error(make_data_type):
         precision_recall_curve(y_true, y_predict_proba, pos_label_idx=9001)
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type, go):
+
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
@@ -322,11 +303,9 @@ def test_graph_precision_recall_curve(X_y_binary, data_type, make_data_type):
     )
 
 
-def test_graph_precision_recall_curve_title_addition(X_y_binary):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_precision_recall_curve_title_addition(X_y_binary, go):
+
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
@@ -429,12 +408,10 @@ def test_roc_curve_multiclass(data_type, make_data_type):
         assert isinstance(roc_curve_data[i]["thresholds"], np.ndarray)
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type, go):
+
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
@@ -461,11 +438,9 @@ def test_graph_roc_curve_binary(X_y_binary, data_type, make_data_type):
     assert fig_dict["data"][1]["name"] == "Trivial Model (AUC 0.5)"
 
 
-def test_graph_roc_curve_nans():
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_roc_curve_nans(go):
+
     one_val_y_zero = np.array([0])
     with pytest.warns(UndefinedMetricWarning):
         fig = graph_roc_curve(one_val_y_zero, one_val_y_zero)
@@ -484,11 +459,9 @@ def test_graph_roc_curve_nans():
     assert fig1 == fig2
 
 
-def test_graph_roc_curve_multiclass(binarized_ys):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_roc_curve_multiclass(binarized_ys, go):
+
     y_true, y_tr, y_pred_proba = binarized_ys
     fig = graph_roc_curve(y_true, y_pred_proba)
     assert isinstance(fig, type(go.Figure()))
@@ -517,11 +490,9 @@ def test_graph_roc_curve_multiclass(binarized_ys):
         graph_roc_curve(y_true, y_pred_proba, custom_class_names=["one", "two"])
 
 
-def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys, go):
+
     y_true, y_tr, y_pred_proba = binarized_ys
     custom_class_names = ["one", "two", "three"]
     fig = graph_roc_curve(y_true, y_pred_proba, custom_class_names=custom_class_names)
@@ -540,11 +511,9 @@ def test_graph_roc_curve_multiclass_custom_class_names(binarized_ys):
     assert fig_dict["data"][3]["name"] == "Trivial Model (AUC 0.5)"
 
 
-def test_graph_roc_curve_title_addition(X_y_binary):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_roc_curve_title_addition(X_y_binary, go):
+
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred_proba = y_true * rs.random(y_true.shape)
@@ -557,12 +526,10 @@ def test_graph_roc_curve_title_addition(X_y_binary):
     )
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type, go):
+
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
@@ -598,11 +565,9 @@ def test_graph_confusion_matrix_default(X_y_binary, data_type, make_data_type):
         assert "text" in annotations[i]
 
 
-def test_graph_confusion_matrix_norm_disabled(X_y_binary):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_confusion_matrix_norm_disabled(X_y_binary, go):
+
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
@@ -628,11 +593,9 @@ def test_graph_confusion_matrix_norm_disabled(X_y_binary):
     )
 
 
-def test_graph_confusion_matrix_title_addition(X_y_binary):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_confusion_matrix_title_addition(X_y_binary, go):
+
     X, y_true = X_y_binary
     rs = get_random_state(42)
     y_pred = np.round(y_true * rs.random(y_true.shape)).astype(int)
@@ -645,15 +608,16 @@ def test_graph_confusion_matrix_title_addition(X_y_binary):
     )
 
 
-def test_graph_permutation_importance(X_y_binary, test_pipeline):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_permutation_importance(
+    X_y_binary, logistic_regression_binary_pipeline, go
+):
+
     X, y = X_y_binary
-    clf = test_pipeline
-    clf.fit(X, y)
-    fig = graph_permutation_importance(test_pipeline, X, y, "Log Loss Binary")
+    logistic_regression_binary_pipeline.fit(X, y)
+    fig = graph_permutation_importance(
+        logistic_regression_binary_pipeline, X, y, "Log Loss Binary"
+    )
     assert isinstance(fig, go.Figure)
     fig_dict = fig.to_dict()
     assert (
@@ -665,7 +629,7 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
     assert len(fig_dict["data"]) == 1
 
     perm_importance_data = calculate_permutation_importance(
-        clf, X, y, "Log Loss Binary"
+        logistic_regression_binary_pipeline, X, y, "Log Loss Binary"
     )
     assert np.array_equal(
         fig_dict["data"][0]["x"][::-1], perm_importance_data["importance"].values
@@ -675,18 +639,21 @@ def test_graph_permutation_importance(X_y_binary, test_pipeline):
     )
 
 
+@pytest.mark.noncore_dependency
 @patch("evalml.model_understanding.graphs.calculate_permutation_importance")
-def test_graph_permutation_importance_show_all_features(mock_perm_importance):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+def test_graph_permutation_importance_show_all_features(
+    mock_perm_importance, logistic_regression_binary_pipeline, go
+):
+
     mock_perm_importance.return_value = pd.DataFrame(
         {"feature": ["f1", "f2"], "importance": [0.0, 0.6]}
     )
 
     figure = graph_permutation_importance(
-        test_pipeline, pd.DataFrame(), pd.Series(), "Log Loss Binary"
+        logistic_regression_binary_pipeline,
+        pd.DataFrame(),
+        pd.Series(),
+        "Log Loss Binary",
     )
     assert isinstance(figure, go.Figure)
 
@@ -694,12 +661,12 @@ def test_graph_permutation_importance_show_all_features(mock_perm_importance):
     assert np.any(data["x"] == 0.0)
 
 
+@pytest.mark.noncore_dependency
 @patch("evalml.model_understanding.graphs.calculate_permutation_importance")
-def test_graph_permutation_importance_threshold(mock_perm_importance):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+def test_graph_permutation_importance_threshold(
+    mock_perm_importance, go, logistic_regression_binary_pipeline
+):
+
     mock_perm_importance.return_value = pd.DataFrame(
         {"feature": ["f1", "f2"], "importance": [0.0, 0.6]}
     )
@@ -708,15 +675,15 @@ def test_graph_permutation_importance_threshold(mock_perm_importance):
         ValueError,
         match="Provided importance threshold of -0.1 must be greater than or equal to 0",
     ):
-        fig = graph_permutation_importance(
-            test_pipeline,
+        graph_permutation_importance(
+            logistic_regression_binary_pipeline,
             pd.DataFrame(),
             pd.Series(),
             "Log Loss Binary",
             importance_threshold=-0.1,
         )
     fig = graph_permutation_importance(
-        test_pipeline,
+        logistic_regression_binary_pipeline,
         pd.DataFrame(),
         pd.Series(),
         "Log Loss Binary",
@@ -730,7 +697,7 @@ def test_graph_permutation_importance_threshold(mock_perm_importance):
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_cost_benefit_matrix_vs_threshold(
-    data_type, X_y_binary, logistic_regression_binary_pipeline_class, make_data_type
+    data_type, X_y_binary, logistic_regression_binary_pipeline, make_data_type
 ):
     X, y = X_y_binary
     X = make_data_type(data_type, X)
@@ -739,39 +706,45 @@ def test_cost_benefit_matrix_vs_threshold(
     cbm = CostBenefitMatrix(
         true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
     )
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
-    pipeline.fit(X, y)
-    original_pipeline_threshold = pipeline.threshold
-    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm, steps=5)
+    logistic_regression_binary_pipeline.fit(X, y)
+    original_pipeline_threshold = logistic_regression_binary_pipeline.threshold
+    cost_benefit_df = binary_objective_vs_threshold(
+        logistic_regression_binary_pipeline, X, y, cbm, steps=5
+    )
     assert list(cost_benefit_df.columns) == ["threshold", "score"]
     assert cost_benefit_df.shape == (6, 2)
     assert not cost_benefit_df.isnull().all().all()
-    assert pipeline.threshold == original_pipeline_threshold
+    assert logistic_regression_binary_pipeline.threshold == original_pipeline_threshold
 
 
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 def test_binary_objective_vs_threshold(
-    data_type, X_y_binary, logistic_regression_binary_pipeline_class, make_data_type
+    data_type, X_y_binary, logistic_regression_binary_pipeline, make_data_type
 ):
     X, y = X_y_binary
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
-    pipeline.fit(X, y)
+    logistic_regression_binary_pipeline.fit(X, y)
 
     # test objective with score_needs_proba == True
     with pytest.raises(ValueError, match="Objective `score_needs_proba` must be False"):
-        binary_objective_vs_threshold(pipeline, X, y, "Log Loss Binary")
+        binary_objective_vs_threshold(
+            logistic_regression_binary_pipeline, X, y, "Log Loss Binary"
+        )
 
     # test with non-binary objective
     with pytest.raises(
         ValueError, match="can only be calculated for binary classification objectives"
     ):
-        binary_objective_vs_threshold(pipeline, X, y, "f1 micro")
+        binary_objective_vs_threshold(
+            logistic_regression_binary_pipeline, X, y, "f1 micro"
+        )
 
     # test objective with score_needs_proba == False
-    results_df = binary_objective_vs_threshold(pipeline, X, y, "f1", steps=5)
+    results_df = binary_objective_vs_threshold(
+        logistic_regression_binary_pipeline, X, y, "f1", steps=5
+    )
     assert list(results_df.columns) == ["threshold", "score"]
     assert results_df.shape == (6, 2)
     assert not results_df.isnull().all().all()
@@ -779,39 +752,38 @@ def test_binary_objective_vs_threshold(
 
 @patch("evalml.pipelines.BinaryClassificationPipeline.score")
 def test_binary_objective_vs_threshold_steps(
-    mock_score, X_y_binary, logistic_regression_binary_pipeline_class
+    mock_score, X_y_binary, logistic_regression_binary_pipeline
 ):
     X, y = X_y_binary
     cbm = CostBenefitMatrix(
         true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
     )
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
-    pipeline.fit(X, y)
+    logistic_regression_binary_pipeline.fit(X, y)
     mock_score.return_value = {"Cost Benefit Matrix": 0.2}
-    cost_benefit_df = binary_objective_vs_threshold(pipeline, X, y, cbm, steps=234)
+    cost_benefit_df = binary_objective_vs_threshold(
+        logistic_regression_binary_pipeline, X, y, cbm, steps=234
+    )
     mock_score.assert_called()
     assert list(cost_benefit_df.columns) == ["threshold", "score"]
     assert cost_benefit_df.shape == (235, 2)
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 @patch("evalml.model_understanding.graphs.binary_objective_vs_threshold")
 def test_graph_binary_objective_vs_threshold(
     mock_cb_thresholds,
     data_type,
     X_y_binary,
-    logistic_regression_binary_pipeline_class,
+    logistic_regression_binary_pipeline,
     make_data_type,
+    go,
 ):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+
     X, y = X_y_binary
     X = make_data_type(data_type, X)
     y = make_data_type(data_type, y)
 
-    pipeline = logistic_regression_binary_pipeline_class(parameters={})
     cbm = CostBenefitMatrix(
         true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
     )
@@ -820,7 +792,9 @@ def test_graph_binary_objective_vs_threshold(
         {"threshold": [0, 0.5, 1.0], "score": [100, -20, 5]}
     )
 
-    figure = graph_binary_objective_vs_threshold(pipeline, X, y, cbm)
+    figure = graph_binary_objective_vs_threshold(
+        logistic_regression_binary_pipeline, X, y, cbm
+    )
     assert isinstance(figure, go.Figure)
     data = figure.data[0]
     assert not np.any(np.isnan(data["x"]))
@@ -829,26 +803,28 @@ def test_graph_binary_objective_vs_threshold(
     assert np.array_equal(data["y"], mock_cb_thresholds.return_value["score"])
 
 
+@pytest.mark.noncore_dependency
 @patch("evalml.model_understanding.graphs.jupyter_check")
 @patch("evalml.model_understanding.graphs.import_or_raise")
 def test_jupyter_graph_check(
-    import_check, jupyter_check, X_y_binary, X_y_regression, test_pipeline
+    import_check,
+    jupyter_check,
+    X_y_binary,
+    X_y_regression,
+    logistic_regression_binary_pipeline,
 ):
-    pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
     X, y = X_y_binary
     X = X[:20, :5]
     y = y[:20]
-    clf = test_pipeline
-    clf.fit(X, y)
+    logistic_regression_binary_pipeline.fit(X, y)
     cbm = CostBenefitMatrix(
         true_positive=1, true_negative=-1, false_positive=-7, false_negative=-2
     )
     jupyter_check.return_value = False
     with pytest.warns(None) as graph_valid:
-        graph_permutation_importance(test_pipeline, X, y, "log loss binary")
+        graph_permutation_importance(
+            logistic_regression_binary_pipeline, X, y, "log loss binary"
+        )
         assert len(graph_valid) == 0
     with pytest.warns(None) as graph_valid:
         graph_confusion_matrix(y, y)
@@ -856,11 +832,15 @@ def test_jupyter_graph_check(
 
     jupyter_check.return_value = True
     with pytest.warns(None) as graph_valid:
-        graph_partial_dependence(clf, X, features=0, grid_resolution=20)
+        graph_partial_dependence(
+            logistic_regression_binary_pipeline, X, features=0, grid_resolution=20
+        )
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
     with pytest.warns(None) as graph_valid:
-        graph_binary_objective_vs_threshold(test_pipeline, X, y, cbm, steps=5)
+        graph_binary_objective_vs_threshold(
+            logistic_regression_binary_pipeline, X, y, cbm, steps=5
+        )
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
     with pytest.warns(None) as graph_valid:
@@ -870,7 +850,9 @@ def test_jupyter_graph_check(
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
     with pytest.warns(None) as graph_valid:
-        graph_permutation_importance(test_pipeline, X, y, "log loss binary")
+        graph_permutation_importance(
+            logistic_regression_binary_pipeline, X, y, "log loss binary"
+        )
         assert len(graph_valid) == 0
         import_check.assert_called_with("ipywidgets", warning=True)
     with pytest.warns(None) as graph_valid:
@@ -924,11 +906,9 @@ def test_get_prediction_vs_actual_data(data_type, make_data_type):
     assert (results["outlier"] == "#0000ff").all()
 
 
-def test_graph_prediction_vs_actual_default():
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_prediction_vs_actual_default(go):
+
     y_true = [1, 2, 3000, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     y_pred = [5, 4, 2, 8, 6, 6, 5, 1, 7, 2, 1, 3000]
 
@@ -948,12 +928,10 @@ def test_graph_prediction_vs_actual_default():
     assert fig_dict["data"][1]["name"] == "Values"
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
-def test_graph_prediction_vs_actual(data_type):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+def test_graph_prediction_vs_actual(data_type, go):
+
     y_true = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
     y_pred = [5, 4, 3, 8, 6, 3, 5, 9, 7, 12, 1, 2]
 
@@ -1001,13 +979,13 @@ def test_get_prediction_vs_actual_over_time_data(ts_data):
     X_test, y_test = X.iloc[15:], y.iloc[15:]
 
     pipeline = TimeSeriesRegressionPipeline(
-        ["DateTime Featurization Component", "Elastic Net Regressor"],
+        ["DateTime Featurizer", "Elastic Net Regressor"],
         parameters={
             "pipeline": {
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "date_index": "date",
+                "time_index": "date",
             }
         },
     )
@@ -1020,24 +998,21 @@ def test_get_prediction_vs_actual_over_time_data(ts_data):
     assert list(results.columns) == ["dates", "target", "prediction"]
 
 
-def test_graph_prediction_vs_actual_over_time(ts_data):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+@pytest.mark.noncore_dependency
+def test_graph_prediction_vs_actual_over_time(ts_data, go):
 
     X, y = ts_data
     X_train, y_train = X.iloc[:15], y.iloc[:15]
     X_test, y_test = X.iloc[15:], y.iloc[15:]
 
     pipeline = TimeSeriesRegressionPipeline(
-        ["DateTime Featurization Component", "Elastic Net Regressor"],
+        ["DateTime Featurizer", "Elastic Net Regressor"],
         parameters={
             "pipeline": {
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-                "date_index": "date",
+                "time_index": "date",
             }
         },
     )
@@ -1065,12 +1040,8 @@ def test_graph_prediction_vs_actual_over_time(ts_data):
     assert not np.isnan(fig_dict["data"][1]["y"]).all()
 
 
+@pytest.mark.noncore_dependency
 def test_graph_prediction_vs_actual_over_time_value_error():
-    pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
-
     class NotTSPipeline:
         problem_type = ProblemTypes.REGRESSION
 
@@ -1217,10 +1188,10 @@ def test_decision_tree_data_from_pipeline(X_y_categorical_regression):
     )
 
 
+@pytest.mark.noncore_dependency
 def test_visualize_decision_trees_filepath(fitted_tree_estimators, tmpdir):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping visualizing test because graphviz not installed"
-    )
+    import graphviz
+
     est_class, _ = fitted_tree_estimators
     filepath = os.path.join(str(tmpdir), "invalid", "path", "test.png")
 
@@ -1235,10 +1206,10 @@ def test_visualize_decision_trees_filepath(fitted_tree_estimators, tmpdir):
     assert isinstance(src, graphviz.Source)
 
 
+@pytest.mark.noncore_dependency
 def test_visualize_decision_trees_wrong_format(fitted_tree_estimators, tmpdir):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping visualizing test because graphviz not installed"
-    )
+    import graphviz
+
     est_class, _ = fitted_tree_estimators
     filepath = os.path.join(str(tmpdir), "test_0.xyz")
     with pytest.raises(
@@ -1280,10 +1251,10 @@ def test_visualize_decision_trees_not_fitted(tree_estimators, tmpdir):
         visualize_decision_tree(estimator=est_class, max_depth=3, filepath=filepath)
 
 
+@pytest.mark.noncore_dependency
 def test_visualize_decision_trees(fitted_tree_estimators, tmpdir):
-    graphviz = pytest.importorskip(
-        "graphviz", reason="Skipping visualizing test because graphviz not installed"
-    )
+    import graphviz
+
     est_class, est_reg = fitted_tree_estimators
 
     filepath = os.path.join(str(tmpdir), "test_2")
@@ -1377,10 +1348,9 @@ def test_t_sne(data_type):
     assert isinstance(output_, np.ndarray)
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("marker_line_width", [-2, -1.2])
-def test_t_sne_errors_marker_line_width(marker_line_width, has_minimal_dependencies):
-    if has_minimal_dependencies:
-        pytest.skip("Skipping plotting test because plotly not installed")
+def test_t_sne_errors_marker_line_width(marker_line_width):
     X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
 
     with pytest.raises(
@@ -1389,10 +1359,9 @@ def test_t_sne_errors_marker_line_width(marker_line_width, has_minimal_dependenc
         graph_t_sne(X, marker_line_width=marker_line_width)
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("marker_size", [-2, -1.2])
 def test_t_sne_errors_marker_size(marker_size, has_minimal_dependencies):
-    if has_minimal_dependencies:
-        pytest.skip("Skipping plotting test because plotly not installed")
     X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
 
     with pytest.raises(
@@ -1401,14 +1370,12 @@ def test_t_sne_errors_marker_size(marker_size, has_minimal_dependencies):
         graph_t_sne(X, marker_size=marker_size)
 
 
+@pytest.mark.noncore_dependency
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
 @pytest.mark.parametrize("perplexity", [0, 4.6, 100])
 @pytest.mark.parametrize("learning_rate", [100.0, 0.1])
-def test_graph_t_sne(data_type, perplexity, learning_rate):
-    go = pytest.importorskip(
-        "plotly.graph_objects",
-        reason="Skipping plotting test because plotly not installed",
-    )
+def test_graph_t_sne(data_type, perplexity, learning_rate, go):
+
     if data_type == "np":
         X = np.array([[0, 0, 0], [0, 1, 1], [1, 0, 1], [1, 1, 1]])
     elif data_type == "pd":

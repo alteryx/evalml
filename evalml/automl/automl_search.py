@@ -57,6 +57,7 @@ from evalml.problem_types import (
 )
 from evalml.tuners import SKOptTuner
 from evalml.utils import convert_to_seconds, infer_feature_types
+from evalml.utils.gen_utils import contains_all_ts_parameters
 from evalml.utils.logger import (
     get_logger,
     log_subtitle,
@@ -110,6 +111,7 @@ def search(
     patience=None,
     tolerance=None,
     problem_configuration=None,
+    n_splits=3,
     verbose=False,
 ):
     """Given data and configuration, run an automl search.
@@ -136,7 +138,8 @@ def search(
         tolerance (float): Minimum percentage difference to qualify as score improvement for early stopping.
             Only applicable if patience is not None. Defaults to None.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the date_index, gap, and max_delay variables.
+            in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
+        n_splits (int): Number of splits to use with the default data splitter.
         verbose (boolean): Whether or not to display semi-real-time updates to stdout while search is running. Defaults to False.
 
     Returns:
@@ -149,20 +152,10 @@ def search(
     y_train = infer_feature_types(y_train)
     problem_type = handle_problem_types(problem_type)
 
-    datetime_column = None
     if is_time_series(problem_type):
-        if problem_configuration:
-            if "date_index" in problem_configuration:
-                datetime_column = problem_configuration["date_index"]
-            else:
-                raise ValueError(
-                    "For the default data checks to run in time series, date_index has to be passed in problem_configuration. "
-                    f"Received {problem_configuration}"
-                )
-        else:
-            raise ValueError(
-                "For the default data checks to run in time series, the problem_configuration parameter must be specified."
-            )
+        is_valid, msg = contains_all_ts_parameters(problem_configuration)
+        if not is_valid:
+            raise ValueError(msg)
 
     if objective == "auto":
         objective = get_default_primary_search_objective(problem_type)
@@ -179,6 +172,14 @@ def search(
     elif mode == "long" and max_time is None:
         max_batches = 6  # corresponds to end of 'long' exploration phase
 
+    data_splitter = make_data_splitter(
+        X=X_train,
+        y=y_train,
+        problem_type=problem_type,
+        problem_configuration=problem_configuration,
+        n_splits=n_splits,
+    )
+
     automl_config = {
         "X_train": X_train,
         "y_train": y_train,
@@ -189,10 +190,15 @@ def search(
         "patience": patience,
         "tolerance": tolerance,
         "verbose": verbose,
+        "problem_configuration": problem_configuration,
+        "data_splitter": data_splitter,
     }
 
     data_checks = DefaultDataChecks(
-        problem_type=problem_type, objective=objective, datetime_column=datetime_column
+        problem_type=problem_type,
+        objective=objective,
+        n_splits=n_splits,
+        problem_configuration=problem_configuration,
     )
     data_check_results = data_checks.validate(X_train, y=y_train)
     if len(data_check_results.get("errors", [])):
@@ -209,6 +215,7 @@ def search_iterative(
     problem_type=None,
     objective="auto",
     problem_configuration=None,
+    n_splits=3,
     **kwargs,
 ):
     """Given data and configuration, run an automl search.
@@ -226,7 +233,8 @@ def search_iterative(
             - LogLossMulticlass for multiclass classification problems, and
             - R2 for regression problems.
         problem_configuration (dict): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the date_index, gap, forecast_horizon, and max_delay variables.
+            in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
+        n_splits (int): Number of splits to use with the default data splitter.
         **kwargs: Other keyword arguments which are provided will be passed to AutoMLSearch.
 
     Returns:
@@ -239,24 +247,22 @@ def search_iterative(
     y_train = infer_feature_types(y_train)
     problem_type = handle_problem_types(problem_type)
 
-    datetime_column = None
     if is_time_series(problem_type):
-        if problem_configuration:
-            if "date_index" in problem_configuration:
-                datetime_column = problem_configuration["date_index"]
-            else:
-                raise ValueError(
-                    "For the default data checks to run in time series, date_index has to be passed in problem_configuration. "
-                    f"Received {problem_configuration}"
-                )
-        else:
-            raise ValueError(
-                "For the default data checks to run in time series, the problem_configuration parameter must be specified."
-            )
+        is_valid, msg = contains_all_ts_parameters(problem_configuration)
+        if not is_valid:
+            raise ValueError(msg)
 
     if objective == "auto":
         objective = get_default_primary_search_objective(problem_type)
     objective = get_objective(objective, return_instance=False)
+
+    data_splitter = make_data_splitter(
+        X=X_train,
+        y=y_train,
+        problem_type=problem_type,
+        problem_configuration=problem_configuration,
+        n_splits=n_splits,
+    )
 
     automl_config = kwargs
     automl_config.update(
@@ -266,11 +272,16 @@ def search_iterative(
             "problem_type": problem_type,
             "objective": objective,
             "max_batches": 1,
+            "problem_configuration": problem_configuration,
+            "data_splitter": data_splitter,
         }
     )
 
     data_checks = DefaultDataChecks(
-        problem_type=problem_type, objective=objective, datetime_column=datetime_column
+        problem_type=problem_type,
+        objective=objective,
+        n_splits=n_splits,
+        problem_configuration=problem_configuration,
     )
     data_check_results = data_checks.validate(X_train, y=y_train)
     if len(data_check_results.get("errors", [])):
@@ -359,7 +370,7 @@ class AutoMLSearch:
             max_iterations have precedence over stopping the search.
 
         problem_configuration (dict, None): Additional parameters needed to configure the search. For example,
-            in time series problems, values should be passed in for the date_index, gap, forecast_horizon, and max_delay variables.
+            in time series problems, values should be passed in for the time_index, gap, forecast_horizon, and max_delay variables.
 
         train_best_pipeline (boolean): Whether or not to train the best pipeline before returning it. Defaults to True.
 
@@ -793,16 +804,9 @@ class AutoMLSearch:
 
     def _validate_problem_configuration(self, problem_configuration=None):
         if is_time_series(self.problem_type):
-            required_parameters = {"date_index", "gap", "max_delay", "forecast_horizon"}
-            if not problem_configuration or not all(
-                p in problem_configuration for p in required_parameters
-            ):
-                raise ValueError(
-                    "problem_configuration must be a dict containing values for at least the date_index, gap, max_delay, "
-                    f"and forecast_horizon parameters. Received {problem_configuration}."
-                )
-            if problem_configuration["date_index"] is None:
-                raise ValueError("date_index cannot be None!")
+            is_valid, msg = contains_all_ts_parameters(problem_configuration)
+            if not is_valid:
+                raise ValueError(msg)
         return problem_configuration or {}
 
     def _handle_keyboard_interrupt(self):
@@ -953,7 +957,7 @@ class AutoMLSearch:
             full_rankings = self.full_rankings
             current_batch_idx = full_rankings["id"].isin(new_pipeline_ids)
             current_batch_pipeline_scores = full_rankings[current_batch_idx][
-                "mean_cv_score"
+                "validation_score"
             ]
             if (
                 len(current_batch_pipeline_scores)
@@ -975,7 +979,7 @@ class AutoMLSearch:
             best_pipeline_name = best_pipeline["pipeline_name"]
             self.logger.info(f"Best pipeline: {best_pipeline_name}")
             self.logger.info(
-                f"Best pipeline {self.objective.name}: {best_pipeline['mean_cv_score']:3f}"
+                f"Best pipeline {self.objective.name}: {best_pipeline['validation_score']:3f}"
             )
         self._searched = True
 
@@ -1097,9 +1101,9 @@ class AutoMLSearch:
         else:
             gap = self.problem_configuration["gap"]
             forecast_horizon = self.problem_configuration["forecast_horizon"]
-            date_index = self.problem_configuration["date_index"]
+            time_index = self.problem_configuration["time_index"]
             baseline = make_timeseries_baseline_pipeline(
-                self.problem_type, gap, forecast_horizon, date_index
+                self.problem_type, gap, forecast_horizon, time_index
             )
         return baseline
 
@@ -1143,7 +1147,11 @@ class AutoMLSearch:
         cv_data = evaluation_results["cv_data"]
         cv_scores = evaluation_results["cv_scores"]
         is_baseline = pipeline.model_family == ModelFamily.BASELINE
-        cv_score = cv_scores.mean()
+        if len(cv_scores) == 1:
+            validation_score = cv_scores[0]
+            mean_cv_score = np.nan
+        elif len(cv_scores) > 1:
+            validation_score = mean_cv_score = cv_scores.mean()
         cv_sd = cv_scores.std()
 
         percent_better_than_baseline = {}
@@ -1172,7 +1180,7 @@ class AutoMLSearch:
             "pipeline_class": pipeline.__class__,
             "pipeline_summary": pipeline.summary,
             "parameters": pipeline.parameters,
-            "mean_cv_score": cv_score,
+            "mean_cv_score": mean_cv_score,
             "standard_deviation_cv_score": cv_sd,
             "high_variance_cv": high_variance_cv,
             "training_time": training_time,
@@ -1181,7 +1189,7 @@ class AutoMLSearch:
             "percent_better_than_baseline": percent_better_than_baseline[
                 self.objective.name
             ],
-            "validation_score": cv_scores[0],
+            "validation_score": validation_score,
         }
         self._pipelines_searched.update({pipeline_id: pipeline.clone()})
 
@@ -1198,7 +1206,9 @@ class AutoMLSearch:
 
         if not is_baseline:
             score_to_minimize = (
-                -cv_score if self.objective.greater_is_better else cv_score
+                -validation_score
+                if self.objective.greater_is_better
+                else validation_score
             )
             try:
                 self._automl_algorithm.add_result(
@@ -1414,7 +1424,7 @@ class AutoMLSearch:
         rankings_df.insert(
             2, "search_order", pd.Series(self._results["search_order"])
         )  # place search_order after pipeline_name
-        rankings_df.sort_values("mean_cv_score", ascending=ascending, inplace=True)
+        rankings_df.sort_values("validation_score", ascending=ascending, inplace=True)
         rankings_df.reset_index(drop=True, inplace=True)
         return rankings_df
 

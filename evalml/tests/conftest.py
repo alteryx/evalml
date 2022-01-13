@@ -40,6 +40,7 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_regression,
+    is_time_series,
 )
 
 
@@ -48,156 +49,284 @@ def pytest_configure(config):
         "markers",
         "skip_offline: mark test to be skipped if offline (https://api.featurelabs.com cannot be reached)",
     )
+    config.addinivalue_line(
+        "markers", "noncore_dependency: mark test as needing non-core dependencies"
+    )
+    config.addinivalue_line(
+        "markers",
+        "skip_during_conda: mark test to be skipped if running during conda build",
+    )
+    config.addinivalue_line(
+        "markers",
+        "skip_if_39: mark test to be skipped if running during conda build",
+    )
 
 
-def create_mock_pipeline(estimator, problem_type, add_label_encoder=False):
-    est_parameters = (
+@pytest.fixture(scope="session")
+def go():
+    from plotly import graph_objects as go
+
+    return go
+
+
+@pytest.fixture(scope="session")
+def im():
+    from imblearn import over_sampling as im
+
+    return im
+
+
+@pytest.fixture(scope="session")
+def lgbm():
+    import lightgbm as lgbm
+
+    return lgbm
+
+
+@pytest.fixture(scope="session")
+def vw():
+    from vowpalwabbit import sklearn_vw as vw
+
+    return vw
+
+
+@pytest.fixture(scope="session")
+def graphviz():
+    import graphviz
+
+    return graphviz
+
+
+@pytest.fixture
+def get_test_data_from_configuration():
+    def _get_test_data_from_configuration(
+        input_type, problem_type, column_names=None, nullable_target=False
+    ):
+        X_all = pd.DataFrame(
+            {
+                "all_null": [np.nan, np.nan, np.nan, np.nan, np.nan, np.nan, np.nan]
+                * 2,
+                "int_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
+                "age_null": [0, 1, 2, np.nan, 4, np.nan, 6] * 2,
+                "bool_null": [True, None, False, True, False, None, True] * 2,
+                "numerical": range(14),
+                "categorical": ["a", "b", "a", "b", "b", "a", "b"] * 2,
+                "dates": pd.date_range("2000-02-03", periods=14, freq="W"),
+                "text": [
+                    "this is a string",
+                    "this is another string",
+                    "this is just another string",
+                    "evalml should handle string input",
+                    "cats are gr8",
+                    "hello world",
+                    "evalml is gr8",
+                ]
+                * 2,
+                "email": [
+                    "abalone_0@gmail.com",
+                    "AbaloneRings@yahoo.com",
+                    "abalone_2@abalone.com",
+                    "titanic_data@hotmail.com",
+                    "fooEMAIL@email.org",
+                    "evalml@evalml.org",
+                    "evalml@alteryx.org",
+                ]
+                * 2,
+                "url": [
+                    "https://evalml.alteryx.com/en/stable/",
+                    "https://woodwork.alteryx.com/en/stable/guides/statistical_insights.html",
+                    "https://twitter.com/AlteryxOSS",
+                    "https://www.twitter.com/AlteryxOSS",
+                    "https://www.evalml.alteryx.com/en/stable/demos/text_input.html",
+                    "https://github.com/alteryx/evalml",
+                    "https://github.com/alteryx/featuretools",
+                ]
+                * 2,
+                "ip": [
+                    "0.0.0.0",
+                    "1.1.1.101",
+                    "1.1.101.1",
+                    "1.101.1.1",
+                    "101.1.1.1",
+                    "192.168.1.1",
+                    "255.255.255.255",
+                ]
+                * 2,
+            }
+        )
+        y = pd.Series([0, 0, 1, 0, 0, 1, 1] * 2)
+        if problem_type == ProblemTypes.MULTICLASS:
+            y = pd.Series([0, 2, 1, 2, 0, 2, 1] * 2)
+        elif is_regression(problem_type):
+            y = pd.Series([1, 2, 3, 3, 3, 4, 5] * 2)
+        if nullable_target:
+            y.iloc[2] = None
+            if input_type == "ww":
+                y = ww.init_series(y, logical_type="integer_nullable")
+        X = X_all[column_names]
+
+        if input_type == "ww":
+            logical_types = {}
+            if "text" in column_names:
+                logical_types.update({"text": "NaturalLanguage"})
+            if "categorical" in column_names:
+                logical_types.update({"categorical": "Categorical"})
+            if "url" in column_names:
+                logical_types.update({"url": "URL"})
+            if "email" in column_names:
+                logical_types.update({"email": "EmailAddress"})
+            if "int_null" in column_names:
+                logical_types.update({"int_null": "integer_nullable"})
+            if "age_null" in column_names:
+                logical_types.update({"age_null": "age_nullable"})
+            if "bool_null" in column_names:
+                logical_types.update({"bool_null": "boolean_nullable"})
+
+            X.ww.init(logical_types=logical_types)
+
+            y = ww.init_series(y)
+
+        return X, y
+
+    return _get_test_data_from_configuration
+
+
+@pytest.fixture
+def get_ts_X_y():
+    def _get_X_y(
+        train_features_index_dt,
+        train_target_index_dt,
+        train_none,
+        datetime_feature,
+        no_features,
+        test_features_index_dt,
+    ):
+        X = pd.DataFrame(index=[i + 1 for i in range(50)])
+        dates = pd.date_range("1/1/21", periods=50)
+        feature = pd.Series([1, 5, 2] * 10 + [3, 1] * 10, index=X.index)
+        y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
+        X.ww.init()
+        y = ww.init_series(y)
+
+        X_train = X.ww.iloc[:40]
+        X_test = X.ww.iloc[40:]
+        y_train = y.ww.iloc[:40]
+
+        if train_features_index_dt:
+            X_train.index = dates[:40]
+        if train_target_index_dt:
+            y_train.index = dates[:40]
+        if test_features_index_dt:
+            X_test.index = dates[40:]
+        if not no_features:
+            X_train.ww["Feature"] = pd.Series(feature[:40].values, index=X_train.index)
+            X_test.ww["Feature"] = pd.Series(feature[40:].values, index=X_test.index)
+            if datetime_feature:
+                X_train.ww["Dates"] = pd.Series(dates[:40].values, index=X_train.index)
+                X_test.ww["Dates"] = pd.Series(dates[40:].values, index=X_test.index)
+        if train_none:
+            X_train = None
+
+        return X_train, X_test, y_train
+
+    return _get_X_y
+
+
+def create_mock_pipeline(
+    estimator, problem_type, parameters=None, add_label_encoder=False
+):
+    pipeline_parameters = (
         {estimator.name: {"n_jobs": 1}}
-        if estimator.model_family
-        not in [ModelFamily.SVM, ModelFamily.DECISION_TREE, ModelFamily.VOWPAL_WABBIT]
+        if (
+            estimator.model_family
+            not in [
+                ModelFamily.SVM,
+                ModelFamily.DECISION_TREE,
+                ModelFamily.VOWPAL_WABBIT,
+                ModelFamily.PROPHET,
+            ]
+            and "Elastic Net" not in estimator.name
+        )
         else {}
     )
 
+    if parameters is not None:
+        pipeline_parameters.update(parameters)
+
+    custom_name = (
+        f"Pipeline with {estimator.name}"
+        if add_label_encoder is False
+        else f"Pipeline with {estimator.name} w/ Label Encoder"
+    )
+    component_graph = (
+        [estimator]
+        if add_label_encoder is False
+        else {
+            "Label Encoder": ["Label Encoder", "X", "y"],
+            estimator.name: [
+                estimator,
+                "Label Encoder.x",
+                "Label Encoder.y",
+            ],
+        }
+    )
+
     if problem_type == ProblemTypes.BINARY:
-
-        class MockBinaryPipelineWithOnlyEstimator(BinaryClassificationPipeline):
-            custom_name = (
-                f"Pipeline with {estimator.name}"
-                if add_label_encoder is False
-                else f"Pipeline with {estimator.name} w/ Label Encoder"
-            )
-            component_graph = (
-                [estimator]
-                if add_label_encoder is False
-                else {
-                    "Label Encoder": ["Label Encoder", "X", "y"],
-                    estimator.name: [
-                        estimator,
-                        "Label Encoder.x",
-                        "Label Encoder.y",
-                    ],
-                }
-            )
-            parameters = est_parameters
-
-            def __init__(self, parameters, random_seed=0):
-                super().__init__(
-                    self.component_graph,
-                    parameters=parameters,
-                    custom_name=self.custom_name,
-                    random_seed=random_seed,
-                )
-
-        return MockBinaryPipelineWithOnlyEstimator
+        return BinaryClassificationPipeline(
+            component_graph, parameters=pipeline_parameters, custom_name=custom_name
+        )
     elif problem_type == ProblemTypes.MULTICLASS:
-
-        class MockMulticlassPipelineWithOnlyEstimator(MulticlassClassificationPipeline):
-            custom_name = (
-                f"Pipeline with {estimator.name}"
-                if add_label_encoder is False
-                else f"Pipeline with {estimator.name} w/ Label Encoder"
-            )
-            component_graph = (
-                [estimator]
-                if add_label_encoder is False
-                else {
-                    "Label Encoder": ["Label Encoder", "X", "y"],
-                    estimator.name: [
-                        estimator,
-                        "Label Encoder.x",
-                        "Label Encoder.y",
-                    ],
-                }
-            )
-            parameters = est_parameters
-
-            def __init__(self, parameters, random_seed=0):
-                super().__init__(
-                    self.component_graph,
-                    parameters=parameters,
-                    custom_name=self.custom_name,
-                    random_seed=random_seed,
-                )
-
-        return MockMulticlassPipelineWithOnlyEstimator
+        return MulticlassClassificationPipeline(
+            component_graph, parameters=pipeline_parameters, custom_name=custom_name
+        )
     elif problem_type == ProblemTypes.REGRESSION:
-
-        class MockRegressionPipelineWithOnlyEstimator(RegressionPipeline):
-            custom_name = f"Pipeline with {estimator.name}"
-            component_graph = [estimator]
-            parameters = est_parameters
-
-        return MockRegressionPipelineWithOnlyEstimator
+        return RegressionPipeline(
+            component_graph, parameters=pipeline_parameters, custom_name=custom_name
+        )
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
-
-        class MockTSRegressionPipelineWithOnlyEstimator(TimeSeriesRegressionPipeline):
-            custom_name = f"Pipeline with {estimator.name}"
-            component_graph = [estimator]
-            parameters = est_parameters
-
-        return MockTSRegressionPipelineWithOnlyEstimator
+        return TimeSeriesRegressionPipeline(
+            component_graph, parameters=pipeline_parameters, custom_name=custom_name
+        )
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
-
-        class MockTSRegressionPipelineWithOnlyEstimator(
-            TimeSeriesBinaryClassificationPipeline
-        ):
-            custom_name = (
-                f"Pipeline with {estimator.name}"
-                if add_label_encoder is False
-                else f"Pipeline with {estimator.name} w/ Label Encoder"
-            )
-            component_graph = (
-                [estimator]
-                if add_label_encoder is False
-                else {
-                    "Label Encoder": ["Label Encoder", "X", "y"],
-                    estimator.name: [
-                        estimator,
-                        "Label Encoder.x",
-                        "Label Encoder.y",
-                    ],
-                }
-            )
-            parameters = est_parameters
-
-        return MockTSRegressionPipelineWithOnlyEstimator
+        return TimeSeriesBinaryClassificationPipeline(
+            component_graph, parameters=pipeline_parameters, custom_name=custom_name
+        )
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
-
-        class MockTSRegressionPipelineWithOnlyEstimator(
-            TimeSeriesMulticlassClassificationPipeline
-        ):
-            custom_name = (
-                f"Pipeline with {estimator.name}"
-                if add_label_encoder is False
-                else f"Pipeline with {estimator.name} and label encoder"
-            )
-            component_graph = (
-                [estimator]
-                if add_label_encoder is False
-                else {
-                    "Label Encoder": ["Label Encoder", "X", "y"],
-                    estimator.name: [
-                        estimator,
-                        "Label Encoder.x",
-                        "Label Encoder.y",
-                    ],
-                }
-            )
-            parameters = est_parameters
-
-        return MockTSRegressionPipelineWithOnlyEstimator
+        return TimeSeriesMulticlassClassificationPipeline(
+            component_graph, parameters=pipeline_parameters, custom_name=custom_name
+        )
 
 
 @pytest.fixture
 def all_pipeline_classes():
+    ts_parameters = {
+        "pipeline": {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 1,
+            "forecast_horizon": 3,
+        },
+    }
+
     all_possible_pipeline_classes = []
     for estimator in _all_estimators():
         for problem_type in estimator.supported_problem_types:
+
             all_possible_pipeline_classes.append(
-                create_mock_pipeline(estimator, problem_type, add_label_encoder=False)
+                create_mock_pipeline(
+                    estimator,
+                    problem_type,
+                    parameters=ts_parameters if is_time_series(problem_type) else None,
+                    add_label_encoder=False,
+                )
             )
             all_possible_pipeline_classes.append(
-                create_mock_pipeline(estimator, problem_type, add_label_encoder=True)
+                create_mock_pipeline(
+                    estimator,
+                    problem_type,
+                    parameters=ts_parameters if is_time_series(problem_type) else None,
+                    add_label_encoder=True,
+                )
             )
     return all_possible_pipeline_classes
 
@@ -205,40 +334,40 @@ def all_pipeline_classes():
 @pytest.fixture
 def all_binary_pipeline_classes(all_pipeline_classes):
     return [
-        pipeline_class
-        for pipeline_class in all_pipeline_classes
-        if issubclass(pipeline_class, BinaryClassificationPipeline)
-        and "label encoder" not in pipeline_class.custom_name
+        pipeline
+        for pipeline in all_pipeline_classes
+        if isinstance(pipeline, BinaryClassificationPipeline)
+        and "label encoder" not in pipeline.custom_name
     ]
 
 
 @pytest.fixture
 def all_binary_pipeline_classes_with_encoder(all_pipeline_classes):
     return [
-        pipeline_class
-        for pipeline_class in all_pipeline_classes
-        if issubclass(pipeline_class, BinaryClassificationPipeline)
-        and "label encoder" in pipeline_class.custom_name
+        pipeline
+        for pipeline in all_pipeline_classes
+        if isinstance(pipeline, BinaryClassificationPipeline)
+        and "label encoder" in pipeline.custom_name
     ]
 
 
 @pytest.fixture
 def all_multiclass_pipeline_classes(all_pipeline_classes):
     return [
-        pipeline_class
-        for pipeline_class in all_pipeline_classes
-        if issubclass(pipeline_class, MulticlassClassificationPipeline)
-        and "label encoder" not in pipeline_class.custom_name
+        pipeline
+        for pipeline in all_pipeline_classes
+        if isinstance(pipeline, MulticlassClassificationPipeline)
+        and "label encoder" not in pipeline.custom_name
     ]
 
 
 @pytest.fixture
 def all_multiclass_pipeline_classes_with_encoder(all_pipeline_classes):
     return [
-        pipeline_class
-        for pipeline_class in all_pipeline_classes
-        if issubclass(pipeline_class, MulticlassClassificationPipeline)
-        and "label encoder" in pipeline_class.custom_name
+        pipeline
+        for pipeline in all_pipeline_classes
+        if isinstance(pipeline, MulticlassClassificationPipeline)
+        and "label encoder" in pipeline.custom_name
     ]
 
 
@@ -257,6 +386,24 @@ def pytest_addoption(parser):
         help="If true, tests will assume that they are being run as part of"
         "the build_conda_pkg workflow with the feedstock.",
     )
+
+
+def pytest_collection_modifyitems(config, items):
+    if config.getoption("--has-minimal-dependencies"):
+        skip_noncore = pytest.mark.skip(reason="needs noncore dependency")
+        for item in items:
+            if "noncore_dependency" in item.keywords:
+                item.add_marker(skip_noncore)
+    if config.getoption("--is-using-conda"):
+        skip_conda = pytest.mark.skip(reason="Test does not run during conda")
+        for item in items:
+            if "skip_during_conda" in item.keywords:
+                item.add_marker(skip_conda)
+    if sys.version_info >= (3, 9):
+        skip_39 = pytest.mark.skip(reason="Test dependency not supported in python 3.9")
+        for item in items:
+            if "skip_if_39" in item.keywords:
+                item.add_marker(skip_39)
 
 
 @pytest.fixture
@@ -364,6 +511,36 @@ def X_y_categorical_classification():
     y = titanic["Survived"]
     X = titanic.drop(["Survived", "Name"], axis=1)
     return X, y
+
+
+@pytest.fixture
+def X_y_based_on_pipeline_or_problem_type(X_y_binary, X_y_multi, X_y_regression):
+    def _X_y_based_on_pipeline_or_problem_type(pipeline_or_type):
+        problem_types = {
+            ProblemTypes.BINARY: "binary",
+            ProblemTypes.MULTICLASS: "multiclass",
+            ProblemTypes.REGRESSION: "regression",
+        }
+        pipeline_classes = {
+            BinaryClassificationPipeline: "binary",
+            MulticlassClassificationPipeline: "multiclass",
+            RegressionPipeline: "regression",
+        }
+
+        if pipeline_or_type in problem_types:
+            problem_type = problem_types[pipeline_or_type]
+        elif pipeline_or_type in pipeline_classes:
+            problem_type = pipeline_classes[pipeline_or_type]
+
+        if problem_type == "binary":
+            X, y = X_y_binary
+        elif problem_type == "multiclass":
+            X, y = X_y_multi
+        else:
+            X, y = X_y_regression
+        return X, y
+
+    return _X_y_based_on_pipeline_or_problem_type
 
 
 @pytest.fixture()
@@ -494,7 +671,7 @@ def example_graph():
         "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
         "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
         "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Random Forest.x",
             "Elastic Net.x",
@@ -523,7 +700,7 @@ def example_pass_target_graph():
         "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
         "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
         "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Random Forest.x",
             "Elastic Net.x",
@@ -551,55 +728,19 @@ def example_regression_graph():
 
 
 @pytest.fixture
-def dummy_binary_pipeline_class(dummy_classifier_estimator_class):
-    MockEstimator = dummy_classifier_estimator_class
-
-    class MockBinaryClassificationPipeline(BinaryClassificationPipeline):
-        custom_name = "Mock Binary Classification Pipeline"
-        estimator = MockEstimator
-        component_graph = [MockEstimator]
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return MockBinaryClassificationPipeline
+def dummy_binary_pipeline(dummy_classifier_estimator_class):
+    return BinaryClassificationPipeline(
+        component_graph=[dummy_classifier_estimator_class],
+        custom_name="Mock Binary Classification Pipeline",
+    )
 
 
 @pytest.fixture
-def dummy_multiclass_pipeline_class(dummy_classifier_estimator_class):
-    MockEstimator = dummy_classifier_estimator_class
-
-    class MockMulticlassClassificationPipeline(MulticlassClassificationPipeline):
-        estimator = MockEstimator
-        component_graph = [MockEstimator]
-        custom_name = "Mock Multiclass Classification Pipeline"
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return MockMulticlassClassificationPipeline
+def dummy_multiclass_pipeline(dummy_classifier_estimator_class):
+    return MulticlassClassificationPipeline(
+        component_graph=[dummy_classifier_estimator_class],
+        custom_name="Mock Multiclass Classification Pipeline",
+    )
 
 
 @pytest.fixture
@@ -622,28 +763,11 @@ def dummy_regressor_estimator_class():
 
 
 @pytest.fixture
-def dummy_regression_pipeline_class(dummy_regressor_estimator_class):
-    MockRegressor = dummy_regressor_estimator_class
-
-    class MockRegressionPipeline(RegressionPipeline):
-        component_graph = [MockRegressor]
-        custom_name = "Mock Regression Pipeline"
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return MockRegressionPipeline
+def dummy_regression_pipeline(dummy_regressor_estimator_class):
+    return RegressionPipeline(
+        component_graph=[dummy_regressor_estimator_class],
+        custom_name="Mock Regression Pipeline",
+    )
 
 
 @pytest.fixture
@@ -691,12 +815,52 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
         estimator = MockEstimator
         component_graph = [MockEstimator]
 
-        def __init__(self, parameters, random_seed=0):
+        def __init__(
+            self, parameters, custom_name=None, component_graph=None, random_seed=0
+        ):
             super().__init__(
                 self.component_graph, parameters=parameters, random_seed=random_seed
             )
 
     return MockBinaryClassificationPipeline
+
+
+@pytest.fixture
+def dummy_ts_binary_linear_classifier_pipeline_class():
+    log_reg_classifier = LogisticRegressionClassifier
+
+    class MockBinaryClassificationPipeline(TimeSeriesBinaryClassificationPipeline):
+        estimator = log_reg_classifier
+        component_graph = [estimator]
+
+        def __init__(
+            self, parameters, custom_name=None, component_graph=None, random_seed=0
+        ):
+            super().__init__(
+                self.component_graph, parameters=parameters, random_seed=random_seed
+            )
+
+    return MockBinaryClassificationPipeline
+
+
+@pytest.fixture
+def dummy_ts_multi_pipeline_class(dummy_classifier_estimator_class):
+    MockEstimator = dummy_classifier_estimator_class
+
+    class MockMultiClassificationClassificationPipeline(
+        TimeSeriesMulticlassClassificationPipeline
+    ):
+        estimator = MockEstimator
+        component_graph = [MockEstimator]
+
+        def __init__(
+            self, parameters, custom_name=None, component_graph=None, random_seed=0
+        ):
+            super().__init__(
+                self.component_graph, parameters=parameters, random_seed=random_seed
+            )
+
+    return MockMultiClassificationClassificationPipeline
 
 
 @pytest.fixture
@@ -720,76 +884,35 @@ def logistic_regression_component_graph():
 
 
 @pytest.fixture
-def logistic_regression_multiclass_pipeline_class(logistic_regression_component_graph):
-    class LogisticRegressionMulticlassPipeline(MulticlassClassificationPipeline):
-        custom_name = "Logistic Regression Multiclass Pipeline"
-        component_graph = logistic_regression_component_graph
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return LogisticRegressionMulticlassPipeline
+def logistic_regression_multiclass_pipeline(logistic_regression_component_graph):
+    return MulticlassClassificationPipeline(
+        component_graph=logistic_regression_component_graph,
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+        custom_name="Logistic Regression Multiclass Pipeline",
+    )
 
 
 @pytest.fixture
-def logistic_regression_binary_pipeline_class(logistic_regression_component_graph):
-    class LogisticRegressionBinaryPipeline(BinaryClassificationPipeline):
-        component_graph = logistic_regression_component_graph
-        custom_name = "Logistic Regression Binary Pipeline"
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return LogisticRegressionBinaryPipeline
+def logistic_regression_binary_pipeline(logistic_regression_component_graph):
+    return BinaryClassificationPipeline(
+        component_graph=logistic_regression_component_graph,
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+        custom_name="Logistic Regression Binary Pipeline",
+    )
 
 
 @pytest.fixture
-def linear_regression_pipeline_class():
-    class LinearRegressionPipeline(RegressionPipeline):
-        """Linear Regression Pipeline for regression problems."""
-
-        component_graph = [
+def linear_regression_pipeline():
+    return RegressionPipeline(
+        component_graph=[
             "One Hot Encoder",
             "Imputer",
             "Standard Scaler",
             "Linear Regressor",
-        ]
-        custom_name = "Linear Regression Pipeline"
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-                random_seed=random_seed,
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return LinearRegressionPipeline
+        ],
+        parameters={"Linear Regressor": {"n_jobs": 1}},
+        custom_name="Linear Regression Pipeline",
+    )
 
 
 @pytest.fixture
@@ -799,7 +922,7 @@ def time_series_regression_pipeline_class():
 
         component_graph = [
             "Time Series Featurizer",
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             "Random Forest Regressor",
         ]
 
@@ -820,14 +943,14 @@ def time_series_classification_component_graph():
             "Label Encoder.x",
             "Label Encoder.y",
         ],
-        "DateTime Featurization Component": [
-            "DateTime Featurization Component",
+        "DateTime Featurizer": [
+            "DateTime Featurizer",
             "Time Series Featurizer.x",
             "Label Encoder.y",
         ],
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
-            "DateTime Featurization Component.x",
+            "DateTime Featurizer.x",
             "Label Encoder.y",
         ],
     }
@@ -869,7 +992,7 @@ def time_series_multiclass_classification_pipeline_class(
 
 
 @pytest.fixture
-def decision_tree_classification_pipeline_class(X_y_categorical_classification):
+def fitted_decision_tree_classification_pipeline(X_y_categorical_classification):
     pipeline = BinaryClassificationPipeline(
         component_graph={
             "Imputer": ["Imputer", "X", "y"],
@@ -889,75 +1012,36 @@ def decision_tree_classification_pipeline_class(X_y_categorical_classification):
 
 
 @pytest.fixture
-def nonlinear_binary_pipeline_class(example_graph):
-    class NonLinearBinaryPipeline(BinaryClassificationPipeline):
-        custom_name = "Non Linear Binary Pipeline"
-        component_graph = example_graph
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-            )
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return NonLinearBinaryPipeline
+def nonlinear_binary_pipeline(example_graph):
+    return BinaryClassificationPipeline(
+        component_graph=example_graph,
+        custom_name="Non Linear Binary Pipeline",
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+    )
 
 
 @pytest.fixture
-def nonlinear_binary_with_target_pipeline_class(example_pass_target_graph):
-    class NonLinearBinaryWithTargetPipeline(BinaryClassificationPipeline):
-        custom_name = "Non Linear Binary With Target Pipeline"
-        component_graph = example_pass_target_graph
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(
-                self.component_graph,
-                parameters=parameters,
-                custom_name=self.custom_name,
-            )
-
-    return NonLinearBinaryWithTargetPipeline
+def nonlinear_binary_with_target_pipeline(example_pass_target_graph):
+    return BinaryClassificationPipeline(
+        component_graph=example_pass_target_graph,
+        custom_name="Non Linear Binary With Target Pipeline",
+    )
 
 
 @pytest.fixture
-def nonlinear_multiclass_pipeline_class(example_graph):
-    class NonLinearMulticlassPipeline(MulticlassClassificationPipeline):
-        component_graph = example_graph
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, parameters=parameters)
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return NonLinearMulticlassPipeline
+def nonlinear_multiclass_pipeline(example_graph):
+    return MulticlassClassificationPipeline(
+        component_graph=example_graph,
+        parameters={"Logistic Regression Classifier": {"n_jobs": 1}},
+    )
 
 
 @pytest.fixture
-def nonlinear_regression_pipeline_class(example_regression_graph):
-    class NonLinearRegressionPipeline(RegressionPipeline):
-        component_graph = example_regression_graph
-
-        def __init__(self, parameters, random_seed=0):
-            super().__init__(self.component_graph, parameters=parameters)
-
-        def new(self, parameters, random_seed=0):
-            return self.__class__(parameters, random_seed=random_seed)
-
-        def clone(self):
-            return self.__class__(self.parameters, random_seed=self.random_seed)
-
-    return NonLinearRegressionPipeline
+def nonlinear_regression_pipeline(example_regression_graph):
+    return RegressionPipeline(
+        component_graph=example_regression_graph,
+        parameters={"Linear Regressor": {"n_jobs": 1}},
+    )
 
 
 @pytest.fixture
@@ -1010,7 +1094,7 @@ def time_series_objectives(
 
 
 @pytest.fixture
-def stackable_classifiers(helper_functions):
+def stackable_classifiers():
     stackable_classifiers = []
     for estimator_class in _all_estimators():
         supported_problem_types = [
@@ -1032,7 +1116,7 @@ def stackable_classifiers(helper_functions):
 
 
 @pytest.fixture
-def stackable_regressors(helper_functions):
+def stackable_regressors():
     stackable_regressors = []
     for estimator_class in _all_estimators():
         supported_problem_types = [
@@ -1284,6 +1368,7 @@ class _AutoMLTestEnv:
         self._mock_get_names = None
         self._mock_encode_targets = None
         self._mock_predict_proba = None
+        self._mock_predict_proba_in_sample = None
         self._mock_optimize_threshold = None
 
     @property
@@ -1316,6 +1401,7 @@ class _AutoMLTestEnv:
         self._mock_get_names = None
         self._mock_encode_targets = None
         self._mock_predict_proba = None
+        self._mock_predict_proba_in_sample = None
         self._mock_optimize_threshold = None
 
     def _get_mock(self, mock_name):
@@ -1348,6 +1434,10 @@ class _AutoMLTestEnv:
         return self._get_mock("predict_proba")
 
     @property
+    def mock_predict_proba_in_sample(self):
+        return self._get_mock("predict_proba_in_sample")
+
+    @property
     def mock_optimize_threshold(self):
         return self._get_mock("optimize_threshold")
 
@@ -1359,6 +1449,7 @@ class _AutoMLTestEnv:
         mock_fit_side_effect=None,
         mock_fit_return_value=None,
         predict_proba_return_value=None,
+        predict_proba_in_sample_return_value=None,
         optimize_threshold_return_value=0.2,
     ):
         """A context manager for creating an environment that patches time-consuming pipeline methods.
@@ -1402,6 +1493,18 @@ class _AutoMLTestEnv:
             return_value=predict_proba_return_value,
             pipeline_class_str=pipeline_to_mock,
         )
+        if handle_problem_types(self.problem_type) in [
+            ProblemTypes.TIME_SERIES_BINARY,
+            ProblemTypes.TIME_SERIES_MULTICLASS,
+        ]:
+            mock_predict_proba_in_sample = self._patch_method(
+                "predict_proba_in_sample",
+                side_effect=None,
+                return_value=predict_proba_in_sample_return_value,
+                pipeline_class_str=pipeline_to_mock,
+            )
+        else:
+            mock_predict_proba_in_sample = None
 
         mock_optimize = patch(
             "evalml.objectives.BinaryClassificationObjective.optimize_threshold",
@@ -1420,17 +1523,29 @@ class _AutoMLTestEnv:
         mock_sleep = patch(
             "evalml.automl.AutoMLSearch._sleep_time", new_callable=sleep_time
         )
-
-        with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
-            # Can think of `yield` as blocking this method until the computation finishes running
-            yield
-            self._mock_fit = fit
-            self._mock_tell = tell
-            self._mock_score = score
-            self._mock_get_names = get_names
-            self._mock_encode_targets = encode
-            self._mock_predict_proba = proba
-            self._mock_optimize_threshold = optimize
+        if mock_predict_proba_in_sample is None:
+            with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_tell as tell, mock_optimize as optimize:
+                # Can think of `yield` as blocking this method until the computation finishes running
+                yield
+                self._mock_fit = fit
+                self._mock_tell = tell
+                self._mock_score = score
+                self._mock_get_names = get_names
+                self._mock_encode_targets = encode
+                self._mock_predict_proba = proba
+                self._mock_optimize_threshold = optimize
+        else:
+            with mock_sleep, mock_fit as fit, mock_score as score, mock_get_names as get_names, mock_encode_targets as encode, mock_predict_proba as proba, mock_predict_proba_in_sample as proba_in_sample, mock_tell as tell, mock_optimize as optimize:
+                # Can think of `yield` as blocking this method until the computation finishes running
+                yield
+                self._mock_fit = fit
+                self._mock_tell = tell
+                self._mock_score = score
+                self._mock_get_names = get_names
+                self._mock_encode_targets = encode
+                self._mock_predict_proba = proba
+                self._mock_predict_proba_in_sample = proba_in_sample
+                self._mock_optimize_threshold = optimize
 
 
 @pytest.fixture
@@ -1519,3 +1634,8 @@ def load_daily_temp_local(n_rows=None):
 def daily_temp_local():
     X, y = load_daily_temp_local()
     return X, y
+
+
+@pytest.fixture
+def dummy_data_check_name():
+    return "dummy_data_check_name"

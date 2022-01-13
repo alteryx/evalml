@@ -30,7 +30,9 @@ class OutliersDataCheck(DataCheck):
 
         Examples:
             >>> import pandas as pd
-            ...
+
+            The column "z" has an outlier so a warning is added to alert the user of its location.
+
             >>> df = pd.DataFrame({
             ...     'x': [1, 2, 3, 4, 5],
             ...     'y': [6, 7, 8, 9, 10],
@@ -139,7 +141,7 @@ class OutliersDataCheck(DataCheck):
             ...                'high_indices': []}
             ...     }
         """
-        data_ = infer_feature_types(data_, ignore_nullable_types=True)
+        data_ = infer_feature_types(data_)
         num_records = data_.count()
         box_plot_dict = data_.ww.box_plot_dict()
         quantiles = box_plot_dict["quantiles"]

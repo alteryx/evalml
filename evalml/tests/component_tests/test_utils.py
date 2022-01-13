@@ -30,7 +30,7 @@ minimum_dependencies_set = set(
         "Baseline Classifier",
         "Baseline Regressor",
         "DFS Transformer",
-        "DateTime Featurization Component",
+        "DateTime Featurizer",
         "Decision Tree Classifier",
         "Decision Tree Regressor",
         "Time Series Featurizer",
@@ -57,6 +57,7 @@ minimum_dependencies_set = set(
         "RF Regressor Select From Model",
         "Random Forest Classifier",
         "Random Forest Regressor",
+        "Replace Nullable Types Transformer",
         "SVM Classifier",
         "SVM Regressor",
         "Select Columns By Type Transformer",
@@ -66,7 +67,7 @@ minimum_dependencies_set = set(
         "Stacked Ensemble Regressor",
         "Standard Scaler",
         "Target Imputer",
-        "Natural Language Featurization Component",
+        "Natural Language Featurizer",
         "Time Series Baseline Estimator",
         "URL Featurizer",
         "Undersampler",
@@ -75,6 +76,7 @@ minimum_dependencies_set = set(
 additional_requirements_set = set(
     [
         "ARIMA Regressor",
+        "Exponential Smoothing Regressor",
         "CatBoost Classifier",
         "CatBoost Regressor",
         "LightGBM Classifier",
@@ -113,10 +115,7 @@ not_supported_in_windows_py39 = set(
     ]
 )
 not_supported_in_linux_py39 = set(
-    [
-        "ARIMA Regressor",
-        "Polynomial Detrender",
-    ]
+    ["ARIMA Regressor", "Polynomial Detrender", "Exponential Smoothing Regressor"]
 )
 
 

@@ -2,18 +2,97 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
+        * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
+        * Updated dependency bot workflow to remove outdated description and add new configuration to delete branches automatically :pr:`3212`
         * Limited estimator usage for long-running multiclass problems on ``DefaultAlgorithm`` :pr:`3099`
     * Fixes
-        * Default parameters for ``RFRegressorSelectFromModel`` and ``RFClassifierSelectFromModel`` has been fixed to avoid selecting all features :pr:`3110`
+        * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
+        * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
+        * Standardized names of featurization components :pr:`3192`
+        * Removed potential prediction explanations failure when pipelines predicted a class with probability 1 :pr:`3221`
     * Changes
+        * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
+        * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
     * Documentation Changes
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
+        * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
+
+
+**v0.41.0 Jan. 06, 2022**
+    * Enhancements
+        * Added string support for DataCheckActionCode :pr:`3167`
+        * Added ``DataCheckActionOption`` class :pr:`3134`
+        * Add issue templates for bugs, feature requests and documentation improvements for GitHub :pr:`3199`
+    * Fixes
+        * Fix bug where prediction explanations ``class_name`` was shown as float for boolean targets :pr:`3179`
+        * Fixed bug in nightly linux tests :pr:`3189`
+    * Changes
+        * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
+        * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
+        * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
+    * Documentation Changes
+    * Testing Changes
+        * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
+        * Add workflow to auto-merge dependency PRs if status checks pass :pr:`3184`
+
+**v0.40.0 Dec. 22, 2021**
+    * Enhancements
+        * Added ``TimeSeriesSplittingDataCheck`` to ``DefaultDataChecks`` to verify adequate class representation in time series classification problems :pr:`3141`
+        * Added the ability to accept serialized features and skip computation in ``DFSTransformer`` :pr:`3106`
+        * Added support for known-in-advance features :pr:`3149`
+        * Added Holt-Winters ``ExponentialSmoothingRegressor`` for time series regression problems :pr:`3157`
+        * Required the separation of training and test data by ``gap`` + 1 units to be verified by ``time_index`` for time series problems :pr:`3160`
+    * Fixes
+        * Fixed error caused when tuning threshold for time series binary classification :pr:`3140`
+    * Changes
+        * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
+        * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
+        * Updated ``nlp-primitives`` minimum version to 2.1.0 :pr:`3166`
+        * Updated minimum version of ``woodwork`` to v0.11.0 :pr:`3171`
+        * Revert `3160` until uninferrable frequency can be addressed earlier in the process :pr:`3198`
+    * Documentation Changes
+        * Added comments to provide clarity on doctests :pr:`3155`
+    * Testing Changes
+        * Parameterized tests in ``test_datasets.py`` :pr:`3145`
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
+
+
+**v0.39.0 Dec. 9, 2021**
+    * Enhancements
+        * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` and enhanced it to compute rolling features :pr:`3028`
+        * Added ability to impute only specific columns in ``PerColumnImputer`` :pr:`3123`
+        * Added ``TimeSeriesParametersDataCheck`` to verify the time series parameters are valid given the number of splits in cross validation :pr:`3111`
+    * Fixes
+        * Default parameters for ``RFRegressorSelectFromModel`` and ``RFClassifierSelectFromModel`` has been fixed to avoid selecting all features :pr:`3110`
+    * Changes
+        * Removed reliance on a datetime index for ``ARIMARegressor`` and ``ProphetRegressor`` :pr:`3104`
+        * Included target leakage check when fitting ``ARIMARegressor`` to account for the lack of ``TimeSeriesFeaturizer`` in ``ARIMARegressor`` based pipelines :pr:`3104`
+        * Cleaned up and refactored ``InvalidTargetDataCheck`` implementation and docstring :pr:`3122`
+        * Removed indices information from the output of ``HighlyNullDataCheck``'s ``validate()`` method :pr:`3092`
+        * Added ``ReplaceNullableTypes`` component to prepare for handling pandas nullable types. :pr:`3090`
+        * Updated ``make_pipeline`` for handling pandas nullable types in preprocessing pipeline. :pr:`3129`
+        * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
+    * Documentation Changes
+    * Testing Changes
+        * Refactored tests to avoid using ``importorskip`` :pr:`3126`
+        * Added ``skip_during_conda`` test marker to skip tests that are not supposed to run during conda build :pr:`3127`
+        * Added ``skip_if_39`` test marker to skip tests that are not supposed to run during python 3.9 :pr:`3133`
+
+.. warning::
+
+    **Breaking Changes**
         * Renamed ``DelayedFeatureTransformer`` to ``TimeSeriesFeaturizer`` :pr:`3028`
+        * ``ProphetRegressor`` now requires a datetime column in ``X`` represented by the ``date_index`` parameter :pr:`3104`
+        * Renamed module ``evalml.data_checks.invalid_target_data_check`` to ``evalml.data_checks.invalid_targets_data_check`` :pr:`3122`
+        * Removed unused ``EnsembleMissingPipelinesError`` exception definition :pr:`3131`
 
 
 **v0.38.0 Nov. 27, 2021**
