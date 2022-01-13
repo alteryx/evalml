@@ -5,6 +5,11 @@ import logging
 from woodwork import logical_types
 
 from ..exceptions import PartialDependenceError, PartialDependenceErrorCode
+from . import (
+    TimeSeriesBinaryClassificationPipeline,
+    TimeSeriesMulticlassClassificationPipeline,
+    TimeSeriesRegressionPipeline,
+)
 from .binary_classification_pipeline import BinaryClassificationPipeline
 from .multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
@@ -46,13 +51,6 @@ from evalml.pipelines.components.transformers.encoders.label_encoder import (
 from evalml.pipelines.components.utils import (
     get_estimators,
     handle_component_class,
-)
-from evalml.pipelines.time_series_classification_pipelines import (
-    TimeSeriesBinaryClassificationPipeline,
-    TimeSeriesMulticlassClassificationPipeline,
-)
-from evalml.pipelines.time_series_regression_pipeline import (
-    TimeSeriesRegressionPipeline,
 )
 from evalml.problem_types import (
     ProblemTypes,
