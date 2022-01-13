@@ -1,15 +1,19 @@
-Release Notes
+﻿Release Notes
 -------------
 **Future Releases**
     * Enhancements
         * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
+        * Updated dependency bot workflow to remove outdated description and add new configuration to delete branches automatically :pr:`3212`
     * Fixes
         * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
         * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
         * Standardized names of featurization components :pr:`3192`
+        * Removed empty cell in text_input.ipynb :pr:`3234`
+        * Removed potential prediction explanations failure when pipelines predicted a class with probability 1 :pr:`3221`
     * Changes
         * Raised lowest compatible numpy version to 1.21.0 to address security concerns :pr:`3207`
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
+        * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
     * Documentation Changes
     * Testing Changes
 
