@@ -134,6 +134,20 @@ messages = [
         },
     ).to_dict(),
     DataCheckWarning(
+        message="Columns 'lots_of_null', 'nullable_integer', 'nullable_bool', 'natural_language_nan', 'nan_dt_col' have null values",
+        data_check_name="NullDataCheck",
+        message_code=DataCheckMessageCode.COLS_WITH_NULL,
+        details={
+            "columns": [
+                "lots_of_null",
+                "nullable_integer",
+                "nullable_bool",
+                "natural_language_nan",
+                "nan_dt_col",
+            ],
+        },
+    ).to_dict(),
+    DataCheckWarning(
         message="Columns 'id' are 100.0% or more likely to be an ID column",
         data_check_name="IDColumnsDataCheck",
         message_code=DataCheckMessageCode.HAS_ID_COLUMN,
@@ -179,6 +193,62 @@ def get_expected_action_options(problem_type):
             DataCheckActionCode.DROP_COL,
             data_check_name="NullDataCheck",
             metadata={"columns": ["all_null", "also_all_null"]},
+        ).to_dict(),
+        DataCheckActionOption(
+            DataCheckActionCode.IMPUTE_COL,
+            data_check_name="NullDataCheck",
+            metadata={
+                "columns": [
+                    "lots_of_null",
+                    "nullable_integer",
+                    "nullable_bool",
+                    "natural_language_nan",
+                    "nan_dt_col",
+                ],
+                "is_target": False,
+            },
+            parameters={
+                "impute_strategies": {
+                    "parameter_type": "column",
+                    "columns": {
+                        "lots_of_null": {
+                            "impute_strategy": {
+                                "categories": ["mode"],
+                                "type": "category",
+                                "default_value": "mode",
+                            }
+                        },
+                        "nullable_integer": {
+                            "impute_strategy": {
+                                "categories": ["mean", "mode"],
+                                "type": "category",
+                                "default_value": "mean",
+                            }
+                        },
+                        "nullable_bool": {
+                            "impute_strategy": {
+                                "categories": ["mode"],
+                                "type": "category",
+                                "default_value": "mode",
+                            }
+                        },
+                        "natural_language_nan": {
+                            "impute_strategy": {
+                                "categories": ["mode"],
+                                "type": "category",
+                                "default_value": "mode",
+                            }
+                        },
+                        "nan_dt_col": {
+                            "impute_strategy": {
+                                "categories": ["mode"],
+                                "type": "category",
+                                "default_value": "mode",
+                            }
+                        },
+                    },
+                }
+            },
         ).to_dict(),
         DataCheckActionOption(
             DataCheckActionCode.DROP_COL,
@@ -261,8 +331,8 @@ def test_default_data_checks_classification(input_type):
     ]
 
     assert data_checks.validate(X, y) == {
-        "warnings": messages[:2],
-        "errors": messages[2:] + imbalance,
+        "warnings": messages[:3],
+        "errors": messages[3:] + imbalance,
         "actions": {
             "action_list": get_expected_action_options("binary"),
             "default_action": None,
@@ -279,8 +349,8 @@ def test_default_data_checks_classification(input_type):
         },
     )
     assert data_checks.validate(X, y) == {
-        "warnings": messages[:2],
-        "errors": messages[2:],
+        "warnings": messages[:3],
+        "errors": messages[3:],
         "actions": {
             "action_list": get_expected_action_options("binary"),
             "default_action": None,
@@ -317,8 +387,8 @@ def test_default_data_checks_classification(input_type):
         "multiclass", get_default_primary_search_objective("multiclass")
     )
     assert data_checks.validate(X, y_multiclass) == {
-        "warnings": messages[:2] + high_class_to_sample_ratio,
-        "errors": [messages[2]] + min_2_class_count + messages[3:] + imbalance,
+        "warnings": messages[:3] + high_class_to_sample_ratio,
+        "errors": [messages[3]] + min_2_class_count + messages[4:] + imbalance,
         "actions": {
             "action_list": get_expected_action_options("multiclass"),
             "default_action": None,
@@ -335,8 +405,8 @@ def test_default_data_checks_classification(input_type):
         },
     )
     assert data_checks.validate(X, y_multiclass) == {
-        "warnings": messages[:2] + high_class_to_sample_ratio,
-        "errors": [messages[2]] + min_2_class_count + messages[3:],
+        "warnings": messages[:3] + high_class_to_sample_ratio,
+        "errors": [messages[3]] + min_2_class_count + messages[4:],
         "actions": {
             "action_list": get_expected_action_options("multiclass"),
             "default_action": None,
@@ -351,7 +421,9 @@ def test_default_data_checks_regression(input_type):
             "lots_of_null": [None, None, None, None, "some data"],
             "all_null": [None, None, None, None, None],
             "also_all_null": [None, None, None, None, None],
-            "no_null": [1, 2, 3, 5, 5],
+            "nullable_integer": [None, 2, 3, 4, 5],
+            "nullable_bool": [None, True, False, True, True],
+            "no_null": [1, 2, 3, 4, 5],
             "id": [0, 1, 2, 3, 4],
             "has_label_leakage": [100, 200, 100, 200, 100],
             "natural_language_nan": [
@@ -364,6 +436,7 @@ def test_default_data_checks_regression(input_type):
             "nan_dt_col": pd.Series(pd.date_range("20200101", periods=5)),
         }
     )
+
     X["nan_dt_col"][0] = None
     y = pd.Series([0.3, 100.0, np.nan, 1.0, 0.2])
     y_no_variance = pd.Series([5] * 5)
@@ -389,10 +462,10 @@ def test_default_data_checks_regression(input_type):
     )
     leakage_warning = [
         DataCheckWarning(
-            message="Columns 'id', 'nan_dt_col' are 95.0% or more correlated with the target",
+            message="Columns 'nullable_integer', 'no_null', 'id', 'nan_dt_col' are 95.0% or more correlated with the target",
             data_check_name="TargetLeakageDataCheck",
             message_code=DataCheckMessageCode.TARGET_LEAKAGE,
-            details={"columns": ["id", "nan_dt_col"]},
+            details={"columns": ["nullable_integer", "no_null", "id", "nan_dt_col"]},
         ).to_dict()
     ]
 
@@ -413,7 +486,7 @@ def test_default_data_checks_regression(input_type):
     leakage_drop_action = DataCheckActionOption(
         DataCheckActionCode.DROP_COL,
         data_check_name="TargetLeakageDataCheck",
-        metadata={"columns": ["id", "nan_dt_col"]},
+        metadata={"columns": ["nullable_integer", "no_null", "id", "nan_dt_col"]},
     ).to_dict()
 
     target_leakage_drop_action = DataCheckActionOption(
@@ -424,13 +497,14 @@ def test_default_data_checks_regression(input_type):
 
     expected_actions = get_expected_action_options("regression")
     expected_actions_with_drop_and_impute = (
-        expected_actions[:2]
+        expected_actions[:3]
         + [leakage_drop_action, impute_action]
-        + expected_actions[3:]
+        + expected_actions[4:]
     )
+
     assert data_checks.validate(X, y) == {
-        "warnings": messages[:2] + leakage_warning,
-        "errors": messages[2:],
+        "warnings": messages[:3] + leakage_warning,
+        "errors": messages[3:],
         "actions": {
             "action_list": expected_actions_with_drop_and_impute,
             "default_action": None,
@@ -439,8 +513,8 @@ def test_default_data_checks_regression(input_type):
 
     # Skip Invalid Target
     assert data_checks.validate(X, y_no_variance) == {
-        "warnings": messages[:2] + null_leakage,
-        "errors": messages[3:5]
+        "warnings": messages[:3] + null_leakage,
+        "errors": messages[4:6]
         + [
             DataCheckError(
                 message="Y has 1 unique value.",
@@ -449,11 +523,11 @@ def test_default_data_checks_regression(input_type):
                 details={"columns": ["Y"]},
             ).to_dict()
         ]
-        + messages[5:],
+        + messages[6:],
         "actions": {
-            "action_list": expected_actions[:2]
+            "action_list": expected_actions[:3]
             + [target_leakage_drop_action]
-            + expected_actions[3:],
+            + expected_actions[4:],
             "default_action": None,
         },
     }
@@ -468,8 +542,8 @@ def test_default_data_checks_regression(input_type):
         },
     )
     assert data_checks.validate(X, y) == {
-        "warnings": messages[:2] + leakage_warning,
-        "errors": messages[2:],
+        "warnings": messages[:3] + leakage_warning,
+        "errors": messages[3:],
         "actions": {
             "action_list": expected_actions_with_drop_and_impute,
             "default_action": None,
