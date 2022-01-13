@@ -124,11 +124,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 "default_action": None}}
 
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
@@ -152,7 +148,7 @@ class NoVarianceDataCheck(DataCheck):
         one_unique_message = "{} has 1 unique value."
         two_unique_with_null_message = "{} has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning."
         if zero_unique:
-            DataCheck._add_message(
+            results.append(
                 DataCheckError(
                     message=zero_unique_message.format(
                         (", ").join(["'{}'".format(str(col)) for col in zero_unique]),
@@ -164,7 +160,7 @@ class NoVarianceDataCheck(DataCheck):
                 results,
             )
         if one_unique:
-            DataCheck._add_message(
+            results.append(
                 DataCheckError(
                     message=one_unique_message.format(
                         (", ").join(["'{}'".format(str(col)) for col in one_unique]),
@@ -176,7 +172,7 @@ class NoVarianceDataCheck(DataCheck):
                 results,
             )
         if one_unique_with_null:
-            DataCheck._add_message(
+            results.append(
                 DataCheckWarning(
                     message=two_unique_with_null_message.format(
                         (", ").join(
@@ -208,7 +204,7 @@ class NoVarianceDataCheck(DataCheck):
         y_any_null = y.isnull().any()
 
         if y_unique_count == 0:
-            DataCheck._add_message(
+            results.append(
                 DataCheckError(
                     message=zero_unique_message.format(y_name),
                     data_check_name=self.name,
@@ -219,7 +215,7 @@ class NoVarianceDataCheck(DataCheck):
             )
 
         elif y_unique_count == 1:
-            DataCheck._add_message(
+            results.append(
                 DataCheckError(
                     message=one_unique_message.format(y_name),
                     data_check_name=self.name,
@@ -230,7 +226,7 @@ class NoVarianceDataCheck(DataCheck):
             )
 
         elif y_unique_count == 2 and not self._dropnan and y_any_null:
-            DataCheck._add_message(
+            results.append(
                 DataCheckWarning(
                     message=two_unique_with_null_message.format(y_name),
                     data_check_name=self.name,
@@ -240,4 +236,4 @@ class NoVarianceDataCheck(DataCheck):
                 results,
             )
 
-        return results
+        return messages

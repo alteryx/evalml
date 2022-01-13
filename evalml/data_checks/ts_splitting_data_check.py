@@ -66,11 +66,7 @@ class TimeSeriesSplittingDataCheck(DataCheck):
             ...     "warnings": [],
             ...     "actions": {"action_list":[], "default_action": None}}
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         y = infer_feature_types(y)
 
@@ -89,7 +85,7 @@ class TimeSeriesSplittingDataCheck(DataCheck):
                     invalid_splits[(split_num + 1)] = invalid_dict
 
         if invalid_splits:
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message=f"Time Series Binary and Time Series Multiclass problem types require every training "
                     f"and validation split to have at least one instance of all the target classes. "
@@ -101,4 +97,4 @@ class TimeSeriesSplittingDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-        return results
+        return messages

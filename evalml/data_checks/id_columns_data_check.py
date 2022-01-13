@@ -107,12 +107,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                  "metadata": {"columns": ["Country_Rank"], "rows": None}}],
             ...                 "default_action": None}}
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
-
+        messages = []
         X = infer_feature_types(X)
 
         col_names = [col for col in X.columns]
@@ -149,7 +144,7 @@ class IDColumnsDataCheck(DataCheck):
         }
         if id_cols_above_threshold:
             warning_msg = "Columns {} are {}% or more likely to be an ID column"
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message=warning_msg.format(
                         (", ").join(
@@ -163,11 +158,11 @@ class IDColumnsDataCheck(DataCheck):
                 ).to_dict()
             )
 
-            results["actions"]["action_list"].append(
+            messages.append(
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=self.name,
                     metadata={"columns": list(id_cols_above_threshold)},
                 ).to_dict()
             )
-        return results
+        return messages

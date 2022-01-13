@@ -79,11 +79,7 @@ class SparsityDataCheck(DataCheck):
             >>> sparse_array = pd.Series([1, 1, 1, 2, 2, 3] * 3)
             >>> assert SparsityDataCheck.sparsity_score(sparse_array, count_threshold=5) == 0.6666666666666666
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         X = infer_feature_types(X)
 
@@ -93,7 +89,7 @@ class SparsityDataCheck(DataCheck):
         )
         too_sparse_cols = [col for col in res.index[res < self.threshold]]
         if too_sparse_cols:
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message=warning_too_unique.format(
                         (", ").join(
@@ -120,7 +116,7 @@ class SparsityDataCheck(DataCheck):
                 ).to_dict()
             )
 
-        return results
+        return messages
 
     @staticmethod
     def sparsity_score(col, count_threshold=10):

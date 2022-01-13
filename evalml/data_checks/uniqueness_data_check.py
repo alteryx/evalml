@@ -95,11 +95,7 @@ class UniquenessDataCheck(DataCheck):
             >>> y = pd.Series([1, 1, 1, 2, 2, 3, 3, 3])
             >>> assert UniquenessDataCheck.uniqueness_score(y) == 0.65625
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         X = infer_feature_types(X)
 
@@ -107,7 +103,7 @@ class UniquenessDataCheck(DataCheck):
 
         if is_regression(self.problem_type):
             not_unique_enough_cols = list(res.index[res < self.threshold])
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message=warning_not_unique_enough.format(
                         (", ").join(
@@ -135,7 +131,7 @@ class UniquenessDataCheck(DataCheck):
             )
         elif is_multiclass(self.problem_type):
             too_unique_cols = list(res.index[res > self.threshold])
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message=warning_too_unique.format(
                         (", ").join(
@@ -161,7 +157,7 @@ class UniquenessDataCheck(DataCheck):
                     metadata={"columns": too_unique_cols},
                 ).to_dict()
             )
-        return results
+        return messages
 
     @staticmethod
     def uniqueness_score(col, drop_na=True):

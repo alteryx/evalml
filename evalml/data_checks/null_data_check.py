@@ -114,7 +114,7 @@ class NullDataCheck(DataCheck):
 
             >>> highly_null_dc = NullDataCheck(pct_null_row_threshold=0.50)
             >>> validation_results = highly_null_dc.validate(df)
-            >>> validation_results["warnings"][0]["details"]["pct_null_cols"] = SeriesWrap(validation_results["warnings"][0]["details"]["pct_null_cols"])
+            >>> validation_messages[0]["details"]["pct_null_cols"] = SeriesWrap(validation_messages[0]["details"]["pct_null_cols"])
             >>> highly_null_rows = SeriesWrap(pd.Series([0.5, 0.5, 0.75, 0.5]))
             >>> assert validation_results == {
             ...     "warnings": [{"message": "4 out of 5 rows are 50.0% or more null",
@@ -171,11 +171,7 @@ class NullDataCheck(DataCheck):
             ... }
 
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         X = infer_feature_types(X)
 
@@ -184,7 +180,7 @@ class NullDataCheck(DataCheck):
         )
         if len(highly_null_rows) > 0:
             warning_msg = f"{len(highly_null_rows)} out of {len(X)} rows are {self.pct_null_row_threshold*100}% or more null"
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message=warning_msg,
                     data_check_name=self.name,
@@ -218,7 +214,7 @@ class NullDataCheck(DataCheck):
 
         warning_msg = "Column(s) {} are {}% or more null"
         if highly_null_cols:
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message=warning_msg.format(
                         (", ").join(
@@ -244,7 +240,7 @@ class NullDataCheck(DataCheck):
             )
 
         if below_highly_null_cols:
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message="Column(s) {} have null values".format(
                         (", ").join(
@@ -295,7 +291,7 @@ class NullDataCheck(DataCheck):
                 ).to_dict()
             )
 
-        return results
+        return messages
 
     @staticmethod
     def get_null_column_information(X, pct_null_col_threshold=0.0):

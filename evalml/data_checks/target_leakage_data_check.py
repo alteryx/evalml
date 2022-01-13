@@ -119,11 +119,7 @@ class TargetLeakageDataCheck(DataCheck):
             ...                  "metadata": {"columns": ["leak", "x"], "rows": None}}],
             ...                 "default_action": None}}
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
@@ -147,7 +143,7 @@ class TargetLeakageDataCheck(DataCheck):
                     (", ").join(["'{}'".format(str(col)) for col in highly_corr_cols]),
                     self.pct_corr_threshold * 100,
                 )
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message=warning_msg,
                     data_check_name=self.name,
@@ -162,4 +158,4 @@ class TargetLeakageDataCheck(DataCheck):
                     metadata={"columns": highly_corr_cols},
                 ).to_dict()
             )
-        return results
+        return messages

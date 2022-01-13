@@ -48,16 +48,12 @@ class MulticollinearityDataCheck(DataCheck):
             ...                   "details": {"columns": [("col_1", "col_2")], "rows": None}}],
             ...     "actions": {"action_list":[], "default_action": None}}
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         X = infer_feature_types(X)
         mutual_info_df = X.ww.mutual_information()
         if mutual_info_df.empty:
-            return results
+            return messages
         above_threshold = mutual_info_df.loc[
             mutual_info_df["mutual_info"] >= self.threshold
         ]
@@ -69,7 +65,7 @@ class MulticollinearityDataCheck(DataCheck):
         ]
         if correlated_cols:
             warning_msg = "Columns are likely to be correlated: {}"
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message=warning_msg.format(correlated_cols),
                     data_check_name=self.name,
@@ -77,4 +73,4 @@ class MulticollinearityDataCheck(DataCheck):
                     details={"columns": correlated_cols},
                 ).to_dict()
             )
-        return results
+        return messages

@@ -70,11 +70,7 @@ class TimeSeriesParametersDataCheck(DataCheck):
             ...     "actions": {"action_list":[], "default_action": None}}
 
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         validation = are_ts_parameters_valid_for_split(
             gap=self.gap,
@@ -84,7 +80,7 @@ class TimeSeriesParametersDataCheck(DataCheck):
             n_obs=X.shape[0],
         )
         if not validation.is_valid:
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message=validation.msg,
                     data_check_name=self.name,
@@ -95,4 +91,4 @@ class TimeSeriesParametersDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-        return results
+        return messages

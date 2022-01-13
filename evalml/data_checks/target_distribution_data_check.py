@@ -65,14 +65,10 @@ class TargetDistributionDataCheck(DataCheck):
             ...                 "code": "TARGET_UNSUPPORTED_TYPE"}],
             ...     "actions": {"action_list":[], "default_action": None}}
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         if y is None:
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message="Target is None",
                     data_check_name=self.name,
@@ -80,7 +76,7 @@ class TargetDistributionDataCheck(DataCheck):
                     details={},
                 ).to_dict()
             )
-            return results
+            return messages
 
         y = infer_feature_types(y)
         allowed_types = [
@@ -90,7 +86,7 @@ class TargetDistributionDataCheck(DataCheck):
         is_supported_type = y.ww.logical_type.type_string in allowed_types
 
         if not is_supported_type:
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message="Target is unsupported {} type. Valid Woodwork logical types include: {}".format(
                         y.ww.logical_type.type_string,
@@ -101,7 +97,7 @@ class TargetDistributionDataCheck(DataCheck):
                     details={"unsupported_type": y.ww.logical_type.type_string},
                 ).to_dict()
             )
-            return results
+            return messages
 
         (
             is_log_distribution,
@@ -114,7 +110,7 @@ class TargetDistributionDataCheck(DataCheck):
                 "statistic": round(norm_test_og.statistic, 1),
                 "p-value": round(norm_test_og.pvalue, 3),
             }
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message="Target may have a lognormal distribution.",
                     data_check_name=self.name,
@@ -133,7 +129,7 @@ class TargetDistributionDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-        return results
+        return messages
 
 
 def _detect_log_distribution_helper(y):

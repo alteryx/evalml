@@ -84,11 +84,7 @@ class DateTimeFormatDataCheck(DataCheck):
             ...                 "code": "DATETIME_IS_NOT_MONOTONIC"}],
             ...     "actions": {"action_list":[], "default_action": None}}
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
@@ -110,14 +106,14 @@ class DateTimeFormatDataCheck(DataCheck):
             no_dt_found = True
 
         if no_dt_found:
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message=f"Datetime information could not be found in the data, or was not in a supported datetime format.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
                 ).to_dict()
             )
-            return results
+            return messages
 
         if not inferred_freq:
             col_name = (
@@ -125,7 +121,7 @@ class DateTimeFormatDataCheck(DataCheck):
                 if self.datetime_column != "index"
                 else "either index"
             )
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message=f"No frequency could be detected in {col_name}, possibly due to uneven intervals.",
                     data_check_name=self.name,
@@ -134,7 +130,7 @@ class DateTimeFormatDataCheck(DataCheck):
             )
 
         if not (pd.DatetimeIndex(datetime_values).is_monotonic_increasing):
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message="Datetime values must be sorted in ascending order.",
                     data_check_name=self.name,
@@ -142,4 +138,4 @@ class DateTimeFormatDataCheck(DataCheck):
                 ).to_dict()
             )
 
-        return results
+        return messages

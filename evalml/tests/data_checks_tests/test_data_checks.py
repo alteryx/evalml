@@ -623,8 +623,8 @@ def test_default_data_checks_null_rows():
         },
     }
     validation_results = data_checks.validate(X, y)
-    validation_results["warnings"][0]["details"]["pct_null_cols"] = SeriesWrap(
-        validation_results["warnings"][0]["details"]["pct_null_cols"]
+    validation_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
+        validation_messages[0]["details"]["pct_null_cols"]
     )
     assert validation_results == expected
 

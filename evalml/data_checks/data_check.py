@@ -28,10 +28,3 @@ class DataCheck(ABC):
         Returns:
             dict (DataCheckMessage): Dictionary of DataCheckError and DataCheckWarning messages
         """
-
-    @staticmethod
-    def _add_message(message, results):
-        if message.message_type == DataCheckMessageType.ERROR:
-            results["errors"].append(message.to_dict())
-        elif message.message_type == DataCheckMessageType.WARNING:
-            results["warnings"].append(message.to_dict())

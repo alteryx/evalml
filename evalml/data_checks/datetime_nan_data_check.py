@@ -74,11 +74,7 @@ class DateTimeNaNDataCheck(DataCheck):
             ...                 "code": "DATETIME_HAS_NAN"}],
             ...     "actions": {"action_list":[], "default_action": None}}
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         X = infer_feature_types(X)
         datetime_cols = X.ww.select("datetime")
@@ -88,7 +84,7 @@ class DateTimeNaNDataCheck(DataCheck):
             cols_str = (
                 ", ".join(nan_columns) if len(nan_columns) > 1 else nan_columns[0]
             )
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message=error_contains_nan.format(cols_str),
                     data_check_name=self.name,
@@ -96,4 +92,4 @@ class DateTimeNaNDataCheck(DataCheck):
                     details={"columns": nan_columns},
                 ).to_dict()
             )
-        return results
+        return messages
