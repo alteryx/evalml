@@ -186,7 +186,7 @@ class NullDataCheck(DataCheck):
                 "IntegerNullable",
                 "BooleanNullable",
                 "unknown",
-                "NaturalLanguage"
+                "NaturalLanguage",
             ]
         )
 
