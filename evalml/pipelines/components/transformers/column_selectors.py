@@ -140,7 +140,8 @@ class SelectByType(Transformer):
     """Selects columns by specified Woodwork logical type or semantic tag in input data.
 
     Args:
-        column_types (string, ww.LogicalType, list(string), list(ww.LogicalType)): List of Woodwork types or tags, used to determine which columns to select.
+        column_types (string, ww.LogicalType, list(string), list(ww.LogicalType)): List of Woodwork types or tags, used to determine which columns to select or exclude.
+        exclude (bool): If true, exclude the column_types instead of including them. Defaults to False.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -149,8 +150,8 @@ class SelectByType(Transformer):
     """{}"""
     needs_fitting = False
 
-    def __init__(self, column_types=None, random_seed=0, **kwargs):
-        parameters = {"column_types": column_types}
+    def __init__(self, column_types=None, exclude=False, random_seed=0, **kwargs):
+        parameters = {"column_types": column_types, "exclude": exclude}
         parameters.update(kwargs)
         super().__init__(
             parameters=parameters,
@@ -162,7 +163,9 @@ class SelectByType(Transformer):
         pass
 
     def _modify_columns(self, cols, X, y=None):
-        return X.ww.select(cols)
+        if self.parameters.get("exclude"):
+            return X.ww.select(exclude=cols)
+        return X.ww.select(include=cols)
 
     def fit(self, X, y=None):
         """Fits the transformer by checking if column names are present in the dataset.

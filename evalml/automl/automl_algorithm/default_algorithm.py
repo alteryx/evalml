@@ -222,7 +222,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 "columns": self._selected_cat_cols
             },
             "Numeric Pipeline - Select Columns By Type Transformer": {
-                "column_types": ["numeric"]
+                "column_types": ["category"],
+                "exclude": True,
             },
             "Numeric Pipeline - Select Columns Transformer": {
                 "columns": self._selected_cols
@@ -493,12 +494,15 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             self._split = True
 
             if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
-                self._X_without_cat_cols = self.X.drop(self._selected_cat_cols, axis=1)
-                self._X_with_cat_cols = self.X[self._selected_cat_cols]
+                self._X_without_cat_cols = self.X.ww.drop(self._selected_cat_cols)
+                self._X_with_cat_cols = self.X.ww[self._selected_cat_cols]
 
             numeric_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cols},
-                "Select Columns By Type Transformer": {"column_types": ["numeric"]},
+                "Select Columns By Type Transformer": {
+                    "column_types": ["category"],
+                    "exclude": True,
+                },
             }
             numeric_pipeline = make_pipeline(
                 self._X_without_cat_cols,
