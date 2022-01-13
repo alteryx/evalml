@@ -46,9 +46,8 @@ def test_time_series_pipeline_validates_holdout_data(
         "max_delay": 2,
         "forecast_horizon": forecast_horizon,
     }
-
     TRAIN_LENGTH = 15
-    X_train, y_train = X.iloc[:TRAIN_LENGTH], y.iloc[:TRAIN_LENGTH]
+    X_train = X.iloc[:TRAIN_LENGTH]
 
     if length_or_freq == "length":
         X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon + 2]
