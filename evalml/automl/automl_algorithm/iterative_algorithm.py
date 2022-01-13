@@ -168,21 +168,6 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 self.y.nunique(),
                 self.logger,
             )
-            if (
-                is_time_series(self.problem_type)
-                and self._pipeline_params["pipeline"]["date_index"]
-            ):
-                if (
-                    pd.infer_freq(
-                        self.X[self._pipeline_params["pipeline"]["date_index"]]
-                    )
-                    == "MS"
-                ):
-                    allowed_estimators = [
-                        estimator
-                        for estimator in allowed_estimators
-                        if estimator.name != "ARIMA Regressor"
-                    ]
             self.logger.debug(
                 f"allowed_estimators set to {[estimator.name for estimator in allowed_estimators]}"
             )
