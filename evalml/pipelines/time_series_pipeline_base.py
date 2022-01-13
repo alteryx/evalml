@@ -71,7 +71,9 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
 
         Need to do this so that we have all the data we need to compute lagged features on the holdout set.
         """
-        from evalml.pipelines.utils import are_datasets_separated_by_gap_time_index
+        from evalml.pipelines.utils import (
+            are_datasets_separated_by_gap_time_index,
+        )
 
         last_row_of_training = self.forecast_horizon + self.max_delay + self.gap
         gap_features = pd.DataFrame()

@@ -19,51 +19,33 @@ from evalml.pipelines.components import (
     TimeSeriesFeaturizer,
     Transformer,
 )
-from evalml.pipelines.utils import _get_pipeline_base_class
+from evalml.pipelines.utils import (
+    _get_pipeline_base_class,
+    are_datasets_separated_by_gap_time_index,
+    validate_holdout_datasets,
+)
 from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
 
-@pytest.mark.parametrize(
-    "pipeline_class,estimator",
-    [
-        (TimeSeriesRegressionPipeline, "Linear Regressor"),
-        (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
-        (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier"),
-    ],
-)
 @pytest.mark.parametrize("gap", [0, 1, 5])
 @pytest.mark.parametrize("forecast_horizon", [1, 5, 10])
 @pytest.mark.parametrize("length_or_freq", ["length", "freq"])
-@patch("evalml.pipelines.components.LinearRegressor.fit")
-@patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
 def test_time_series_pipeline_validates_holdout_data(
-    mock_fit_lr,
-    mock_fit_linear,
     length_or_freq,
     forecast_horizon,
     gap,
-    pipeline_class,
-    estimator,
     ts_data,
     ts_data_binary,
 ):
-    pl = pipeline_class(
-        component_graph=[estimator],
-        parameters={
-            "pipeline": {
-                "time_index": "date",
-                "gap": gap,
-                "max_delay": 2,
-                "forecast_horizon": forecast_horizon,
-            }
-        },
-    )
     X, y = ts_data
-
-    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
-        X, y = ts_data_binary
+    problem_config = {
+        "time_index": "date",
+        "gap": gap,
+        "max_delay": 2,
+        "forecast_horizon": forecast_horizon,
+    }
 
     TRAIN_LENGTH = 15
     X_train, y_train = X.iloc[:TRAIN_LENGTH], y.iloc[:TRAIN_LENGTH]
@@ -75,18 +57,10 @@ def test_time_series_pipeline_validates_holdout_data(
         X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon]
         X["date"] = dates[gap + 1 : gap + 1 + len(X)]
 
-    pl.fit(X_train, y_train)
-
     with pytest.raises(
         PartialDependenceError, match=f"Holdout data X must have {forecast_horizon}"
     ):
-        pl.predict(X, None, X_train, y_train)
-
-    if hasattr(pl, "predict_proba"):
-        with pytest.raises(
-            PartialDependenceError, match=f"Holdout data X must have {forecast_horizon}"
-        ):
-            pl.predict_proba(X, X_train, y_train)
+        validate_holdout_datasets(X, X_train, problem_config)
 
 
 @pytest.mark.parametrize("num_unique", [1, 2, 3])
@@ -1600,24 +1574,11 @@ def test_noninferrable_data(pipeline_class, estimator_name, gap, reset_index, fr
     if not reset_index:
         X.index = [i for i in range(80, 85)]
 
-    pl = pipeline_class(
-        component_graph=[estimator_name],
-        parameters={
-            "pipeline": {
-                "time_index": "date",
-                "gap": gap,
-                "max_delay": 1,
-                "forecast_horizon": 5,
-            },
-        },
-    )
+    problem_config = {
+        "max_delay": 0,
+        "forecast_horizon": 1,
+        "time_index": "date",
+        "gap": gap,
+    }
 
-    if freq is None:
-        with pytest.raises(
-            ValueError,
-            match="The training data must have an inferrable interval frequency!",
-        ):
-            pl._are_datasets_separated_by_gap_time_index(X_train, X, gap)
-    else:
-        are_equal = pl._are_datasets_separated_by_gap_time_index(X_train, X, gap)
-        assert are_equal
+    assert are_datasets_separated_by_gap_time_index(X_train, X, problem_config)
