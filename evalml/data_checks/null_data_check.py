@@ -66,14 +66,14 @@ class NullDataCheck(DataCheck):
             >>> assert highly_null_dc.validate(df) == {
             ...     "warnings": [
             ...         {
-            ...             "message": "Columns 'all_null', 'lots_of_null' are 50.0% or more null",
+            ...             "message": "Column(s) 'all_null', 'lots_of_null' are 50.0% or more null",
             ...             "data_check_name": "NullDataCheck",
             ...             "level": "warning",
             ...             "details": {"columns": ["all_null", "lots_of_null"], "rows": None, "pct_null_rows": {"all_null": 1.0, "lots_of_null": 0.8}},
             ...             "code": "HIGHLY_NULL_COLS"
             ...         },
             ...         {
-            ...             "message": "Columns 'few_null' have null values",
+            ...             "message": "Column(s) 'few_null' have null values",
             ...             "data_check_name": "NullDataCheck",
             ...             "level": "warning",
             ...             "details": {"columns": ["few_null"], "rows": None},
@@ -97,7 +97,7 @@ class NullDataCheck(DataCheck):
             ...                     "impute_strategies": {
             ...                         "parameter_type": "column",
             ...                         "columns": {
-            ...                             "few_null": {"impute_strategy": {"categories": ["mode"], "type": "category", "default_value": "mode"}}
+            ...                             "few_null": {"impute_strategy": {"categories": ["most_frequent"], "type": "category", "default_value": "most_frequent"}}
             ...                         }
             ...                     }
             ...                 }
@@ -124,14 +124,14 @@ class NullDataCheck(DataCheck):
             ...                               "rows": [0, 1, 2, 3],
             ...                               "pct_null_cols": highly_null_rows},
             ...                   "code": "HIGHLY_NULL_ROWS"},
-            ...                  {"message": "Columns 'all_null' are 95.0% or more null",
+            ...                  {"message": "Column(s) 'all_null' are 95.0% or more null",
             ...                   "data_check_name": "NullDataCheck",
             ...                   "level": "warning",
             ...                   "details": {"columns": ["all_null"],
             ...                               "rows": None,
             ...                               "pct_null_rows": {"all_null": 1.0}},
             ...                   "code": "HIGHLY_NULL_COLS"},
-            ...                 {"message": "Columns 'lots_of_null', 'few_null' have null values",
+            ...                 {"message": "Column(s) 'lots_of_null', 'few_null' have null values",
             ...                  "data_check_name": "NullDataCheck",
             ...                  "level": "warning",
             ...                  "details": {"columns": ["lots_of_null", "few_null"], "rows": None},
@@ -152,15 +152,15 @@ class NullDataCheck(DataCheck):
             ...                  "metadata": {"columns": ["all_null"], "rows": None}
             ...              },
             ...              {
-            ...                 'code': 'IMPUTE_COL',
-            ...                 'data_check_name': 'NullDataCheck',
-            ...                 'metadata': {'columns': ['lots_of_null', 'few_null'], 'rows': None, 'is_target': False},
-            ...                 'parameters': {
-            ...                     'impute_strategies': {
-            ...                         'parameter_type': 'column',
-            ...                         'columns': {
-            ...                             'lots_of_null': {'impute_strategy': {'categories': ['mean', 'mode'], 'type': 'category', 'default_value': 'mean'}},
-            ...                             'few_null': {'impute_strategy': {'categories': ['mode'], 'type': 'category', 'default_value': 'mode'}}
+            ...                 "code": "IMPUTE_COL",
+            ...                 "data_check_name": "NullDataCheck",
+            ...                 "metadata": {"columns": ["lots_of_null", "few_null"], "rows": None, "is_target": False},
+            ...                 "parameters": {
+            ...                     "impute_strategies": {
+            ...                         "parameter_type": "column",
+            ...                         "columns": {
+            ...                             "lots_of_null": {"impute_strategy": {"categories": ["mean", "most_frequent"], "type": "category", "default_value": "mean"}},
+            ...                             "few_null": {"impute_strategy": {"categories": ["most_frequent"], "type": "category", "default_value": "most_frequent"}}
             ...                         }
             ...                     }
             ...                 }
@@ -216,7 +216,7 @@ class NullDataCheck(DataCheck):
             col for col in cols_with_any_nulls if col not in highly_null_cols
         ]
 
-        warning_msg = "Columns {} are {}% or more null"
+        warning_msg = "Column(s) {} are {}% or more null"
         if highly_null_cols:
             results["warnings"].append(
                 DataCheckWarning(
@@ -246,7 +246,7 @@ class NullDataCheck(DataCheck):
         if below_highly_null_cols:
             results["warnings"].append(
                 DataCheckWarning(
-                    message="Columns {} have null values".format(
+                    message="Column(s) {} have null values".format(
                         (", ").join(
                             ["'{}'".format(str(col)) for col in below_highly_null_cols]
                         )
@@ -262,15 +262,19 @@ class NullDataCheck(DataCheck):
             impute_strategies_dict = {}
             for col in below_highly_null_cols:
                 col_in_df = X.ww[col]
+                categories = (
+                    ["mean", "most_frequent"]
+                    if col_in_df.ww.schema.is_numeric
+                    else ["most_frequent"]
+                )
+                default_value = (
+                    "mean" if col_in_df.ww.schema.is_numeric else "most_frequent"
+                )
                 impute_strategies_dict[col] = {
                     "impute_strategy": {
-                        "categories": ["mean", "mode"]
-                        if col_in_df.ww.schema.is_numeric
-                        else ["mode"],
+                        "categories": categories,
                         "type": "category",
-                        "default_value": "mean"
-                        if col_in_df.ww.schema.is_numeric
-                        else "mode",
+                        "default_value": default_value,
                     }
                 }
 
