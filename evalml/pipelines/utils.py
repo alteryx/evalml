@@ -541,7 +541,8 @@ def _make_stacked_ensemble_pipeline(
         ProblemTypes.REGRESSION: RegressionPipeline,
     }[problem_type]
 
-    cached_component_instances = {}
+    cached_component_instances = [{}, {}, {}]
+    hash_dict = list(cached_data.values())[0][0]
     for pipeline in input_pipelines:
         model_family = pipeline.component_graph[-1].model_family
         model_family_idx = (
@@ -557,12 +558,14 @@ def _make_stacked_ensemble_pipeline(
             new_component_name = _make_new_component_name(
                 model_family, name, model_family_idx
             )
-            for hashes, comp_graph in cached_data[model_family].items():
-                if hashes not in list(cached_component_instances.keys()):
-                    cached_component_instances[hashes] = {}
-                cached_component_instances[hashes][
+            seen_index = set()
+            for hashes, index in cached_data[model_family][0].items():
+                if index in seen_index:
+                    continue
+                cached_component_instances[index][
                     new_component_name
-                ] = handle_component_class(comp_graph.component_instances[name])
+                ] = cached_data[model_family][1][index][name]
+                seen_index.add(index)
             for i, item in enumerate(component_list):
                 if i == 0:
                     fitted_comp = handle_component_class(item)
@@ -592,7 +595,7 @@ def _make_stacked_ensemble_pipeline(
     )
     cg = ComponentGraph(
         component_dict=component_graph,
-        cached_data=cached_component_instances,
+        cached_data=(hash_dict, cached_component_instances),
         random_seed=random_seed,
     )
 
