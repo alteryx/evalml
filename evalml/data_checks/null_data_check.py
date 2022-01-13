@@ -152,15 +152,15 @@ class NullDataCheck(DataCheck):
             ...                  "metadata": {"columns": ["all_null"], "rows": None}
             ...              },
             ...              {
-            ...                 'code': 'IMPUTE_COL',
-            ...                 'data_check_name': 'NullDataCheck',
-            ...                 'metadata': {'columns': ['lots_of_null', 'few_null'], 'rows': None, 'is_target': False},
-            ...                 'parameters': {
-            ...                     'impute_strategies': {
-            ...                         'parameter_type': 'column',
-            ...                         'columns': {
-            ...                             'lots_of_null': {'impute_strategy': {'categories': ['mean', 'mode'], 'type': 'category', 'default_value': 'mean'}},
-            ...                             'few_null': {'impute_strategy': {'categories': ['mode'], 'type': 'category', 'default_value': 'mode'}}
+            ...                 "code": "IMPUTE_COL",
+            ...                 "data_check_name": "NullDataCheck",
+            ...                 "metadata": {"columns": ["lots_of_null", "few_null"], "rows": None, "is_target": False},
+            ...                 "parameters": {
+            ...                     "impute_strategies": {
+            ...                         "parameter_type": "column",
+            ...                         "columns": {
+            ...                             "lots_of_null": {"impute_strategy": {"categories": ["mean", "most_frequent"], "type": "category", "default_value": "mean"}},
+            ...                             "few_null": {"impute_strategy": {"categories": ["most_frequent"], "type": "category", "default_value": "most_frequent"}}
             ...                         }
             ...                     }
             ...                 }
@@ -263,9 +263,13 @@ class NullDataCheck(DataCheck):
             for col in below_highly_null_cols:
                 col_in_df = X.ww[col]
                 categories = (
-                    ["mean", "most_frequent"] if col_in_df.ww.schema.is_numeric else ["most_frequent"]
+                    ["mean", "most_frequent"]
+                    if col_in_df.ww.schema.is_numeric
+                    else ["most_frequent"]
                 )
-                default_value = "mean" if col_in_df.ww.schema.is_numeric else "most_frequent"
+                default_value = (
+                    "mean" if col_in_df.ww.schema.is_numeric else "most_frequent"
+                )
                 impute_strategies_dict[col] = {
                     "impute_strategy": {
                         "categories": categories,
