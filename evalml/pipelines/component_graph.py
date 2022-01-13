@@ -84,8 +84,7 @@ class ComponentGraph:
                 "component_dict must be a dictionary which specifies the components and edges between components"
             )
         self._validate_component_dict()
-        # self.cached_data = cached_data
-        self.cached_data = None
+        self.cached_data = cached_data
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
@@ -467,8 +466,9 @@ class ComponentGraph:
             try:
                 index = self.cached_data[0][hashes]
                 component_instance = self.cached_data[1][index][component_name]
-                # logger.info("Got component instance {}, {}".format(component_name, component_instance))
+                # print("Got component instance {}, {}".format(component_name, component_instance))
             except KeyError:
+                # print("failed to get componentn instance", component_name)
                 pass
         return component_instance
 
