@@ -401,7 +401,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
     )
 
     data_check_action_option_with_one_column_parameter = DataCheckActionOption(
-        DataCheckActionCode.DROP_COL,
+        DataCheckActionCode.IMPUTE_COL,
         dummy_data_check_name,
         metadata={"columns": None, "rows": None},
         parameters={
@@ -431,7 +431,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
     assert (
         data_check_action_option_with_one_column_parameter.get_action_from_defaults()
         == DataCheckAction(
-            DataCheckActionCode.DROP_COL.name,
+            DataCheckActionCode.IMPUTE_COL.name,
             dummy_data_check_name,
             metadata={
                 "columns": None,
@@ -508,7 +508,7 @@ def test_get_action_from_defaults(dummy_data_check_name):
     assert (
         data_check_action_option_with_multiple_parameters.get_action_from_defaults()
         == DataCheckAction(
-            DataCheckActionCode.DROP_COL.name,
+            DataCheckActionCode.IMPUTE_COL.name,
             dummy_data_check_name,
             metadata={
                 "columns": None,
