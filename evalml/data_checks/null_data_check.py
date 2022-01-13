@@ -262,15 +262,15 @@ class NullDataCheck(DataCheck):
             impute_strategies_dict = {}
             for col in below_highly_null_cols:
                 col_in_df = X.ww[col]
+                categories = (
+                    ["mean", "mode"] if col_in_df.ww.schema.is_numeric else ["mode"]
+                )
+                default_value = "mean" if col_in_df.ww.schema.is_numeric else "mode"
                 impute_strategies_dict[col] = {
                     "impute_strategy": {
-                        "categories": ["mean", "mode"]
-                        if col_in_df.ww.schema.is_numeric
-                        else ["mode"],
+                        "categories": categories,
                         "type": "category",
-                        "default_value": "mean"
-                        if col_in_df.ww.schema.is_numeric
-                        else "mode",
+                        "default_value": default_value,
                     }
                 }
 
