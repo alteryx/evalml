@@ -2,9 +2,6 @@ name: Dependency update checker
 on:
   schedule:
       - cron: '0 * * * *'
-  push:	
-    branches:	
-      - update_latest_dep_contributing	
   workflow_dispatch:
 jobs:
   update-deps:
@@ -32,7 +29,6 @@ jobs:
           branch: latest-dep-update
           branch-suffix: short-commit-hash
           delete-branch: true
-          base: update_latest_dep_contributing
+          base: main
           assignees: machineFL
-          reviewers: machineAYX, angela97lin
-          team-reviewers: "@alteryx/evalml"
+          reviewers: machineAYX, angela97lin, dsherry, jeremyliweishih, freddyaboulton, bchen1116, chukarsten, ParthivNaresh, eccabay, christopherbunn
