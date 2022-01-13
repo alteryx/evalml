@@ -204,16 +204,31 @@ class NullDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
+
+            # import pdb; pdb.set_trace()
+            impute_strategies_dict = {}
+            for col in below_highly_null_cols:
+                col_in_df = X.ww[col]
+                impute_strategies_dict[col] = {
+                    "impute_strategy": {
+                        "categories": ["mean", "mode"]
+                        if col_in_df.ww.schema.is_numeric
+                        else ["mode"],
+                        "type": "category",
+                        "default_value": "mean"
+                        if col_in_df.ww.schema.is_numeric
+                        else "mode",
+                    }
+                }
+
             results["actions"]["action_list"].append(
                 DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=self.name,
                     parameters={
-                        "impute_strategy": {  # todo: update to make per-column...
-                            "parameter_type": "global",
-                            "type": "category",
-                            "categories": ["mean", "most_frequent"],
-                            "default_value": "most_frequent",
+                        "impute_strategies": {
+                            "parameter_type": "column",
+                            "columns": impute_strategies_dict,
                         }
                     },
                     metadata={

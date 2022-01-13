@@ -290,11 +290,17 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": ["lots_of_null"], "is_target": False},
                     parameters={
-                        "impute_strategy": {
-                            "parameter_type": "global",
-                            "type": "category",
-                            "categories": ["mean", "most_frequent"],
-                            "default_value": "most_frequent",
+                        "impute_strategies": {
+                            "parameter_type": "column",
+                            "columns": {
+                                "lots_of_null": {
+                                    "impute_strategy": {
+                                        "categories": ["mean", "mode"],
+                                        "type": "category",
+                                        "default_value": "mean",
+                                    }
+                                }
+                            },
                         }
                     },
                 ).to_dict(),
@@ -338,12 +344,12 @@ def test_highly_null_data_check_input_formats():
         pct_null_col_threshold=0.8, pct_null_row_threshold=0.8
     )
 
-    # # test empty pd.DataFrame
-    # assert highly_null_check.validate(pd.DataFrame()) == {
-    #     "warnings": [],
-    #     "errors": [],
-    #     "actions": {"action_list": [], "default_action": None},
-    # }
+    # test empty pd.DataFrame
+    assert highly_null_check.validate(pd.DataFrame()) == {
+        "warnings": [],
+        "errors": [],
+        "actions": {"action_list": [], "default_action": None},
+    }
 
     highly_null_rows = SeriesWrap(pd.Series([0.8]))
     expected = {
@@ -390,11 +396,17 @@ def test_highly_null_data_check_input_formats():
                     data_check_name=highly_null_data_check_name,
                     metadata={"columns": [3], "is_target": False},
                     parameters={
-                        "impute_strategy": {
-                            "parameter_type": "global",
-                            "type": "category",
-                            "categories": ["mean", "most_frequent"],
-                            "default_value": "most_frequent",
+                        "impute_strategies": {
+                            "parameter_type": "column",
+                            "columns": {
+                                3: {
+                                    "impute_strategy": {
+                                        "categories": ["mode"],
+                                        "type": "category",
+                                        "default_value": "mode",
+                                    }
+                                }
+                            },
                         }
                     },
                 ).to_dict(),
@@ -411,23 +423,23 @@ def test_highly_null_data_check_input_formats():
     )
     assert validate_results == expected
 
-    # # #  test 2D list
-    # validate_results = highly_null_check.validate(
-    #     [[None, None, None, None, 0], [None, None, None, "hi", 5]]
-    # )
-    # validate_results["warnings"][0]["details"]["pct_null_cols"] = SeriesWrap(
-    #     validate_results["warnings"][0]["details"]["pct_null_cols"]
-    # )
-    # assert validate_results == expected
+    #  test 2D list
+    validate_results = highly_null_check.validate(
+        [[None, None, None, None, 0], [None, None, None, "hi", 5]]
+    )
+    validate_results["warnings"][0]["details"]["pct_null_cols"] = SeriesWrap(
+        validate_results["warnings"][0]["details"]["pct_null_cols"]
+    )
+    assert validate_results == expected
 
-    # # test np.array
-    # validate_results = highly_null_check.validate(
-    #     np.array([[None, None, None, None, 0], [None, None, None, "hi", 5]])
-    # )
-    # validate_results["warnings"][0]["details"]["pct_null_cols"] = SeriesWrap(
-    #     validate_results["warnings"][0]["details"]["pct_null_cols"]
-    # )
-    # assert validate_results == expected
+    # test np.array
+    validate_results = highly_null_check.validate(
+        np.array([[None, None, None, None, 0], [None, None, None, "hi", 5]])
+    )
+    validate_results["warnings"][0]["details"]["pct_null_cols"] = SeriesWrap(
+        validate_results["warnings"][0]["details"]["pct_null_cols"]
+    )
+    assert validate_results == expected
 
 
 def test_get_null_column_information(highly_null_dataframe):
