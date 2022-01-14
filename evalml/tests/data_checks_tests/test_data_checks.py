@@ -534,50 +534,42 @@ def test_default_data_checks_null_rows():
         "regression", get_default_primary_search_objective("regression")
     )
     highly_null_rows = SeriesWrap(pd.Series([1.0, 1.0, 1.0, 1.0, 1.0]))
-    expected = {
-        "warnings": [
-            DataCheckWarning(
-                message="5 out of 5 rows are 95.0% or more null",
-                data_check_name="NullDataCheck",
-                message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
-                details={"pct_null_cols": highly_null_rows, "rows": [0, 1, 2, 3, 4]},
-            ).to_dict(),
-            DataCheckWarning(
-                message="Column(s) 'all_null', 'also_all_null' are 95.0% or more null",
-                data_check_name="NullDataCheck",
-                message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-                details={
-                    "columns": ["all_null", "also_all_null"],
-                    "pct_null_rows": {"all_null": 1.0, "also_all_null": 1.0},
-                },
-            ).to_dict(),
-        ],
-        "errors": [
-            DataCheckError(
-                message="1 row(s) (20.0%) of target values are null",
-                data_check_name="InvalidTargetDataCheck",
-                message_code=DataCheckMessageCode.TARGET_HAS_NULL,
-                details={"num_null_rows": 1, "pct_null_rows": 20.0},
-            ).to_dict(),
-            DataCheckError(
-                message="'all_null', 'also_all_null' has 0 unique values.",
-                data_check_name="NoVarianceDataCheck",
-                message_code=DataCheckMessageCode.NO_VARIANCE,
-                details={"columns": ["all_null", "also_all_null"]},
-            ).to_dict(),
-        ],
-        "actions": {
-            "action_list": [
+    expected = [
+        DataCheckWarning(
+            message="5 out of 5 rows are 95.0% or more null",
+            data_check_name="NullDataCheck",
+            message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
+            details={"pct_null_cols": highly_null_rows, "rows": [0, 1, 2, 3, 4]},
+            actions=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name="NullDataCheck",
                     metadata={"rows": [0, 1, 2, 3, 4]},
-                ).to_dict(),
+                )
+            ],
+        ).to_dict(),
+        DataCheckWarning(
+            message="Column(s) 'all_null', 'also_all_null' are 95.0% or more null",
+            data_check_name="NullDataCheck",
+            message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
+            details={
+                "columns": ["all_null", "also_all_null"],
+                "pct_null_rows": {"all_null": 1.0, "also_all_null": 1.0},
+            },
+            actions=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name="NullDataCheck",
                     metadata={"columns": ["all_null", "also_all_null"]},
-                ).to_dict(),
+                )
+            ],
+        ).to_dict(),
+        DataCheckError(
+            message="1 row(s) (20.0%) of target values are null",
+            data_check_name="InvalidTargetDataCheck",
+            message_code=DataCheckMessageCode.TARGET_HAS_NULL,
+            details={"num_null_rows": 1, "pct_null_rows": 20.0},
+            actions=[
                 DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name="InvalidTargetDataCheck",
@@ -590,21 +582,28 @@ def test_default_data_checks_null_rows():
                         }
                     },
                     metadata={"is_target": True},
-                ).to_dict(),
+                )
+            ],
+        ).to_dict(),
+        DataCheckError(
+            message="'all_null', 'also_all_null' has 0 unique values.",
+            data_check_name="NoVarianceDataCheck",
+            message_code=DataCheckMessageCode.NO_VARIANCE,
+            details={"columns": ["all_null", "also_all_null"]},
+            actions=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name="NoVarianceDataCheck",
                     metadata={"columns": ["all_null", "also_all_null"]},
-                ).to_dict(),
+                )
             ],
-            "default_action": None,
-        },
-    }
-    validation_results = data_checks.validate(X, y)
+        ).to_dict(),
+    ]
+    validation_messages = data_checks.validate(X, y)
     validation_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
         validation_messages[0]["details"]["pct_null_cols"]
     )
-    assert validation_results == expected
+    assert validation_messages == expected
 
 
 @pytest.mark.parametrize("problem_type", ProblemTypes.all_problem_types)

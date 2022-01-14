@@ -29,20 +29,17 @@ class DateTimeNaNDataCheck(DataCheck):
             ...         ["2-4-21", "3-4-21"]]
             >>> df = pd.DataFrame(dates, columns=["index", "days"])
             >>> dt_nan_dc = DateTimeNaNDataCheck()
-            >>> assert dt_nan_dc.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
+            >>> assert dt_nan_dc.validate(df) == []
 
             The first value in the column "index" is replaced with NaT, which will raise an error in this data check.
 
             >>> dates[0][0] = np.datetime64("NaT")
             >>> df = pd.DataFrame(dates, columns=["index", "days"])
-            >>> assert dt_nan_dc.validate(df) == {
-            ...     "warnings": [],
-            ...     "errors": [{"message": "Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            >>> assert dt_nan_dc.validate(df) == [{"message": "Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.",
             ...                 "data_check_name": "DateTimeNaNDataCheck",
             ...                 "level": "error",
             ...                 "details": {"columns": ["index"], "rows": None},
-            ...                 "code": "DATETIME_HAS_NAN"}],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            ...                 "code": "DATETIME_HAS_NAN"}]
             ...
             ...
 
@@ -50,14 +47,11 @@ class DateTimeNaNDataCheck(DataCheck):
 
             >>> dates[0][1] = None
             >>> df = pd.DataFrame(dates, columns=["index", "days"])
-            >>> assert dt_nan_dc.validate(df) == {
-            ...     "warnings": [],
-            ...     "errors": [{"message": "Input datetime column(s) (index, days) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            >>> assert dt_nan_dc.validate(df) == {"message": "Input datetime column(s) (index, days) contains NaN values. Please impute NaN values or drop these rows or columns.",
             ...                 "data_check_name": "DateTimeNaNDataCheck",
             ...                 "level": "error",
             ...                 "details": {"columns": ["index", "days"], "rows": None},
-            ...                 "code": "DATETIME_HAS_NAN"}],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            ...                 "code": "DATETIME_HAS_NAN"}]
             ...
             ...
 

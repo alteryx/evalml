@@ -59,7 +59,7 @@ def test_time_series_param_data_check(
     }
     data_check = TimeSeriesParametersDataCheck(config, n_splits)
     X = pd.DataFrame({"feature": range(n_obs)})
-    results = data_check.validate(X)
+    messages = data_check.validate(X)
     code = DataCheckMessageCode.TIMESERIES_PARAMETERS_NOT_COMPATIBLE_WITH_SPLIT.name
     if not is_valid:
         assert len(messages) == 1
@@ -71,4 +71,4 @@ def test_time_series_param_data_check(
         }
         assert messages[0]["code"] == code
     else:
-        assert results == []
+        assert messages == []

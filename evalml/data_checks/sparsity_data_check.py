@@ -57,24 +57,19 @@ class SparsityDataCheck(DataCheck):
             ... })
             ...
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=0.5, unique_count_threshold=10)
-            >>> assert sparsity_check.validate(df) == {
-            ...     "errors": [],
-            ...     "warnings": [{"message": "Input columns ('sparse') for multiclass problem type are too sparse.",
+            >>> assert sparsity_check.validate(df) == [{"message": "Input columns ('sparse') for multiclass problem type are too sparse.",
             ...                   "data_check_name": "SparsityDataCheck",
             ...                    "level": "warning",
             ...                    "code": "TOO_SPARSE",
-            ...                    "details": {"columns": ["sparse"], "sparsity_score": {"sparse": 0.0}, "rows": None}}],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            ...                    "details": {"columns": ["sparse"], "sparsity_score": {"sparse": 0.0}, "rows": None}, "actions": {"code": "DROP_COL",
             ...                  "data_check_name": "SparsityDataCheck",
             ...                  "parameters": {},
-            ...                  "metadata": {"columns": ["sparse"], "rows": None}}],
-            ...                 "default_action": None}}
-            ...
+            ...                  "metadata": {"columns": ["sparse"], "rows": None}}}],
+
             ...
             >>> df["sparse"] = [float(x % 10) for x in range(100)]
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=1, unique_count_threshold=5)
-            >>> assert sparsity_check.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
-            ...
+            >>> assert sparsity_check.validate(df) == []
             ...
             >>> sparse_array = pd.Series([1, 1, 1, 2, 2, 3] * 3)
             >>> assert SparsityDataCheck.sparsity_score(sparse_array, count_threshold=5) == 0.6666666666666666

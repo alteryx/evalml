@@ -78,9 +78,7 @@ class InvalidTargetDataCheck(DataCheck):
             >>> X = pd.DataFrame({"col": [1, 2, 3, 1]})
             >>> y = pd.Series(["cat_1", "cat_2", "cat_1", "cat_2"])
             >>> target_check = InvalidTargetDataCheck("regression", "R2")
-            >>> assert target_check.validate(X, y) == {
-            ...     "warnings": [],
-            ...     "errors": [{"message": "Target is unsupported Unknown type. Valid Woodwork logical types include: integer, double, boolean, integer_nullable, boolean_nullable, age_nullable",
+            >>> assert target_check.validate(X, y) == [{"message": "Target is unsupported Unknown type. Valid Woodwork logical types include: integer, double, boolean, integer_nullable, boolean_nullable, age_nullable",
             ...                 "data_check_name": "InvalidTargetDataCheck",
             ...                 "level": "error",
             ...                 "details": {"columns": None, "rows": None, "unsupported_type": "unknown"},
@@ -89,40 +87,32 @@ class InvalidTargetDataCheck(DataCheck):
             ...                 "data_check_name": "InvalidTargetDataCheck",
             ...                 "level": "error",
             ...                 "details": {"columns": None, "rows": None},
-            ...                 "code": "TARGET_UNSUPPORTED_TYPE"}],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            ...                 "code": "TARGET_UNSUPPORTED_TYPE"}]
 
             The target cannot have null values.
 
             >>> y = pd.Series([None, pd.NA, pd.NaT, None])
-            >>> assert target_check.validate(X, y) == {
-            ...     "warnings": [],
-            ...     "errors": [{"message": "Target is either empty or fully null.",
+            >>> assert target_check.validate(X, y) == [{"message": "Target is either empty or fully null.",
             ...                 "data_check_name": "InvalidTargetDataCheck",
             ...                 "level": "error",
             ...                 "details": {"columns": None, "rows": None},
-            ...                 "code": "TARGET_IS_EMPTY_OR_FULLY_NULL"}],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            ...                 "code": "TARGET_IS_EMPTY_OR_FULLY_NULL"}]
             ...
             ...
             >>> y = pd.Series([1, None, 3, None])
-            >>> assert target_check.validate(None, y) == {
-            ...     "warnings": [],
-            ...     "errors": [{"message": "2 row(s) (50.0%) of target values are null",
+            >>> assert target_check.validate(None, y) == [{"message": "2 row(s) (50.0%) of target values are null",
             ...                 "data_check_name": "InvalidTargetDataCheck",
             ...                 "level": "error",
             ...                 "details": {"columns": None,
             ...                             "rows": None,
             ...                             "num_null_rows": 2,
             ...                             "pct_null_rows": 50.0},
-            ...                 "code": "TARGET_HAS_NULL"}],
-            ...     "actions": {"action_list": [{"code": "IMPUTE_COL",
+            ...                 "code": "TARGET_HAS_NULL"}, "actions": {"code": "IMPUTE_COL",
             ...                  "data_check_name": "InvalidTargetDataCheck",
             ...                  "parameters": {"impute_strategy": {"parameter_type": "global", "type": "category", "categories": ["mean", "most_frequent"], "default_value": "mean"}},
             ...                  "metadata": {"columns": None,
             ...                               "rows": None,
-            ...                               "is_target": True}}],
-            ...                 "default_action": None}}
+            ...                               "is_target": True}}]
 
             If the target values don't match the problem type passed, an error will be raised.
             In this instance, only two values exist in the target column, but multiclass has been passed as the problem type.
@@ -130,22 +120,18 @@ class InvalidTargetDataCheck(DataCheck):
             >>> X = pd.DataFrame([i for i in range(50)])
             >>> y = pd.Series([i%2 for i in range(50)])
             >>> target_check = InvalidTargetDataCheck("multiclass", "Log Loss Multiclass")
-            >>> assert target_check.validate(X, y) == {
-            ...     "warnings": [],
-            ...     "errors": [{"message": "Target has two or less classes, which is too few for multiclass problems.  Consider changing to binary.",
+            >>> assert target_check.validate(X, y) == [{"message": "Target has two or less classes, which is too few for multiclass problems.  Consider changing to binary.",
             ...                 "data_check_name": "InvalidTargetDataCheck",
             ...                 "level": "error",
             ...                 "details": {"columns": None, "rows": None, "num_classes": 2},
-            ...                 "code": "TARGET_MULTICLASS_NOT_ENOUGH_CLASSES"}],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            ...                 "code": "TARGET_MULTICLASS_NOT_ENOUGH_CLASSES"}]
 
             If the length of X and y differ, a warning will be raised. A warning will also be raised for indices that don"t match.
 
             >>> target_check = InvalidTargetDataCheck("regression", "R2")
             >>> X = pd.DataFrame([i for i in range(5)])
             >>> y = pd.Series([1, 2, 4, 3], index=[1, 2, 4, 3])
-            >>> assert target_check.validate(X, y) == {
-            ...     "warnings": [{"message": "Input target and features have different lengths",
+            >>> assert target_check.validate(X, y) == [{"message": "Input target and features have different lengths",
             ...                   "data_check_name": "InvalidTargetDataCheck",
             ...                   "level": "warning",
             ...                   "details": {"columns": None,
@@ -160,9 +146,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                               "rows": None,
             ...                               "indices_not_in_features": [],
             ...                               "indices_not_in_target": [0]},
-            ...                   "code": "MISMATCHED_INDICES"}],
-            ...     "errors": [],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            ...                   "code": "MISMATCHED_INDICES"}]
         """
         messages = []
 
