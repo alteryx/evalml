@@ -148,7 +148,7 @@ class NoVarianceDataCheck(DataCheck):
         one_unique_message = "{} has 1 unique value."
         two_unique_with_null_message = "{} has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning."
         if zero_unique:
-            results.append(
+            messages.append(
                 DataCheckError(
                     message=zero_unique_message.format(
                         (", ").join(["'{}'".format(str(col)) for col in zero_unique]),
@@ -156,11 +156,15 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": zero_unique},
-                ),
-                results,
+                    actions=DataCheckActionOption(
+                        DataCheckActionCode.DROP_COL,
+                        data_check_name=self.name,
+                        metadata={"columns": zero_unique},
+                    ),
+                )
             )
         if one_unique:
-            results.append(
+            messages.append(
                 DataCheckError(
                     message=one_unique_message.format(
                         (", ").join(["'{}'".format(str(col)) for col in one_unique]),
@@ -168,11 +172,15 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": one_unique},
-                ),
-                results,
+                    actions=DataCheckActionOption(
+                        DataCheckActionCode.DROP_COL,
+                        data_check_name=self.name,
+                        metadata={"columns": one_unique},
+                    ),
+                )
             )
         if one_unique_with_null:
-            results.append(
+            messages.append(
                 DataCheckWarning(
                     message=two_unique_with_null_message.format(
                         (", ").join(
@@ -182,17 +190,12 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                     details={"columns": one_unique_with_null},
-                ),
-                results,
-            )
-        all_cols = zero_unique + one_unique + one_unique_with_null
-        if all_cols:
-            results["actions"]["action_list"].append(
-                DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
-                    data_check_name=self.name,
-                    metadata={"columns": all_cols},
-                ).to_dict()
+                    actions=DataCheckActionOption(
+                        DataCheckActionCode.DROP_COL,
+                        data_check_name=self.name,
+                        metadata={"columns": one_unique_with_null},
+                    ),
+                )
             )
 
         # Check target for variance
@@ -204,36 +207,33 @@ class NoVarianceDataCheck(DataCheck):
         y_any_null = y.isnull().any()
 
         if y_unique_count == 0:
-            results.append(
+            messages.append(
                 DataCheckError(
                     message=zero_unique_message.format(y_name),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": [y_name]},
-                ),
-                results,
+                )
             )
 
         elif y_unique_count == 1:
-            results.append(
+            messages.append(
                 DataCheckError(
                     message=one_unique_message.format(y_name),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": [y_name]},
-                ),
-                results,
+                )
             )
 
         elif y_unique_count == 2 and not self._dropnan and y_any_null:
-            results.append(
+            messages.append(
                 DataCheckWarning(
                     message=two_unique_with_null_message.format(y_name),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                     details={"columns": [y_name]},
-                ),
-                results,
+                )
             )
 
         return messages

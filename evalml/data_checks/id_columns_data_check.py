@@ -155,14 +155,14 @@ class IDColumnsDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                     details={"columns": list(id_cols_above_threshold)},
+                    actions=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": list(id_cols_above_threshold)},
+                        )
+                    ],
                 ).to_dict()
             )
 
-            messages.append(
-                DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
-                    data_check_name=self.name,
-                    metadata={"columns": list(id_cols_above_threshold)},
-                ).to_dict()
-            )
         return messages

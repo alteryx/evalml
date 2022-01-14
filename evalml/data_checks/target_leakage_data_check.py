@@ -149,13 +149,13 @@ class TargetLeakageDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                     details={"columns": highly_corr_cols},
-                ).to_dict()
-            )
-            results["actions"]["action_list"].append(
-                DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
-                    data_check_name=self.name,
-                    metadata={"columns": highly_corr_cols},
+                    actions=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": highly_corr_cols},
+                        )
+                    ],
                 ).to_dict()
             )
         return messages

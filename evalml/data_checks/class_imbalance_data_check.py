@@ -70,13 +70,12 @@ class ClassImbalanceDataCheck(DataCheck):
             a severe class imbalance warning will be raised.
 
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.10)
-            >>> assert class_imb_dc.validate(X, y) == {
-            ...     "errors": [{"message": "The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]",
+            >>> assert class_imb_dc.validate(X, y) == {"message": "The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]",
             ...                 "data_check_name": "ClassImbalanceDataCheck",
             ...                 "level": "error",
             ...                 "code": "CLASS_IMBALANCE_BELOW_FOLDS",
-            ...                 "details": {"target_values": [0], "rows": None, "columns": None}}],
-            ...     "warnings": [{"message": "The following labels fall below 10% of the target: [0]",
+            ...                 "details": {"target_values": [0], "rows": None, "columns": None}},
+            ...                 {"message": "The following labels fall below 10% of the target: [0]",
             ...                   "data_check_name": "ClassImbalanceDataCheck",
             ...                   "level": "warning",
             ...                   "code": "CLASS_IMBALANCE_BELOW_THRESHOLD",
@@ -85,8 +84,7 @@ class ClassImbalanceDataCheck(DataCheck):
             ...                   "data_check_name": "ClassImbalanceDataCheck",
             ...                   "level": "warning",
             ...                   "code": "CLASS_IMBALANCE_SEVERE",
-            ...                   "details": {"target_values": [0], "rows": None, "columns": None}}],
-            ...      "actions": {"action_list":[], "default_action": None}}
+            ...                   "details": {"target_values": [0], "rows": None, "columns": None}}]
             ...
             ...
 
@@ -95,8 +93,7 @@ class ClassImbalanceDataCheck(DataCheck):
 
             >>> y = pd.Series([0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2])
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.30, min_samples=5, num_cv_folds=1)
-            >>> assert class_imb_dc.validate(X, y) == {
-            ...     "warnings": [{"message": "The following labels fall below 30% of the target: [0]",
+            >>> assert class_imb_dc.validate(X, y) == [{"message": "The following labels fall below 30% of the target: [0]",
             ...                    "data_check_name": "ClassImbalanceDataCheck",
             ...                    "level": "warning",
             ...                    "code": "CLASS_IMBALANCE_BELOW_THRESHOLD",
@@ -105,14 +102,13 @@ class ClassImbalanceDataCheck(DataCheck):
             ...                     "data_check_name": "ClassImbalanceDataCheck",
             ...                     "level": "warning",
             ...                     "code": "CLASS_IMBALANCE_SEVERE",
-            ...                     "details": {"target_values": [0], "rows": None, "columns": None}}],
-            ...     "errors": [],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            ...                     "details": {"target_values": [0], "rows": None, "columns": None}}]
+
             ...
             ...
             >>> y = pd.Series([0, 0, 1, 1, 1, 1, 2, 2, 2, 2])
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.30, num_cv_folds=1)
-            >>> assert class_imb_dc.validate(X, y) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
+            >>> assert class_imb_dc.validate(X, y) == []
         """
         messages = []
 
@@ -134,7 +130,8 @@ class ClassImbalanceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
                     details={"target_values": sorted(below_threshold_values)},
-            ))
+                )
+            )
 
         counts = fold_counts / (fold_counts + fold_counts.values[0])
         below_threshold = counts.where(counts < self.threshold).dropna()

@@ -65,14 +65,11 @@ class DateTimeNaNDataCheck(DataCheck):
 
             >>> dates[0][1] = pd.NA
             >>> df = pd.DataFrame(dates, columns=["index", "days"])
-            >>> assert dt_nan_dc.validate(df) == {
-            ...     "warnings": [],
-            ...     "errors": [{"message": "Input datetime column(s) (index, days) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            >>> assert dt_nan_dc.validate(df) == [{"message": "Input datetime column(s) (index, days) contains NaN values. Please impute NaN values or drop these rows or columns.",
             ...                 "data_check_name": "DateTimeNaNDataCheck",
             ...                 "level": "error",
             ...                 "details": {"columns": ["index", "days"], "rows": None},
-            ...                 "code": "DATETIME_HAS_NAN"}],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            ...                 "code": "DATETIME_HAS_NAN"}]
         """
         messages = []
 

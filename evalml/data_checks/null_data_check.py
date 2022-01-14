@@ -180,6 +180,8 @@ class NullDataCheck(DataCheck):
         )
         if len(highly_null_rows) > 0:
             warning_msg = f"{len(highly_null_rows)} out of {len(X)} rows are {self.pct_null_row_threshold*100}% or more null"
+            rows_to_drop = highly_null_rows.index.tolist()
+
             messages.append(
                 DataCheckWarning(
                     message=warning_msg,
@@ -189,14 +191,13 @@ class NullDataCheck(DataCheck):
                         "rows": highly_null_rows.index.tolist(),
                         "pct_null_cols": highly_null_rows,
                     },
-                ).to_dict()
-            )
-            rows_to_drop = highly_null_rows.index.tolist()
-            results["actions"]["action_list"].append(
-                DataCheckActionOption(
-                    DataCheckActionCode.DROP_ROWS,
-                    data_check_name=self.name,
-                    metadata={"rows": rows_to_drop},
+                    actions=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_ROWS,
+                            data_check_name=self.name,
+                            metadata={"rows": rows_to_drop},
+                        )
+                    ],
                 ).to_dict()
             )
 
@@ -228,32 +229,17 @@ class NullDataCheck(DataCheck):
                         "columns": list(highly_null_cols),
                         "pct_null_rows": highly_null_cols,
                     },
-                ).to_dict()
-            )
-
-            results["actions"]["action_list"].append(
-                DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
-                    data_check_name=self.name,
-                    metadata={"columns": list(highly_null_cols)},
+                    actions=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": list(highly_null_cols)},
+                        )
+                    ],
                 ).to_dict()
             )
 
         if below_highly_null_cols:
-            messages.append(
-                DataCheckWarning(
-                    message="Column(s) {} have null values".format(
-                        (", ").join(
-                            ["'{}'".format(str(col)) for col in below_highly_null_cols]
-                        )
-                    ),
-                    data_check_name=self.name,
-                    message_code=DataCheckMessageCode.COLS_WITH_NULL,
-                    details={
-                        "columns": list(below_highly_null_cols),
-                    },
-                ).to_dict()
-            )
 
             impute_strategies_dict = {}
             for col in below_highly_null_cols:
@@ -274,23 +260,36 @@ class NullDataCheck(DataCheck):
                     }
                 }
 
-            results["actions"]["action_list"].append(
-                DataCheckActionOption(
-                    DataCheckActionCode.IMPUTE_COL,
+            messages.append(
+                DataCheckWarning(
+                    message="Column(s) {} have null values".format(
+                        (", ").join(
+                            ["'{}'".format(str(col)) for col in below_highly_null_cols]
+                        )
+                    ),
                     data_check_name=self.name,
-                    parameters={
-                        "impute_strategies": {
-                            "parameter_type": "column",
-                            "columns": impute_strategies_dict,
-                        }
-                    },
-                    metadata={
+                    message_code=DataCheckMessageCode.COLS_WITH_NULL,
+                    details={
                         "columns": list(below_highly_null_cols),
-                        "is_target": False,
                     },
+                    actions=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.IMPUTE_COL,
+                            data_check_name=self.name,
+                            parameters={
+                                "impute_strategies": {
+                                    "parameter_type": "column",
+                                    "columns": impute_strategies_dict,
+                                }
+                            },
+                            metadata={
+                                "columns": list(below_highly_null_cols),
+                                "is_target": False,
+                            },
+                        )
+                    ],
                 ).to_dict()
             )
-
         return messages
 
     @staticmethod

@@ -179,10 +179,7 @@ class InvalidTargetDataCheck(DataCheck):
 
         y = infer_feature_types(y)
         messages = self._check_target_has_nan(y, messages)
-        if any(
-            error["code"] == "TARGET_IS_EMPTY_OR_FULLY_NULL"
-            for error in messages
-        ):
+        if any(error["code"] == "TARGET_IS_EMPTY_OR_FULLY_NULL" for error in messages):
             # If our target is empty or fully null, no need to check for other invalid targets, return immediately.
             return messages
         messages = self._check_target_is_unsupported_type(y, messages)

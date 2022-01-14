@@ -119,16 +119,16 @@ class UniquenessDataCheck(DataCheck):
                             col: res.loc[col] for col in not_unique_enough_cols
                         },
                     },
+                    actions=[
+                        DataCheckActionOption(
+                            action_code=DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": not_unique_enough_cols},
+                        )
+                    ],
                 ).to_dict()
             )
 
-            results["actions"]["action_list"].append(
-                DataCheckActionOption(
-                    action_code=DataCheckActionCode.DROP_COL,
-                    data_check_name=self.name,
-                    metadata={"columns": not_unique_enough_cols},
-                ).to_dict()
-            )
         elif is_multiclass(self.problem_type):
             too_unique_cols = list(res.index[res > self.threshold])
             messages.append(
@@ -147,23 +147,21 @@ class UniquenessDataCheck(DataCheck):
                             col: res.loc[col] for col in too_unique_cols
                         },
                     },
+                    actions=DataCheckActionOption(
+                        action_code=DataCheckActionCode.DROP_COL,
+                        data_check_name=self.name,
+                        metadata={"columns": too_unique_cols},
+                    ),
                 ).to_dict()
             )
 
-            results["actions"]["action_list"].append(
-                DataCheckActionOption(
-                    action_code=DataCheckActionCode.DROP_COL,
-                    data_check_name=self.name,
-                    metadata={"columns": too_unique_cols},
-                ).to_dict()
-            )
         return messages
 
     @staticmethod
     def uniqueness_score(col, drop_na=True):
         """Calculate a uniqueness score for the provided field.  NaN values are not considered as unique values in the calculation.
 
-        Based on the Herfindahl–Hirschman Index.
+        Based on the Herfindahl-Hirschman Index.
 
         Args:
             col (pd.Series): Feature values.

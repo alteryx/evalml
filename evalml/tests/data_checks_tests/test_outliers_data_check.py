@@ -232,31 +232,29 @@ def test_outliers_data_check_warnings_has_nan():
     X.iloc[:, 90] = "string_values"
 
     outliers_check = OutliersDataCheck()
-    assert outliers_check.validate(X) == {
-        "warnings": [
-            DataCheckWarning(
-                message="Column(s) '25', '55', '72' are likely to have outlier data.",
-                data_check_name=outliers_data_check_name,
-                message_code=DataCheckMessageCode.HAS_OUTLIERS,
-                details={
-                    "columns": [25, 55, 72],
-                    "rows": [3, 5, 10],
-                    "column_indices": {25: [3], 55: [5], 72: [10]},
-                },
-            ).to_dict()
-        ],
-        "errors": [],
-        "actions": {
-            "action_list": [
-                DataCheckActionOption(
-                    DataCheckActionCode.DROP_ROWS,
-                    data_check_name=outliers_data_check_name,
-                    metadata={"rows": [3, 5, 10]},
-                ).to_dict()
-            ],
-            "default_action": None,
-        },
-    }
+    assert outliers_check.validate(X) == [
+        DataCheckWarning(
+            message="Column(s) '25', '55', '72' are likely to have outlier data.",
+            data_check_name=outliers_data_check_name,
+            message_code=DataCheckMessageCode.HAS_OUTLIERS,
+            details={
+                "columns": [25, 55, 72],
+                "rows": [3, 5, 10],
+                "column_indices": {25: [3], 55: [5], 72: [10]},
+            },
+        ).to_dict()
+    ]
+
+    # "actions": {
+    #     "action_list": [
+    #         DataCheckActionOption(
+    #             DataCheckActionCode.DROP_ROWS,
+    #             data_check_name=outliers_data_check_name,
+    #             metadata={"rows": [3, 5, 10]},
+    #         ).to_dict()
+    #     ],
+    #     "default_action": None,
+    # },
 
 
 @pytest.mark.parametrize("data_type", ["int", "mixed"])

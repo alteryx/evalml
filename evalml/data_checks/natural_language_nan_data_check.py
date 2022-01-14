@@ -32,14 +32,10 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             >>> data.ww.init(logical_types={"A": "NaturalLanguage", "B": "NaturalLanguage"})
             ...
             >>> nl_nan_check = NaturalLanguageNaNDataCheck()
-            >>> assert nl_nan_check.validate(data) == {
-            ...        "warnings": [],
-            ...        "actions": {"action_list":[], "default_action": None},
-            ...        "errors": [DataCheckError(message="Input natural language column(s) (A) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            >>> assert nl_nan_check.validate(data) == [DataCheckError(message="Input natural language column(s) (A) contains NaN values. Please impute NaN values or drop these rows or columns.",
             ...                      data_check_name=NaturalLanguageNaNDataCheck.name,
             ...                      message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
             ...                      details={"columns": ["A"]}).to_dict()]
-            ...    }
         """
         messages = []
 

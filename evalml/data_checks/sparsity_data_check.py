@@ -105,14 +105,13 @@ class SparsityDataCheck(DataCheck):
                             col: res.loc[col] for col in too_sparse_cols
                         },
                     },
-                ).to_dict()
-            )
-
-            results["actions"]["action_list"].append(
-                DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
-                    data_check_name=self.name,
-                    metadata={"columns": too_sparse_cols},
+                    actions=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": too_sparse_cols},
+                        )
+                    ],
                 ).to_dict()
             )
 

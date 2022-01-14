@@ -97,14 +97,11 @@ class OutliersDataCheck(DataCheck):
                     "rows": all_rows_with_indices,
                     "column_indices": outlier_row_indices,
                 },
-            ).to_dict()
-        )
-
-        results["actions"]["action_list"].append(
-            DataCheckActionOption(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=self.name,
-                metadata={"rows": all_rows_with_indices},
+                action=DataCheckActionOption(
+                    DataCheckActionCode.DROP_ROWS,
+                    data_check_name=self.name,
+                    metadata={"rows": all_rows_with_indices},
+                ),
             ).to_dict()
         )
         return messages
