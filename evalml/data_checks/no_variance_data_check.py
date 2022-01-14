@@ -82,9 +82,7 @@ class NoVarianceDataCheck(DataCheck):
 
             >>> X["First_Column"] = [2, 2, 2, 2, None, None, None, None]
             >>> y = pd.Series([1, 1, 1, 1, None, None, None, None])
-            >>> assert novar_dc.validate(X, y) == {
-            ...     "warnings": [],
-            ...     "errors": [{"message": "'First_Column' has 1 unique value.",
+            >>> assert novar_dc.validate(X, y) == [{"message": "'First_Column' has 1 unique value.",
             ...                 "data_check_name": "NoVarianceDataCheck",
             ...                 "level": "error",
             ...                 "details": {"columns": ["First_Column"], "rows": None},

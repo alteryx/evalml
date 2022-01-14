@@ -11,8 +11,22 @@ from evalml.utils import infer_feature_types
 @patch("evalml.automl.AutoMLSearch.search")
 def test_search_iterative(mock_automl_search, mock_data_checks_validate, X_y_binary):
     X, y = X_y_binary
-    # this doesn't exactly match the data check results schema but its enough to trigger the error in search_iterative()
-    data_check_results_expected = {"warnings": ["Warning 1", "Warning 2"]}
+    data_check_results_expected = [
+        {
+            "message": "Data check dummy message",
+            "data_check_name": "DataCheck",
+            "level": "warning",
+            "details": {"columns": None, "rows": None},
+            "code": "DATA_CHECK_CODE",
+        },
+        {
+            "message": "Data check dummy message",
+            "data_check_name": "DataCheck",
+            "level": "warning",
+            "details": {"columns": None, "rows": None},
+            "code": "DATA_CHECK_CODE",
+        },
+    ]
     mock_data_checks_validate.return_value = data_check_results_expected
     automl, data_check_results = search_iterative(
         X_train=X, y_train=y, problem_type="binary"
@@ -35,8 +49,22 @@ def test_search_iterative_data_check_error(
     mock_automl_search, mock_data_checks_validate, X_y_binary
 ):
     X, y = X_y_binary
-    # this doesn't exactly match the data check results schema but its enough to trigger the error in search_iterative()
-    data_check_results_expected = {"errors": ["Error 1", "Error 2"]}
+    data_check_results_expected = [
+        {
+            "message": "Data check dummy message",
+            "data_check_name": "DataCheck",
+            "level": "error",
+            "details": {"columns": None, "rows": None},
+            "code": "DATA_CHECK_CODE",
+        },
+        {
+            "message": "Data check dummy message",
+            "data_check_name": "DataCheck",
+            "level": "error",
+            "details": {"columns": None, "rows": None},
+            "code": "DATA_CHECK_CODE",
+        },
+    ]
     mock_data_checks_validate.return_value = data_check_results_expected
     automl, data_check_results = search_iterative(
         X_train=X, y_train=y, problem_type="binary"
