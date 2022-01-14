@@ -361,12 +361,9 @@ def test_make_split_pipeline(X_y_binary):
     assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
         "column_types"
     ] == ["category"]
-    assert (
-        pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
-            "exclude"
-        ]
-        == True
-    )
+    assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
+        "exclude"
+    ]
     assert pipeline.parameters["Numeric Pipeline - Select Columns Transformer"][
         "columns"
     ] == ["1", "2", "3"]
@@ -408,7 +405,7 @@ def test_select_cat_cols(
             assert value["columns"] == algo._selected_cols
         elif "Numeric Pipeline - Select Columns By Type Transformer" in component:
             assert value["column_types"] == ["category"]
-            assert value["exclude"] == True
+            assert value["exclude"]
         elif "Categorical Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cat_cols
 
@@ -419,7 +416,7 @@ def test_select_cat_cols(
             assert value["columns"] == algo._selected_cols
         elif "Numeric Pipeline - Select Columns By Type Transformer" in component:
             assert value["column_types"] == ["category"]
-            assert value["exclude"] == True
+            assert value["exclude"]
         elif "Categorical Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cat_cols
 
