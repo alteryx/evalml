@@ -877,8 +877,8 @@ def test_data_checks_drop_index(X_y_binary):
         def validate(self, X, y):
             return []
 
-    assert MockDataCheck().validate(X, y)
-
+    assert MockDataCheck().validate(X, y) == []
+ 
     MockDataCheck.validate = MagicMock()
     checks = DataChecks([MockDataCheck, MockDataCheck, MockDataCheck])
     checks.validate(X, y)
