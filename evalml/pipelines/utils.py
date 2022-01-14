@@ -1,11 +1,9 @@
 """Utility methods for EvalML pipelines."""
 import copy
 import logging
-from collections import namedtuple
 
 from woodwork import logical_types
 
-from ..exceptions import ValidationErrorCode
 from . import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
