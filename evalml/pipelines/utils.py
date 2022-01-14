@@ -856,10 +856,12 @@ def are_datasets_separated_by_gap_time_index(train, test, pipeline_params):
         units_difference = dt_difference / ("1" + freq)
     return units_difference == gap_difference
 
+
 _holdout_validation_result = namedtuple(
     "TSHoldoutValidationResult",
     ("is_valid", "error_messages", "error_codes"),
 )
+
 
 def validate_holdout_datasets(X, X_train, pipeline_params):
     """Validate the holdout datasets match out expectations.
@@ -883,13 +885,17 @@ def validate_holdout_datasets(X, X_train, pipeline_params):
     error_msg = []
     if not right_length:
         errors.append(ValidationErrorCode.INVALID_HOLDOUT_LENGTH)
-        error_msg.append(f"Holdout data X must have {forecast_horizon} rows (value of forecast horizon) "
-                         f"Data received - Length X: {len(X)}")
+        error_msg.append(
+            f"Holdout data X must have {forecast_horizon} rows (value of forecast horizon) "
+            f"Data received - Length X: {len(X)}"
+        )
     if not X_separated_by_gap:
         errors.append(ValidationErrorCode.INVALID_HOLDOUT_GAP_SEPARATION)
-        error_msg.append(f"The first value indicated by the column {time_index} needs to start {gap + 1} "
-                         f"units ahead of the training data. "
-                         f"X value start: {X[time_index].iloc[0]}, X_train value end {X_train[time_index].iloc[-1]}.")
+        error_msg.append(
+            f"The first value indicated by the column {time_index} needs to start {gap + 1} "
+            f"units ahead of the training data. "
+            f"X value start: {X[time_index].iloc[0]}, X_train value end {X_train[time_index].iloc[-1]}."
+        )
 
     return _holdout_validation_result(not errors, error_msg, errors)
 

@@ -97,7 +97,6 @@ class ParameterNotUsedWarning(UserWarning):
         super().__init__(msg)
 
 
-
 class ValidationErrorCode(Enum):
     """Enum identifying the type of error encountered in holdout validation."""
 

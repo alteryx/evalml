@@ -43,7 +43,8 @@ from evalml.pipelines.utils import (
     is_classification,
     make_pipeline,
     make_pipeline_from_actions,
-    rows_of_interest, validate_holdout_datasets,
+    rows_of_interest,
+    validate_holdout_datasets,
 )
 from evalml.problem_types import ProblemTypes, is_time_series
 
@@ -964,11 +965,15 @@ def test_time_series_pipeline_validates_holdout_data(
         X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon]
         X["date"] = dates[gap + 1 : gap + 1 + len(X)]
 
-    length_error = f"Holdout data X must have {forecast_horizon} rows (value of forecast horizon) " \
-                   f"Data received - Length X: {len(X)}"
-    gap_error = f"The first value indicated by the column date needs to start {gap + 1} " \
-                f"units ahead of the training data. " \
-                f"X value start: {X['date'].iloc[0]}, X_train value end {X_train['date'].iloc[-1]}."
+    length_error = (
+        f"Holdout data X must have {forecast_horizon} rows (value of forecast horizon) "
+        f"Data received - Length X: {len(X)}"
+    )
+    gap_error = (
+        f"The first value indicated by the column date needs to start {gap + 1} "
+        f"units ahead of the training data. "
+        f"X value start: {X['date'].iloc[0]}, X_train value end {X_train['date'].iloc[-1]}."
+    )
 
     result = validate_holdout_datasets(X, X_train, problem_config)
 
@@ -978,4 +983,6 @@ def test_time_series_pipeline_validates_holdout_data(
         assert result.error_codes[0] == ValidationErrorCode.INVALID_HOLDOUT_LENGTH
     else:
         assert result.error_messages[0] == gap_error
-        assert result.error_codes[0] == ValidationErrorCode.INVALID_HOLDOUT_GAP_SEPARATION
+        assert (
+            result.error_codes[0] == ValidationErrorCode.INVALID_HOLDOUT_GAP_SEPARATION
+        )
