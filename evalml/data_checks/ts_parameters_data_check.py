@@ -88,6 +88,8 @@ class TimeSeriesParametersDataCheck(DataCheck):
                     details={
                         "max_window_size": validation.max_window_size,
                         "min_split_size": validation.smallest_split_size,
+                        "n_obs": validation.n_obs,
+                        "n_splits": validation.n_splits,
                     },
                 ).to_dict()
             )
