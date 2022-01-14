@@ -66,7 +66,9 @@ class TimeSeriesParametersDataCheck(DataCheck):
             ...                 "details": {'columns': None,
             ...                             'rows': None,
             ...                             'max_window_size': 21,
-            ...                             'min_split_size': 20}}],
+            ...                             'min_split_size': 20,
+            ...                             'n_obs': 100,
+            ...                             'n_splits': 4}}],
             ...     "actions": []}
 
         """
