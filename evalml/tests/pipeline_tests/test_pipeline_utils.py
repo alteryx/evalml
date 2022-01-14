@@ -38,6 +38,7 @@ from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _get_preprocessing_components,
     _make_pipeline_from_multiple_graphs,
+    are_datasets_separated_by_gap_time_index,
     generate_pipeline_code,
     get_estimators,
     is_classification,
@@ -936,6 +937,41 @@ def test_make_pipeline_from_multiple_graphs_with_sampler(X_y_binary):
         combined_pipeline.component_graph.get_inputs("Random Forest Classifier")[2]
         == second_pipeline_sampler
     )
+
+
+@pytest.mark.parametrize(
+    "gap,reset_index,freq",
+    [
+        (0, False, "1D"),
+        (0, True, "3D"),
+        (1, False, "1D"),
+        (1, True, "1D"),
+        (5, False, "1D"),
+        (5, True, "1D"),
+        (5, False, None),
+    ],
+)
+def test_noninferrable_data(gap, reset_index, freq):
+    date_range_ = pd.date_range("1/1/21", freq=freq, periods=100)
+    training_date_range = date_range_[:80]
+    if freq is None:
+        training_date_range = pd.DatetimeIndex(["12/12/1984"]).append(date_range_[1:])
+    testing_date_range = date_range_[80 + gap : 85 + gap]
+
+    X_train = pd.DataFrame(training_date_range, columns=["date"])
+    X = pd.DataFrame(testing_date_range, columns=["date"])
+
+    if not reset_index:
+        X.index = [i for i in range(80, 85)]
+
+    problem_config = {
+        "max_delay": 0,
+        "forecast_horizon": 1,
+        "time_index": "date",
+        "gap": gap,
+    }
+
+    assert are_datasets_separated_by_gap_time_index(X_train, X, problem_config)
 
 
 @pytest.mark.parametrize("gap", [0, 1, 5])

@@ -19,10 +19,7 @@ from evalml.pipelines.components import (
     TimeSeriesFeaturizer,
     Transformer,
 )
-from evalml.pipelines.utils import (
-    _get_pipeline_base_class,
-    are_datasets_separated_by_gap_time_index,
-)
+from evalml.pipelines.utils import _get_pipeline_base_class
 from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
@@ -1504,46 +1501,3 @@ def test_time_index_cannot_be_none(time_series_regression_pipeline_class):
                 }
             }
         )
-
-
-@pytest.mark.parametrize(
-    "gap,reset_index,freq",
-    [
-        (0, False, "1D"),
-        (0, True, "3D"),
-        (1, False, "1D"),
-        (1, True, "1D"),
-        (5, False, "1D"),
-        (5, True, "1D"),
-        (5, False, None),
-    ],
-)
-@pytest.mark.parametrize(
-    "pipeline_class,estimator_name",
-    [
-        (TimeSeriesRegressionPipeline, "Random Forest Regressor"),
-        (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
-        (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier"),
-    ],
-)
-def test_noninferrable_data(pipeline_class, estimator_name, gap, reset_index, freq):
-    date_range_ = pd.date_range("1/1/21", freq=freq, periods=100)
-    training_date_range = date_range_[:80]
-    if freq is None:
-        training_date_range = pd.DatetimeIndex(["12/12/1984"]).append(date_range_[1:])
-    testing_date_range = date_range_[80 + gap : 85 + gap]
-
-    X_train = pd.DataFrame(training_date_range, columns=["date"])
-    X = pd.DataFrame(testing_date_range, columns=["date"])
-
-    if not reset_index:
-        X.index = [i for i in range(80, 85)]
-
-    problem_config = {
-        "max_delay": 0,
-        "forecast_horizon": 1,
-        "time_index": "date",
-        "gap": gap,
-    }
-
-    assert are_datasets_separated_by_gap_time_index(X_train, X, problem_config)
