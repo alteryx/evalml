@@ -20,18 +20,14 @@ def test_nl_nan_data_check_error():
     )
     data.ww.init(logical_types={"natural_language": "NaturalLanguage"})
     nl_nan_check = NaturalLanguageNaNDataCheck()
-    assert nl_nan_check.validate(data) == {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [
-            DataCheckError(
-                message="Input natural language column(s) (natural_language) contains NaN values. Please impute NaN values or drop these rows or columns.",
-                data_check_name=NaturalLanguageNaNDataCheck.name,
-                message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-                details={"columns": ["natural_language"]},
-            ).to_dict()
-        ],
-    }
+    assert nl_nan_check.validate(data) == [
+        DataCheckError(
+            message="Input natural language column(s) (natural_language) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            data_check_name=NaturalLanguageNaNDataCheck.name,
+            message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
+            details={"columns": ["natural_language"]},
+        ).to_dict()
+    ]
 
 
 def test_nl_nan_data_check_error_no_nan():
@@ -45,11 +41,7 @@ def test_nl_nan_data_check_error_no_nan():
     )
     data.ww.init(logical_types={"natural_language": "NaturalLanguage"})
     nl_nan_check = NaturalLanguageNaNDataCheck()
-    assert nl_nan_check.validate(data) == {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [],
-    }
+    assert nl_nan_check.validate(data) == []
 
 
 def test_nl_nan_data_check_error_other_cols_with_nan():
@@ -61,11 +53,7 @@ def test_nl_nan_data_check_error_other_cols_with_nan():
     data = data.replace(data.iloc[0][0], None)
     data = data.replace(data.iloc[1][1], None)
     nl_nan_check = NaturalLanguageNaNDataCheck()
-    assert nl_nan_check.validate(data) == {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [],
-    }
+    assert nl_nan_check.validate(data) == []
 
 
 def test_nl_nan_data_check_error_multiple_nl_no_nan():
@@ -82,11 +70,7 @@ def test_nl_nan_data_check_error_multiple_nl_no_nan():
     data["C"] = np.random.randint(0, 3, size=len(data))
     data.ww.init(logical_types={"A": "NaturalLanguage", "B": "NaturalLanguage"})
     nl_nan_check = NaturalLanguageNaNDataCheck()
-    assert nl_nan_check.validate(data) == {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [],
-    }
+    assert nl_nan_check.validate(data) == []
 
 
 def test_nl_nan_data_check_error_multiple_nl_nan():
@@ -121,42 +105,30 @@ def test_nl_nan_data_check_error_multiple_nl_nan():
         }
     )
     nl_nan_check = NaturalLanguageNaNDataCheck()
-    assert nl_nan_check.validate(data) == {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [
-            DataCheckError(
-                message="Input natural language column(s) (A, B) contains NaN values. Please impute NaN values or drop these rows or columns.",
-                data_check_name=NaturalLanguageNaNDataCheck.name,
-                message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-                details={"columns": ["A", "B"]},
-            ).to_dict()
-        ],
-    }
+    assert nl_nan_check.validate(data) == [
+        DataCheckError(
+            message="Input natural language column(s) (A, B) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            data_check_name=NaturalLanguageNaNDataCheck.name,
+            message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
+            details={"columns": ["A", "B"]},
+        ).to_dict()
+    ]
 
 
 def test_nl_nan_check_input_formats():
     nl_nan_check = NaturalLanguageNaNDataCheck()
 
     # test empty pd.DataFrame
-    assert nl_nan_check.validate(pd.DataFrame()) == {
-        "warnings": [],
-        "errors": [],
-        "actions": {"action_list": [], "default_action": None},
-    }
+    assert nl_nan_check.validate(pd.DataFrame()) == []
 
-    expected = {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [
-            DataCheckError(
-                message="Input natural language column(s) (nl) contains NaN values. Please impute NaN values or drop these rows or columns.",
-                data_check_name=NaturalLanguageNaNDataCheck.name,
-                message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-                details={"columns": ["nl"]},
-            ).to_dict()
-        ],
-    }
+    expected = [
+        DataCheckError(
+            message="Input natural language column(s) (nl) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            data_check_name=NaturalLanguageNaNDataCheck.name,
+            message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
+            details={"columns": ["nl"]},
+        ).to_dict()
+    ]
 
     nl_col = [
         None,
@@ -169,15 +141,11 @@ def test_nl_nan_check_input_formats():
     ww_input.ww.init(logical_types={"nl": "NaturalLanguage"})
     assert nl_nan_check.validate(ww_input) == expected
 
-    expected = {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [
-            DataCheckError(
-                message="Input natural language column(s) (0) contains NaN values. Please impute NaN values or drop these rows or columns.",
-                data_check_name=NaturalLanguageNaNDataCheck.name,
-                message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-                details={"columns": ["0"]},
-            ).to_dict()
-        ],
-    }
+    expected = [
+        DataCheckError(
+            message="Input natural language column(s) (0) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            data_check_name=NaturalLanguageNaNDataCheck.name,
+            message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
+            details={"columns": ["0"]},
+        ).to_dict()
+    ]

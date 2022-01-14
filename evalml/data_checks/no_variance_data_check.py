@@ -161,7 +161,7 @@ class NoVarianceDataCheck(DataCheck):
                         data_check_name=self.name,
                         metadata={"columns": zero_unique},
                     ),
-                )
+                ).to_dict()
             )
         if one_unique:
             messages.append(
@@ -177,7 +177,7 @@ class NoVarianceDataCheck(DataCheck):
                         data_check_name=self.name,
                         metadata={"columns": one_unique},
                     ),
-                )
+                ).to_dict()
             )
         if one_unique_with_null:
             messages.append(
@@ -195,7 +195,7 @@ class NoVarianceDataCheck(DataCheck):
                         data_check_name=self.name,
                         metadata={"columns": one_unique_with_null},
                     ),
-                )
+                ).to_dict()
             )
 
         # Check target for variance
@@ -213,7 +213,7 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": [y_name]},
-                )
+                ).to_dict()
             )
 
         elif y_unique_count == 1:
@@ -223,7 +223,7 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": [y_name]},
-                )
+                ).to_dict()
             )
 
         elif y_unique_count == 2 and not self._dropnan and y_any_null:
@@ -233,7 +233,7 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                     details={"columns": [y_name]},
-                )
+                ).to_dict()
             )
 
         return messages

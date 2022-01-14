@@ -130,7 +130,7 @@ class ClassImbalanceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
                     details={"target_values": sorted(below_threshold_values)},
-                )
+                ).to_dict()
             )
 
         counts = fold_counts / (fold_counts + fold_counts.values[0])
@@ -147,7 +147,7 @@ class ClassImbalanceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
                     details={"target_values": below_threshold_values},
-                ),
+                ).to_dict()
             )
         sample_counts = fold_counts.where(fold_counts < self.min_samples).dropna()
         if len(below_threshold) and len(sample_counts):
@@ -162,6 +162,6 @@ class ClassImbalanceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
                     details={"target_values": severe_imbalance},
-                ),
+                ).to_dict()
             )
         return messages

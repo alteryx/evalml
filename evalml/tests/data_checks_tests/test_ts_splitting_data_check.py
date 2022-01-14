@@ -44,7 +44,7 @@ def test_time_series_param_data_check(is_valid, problem_type):
             y = pd.Series([i % 3 for i in range(100)])
 
     data_check = TimeSeriesSplittingDataCheck("time series binary", 3)
-    results = data_check.validate(X, y)
+    messages = data_check.validate(X, y)
     code = DataCheckMessageCode.TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT.name
 
     if not is_valid:
@@ -56,8 +56,4 @@ def test_time_series_param_data_check(is_valid, problem_type):
         }
         assert messages[0]["code"] == code
     else:
-        assert results == {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        assert messages == []

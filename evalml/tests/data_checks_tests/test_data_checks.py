@@ -67,59 +67,42 @@ def test_data_checks(X_y_binary):
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
-            return {
-                "warnings": [],
-                "errors": [],
-                "actions": {"action_list": [], "default_action": None},
-            }
+            return []
 
     class MockDataCheckWarning(DataCheck):
         def validate(self, X, y):
-            return {
-                "warnings": [
-                    DataCheckWarning(
-                        message="warning one",
-                        data_check_name=self.name,
-                        message_code=None,
-                    ).to_dict()
-                ],
-                "errors": [],
-                "actions": {"action_list": [], "default_action": None},
-            }
+            return [
+                DataCheckWarning(
+                    message="warning one",
+                    data_check_name=self.name,
+                    message_code=None,
+                ).to_dict()
+            ]
 
     class MockDataCheckError(DataCheck):
         def validate(self, X, y):
-            return {
-                "warnings": [],
-                "errors": [
-                    DataCheckError(
-                        message="error one",
-                        data_check_name=self.name,
-                        message_code=None,
-                    ).to_dict()
-                ],
-                "actions": {"action_list": [], "default_action": None},
-            }
+            return [
+                DataCheckError(
+                    message="error one",
+                    data_check_name=self.name,
+                    message_code=None,
+                ).to_dict()
+            ]
 
     class MockDataCheckErrorAndWarning(DataCheck):
         def validate(self, X, y):
-            return {
-                "warnings": [
-                    DataCheckWarning(
-                        message="warning two",
-                        data_check_name=self.name,
-                        message_code=None,
-                    ).to_dict()
-                ],
-                "errors": [
-                    DataCheckError(
-                        message="error two",
-                        data_check_name=self.name,
-                        message_code=None,
-                    ).to_dict()
-                ],
-                "actions": {"action_list": [], "default_action": None},
-            }
+            return [
+                DataCheckWarning(
+                    message="warning two",
+                    data_check_name=self.name,
+                    message_code=None,
+                ).to_dict(),
+                DataCheckError(
+                    message="error two",
+                    data_check_name=self.name,
+                    message_code=None,
+                ).to_dict(),
+            ]
 
     data_checks_list = [
         MockDataCheck,
@@ -128,25 +111,20 @@ def test_data_checks(X_y_binary):
         MockDataCheckErrorAndWarning,
     ]
     data_checks = DataChecks(data_checks=data_checks_list)
-    assert data_checks.validate(X, y) == {
-        "warnings": [
-            DataCheckWarning(
-                message="warning one", data_check_name="MockDataCheckWarning"
-            ).to_dict(),
-            DataCheckWarning(
-                message="warning two", data_check_name="MockDataCheckErrorAndWarning"
-            ).to_dict(),
-        ],
-        "errors": [
-            DataCheckError(
-                message="error one", data_check_name="MockDataCheckError"
-            ).to_dict(),
-            DataCheckError(
-                message="error two", data_check_name="MockDataCheckErrorAndWarning"
-            ).to_dict(),
-        ],
-        "actions": {"action_list": [], "default_action": None},
-    }
+    assert data_checks.validate(X, y) == [
+        DataCheckWarning(
+            message="warning one", data_check_name="MockDataCheckWarning"
+        ).to_dict(),
+        DataCheckWarning(
+            message="warning two", data_check_name="MockDataCheckErrorAndWarning"
+        ).to_dict(),
+        DataCheckError(
+            message="error one", data_check_name="MockDataCheckError"
+        ).to_dict(),
+        DataCheckError(
+            message="error two", data_check_name="MockDataCheckErrorAndWarning"
+        ).to_dict(),
+    ]
 
 
 messages = [
@@ -827,11 +805,7 @@ def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
     ).data_checks
     for check in default_data_check:
         if check.name == "InvalidTargetDataCheck":
-            assert check.validate(X, y) == {
-                "warnings": [],
-                "errors": [data_check_error],
-                "actions": {"action_list": [], "default_action": None},
-            }
+            assert check.validate(X, y) == [data_check_error]
 
 
 def test_data_checks_do_not_duplicate_actions(X_y_binary):
@@ -858,11 +832,7 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
 
     class MockDataCheckWithSameAction(DataCheck):
         def validate(self, X, y):
-            return {
-                "warnings": [],
-                "errors": [],
-                "actions": {"action_list": [], "default_action": None},
-            }
+            return []
 
     data_checks_list = [MockDataCheck, MockDataCheckWithSameAction]
     data_checks = DataChecks(data_checks=data_checks_list)
@@ -892,11 +862,7 @@ def test_data_checks_drop_index(X_y_binary):
 
     class MockDataCheck(DataCheck):
         def validate(self, X, y):
-            return {
-                "warnings": [],
-                "errors": [],
-                "actions": {"action_list": [], "default_action": None},
-            }
+            return []
 
     assert MockDataCheck().validate(X, y)
 

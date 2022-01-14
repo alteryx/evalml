@@ -71,8 +71,4 @@ def test_time_series_param_data_check(
         }
         assert messages[0]["code"] == code
     else:
-        assert results == {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        assert results == []

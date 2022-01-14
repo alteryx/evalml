@@ -168,11 +168,7 @@ def test_id_cols_data_check_input_formats():
     id_cols_check = IDColumnsDataCheck(id_threshold=0.8)
 
     # test empty pd.DataFrame
-    assert id_cols_check.validate(pd.DataFrame()) == {
-        "warnings": [],
-        "errors": [],
-        "actions": {"action_list": [], "default_action": None},
-    }
+    assert id_cols_check.validate(pd.DataFrame()) == []
 
     #  test Woodwork
     ww_input = pd.DataFrame(np.array([[0, 1], [1, 2], [2, 3], [3, 4], [4, 5]]))

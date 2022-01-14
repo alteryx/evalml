@@ -96,8 +96,8 @@ def test_highly_null_data_check_warnings(
     )
     highly_null_rows = SeriesWrap(pd.Series([2 / 3, 2 / 3, 2 / 3, 2 / 3, 1 / 3]))
     validate_results = no_null_check.validate(df)
-    validate_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
-        validate_messages[0]["details"]["pct_null_cols"]
+    validate_results[0]["details"]["pct_null_cols"] = SeriesWrap(
+        validate_results[0]["details"]["pct_null_cols"]
     )
     assert validate_results == {
         "warnings": [
@@ -143,8 +143,8 @@ def test_highly_null_data_check_warnings(
     )
     highly_null_rows = SeriesWrap(pd.Series([2 / 3, 2 / 3, 2 / 3, 2 / 3]))
     validate_results = some_null_check.validate(df)
-    validate_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
-        validate_messages[0]["details"]["pct_null_cols"]
+    validate_results[0]["details"]["pct_null_cols"] = SeriesWrap(
+        validate_results[0]["details"]["pct_null_cols"]
     )
     assert validate_results == {
         "warnings": [
@@ -244,8 +244,8 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
     )
     highly_null_rows = SeriesWrap(pd.Series([2 / 3, 2 / 3, 2 / 3, 2 / 3, 1 / 3]))
     validate_results = row_null_check.validate(highly_null_dataframe)
-    validate_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
-        validate_messages[0]["details"]["pct_null_cols"]
+    validate_results[0]["details"]["pct_null_cols"] = SeriesWrap(
+        validate_results[0]["details"]["pct_null_cols"]
     )
     assert validate_results == {
         "warnings": [
@@ -346,11 +346,7 @@ def test_highly_null_data_check_input_formats():
     )
 
     # test empty pd.DataFrame
-    assert highly_null_check.validate(pd.DataFrame()) == {
-        "warnings": [],
-        "errors": [],
-        "actions": {"action_list": [], "default_action": None},
-    }
+    assert highly_null_check.validate(pd.DataFrame()) == []
 
     highly_null_rows = SeriesWrap(pd.Series([0.8]))
     expected = {
