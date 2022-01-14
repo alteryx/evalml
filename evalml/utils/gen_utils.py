@@ -543,7 +543,7 @@ def contains_all_ts_parameters(problem_configuration):
 
 _validation_result = namedtuple(
     "TSParameterValidationResult",
-    ("is_valid", "msg", "smallest_split_size", "max_window_size"),
+    ("is_valid", "msg", "smallest_split_size", "max_window_size", "n_obs", "n_splits"),
 )
 
 
@@ -577,4 +577,4 @@ def are_ts_parameters_valid_for_split(
             "then at least one of the splits would be empty by the time it reaches the pipeline. "
             "Please use a smaller number of splits, reduce one or more these parameters, or collect more data."
         )
-    return _validation_result(not msg, msg, split_size, window_size)
+    return _validation_result(not msg, msg, split_size, window_size, n_obs, n_splits)
