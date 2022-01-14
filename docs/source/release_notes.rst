@@ -1,4 +1,4 @@
-Release Notes
+﻿Release Notes
 -------------
 **Future Releases**
     * Enhancements
@@ -10,8 +10,11 @@ Release Notes
         * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
         * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
         * Standardized names of featurization components :pr:`3192`
+        * Removed empty cell in text_input.ipynb :pr:`3234`
         * Removed potential prediction explanations failure when pipelines predicted a class with probability 1 :pr:`3221`
+        * Dropped NaNs before partial dependence grid generation :pr:`3235`
     * Changes
+        * Raised lowest compatible numpy version to 1.21.0 to address security concerns :pr:`3207`
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
         * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
         * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`

@@ -71,15 +71,14 @@ def _grid_from_X(X, percentiles, grid_resolution, custom_range):
                 )
             axis = feature_range
         else:
-            uniques = np.unique(X.loc[:, feature])
+            feature_vector = X.loc[:, feature].dropna()
+            uniques = np.unique(feature_vector)
             if uniques.shape[0] < grid_resolution:
                 # feature has low resolution use unique vals
                 axis = uniques
             else:
                 # create axis based on percentiles and grid resolution
-                emp_percentiles = mquantiles(
-                    X.loc[:, feature], prob=percentiles, axis=0
-                )
+                emp_percentiles = mquantiles(feature_vector, prob=percentiles, axis=0)
                 if np.allclose(emp_percentiles[0], emp_percentiles[1]):
                     raise ValueError(
                         "percentiles are too close to each other, "
