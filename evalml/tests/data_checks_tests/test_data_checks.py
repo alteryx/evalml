@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 import woodwork as ww
 
-from evalml import problem_types
 from evalml.automl import get_default_primary_search_objective
 from evalml.data_checks import (
     ClassImbalanceDataCheck,
@@ -854,12 +853,12 @@ def test_data_checks_do_not_duplicate_actions(X_y_binary):
         ).to_dict(),
         DataCheckWarning(
             message="warning one",
-            data_check_name="Mock Data Check",
+            data_check_name="MockDataCheckWithSameOutput",
             message_code=None,
             action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
-                    data_check_name="Mock Data Check",
+                    data_check_name="MockDataCheckWithSameOutput",
                     metadata={"columns": ["col_to_drop"]},
                 )
             ],
@@ -878,7 +877,7 @@ def test_data_checks_drop_index(X_y_binary):
             return []
 
     assert MockDataCheck().validate(X, y) == []
- 
+
     MockDataCheck.validate = MagicMock()
     checks = DataChecks([MockDataCheck, MockDataCheck, MockDataCheck])
     checks.validate(X, y)

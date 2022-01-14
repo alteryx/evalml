@@ -66,7 +66,7 @@ def test_n_splits_passed_to_ts_splitting_data_check():
         problem_type="time series binary",
         n_splits=4,
     )
-    assert len(data_checks["errors"][0]["details"]["invalid_splits"]) == 4
+    assert len(data_checks[0]["details"]["invalid_splits"]) == 4
 
 
 @pytest.mark.parametrize(
