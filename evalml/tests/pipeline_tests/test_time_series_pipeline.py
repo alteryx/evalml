@@ -7,7 +7,7 @@ import pytest
 import woodwork as ww
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from evalml.exceptions import PartialDependenceError, PipelineNotYetFittedError
+from evalml.exceptions import PipelineNotYetFittedError
 from evalml.objectives import FraudCost, get_objective
 from evalml.pipelines import (
     TimeSeriesBinaryClassificationPipeline,
@@ -22,44 +22,10 @@ from evalml.pipelines.components import (
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     are_datasets_separated_by_gap_time_index,
-    validate_holdout_datasets,
 )
 from evalml.preprocessing.utils import is_classification
 from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
-
-
-@pytest.mark.parametrize("gap", [0, 1, 5])
-@pytest.mark.parametrize("forecast_horizon", [1, 5, 10])
-@pytest.mark.parametrize("length_or_freq", ["length", "freq"])
-def test_time_series_pipeline_validates_holdout_data(
-    length_or_freq,
-    forecast_horizon,
-    gap,
-    ts_data,
-    ts_data_binary,
-):
-    X, y = ts_data
-    problem_config = {
-        "time_index": "date",
-        "gap": gap,
-        "max_delay": 2,
-        "forecast_horizon": forecast_horizon,
-    }
-    TRAIN_LENGTH = 15
-    X_train = X.iloc[:TRAIN_LENGTH]
-
-    if length_or_freq == "length":
-        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon + 2]
-    elif length_or_freq == "freq":
-        dates = pd.date_range("2020-10-16", periods=16)
-        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon]
-        X["date"] = dates[gap + 1 : gap + 1 + len(X)]
-
-    with pytest.raises(
-        PartialDependenceError, match=f"Holdout data X must have {forecast_horizon}"
-    ):
-        validate_holdout_datasets(X, X_train, problem_config)
 
 
 @pytest.mark.parametrize("num_unique", [1, 2, 3])

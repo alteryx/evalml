@@ -97,6 +97,16 @@ class ParameterNotUsedWarning(UserWarning):
         super().__init__(msg)
 
 
+
+class ValidationErrorCode(Enum):
+    """Enum identifying the type of error encountered in holdout validation."""
+
+    INVALID_HOLDOUT_LENGTH = "invalid_holdout_length"
+    """invalid_holdout_length"""
+    INVALID_HOLDOUT_GAP_SEPARATION = "invalid_holdout_gap_separation"
+    """invalid_holdout_gap_separation"""
+
+
 class PartialDependenceErrorCode(Enum):
     """Enum identifying the type of error encountered in partial dependence."""
 
@@ -124,8 +134,6 @@ class PartialDependenceErrorCode(Enum):
     """ice_plot_requested_for_two_way_partial_dependence_plot"""
     INVALID_CLASS_LABEL = "invalid_class_label_requested_for_plot"
     """invalid_class_label_requested_for_plot"""
-    INVALID_HOLDOUT_SET = "invalid_holdout_set"
-    """invalid_holdout_set"""
     ALL_OTHER_ERRORS = "all_other_errors"
     """all_other_errors"""
 
