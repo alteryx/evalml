@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks import DataCheckAction, DataCheckActionCode
-from evalml.exceptions import ValidationErrorCode
 from evalml.model_family import ModelFamily
 from evalml.pipelines import (
     BinaryClassificationPipeline,
@@ -38,14 +37,12 @@ from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _get_preprocessing_components,
     _make_pipeline_from_multiple_graphs,
-    are_datasets_separated_by_gap_time_index,
     generate_pipeline_code,
     get_estimators,
     is_classification,
     make_pipeline,
     make_pipeline_from_actions,
     rows_of_interest,
-    validate_holdout_datasets,
 )
 from evalml.problem_types import ProblemTypes, is_time_series
 
@@ -937,88 +934,3 @@ def test_make_pipeline_from_multiple_graphs_with_sampler(X_y_binary):
         combined_pipeline.component_graph.get_inputs("Random Forest Classifier")[2]
         == second_pipeline_sampler
     )
-
-
-@pytest.mark.parametrize(
-    "gap,reset_index,freq",
-    [
-        (0, False, "1D"),
-        (0, True, "3D"),
-        (1, False, "1D"),
-        (1, True, "1D"),
-        (5, False, "1D"),
-        (5, True, "1D"),
-        (5, False, None),
-    ],
-)
-def test_noninferrable_data(gap, reset_index, freq):
-    date_range_ = pd.date_range("1/1/21", freq=freq, periods=100)
-    training_date_range = date_range_[:80]
-    if freq is None:
-        training_date_range = pd.DatetimeIndex(["12/12/1984"]).append(date_range_[1:])
-    testing_date_range = date_range_[80 + gap : 85 + gap]
-
-    X_train = pd.DataFrame(training_date_range, columns=["date"])
-    X = pd.DataFrame(testing_date_range, columns=["date"])
-
-    if not reset_index:
-        X.index = [i for i in range(80, 85)]
-
-    problem_config = {
-        "max_delay": 0,
-        "forecast_horizon": 1,
-        "time_index": "date",
-        "gap": gap,
-    }
-
-    assert are_datasets_separated_by_gap_time_index(X_train, X, problem_config)
-
-
-@pytest.mark.parametrize("gap", [0, 1, 5])
-@pytest.mark.parametrize("forecast_horizon", [1, 5, 10])
-@pytest.mark.parametrize("length_or_freq", ["length", "freq"])
-def test_time_series_pipeline_validates_holdout_data(
-    length_or_freq,
-    forecast_horizon,
-    gap,
-    ts_data,
-    ts_data_binary,
-):
-    X, y = ts_data
-    problem_config = {
-        "time_index": "date",
-        "gap": gap,
-        "max_delay": 2,
-        "forecast_horizon": forecast_horizon,
-    }
-    TRAIN_LENGTH = 15
-    X_train = X.iloc[:TRAIN_LENGTH]
-
-    if length_or_freq == "length":
-        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon + 2]
-    elif length_or_freq == "freq":
-        dates = pd.date_range("2020-10-16", periods=16)
-        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon]
-        X["date"] = dates[gap + 1 : gap + 1 + len(X)]
-
-    length_error = (
-        f"Holdout data X must have {forecast_horizon} rows (value of forecast horizon) "
-        f"Data received - Length X: {len(X)}"
-    )
-    gap_error = (
-        f"The first value indicated by the column date needs to start {gap + 1} "
-        f"units ahead of the training data. "
-        f"X value start: {X['date'].iloc[0]}, X_train value end {X_train['date'].iloc[-1]}."
-    )
-
-    result = validate_holdout_datasets(X, X_train, problem_config)
-
-    assert not result.is_valid
-    if length_or_freq == "length":
-        assert result.error_messages[0] == length_error
-        assert result.error_codes[0] == ValidationErrorCode.INVALID_HOLDOUT_LENGTH
-    else:
-        assert result.error_messages[0] == gap_error
-        assert (
-            result.error_codes[0] == ValidationErrorCode.INVALID_HOLDOUT_GAP_SEPARATION
-        )
