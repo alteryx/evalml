@@ -712,6 +712,24 @@ def test_errors_warnings_in_invalid_target_data_check(objective, ts_data):
                 "errors": [data_check_error],
                 "actions": [],
             }
+    y = ww.init_series(y, logical_type="Categorical")
+    default_data_check = DefaultDataChecks(
+        problem_type="time series regression",
+        objective=objective,
+        problem_configuration=problem_config,
+    ).data_checks
+    data_check_error_type = DataCheckError(
+        message=f"Target data type should be numeric for regression type problems.",
+        data_check_name="InvalidTargetDataCheck",
+        message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
+    ).to_dict()
+    for check in default_data_check:
+        if check.name == "InvalidTargetDataCheck":
+            assert check.validate(X, y) == {
+                "warnings": [],
+                "errors": [data_check_error_type],
+                "actions": [],
+            }
 
 
 def test_data_checks_do_not_duplicate_actions(X_y_binary):
