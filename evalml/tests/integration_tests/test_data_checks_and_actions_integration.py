@@ -35,7 +35,7 @@ def test_data_checks_with_healthy_data(X_y_binary):
 
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
-        for option in data_checks_output["actions"]["action_list"]
+        for option in data_checks_output["action_options"]["action_list"]
     )
     assert make_pipeline_from_actions(
         "binary", actions
@@ -56,7 +56,7 @@ def test_data_checks_suggests_drop_cols():
 
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
-        for option in data_checks_output["actions"]["action_list"]
+        for option in data_checks_output["action_options"]["action_list"]
     )
     action_pipeline = make_pipeline_from_actions("binary", actions)
     assert action_pipeline == BinaryClassificationPipeline(
@@ -111,7 +111,7 @@ def test_data_checks_impute_cols(problem_type):
 
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
-        for option in data_checks_output["actions"]["action_list"]
+        for option in data_checks_output["action_options"]["action_list"]
     )
     action_pipeline = make_pipeline_from_actions(problem_type, actions)
     expected_parameters = (
@@ -149,7 +149,7 @@ def test_data_checks_suggests_drop_rows():
 
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
-        for option in data_checks_output["actions"]["action_list"]
+        for option in data_checks_output["action_options"]["action_list"]
     )
     action_pipeline = make_pipeline_from_actions("binary", actions)
     assert action_pipeline == BinaryClassificationPipeline(

@@ -108,7 +108,7 @@ def test_highly_null_data_check_warnings(
                 "pct_null_cols": highly_null_rows,
                 "rows": highly_null_rows.series.index.tolist(),
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
@@ -124,7 +124,7 @@ def test_highly_null_data_check_warnings(
                 "columns": ["lots_of_null", "all_null"],
                 "pct_null_rows": {"all_null": 1.0, "lots_of_null": 0.8},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
@@ -148,7 +148,7 @@ def test_highly_null_data_check_warnings(
             data_check_name=highly_null_data_check_name,
             message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
             details={"pct_null_cols": highly_null_rows, "rows": [0, 1, 2, 3]},
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
@@ -164,7 +164,7 @@ def test_highly_null_data_check_warnings(
                 "columns": ["lots_of_null", "all_null"],
                 "pct_null_rows": {"all_null": 1.0, "lots_of_null": 0.8},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
@@ -186,7 +186,7 @@ def test_highly_null_data_check_warnings(
                 "columns": ["all_null"],
                 "pct_null_rows": {"all_null": 1.0},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
@@ -201,7 +201,7 @@ def test_highly_null_data_check_warnings(
             details={
                 "columns": ["lots_of_null"],
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=highly_null_data_check_name,
@@ -241,7 +241,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
             data_check_name=highly_null_data_check_name,
             message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
             details={"pct_null_cols": highly_null_rows, "rows": [0, 1, 2, 3, 4]},
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
@@ -257,7 +257,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
                 "columns": ["all_null"],
                 "pct_null_rows": {"all_null": 1.0},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
@@ -272,7 +272,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
             details={
                 "columns": ["lots_of_null"],
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=highly_null_data_check_name,
@@ -309,7 +309,7 @@ def test_highly_null_data_check_separate_rows_cols(highly_null_dataframe):
                 "columns": ["lots_of_null", "all_null"],
                 "pct_null_rows": {"lots_of_null": 0.8, "all_null": 1.0},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
@@ -335,7 +335,7 @@ def test_highly_null_data_check_input_formats():
             data_check_name=highly_null_data_check_name,
             message_code=DataCheckMessageCode.HIGHLY_NULL_ROWS,
             details={"pct_null_cols": highly_null_rows, "rows": [0]},
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=highly_null_data_check_name,
@@ -351,7 +351,7 @@ def test_highly_null_data_check_input_formats():
                 "columns": [0, 1, 2],
                 "pct_null_rows": {0: 1.0, 1: 1.0, 2: 1.0},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=highly_null_data_check_name,
@@ -366,7 +366,7 @@ def test_highly_null_data_check_input_formats():
             details={
                 "columns": [3],
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=highly_null_data_check_name,
@@ -467,7 +467,7 @@ def test_has_null_but_not_highly_null():
                     "few_null_2",
                 ],
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=highly_null_data_check_name,

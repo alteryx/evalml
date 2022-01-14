@@ -96,7 +96,7 @@ class TargetLeakageDataCheck(DataCheck):
             ...                   "code": "TARGET_LEAKAGE",
             ...                   "details": {"columns": ["leak"], "rows": None}}],
             ...     "errors": [],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            ...     "action_options": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "TargetLeakageDataCheck",
             ...                  "parameters": {},
             ...                  "metadata": {"columns": ["leak"], "rows": None}}],
@@ -113,7 +113,7 @@ class TargetLeakageDataCheck(DataCheck):
             ...                   "details": {"columns": ["leak", "x"], "rows": None},
             ...                   "code": "TARGET_LEAKAGE"}],
             ...     "errors": [],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            ...     "action_options": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "TargetLeakageDataCheck",
             ...                  "parameters": {},
             ...                  "metadata": {"columns": ["leak", "x"], "rows": None}}],
@@ -149,7 +149,7 @@ class TargetLeakageDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                     details={"columns": highly_corr_cols},
-                    actions=[
+                    action_options=[
                         DataCheckActionOption(
                             DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,

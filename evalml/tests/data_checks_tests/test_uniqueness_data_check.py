@@ -101,7 +101,7 @@ def test_uniqueness_data_check_warnings():
                 "columns": ["regression_not_unique_enough"],
                 "uniqueness_score": {"regression_not_unique_enough": 0.0},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=uniqueness_data_check_name,
@@ -127,7 +127,7 @@ def test_uniqueness_data_check_warnings():
                 "columns": ["multiclass_too_unique"],
                 "uniqueness_score": {"multiclass_too_unique": 0.7999999999999999},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=uniqueness_data_check_name,

@@ -67,7 +67,7 @@ class TimeSeriesParametersDataCheck(DataCheck):
             ...                             "rows": None,
             ...                             "max_window_size": 21,
             ...                             "min_split_size": 20}}],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            ...     "action_options": {"action_list":[], "default_action": None}}
 
         """
         messages = []

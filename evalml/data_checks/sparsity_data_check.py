@@ -61,7 +61,7 @@ class SparsityDataCheck(DataCheck):
             ...                   "data_check_name": "SparsityDataCheck",
             ...                    "level": "warning",
             ...                    "code": "TOO_SPARSE",
-            ...                    "details": {"columns": ["sparse"], "sparsity_score": {"sparse": 0.0}, "rows": None}, "actions": {"code": "DROP_COL",
+            ...                    "details": {"columns": ["sparse"], "sparsity_score": {"sparse": 0.0}, "rows": None}, "action_options": {"code": "DROP_COL",
             ...                  "data_check_name": "SparsityDataCheck",
             ...                  "parameters": {},
             ...                  "metadata": {"columns": ["sparse"], "rows": None}}}],
@@ -100,7 +100,7 @@ class SparsityDataCheck(DataCheck):
                             col: res.loc[col] for col in too_sparse_cols
                         },
                     },
-                    actions=[
+                    action_options=[
                         DataCheckActionOption(
                             DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,

@@ -114,7 +114,7 @@ def test_target_distribution_data_check_warning_action(
                 data_check_name=target_dist_check_name,
                 message_code=DataCheckMessageCode.TARGET_LOGNORMAL_DISTRIBUTION,
                 details=details,
-                actions=[
+                action_options=[
                     DataCheckActionOption(
                         DataCheckActionCode.TRANSFORM_TARGET,
                         data_check_name=target_dist_check_name,

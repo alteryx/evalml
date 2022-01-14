@@ -53,7 +53,7 @@ def test_id_columns_warning():
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_COLUMN,
             details={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
@@ -71,7 +71,7 @@ def test_id_columns_warning():
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_COLUMN,
             details={"columns": ["Id", "col_1_id"]},
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
@@ -112,7 +112,7 @@ def test_id_columns_strings():
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_COLUMN,
             details={"columns": ["Id", "col_1_id", "col_2", "col_3_id"]},
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
@@ -129,7 +129,7 @@ def test_id_columns_strings():
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_COLUMN,
             details={"columns": ["Id", "col_1_id"]},
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
@@ -155,7 +155,7 @@ def test_id_cols_data_check_input_formats():
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_COLUMN,
             details={"columns": [0, 1]},
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
@@ -172,7 +172,7 @@ def test_id_cols_data_check_input_formats():
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_COLUMN,
             details={"columns": [0, 1]},
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,
@@ -191,7 +191,7 @@ def test_id_cols_data_check_input_formats():
             data_check_name=id_data_check_name,
             message_code=DataCheckMessageCode.HAS_ID_COLUMN,
             details={"columns": [0, 1]},
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=id_data_check_name,

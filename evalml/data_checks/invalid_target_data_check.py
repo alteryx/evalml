@@ -107,7 +107,7 @@ class InvalidTargetDataCheck(DataCheck):
             ...                             "rows": None,
             ...                             "num_null_rows": 2,
             ...                             "pct_null_rows": 50.0},
-            ...                 "code": "TARGET_HAS_NULL"}, "actions": {"code": "IMPUTE_COL",
+            ...                 "code": "TARGET_HAS_NULL"}, "action_options": {"code": "IMPUTE_COL",
             ...                  "data_check_name": "InvalidTargetDataCheck",
             ...                  "parameters": {"impute_strategy": {"parameter_type": "global", "type": "category", "categories": ["mean", "most_frequent"], "default_value": "mean"}},
             ...                  "metadata": {"columns": None,
@@ -217,7 +217,7 @@ class InvalidTargetDataCheck(DataCheck):
                         "num_null_rows": num_null_rows,
                         "pct_null_rows": pct_null_rows,
                     },
-                    actions=[
+                    action_options=[
                         DataCheckActionOption(
                             DataCheckActionCode.IMPUTE_COL,
                             data_check_name=self.name,

@@ -173,7 +173,7 @@ def test_invalid_target_data_input_formats():
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_HAS_NULL,
             details={"num_null_rows": 3, "pct_null_rows": 75},
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=invalid_targets_data_check_name,
@@ -639,7 +639,7 @@ def test_invalid_target_data_action_for_data_with_null(
             data_check_name=invalid_targets_data_check_name,
             message_code=DataCheckMessageCode.TARGET_HAS_NULL,
             details={"num_null_rows": 3, "pct_null_rows": 30.0},
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.IMPUTE_COL,
                     data_check_name=invalid_targets_data_check_name,

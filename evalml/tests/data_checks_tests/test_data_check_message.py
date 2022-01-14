@@ -1,6 +1,8 @@
 import pytest
 
 from evalml.data_checks import (
+    DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckError,
     DataCheckMessage,
     DataCheckMessageCode,
@@ -161,17 +163,41 @@ def test_warning_error_eq():
 def test_data_check_message_to_dict():
     error = DataCheckError(
         message="test message",
-        data_check_name="same test name",
+        data_check_name="test name",
         message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
-        details={"detail 1": "error info", "columns": None, "rows": None},
+        details={
+            "detail 1": "error info",
+            "columns": ["all_null", "also_all_null"],
+            "rows": None,
+        },
+        action_options=[
+            DataCheckActionOption(
+                DataCheckActionCode.DROP_COL,
+                data_check_name="test_name",
+                metadata={"columns": ["all_null", "also_all_null"]},
+            )
+        ],
     )
     assert error.to_dict() == {
         "message": "test message",
         "level": "error",
-        "data_check_name": "same test name",
+        "data_check_name": "test name",
         "code": DataCheckMessageCode.HIGHLY_NULL_COLS.name,
-        "details": {"detail 1": "error info", "columns": None, "rows": None},
+        "details": {
+            "detail 1": "error info",
+            "columns": ["all_null", "also_all_null"],
+            "rows": None,
+        },
+        "action_options": [
+            {
+                "code": "DROP_COL",
+                "data_check_name": "test_name",
+                "metadata": {"columns": ["all_null", "also_all_null"], "rows": None},
+                "parameters": {},
+            }
+        ],
     }
+
     warning = DataCheckWarning(
         message="test message",
         data_check_name="same test name",
@@ -184,6 +210,7 @@ def test_data_check_message_to_dict():
         "data_check_name": "same test name",
         "code": DataCheckMessageCode.HIGHLY_NULL_COLS.name,
         "details": {"detail 1": "warning info", "columns": None, "rows": None},
+        "action_options": [],
     }
 
 
@@ -194,6 +221,7 @@ def test_data_check_message_to_dict_optional():
         "level": "error",
         "data_check_name": "same test name",
         "details": {"columns": None, "rows": None},
+        "action_options": [],
     }
     warning = DataCheckWarning(message="test message", data_check_name="same test name")
     assert warning.to_dict() == {
@@ -201,4 +229,8 @@ def test_data_check_message_to_dict_optional():
         "level": "warning",
         "data_check_name": "same test name",
         "details": {"columns": None, "rows": None},
+        "action_options": [],
     }
+
+
+## TODO: add tests with actions

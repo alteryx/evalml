@@ -131,7 +131,7 @@ def test_sparsity_data_check_warnings():
                     "sparse": 0.3333333333333333,
                 },
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name=sparsity_data_check_name,

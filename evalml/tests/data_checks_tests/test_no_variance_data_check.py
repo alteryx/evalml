@@ -41,20 +41,20 @@ drop_feature_action_option = DataCheckActionOption(
     DataCheckActionCode.DROP_COL,
     data_check_name=no_variance_data_check_name,
     metadata={"columns": ["feature"]},
-).to_dict()
+)
 feature_0_unique = DataCheckError(
     message="'feature' has 0 unique values.",
     data_check_name=no_variance_data_check_name,
     message_code=DataCheckMessageCode.NO_VARIANCE,
     details={"columns": ["feature"]},
-    actions=[drop_feature_action_option],
+    action_options=[drop_feature_action_option],
 ).to_dict()
 feature_1_unique = DataCheckError(
     message="'feature' has 1 unique value.",
     data_check_name=no_variance_data_check_name,
     message_code=DataCheckMessageCode.NO_VARIANCE,
     details={"columns": ["feature"]},
-    actions=[drop_feature_action_option],
+    action_options=[drop_feature_action_option],
 ).to_dict()
 labels_0_unique = DataCheckError(
     message="Y has 0 unique values.",
@@ -105,7 +105,7 @@ cases = [
                 data_check_name=no_variance_data_check_name,
                 message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                 details={"columns": ["feature"]},
-                actions=[drop_feature_action_option],
+                action_options=[drop_feature_action_option],
             ).to_dict(),
             DataCheckWarning(
                 message="Y has two unique values including nulls. Consider encoding the nulls for "
@@ -113,7 +113,7 @@ cases = [
                 data_check_name=no_variance_data_check_name,
                 message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                 details={"columns": ["Y"]},
-                actions=[drop_feature_action_option],
+                action_options=[drop_feature_action_option],
             ).to_dict(),
         ],
     ),
@@ -128,7 +128,7 @@ cases = [
                 data_check_name=no_variance_data_check_name,
                 message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                 details={"columns": ["feature"]},
-                actions=[drop_feature_action_option],
+                action_options=[drop_feature_action_option],
             ).to_dict(),
             DataCheckWarning(
                 message="Y has two unique values including nulls. Consider encoding the nulls for "
@@ -136,7 +136,7 @@ cases = [
                 data_check_name=no_variance_data_check_name,
                 message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                 details={"columns": ["Y"]},
-                actions=[drop_feature_action_option],
+                action_options=[drop_feature_action_option],
             ).to_dict(),
         ],
     ),
@@ -169,14 +169,14 @@ cases = [
                 data_check_name=no_variance_data_check_name,
                 message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                 details={"columns": ["feature"]},
-                actions=[drop_feature_action_option],
+                action_options=[drop_feature_action_option],
             ).to_dict(),
             DataCheckWarning(
                 message="Y has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.",
                 data_check_name=no_variance_data_check_name,
                 message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                 details={"columns": ["Y"]},
-                actions=[drop_feature_action_option],
+                action_options=[drop_feature_action_option],
             ).to_dict(),
         ],
     ),

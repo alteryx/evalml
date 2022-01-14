@@ -81,7 +81,7 @@ class NullDataCheck(DataCheck):
             ...         }
             ...     ],
             ...     "errors": [],
-            ...     "actions": {
+            ...     "action_options": {
             ...         "action_list": [
             ...             {
             ...                 "code": "DROP_COL",
@@ -137,7 +137,7 @@ class NullDataCheck(DataCheck):
             ...                  "details": {"columns": ["lots_of_null", "few_null"], "rows": None},
             ...                  "code": "COLS_WITH_NULL"}],
             ...     "errors": [],
-            ...     "actions": {
+            ...     "action_options": {
             ...         "action_list": [
             ...             {
             ...                 "code": "DROP_ROWS",
@@ -191,7 +191,7 @@ class NullDataCheck(DataCheck):
                         "rows": highly_null_rows.index.tolist(),
                         "pct_null_cols": highly_null_rows,
                     },
-                    actions=[
+                    action_options=[
                         DataCheckActionOption(
                             DataCheckActionCode.DROP_ROWS,
                             data_check_name=self.name,
@@ -229,7 +229,7 @@ class NullDataCheck(DataCheck):
                         "columns": list(highly_null_cols),
                         "pct_null_rows": highly_null_cols,
                     },
-                    actions=[
+                    action_options=[
                         DataCheckActionOption(
                             DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,
@@ -272,7 +272,7 @@ class NullDataCheck(DataCheck):
                     details={
                         "columns": list(below_highly_null_cols),
                     },
-                    actions=[
+                    action_options=[
                         DataCheckActionOption(
                             DataCheckActionCode.IMPUTE_COL,
                             data_check_name=self.name,

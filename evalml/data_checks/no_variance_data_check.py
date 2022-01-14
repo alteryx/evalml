@@ -54,7 +54,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 "level": "error",
             ...                 "details": {"columns": ["Y"], "rows": None},
             ...                 "code": "NO_VARIANCE"}],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            ...     "action_options": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "NoVarianceDataCheck",
             ...                  "parameters": {},
             ...                  "metadata": {"columns": ["First_Column"], "rows": None}}],
@@ -65,7 +65,7 @@ class NoVarianceDataCheck(DataCheck):
 
             >>> X["First_Column"] = [2, 2, 2, 3, 3, 3, None, None]
             >>> y = pd.Series([1, 1, 1, 2, 2, 2, None, None])
-            >>> assert novar_dc.validate(X, y) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
+            >>> assert novar_dc.validate(X, y) == {"warnings": [], "errors": [], "action_options": {"action_list":[], "default_action": None}}
             ...
             ...
             >>> y = pd.Series([None] * 7)
@@ -76,7 +76,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 "level": "error",
             ...                 "details": {"columns": ["Y"], "rows": None},
             ...                 "code": "NO_VARIANCE"}],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            ...     "action_options": {"action_list":[], "default_action": None}}
 
             As None is not considered a distinct value by default, there is only one unique value in X and y.
 
@@ -94,7 +94,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                 "level": "error",
             ...                 "details": {"columns": ["Y"], "rows": None},
             ...                 "code": "NO_VARIANCE"}],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            ...     "action_options": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "NoVarianceDataCheck",
             ...                  "parameters": {},
             ...                  "metadata": {"columns": ["First_Column"], "rows": None}}],
@@ -117,7 +117,7 @@ class NoVarianceDataCheck(DataCheck):
             ...                   "details": {"columns": ["Y"], "rows": None},
             ...                   "code": "NO_VARIANCE_WITH_NULL"}],
             ...     "errors": [],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            ...     "action_options": {"action_list": [{"code": "DROP_COL",
             ...                  "data_check_name": "NoVarianceDataCheck",
             ...                  "parameters": {},
             ...                  "metadata": {"columns": ["First_Column"], "rows": None}}],
@@ -156,11 +156,13 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": zero_unique},
-                    actions=DataCheckActionOption(
-                        DataCheckActionCode.DROP_COL,
-                        data_check_name=self.name,
-                        metadata={"columns": zero_unique},
-                    ),
+                    action_options=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": zero_unique},
+                        )
+                    ],
                 ).to_dict()
             )
         if one_unique:
@@ -172,11 +174,13 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": one_unique},
-                    actions=DataCheckActionOption(
-                        DataCheckActionCode.DROP_COL,
-                        data_check_name=self.name,
-                        metadata={"columns": one_unique},
-                    ),
+                    action_options=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": one_unique},
+                        ),
+                    ],
                 ).to_dict()
             )
         if one_unique_with_null:
@@ -190,11 +194,13 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                     details={"columns": one_unique_with_null},
-                    actions=DataCheckActionOption(
-                        DataCheckActionCode.DROP_COL,
-                        data_check_name=self.name,
-                        metadata={"columns": one_unique_with_null},
-                    ),
+                    action_options=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": one_unique_with_null},
+                        ),
+                    ],
                 ).to_dict()
             )
 

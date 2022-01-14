@@ -52,7 +52,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "data_check_name": "IDColumnsDataCheck",
             ...                   "level": "warning",
             ...                   "code": "HAS_ID_COLUMN",
-            ...                   "details": {"columns": ["customer_id"], "rows": None}}, "actions": {"code": "DROP_COL",
+            ...                   "details": {"columns": ["customer_id"], "rows": None}}, "action_options": {"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
             ...                  "parameters": {},
             ...                  "metadata": {"columns": ["customer_id"], "rows": None}}]
@@ -65,7 +65,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "data_check_name": "IDColumnsDataCheck",
             ...                   "level": "warning",
             ...                   "code": "HAS_ID_COLUMN",
-            ...                   "details": {"columns": ["ID"], "rows": None}}, "actions": {"code": "DROP_COL",
+            ...                   "details": {"columns": ["ID"], "rows": None}}, "action_options": {"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
             ...                  "parameters": {},
             ...                  "metadata": {"columns": ["ID"], "rows": None}}]
@@ -90,7 +90,7 @@ class IDColumnsDataCheck(DataCheck):
             ...                   "data_check_name": "IDColumnsDataCheck",
             ...                   "level": "warning",
             ...                   "details": {"columns": ["Country_Rank"], "rows": None},
-            ...                   "code": "HAS_ID_COLUMN", "actions": {"code": "DROP_COL",
+            ...                   "code": "HAS_ID_COLUMN", "action_options": {"code": "DROP_COL",
             ...                  "data_check_name": "IDColumnsDataCheck",
             ...                  "parameters": {},
             ...                  "metadata": {"columns": ["Country_Rank"], "rows": None}}}]
@@ -143,7 +143,7 @@ class IDColumnsDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                     details={"columns": list(id_cols_above_threshold)},
-                    actions=[
+                    action_options=[
                         DataCheckActionOption(
                             DataCheckActionCode.DROP_COL,
                             data_check_name=self.name,

@@ -41,7 +41,7 @@ class TargetDistributionDataCheck(DataCheck):
             ...                   "level": "warning",
             ...                   "code": "TARGET_LOGNORMAL_DISTRIBUTION",
             ...                   "details": {"normalization_method": "shapiro", "statistic": 0.8, "p-value": 0.045, "columns": None, "rows": None}}],
-            ...     "actions": {"action_list": [{"code": "TRANSFORM_TARGET",
+            ...     "action_options": {"action_list": [{"code": "TRANSFORM_TARGET",
             ...                  "data_check_name": "TargetDistributionDataCheck",
             ...                  "parameters": {},
             ...                  "metadata": {"transformation_strategy": "lognormal",
@@ -52,7 +52,7 @@ class TargetDistributionDataCheck(DataCheck):
             ...
             ...
             >>> y = pd.Series([1, 1, 1, 2, 2, 3, 4, 4, 5, 5, 5])
-            >>> assert target_check.validate(None, y) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
+            >>> assert target_check.validate(None, y) == {"warnings": [], "errors": [], "action_options": {"action_list":[], "default_action": None}}
             ...
             ...
             >>> y = pd.Series(pd.date_range("1/1/21", periods=10))
@@ -63,7 +63,7 @@ class TargetDistributionDataCheck(DataCheck):
             ...                 "level": "error",
             ...                 "details": {"columns": None, "rows": None, "unsupported_type": "datetime"},
             ...                 "code": "TARGET_UNSUPPORTED_TYPE"}],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            ...     "action_options": {"action_list":[], "default_action": None}}
         """
         messages = []
 
@@ -116,7 +116,7 @@ class TargetDistributionDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_LOGNORMAL_DISTRIBUTION,
                     details=details,
-                    actions=[
+                    action_options=[
                         DataCheckActionOption(
                             DataCheckActionCode.TRANSFORM_TARGET,
                             data_check_name=self.name,

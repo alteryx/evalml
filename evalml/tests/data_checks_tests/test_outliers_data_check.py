@@ -37,7 +37,7 @@ def test_outliers_data_check_warnings():
                 "rows": [0, 3, 5, 10],
                 "column_indices": {3: [0], 25: [3], 55: [5], 72: [10]},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
@@ -70,7 +70,7 @@ def test_outliers_data_check_warnings_with_duplicate_outlier_indices():
                 "rows": [0, 3],
                 "column_indices": {3: [0], 25: [3], 55: [0], 72: [0]},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
@@ -108,7 +108,7 @@ def test_outliers_data_check_input_formats():
                 "rows": [0, 3, 5, 10],
                 "column_indices": {3: [0], 25: [3], 55: [5], 72: [10]},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
@@ -131,7 +131,7 @@ def test_outliers_data_check_input_formats():
                 "rows": [0, 3, 5, 10],
                 "column_indices": {3: [0], 25: [3], 55: [5], 72: [10]},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
@@ -163,7 +163,7 @@ def test_outliers_data_check_string_cols():
                 "rows": [0],
                 "column_indices": {"d": [0]},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
@@ -204,7 +204,7 @@ def test_outliers_data_check_warnings_has_nan():
                 "rows": [3, 5, 10],
                 "column_indices": {25: [3], 55: [5], 72: [10]},
             },
-            actions=[
+            action_options=[
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_ROWS,
                     data_check_name=outliers_data_check_name,
