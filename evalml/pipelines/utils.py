@@ -871,8 +871,12 @@ def validate_holdout_datasets(X, X_train, pipeline_params):
         X_train (pd.DataFrame): Training data.
         pipeline_params (dict): Dictionary of time series parameters.
 
-    Raises:
-        PartialDependenceError: If holdout data does not have forecast_horizon entries or if datasets are not separated by gap.
+    Returns:
+        TSHoldoutValidationResult - named tuple with three fields
+            is_valid (bool): True if holdout data is valid.
+            error_messages (list): List of error messages to display. Empty if is_valid.
+            error_codes (list): List of error codes to display. Empty if is_valid.
+
     """
     forecast_horizon = pipeline_params["forecast_horizon"]
     gap = pipeline_params["gap"]
