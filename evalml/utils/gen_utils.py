@@ -543,7 +543,7 @@ def contains_all_ts_parameters(problem_configuration):
 
 _validation_result = namedtuple(
     "TSParameterValidationResult",
-    ("is_valid", "msg", "smallest_split_size", "max_window_size"),
+    ("is_valid", "msg", "smallest_split_size", "max_window_size", "n_obs", "n_splits"),
 )
 
 
