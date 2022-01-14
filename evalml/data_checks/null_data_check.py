@@ -10,7 +10,7 @@ from evalml.utils import infer_feature_types
 
 
 class NullDataCheck(DataCheck):
-    """Check if there are any highly-null numerical and categorical columns and rows in the input.
+    """Check if there are any highly-null numerical, boolean, categorical, natural language, and unknown columns and rows in the input.
 
     Args:
         pct_null_col_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
