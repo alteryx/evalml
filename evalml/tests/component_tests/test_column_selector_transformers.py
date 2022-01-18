@@ -255,3 +255,18 @@ def test_column_selector_missing_columns():
 
     X_t = selector.fit_transform(X)
     assert (X_t.columns == ["A", "C"]).all()
+
+
+def test_select_by_type_exclude():
+    selector = SelectByType(column_types="category", exclude=True)
+    X = pd.DataFrame(
+        {
+            "one": ["1", "2", "3", "4"],
+            "two": [1, 2, 3, 4],
+            "three": [4.0, 2.3, 6.5, 2.6],
+        }
+    )
+    X.ww.init(logical_types={"one": "categorical"})
+
+    X_t = selector.fit_transform(X)
+    assert list(X_t.columns) == ["two", "three"]
