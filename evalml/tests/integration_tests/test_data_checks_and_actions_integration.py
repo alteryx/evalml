@@ -35,8 +35,7 @@ def test_data_checks_with_healthy_data(X_y_binary):
 
     action_options = []
     for message in data_checks_output:
-        if message["action_options"]:
-            action_options.extend(message["action_options"])
+        action_options.extend([option for option in message["action_options"]])
 
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
@@ -62,8 +61,7 @@ def test_data_checks_suggests_drop_cols():
 
     action_options = []
     for message in data_checks_output:
-        if message["action_options"]:
-            action_options.extend(message["action_options"])
+        action_options.extend([option for option in message["action_options"]])
 
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
@@ -123,8 +121,7 @@ def test_data_checks_impute_cols(problem_type):
 
     action_options = []
     for message in data_checks_output:
-        if message["action_options"]:
-            action_options.extend(message["action_options"])
+        action_options.extend([option for option in message["action_options"]])
 
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
@@ -166,8 +163,7 @@ def test_data_checks_suggests_drop_rows():
 
     action_options = []
     for message in data_checks_output:
-        if message["action_options"]:
-            action_options.extend(message["action_options"])
+        action_options.extend([option for option in message["action_options"]])
 
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)

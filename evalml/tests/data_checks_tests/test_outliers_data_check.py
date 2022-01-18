@@ -15,6 +15,15 @@ from evalml.data_checks import (
 outliers_data_check_name = OutliersDataCheck.name
 
 
+def test_outliers_data_check_no_warnings():
+    a = np.arange(10) * 0.01
+    data = np.tile(a, (100, 10))
+    X = pd.DataFrame(data=data)
+
+    outliers_check = OutliersDataCheck()
+    assert outliers_check.validate(X) == []
+
+
 def test_outliers_data_check_warnings():
     a = np.arange(10) * 0.01
     data = np.tile(a, (100, 10))
