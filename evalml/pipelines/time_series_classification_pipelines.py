@@ -119,7 +119,6 @@ class TimeSeriesClassificationPipeline(TimeSeriesPipelineBase, ClassificationPip
         X.index = self._move_index_forward(
             X_train.index[-X.shape[0] :], self.gap + X.shape[0]
         )
-        self._validate_holdout_datasets(X, X_train)
         y_holdout = self._create_empty_series(y_train, X.shape[0])
         y_holdout = infer_feature_types(y_holdout)
         y_holdout.index = X.index
