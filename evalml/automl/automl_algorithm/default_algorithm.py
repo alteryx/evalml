@@ -495,19 +495,16 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return parameters
 
     def _make_split_pipeline(self, estimator, pipeline_name=None):
-        categorical_pipeline = None
-        numeric_pipeline = None
+        if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
+            self._X_without_cat_cols = self.X.ww.drop(self._selected_cat_cols)
+            self._X_with_cat_cols = self.X.ww[self._selected_cat_cols]
 
         if self._selected_cat_cols and self._selected_cols:
             self._split = True
-            if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
-                self._X_without_cat_cols = self.X.ww.drop(self._selected_cat_cols)
-                self._X_with_cat_cols = self.X.ww[self._selected_cat_cols]
 
             categorical_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cat_cols}
             }
-
             numeric_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cols},
                 "Select Columns By Type Transformer": {
@@ -557,7 +554,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 "Select Columns Transformer": {"columns": self._selected_cat_cols}
             }
             categorical_pipeline = make_pipeline(
-                self.X,
+                self._X_with_cat_cols,
                 self.y,
                 estimator,
                 self.problem_type,
@@ -571,7 +568,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 "Select Columns Transformer": {"columns": self._selected_cols},
             }
             numeric_pipeline = make_pipeline(
-                self.X,
+                self._X_without_cat_cols,
                 self.y,
                 estimator,
                 self.problem_type,
