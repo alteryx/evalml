@@ -92,17 +92,21 @@ def add_result(algo, batch):
     "automl_type",
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
+@pytest.mark.parametrize("split", ["split", "numeric-only", "categorical-only"])
 def test_default_algorithm(
     mock_get_names,
     automl_type,
+    split,
     X_y_categorical_classification,
     X_y_multi,
     X_y_regression,
 ):
-    pipeline_names = [
-        "Numeric Pipeline - Select Columns Transformer",
-        "Categorical Pipeline - Select Columns Transformer",
-    ]
+    if split == "split":
+        pipeline_names = [
+            "Numeric Pipeline - Select Columns Transformer",
+            "Categorical Pipeline - Select Columns Transformer",
+        ]
+
     if automl_type == ProblemTypes.BINARY:
         X, y = X_y_categorical_classification
         fs = "RF Classifier Select From Model"
@@ -121,7 +125,11 @@ def test_default_algorithm(
     X["B"] = "b"
     X["C"] = "c"
 
-    mock_get_names.return_value = ["0", "1", "2"]
+    if split == "split" or split == "numeric-only":
+        mock_get_names.return_value = ["0", "1", "2"]
+    else:
+        mock_get_names.return_value = None
+
     problem_type = automl_type
     sampler_name = None
     algo = DefaultAlgorithm(X, y, problem_type, sampler_name)
@@ -138,26 +146,44 @@ def test_default_algorithm(
     for pipeline in second_batch:
         assert pipeline.get_component(fs)
     add_result(algo, second_batch)
-    algo._selected_cat_cols = ["A", "B", "C"]
 
-    assert algo._selected_cols == ["0", "1", "2"]
-    assert algo._selected_cat_cols == ["A", "B", "C"]
+    if split == "split" or split == "categorical-only":
+        algo._selected_cat_cols = ["A", "B", "C"]
+    if split == "split" or split == "numeric-only":
+        assert algo._selected_cols == ["0", "1", "2"]
+    if split == "split" or split == "categorical-only":
+        assert algo._selected_cat_cols == ["A", "B", "C"]
+
     final_batch = algo.next_batch()
     for pipeline in final_batch:
         if not isinstance(
             pipeline.estimator, (ElasticNetClassifier, ElasticNetRegressor)
         ):
             assert pipeline.model_family not in naive_model_families
-        assert pipeline.parameters[pipeline_names[0]]["columns"] == [
-            "0",
-            "1",
-            "2",
-        ]
-        assert pipeline.parameters[pipeline_names[1]]["columns"] == [
-            "A",
-            "B",
-            "C",
-        ]
+        if split == "split":
+            assert pipeline.parameters[pipeline_names[0]]["columns"] == [
+                "0",
+                "1",
+                "2",
+            ]
+            assert pipeline.parameters[pipeline_names[1]]["columns"] == [
+                "A",
+                "B",
+                "C",
+            ]
+        elif split == "numeric-only":
+            assert pipeline.parameters["Select Columns Transformer"]["columns"] == [
+                "0",
+                "1",
+                "2",
+            ]
+        elif split == "categorical-only":
+            assert pipeline.parameters["Select Columns Transformer"]["columns"] == [
+                "A",
+                "B",
+                "C",
+            ]
+
         assert algo._tuners[pipeline.name]
     add_result(algo, final_batch)
 
@@ -392,9 +418,11 @@ def test_make_split_pipeline_categorical_only(X_y_binary):
         "Random Forest Classifier",
     ]
     assert pipeline.component_graph.compute_order == compute_order
-    assert pipeline.parameters["Select Columns Transformer"][
-        "columns"
-    ] == ["A", "B", "C"]
+    assert pipeline.parameters["Select Columns Transformer"]["columns"] == [
+        "A",
+        "B",
+        "C",
+    ]
     assert isinstance(pipeline.estimator, RandomForestClassifier)
 
 
