@@ -290,7 +290,6 @@ def search_iterative(
         if data_check_result["level"] == DataCheckMessageType.ERROR.value:
             return None, data_check_results
 
-
     automl = AutoMLSearch(**automl_config)
     automl.search()
     return automl, data_check_results
