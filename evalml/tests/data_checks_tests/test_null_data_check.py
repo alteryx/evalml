@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import pytest
 
@@ -391,26 +390,8 @@ def test_highly_null_data_check_input_formats():
     ]
     #  test Woodwork
     ww_input = pd.DataFrame([[None, None, None, None, 0], [None, None, None, "hi", 5]])
-    ww_input.ww.init(logical_types={1: "categorical"})
+    ww_input.ww.init(logical_types={1: "categorical", 3: "categorical"})
     validate_messages = highly_null_check.validate(ww_input)
-    validate_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
-        validate_messages[0]["details"]["pct_null_cols"]
-    )
-    assert validate_messages == expected
-
-    #  test 2D list
-    validate_messages = highly_null_check.validate(
-        [[None, None, None, None, 0], [None, None, None, "hi", 5]]
-    )
-    validate_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
-        validate_messages[0]["details"]["pct_null_cols"]
-    )
-    assert validate_messages == expected
-
-    # test np.array
-    validate_messages = highly_null_check.validate(
-        np.array([[None, None, None, None, 0], [None, None, None, "hi", 5]])
-    )
     validate_messages[0]["details"]["pct_null_cols"] = SeriesWrap(
         validate_messages[0]["details"]["pct_null_cols"]
     )
@@ -524,4 +505,76 @@ def test_has_null_but_not_highly_null():
                 )
             ],
         ).to_dict(),
+    ]
+
+
+def test_null_data_check_natural_language_highly_null_dropped():
+    X = pd.DataFrame(
+        {
+            "few_null_natural_language": [None, "a", "b", "c", "d"],
+            "highly_null_natural_language": [None, None, "b", None, "d"],
+            "no_null_natural_language": ["a", "b", "a", "d", "e"],
+        }
+    )
+
+    X.ww.init(
+        logical_types={
+            "highly_null_natural_language": "NaturalLanguage",
+            "few_null_natural_language": "NaturalLanguage",
+            "no_null_natural_language": "NaturalLanguage",
+        }
+    )
+
+    null_check = NullDataCheck(pct_null_col_threshold=0.5, pct_null_row_threshold=1.0)
+    validate_messages = null_check.validate(X)
+
+    assert validate_messages == [
+        DataCheckWarning(
+            message="Column(s) 'highly_null_natural_language' are 50.0% or more null",
+            data_check_name=highly_null_data_check_name,
+            message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
+            details={
+                "columns": ["highly_null_natural_language"],
+                "pct_null_rows": {"highly_null_natural_language": 0.6},
+            },
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={"columns": ["highly_null_natural_language"]},
+                )
+            ],
+        ).to_dict()
+    ]
+
+
+def test_null_data_check_datetime_highly_null_dropped():
+    X = pd.DataFrame()
+    X["highly_null_datetime"] = pd.Series(pd.date_range("20200101", periods=5))
+    for i in range(3):
+        X.loc[i][0] = None
+
+    X["few_null_datetime"] = pd.Series(pd.date_range("20200101", periods=5))
+    X.loc[4][1] = None
+
+    null_check = NullDataCheck(pct_null_col_threshold=0.5, pct_null_row_threshold=1.0)
+    validate_messages = null_check.validate(X)
+
+    assert validate_messages == [
+        DataCheckWarning(
+            message="Column(s) 'highly_null_datetime' are 50.0% or more null",
+            data_check_name=highly_null_data_check_name,
+            message_code=DataCheckMessageCode.HIGHLY_NULL_COLS,
+            details={
+                "columns": ["highly_null_datetime"],
+                "pct_null_rows": {"highly_null_datetime": 0.6},
+            },
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=highly_null_data_check_name,
+                    metadata={"columns": ["highly_null_datetime"]},
+                )
+            ],
+        ).to_dict()
     ]

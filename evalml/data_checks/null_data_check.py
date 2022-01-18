@@ -186,20 +186,9 @@ class NullDataCheck(DataCheck):
         messages = []
 
         X = infer_feature_types(X)
-        X_to_validate = X.ww.select(
-            [
-                "category",
-                "boolean",
-                "numeric",
-                "IntegerNullable",
-                "BooleanNullable",
-                "unknown",
-                "NaturalLanguage",
-            ]
-        )
 
         highly_null_rows = NullDataCheck.get_null_row_information(
-            X_to_validate, pct_null_row_threshold=self.pct_null_row_threshold
+            X, pct_null_row_threshold=self.pct_null_row_threshold
         )
         if len(highly_null_rows) > 0:
             warning_msg = f"{len(highly_null_rows)} out of {len(X)} rows are {self.pct_null_row_threshold*100}% or more null"
@@ -225,11 +214,21 @@ class NullDataCheck(DataCheck):
             )
 
         highly_null_cols, _ = NullDataCheck.get_null_column_information(
-            X_to_validate, pct_null_col_threshold=self.pct_null_col_threshold
+            X, pct_null_col_threshold=self.pct_null_col_threshold
+        )
+
+        X_to_check_for_any_null = X.ww.select(
+            [
+                "category",
+                "boolean",
+                "numeric",
+                "IntegerNullable",
+                "BooleanNullable",
+            ]
         )
 
         cols_with_any_nulls, _ = NullDataCheck.get_null_column_information(
-            X_to_validate, pct_null_col_threshold=0.0
+            X_to_check_for_any_null, pct_null_col_threshold=0.0
         )
 
         below_highly_null_cols = [
