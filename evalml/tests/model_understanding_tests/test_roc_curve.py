@@ -7,11 +7,16 @@ from evalml.model_understanding import graph_roc_curve, roc_curve
 from evalml.utils import get_random_state
 
 
+@pytest.mark.parametrize("test_nullable", [True, False])
+@pytest.mark.parametrize("dtype", ["int", "bool"])
 @pytest.mark.parametrize("data_type", ["np", "pd", "ww"])
-def test_roc_curve_binary(data_type, make_data_type):
-    y_true = np.array([1, 1, 0, 0])
+def test_roc_curve_binary(test_nullable, dtype, data_type, make_data_type):
+    if dtype == "int":
+        y_true = np.array([1, 1, 0, 0])
+    elif dtype == "bool":
+        y_true = np.array([1, 1, 0, 0]).astype(bool)
     y_predict_proba = np.array([0.1, 0.4, 0.35, 0.8])
-    y_true = make_data_type(data_type, y_true)
+    y_true = make_data_type(data_type, y_true, nullable=test_nullable)
     y_predict_proba = make_data_type(data_type, y_predict_proba)
 
     roc_curve_data = roc_curve(y_true, y_predict_proba)[0]

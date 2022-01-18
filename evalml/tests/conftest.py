@@ -1158,6 +1158,14 @@ def logit_estimator():
     return est_class
 
 
+from woodwork.logical_types import (
+    Boolean,
+    BooleanNullable,
+    Integer,
+    IntegerNullable,
+)
+
+
 @pytest.fixture
 def helper_functions():
     class Helpers:
@@ -1176,7 +1184,7 @@ def helper_functions():
 def make_data_type():
     """Helper function to convert numpy or pandas input to the appropriate type for tests."""
 
-    def _make_data_type(data_type, data):
+    def _make_data_type(data_type, data, nullable=False):
         if data_type == "li":
             if isinstance(data, pd.DataFrame):
                 data = data.to_numpy()
@@ -1190,8 +1198,16 @@ def make_data_type():
         if data_type == "ww":
             if len(data.shape) == 1:
                 data = ww.init_series(data)
+                if nullable and isinstance(data.ww.logical_type, Integer):
+                    data = ww.init_series(data, logical_type=IntegerNullable)
+                elif nullable and isinstance(data.ww.logical_type, Boolean):
+                    data = ww.init_series(data, logical_type=BooleanNullable)
             else:
                 data.ww.init()
+                if nullable and isinstance(data.ww.logical_type, Integer):
+                    data.ww.init(data, logical_type=IntegerNullable)
+                elif nullable and isinstance(data.ww.logical_type, Boolean):
+                    data.ww.init(data, logical_type=BooleanNullable)
         return data
 
     return _make_data_type

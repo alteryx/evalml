@@ -18,6 +18,7 @@ from sklearn.metrics import roc_curve as sklearn_roc_curve
 from sklearn.preprocessing import LabelBinarizer
 from sklearn.tree import export_graphviz
 from sklearn.utils.multiclass import unique_labels
+from woodwork.logical_types import BooleanNullable, IntegerNullable
 
 import evalml
 from evalml.exceptions import (
@@ -263,34 +264,48 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
 
 
 def roc_curve(y_true, y_pred_proba):
-    """Given labels and classifier predicted probabilities, compute and return the data representing a Receiver Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
+    """Given labels and classifier predicted probabilities, compute and return the data representing a Receiver
+    Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
 
     Args:
         y_true (pd.Series or np.ndarray): True labels.
         y_pred_proba (pd.Series or np.ndarray): Predictions from a classifier, before thresholding has been applied.
 
     Returns:
-        list(dict): A list of dictionaries (with one for each class) is returned. Binary classification problems return a list with one dictionary.
+        list(dict): A list of dictionaries (with one for each class) is returned. Binary classification problems return
+            a list with one dictionary.
+
             Each dictionary contains metrics used to generate an ROC plot with the following keys:
                   * `fpr_rate`: False positive rate.
                   * `tpr_rate`: True positive rate.
                   * `threshold`: Threshold values used to produce each pair of true/false positive rates.
                   * `auc_score`: The area under the ROC curve.
     """
-    y_true = infer_feature_types(y_true).to_numpy()
+    y_true_ww = infer_feature_types(y_true)
+    y_true_np = y_true_ww.to_numpy()
+    if isinstance(y_true_ww.ww.logical_type, BooleanNullable):
+        if any(y_true.isna()):
+            y_true_np = y_true_np.astype("boolean")
+        else:
+            y_true_np = y_true_np.astype("bool")
+    if isinstance(y_true_ww.ww.logical_type, IntegerNullable):
+        if any(y_true.isna()):
+            y_true_np = y_true_np.astype("Int64")
+        else:
+            y_true_np = y_true_np.astype("int64")
     y_pred_proba = infer_feature_types(y_pred_proba).to_numpy()
 
     if len(y_pred_proba.shape) == 1:
         y_pred_proba = y_pred_proba.reshape(-1, 1)
     if y_pred_proba.shape[1] == 2:
         y_pred_proba = y_pred_proba[:, 1].reshape(-1, 1)
-    nan_indices = np.logical_or(pd.isna(y_true), np.isnan(y_pred_proba).any(axis=1))
-    y_true = y_true[~nan_indices]
+    nan_indices = np.logical_or(pd.isna(y_true_np), np.isnan(y_pred_proba).any(axis=1))
+    y_true_np = y_true_np[~nan_indices]
     y_pred_proba = y_pred_proba[~nan_indices]
 
     lb = LabelBinarizer()
-    lb.fit(np.unique(y_true))
-    y_one_hot_true = lb.transform(y_true)
+    lb.fit(np.unique(y_true_np))
+    y_one_hot_true = lb.transform(y_true_np)
     n_classes = y_one_hot_true.shape[1]
 
     curve_data = []
