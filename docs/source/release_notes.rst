@@ -4,6 +4,7 @@
     * Enhancements
         * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
         * Updated dependency bot workflow to remove outdated description and add new configuration to delete branches automatically :pr:`3212`
+        * Added ``n_obs`` and ``n_splits`` to ``TimeSeriesParametersDataCheck`` error details :pr:`3246`
     * Fixes
         * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
         * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
