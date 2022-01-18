@@ -568,7 +568,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 "Select Columns Transformer": {"columns": self._selected_cols},
             }
             numeric_pipeline = make_pipeline(
-                self._X_without_cat_cols,
+                self.X,
                 self.y,
                 estimator,
                 self.problem_type,
