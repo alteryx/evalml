@@ -2,10 +2,12 @@
 -------------
 **Future Releases**
     * Enhancements
+        * Required the separation of training and test data by ``gap`` + 1 units to be verified by ``time_index`` for time series problems :pr:`3208`
         * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
         * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
         * Updated dependency bot workflow to remove outdated description and add new configuration to delete branches automatically :pr:`3212`
         * Updated ``make_pipeline_from_actions`` to handle null column imputation :pr:`3237`
+        * Added ``n_obs`` and ``n_splits`` to ``TimeSeriesParametersDataCheck`` error details :pr:`3246`
     * Fixes
         * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
         * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
@@ -13,11 +15,14 @@
         * Removed empty cell in text_input.ipynb :pr:`3234`
         * Removed potential prediction explanations failure when pipelines predicted a class with probability 1 :pr:`3221`
         * Dropped NaNs before partial dependence grid generation :pr:`3235`
+        * Fixed bug where ``InvalidTargetDataCheck`` would not check time series regression targets :pr:`3251`
     * Changes
         * Raised lowest compatible numpy version to 1.21.0 to address security concerns :pr:`3207`
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
         * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
         * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
+        * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary :pr:`3244`
+        * Checking the validity of holdout data for time series problems can be performed by calling ``pipelines.utils.validate_holdout_datasets`` prior to calling ``predict`` :pr:`3208`
     * Documentation Changes
     * Testing Changes
 
@@ -26,6 +31,8 @@
     **Breaking Changes**
         * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
         * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
+        * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary. See the Data Check or Data Check Actions pages (under User Guide) for examples. :pr:`3244`
+
 
 
 **v0.41.0 Jan. 06, 2022**

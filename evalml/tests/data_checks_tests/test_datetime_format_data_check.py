@@ -47,37 +47,25 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
     datetime_format_check = DateTimeFormatDataCheck(datetime_column=datetime_column)
 
     if type_errors:
-        assert datetime_format_check.validate(X, y) == {
-            "errors": [
-                DataCheckError(
-                    message=f"Datetime information could not be found in the data, or was not in a supported datetime format.",
-                    data_check_name=datetime_format_check_name,
-                    message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
-                ).to_dict()
-            ],
-            "warnings": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        assert datetime_format_check.validate(X, y) == [
+            DataCheckError(
+                message=f"Datetime information could not be found in the data, or was not in a supported datetime format.",
+                data_check_name=datetime_format_check_name,
+                message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
+            ).to_dict()
+        ]
     else:
         if not uneven:
-            assert datetime_format_check.validate(X, y) == {
-                "warnings": [],
-                "errors": [],
-                "actions": {"action_list": [], "default_action": None},
-            }
+            assert datetime_format_check.validate(X, y) == []
         else:
             col_name = datetime_loc if datetime_loc == 1 else "either index"
-            assert datetime_format_check.validate(X, y) == {
-                "errors": [
-                    DataCheckError(
-                        message=f"No frequency could be detected in {col_name}, possibly due to uneven intervals.",
-                        data_check_name=datetime_format_check_name,
-                        message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-                    ).to_dict()
-                ],
-                "warnings": [],
-                "actions": {"action_list": [], "default_action": None},
-            }
+            assert datetime_format_check.validate(X, y) == [
+                DataCheckError(
+                    message=f"No frequency could be detected in {col_name}, possibly due to uneven intervals.",
+                    data_check_name=datetime_format_check_name,
+                    message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
+                ).to_dict()
+            ]
 
 
 @pytest.mark.parametrize("sort_order", ["increasing", "decreasing", "mixed"])
@@ -103,11 +91,7 @@ def test_datetime_format_data_check_monotonic(datetime_loc, sort_order):
     datetime_format_check = DateTimeFormatDataCheck(datetime_column=datetime_column)
 
     if sort_order == "increasing":
-        assert datetime_format_check.validate(X, y) == {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        assert datetime_format_check.validate(X, y) == []
     else:
         col_name = (
             datetime_loc if datetime_loc == "datetime_feature" else "either index"
@@ -123,14 +107,6 @@ def test_datetime_format_data_check_monotonic(datetime_loc, sort_order):
             message_code=DataCheckMessageCode.DATETIME_IS_NOT_MONOTONIC,
         ).to_dict()
         if sort_order == "decreasing":
-            assert datetime_format_check.validate(X, y) == {
-                "errors": [mono_error],
-                "warnings": [],
-                "actions": {"action_list": [], "default_action": None},
-            }
+            assert datetime_format_check.validate(X, y) == [mono_error]
         else:
-            assert datetime_format_check.validate(X, y) == {
-                "errors": [freq_error, mono_error],
-                "warnings": [],
-                "actions": {"action_list": [], "default_action": None},
-            }
+            assert datetime_format_check.validate(X, y) == [freq_error, mono_error]

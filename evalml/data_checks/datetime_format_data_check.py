@@ -34,61 +34,60 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=9).append(pd.date_range("2021-01-31", periods=1)), columns=["dates"])
             >>> y = pd.Series([0, 1, 0, 1, 1, 0, 0, 0, 1, 0])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
-            >>> assert datetime_format_dc.validate(X, y) == {
-            ...     "errors": [{"message": "No frequency could be detected in dates, possibly due to uneven intervals.",
-            ...                 "data_check_name": "DateTimeFormatDataCheck",
-            ...                 "level": "error",
-            ...                 "code": "DATETIME_HAS_UNEVEN_INTERVALS",
-            ...                 "details": {"columns": None, "rows": None}
-            ...                 }],
-            ...     "warnings": [],
-            ...     "actions": {"action_list":[], "default_action": None}}
-            ...
-            ...
+            >>> assert datetime_format_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "No frequency could be detected in dates, possibly due to uneven intervals.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "code": "DATETIME_HAS_UNEVEN_INTERVALS",
+            ...         "details": {"columns": None, "rows": None},
+            ...         "action_options": []
+            ...      }
+            ... ]
 
             The column "Weeks" passed integers instead of datetime data, which will raise an error.
 
             >>> X = pd.DataFrame([1, 2, 3, 4], columns=["Weeks"])
             >>> y = pd.Series([0] * 4)
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
-            >>> assert datetime_format_dc.validate(X, y) == {
-            ...     "warnings": [],
-            ...     "errors": [{"message": "Datetime information could not be found in the data, or was not in a supported datetime format.",
-            ...                 "data_check_name": "DateTimeFormatDataCheck",
-            ...                 "level": "error",
-            ...                 "details": {"columns": None, "rows": None},
-            ...                 "code": "DATETIME_INFORMATION_NOT_FOUND"}],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            >>> assert datetime_format_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "Datetime information could not be found in the data, or was not in a supported datetime format.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "details": {"columns": None, "rows": None},
+            ...         "code": "DATETIME_INFORMATION_NOT_FOUND",
+            ...         "action_options": []
+            ...      }
+            ... ]
 
-            Converting that same integer data to datetime however is valid.
+            Converting that same integer data to datetime, however, is valid.
 
             >>> X = pd.DataFrame(pd.to_datetime([1, 2, 3, 4]), columns=["Weeks"])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
-            >>> assert datetime_format_dc.validate(X, y) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
+            >>> assert datetime_format_dc.validate(X, y) == []
 
             >>> X = pd.DataFrame(pd.date_range("2021-01-01", freq="W", periods=10), columns=["Weeks"])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
-            >>> assert datetime_format_dc.validate(X, y) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
+            >>> assert datetime_format_dc.validate(X, y) == []
 
             While the data passed in is of datetime type, time series requires the datetime information in datetime_column
             to be monotonically increasing (ascending).
 
             >>> X = X.iloc[::-1]
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="Weeks")
-            >>> assert datetime_format_dc.validate(X, y) == {
-            ...     "warnings": [],
-            ...     "errors": [{"message": "Datetime values must be sorted in ascending order.",
-            ...                 "data_check_name": "DateTimeFormatDataCheck",
-            ...                 "level": "error",
-            ...                 "details": {"columns": None, "rows": None},
-            ...                 "code": "DATETIME_IS_NOT_MONOTONIC"}],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            >>> assert datetime_format_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "Datetime values must be sorted in ascending order.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "details": {"columns": None, "rows": None},
+            ...         "code": "DATETIME_IS_NOT_MONOTONIC",
+            ...         "action_options": []
+            ...      }
+            ... ]
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
@@ -110,14 +109,14 @@ class DateTimeFormatDataCheck(DataCheck):
             no_dt_found = True
 
         if no_dt_found:
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message=f"Datetime information could not be found in the data, or was not in a supported datetime format.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_INFORMATION_NOT_FOUND,
                 ).to_dict()
             )
-            return results
+            return messages
 
         if not inferred_freq:
             col_name = (
@@ -125,7 +124,7 @@ class DateTimeFormatDataCheck(DataCheck):
                 if self.datetime_column != "index"
                 else "either index"
             )
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message=f"No frequency could be detected in {col_name}, possibly due to uneven intervals.",
                     data_check_name=self.name,
@@ -134,7 +133,7 @@ class DateTimeFormatDataCheck(DataCheck):
             )
 
         if not (pd.DatetimeIndex(datetime_values).is_monotonic_increasing):
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message="Datetime values must be sorted in ascending order.",
                     data_check_name=self.name,
@@ -142,4 +141,4 @@ class DateTimeFormatDataCheck(DataCheck):
                 ).to_dict()
             )
 
-        return results
+        return messages

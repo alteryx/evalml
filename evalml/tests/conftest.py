@@ -42,6 +42,7 @@ from evalml.problem_types import (
     is_regression,
     is_time_series,
 )
+from evalml.utils import infer_feature_types
 
 
 def pytest_configure(config):
@@ -826,11 +827,11 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
 
 
 @pytest.fixture
-def dummy_ts_binary_linear_classifier_pipeline_class():
-    log_reg_classifier = LogisticRegressionClassifier
+def dummy_ts_binary_tree_classifier_pipeline_class():
+    dec_tree_classifier = DecisionTreeClassifier
 
     class MockBinaryClassificationPipeline(TimeSeriesBinaryClassificationPipeline):
-        estimator = log_reg_classifier
+        estimator = dec_tree_classifier
         component_graph = [estimator]
 
         def __init__(
@@ -1620,22 +1621,87 @@ def CustomClassificationObjectiveRanges(ranges):
 def load_daily_temp_local(n_rows=None):
     currdir_path = os.path.dirname(os.path.abspath(__file__))
     data_folder_path = os.path.join(currdir_path, "data")
-    fraud_data_path = os.path.join(data_folder_path, "daily-min-temperatures.csv")
+    temp_data_path = os.path.join(data_folder_path, "daily-min-temperatures.csv")
     X, y = load_data(
-        path=fraud_data_path,
+        path=temp_data_path,
         index=None,
         target="Temp",
         n_rows=n_rows,
     )
+    missing_date_1 = pd.DataFrame([pd.to_datetime("1984-12-31")], columns=["Date"])
+    missing_date_2 = pd.DataFrame([pd.to_datetime("1988-12-31")], columns=["Date"])
+    missing_y_1 = pd.Series([14.5], name="Temp")
+    missing_y_2 = pd.Series([14.5], name="Temp")
+
+    X = pd.concat(
+        [
+            X.iloc[:1460],
+            missing_date_1,
+            X.iloc[1460:2920],
+            missing_date_2,
+            X.iloc[2920:],
+        ]
+    ).reset_index(drop=True)
+    y = pd.concat(
+        [
+            y.iloc[:1460],
+            missing_y_1,
+            y.iloc[1460:2920],
+            missing_y_2,
+            y.iloc[2920:],
+        ]
+    ).reset_index(drop=True)
     return X, y
 
 
 @pytest.fixture
 def daily_temp_local():
     X, y = load_daily_temp_local()
-    return X, y
+    return infer_feature_types(X), infer_feature_types(y)
 
 
 @pytest.fixture
 def dummy_data_check_name():
     return "dummy_data_check_name"
+
+
+@pytest.fixture
+def dummy_data_check_validate_output_warnings():
+
+    return [
+        {
+            "message": "Data check dummy message",
+            "data_check_name": "DataCheck",
+            "level": "warning",
+            "details": {"columns": None, "rows": None},
+            "code": "DATA_CHECK_CODE",
+        },
+        {
+            "message": "Data check dummy message",
+            "data_check_name": "DataCheck",
+            "level": "warning",
+            "details": {"columns": None, "rows": None},
+            "code": "DATA_CHECK_CODE",
+        },
+    ]
+
+
+@pytest.fixture
+def dummy_data_check_validate_output_errors():
+
+    return [
+        {
+            "message": "Data check dummy message",
+            "data_check_name": "DataCheck",
+            "level": "error",
+            "details": {"columns": None, "rows": None},
+            "code": "DATA_CHECK_CODE",
+        },
+        {
+            "message": "Data check dummy message",
+            "data_check_name": "DataCheck",
+            "level": "error",
+            "details": {"columns": None, "rows": None},
+            "code": "DATA_CHECK_CODE",
+        },
+    ]

@@ -37,17 +37,24 @@ two_distinct_with_nulls_y_ww_nullable_types = ww.init_series(
 all_null_y_with_name = pd.Series([None] * 4)
 all_null_y_with_name.name = "Labels"
 
+drop_feature_action_option = DataCheckActionOption(
+    DataCheckActionCode.DROP_COL,
+    data_check_name=no_variance_data_check_name,
+    metadata={"columns": ["feature"]},
+)
 feature_0_unique = DataCheckError(
     message="'feature' has 0 unique values.",
     data_check_name=no_variance_data_check_name,
     message_code=DataCheckMessageCode.NO_VARIANCE,
     details={"columns": ["feature"]},
+    action_options=[drop_feature_action_option],
 ).to_dict()
 feature_1_unique = DataCheckError(
     message="'feature' has 1 unique value.",
     data_check_name=no_variance_data_check_name,
     message_code=DataCheckMessageCode.NO_VARIANCE,
     details={"columns": ["feature"]},
+    action_options=[drop_feature_action_option],
 ).to_dict()
 labels_0_unique = DataCheckError(
     message="Y has 0 unique values.",
@@ -61,11 +68,6 @@ labels_1_unique = DataCheckError(
     message_code=DataCheckMessageCode.NO_VARIANCE,
     details={"columns": ["Y"]},
 ).to_dict()
-drop_feature_action_option = DataCheckActionOption(
-    DataCheckActionCode.DROP_COL,
-    data_check_name=no_variance_data_check_name,
-    metadata={"columns": ["feature"]},
-).to_dict()
 
 
 cases = [
@@ -73,215 +75,113 @@ cases = [
         all_distinct_X,
         all_distinct_y,
         True,
-        {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        },
+        [],
     ),
     (
         [[1], [2], [3], [4]],
         [1, 2, 3, 2],
         False,
-        {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        },
+        [],
     ),
     (
         np.arange(12).reshape(4, 3),
         [1, 2, 3],
         True,
-        {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        },
+        [],
     ),
-    (
-        all_null_X,
-        all_distinct_y,
-        False,
-        {
-            "warnings": [],
-            "errors": [feature_0_unique],
-            "actions": {
-                "action_list": [drop_feature_action_option],
-                "default_action": None,
-            },
-        },
-    ),
-    (
-        all_null_X,
-        [1] * 4,
-        False,
-        {
-            "warnings": [],
-            "errors": [feature_0_unique, labels_1_unique],
-            "actions": {
-                "action_list": [drop_feature_action_option],
-                "default_action": None,
-            },
-        },
-    ),
-    (
-        all_null_X,
-        all_distinct_y,
-        True,
-        {
-            "warnings": [],
-            "errors": [feature_1_unique],
-            "actions": {
-                "action_list": [drop_feature_action_option],
-                "default_action": None,
-            },
-        },
-    ),
-    (
-        all_distinct_X,
-        all_null_y,
-        True,
-        {
-            "warnings": [],
-            "errors": [labels_1_unique],
-            "actions": {"action_list": [], "default_action": None},
-        },
-    ),
-    (
-        all_distinct_X,
-        all_null_y,
-        False,
-        {
-            "warnings": [],
-            "errors": [labels_0_unique],
-            "actions": {"action_list": [], "default_action": None},
-        },
-    ),
+    (all_null_X, all_distinct_y, False, [feature_0_unique]),
+    (all_null_X, [1] * 4, False, [feature_0_unique, labels_1_unique]),
+    (all_null_X, all_distinct_y, True, [feature_1_unique]),
+    (all_distinct_X, all_null_y, True, [labels_1_unique]),
+    (all_distinct_X, all_null_y, False, [labels_0_unique]),
     (
         two_distinct_with_nulls_X,
         two_distinct_with_nulls_y,
         True,
-        {
-            "warnings": [
-                DataCheckWarning(
-                    message="'feature' has two unique values including nulls. Consider encoding the nulls for "
-                    "this column to be useful for machine learning.",
-                    data_check_name=no_variance_data_check_name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
-                    details={"columns": ["feature"]},
-                ).to_dict(),
-                DataCheckWarning(
-                    message="Y has two unique values including nulls. Consider encoding the nulls for "
-                    "this column to be useful for machine learning.",
-                    data_check_name=no_variance_data_check_name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
-                    details={"columns": ["Y"]},
-                ).to_dict(),
-            ],
-            "errors": [],
-            "actions": {
-                "action_list": [drop_feature_action_option],
-                "default_action": None,
-            },
-        },
+        [
+            DataCheckWarning(
+                message="'feature' has two unique values including nulls. Consider encoding the nulls for "
+                "this column to be useful for machine learning.",
+                data_check_name=no_variance_data_check_name,
+                message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
+                details={"columns": ["feature"]},
+                action_options=[drop_feature_action_option],
+            ).to_dict(),
+            DataCheckWarning(
+                message="Y has two unique values including nulls. Consider encoding the nulls for "
+                "this column to be useful for machine learning.",
+                data_check_name=no_variance_data_check_name,
+                message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
+                details={"columns": ["Y"]},
+            ).to_dict(),
+        ],
     ),
     (
         two_distinct_with_nulls_X_ww_nullable_types,
         two_distinct_with_nulls_y_ww_nullable_types,
         True,
-        {
-            "warnings": [
-                DataCheckWarning(
-                    message="'feature' has two unique values including nulls. Consider encoding the nulls for "
-                    "this column to be useful for machine learning.",
-                    data_check_name=no_variance_data_check_name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
-                    details={"columns": ["feature"]},
-                ).to_dict(),
-                DataCheckWarning(
-                    message="Y has two unique values including nulls. Consider encoding the nulls for "
-                    "this column to be useful for machine learning.",
-                    data_check_name=no_variance_data_check_name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
-                    details={"columns": ["Y"]},
-                ).to_dict(),
-            ],
-            "errors": [],
-            "actions": {
-                "action_list": [drop_feature_action_option],
-                "default_action": None,
-            },
-        },
+        [
+            DataCheckWarning(
+                message="'feature' has two unique values including nulls. Consider encoding the nulls for "
+                "this column to be useful for machine learning.",
+                data_check_name=no_variance_data_check_name,
+                message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
+                details={"columns": ["feature"]},
+                action_options=[drop_feature_action_option],
+            ).to_dict(),
+            DataCheckWarning(
+                message="Y has two unique values including nulls. Consider encoding the nulls for "
+                "this column to be useful for machine learning.",
+                data_check_name=no_variance_data_check_name,
+                message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
+                details={"columns": ["Y"]},
+            ).to_dict(),
+        ],
     ),
     (
         two_distinct_with_nulls_X,
         two_distinct_with_nulls_y,
         False,
-        {
-            "warnings": [],
-            "errors": [feature_1_unique, labels_1_unique],
-            "actions": {
-                "action_list": [drop_feature_action_option],
-                "default_action": None,
-            },
-        },
+        [feature_1_unique, labels_1_unique],
     ),
     (
         all_distinct_X,
         all_null_y_with_name,
         False,
-        {
-            "warnings": [],
-            "errors": [
-                DataCheckError(
-                    message="Labels has 0 unique values.",
-                    data_check_name=no_variance_data_check_name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE,
-                    details={"columns": ["Labels"]},
-                ).to_dict()
-            ],
-            "actions": {"action_list": [], "default_action": None},
-        },
+        [
+            DataCheckError(
+                message="Labels has 0 unique values.",
+                data_check_name=no_variance_data_check_name,
+                message_code=DataCheckMessageCode.NO_VARIANCE,
+                details={"columns": ["Labels"]},
+            ).to_dict()
+        ],
     ),
     (
         two_distinct_with_nulls_X_ww,
         two_distinct_with_nulls_y_ww,
         True,
-        {
-            "warnings": [
-                DataCheckWarning(
-                    message="'feature' has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.",
-                    data_check_name=no_variance_data_check_name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
-                    details={"columns": ["feature"]},
-                ).to_dict(),
-                DataCheckWarning(
-                    message="Y has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.",
-                    data_check_name=no_variance_data_check_name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
-                    details={"columns": ["Y"]},
-                ).to_dict(),
-            ],
-            "errors": [],
-            "actions": {
-                "action_list": [drop_feature_action_option],
-                "default_action": None,
-            },
-        },
+        [
+            DataCheckWarning(
+                message="'feature' has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.",
+                data_check_name=no_variance_data_check_name,
+                message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
+                details={"columns": ["feature"]},
+                action_options=[drop_feature_action_option],
+            ).to_dict(),
+            DataCheckWarning(
+                message="Y has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.",
+                data_check_name=no_variance_data_check_name,
+                message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
+                details={"columns": ["Y"]},
+            ).to_dict(),
+        ],
     ),
     (
         two_distinct_with_nulls_X,
         two_distinct_with_nulls_y,
         False,
-        {
-            "warnings": [],
-            "errors": [feature_1_unique, labels_1_unique],
-            "actions": {
-                "action_list": [drop_feature_action_option],
-                "default_action": None,
-            },
-        },
+        [feature_1_unique, labels_1_unique],
     ),
 ]
 

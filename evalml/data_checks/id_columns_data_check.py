@@ -48,35 +48,45 @@ class IDColumnsDataCheck(DataCheck):
             ... })
             ...
             >>> id_col_check = IDColumnsDataCheck()
-            >>> assert id_col_check.validate(df) == {
-            ...     "errors": [],
-            ...     "warnings": [{"message": "Columns 'customer_id' are 100.0% or more likely to be an ID column",
-            ...                   "data_check_name": "IDColumnsDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "HAS_ID_COLUMN",
-            ...                   "details": {"columns": ["customer_id"], "rows": None}}],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
-            ...                  "data_check_name": "IDColumnsDataCheck",
-            ...                  "parameters": {},
-            ...                  "metadata": {"columns": ["customer_id"], "rows": None}}],
-            ...                 "default_action": None}}
+            >>> assert id_col_check.validate(df) == [
+            ...     {
+            ...         "message": "Columns 'customer_id' are 100.0% or more likely to be an ID column",
+            ...         "data_check_name": "IDColumnsDataCheck",
+            ...         "level": "warning",
+            ...         "code": "HAS_ID_COLUMN",
+            ...         "details": {"columns": ["customer_id"], "rows": None},
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_COL",
+            ...                 "data_check_name": "IDColumnsDataCheck",
+            ...                 "parameters": {},
+            ...                 "metadata": {"columns": ["customer_id"], "rows": None}
+            ...             }
+            ...         ]
+            ...    }
+            ... ]
 
             Columns named "ID" with all unique values will also be identified as ID columns.
 
             >>> df = df.rename(columns={"customer_id": "ID"})
             >>> id_col_check = IDColumnsDataCheck()
-            >>> assert id_col_check.validate(df) == {
-            ...     "errors": [],
-            ...     "warnings": [{"message": "Columns 'ID' are 100.0% or more likely to be an ID column",
-            ...                   "data_check_name": "IDColumnsDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "HAS_ID_COLUMN",
-            ...                   "details": {"columns": ["ID"], "rows": None}}],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
-            ...                  "data_check_name": "IDColumnsDataCheck",
-            ...                  "parameters": {},
-            ...                  "metadata": {"columns": ["ID"], "rows": None}}],
-            ...                 "default_action": None}}
+            >>> assert id_col_check.validate(df) == [
+            ...     {
+            ...         "message": "Columns 'ID' are 100.0% or more likely to be an ID column",
+            ...         "data_check_name": "IDColumnsDataCheck",
+            ...         "level": "warning",
+            ...         "code": "HAS_ID_COLUMN",
+            ...         "details": {"columns": ["ID"], "rows": None},
+            ...         "action_options": [
+            ...            {
+            ...                 "code": "DROP_COL",
+            ...                 "data_check_name": "IDColumnsDataCheck",
+            ...                 "parameters": {},
+            ...                 "metadata": {"columns": ["ID"], "rows": None}
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
 
             Despite being all unique, "Country_Rank" will not be identified as an ID column as id_threshold is set to 1.0
             by default and its name doesn't indicate that it's an ID.
@@ -87,32 +97,32 @@ class IDColumnsDataCheck(DataCheck):
             ... })
             ...
             >>> id_col_check = IDColumnsDataCheck()
-            >>> assert id_col_check.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
+            >>> assert id_col_check.validate(df) == []
 
 
             However lowering the threshold will cause this column to be identified as an ID.
 
             >>> id_col_check = IDColumnsDataCheck()
             >>> id_col_check = IDColumnsDataCheck(id_threshold=0.95)
-            >>> assert id_col_check.validate(df) == {
-            ...     "warnings": [{"message": "Columns 'Country_Rank' are 95.0% or more likely to be an ID column",
-            ...                   "data_check_name": "IDColumnsDataCheck",
-            ...                   "level": "warning",
-            ...                   "details": {"columns": ["Country_Rank"], "rows": None},
-            ...                   "code": "HAS_ID_COLUMN"}],
-            ...     "errors": [],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
-            ...                  "data_check_name": "IDColumnsDataCheck",
-            ...                  "parameters": {},
-            ...                  "metadata": {"columns": ["Country_Rank"], "rows": None}}],
-            ...                 "default_action": None}}
+            >>> assert id_col_check.validate(df) == [
+            ...     {
+            ...         "message": "Columns 'Country_Rank' are 95.0% or more likely to be an ID column",
+            ...         "data_check_name": "IDColumnsDataCheck",
+            ...         "level": "warning",
+            ...         "details": {"columns": ["Country_Rank"], "rows": None},
+            ...         "code": "HAS_ID_COLUMN",
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_COL",
+            ...                 "data_check_name": "IDColumnsDataCheck",
+            ...                 "parameters": {},
+            ...                 "metadata": {"columns": ["Country_Rank"], "rows": None}
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
-
+        messages = []
         X = infer_feature_types(X)
 
         col_names = [col for col in X.columns]
@@ -149,7 +159,7 @@ class IDColumnsDataCheck(DataCheck):
         }
         if id_cols_above_threshold:
             warning_msg = "Columns {} are {}% or more likely to be an ID column"
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message=warning_msg.format(
                         (", ").join(
@@ -160,14 +170,14 @@ class IDColumnsDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.HAS_ID_COLUMN,
                     details={"columns": list(id_cols_above_threshold)},
+                    action_options=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": list(id_cols_above_threshold)},
+                        )
+                    ],
                 ).to_dict()
             )
 
-            results["actions"]["action_list"].append(
-                DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
-                    data_check_name=self.name,
-                    metadata={"columns": list(id_cols_above_threshold)},
-                ).to_dict()
-            )
-        return results
+        return messages

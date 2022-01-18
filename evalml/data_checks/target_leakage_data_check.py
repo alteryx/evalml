@@ -89,41 +89,49 @@ class TargetLeakageDataCheck(DataCheck):
             >>> y = pd.Series([10, 42, 31, 51, 40])
             ...
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.95)
-            >>> assert target_leakage_check.validate(X, y) == {
-            ...     "warnings": [{"message": "Column 'leak' is 95.0% or more correlated with the target",
-            ...                   "data_check_name": "TargetLeakageDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "TARGET_LEAKAGE",
-            ...                   "details": {"columns": ["leak"], "rows": None}}],
-            ...     "errors": [],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
-            ...                  "data_check_name": "TargetLeakageDataCheck",
-            ...                  "parameters": {},
-            ...                  "metadata": {"columns": ["leak"], "rows": None}}],
-            ...                 "default_action": None}}
+            >>> assert target_leakage_check.validate(X, y) == [
+            ...     {
+            ...         "message": "Column 'leak' is 95.0% or more correlated with the target",
+            ...         "data_check_name": "TargetLeakageDataCheck",
+            ...         "level": "warning",
+            ...         "code": "TARGET_LEAKAGE",
+            ...         "details": {"columns": ["leak"], "rows": None},
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_COL",
+            ...                 "data_check_name": "TargetLeakageDataCheck",
+            ...                 "parameters": {},
+            ...                 "metadata": {"columns": ["leak"], "rows": None}
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
+
 
             The default method can be changed to pearson from mutual information.
 
             >>> X["x"] = y / 2
             >>> target_leakage_check = TargetLeakageDataCheck(pct_corr_threshold=0.8, method="pearson")
-            >>> assert target_leakage_check.validate(X, y) == {
-            ...     "warnings": [{"message": "Columns 'leak', 'x' are 80.0% or more correlated with the target",
-            ...                   "data_check_name": "TargetLeakageDataCheck",
-            ...                   "level": "warning",
-            ...                   "details": {"columns": ["leak", "x"], "rows": None},
-            ...                   "code": "TARGET_LEAKAGE"}],
-            ...     "errors": [],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            >>> assert target_leakage_check.validate(X, y) == [
+            ...     {
+            ...         "message": "Columns 'leak', 'x' are 80.0% or more correlated with the target",
+            ...         "data_check_name": "TargetLeakageDataCheck",
+            ...         "level": "warning",
+            ...         "details": {"columns": ["leak", "x"], "rows": None},
+            ...         "code": "TARGET_LEAKAGE",
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_COL",
             ...                  "data_check_name": "TargetLeakageDataCheck",
             ...                  "parameters": {},
-            ...                  "metadata": {"columns": ["leak", "x"], "rows": None}}],
-            ...                 "default_action": None}}
+            ...                  "metadata": {"columns": ["leak", "x"], "rows": None}
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
+
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         X = infer_feature_types(X)
         y = infer_feature_types(y)
@@ -147,19 +155,19 @@ class TargetLeakageDataCheck(DataCheck):
                     (", ").join(["'{}'".format(str(col)) for col in highly_corr_cols]),
                     self.pct_corr_threshold * 100,
                 )
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message=warning_msg,
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_LEAKAGE,
                     details={"columns": highly_corr_cols},
+                    action_options=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": highly_corr_cols},
+                        )
+                    ],
                 ).to_dict()
             )
-            results["actions"]["action_list"].append(
-                DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
-                    data_check_name=self.name,
-                    metadata={"columns": highly_corr_cols},
-                ).to_dict()
-            )
-        return results
+        return messages

@@ -57,33 +57,37 @@ class SparsityDataCheck(DataCheck):
             ... })
             ...
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=0.5, unique_count_threshold=10)
-            >>> assert sparsity_check.validate(df) == {
-            ...     "errors": [],
-            ...     "warnings": [{"message": "Input columns ('sparse') for multiclass problem type are too sparse.",
-            ...                   "data_check_name": "SparsityDataCheck",
-            ...                    "level": "warning",
-            ...                    "code": "TOO_SPARSE",
-            ...                    "details": {"columns": ["sparse"], "sparsity_score": {"sparse": 0.0}, "rows": None}}],
-            ...     "actions": {"action_list": [{"code": "DROP_COL",
+            >>> assert sparsity_check.validate(df) == [
+            ...     {
+            ...         "message": "Input columns ('sparse') for multiclass problem type are too sparse.",
+            ...         "data_check_name": "SparsityDataCheck",
+            ...         "level": "warning",
+            ...         "code": "TOO_SPARSE",
+            ...         "details": {
+            ...             "columns": ["sparse"],
+            ...             "sparsity_score": {"sparse": 0.0},
+            ...             "rows": None
+            ...         },
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_COL",
             ...                  "data_check_name": "SparsityDataCheck",
             ...                  "parameters": {},
-            ...                  "metadata": {"columns": ["sparse"], "rows": None}}],
-            ...                 "default_action": None}}
-            ...
+            ...                  "metadata": {"columns": ["sparse"], "rows": None}
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
+
             ...
             >>> df["sparse"] = [float(x % 10) for x in range(100)]
             >>> sparsity_check = SparsityDataCheck(problem_type="multiclass", threshold=1, unique_count_threshold=5)
-            >>> assert sparsity_check.validate(df) == {"warnings": [], "errors": [], "actions": {"action_list":[], "default_action": None}}
-            ...
+            >>> assert sparsity_check.validate(df) == []
             ...
             >>> sparse_array = pd.Series([1, 1, 1, 2, 2, 3] * 3)
             >>> assert SparsityDataCheck.sparsity_score(sparse_array, count_threshold=5) == 0.6666666666666666
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         X = infer_feature_types(X)
 
@@ -93,7 +97,7 @@ class SparsityDataCheck(DataCheck):
         )
         too_sparse_cols = [col for col in res.index[res < self.threshold]]
         if too_sparse_cols:
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message=warning_too_unique.format(
                         (", ").join(
@@ -109,18 +113,17 @@ class SparsityDataCheck(DataCheck):
                             col: res.loc[col] for col in too_sparse_cols
                         },
                     },
+                    action_options=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": too_sparse_cols},
+                        )
+                    ],
                 ).to_dict()
             )
 
-            results["actions"]["action_list"].append(
-                DataCheckActionOption(
-                    DataCheckActionCode.DROP_COL,
-                    data_check_name=self.name,
-                    metadata={"columns": too_sparse_cols},
-                ).to_dict()
-            )
-
-        return results
+        return messages
 
     @staticmethod
     def sparsity_score(col, count_threshold=10):
