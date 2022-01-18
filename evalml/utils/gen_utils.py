@@ -627,7 +627,7 @@ _holdout_validation_result = namedtuple(
 
 
 def validate_holdout_datasets(X, X_train, pipeline_params):
-    """Validate the holdout datasets match out expectations.
+    """Validate the holdout datasets match our expectations.
 
     Args:
         X (pd.DataFrame): Data of shape [n_samples, n_features].

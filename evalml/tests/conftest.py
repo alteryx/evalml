@@ -1620,13 +1620,36 @@ def CustomClassificationObjectiveRanges(ranges):
 def load_daily_temp_local(n_rows=None):
     currdir_path = os.path.dirname(os.path.abspath(__file__))
     data_folder_path = os.path.join(currdir_path, "data")
-    fraud_data_path = os.path.join(data_folder_path, "daily-min-temperatures.csv")
+    temp_data_path = os.path.join(data_folder_path, "daily-min-temperatures.csv")
     X, y = load_data(
-        path=fraud_data_path,
+        path=temp_data_path,
         index=None,
         target="Temp",
         n_rows=n_rows,
     )
+    missing_date_1 = pd.DataFrame([pd.to_datetime("1984-12-31")], columns=["Date"])
+    missing_date_2 = pd.DataFrame([pd.to_datetime("1988-12-31")], columns=["Date"])
+    missing_y_1 = pd.Series([14.5], name="Temp")
+    missing_y_2 = pd.Series([14.5], name="Temp")
+
+    X = pd.concat(
+        [
+            X.iloc[:1460],
+            missing_date_1,
+            X.iloc[1460:2920],
+            missing_date_2,
+            X.iloc[2920:],
+        ]
+    ).reset_index(drop=True)
+    y = pd.concat(
+        [
+            y.iloc[:1460],
+            missing_y_1,
+            y.iloc[1460:2920],
+            missing_y_2,
+            y.iloc[2920:],
+        ]
+    ).reset_index(drop=True)
     return X, y
 
 
