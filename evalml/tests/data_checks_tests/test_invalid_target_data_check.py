@@ -422,7 +422,10 @@ def test_invalid_target_data_check_initialize_with_none_objective():
         )
 
 
-def test_invalid_target_data_check_regression_problem_nonnumeric_data():
+@pytest.mark.parametrize(
+    "problem_type", [ProblemTypes.TIME_SERIES_REGRESSION, ProblemTypes.REGRESSION]
+)
+def test_invalid_target_data_check_regression_problem_nonnumeric_data(problem_type):
     y_categorical = pd.Series(["Peace", "Is", "A", "Lie"] * 100)
     y_mixed_cat_numeric = pd.Series(["Peace", 2, "A", 4] * 100)
     y_integer = pd.Series([1, 2, 3, 4])
@@ -437,7 +440,7 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data():
     ).to_dict()
 
     invalid_targets_check = InvalidTargetDataCheck(
-        "regression", get_default_primary_search_objective("regression")
+        problem_type, get_default_primary_search_objective(problem_type)
     )
     assert invalid_targets_check.validate(
         X=pd.DataFrame({"col": range(len(y_categorical))}), y=y_categorical
@@ -465,7 +468,10 @@ def test_invalid_target_data_check_regression_problem_nonnumeric_data():
     )
 
 
-def test_invalid_target_data_check_multiclass_problem_binary_data():
+@pytest.mark.parametrize(
+    "problem_type", [ProblemTypes.MULTICLASS, ProblemTypes.TIME_SERIES_MULTICLASS]
+)
+def test_invalid_target_data_check_multiclass_problem_binary_data(problem_type):
     y_multiclass = pd.Series([1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 2, 3] * 25)
     y_binary = pd.Series([0, 1, 1, 1, 0, 0] * 25)
 
@@ -611,11 +617,16 @@ def test_invalid_target_data_check_different_lengths():
     ]
 
 
-def test_invalid_target_data_check_numeric_binary_does_not_return_warnings():
+@pytest.mark.parametrize(
+    "problem_type", [ProblemTypes.BINARY, ProblemTypes.TIME_SERIES_BINARY]
+)
+def test_invalid_target_data_check_numeric_binary_does_not_return_warnings(
+    problem_type,
+):
     y = pd.Series([1, 5, 1, 5, 1, 1])
     X = pd.DataFrame({"col": range(len(y))})
     invalid_targets_check = InvalidTargetDataCheck(
-        "binary", get_default_primary_search_objective("binary")
+        problem_type, get_default_primary_search_objective(problem_type)
     )
     assert invalid_targets_check.validate(X, y) == []
 

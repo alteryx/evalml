@@ -12,7 +12,6 @@ from evalml.data_checks import (
 )
 from evalml.objectives import get_objective
 from evalml.problem_types import (
-    ProblemTypes,
     handle_problem_types,
     is_binary,
     is_multiclass,
@@ -353,10 +352,7 @@ class InvalidTargetDataCheck(DataCheck):
         return messages
 
     def _check_regression_target(self, y, messages):
-        if (
-            self.problem_type == ProblemTypes.REGRESSION
-            and "numeric" not in y.ww.semantic_tags
-        ):
+        if is_regression(self.problem_type) and "numeric" not in y.ww.semantic_tags:
             messages.append(
                 DataCheckError(
                     message="Target data type should be numeric for regression type problems.",
