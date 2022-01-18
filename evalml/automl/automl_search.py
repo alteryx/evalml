@@ -287,13 +287,10 @@ def search_iterative(
     )
     data_check_results = data_checks.validate(X_train, y=y_train)
     for data_check_result in data_check_results:
-        try:
-            if data_check_result["level"] == DataCheckMessageType.ERROR.value:
-                return None, data_check_results
-        except TypeError:
-            import pdb
+        if data_check_result["level"] == DataCheckMessageType.ERROR.value:
+            return None, data_check_results
 
-            pdb.set_trace()
+
     automl = AutoMLSearch(**automl_config)
     automl.search()
     return automl, data_check_results

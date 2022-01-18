@@ -19,7 +19,7 @@
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
         * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
         * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
-        * Flattened data check ``validate()`` output :pr:`3244`
+        * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary :pr:`3244`
         * Checking the validity of holdout data for time series problems can be performed by calling ``pipelines.utils.validate_holdout_datasets`` prior to calling ``predict`` :pr:`3208`
     * Documentation Changes
     * Testing Changes
@@ -29,7 +29,7 @@
     **Breaking Changes**
         * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
         * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
-        * Flattened data check ``validate()`` output. See documentation for examples. :pr:`3244`
+        * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary. See the Data Check or Data Check Actions pages (under User Guide) for examples. :pr:`3244`
 
 
 
