@@ -373,6 +373,31 @@ def test_make_split_pipeline(X_y_binary):
     assert isinstance(pipeline.estimator, RandomForestClassifier)
 
 
+def test_make_split_pipeline_categorical_only(X_y_binary):
+    X, y = X_y_binary
+
+    X = pd.DataFrame(X)
+    X["A"] = "a"
+    X["B"] = "b"
+    X["C"] = "c"
+
+    algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
+    algo._selected_cat_cols = ["A", "B", "C"]
+    pipeline = algo._make_split_pipeline(RandomForestClassifier)
+    compute_order = [
+        "Select Columns Transformer",
+        "Label Encoder",
+        "Imputer",
+        "One Hot Encoder",
+        "Random Forest Classifier",
+    ]
+    assert pipeline.component_graph.compute_order == compute_order
+    assert pipeline.parameters["Select Columns Transformer"][
+        "columns"
+    ] == ["A", "B", "C"]
+    assert isinstance(pipeline.estimator, RandomForestClassifier)
+
+
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
 @patch("evalml.pipelines.components.OneHotEncoder._get_feature_provenance")
 def test_select_cat_cols(
