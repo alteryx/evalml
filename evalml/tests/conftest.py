@@ -42,6 +42,7 @@ from evalml.problem_types import (
     is_regression,
     is_time_series,
 )
+from evalml.utils import infer_feature_types
 
 
 def pytest_configure(config):
@@ -1656,7 +1657,7 @@ def load_daily_temp_local(n_rows=None):
 @pytest.fixture
 def daily_temp_local():
     X, y = load_daily_temp_local()
-    return X, y
+    return infer_feature_types(X), infer_feature_types(y)
 
 
 @pytest.fixture
