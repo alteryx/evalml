@@ -58,41 +58,50 @@ class UniquenessDataCheck(DataCheck):
             ... })
             ...
             >>> uniqueness_check = UniquenessDataCheck(problem_type="regression", threshold=0.8)
-            >>> assert uniqueness_check.validate(df) == {
-            ...     "errors": [],
-            ...     "warnings": [{"message": "Input columns 'regression_not_unique_enough' for regression problem type are not unique enough.",
-            ...                   "data_check_name": "UniquenessDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "NOT_UNIQUE_ENOUGH",
-            ...                   "details": {"columns": ["regression_not_unique_enough"], "uniqueness_score": {"regression_not_unique_enough": 0.0}, "rows": None}}],
-            ...     "action_options": {"action_list": [{"code": "DROP_COL", "parameters": {},
-            ...                                  "data_check_name": "UniquenessDataCheck",
-            ...                                  "metadata": {"columns": ["regression_not_unique_enough"], "rows": None}}],
-            ...                 "default_action": None
-            ...                }
-            ... }
+            >>> assert uniqueness_check.validate(df) == [
+            ...     {
+            ...         "message": "Input columns 'regression_not_unique_enough' for regression problem type are not unique enough.",
+            ...         "data_check_name": "UniquenessDataCheck",
+            ...         "level": "warning",
+            ...         "code": "NOT_UNIQUE_ENOUGH",
+            ...         "details": {"columns": ["regression_not_unique_enough"], "uniqueness_score": {"regression_not_unique_enough": 0.0}, "rows": None},
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_COL",
+            ...                 "parameters": {},
+            ...                 "data_check_name": "UniquenessDataCheck",
+            ...                 "metadata": {"columns": ["regression_not_unique_enough"], "rows": None}
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
 
             For multiclass, the column "regression_unique_enough" has too many unique values and will raise
             an appropriate warning.
-            >>> uniqueness_check = UniquenessDataCheck(problem_type="multiclass", threshold=0.8)
-            >>> assert uniqueness_check.validate(df) == {
-            ...     "warnings": [{"message": "Input columns 'regression_unique_enough' for multiclass problem type are too unique.",
-            ...                   "data_check_name": "UniquenessDataCheck",
-            ...                   "level": "warning",
-            ...                   "details": {"columns": ["regression_unique_enough"],
-            ...                               "rows": None,
-            ...                               "uniqueness_score": {"regression_unique_enough": 0.99}},
-            ...                   "code": "TOO_UNIQUE"}],
-            ...     "errors": [],
-            ...     "action_options": {"action_list": [{"code": "DROP_COL",
-            ...                                  "data_check_name": "UniquenessDataCheck",
-            ...                                  "parameters": {},
-            ...                                  "metadata": {"columns": ["regression_unique_enough"], "rows": None}}],
-            ...                 "default_action": None
-            ...                 }
-            ... }
-            ...
             >>> y = pd.Series([1, 1, 1, 2, 2, 3, 3, 3])
+            >>> uniqueness_check = UniquenessDataCheck(problem_type="multiclass", threshold=0.8)
+            >>> assert uniqueness_check.validate(df) == [
+            ...     {
+            ...         "message": "Input columns 'regression_unique_enough' for multiclass problem type are too unique.",
+            ...         "data_check_name": "UniquenessDataCheck",
+            ...         "level": "warning",
+            ...         "details": {
+            ...             "columns": ["regression_unique_enough"],
+            ...             "rows": None,
+            ...             "uniqueness_score": {"regression_unique_enough": 0.99}
+            ...         },
+            ...         "code": "TOO_UNIQUE",
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_COL",
+            ...                 "data_check_name": "UniquenessDataCheck",
+            ...                 "parameters": {},
+            ...                 "metadata": {"columns": ["regression_unique_enough"], "rows": None}
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
+            ...
             >>> assert UniquenessDataCheck.uniqueness_score(y) == 0.65625
         """
         messages = []

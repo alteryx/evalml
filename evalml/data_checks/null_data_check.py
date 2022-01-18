@@ -63,32 +63,33 @@ class NullDataCheck(DataCheck):
             ... })
             ...
             >>> highly_null_dc = NullDataCheck(pct_null_col_threshold=0.50)
-            >>> assert highly_null_dc.validate(df) == {
-            ...     "warnings": [
-            ...         {
-            ...             "message": "Column(s) 'all_null', 'lots_of_null' are 50.0% or more null",
-            ...             "data_check_name": "NullDataCheck",
-            ...             "level": "warning",
-            ...             "details": {"columns": ["all_null", "lots_of_null"], "rows": None, "pct_null_rows": {"all_null": 1.0, "lots_of_null": 0.8}},
-            ...             "code": "HIGHLY_NULL_COLS"
+            >>> assert highly_null_dc.validate(df) == [
+            ...     {
+            ...         "message": "Column(s) 'all_null', 'lots_of_null' are 50.0% or more null",
+            ...         "data_check_name": "NullDataCheck",
+            ...         "level": "warning",
+            ...         "details": {
+            ...             "columns": ["all_null", "lots_of_null"],
+            ...             "rows": None,
+            ...             "pct_null_rows": {"all_null": 1.0, "lots_of_null": 0.8}
             ...         },
-            ...         {
-            ...             "message": "Column(s) 'few_null' have null values",
-            ...             "data_check_name": "NullDataCheck",
-            ...             "level": "warning",
-            ...             "details": {"columns": ["few_null"], "rows": None},
-            ...             "code": "COLS_WITH_NULL"
-            ...         }
-            ...     ],
-            ...     "errors": [],
-            ...     "action_options": {
-            ...         "action_list": [
+            ...         "code": "HIGHLY_NULL_COLS",
+            ...         "action_options": [
             ...             {
             ...                 "code": "DROP_COL",
             ...                 "data_check_name": "NullDataCheck",
             ...                 "parameters": {},
             ...                 "metadata": {"columns": ["all_null", "lots_of_null"], "rows": None}
-            ...             },
+            ...             }
+            ...         ]
+            ...     },
+            ...     {
+            ...         "message": "Column(s) 'few_null' have null values",
+            ...         "data_check_name": "NullDataCheck",
+            ...         "level": "warning",
+            ...         "details": {"columns": ["few_null"], "rows": None},
+            ...         "code": "COLS_WITH_NULL",
+            ...         "action_options": [
             ...             {
             ...                 "code": "IMPUTE_COL",
             ...                 "data_check_name": "NullDataCheck",
@@ -97,15 +98,16 @@ class NullDataCheck(DataCheck):
             ...                     "impute_strategies": {
             ...                         "parameter_type": "column",
             ...                         "columns": {
-            ...                             "few_null": {"impute_strategy": {"categories": ["most_frequent"], "type": "category", "default_value": "most_frequent"}}
+            ...                             "few_null": {
+            ...                                 "impute_strategy": {"categories": ["most_frequent"], "type": "category", "default_value": "most_frequent"}
+            ...                             }
             ...                         }
             ...                     }
             ...                 }
             ...             }
-            ...         ],
-            ...         "default_action": None
+            ...         ]
             ...     }
-            ... }
+            ... ]
 
             With pct_null_row_threshold set to 0.50, any row with 50% or more of its respective column values set to null will
             included in the warning, as well as the offending rows ("rows": [0, 1, 2, 3]).
@@ -113,62 +115,72 @@ class NullDataCheck(DataCheck):
             the percentage of null values in that row is over 95%.
 
             >>> highly_null_dc = NullDataCheck(pct_null_row_threshold=0.50)
-            >>> validation_results = highly_null_dc.validate(df)
+            >>> validation_messages = highly_null_dc.validate(df)
             >>> validation_messages[0]["details"]["pct_null_cols"] = SeriesWrap(validation_messages[0]["details"]["pct_null_cols"])
             >>> highly_null_rows = SeriesWrap(pd.Series([0.5, 0.5, 0.75, 0.5]))
-            >>> assert validation_results == {
-            ...     "warnings": [{"message": "4 out of 5 rows are 50.0% or more null",
-            ...                   "data_check_name": "NullDataCheck",
-            ...                   "level": "warning",
-            ...                   "details": {"columns": None,
-            ...                               "rows": [0, 1, 2, 3],
-            ...                               "pct_null_cols": highly_null_rows},
-            ...                   "code": "HIGHLY_NULL_ROWS"},
-            ...                  {"message": "Column(s) 'all_null' are 95.0% or more null",
-            ...                   "data_check_name": "NullDataCheck",
-            ...                   "level": "warning",
-            ...                   "details": {"columns": ["all_null"],
-            ...                               "rows": None,
-            ...                               "pct_null_rows": {"all_null": 1.0}},
-            ...                   "code": "HIGHLY_NULL_COLS"},
-            ...                 {"message": "Column(s) 'lots_of_null', 'few_null' have null values",
-            ...                  "data_check_name": "NullDataCheck",
-            ...                  "level": "warning",
-            ...                  "details": {"columns": ["lots_of_null", "few_null"], "rows": None},
-            ...                  "code": "COLS_WITH_NULL"}],
-            ...     "errors": [],
-            ...     "action_options": {
-            ...         "action_list": [
+            >>> assert validation_messages == [
+            ...     {
+            ...         "message": "4 out of 5 rows are 50.0% or more null",
+            ...         "data_check_name": "NullDataCheck",
+            ...         "level": "warning",
+            ...         "details": {
+            ...             "columns": None,
+            ...             "rows": [0, 1, 2, 3],
+            ...             "pct_null_cols": highly_null_rows
+            ...         },
+            ...         "code": "HIGHLY_NULL_ROWS",
+            ...         "action_options": [
             ...             {
             ...                 "code": "DROP_ROWS",
             ...                  "data_check_name": "NullDataCheck",
             ...                  "parameters": {},
             ...                  "metadata": {"columns": None, "rows": [0, 1, 2, 3]}
-            ...              },
+            ...              }
+            ...         ]
+            ...     },
+            ...     {
+            ...         "message": "Column(s) 'all_null' are 95.0% or more null",
+            ...         "data_check_name": "NullDataCheck",
+            ...         "level": "warning",
+            ...         "details": {
+            ...             "columns": ["all_null"],
+            ...             "rows": None,
+            ...             "pct_null_rows": {"all_null": 1.0}
+            ...         },
+            ...        "code": "HIGHLY_NULL_COLS",
+            ...        "action_options": [
             ...             {
             ...                 "code": "DROP_COL",
-            ...                  "data_check_name": "NullDataCheck",
-            ...                  "parameters": {},
-            ...                  "metadata": {"columns": ["all_null"], "rows": None}
-            ...              },
-            ...              {
-            ...                 "code": "IMPUTE_COL",
             ...                 "data_check_name": "NullDataCheck",
-            ...                 "metadata": {"columns": ["lots_of_null", "few_null"], "rows": None, "is_target": False},
-            ...                 "parameters": {
-            ...                     "impute_strategies": {
-            ...                         "parameter_type": "column",
-            ...                         "columns": {
-            ...                             "lots_of_null": {"impute_strategy": {"categories": ["mean", "most_frequent"], "type": "category", "default_value": "mean"}},
-            ...                             "few_null": {"impute_strategy": {"categories": ["most_frequent"], "type": "category", "default_value": "most_frequent"}}
-            ...                         }
-            ...                     }
-            ...                 }
-            ...              }
-            ...         ],
-            ...         "default_action": None
+            ...                 "metadata": {"columns": ["all_null"], "rows": None},
+            ...                 "parameters": {}
+            ...             }
+            ...         ]
+            ...     },
+            ...     {
+            ...         "message": "Column(s) 'lots_of_null', 'few_null' have null values",
+            ...         "data_check_name": "NullDataCheck",
+            ...         "level": "warning",
+            ...         "details": {"columns": ["lots_of_null", "few_null"], "rows": None},
+            ...         "code": "COLS_WITH_NULL",
+            ...         "action_options": [
+            ...             {
+            ...                "code": "IMPUTE_COL",
+            ...                "data_check_name": "NullDataCheck",
+            ...                "metadata": {"columns": ["lots_of_null", "few_null"], "rows": None, "is_target": False},
+            ...                "parameters": {
+            ...                    "impute_strategies": {
+            ...                        "parameter_type": "column",
+            ...                        "columns": {
+            ...                            "lots_of_null": {"impute_strategy": {"categories": ["mean", "most_frequent"], "type": "category", "default_value": "mean"}},
+            ...                            "few_null": {"impute_strategy": {"categories": ["most_frequent"], "type": "category", "default_value": "most_frequent"}}
+            ...                        }
+            ...                    }
+            ...                }
+            ...             }
+            ...         ]
             ...     }
-            ... }
+            ... ]
 
         """
         messages = []

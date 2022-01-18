@@ -51,18 +51,26 @@ class TimeSeriesSplittingDataCheck(DataCheck):
 
             >>> X = None
             >>> y = pd.Series([0 if i < 45 else i % 2 if i < 55 else 1 for i in range(100)])
-            ...
             >>> ts_splitting_check = TimeSeriesSplittingDataCheck("time series binary", 3)
             >>> assert ts_splitting_check.validate(X, y) == [
-            ...                             {"message": "Time Series Binary and Time Series Multiclass problem "
-            ...                             "types require every training and validation split to "
-            ...                             "have at least one instance of all the target classes. "
-            ...                             "The following splits are invalid: [1, 3]",
-            ...                  "data_check_name": "TimeSeriesSplittingDataCheck",
-            ...                  "level": "error",
-            ...                  "details": {"columns": None, "rows": None, "invalid_splits": {1: {"Training": [0, 25]},
-            ...                                                                                3: {"Validation": [75, 100]}}},
-            ...                  "code": "TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT"}]
+            ...     {
+            ...         "message": "Time Series Binary and Time Series Multiclass problem "
+            ...                    "types require every training and validation split to "
+            ...                    "have at least one instance of all the target classes. "
+            ...                    "The following splits are invalid: [1, 3]",
+            ...         "data_check_name": "TimeSeriesSplittingDataCheck",
+            ...         "level": "error",
+            ...         "details": {
+            ...             "columns": None, "rows": None,
+            ...             "invalid_splits": {
+            ...                 1: {"Training": [0, 25]},
+            ...                 3: {"Validation": [75, 100]}
+            ...             }
+            ...         },
+            ...         "code": "TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT",
+            ...         "action_options": []
+            ...     }
+            ... ]
         """
         messages = []
 

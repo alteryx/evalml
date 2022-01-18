@@ -40,18 +40,23 @@ class OutliersDataCheck(DataCheck):
             ... })
             ...
             >>> outliers_check = OutliersDataCheck()
-            >>> assert outliers_check.validate(df) == {
-            ...     "warnings": [{"message": "Column(s) 'z' are likely to have outlier data.",
-            ...                   "data_check_name": "OutliersDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "HAS_OUTLIERS",
-            ...                   "details": {"columns": ["z"], "rows": [3], "column_indices": {"z": [3]}}}],
-            ...     "errors": [],
-            ...     "action_options": {"action_list": [{"code": "DROP_ROWS",
+            >>> assert outliers_check.validate(df) == [
+            ...     {
+            ...         "message": "Column(s) 'z' are likely to have outlier data.",
+            ...         "data_check_name": "OutliersDataCheck",
+            ...         "level": "warning",
+            ...         "code": "HAS_OUTLIERS",
+            ...         "details": {"columns": ["z"], "rows": [3], "column_indices": {"z": [3]}},
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_ROWS",
             ...                  "data_check_name": "OutliersDataCheck",
             ...                  "parameters": {},
-            ...                  "metadata": {"rows": [3], "columns": None}}],
-            ...                 "default_action": None}}
+            ...                  "metadata": {"rows": [3], "columns": None}
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
         """
         messages = []
 
