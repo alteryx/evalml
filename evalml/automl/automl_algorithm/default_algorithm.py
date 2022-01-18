@@ -237,6 +237,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cols}
             }
+        elif self._selected_cat_cols:
+            parameters = {
+                "Select Columns Transformer": {"columns": self._selected_cat_cols}
+            }
+
         if self._split:
             parameters = self._create_split_select_parameters()
         return parameters
@@ -490,12 +495,18 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return parameters
 
     def _make_split_pipeline(self, estimator, pipeline_name=None):
-        if self._selected_cat_cols:
-            self._split = True
+        categorical_pipeline = None
+        numeric_pipeline = None
 
+        if self._selected_cat_cols and self._selected_cols:
+            self._split = True
             if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
                 self._X_without_cat_cols = self.X.ww.drop(self._selected_cat_cols)
                 self._X_with_cat_cols = self.X.ww[self._selected_cat_cols]
+
+            categorical_pipeline_parameters = {
+                "Select Columns Transformer": {"columns": self._selected_cat_cols}
+            }
 
             numeric_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cols},
@@ -504,6 +515,18 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     "exclude": True,
                 },
             }
+
+            categorical_pipeline = make_pipeline(
+                self._X_with_cat_cols,
+                self.y,
+                estimator,
+                self.problem_type,
+                sampler_name=self.sampler_name,
+                parameters=categorical_pipeline_parameters,
+                extra_components_before=[SelectColumns],
+                use_estimator=False,
+            )
+
             numeric_pipeline = make_pipeline(
                 self._X_without_cat_cols,
                 self.y,
@@ -516,19 +539,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 use_estimator=False if self._selected_cat_cols else True,
             )
 
-            categorical_pipeline_parameters = {
-                "Select Columns Transformer": {"columns": self._selected_cat_cols}
-            }
-            categorical_pipeline = make_pipeline(
-                self._X_with_cat_cols,
-                self.y,
-                estimator,
-                self.problem_type,
-                sampler_name=self.sampler_name,
-                parameters=categorical_pipeline_parameters,
-                extra_components_before=[SelectColumns],
-                use_estimator=False,
-            )
             input_pipelines = [numeric_pipeline, categorical_pipeline]
             sub_pipeline_names = {
                 numeric_pipeline.name: "Numeric",
@@ -542,18 +552,31 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 random_seed=self.random_seed,
                 sub_pipeline_names=sub_pipeline_names,
             )
-
-        numeric_pipeline_parameters = {
-            "Select Columns Transformer": {"columns": self._selected_cols},
-        }
-        numeric_pipeline = make_pipeline(
-            self.X.ww.select(include="numeric"),
-            self.y,
-            estimator,
-            self.problem_type,
-            sampler_name=self.sampler_name,
-            parameters=numeric_pipeline_parameters,
-            extra_components_after=[SelectColumns],
-            use_estimator=False if self._selected_cat_cols else True,
-        )
-        return numeric_pipeline
+        elif self._selected_cat_cols and not self._selected_cols:
+            categorical_pipeline_parameters = {
+                "Select Columns Transformer": {"columns": self._selected_cat_cols}
+            }
+            categorical_pipeline = make_pipeline(
+                self.X,
+                self.y,
+                estimator,
+                self.problem_type,
+                sampler_name=self.sampler_name,
+                parameters=categorical_pipeline_parameters,
+                extra_components_before=[SelectColumns],
+            )
+            return categorical_pipeline
+        else:
+            numeric_pipeline_parameters = {
+                "Select Columns Transformer": {"columns": self._selected_cols},
+            }
+            numeric_pipeline = make_pipeline(
+                self.X,
+                self.y,
+                estimator,
+                self.problem_type,
+                sampler_name=self.sampler_name,
+                parameters=numeric_pipeline_parameters,
+                extra_components_after=[SelectColumns],
+            )
+            return numeric_pipeline
