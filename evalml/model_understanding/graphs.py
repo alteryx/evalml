@@ -265,7 +265,7 @@ def graph_precision_recall_curve(y_true, y_pred_proba, title_addition=None):
 
 def roc_curve(y_true, y_pred_proba):
     """Given labels and classifier predicted probabilities, compute and return the data representing a Receiver
-    Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
+        Operating Characteristic (ROC) curve. Works with binary or multiclass problems.
 
     Args:
         y_true (pd.Series or np.ndarray): True labels.
