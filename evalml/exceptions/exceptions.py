@@ -97,6 +97,15 @@ class ParameterNotUsedWarning(UserWarning):
         super().__init__(msg)
 
 
+class ValidationErrorCode(Enum):
+    """Enum identifying the type of error encountered in holdout validation."""
+
+    INVALID_HOLDOUT_LENGTH = "invalid_holdout_length"
+    """invalid_holdout_length"""
+    INVALID_HOLDOUT_GAP_SEPARATION = "invalid_holdout_gap_separation"
+    """invalid_holdout_gap_separation"""
+
+
 class PartialDependenceErrorCode(Enum):
     """Enum identifying the type of error encountered in partial dependence."""
 
