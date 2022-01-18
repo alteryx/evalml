@@ -40,30 +40,31 @@ class OutliersDataCheck(DataCheck):
             ... })
             ...
             >>> outliers_check = OutliersDataCheck()
-            >>> assert outliers_check.validate(df) == {
-            ...     "warnings": [{"message": "Column(s) 'z' are likely to have outlier data.",
-            ...                   "data_check_name": "OutliersDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "HAS_OUTLIERS",
-            ...                   "details": {"columns": ["z"], "rows": [3], "column_indices": {"z": [3]}}}],
-            ...     "errors": [],
-            ...     "actions": {"action_list": [{"code": "DROP_ROWS",
+            >>> assert outliers_check.validate(df) == [
+            ...     {
+            ...         "message": "Column(s) 'z' are likely to have outlier data.",
+            ...         "data_check_name": "OutliersDataCheck",
+            ...         "level": "warning",
+            ...         "code": "HAS_OUTLIERS",
+            ...         "details": {"columns": ["z"], "rows": [3], "column_indices": {"z": [3]}},
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_ROWS",
             ...                  "data_check_name": "OutliersDataCheck",
             ...                  "parameters": {},
-            ...                  "metadata": {"rows": [3], "columns": None}}],
-            ...                 "default_action": None}}
+            ...                  "metadata": {"rows": [3], "columns": None}
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         X = infer_feature_types(X)
         X = X.ww.select("numeric")
 
         if len(X.columns) == 0:
-            return results
+            return messages
 
         has_outliers = []
         outlier_row_indices = {}
@@ -80,7 +81,7 @@ class OutliersDataCheck(DataCheck):
                 )
 
         if not len(has_outliers):
-            return results
+            return messages
 
         warning_msg = "Column(s) {} are likely to have outlier data.".format(
             ", ".join([f"'{col}'" for col in has_outliers])
@@ -91,7 +92,7 @@ class OutliersDataCheck(DataCheck):
 
         all_rows_with_indices = list(all_rows_with_indices_set)
         all_rows_with_indices.sort()
-        results["warnings"].append(
+        messages.append(
             DataCheckWarning(
                 message=warning_msg,
                 data_check_name=self.name,
@@ -101,17 +102,16 @@ class OutliersDataCheck(DataCheck):
                     "rows": all_rows_with_indices,
                     "column_indices": outlier_row_indices,
                 },
+                action_options=[
+                    DataCheckActionOption(
+                        DataCheckActionCode.DROP_ROWS,
+                        data_check_name=self.name,
+                        metadata={"rows": all_rows_with_indices},
+                    )
+                ],
             ).to_dict()
         )
-
-        results["actions"]["action_list"].append(
-            DataCheckActionOption(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=self.name,
-                metadata={"rows": all_rows_with_indices},
-            ).to_dict()
-        )
-        return results
+        return messages
 
     @staticmethod
     def get_boxplot_data(data_):

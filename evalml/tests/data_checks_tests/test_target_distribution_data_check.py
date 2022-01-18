@@ -22,18 +22,14 @@ def test_target_distribution_data_check_no_y(X_y_regression):
 
     target_dist_check = TargetDistributionDataCheck()
 
-    assert target_dist_check.validate(X, y) == {
-        "warnings": [],
-        "errors": [
-            DataCheckError(
-                message="Target is None",
-                data_check_name=target_dist_check_name,
-                message_code=DataCheckMessageCode.TARGET_IS_NONE,
-                details={},
-            ).to_dict()
-        ],
-        "actions": {"action_list": [], "default_action": None},
-    }
+    assert target_dist_check.validate(X, y) == [
+        DataCheckError(
+            message="Target is None",
+            data_check_name=target_dist_check_name,
+            message_code=DataCheckMessageCode.TARGET_IS_NONE,
+            details={},
+        ).to_dict()
+    ]
 
 
 @pytest.mark.parametrize("target_type", ["boolean", "categorical", "integer", "double"])
@@ -54,24 +50,16 @@ def test_target_distribution_data_check_unsupported_target_type(target_type):
     target_dist_check = TargetDistributionDataCheck()
 
     if target_type in ["integer", "double"]:
-        assert target_dist_check.validate(X, y) == {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        assert target_dist_check.validate(X, y) == []
     else:
-        assert target_dist_check.validate(X, y) == {
-            "warnings": [],
-            "errors": [
-                DataCheckError(
-                    message=f"Target is unsupported {y.ww.logical_type.type_string} type. Valid Woodwork logical types include: integer, double",
-                    data_check_name=target_dist_check_name,
-                    message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
-                    details={"unsupported_type": y.ww.logical_type.type_string},
-                ).to_dict()
-            ],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        assert target_dist_check.validate(X, y) == [
+            DataCheckError(
+                message=f"Target is unsupported {y.ww.logical_type.type_string} type. Valid Woodwork logical types include: integer, double",
+                data_check_name=target_dist_check_name,
+                message_code=DataCheckMessageCode.TARGET_UNSUPPORTED_TYPE,
+                details={"unsupported_type": y.ww.logical_type.type_string},
+            ).to_dict()
+        ]
 
 
 @pytest.mark.parametrize("data_type", ["positive", "mixed", "negative"])
@@ -106,11 +94,7 @@ def test_target_distribution_data_check_warning_action(
         y = y - 1.2
 
     if distribution == "normal":
-        assert target_dist_check.validate(X, y) == {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        assert target_dist_check.validate(X, y) == []
     else:
         target_dist_ = target_dist_check.validate(X, y)
 
@@ -124,18 +108,13 @@ def test_target_distribution_data_check_warning_action(
             "statistic": round(test_og.statistic, 1),
             "p-value": round(test_og.pvalue, 3),
         }
-        assert target_dist_ == {
-            "warnings": [
-                DataCheckWarning(
-                    message="Target may have a lognormal distribution.",
-                    data_check_name=target_dist_check_name,
-                    message_code=DataCheckMessageCode.TARGET_LOGNORMAL_DISTRIBUTION,
-                    details=details,
-                ).to_dict()
-            ],
-            "errors": [],
-            "actions": {
-                "action_list": [
+        assert target_dist_ == [
+            DataCheckWarning(
+                message="Target may have a lognormal distribution.",
+                data_check_name=target_dist_check_name,
+                message_code=DataCheckMessageCode.TARGET_LOGNORMAL_DISTRIBUTION,
+                details=details,
+                action_options=[
                     DataCheckActionOption(
                         DataCheckActionCode.TRANSFORM_TARGET,
                         data_check_name=target_dist_check_name,
@@ -143,8 +122,7 @@ def test_target_distribution_data_check_warning_action(
                             "is_target": True,
                             "transformation_strategy": "lognormal",
                         },
-                    ).to_dict()
+                    )
                 ],
-                "default_action": None,
-            },
-        }
+            ).to_dict()
+        ]

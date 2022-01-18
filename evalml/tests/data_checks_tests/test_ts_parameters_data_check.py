@@ -59,11 +59,11 @@ def test_time_series_param_data_check(
     }
     data_check = TimeSeriesParametersDataCheck(config, n_splits)
     X = pd.DataFrame({"feature": range(n_obs)})
-    results = data_check.validate(X)
+    messages = data_check.validate(X)
     code = DataCheckMessageCode.TIMESERIES_PARAMETERS_NOT_COMPATIBLE_WITH_SPLIT.name
     if not is_valid:
-        assert len(results["errors"]) == 1
-        assert results["errors"][0]["details"] == {
+        assert len(messages) == 1
+        assert messages[0]["details"] == {
             "max_window_size": gap + max_delay + forecast_horizon,
             "min_split_size": n_obs // (n_splits + 1),
             "n_obs": n_obs,
@@ -71,10 +71,6 @@ def test_time_series_param_data_check(
             "columns": None,
             "rows": None,
         }
-        assert results["errors"][0]["code"] == code
+        assert messages[0]["code"] == code
     else:
-        assert results == {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        assert messages == []

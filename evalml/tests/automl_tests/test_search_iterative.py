@@ -9,16 +9,20 @@ from evalml.utils import infer_feature_types
 
 @patch("evalml.data_checks.default_data_checks.DefaultDataChecks.validate")
 @patch("evalml.automl.AutoMLSearch.search")
-def test_search_iterative(mock_automl_search, mock_data_checks_validate, X_y_binary):
+def test_search_iterative(
+    mock_automl_search,
+    mock_data_checks_validate,
+    X_y_binary,
+    dummy_data_check_validate_output_warnings,
+):
     X, y = X_y_binary
-    # this doesn't exactly match the data check results schema but its enough to trigger the error in search_iterative()
-    data_check_results_expected = {"warnings": ["Warning 1", "Warning 2"]}
-    mock_data_checks_validate.return_value = data_check_results_expected
+
+    mock_data_checks_validate.return_value = dummy_data_check_validate_output_warnings
     automl, data_check_results = search_iterative(
         X_train=X, y_train=y, problem_type="binary"
     )
     assert isinstance(automl, AutoMLSearch)
-    assert data_check_results is data_check_results_expected
+    assert data_check_results is dummy_data_check_validate_output_warnings
     mock_data_checks_validate.assert_called_once()
     data, target = (
         mock_data_checks_validate.call_args[0][0],
@@ -32,17 +36,18 @@ def test_search_iterative(mock_automl_search, mock_data_checks_validate, X_y_bin
 @patch("evalml.data_checks.default_data_checks.DefaultDataChecks.validate")
 @patch("evalml.automl.AutoMLSearch.search")
 def test_search_iterative_data_check_error(
-    mock_automl_search, mock_data_checks_validate, X_y_binary
+    mock_automl_search,
+    mock_data_checks_validate,
+    X_y_binary,
+    dummy_data_check_validate_output_errors,
 ):
     X, y = X_y_binary
-    # this doesn't exactly match the data check results schema but its enough to trigger the error in search_iterative()
-    data_check_results_expected = {"errors": ["Error 1", "Error 2"]}
-    mock_data_checks_validate.return_value = data_check_results_expected
+    mock_data_checks_validate.return_value = dummy_data_check_validate_output_errors
     automl, data_check_results = search_iterative(
         X_train=X, y_train=y, problem_type="binary"
     )
     assert automl is None
-    assert data_check_results == data_check_results_expected
+    assert data_check_results == dummy_data_check_validate_output_errors
     mock_data_checks_validate.assert_called_once()
     data, target = (
         mock_data_checks_validate.call_args[0][0],
@@ -69,7 +74,7 @@ def test_n_splits_passed_to_ts_splitting_data_check():
         problem_type="time series binary",
         n_splits=4,
     )
-    assert len(data_checks["errors"][0]["details"]["invalid_splits"]) == 4
+    assert len(data_checks[0]["details"]["invalid_splits"]) == 4
 
 
 @pytest.mark.parametrize(

@@ -13,29 +13,22 @@ def test_datetime_nan_data_check_error(ts_data):
     data.reset_index(inplace=True, drop=False)
     data.at[0, "index"] = np.NaN
     dt_nan_check = DateTimeNaNDataCheck()
-    assert dt_nan_check.validate(data) == {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [
-            DataCheckError(
-                message="Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.",
-                data_check_name=DateTimeNaNDataCheck.name,
-                message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                details={"columns": ["index"]},
-            ).to_dict()
-        ],
-    }
+    assert dt_nan_check.validate(data) == [
+        DataCheckError(
+            message="Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            data_check_name=DateTimeNaNDataCheck.name,
+            message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
+            details={"columns": ["index"]},
+        ).to_dict()
+    ]
 
 
 def test_datetime_nan_data_check_error_numeric_columns_no_null():
     dt_nan_check = DateTimeNaNDataCheck()
-    assert dt_nan_check.validate(
-        pd.DataFrame(np.random.randint(0, 10, size=(10, 4)))
-    ) == {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [],
-    }
+    assert (
+        dt_nan_check.validate(pd.DataFrame(np.random.randint(0, 10, size=(10, 4))))
+        == []
+    )
 
 
 def test_datetime_nan_data_check_error_numeric_null_columns():
@@ -43,11 +36,7 @@ def test_datetime_nan_data_check_error_numeric_null_columns():
     data = data.replace(data.iloc[0][0], None)
     data = data.replace(data.iloc[1][1], None)
     dt_nan_check = DateTimeNaNDataCheck()
-    assert dt_nan_check.validate(data) == {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [],
-    }
+    assert dt_nan_check.validate(data) == []
 
 
 def test_datetime_nan_data_check_multiple_dt_no_nan():
@@ -57,11 +46,7 @@ def test_datetime_nan_data_check_multiple_dt_no_nan():
     data["C"] = np.random.randint(0, 5, size=len(data))
 
     dt_nan_check = DateTimeNaNDataCheck()
-    assert dt_nan_check.validate(data) == {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [],
-    }
+    assert dt_nan_check.validate(data) == []
 
 
 def test_datetime_nan_data_check_multiple_nan_dt():
@@ -73,42 +58,30 @@ def test_datetime_nan_data_check_multiple_nan_dt():
     data["C"] = np.random.randint(0, 5, size=len(data))
 
     dt_nan_check = DateTimeNaNDataCheck()
-    assert dt_nan_check.validate(data) == {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [
-            DataCheckError(
-                message="Input datetime column(s) (A, B) contains NaN values. Please impute NaN values or drop these rows or columns.",
-                data_check_name=DateTimeNaNDataCheck.name,
-                message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                details={"columns": ["A", "B"]},
-            ).to_dict()
-        ],
-    }
+    assert dt_nan_check.validate(data) == [
+        DataCheckError(
+            message="Input datetime column(s) (A, B) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            data_check_name=DateTimeNaNDataCheck.name,
+            message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
+            details={"columns": ["A", "B"]},
+        ).to_dict()
+    ]
 
 
 def test_datetime_nan_check_input_formats():
     dt_nan_check = DateTimeNaNDataCheck()
 
     # test empty pd.DataFrame
-    assert dt_nan_check.validate(pd.DataFrame()) == {
-        "warnings": [],
-        "errors": [],
-        "actions": {"action_list": [], "default_action": None},
-    }
+    assert dt_nan_check.validate(pd.DataFrame()) == []
 
-    expected = {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [
-            DataCheckError(
-                message="Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.",
-                data_check_name=DateTimeNaNDataCheck.name,
-                message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                details={"columns": ["index"]},
-            ).to_dict()
-        ],
-    }
+    expected = [
+        DataCheckError(
+            message="Input datetime column(s) (index) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            data_check_name=DateTimeNaNDataCheck.name,
+            message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
+            details={"columns": ["index"]},
+        ).to_dict()
+    ]
 
     dates = np.arange(np.datetime64("2017-01-01"), np.datetime64("2017-01-08"))
     dates[0] = np.datetime64("NaT")
@@ -118,18 +91,14 @@ def test_datetime_nan_check_input_formats():
     ww_input.ww.init()
     assert dt_nan_check.validate(ww_input) == expected
 
-    expected = {
-        "warnings": [],
-        "actions": {"action_list": [], "default_action": None},
-        "errors": [
-            DataCheckError(
-                message="Input datetime column(s) (0) contains NaN values. Please impute NaN values or drop these rows or columns.",
-                data_check_name=DateTimeNaNDataCheck.name,
-                message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-                details={"columns": ["0"]},
-            ).to_dict()
-        ],
-    }
+    expected = [
+        DataCheckError(
+            message="Input datetime column(s) (0) contains NaN values. Please impute NaN values or drop these rows or columns.",
+            data_check_name=DateTimeNaNDataCheck.name,
+            message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
+            details={"columns": ["0"]},
+        ).to_dict()
+    ]
 
     #  test 2D list
     assert (

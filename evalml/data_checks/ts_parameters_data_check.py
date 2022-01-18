@@ -53,30 +53,30 @@ class TimeSeriesParametersDataCheck(DataCheck):
             ...
             >>> problem_config = {"gap": 7, "max_delay": 2, "forecast_horizon": 12, "time_index": "dates"}
             >>> target_leakage_check = TimeSeriesParametersDataCheck(problem_configuration=problem_config, n_splits=4)
-            >>> assert target_leakage_check.validate(X, y) == {
-            ...     "warnings": [],
-            ...     "errors": [{"message": "Since the data has 100 observations and n_splits=4, the smallest "
-            ...                            "split would have 20 observations. Since 21 (gap + max_delay + forecast_horizon)"
-            ...                            " >= 20, then at least one of the splits would be empty by the time it reaches "
-            ...                            "the pipeline. Please use a smaller number of splits, reduce one or more these "
-            ...                            "parameters, or collect more data.",
-            ...                 "data_check_name": "TimeSeriesParametersDataCheck",
-            ...                 "level": "error",
-            ...                 "code": "TIMESERIES_PARAMETERS_NOT_COMPATIBLE_WITH_SPLIT",
-            ...                 "details": {"columns": None,
-            ...                             "rows": None,
-            ...                             "max_window_size": 21,
-            ...                             "min_split_size": 20,
-            ...                             'n_obs': 100,
-            ...                             'n_splits': 4}}],
-            ...     "actions": {"action_list":[], "default_action": None}}
+            >>> assert target_leakage_check.validate(X, y) == [
+            ...     {
+            ...         "message": "Since the data has 100 observations and n_splits=4, the smallest "
+            ...                    "split would have 20 observations. Since 21 (gap + max_delay + forecast_horizon)"
+            ...                    " >= 20, then at least one of the splits would be empty by the time it reaches "
+            ...                    "the pipeline. Please use a smaller number of splits, reduce one or more these "
+            ...                    "parameters, or collect more data.",
+            ...         "data_check_name": "TimeSeriesParametersDataCheck",
+            ...         "level": "error",
+            ...         "code": "TIMESERIES_PARAMETERS_NOT_COMPATIBLE_WITH_SPLIT",
+            ...         "details": {
+            ...             "columns": None,
+            ...             "rows": None,
+            ...             "max_window_size": 21,
+            ...             "min_split_size": 20,
+            ...             "n_obs": 100,
+            ...             "n_splits": 4
+            ...         },
+            ...         "action_options": []
+            ...     }
+            ... ]
 
         """
-        results = {
-            "warnings": [],
-            "errors": [],
-            "actions": {"action_list": [], "default_action": None},
-        }
+        messages = []
 
         validation = are_ts_parameters_valid_for_split(
             gap=self.gap,
@@ -86,7 +86,7 @@ class TimeSeriesParametersDataCheck(DataCheck):
             n_obs=X.shape[0],
         )
         if not validation.is_valid:
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message=validation.msg,
                     data_check_name=self.name,
@@ -99,4 +99,4 @@ class TimeSeriesParametersDataCheck(DataCheck):
                     },
                 ).to_dict()
             )
-        return results
+        return messages
