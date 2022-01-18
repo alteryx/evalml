@@ -447,32 +447,6 @@ def test_default_data_checks_regression(input_type, data_checks_input_dataframe)
         ).to_dict()
     ]
 
-    impute_action = DataCheckActionOption(
-        DataCheckActionCode.IMPUTE_COL,
-        data_check_name="InvalidTargetDataCheck",
-        parameters={
-            "impute_strategy": {
-                "parameter_type": DCAOParameterType.GLOBAL,
-                "type": "category",
-                "categories": ["mean", "most_frequent"],
-                "default_value": "mean",
-            }
-        },
-        metadata={"is_target": True},
-    ).to_dict()
-
-    # leakage_drop_action = DataCheckActionOption(
-    #     DataCheckActionCode.DROP_COL,
-    #     data_check_name="TargetLeakageDataCheck",
-    #     metadata={"columns": ["nullable_integer", "no_null", "id", "nan_dt_col"]},
-    # ).to_dict()
-
-    # target_leakage_drop_action = DataCheckActionOption(
-    #     DataCheckActionCode.DROP_COL,
-    #     data_check_name="TargetLeakageDataCheck",
-    #     metadata={"columns": ["lots_of_null"]},
-    # ).to_dict()
-
     expected = get_expected_messages("regression")
 
     assert data_checks.validate(X, y) == expected[:3] + leakage_warning + expected[3:]

@@ -33,10 +33,16 @@ def test_data_checks_with_healthy_data(X_y_binary):
     )
     data_checks_output = data_check.validate(X, y)
 
+    action_options = []
+    for message in data_checks_output:
+        if message["action_options"]:
+            action_options.extend(message["action_options"])
+
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
-        for option in data_checks_output["action_options"]["action_list"]
+        for option in action_options
     )
+
     assert make_pipeline_from_actions(
         "binary", actions
     ) == BinaryClassificationPipeline(component_graph={}, parameters={}, random_seed=0)
@@ -54,10 +60,16 @@ def test_data_checks_suggests_drop_cols():
     data_check = NullDataCheck()
     data_checks_output = data_check.validate(X, y)
 
+    action_options = []
+    for message in data_checks_output:
+        if message["action_options"]:
+            action_options.extend(message["action_options"])
+
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
-        for option in data_checks_output["action_options"]["action_list"]
+        for option in action_options
     )
+
     action_pipeline = make_pipeline_from_actions("binary", actions)
     assert action_pipeline == BinaryClassificationPipeline(
         component_graph={"Drop Columns Transformer": [DropColumns, "X", "y"]},
@@ -109,9 +121,14 @@ def test_data_checks_impute_cols(problem_type):
     data_check = InvalidTargetDataCheck(problem_type, objective)
     data_checks_output = data_check.validate(None, y)
 
+    action_options = []
+    for message in data_checks_output:
+        if message["action_options"]:
+            action_options.extend(message["action_options"])
+
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
-        for option in data_checks_output["action_options"]["action_list"]
+        for option in action_options
     )
     action_pipeline = make_pipeline_from_actions(problem_type, actions)
     expected_parameters = (
@@ -147,10 +164,16 @@ def test_data_checks_suggests_drop_rows():
     outliers_check = OutliersDataCheck()
     data_checks_output = outliers_check.validate(X)
 
+    action_options = []
+    for message in data_checks_output:
+        if message["action_options"]:
+            action_options.extend(message["action_options"])
+
     actions = get_actions_from_option_defaults(
         DataCheckActionOption.convert_dict_to_option(option)
-        for option in data_checks_output["action_options"]["action_list"]
+        for option in action_options
     )
+
     action_pipeline = make_pipeline_from_actions("binary", actions)
     assert action_pipeline == BinaryClassificationPipeline(
         component_graph={"Drop Rows Transformer": [DropRowsTransformer, "X", "y"]},

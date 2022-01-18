@@ -231,6 +231,3 @@ def test_data_check_message_to_dict_optional():
         "details": {"columns": None, "rows": None},
         "action_options": [],
     }
-
-
-## TODO: add tests with actions
