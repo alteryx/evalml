@@ -58,7 +58,7 @@ def local_datasets(
         ("breast_cancer", (569, 30)),
         ("diabetes", (442, 10)),
         ("churn", (7043, 19)),
-        ("daily_temp", (3650, 1)),
+        ("daily_temp", (3652, 1)),
     ],
 )
 def test_datasets(dataset_name, expected_shape, local_datasets):
