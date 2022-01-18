@@ -66,7 +66,9 @@ class TimeSeriesParametersDataCheck(DataCheck):
             ...                 "details": {"columns": None,
             ...                             "rows": None,
             ...                             "max_window_size": 21,
-            ...                             "min_split_size": 20}}],
+            ...                             "min_split_size": 20,
+            ...                             'n_obs': 100,
+            ...                             'n_splits': 4}}],
             ...     "actions": {"action_list":[], "default_action": None}}
 
         """
@@ -92,6 +94,8 @@ class TimeSeriesParametersDataCheck(DataCheck):
                     details={
                         "max_window_size": validation.max_window_size,
                         "min_split_size": validation.smallest_split_size,
+                        "n_obs": validation.n_obs,
+                        "n_splits": validation.n_splits,
                     },
                 ).to_dict()
             )

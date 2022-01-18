@@ -66,6 +66,8 @@ def test_time_series_param_data_check(
         assert results["errors"][0]["details"] == {
             "max_window_size": gap + max_delay + forecast_horizon,
             "min_split_size": n_obs // (n_splits + 1),
+            "n_obs": n_obs,
+            "n_splits": n_splits,
             "columns": None,
             "rows": None,
         }

@@ -58,7 +58,7 @@ def local_datasets(
         ("breast_cancer", (569, 30)),
         ("diabetes", (442, 10)),
         ("churn", (7043, 19)),
-        ("daily_temp", (3650, 1)),
+        ("daily_temp", (3652, 1)),
     ],
 )
 def test_datasets(dataset_name, expected_shape, local_datasets):
@@ -86,5 +86,6 @@ def test_datasets(dataset_name, expected_shape, local_datasets):
 def test_datasets_match_local(dataset_name, demo_method, local_datasets):
     X, y = demo_method
     X_local, y_local = local_datasets[dataset_name]
+
     pd.testing.assert_frame_equal(X, X_local)
     pd.testing.assert_series_equal(y, y_local)
