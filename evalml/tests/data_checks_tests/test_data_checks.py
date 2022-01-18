@@ -115,11 +115,11 @@ def test_data_checks(X_y_binary):
         DataCheckWarning(
             message="warning one", data_check_name="MockDataCheckWarning"
         ).to_dict(),
-        DataCheckWarning(
-            message="warning two", data_check_name="MockDataCheckErrorAndWarning"
-        ).to_dict(),
         DataCheckError(
             message="error one", data_check_name="MockDataCheckError"
+        ).to_dict(),
+        DataCheckWarning(
+            message="warning two", data_check_name="MockDataCheckErrorAndWarning"
         ).to_dict(),
         DataCheckError(
             message="error two", data_check_name="MockDataCheckErrorAndWarning"
@@ -264,7 +264,7 @@ def get_expected_messages(problem_type):
                 DataCheckActionOption(
                     DataCheckActionCode.DROP_COL,
                     data_check_name="NoVarianceDataCheck",
-                    metadata={"columns": ["all_null", "also_all_null", "lots_of_null"]},
+                    metadata={"columns": ["all_null", "also_all_null"]},
                 )
             ],
         ).to_dict(),
@@ -273,6 +273,13 @@ def get_expected_messages(problem_type):
             data_check_name="NoVarianceDataCheck",
             message_code=DataCheckMessageCode.NO_VARIANCE,
             details={"columns": ["lots_of_null"]},
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name="NoVarianceDataCheck",
+                    metadata={"columns": ["lots_of_null"]},
+                )
+            ],
         ).to_dict(),
         DataCheckError(
             message="Input natural language column(s) (natural_language_nan) contains NaN values. Please impute NaN values or drop these rows or columns.",
@@ -367,10 +374,9 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
 
     assert (
         data_checks.validate(X, y_multiclass)
-        == expected[:3]
-        + high_class_to_sample_ratio
-        + expected[3]
+        == expected[:4]
         + min_2_class_count
+        + high_class_to_sample_ratio
         + expected[4:]
         + imbalance
     )
@@ -386,11 +392,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
     )
     assert (
         data_checks.validate(X, y_multiclass)
-        == expected[:3]
-        + high_class_to_sample_ratio
-        + expected[3]
-        + min_2_class_count
-        + expected[4:]
+        == expected[:4] + min_2_class_count + high_class_to_sample_ratio + expected[4:]
     )
 
 
