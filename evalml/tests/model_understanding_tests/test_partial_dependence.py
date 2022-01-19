@@ -550,8 +550,8 @@ def test_partial_dependence_ice_plot(logistic_regression_binary_pipeline):
     assert isinstance(avg_pred, pd.DataFrame)
     assert isinstance(ind_preds, pd.DataFrame)
 
-    assert avg_pred.shape == (3, 3)
-    assert ind_preds.shape == (3, 7)
+    assert avg_pred.shape == (2, 3)
+    assert ind_preds.shape == (2, 7)
 
     ind_preds = partial_dependence(pipeline, X, features="b", kind="individual")
     assert isinstance(ind_preds, pd.DataFrame)
@@ -572,10 +572,10 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
     assert isinstance(ind_preds, list)
     assert isinstance(ind_preds[0], pd.DataFrame)
 
-    assert avg_pred.shape == (3, 3)
+    assert avg_pred.shape == (2, 3)
     assert len(ind_preds) == 5
     for ind_df in ind_preds:
-        assert ind_df.shape == (3, 3)
+        assert ind_df.shape == (2, 3)
 
     ind_preds = partial_dependence(
         pipeline, X, features=["a", "b"], grid_resolution=5, kind="individual"
@@ -585,7 +585,7 @@ def test_two_way_partial_dependence_ice_plot(logistic_regression_binary_pipeline
 
     assert len(ind_preds) == 5
     for ind_df in ind_preds:
-        assert ind_df.shape == (3, 3)
+        assert ind_df.shape == (2, 3)
 
 
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
@@ -1147,6 +1147,7 @@ def test_partial_dependence_all_nan_value_error(
     logistic_regression_binary_pipeline.fit(X, y)
 
     pred_df = pd.DataFrame({"a": [None] * 5, "b": [1, 2, 3, 4, 4], "c": [None] * 5})
+    pred_df.ww.init(logical_types={"a": "Double", "c": "Double", "b": "Integer"})
     message = "The following features have all NaN values and so the partial dependence cannot be computed: {}"
     with pytest.raises(PartialDependenceError, match=message.format("'a'")) as e:
         partial_dependence(
@@ -1181,7 +1182,7 @@ def test_partial_dependence_all_nan_value_error(
         )
     assert e.value.code == PartialDependenceErrorCode.FEATURE_IS_ALL_NANS
 
-    pred_df = pred_df.rename(columns={"a": 0})
+    pred_df = pred_df.ww.rename(columns={"a": 0})
     with pytest.raises(PartialDependenceError, match=message.format("'0'")) as e:
         partial_dependence(
             logistic_regression_binary_pipeline, pred_df, features=0, grid_resolution=10
@@ -1788,3 +1789,31 @@ def test_partial_dependence_preserves_woodwork_schema(mock_predict_proba, fraud_
         call_args[0][0].ww.schema == X_test.ww.schema
         for call_args in mock_predict_proba.call_args_list
     )
+
+
+def test_partial_dependence_does_not_return_all_nan_grid():
+    # In this case, the 95th percentile of "a" if we included all values
+    # would be NaN, so the resulting grid by np.linspace would be all NaN
+    # This tests verifies that the grid is not all NaN
+    X = pd.DataFrame({"a": [1, 2, None, 3, 3.2, 4.5, 2.3, 1.2], "b": [4, 5, 6, 7] * 2})
+    y = pd.Series([1, 0, 0, 1] * 2)
+    X_holdout = pd.DataFrame(
+        {"a": [1, 2, None, 3, 3.2, 4.5, 2.3, 1.2], "b": [4, 5, 6, 7] * 2}
+    )
+
+    pipeline = BinaryClassificationPipeline(
+        component_graph={
+            "Label Encoder": ["Label Encoder", "X", "y"],
+            "Imputer": ["Imputer", "X", "Label Encoder.y"],
+            "Random Forest Classifier": [
+                "Random Forest Classifier",
+                "Imputer.x",
+                "Label Encoder.y",
+            ],
+        }
+    )
+    pipeline.fit(X, y)
+
+    dep = partial_dependence(pipeline, X_holdout, "a", grid_resolution=4)
+    assert not dep.feature_values.isna().any()
+    assert not dep.partial_dependence.isna().any()

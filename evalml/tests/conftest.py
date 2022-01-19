@@ -42,6 +42,7 @@ from evalml.problem_types import (
     is_regression,
     is_time_series,
 )
+from evalml.utils import infer_feature_types
 
 
 def pytest_configure(config):
@@ -203,12 +204,14 @@ def get_ts_X_y():
     ):
         X = pd.DataFrame(index=[i + 1 for i in range(50)])
         dates = pd.date_range("1/1/21", periods=50)
-        feature = [1, 5, 2] * 10 + [3, 1] * 10
+        feature = pd.Series([1, 5, 2] * 10 + [3, 1] * 10, index=X.index)
         y = pd.Series([1, 2, 3, 4, 5, 6, 5, 4, 3, 2] * 5)
+        X.ww.init()
+        y = ww.init_series(y)
 
-        X_train = X[:40]
-        X_test = X[40:]
-        y_train = y[:40]
+        X_train = X.ww.iloc[:40]
+        X_test = X.ww.iloc[40:]
+        y_train = y.ww.iloc[:40]
 
         if train_features_index_dt:
             X_train.index = dates[:40]
@@ -217,11 +220,11 @@ def get_ts_X_y():
         if test_features_index_dt:
             X_test.index = dates[40:]
         if not no_features:
-            X_train["Feature"] = feature[:40]
-            X_test["Feature"] = feature[40:]
+            X_train.ww["Feature"] = pd.Series(feature[:40].values, index=X_train.index)
+            X_test.ww["Feature"] = pd.Series(feature[40:].values, index=X_test.index)
             if datetime_feature:
-                X_train["Dates"] = dates[:40]
-                X_test["Dates"] = dates[40:]
+                X_train.ww["Dates"] = pd.Series(dates[:40].values, index=X_train.index)
+                X_test.ww["Dates"] = pd.Series(dates[40:].values, index=X_test.index)
         if train_none:
             X_train = None
 
@@ -824,11 +827,11 @@ def dummy_ts_binary_pipeline_class(dummy_classifier_estimator_class):
 
 
 @pytest.fixture
-def dummy_ts_binary_linear_classifier_pipeline_class():
-    log_reg_classifier = LogisticRegressionClassifier
+def dummy_ts_binary_tree_classifier_pipeline_class():
+    dec_tree_classifier = DecisionTreeClassifier
 
     class MockBinaryClassificationPipeline(TimeSeriesBinaryClassificationPipeline):
-        estimator = log_reg_classifier
+        estimator = dec_tree_classifier
         component_graph = [estimator]
 
         def __init__(
@@ -1618,20 +1621,43 @@ def CustomClassificationObjectiveRanges(ranges):
 def load_daily_temp_local(n_rows=None):
     currdir_path = os.path.dirname(os.path.abspath(__file__))
     data_folder_path = os.path.join(currdir_path, "data")
-    fraud_data_path = os.path.join(data_folder_path, "daily-min-temperatures.csv")
+    temp_data_path = os.path.join(data_folder_path, "daily-min-temperatures.csv")
     X, y = load_data(
-        path=fraud_data_path,
+        path=temp_data_path,
         index=None,
         target="Temp",
         n_rows=n_rows,
     )
+    missing_date_1 = pd.DataFrame([pd.to_datetime("1984-12-31")], columns=["Date"])
+    missing_date_2 = pd.DataFrame([pd.to_datetime("1988-12-31")], columns=["Date"])
+    missing_y_1 = pd.Series([14.5], name="Temp")
+    missing_y_2 = pd.Series([14.5], name="Temp")
+
+    X = pd.concat(
+        [
+            X.iloc[:1460],
+            missing_date_1,
+            X.iloc[1460:2920],
+            missing_date_2,
+            X.iloc[2920:],
+        ]
+    ).reset_index(drop=True)
+    y = pd.concat(
+        [
+            y.iloc[:1460],
+            missing_y_1,
+            y.iloc[1460:2920],
+            missing_y_2,
+            y.iloc[2920:],
+        ]
+    ).reset_index(drop=True)
     return X, y
 
 
 @pytest.fixture
 def daily_temp_local():
     X, y = load_daily_temp_local()
-    return X, y
+    return infer_feature_types(X), infer_feature_types(y)
 
 
 @pytest.fixture
