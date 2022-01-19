@@ -458,7 +458,9 @@ class ComponentGraph:
                     output = component_instance.predict(x_inputs)
                 output_cache[f"{component_name}.x"] = output
             if self.cached_data is not None:
-                self.set_component(component_name, component_instance)
+                # self.set_component(component_name, component_instance)
+                self.component_instances[component_name] = component_instance
+
         return output_cache
 
     def _get_stacked_ensemble_component(self, hashes, component_name, fit):
@@ -553,14 +555,14 @@ class ComponentGraph:
         except KeyError:
             raise ValueError(f"Component {component_name} is not in the graph")
 
-    def set_component(self, component_name, component_instance):
-        """Sets a single component object from the graph.
+    # def set_component(self, component_name, component_instance):
+    #     """Sets a single component object from the graph.
 
-        Args:
-            component_name (str): Name of the component to retrieve
-            component_instance (ComponentBase): The instance of the component to set
-        """
-        self.component_instances[component_name] = component_instance
+    #     Args:
+    #         component_name (str): Name of the component to retrieve
+    #         component_instance (ComponentBase): The instance of the component to set
+        # """
+        # self.component_instances[component_name] = component_instance
 
     def get_last_component(self):
         """Retrieves the component that is computed last in the graph, usually the final estimator.
