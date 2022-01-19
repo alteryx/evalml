@@ -2149,7 +2149,7 @@ def test_explain_predictions_best_worst_json(algorithm, fraud_100):
             "Natural Language Featurizer",
             "DateTime Featurizer",
             "One Hot Encoder",
-            "CatBoost Classifier",
+            "Logistic Regression Classifier",
         ]
     )
     X, y = fraud_100
