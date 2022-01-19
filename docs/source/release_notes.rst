@@ -14,7 +14,7 @@
         * Removed potential prediction explanations failure when pipelines predicted a class with probability 1 :pr:`3221`
         * Dropped NaNs before partial dependence grid generation :pr:`3235`
         * Fixed bug where ``InvalidTargetDataCheck`` would not check time series regression targets :pr:`3251`
-        * Fixed bug in ``are_datasets_separated_by_gap_time_index` :pr:`3256`
+        * Fixed bug in ``are_datasets_separated_by_gap_time_index`` :pr:`3256`
     * Changes
         * Raised lowest compatible numpy version to 1.21.0 to address security concerns :pr:`3207`
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
