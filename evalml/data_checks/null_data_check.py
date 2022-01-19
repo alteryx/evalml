@@ -58,7 +58,7 @@ class NullDataCheck(DataCheck):
             >>> df = pd.DataFrame({
             ...     "all_null": [None, pd.NA, None, None, None],
             ...     "lots_of_null": [None, None, None, None, 5],
-            ...     "few_null": ["near", "far", pd.NaT, "wherever", "nowhere"],
+            ...     "few_null": [1, 2, None, 2, 3],
             ...     "no_null": [1, 2, 3, 4, 5]
             ... })
             ...
@@ -99,7 +99,7 @@ class NullDataCheck(DataCheck):
             ...                         "parameter_type": "column",
             ...                         "columns": {
             ...                             "few_null": {
-            ...                                 "impute_strategy": {"categories": ["most_frequent"], "type": "category", "default_value": "most_frequent"}
+            ...                                 "impute_strategy": {"categories": ["mean", "most_frequent"], "type": "category", "default_value": "mean"}
             ...                             }
             ...                         }
             ...                     }
@@ -173,7 +173,7 @@ class NullDataCheck(DataCheck):
             ...                        "parameter_type": "column",
             ...                        "columns": {
             ...                            "lots_of_null": {"impute_strategy": {"categories": ["mean", "most_frequent"], "type": "category", "default_value": "mean"}},
-            ...                            "few_null": {"impute_strategy": {"categories": ["most_frequent"], "type": "category", "default_value": "most_frequent"}}
+            ...                            "few_null": {"impute_strategy": {"categories": ["mean", "most_frequent"], "type": "category", "default_value": "mean"}}
             ...                        }
             ...                    }
             ...                }
