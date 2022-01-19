@@ -7,6 +7,7 @@
         * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
         * Updated dependency bot workflow to remove outdated description and add new configuration to delete branches automatically :pr:`3212`
         * Added ``n_obs`` and ``n_splits`` to ``TimeSeriesParametersDataCheck`` error details :pr:`3246`
+        * Updated data check actions API to return options instead of actions and add functionality to suggest and take action on columns with null values :pr:`3182`
     * Fixes
         * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
         * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
