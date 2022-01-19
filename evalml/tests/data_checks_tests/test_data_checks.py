@@ -146,7 +146,7 @@ def get_expected_messages(problem_type):
             ],
         ).to_dict(),
         DataCheckWarning(
-            message="Column(s) 'lots_of_null', 'nullable_integer', 'nullable_bool', 'natural_language_nan' have null values",
+            message="Column(s) 'lots_of_null', 'nullable_integer', 'nullable_bool' have null values",
             data_check_name="NullDataCheck",
             message_code=DataCheckMessageCode.COLS_WITH_NULL,
             details={
@@ -154,7 +154,6 @@ def get_expected_messages(problem_type):
                     "lots_of_null",
                     "nullable_integer",
                     "nullable_bool",
-                    "natural_language_nan",
                 ],
             },
             action_options=[
@@ -166,7 +165,6 @@ def get_expected_messages(problem_type):
                             "lots_of_null",
                             "nullable_integer",
                             "nullable_bool",
-                            "natural_language_nan",
                         ],
                         "is_target": False,
                     },
@@ -189,13 +187,6 @@ def get_expected_messages(problem_type):
                                     }
                                 },
                                 "nullable_bool": {
-                                    "impute_strategy": {
-                                        "categories": ["most_frequent"],
-                                        "type": "category",
-                                        "default_value": "most_frequent",
-                                    }
-                                },
-                                "natural_language_nan": {
                                     "impute_strategy": {
                                         "categories": ["most_frequent"],
                                         "type": "category",
@@ -296,6 +287,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
     y_multiclass = pd.Series([0, 1, np.nan, 2, 0])
     X.ww.init(
         logical_types={
+            "lots_of_null": "categorical",
             "natural_language_nan": "NaturalLanguage",
             "nullable_integer": "IntegerNullable",
             "nullable_bool": "BooleanNullable",
@@ -397,6 +389,7 @@ def test_default_data_checks_regression(input_type, data_checks_input_dataframe)
         logical_types={
             "lots_of_null": "categorical",
             "natural_language_nan": "NaturalLanguage",
+            "nullable_bool": "BooleanNullable",
         }
     )
     if input_type == "ww":
