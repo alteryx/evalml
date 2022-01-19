@@ -24,6 +24,8 @@
         * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
         * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary :pr:`3244`
         * Checking the validity of holdout data for time series problems can be performed by calling ``pipelines.utils.validate_holdout_datasets`` prior to calling ``predict`` :pr:`3208`
+        * Updated ``DataCheck`` ``validate()`` output to return a dictionary instead of list for actions :pr:`3142`
+        * Updated validate() API to use the new ``DataCheckActionOption`` class instead of ``DataCheckAction`` :pr:`3152`
     * Documentation Changes
     * Testing Changes
 
@@ -48,8 +50,6 @@
         * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
         * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
-        * Updated ``DataCheck`` ``validate()`` output to return a dictionary instead of list for actions :pr:`3142`
-        * Updated validate() API to use the new ``DataCheckActionOption`` class instead of ``DataCheckAction`` :pr:`3152`
     * Documentation Changes
     * Testing Changes
         * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
