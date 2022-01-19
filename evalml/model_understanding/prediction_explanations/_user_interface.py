@@ -61,6 +61,8 @@ def _make_rows(
         else:
             feature_value = pipeline_features[feature_name].iloc[0]
 
+        feature_value = _make_json_serializable(feature_value)
+
         if convert_numeric_to_string:
             if pd.api.types.is_number(feature_value) and not pd.api.types.is_bool(
                 feature_value
@@ -117,6 +119,8 @@ def _make_json_serializable(value):
             value = int(value)
         else:
             value = float(value)
+    elif isinstance(value, pd.Timestamp):
+        value = value.ctime()
 
     return value
 
