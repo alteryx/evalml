@@ -469,7 +469,6 @@ class ComponentGraph:
             try:
                 index = self.cached_data[0][hashes]
                 component_instance = self.cached_data[1][index][component_name]
-                print("Got component instance {}, {}".format(component_name, component_instance._is_fitted))
             except KeyError:
                 pass
         return component_instance
