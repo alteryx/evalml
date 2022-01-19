@@ -1303,7 +1303,7 @@ def test_categories_aggregated_text(
             "CUC",
             "Mastercard",
             24900,
-            pd.Timestamp("2019-01-01 00:12:26"),
+            pd.Timestamp("2019-01-01 00:12:26").isoformat(),
         }
         assert explanation["drill_down"].keys() == {"currency", "provider", "datetime"}
         assert (
@@ -1368,7 +1368,7 @@ def test_categories_aggregated_date_ohe(
             "datetime",
         }
         assert set(explanation["feature_values"]) == {
-            pd.Timestamp("2019-01-01 00:12:26"),
+            pd.Timestamp("2019-01-01 00:12:26").isoformat(),
             "Mastercard",
             "CUC",
             24900,
@@ -1442,7 +1442,7 @@ def test_categories_aggregated_pca_dag(
         assert all(
             [
                 f in explanation["feature_values"]
-                for f in [pd.Timestamp("2019-01-01 00:12:26"), "Mastercard", "CUC"]
+                for f in [pd.Timestamp("2019-01-01 00:12:26").isoformat(), "Mastercard", "CUC"]
             ]
         )
         assert explanation["drill_down"].keys() == {"currency", "provider", "datetime"}
@@ -1567,7 +1567,7 @@ def test_categories_aggregated_when_some_are_dropped(
             "CUC",
             "Mastercard",
             24900,
-            pd.Timestamp("2019-01-01 00:12:26"),
+            pd.Timestamp("2019-01-01 00:12:26").isoformat(),
         }
         assert explanation["drill_down"].keys() == {"currency", "provider", "datetime"}
         assert (
@@ -2043,6 +2043,7 @@ def test_explain_predictions_report_shows_original_value_if_possible(
         top_k_features=20,
         algorithm=algorithm,
     )
+    X['datetime'] = X['datetime'].map(lambda val: val.isoformat())
     expected_feature_values = set(X.ww.iloc[0, :].tolist())
     for explanation in report["explanations"][0]["explanations"]:
         assert set(explanation["feature_names"]) == set(X.columns)
@@ -2106,6 +2107,7 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
         algorithm=algorithm,
     )
 
+    X['datetime'] = X['datetime'].map(lambda val: val.isoformat())
     for index, explanation in enumerate(report["explanations"]):
         for exp in explanation["explanations"]:
             assert set(exp["feature_names"]) == set(X.columns)
