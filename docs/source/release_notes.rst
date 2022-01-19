@@ -6,6 +6,7 @@
         * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
         * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
         * Updated dependency bot workflow to remove outdated description and add new configuration to delete branches automatically :pr:`3212`
+        * Updated ``make_pipeline_from_actions`` to handle null column imputation :pr:`3237`
         * Added ``n_obs`` and ``n_splits`` to ``TimeSeriesParametersDataCheck`` error details :pr:`3246`
     * Fixes
         * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`

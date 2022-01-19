@@ -32,6 +32,9 @@ from evalml.pipelines.components import (
 from evalml.pipelines.components.transformers.encoders.label_encoder import (
     LabelEncoder,
 )
+from evalml.pipelines.components.transformers.imputers.per_column_imputer import (
+    PerColumnImputer,
+)
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
@@ -347,12 +350,38 @@ def test_make_pipeline_from_actions(problem_type):
             },
         ),
         DataCheckAction(DataCheckActionCode.DROP_ROWS, None, metadata={"rows": [1, 2]}),
+        DataCheckAction(
+            DataCheckActionCode.IMPUTE_COL,
+            None,
+            metadata={
+                "columns": None,
+                "is_target": False,
+                "parameters": {
+                    "global_parameter_name": 0.0,
+                    "impute_strategies": {
+                        "some_column": {
+                            "impute_strategy": "most_frequent",
+                            "fill_value": 0.0,
+                        },
+                        "some_other_column": {
+                            "impute_strategy": "mean",
+                            "fill_value": 1.0,
+                        },
+                    },
+                },
+            },
+        ),
     ]
 
     assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
         component_graph={
             "Target Imputer": [TargetImputer, "X", "y"],
-            "Drop Columns Transformer": [DropColumns, "X", "Target Imputer.y"],
+            "Per Column Imputer": [PerColumnImputer, "X", "Target Imputer.y"],
+            "Drop Columns Transformer": [
+                DropColumns,
+                "Per Column Imputer.x",
+                "Target Imputer.y",
+            ],
             "Drop Rows Transformer": [
                 DropRowsTransformer,
                 "Drop Columns Transformer.x",
@@ -363,6 +392,20 @@ def test_make_pipeline_from_actions(problem_type):
             "Target Imputer": {"impute_strategy": "most_frequent", "fill_value": None},
             "Drop Columns Transformer": {"columns": ["some col"]},
             "Drop Rows Transformer": {"indices_to_drop": [1, 2]},
+            "Per Column Imputer": {
+                "impute_strategies": {
+                    "some_column": {
+                        "impute_strategy": "most_frequent",
+                        "fill_value": 0.0,
+                    },
+                    "some_other_column": {
+                        "impute_strategy": "mean",
+                        "fill_value": 1.0,
+                    },
+                },
+                "default_impute_strategy": "most_frequent",
+                "impute_all": False,
+            },
         },
         random_seed=0,
     )
