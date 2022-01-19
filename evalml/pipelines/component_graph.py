@@ -406,7 +406,7 @@ class ComponentGraph:
 
         output_cache = {}
         for component_name in component_list:
-            component_instance = self._get_stacked_ensemble_component(hashes, component_name)
+            component_instance = self._get_stacked_ensemble_component(hashes, component_name, fit)
             if not isinstance(component_instance, ComponentBase):
                 raise ValueError(
                     "All components must be instantiated before fitting or predicting"
@@ -436,7 +436,6 @@ class ComponentGraph:
             else:
                 if fit and not component_instance._is_fitted:
                     component_instance.fit(x_inputs, y_input)
-
                 if fit and component_name == self.compute_order[-1]:
                     # Don't call predict on the final component during fit
                     output = None
@@ -458,17 +457,18 @@ class ComponentGraph:
                 else:
                     output = component_instance.predict(x_inputs)
                 output_cache[f"{component_name}.x"] = output
+            if self.cached_data is not None:
+                self.set_component(component_name, component_instance)
         return output_cache
 
-    def _get_stacked_ensemble_component(self, hashes, component_name):
+    def _get_stacked_ensemble_component(self, hashes, component_name, fit):
         component_instance = self.get_component(component_name)
-        if self.cached_data is not None:
+        if self.cached_data is not None and fit:
             try:
                 index = self.cached_data[0][hashes]
                 component_instance = self.cached_data[1][index][component_name]
-                # print("Got component instance {}, {}".format(component_name, component_instance))
+                print("Got component instance {}, {}".format(component_name, component_instance._is_fitted))
             except KeyError:
-                # print("failed to get componentn instance", component_name)
                 pass
         return component_instance
 
@@ -552,6 +552,15 @@ class ComponentGraph:
             return self.component_instances[component_name]
         except KeyError:
             raise ValueError(f"Component {component_name} is not in the graph")
+
+    def set_component(self, component_name, component_instance):
+        """Sets a single component object from the graph.
+
+        Args:
+            component_name (str): Name of the component to retrieve
+            component_instance (ComponentBase): The instance of the component to set
+        """
+        self.component_instances[component_name] = component_instance
 
     def get_last_component(self):
         """Retrieves the component that is computed last in the graph, usually the final estimator.
