@@ -443,7 +443,7 @@ class AutoMLSearch:
         allow_long_running_models=False,
         _ensembling_split_size=0.2,
         _pipelines_per_batch=5,
-        _automl_algorithm="iterative",
+        _automl_algorithm="default",
         engine="sequential",
         verbose=False,
     ):
