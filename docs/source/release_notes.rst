@@ -26,6 +26,7 @@
         * Checking the validity of holdout data for time series problems can be performed by calling ``pipelines.utils.validate_holdout_datasets`` prior to calling ``predict`` :pr:`3208`
         * Updated ``DataCheck`` ``validate()`` output to return a dictionary instead of list for actions :pr:`3142`
         * Updated validate() API to use the new ``DataCheckActionOption`` class instead of ``DataCheckAction`` :pr:`3152`
+        * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
     * Documentation Changes
     * Testing Changes
 
@@ -35,6 +36,7 @@
         * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
         * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
         * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary. See the Data Check or Data Check Actions pages (under User Guide) for examples. :pr:`3244`
+        * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
 
 
 
