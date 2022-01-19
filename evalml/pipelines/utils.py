@@ -33,6 +33,7 @@ from evalml.pipelines.components import (  # noqa: F401
     NaturalLanguageFeaturizer,
     OneHotEncoder,
     Oversampler,
+    PerColumnImputer,
     RandomForestClassifier,
     ReplaceNullableTypes,
     SelectColumns,
@@ -746,6 +747,13 @@ def _make_component_list_from_actions(actions):
             if metadata["is_target"]:
                 components.append(
                     TargetImputer(impute_strategy=parameters["impute_strategy"])
+                )
+            else:
+                impute_strategies = parameters["impute_strategies"]
+                components.append(
+                    PerColumnImputer(
+                        impute_strategies=impute_strategies, impute_all=False
+                    )
                 )
         elif action.action_code == DataCheckActionCode.DROP_ROWS:
             indices_to_drop.extend(action.metadata["rows"])

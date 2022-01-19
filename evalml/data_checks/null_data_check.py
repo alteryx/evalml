@@ -10,7 +10,7 @@ from evalml.utils import infer_feature_types
 
 
 class NullDataCheck(DataCheck):
-    """Check if there are any highly-null columns and rows in the input.
+    """Check if there are any highly-null numerical, boolean, categorical, natural language, and unknown columns and rows in the input.
 
     Args:
         pct_null_col_threshold(float): If the percentage of NaN values in an input feature exceeds this amount,
@@ -58,7 +58,7 @@ class NullDataCheck(DataCheck):
             >>> df = pd.DataFrame({
             ...     "all_null": [None, pd.NA, None, None, None],
             ...     "lots_of_null": [None, None, None, None, 5],
-            ...     "few_null": ["near", "far", pd.NaT, "wherever", "nowhere"],
+            ...     "few_null": [1, 2, None, 2, 3],
             ...     "no_null": [1, 2, 3, 4, 5]
             ... })
             ...
@@ -99,7 +99,7 @@ class NullDataCheck(DataCheck):
             ...                         "parameter_type": "column",
             ...                         "columns": {
             ...                             "few_null": {
-            ...                                 "impute_strategy": {"categories": ["most_frequent"], "type": "category", "default_value": "most_frequent"}
+            ...                                 "impute_strategy": {"categories": ["mean", "most_frequent"], "type": "category", "default_value": "mean"}
             ...                             }
             ...                         }
             ...                     }
@@ -173,7 +173,7 @@ class NullDataCheck(DataCheck):
             ...                        "parameter_type": "column",
             ...                        "columns": {
             ...                            "lots_of_null": {"impute_strategy": {"categories": ["mean", "most_frequent"], "type": "category", "default_value": "mean"}},
-            ...                            "few_null": {"impute_strategy": {"categories": ["most_frequent"], "type": "category", "default_value": "most_frequent"}}
+            ...                            "few_null": {"impute_strategy": {"categories": ["mean", "most_frequent"], "type": "category", "default_value": "mean"}}
             ...                        }
             ...                    }
             ...                }
@@ -217,8 +217,18 @@ class NullDataCheck(DataCheck):
             X, pct_null_col_threshold=self.pct_null_col_threshold
         )
 
+        X_to_check_for_any_null = X.ww.select(
+            [
+                "category",
+                "boolean",
+                "numeric",
+                "IntegerNullable",
+                "BooleanNullable",
+            ]
+        )
+
         cols_with_any_nulls, _ = NullDataCheck.get_null_column_information(
-            X, pct_null_col_threshold=0.0
+            X_to_check_for_any_null, pct_null_col_threshold=0.0
         )
 
         below_highly_null_cols = [
