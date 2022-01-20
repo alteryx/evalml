@@ -2,6 +2,18 @@
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.42.0 Jan. 18, 2022**
+    * Enhancements
         * Required the separation of training and test data by ``gap`` + 1 units to be verified by ``time_index`` for time series problems :pr:`3208`
         * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
         * Updated dependency bot workflow to remove outdated description and add new configuration to delete branches automatically :pr:`3212`
@@ -13,7 +25,9 @@
         * Removed empty cell in text_input.ipynb :pr:`3234`
         * Removed potential prediction explanations failure when pipelines predicted a class with probability 1 :pr:`3221`
         * Dropped NaNs before partial dependence grid generation :pr:`3235`
+        * Allowed prediction explanations to be json-serializable :pr:`3262`
         * Fixed bug where ``InvalidTargetDataCheck`` would not check time series regression targets :pr:`3251`
+        * Fixed bug in ``are_datasets_separated_by_gap_time_index`` :pr:`3256`
     * Changes
         * Raised lowest compatible numpy version to 1.21.0 to address security concerns :pr:`3207`
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
@@ -22,6 +36,7 @@
         * Uncapped numba version and removed it from requirements :pr:`3263`
     * Documentation Changes
     * Testing Changes
+        * Update auto approve workflow trigger and delete branch after merge :pr:`3265`
 
 .. warning::
 
