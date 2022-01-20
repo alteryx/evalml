@@ -25,6 +25,7 @@
         * Removed empty cell in text_input.ipynb :pr:`3234`
         * Removed potential prediction explanations failure when pipelines predicted a class with probability 1 :pr:`3221`
         * Dropped NaNs before partial dependence grid generation :pr:`3235`
+        * Allowed prediction explanations to be json-serializable :pr:`3262`
         * Fixed bug where ``InvalidTargetDataCheck`` would not check time series regression targets :pr:`3251`
         * Fixed bug in ``are_datasets_separated_by_gap_time_index`` :pr:`3256`
     * Changes

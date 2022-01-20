@@ -68,6 +68,9 @@ def _make_rows(
                 feature_value = "{:.2f}".format(feature_value)
             else:
                 feature_value = str(feature_value)
+
+        feature_value = _make_json_serializable(feature_value)
+
         row = [feature_name, feature_value, display_text]
         if include_explainer_values:
             explainer_value = explainer_values[feature_name][0]
@@ -117,6 +120,8 @@ def _make_json_serializable(value):
             value = int(value)
         else:
             value = float(value)
+    elif isinstance(value, pd.Timestamp):
+        value = str(value)
 
     return value
 
