@@ -3,6 +3,7 @@
 **Future Releases**
     * Enhancements
     * Fixes
+        * Allowed DateTime columns to pass through PerColumnImputer without breaking :pr:`3267`
     * Changes
     * Documentation Changes
     * Testing Changes
@@ -10,6 +11,7 @@
 .. warning::
 
     **Breaking Changes**
+        * Removed ``impute_all`` parameter from the ``PerColumnImputer`` :pr:`3267`
 
 
 **v0.42.0 Jan. 18, 2022**
