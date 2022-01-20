@@ -44,6 +44,7 @@ from .transformers import (
     StandardScaler,
     FeatureSelector,
     DropColumns,
+    DropNaNRows,
     DropNullColumns,
     DateTimeFeaturizer,
     SelectColumns,

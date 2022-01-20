@@ -4,6 +4,8 @@ import logging
 
 from woodwork import logical_types
 
+from evalml.pipelines import components
+
 from . import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
@@ -26,6 +28,7 @@ from evalml.pipelines.components import (  # noqa: F401
     DropColumns,
     DropNullColumns,
     DropRowsTransformer,
+    DropNaNRows,
     EmailFeaturizer,
     Estimator,
     Imputer,
@@ -222,6 +225,19 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
     return components
 
 
+def _get_drop_nan_rows(X, y, problem_type, estimator_class, sampler_name=None):
+    components = []
+    needs_drop_nan = [
+        ModelFamily.EXTRA_TREES,
+        ModelFamily.RANDOM_FOREST,
+        ModelFamily.LINEAR_MODEL,
+        ModelFamily.DECISION_TREE
+    ]
+    if is_time_series(problem_type) and estimator_class.model_family in needs_drop_nan:
+        components.append(DropNaNRows)
+    return components
+
+
 def _get_preprocessing_components(
     X, y, problem_type, estimator_class, sampler_name=None
 ):
@@ -251,6 +267,7 @@ def _get_preprocessing_components(
             _get_ohe,
             _get_sampler,
             _get_standard_scaler,
+            _get_drop_nan_rows,
         ]
     else:
         components_functions = [
@@ -317,7 +334,7 @@ def _make_pipeline_time_series(
          known_in_advance (list[str], None): List of features that are known in advance.
 
     Returns:
-        PipelineBase: TimeSeriesPipeline''
+        PipelineBase: TimeSeriesPipeline
     """
     if known_in_advance:
         not_known_in_advance = [c for c in X.columns if c not in known_in_advance]

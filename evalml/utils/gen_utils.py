@@ -349,7 +349,7 @@ def pad_with_nans(pd_data, num_to_pad):
     )
 
 
-def _get_rows_without_nans(*data):
+def get_rows_without_nans(*data):
     """Compute a boolean array marking where all entries in the data are non-nan.
 
     Args:
@@ -383,7 +383,7 @@ def drop_rows_with_nans(*pd_data):
     Returns:
         list of pd.DataFrame or pd.Series or None
     """
-    mask = _get_rows_without_nans(*pd_data)
+    mask = get_rows_without_nans(*pd_data)
 
     def _subset(pd_data):
         if pd_data is not None and not pd_data.empty:

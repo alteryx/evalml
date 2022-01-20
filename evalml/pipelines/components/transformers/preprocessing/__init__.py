@@ -1,5 +1,6 @@
 """Preprocessing transformer components."""
 from .datetime_featurizer import DateTimeFeaturizer
+from.drop_nan_rows_transformer import DropNaNRows
 from .drop_null_columns import DropNullColumns
 from .text_transformer import TextTransformer
 from .lsa import LSA

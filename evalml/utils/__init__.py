@@ -11,7 +11,7 @@ from .gen_utils import (
     safe_repr,
     drop_rows_with_nans,
     pad_with_nans,
-    _get_rows_without_nans,
+    get_rows_without_nans,
     save_plot,
     is_all_numeric,
     get_importable_subclasses,

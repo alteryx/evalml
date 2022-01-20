@@ -20,6 +20,7 @@ from .column_selectors import DropColumns, SelectColumns, SelectByType
 from .dimensionality_reduction import LinearDiscriminantAnalysis, PCA
 from .preprocessing import (
     DateTimeFeaturizer,
+    DropNaNRows,
     DropNullColumns,
     LSA,
     NaturalLanguageFeaturizer,
