@@ -74,4 +74,5 @@ jobs:
           branch: min-dep-update
           branch-suffix: short-commit-hash
           base: main
+          assignees: machineFL
           reviewers: machineAYX, angela97lin, dsherry, jeremyliweishih, freddyaboulton, bchen1116, chukarsten, ParthivNaresh, eccabay, christopherbunn
