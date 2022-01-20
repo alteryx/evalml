@@ -21,6 +21,7 @@
         * Checking the validity of holdout data for time series problems can be performed by calling ``pipelines.utils.validate_holdout_datasets`` prior to calling ``predict`` :pr:`3208`
     * Documentation Changes
     * Testing Changes
+        * Update auto approve workflow trigger and delete branch after merge :pr:`3265`
 
 .. warning::
 
