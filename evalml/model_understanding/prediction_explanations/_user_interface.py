@@ -121,7 +121,7 @@ def _make_json_serializable(value):
         else:
             value = float(value)
     elif isinstance(value, pd.Timestamp):
-        value = value.isoformat()
+        value = str(value)
 
     return value
 
