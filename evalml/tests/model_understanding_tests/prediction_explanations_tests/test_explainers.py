@@ -2155,7 +2155,9 @@ def test_explain_predictions_best_worst_json(algorithm, fraud_100):
     X, y = fraud_100
     pipeline.fit(X, y)
 
-    report = explain_predictions_best_worst(pipeline, X, y, output_format="dict")
+    report = explain_predictions_best_worst(
+        pipeline, X, y, algorithm=algorithm, output_format="dict"
+    )
     json_output = json.dumps(report)
     assert isinstance(json_output, str)
 
