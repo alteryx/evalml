@@ -837,3 +837,18 @@ def test_time_series_pipeline_validates_holdout_data(
         assert (
             result.error_codes[0] == ValidationErrorCode.INVALID_HOLDOUT_GAP_SEPARATION
         )
+
+
+def test_year_start_separated_by_gap():
+    X = pd.DataFrame(
+        {
+            "time_index": pd.Series(
+                pd.date_range("1960-01-01", freq="AS-JAN", periods=35)
+            )
+        }
+    )
+    train = X.iloc[:30]
+    test = X.iloc[32:36]
+    assert are_datasets_separated_by_gap_time_index(
+        train, test, {"time_index": "time_index", "gap": 2}
+    )

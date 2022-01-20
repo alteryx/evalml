@@ -8,6 +8,7 @@ from functools import reduce
 
 import numpy as np
 import pandas as pd
+from pandas.tseries.frequencies import to_offset
 from sklearn.utils import check_random_state
 
 from evalml.exceptions import MissingComponentError, ValidationErrorCode
@@ -611,13 +612,7 @@ def are_datasets_separated_by_gap_time_index(train, test, pipeline_params):
 
     first_testing_date = test_copy[test_copy.ww.time_index].iloc[0]
     last_training_date = train_copy[train_copy.ww.time_index].iloc[-1]
-    dt_difference = first_testing_date - last_training_date
-
-    try:
-        units_difference = dt_difference / freq
-    except ValueError:
-        units_difference = dt_difference / ("1" + freq)
-    return units_difference == gap_difference
+    return (to_offset(freq) * gap_difference) + last_training_date == first_testing_date
 
 
 _holdout_validation_result = namedtuple(
