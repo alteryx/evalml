@@ -2,6 +2,18 @@
 -------------
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.42.0 Jan. 18, 2022**
+    * Enhancements
         * Required the separation of training and test data by ``gap`` + 1 units to be verified by ``time_index`` for time series problems :pr:`3208`
         * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
         * Updated dependency bot workflow to remove outdated description and add new configuration to delete branches automatically :pr:`3212`
