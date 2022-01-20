@@ -198,7 +198,6 @@ def train_and_score_pipeline(
         }
         full_y_train = ww.init_series(full_y_train.map(y_mapping))
     cv_pipeline = pipeline
-    pipes = []
     pipeline_cache = {}
     for i, (train, valid) in enumerate(
         automl_config.data_splitter.split(full_X_train, full_y_train)
@@ -252,9 +251,8 @@ def train_and_score_pipeline(
                 f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
             )
             score = scores[automl_config.objective.name]
-            for x_hash in hashes:
-                pipeline_cache[x_hash] = i
-            pipes.append(cv_pipeline.component_graph.component_instances)
+            # only should have 1 hash since fit is only called once per split
+            pipeline_cache[hashes[0]] = cv_pipeline.component_graph.component_instances
         except Exception as e:
             if automl_config.error_callback is not None:
                 automl_config.error_callback(
@@ -314,7 +312,7 @@ def train_and_score_pipeline(
             "training_time": training_time,
             "cv_scores": cv_scores,
             "cv_score_mean": cv_score_mean,
-            "cached_data": (pipeline_cache, pipes),
+            "cached_data": pipeline_cache,
         },
         "pipeline": cv_pipeline,
         "logger": logger,
