@@ -457,7 +457,7 @@ class ComponentGraph:
                 else:
                     output = component_instance.predict(x_inputs)
                 output_cache[f"{component_name}.x"] = output
-            if self.cached_data is not None:
+            if self.cached_data is not None and fit:
                 self.component_instances[component_name] = component_instance
 
         return output_cache
