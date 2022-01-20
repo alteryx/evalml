@@ -529,10 +529,16 @@ def _make_stacked_ensemble_pipeline(
         estimator = StackedEnsembleRegressor
         pipeline_name = "Stacked Ensemble Regression Pipeline"
 
+    if is_time_series(problem_type):
+        parameters['pipeline'] = input_pipelines[0].parameters['pipeline']
+
     pipeline_class = {
         ProblemTypes.BINARY: BinaryClassificationPipeline,
         ProblemTypes.MULTICLASS: MulticlassClassificationPipeline,
         ProblemTypes.REGRESSION: RegressionPipeline,
+        ProblemTypes.TIME_SERIES_BINARY: TimeSeriesBinaryClassificationPipeline,
+        ProblemTypes.TIME_SERIES_MULTICLASS: TimeSeriesMulticlassClassificationPipeline,
+        ProblemTypes.TIME_SERIES_REGRESSION: TimeSeriesRegressionPipeline,
     }[problem_type]
 
     for pipeline in input_pipelines:
