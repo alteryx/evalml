@@ -278,7 +278,11 @@ class InvalidTargetDataCheck(DataCheck):
                 if set(X_index) == set(y_index):
                     DataCheck._add_message(
                         DataCheckWarning(
-                            message="Input target and features have mismatched indices order.",
+                            message=f"Input target and features have mismatched indices order."
+                                    f"X head: {X.head().index}"
+                                    f"y head: {y.head().index}"
+                                    f"X tail: {X.tail().index}"
+                                    f"y tail: {y.tail().index}",
                             data_check_name=self.name,
                             message_code=DataCheckMessageCode.MISMATCHED_INDICES_ORDER,
                             details={},
