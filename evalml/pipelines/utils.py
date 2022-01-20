@@ -542,7 +542,7 @@ def _make_stacked_ensemble_pipeline(
         ProblemTypes.REGRESSION: RegressionPipeline,
     }[problem_type]
 
-    cached_component_instances = {hashes: {} for hashes in list(cached_data.values())[0].keys()}
+    cached_component_instances = {}
     for pipeline in input_pipelines:
         model_family = pipeline.component_graph[-1].model_family
         model_family_idx = (
@@ -559,6 +559,8 @@ def _make_stacked_ensemble_pipeline(
                 model_family, name, model_family_idx
             )
             for hashes, component_instances in cached_data[model_family].items():
+                if hashes not in list(cached_component_instances.keys()):
+                    cached_component_instances[hashes] = {}
                 cached_component_instances[hashes][
                     new_component_name
                 ] = cached_data[model_family][hashes][name]

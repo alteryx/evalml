@@ -161,8 +161,8 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
     )
     if not get_hashes:
         return cv_pipeline
-    
-    X_hash = [joblib.hash(X)]
+
+    X_hash = joblib.hash(X)
     return (cv_pipeline, X_hash)
 
 
@@ -251,8 +251,7 @@ def train_and_score_pipeline(
                 f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
             )
             score = scores[automl_config.objective.name]
-            # only should have 1 hash since fit is only called once per split
-            pipeline_cache[hashes[0]] = cv_pipeline.component_graph.component_instances
+            pipeline_cache[hashes] = cv_pipeline.component_graph.component_instances
         except Exception as e:
             if automl_config.error_callback is not None:
                 automl_config.error_callback(
