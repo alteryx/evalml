@@ -35,6 +35,7 @@
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
         * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
         * Checking the validity of holdout data for time series problems can be performed by calling ``pipelines.utils.validate_holdout_datasets`` prior to calling ``predict`` :pr:`3208`
+        * Uncapped numba version and removed it from requirements :pr:`3263`
     * Documentation Changes
     * Testing Changes
         * Update auto approve workflow trigger and delete branch after merge :pr:`3265`
