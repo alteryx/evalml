@@ -8,9 +8,10 @@ from functools import reduce
 
 import numpy as np
 import pandas as pd
+from pandas.tseries.frequencies import to_offset
 from sklearn.utils import check_random_state
 
-from evalml.exceptions import MissingComponentError
+from evalml.exceptions import MissingComponentError, ValidationErrorCode
 
 logger = logging.getLogger(__name__)
 
@@ -543,7 +544,7 @@ def contains_all_ts_parameters(problem_configuration):
 
 _validation_result = namedtuple(
     "TSParameterValidationResult",
-    ("is_valid", "msg", "smallest_split_size", "max_window_size"),
+    ("is_valid", "msg", "smallest_split_size", "max_window_size", "n_obs", "n_splits"),
 )
 
 
@@ -577,4 +578,85 @@ def are_ts_parameters_valid_for_split(
             "then at least one of the splits would be empty by the time it reaches the pipeline. "
             "Please use a smaller number of splits, reduce one or more these parameters, or collect more data."
         )
-    return _validation_result(not msg, msg, split_size, window_size)
+    return _validation_result(not msg, msg, split_size, window_size, n_obs, n_splits)
+
+
+def are_datasets_separated_by_gap_time_index(train, test, pipeline_params):
+    """Determine if the train and test datasets are separated by gap number of units using the time_index.
+
+    This will be true when users are predicting on unseen data but not during cross
+    validation since the target is known.
+
+    Args:
+        train (pd.DataFrame): Training data.
+        test (pd.DataFrame): Data of shape [n_samples, n_features].
+        pipeline_params (dict): Dictionary of time series parameters.
+
+    Returns:
+        bool: True if the difference in time units is equal to gap + 1.
+
+    """
+    gap_difference = pipeline_params["gap"] + 1
+
+    train_copy = train.copy()
+    test_copy = test.copy()
+    train_copy.ww.init(time_index=pipeline_params["time_index"])
+    test_copy.ww.init(time_index=pipeline_params["time_index"])
+
+    X_frequency_dict = train_copy.ww.infer_temporal_frequencies(
+        temporal_columns=[train_copy.ww.time_index]
+    )
+    freq = X_frequency_dict[test_copy.ww.time_index]
+    if freq is None:
+        return True
+
+    first_testing_date = test_copy[test_copy.ww.time_index].iloc[0]
+    last_training_date = train_copy[train_copy.ww.time_index].iloc[-1]
+    return (to_offset(freq) * gap_difference) + last_training_date == first_testing_date
+
+
+_holdout_validation_result = namedtuple(
+    "TSHoldoutValidationResult",
+    ("is_valid", "error_messages", "error_codes"),
+)
+
+
+def validate_holdout_datasets(X, X_train, pipeline_params):
+    """Validate the holdout datasets match our expectations.
+
+    Args:
+        X (pd.DataFrame): Data of shape [n_samples, n_features].
+        X_train (pd.DataFrame): Training data.
+        pipeline_params (dict): Dictionary of time series parameters.
+
+    Returns:
+        TSHoldoutValidationResult - named tuple with three fields
+            is_valid (bool): True if holdout data is valid.
+            error_messages (list): List of error messages to display. Empty if is_valid.
+            error_codes (list): List of error codes to display. Empty if is_valid.
+
+    """
+    forecast_horizon = pipeline_params["forecast_horizon"]
+    gap = pipeline_params["gap"]
+    time_index = pipeline_params["time_index"]
+    right_length = len(X) <= forecast_horizon
+    X_separated_by_gap = are_datasets_separated_by_gap_time_index(
+        X_train, X, pipeline_params
+    )
+    errors = []
+    error_msg = []
+    if not right_length:
+        errors.append(ValidationErrorCode.INVALID_HOLDOUT_LENGTH)
+        error_msg.append(
+            f"Holdout data X must have {forecast_horizon} rows (value of forecast horizon) "
+            f"Data received - Length X: {len(X)}"
+        )
+    if not X_separated_by_gap:
+        errors.append(ValidationErrorCode.INVALID_HOLDOUT_GAP_SEPARATION)
+        error_msg.append(
+            f"The first value indicated by the column {time_index} needs to start {gap + 1} "
+            f"units ahead of the training data. "
+            f"X value start: {X[time_index].iloc[0]}, X_train value end {X_train[time_index].iloc[-1]}."
+        )
+
+    return _holdout_validation_result(not errors, error_msg, errors)
