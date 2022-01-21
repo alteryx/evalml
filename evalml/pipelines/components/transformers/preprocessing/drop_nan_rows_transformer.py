@@ -13,7 +13,6 @@ class DropNaNRows(Transformer):
 
     name = "Drop NaN Rows Transformer"
     modifies_target = True
-    training_only = True
     hyperparameter_ranges = {}
     """{}"""
 
@@ -65,5 +64,7 @@ class DropNaNRows(Transformer):
         y_t = infer_feature_types(y) if y is not None else None
 
         X_t, y_t = drop_rows_with_nans(X_t, y_t)
-
+        X_t.ww.init()
+        if y_t is not None:
+            y_t.ww.init()
         return X_t, y_t

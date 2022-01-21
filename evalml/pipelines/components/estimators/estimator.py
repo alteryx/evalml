@@ -74,7 +74,6 @@ class Estimator(ComponentBase):
         """
         X, y = self._manage_woodwork(X, y)
         self.input_feature_names = list(X.columns)
-        print(self._component_obj)
         self._component_obj.fit(X, y)
         return self
 

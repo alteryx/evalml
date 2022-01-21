@@ -227,13 +227,7 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
 
 def _get_drop_nan_rows(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
-    needs_drop_nan = [
-        ModelFamily.EXTRA_TREES,
-        ModelFamily.RANDOM_FOREST,
-        ModelFamily.LINEAR_MODEL,
-        ModelFamily.DECISION_TREE
-    ]
-    if is_time_series(problem_type) and estimator_class.model_family in needs_drop_nan:
+    if is_time_series(problem_type):
         components.append(DropNaNRows)
     return components
 
@@ -597,9 +591,15 @@ def _make_stacked_ensemble_pipeline(
             final_component = new_component_name
         final_components.append(final_component)
 
-    component_graph[estimator.name] = (
-        [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
-    )
+    if is_time_series(problem_type):
+        component_graph["Stacked Ensembler - Drop NaN Rows Transformer"] = (
+            [DropNaNRows] + [comp + ".x" for comp in final_components] + [ensemble_y]
+        )
+        component_graph[estimator.name] = [estimator, "Stacked Ensembler - Drop NaN Rows Transformer.x", "Stacked Ensembler - Drop NaN Rows Transformer.y"]
+    else:
+        component_graph[estimator.name] = (
+            [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
+        )
 
     return pipeline_class(
         component_graph,
