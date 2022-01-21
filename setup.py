@@ -13,7 +13,7 @@ setup(
     name='evalml',
     version='0.42.0',
     author='Alteryx, Inc.',
-    author_email='support@featurelabs.com',
+    author_email='open_source_support@alteryx.com',
     description='EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.',
     long_description=long_description,
     long_description_content_type="text/markdown",

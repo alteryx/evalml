@@ -3,6 +3,7 @@
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed Python 3.9 installation for prophet by updating ``pmdarima`` version in requirements :pr:`3268`
         * Allowed DateTime columns to pass through PerColumnImputer without breaking :pr:`3267`
     * Changes
     * Documentation Changes
