@@ -31,14 +31,14 @@ jobs:
       - name: Create virtual environment, upgrade pip
         run: |
           pip install virtualenv
-          virtualenv test_python -q
+          virtualenv test_python
           source test_python/bin/activate
           python -m pip install --upgrade pip -q
       - if: ${{ (matrix.command == 'git-test-automl' || matrix.command == 'git-test-prophet') }}
         name: Installing Latest Dependencies and Prophet
         run: |
           pip install virtualenv
-          virtualenv test_python -q
+          virtualenv test_python
           source test_python/bin/activate
           pip install cmdstan-builder==0.0.8
           make installdeps
@@ -48,7 +48,7 @@ jobs:
         name: Installing Latest Dependencies
         run: |
           pip install virtualenv
-          virtualenv test_python -q
+          virtualenv test_python
           source test_python/bin/activate
           make installdeps
           make installdeps-test
