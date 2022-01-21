@@ -58,7 +58,7 @@ jobs:
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda config --add channels conda-forge
           conda activate curr_py
-          conda install numba==0.53 -q -y
+          conda install numba -q -y
       - name: Install EvalML with test requirements
         shell: pwsh
         run: |
