@@ -3,6 +3,12 @@ name: Nightly unit tests, linux
 on:
   schedule:
       - cron: '0 7 * * *'
+on:
+  pull_request:
+    types: [opened, synchronize]
+  push:
+    branches:
+      - main
 
 jobs:
   unit_tests:
