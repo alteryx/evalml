@@ -104,20 +104,20 @@ installdeps-prophet:
 
 .PHONY: installdeps-core
 installdeps-core:
-	pip install -e . -q
-	pip install -r core-requirements.txt -q
+	pip install -e .
+	pip install -r core-requirements.txt
 
 .PHONY: installdeps-test
 installdeps-test:
-	pip install -e . -q
+	pip install -e .
 	pip install -r test-requirements.txt
 
 .PHONY: installdeps-dev
 installdeps-dev:
-	pip install -e . -q
-	pip install -r dev-requirements.txt -q
+	pip install -e .
+	pip install -r dev-requirements.txt
 
 .PHONY: installdeps-docs
 installdeps-docs:
-	pip install -e . -q
-	pip install -r docs-requirements.txt -q
+	pip install -e .
+	pip install -r docs-requirements.txt
