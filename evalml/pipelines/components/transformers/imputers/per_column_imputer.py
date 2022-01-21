@@ -17,9 +17,6 @@ class PerColumnImputer(Transformer):
             and "most_frequent", "constant" for object data types. Defaults to None, which uses "most_frequent" for all columns.
             When impute_strategy == "constant", fill_value is used to replace missing data.
             When None, uses 0 when imputing numerical data and "missing_value" for strings or object data types.
-        default_impute_strategy (str): Impute strategy to fall back on when none is provided for a certain column.
-            Valid values include "mean", "median", "most_frequent", "constant" for numerical data,
-            and "most_frequent", "constant" for object data types. Defaults to "most_frequent".
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -30,13 +27,11 @@ class PerColumnImputer(Transformer):
     def __init__(
         self,
         impute_strategies=None,
-        default_impute_strategy="most_frequent",
         random_seed=0,
         **kwargs,
     ):
         parameters = {
             "impute_strategies": impute_strategies,
-            "default_impute_strategy": default_impute_strategy,
         }
         self.imputers = None
         self.impute_strategies = impute_strategies or dict()
@@ -44,7 +39,6 @@ class PerColumnImputer(Transformer):
             raise ValueError(
                 "`impute_strategies` is not a dictionary. Please provide in Column and {`impute_strategy`: strategy, `fill_value`:value} pairs. "
             )
-        self.default_impute_strategy = default_impute_strategy
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
@@ -70,9 +64,7 @@ class PerColumnImputer(Transformer):
 
         for column in columns_to_impute:
             strategy_dict = self.impute_strategies.get(column, dict())
-            strategy = strategy_dict.get(
-                "impute_strategy", self.default_impute_strategy
-            )
+            strategy = strategy_dict["impute_strategy"]
             fill_value = strategy_dict.get("fill_value", None)
             self.imputers[column] = SimpleImputer(
                 impute_strategy=strategy, fill_value=fill_value
