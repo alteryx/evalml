@@ -190,10 +190,11 @@ def test_non_numeric_valid(non_numeric_df):
     assert_frame_equal(X_expected, X_t)
 
 
-def test_datetime_doesnt_error(fraud_100):
+def test_datetime_does_not_error(fraud_100):
     X, y = fraud_100
-
-    pci = PerColumnImputer()
+    pci = PerColumnImputer(
+        impute_strategies={"country": {"impute_strategy": "most_frequent"}}
+    )
     pci.fit(X, y)
 
     assert pci._is_fitted
