@@ -1303,7 +1303,7 @@ def test_categories_aggregated_text(
             "CUC",
             "Mastercard",
             24900,
-            pd.Timestamp("2019-01-01 00:12:26"),
+            str(pd.Timestamp("2019-01-01 00:12:26")),
         }
         assert explanation["drill_down"].keys() == {"currency", "provider", "datetime"}
         assert (
@@ -1368,7 +1368,7 @@ def test_categories_aggregated_date_ohe(
             "datetime",
         }
         assert set(explanation["feature_values"]) == {
-            pd.Timestamp("2019-01-01 00:12:26"),
+            str(pd.Timestamp("2019-01-01 00:12:26")),
             "Mastercard",
             "CUC",
             24900,
@@ -1442,7 +1442,11 @@ def test_categories_aggregated_pca_dag(
         assert all(
             [
                 f in explanation["feature_values"]
-                for f in [pd.Timestamp("2019-01-01 00:12:26"), "Mastercard", "CUC"]
+                for f in [
+                    str(pd.Timestamp("2019-01-01 00:12:26")),
+                    "Mastercard",
+                    "CUC",
+                ]
             ]
         )
         assert explanation["drill_down"].keys() == {"currency", "provider", "datetime"}
@@ -1567,7 +1571,7 @@ def test_categories_aggregated_when_some_are_dropped(
             "CUC",
             "Mastercard",
             24900,
-            pd.Timestamp("2019-01-01 00:12:26"),
+            str(pd.Timestamp("2019-01-01 00:12:26")),
         }
         assert explanation["drill_down"].keys() == {"currency", "provider", "datetime"}
         assert (
@@ -2043,7 +2047,10 @@ def test_explain_predictions_report_shows_original_value_if_possible(
         top_k_features=20,
         algorithm=algorithm,
     )
-    expected_feature_values = set(X.ww.iloc[0, :].tolist())
+    X_dt = X.copy()
+    X_dt.ww.init()
+    X_dt["datetime"] = X_dt["datetime"].astype(str)
+    expected_feature_values = set(X_dt.ww.iloc[0, :].tolist())
     for explanation in report["explanations"][0]["explanations"]:
         assert set(explanation["feature_names"]) == set(X.columns)
         assert set(explanation["feature_values"]) == expected_feature_values
@@ -2106,11 +2113,14 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
         algorithm=algorithm,
     )
 
+    X_dt = X.copy()
+    X_dt.ww.init()
+    X_dt["datetime"] = X_dt["datetime"].astype(str)
     for index, explanation in enumerate(report["explanations"]):
         for exp in explanation["explanations"]:
             assert set(exp["feature_names"]) == set(X.columns)
             assert set(exp["feature_values"]) == set(
-                X.ww.iloc[explanation["predicted_values"]["index_id"], :]
+                X_dt.ww.iloc[explanation["predicted_values"]["index_id"], :]
             )
 
     X_null = X.ww.copy()
@@ -2134,6 +2144,30 @@ def test_explain_predictions_best_worst_report_shows_original_value_if_possible(
             ):
                 if feature_name == "lat":
                     assert np.isnan(feature_value)
+
+
+@pytest.mark.parametrize("algorithm", algorithms)
+def test_explain_predictions_best_worst_json(
+    algorithm, fraud_100, has_minimal_dependencies
+):
+    if has_minimal_dependencies and algorithm == "lime":
+        pytest.skip("Skipping because lime is a non-core dependency")
+    pipeline = BinaryClassificationPipeline(
+        [
+            "Natural Language Featurizer",
+            "DateTime Featurizer",
+            "One Hot Encoder",
+            "Logistic Regression Classifier",
+        ]
+    )
+    X, y = fraud_100
+    pipeline.fit(X, y)
+
+    report = explain_predictions_best_worst(
+        pipeline, X, y, algorithm=algorithm, output_format="dict"
+    )
+    json_output = json.dumps(report)
+    assert isinstance(json_output, str)
 
 
 def test_explain_predictions_invalid_algorithm():
