@@ -383,8 +383,8 @@ def make_pipeline(
     problem_type,
     parameters=None,
     sampler_name=None,
-    extra_components=None,
-    extra_components_position="before_preprocessing",
+    extra_components_before=None,
+    extra_components_after=None,
     use_estimator=True,
     known_in_advance=None,
 ):
@@ -399,8 +399,8 @@ def make_pipeline(
              An empty dictionary or None implies using all default values for component parameters.
          sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
              Defaults to None
-         extra_components (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
-         extra_components_position (str): Where to put extra components. Defaults to "before_preprocessing" and any other value will put components after preprocessing components.
+         extra_components_before (list[ComponentBase]): List of extra components to be added before preprocessing components. Defaults to None.
+         extra_components_after (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
          use_estimator (bool): Whether to add the provided estimator to the pipeline or not. Defaults to True.
          known_in_advance (list[str], None): List of features that are known in advance.
 
@@ -432,17 +432,15 @@ def make_pipeline(
         preprocessing_components = _get_preprocessing_components(
             X, y, problem_type, estimator, sampler_name
         )
-        extra_components = extra_components or []
+        extra_components_before = extra_components_before or []
+        extra_components_after = extra_components_after or []
         estimator_component = [estimator] if use_estimator else []
-
-        if extra_components_position == "before_preprocessing":
-            complete_component_list = (
-                extra_components + preprocessing_components + estimator_component
-            )
-        else:
-            complete_component_list = (
-                preprocessing_components + extra_components + estimator_component
-            )
+        complete_component_list = (
+            extra_components_before
+            + preprocessing_components
+            + extra_components_after
+            + estimator_component
+        )
 
         component_graph = PipelineBase._make_component_dict_from_component_list(
             complete_component_list

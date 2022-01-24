@@ -6,6 +6,7 @@
         * Updated ``make_pipeline_from_actions`` to handle null column imputation :pr:`3237`
         * Updated data check actions API to return options instead of actions and add functionality to suggest and take action on columns with null values :pr:`3182`
     * Fixes
+        * Fixed categorical data leaking into non-categorical sub-pipelines in ``DefaultAlgorithm`` :pr:`3209`
         * Fixed Python 3.9 installation for prophet by updating ``pmdarima`` version in requirements :pr:`3268`
         * Allowed DateTime columns to pass through PerColumnImputer without breaking :pr:`3267`
     * Changes
@@ -17,6 +18,7 @@
         * Capped ``pandas`` at < 1.4.0 :pr:`3274`
     * Documentation Changes
     * Testing Changes
+        * Bumped minimum ``IPython`` version to 7.16.3 in ``test-requirements.txt`` based on dependabot feedback :pr:`3269`
 
 .. warning::
 
