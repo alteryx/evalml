@@ -533,7 +533,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 parameters=numeric_pipeline_parameters,
                 extra_components_before=[SelectByType],
                 extra_components_after=[SelectColumns],
-                use_estimator=False if self._selected_cat_cols else True,
+                use_estimator=False
             )
 
             input_pipelines = [numeric_pipeline, categorical_pipeline]
