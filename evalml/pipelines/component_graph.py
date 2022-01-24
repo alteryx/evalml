@@ -85,6 +85,7 @@ class ComponentGraph:
             )
         self._validate_component_dict()
         self.cached_data = cached_data
+        # self.cached_data = None
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
@@ -416,8 +417,11 @@ class ComponentGraph:
             )
             self.input_feature_names.update({component_name: list(x_inputs.columns)})
             if isinstance(component_instance, Transformer):
-                if fit and not component_instance._is_fitted:
-                    output = component_instance.fit_transform(x_inputs, y_input)
+                if fit:
+                    if not component_instance._is_fitted:
+                        output = component_instance.fit_transform(x_inputs, y_input)
+                    else:
+                        output = component_instance.transform(x_inputs, y_input)
                 elif (
                     component_instance.training_only
                     and evaluate_training_only_components is False
