@@ -6,6 +6,7 @@
         * Fixed Python 3.9 installation for prophet by updating ``pmdarima`` version in requirements :pr:`3268`
         * Allowed DateTime columns to pass through PerColumnImputer without breaking :pr:`3267`
     * Changes
+        * Capped ``pandas`` at < 1.4.0 :pr:`3274`
     * Documentation Changes
     * Testing Changes
 
