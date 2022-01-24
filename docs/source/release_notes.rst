@@ -10,6 +10,7 @@
         * Capped ``pandas`` at < 1.4.0 :pr:`3274`
     * Documentation Changes
     * Testing Changes
+        * Bumped minimum ``IPython`` version to 7.16.3 in ``test-requirements.txt`` based on dependabot feedback :pr:`3269`
 
 .. warning::
 
