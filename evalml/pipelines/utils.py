@@ -16,7 +16,7 @@ from .multiclass_classification_pipeline import (
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
-from evalml.data_checks import DataCheckActionCode
+from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
@@ -765,6 +765,28 @@ def _make_component_list_from_actions(actions):
         components.append(DropRowsTransformer(indices_to_drop=indices_to_drop))
 
     return components
+
+
+def make_pipeline_from_data_check_output(problem_type, data_check_output):
+    """Creates a pipeline of components to address warnings and errors output from running data checks. Uses all default suggestions.
+
+    Args:
+        problem_type (str or ProblemType): The problem type.
+        data_check_output (dict): Output from calling ``DataCheck.validate()``.
+
+    Returns:
+        PipelineBase: Pipeline which can be used to address data check outputs.
+    """
+    action_options = []
+    for message in data_check_output:
+        action_options.extend([option for option in message["action_options"]])
+
+    actions = get_actions_from_option_defaults(
+        DataCheckActionOption.convert_dict_to_option(option)
+        for option in action_options
+    )
+
+    return make_pipeline_from_actions(problem_type, actions)
 
 
 def get_actions_from_option_defaults(action_options):

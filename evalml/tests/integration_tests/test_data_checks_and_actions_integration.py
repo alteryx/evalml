@@ -24,7 +24,7 @@ from evalml.pipelines.multiclass_classification_pipeline import (
 from evalml.pipelines.regression_pipeline import RegressionPipeline
 from evalml.pipelines.utils import (
     get_actions_from_option_defaults,
-    make_pipeline_from_actions,
+    make_pipeline_from_data_check_output,
 )
 
 
@@ -36,17 +36,8 @@ def test_data_checks_with_healthy_data(X_y_binary):
     )
     data_checks_output = data_check.validate(X, y)
 
-    action_options = []
-    for message in data_checks_output:
-        action_options.extend([option for option in message["action_options"]])
-
-    actions = get_actions_from_option_defaults(
-        DataCheckActionOption.convert_dict_to_option(option)
-        for option in action_options
-    )
-
-    assert make_pipeline_from_actions(
-        "binary", actions
+    assert make_pipeline_from_data_check_output(
+        "binary", data_checks_output
     ) == BinaryClassificationPipeline(component_graph={}, parameters={}, random_seed=0)
 
 
@@ -64,16 +55,7 @@ def test_data_checks_suggests_drop_and_impute_cols():
     data_check = NullDataCheck()
     data_checks_output = data_check.validate(X, y)
 
-    action_options = []
-    for message in data_checks_output:
-        action_options.extend([option for option in message["action_options"]])
-
-    actions = get_actions_from_option_defaults(
-        DataCheckActionOption.convert_dict_to_option(option)
-        for option in action_options
-    )
-
-    action_pipeline = make_pipeline_from_actions("binary", actions)
+    action_pipeline = make_pipeline_from_data_check_output("binary", data_checks_output)
     assert action_pipeline == BinaryClassificationPipeline(
         component_graph={
             "Per Column Imputer": [PerColumnImputer, "X", "y"],
@@ -136,15 +118,9 @@ def test_data_checks_impute_cols(problem_type):
     data_check = InvalidTargetDataCheck(problem_type, objective)
     data_checks_output = data_check.validate(None, y)
 
-    action_options = []
-    for message in data_checks_output:
-        action_options.extend([option for option in message["action_options"]])
-
-    actions = get_actions_from_option_defaults(
-        DataCheckActionOption.convert_dict_to_option(option)
-        for option in action_options
+    action_pipeline = make_pipeline_from_data_check_output(
+        problem_type, data_checks_output
     )
-    action_pipeline = make_pipeline_from_actions(problem_type, actions)
     expected_parameters = (
         {"Target Imputer": {"impute_strategy": "mean", "fill_value": None}}
         if problem_type == "regression"
@@ -178,16 +154,7 @@ def test_data_checks_suggests_drop_rows():
     outliers_check = OutliersDataCheck()
     data_checks_output = outliers_check.validate(X)
 
-    action_options = []
-    for message in data_checks_output:
-        action_options.extend([option for option in message["action_options"]])
-
-    actions = get_actions_from_option_defaults(
-        DataCheckActionOption.convert_dict_to_option(option)
-        for option in action_options
-    )
-
-    action_pipeline = make_pipeline_from_actions("binary", actions)
+    action_pipeline = make_pipeline_from_data_check_output("binary", data_checks_output)
     assert action_pipeline == BinaryClassificationPipeline(
         component_graph={"Drop Rows Transformer": [DropRowsTransformer, "X", "y"]},
         parameters={"Drop Rows Transformer": {"indices_to_drop": [0, 3, 5, 10]}},
