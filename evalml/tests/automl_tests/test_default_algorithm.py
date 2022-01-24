@@ -125,8 +125,11 @@ def test_default_algorithm(
     X["B"] = "b"
     X["C"] = "c"
 
+    non_categorical_columns = ["0", "1", "2"]
+    categorical_columns = ["A", "B", "C"]
+
     if split == "split" or split == "numeric-only":
-        mock_get_names.return_value = ["0", "1", "2"]
+        mock_get_names.return_value = non_categorical_columns
     else:
         mock_get_names.return_value = None
 
@@ -147,12 +150,11 @@ def test_default_algorithm(
         assert pipeline.get_component(fs)
     add_result(algo, second_batch)
 
-    if split == "split" or split == "categorical-only":
-        algo._selected_cat_cols = ["A", "B", "C"]
     if split == "split" or split == "numeric-only":
-        assert algo._selected_cols == ["0", "1", "2"]
+        assert algo._selected_cols == non_categorical_columns
     if split == "split" or split == "categorical-only":
-        assert algo._selected_cat_cols == ["A", "B", "C"]
+        algo._selected_cat_cols = categorical_columns
+        assert algo._selected_cat_cols == categorical_columns
 
     final_batch = algo.next_batch()
     for pipeline in final_batch:
@@ -161,29 +163,23 @@ def test_default_algorithm(
         ):
             assert pipeline.model_family not in naive_model_families
         if split == "split":
-            assert pipeline.parameters[pipeline_names[0]]["columns"] == [
-                "0",
-                "1",
-                "2",
-            ]
-            assert pipeline.parameters[pipeline_names[1]]["columns"] == [
-                "A",
-                "B",
-                "C",
-            ]
+            assert (
+                pipeline.parameters[pipeline_names[0]]["columns"]
+                == non_categorical_columns
+            )
+            assert (
+                pipeline.parameters[pipeline_names[1]]["columns"] == categorical_columns
+            )
         elif split == "numeric-only":
-            assert pipeline.parameters["Select Columns Transformer"]["columns"] == [
-                "0",
-                "1",
-                "2",
-            ]
+            assert (
+                pipeline.parameters["Select Columns Transformer"]["columns"]
+                == non_categorical_columns
+            )
         elif split == "categorical-only":
-            assert pipeline.parameters["Select Columns Transformer"]["columns"] == [
-                "A",
-                "B",
-                "C",
-            ]
-
+            assert (
+                pipeline.parameters["Select Columns Transformer"]["columns"]
+                == categorical_columns
+            )
         assert algo._tuners[pipeline.name]
     add_result(algo, final_batch)
 
