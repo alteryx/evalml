@@ -39,15 +39,6 @@ class DropNaNRows(Transformer):
             ValueError: If indices to drop do not exist in input features or target.
         """
         return self
-    #     X_t = infer_feature_types(X)
-    #     y_t = infer_feature_types(y) if y is not None else None
-
-    #     self.X_t_nan_indicies = get_rows_without_nans(X_t)
-
-    #     if y_t is not None:
-    #         self.y_t_nan_indicies = get_rows_without_nans(y_t)
-
-    #     return self
 
     def transform(self, X, y=None):
         """Transforms data using fitted component.
