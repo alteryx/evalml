@@ -6,7 +6,6 @@ from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.automl import get_default_primary_search_objective
 from evalml.data_checks import DefaultDataChecks, OutliersDataCheck
-from evalml.data_checks.data_check_action_option import DataCheckActionOption
 from evalml.data_checks.invalid_target_data_check import InvalidTargetDataCheck
 from evalml.data_checks.null_data_check import NullDataCheck
 from evalml.pipelines import BinaryClassificationPipeline
@@ -22,10 +21,7 @@ from evalml.pipelines.multiclass_classification_pipeline import (
     MulticlassClassificationPipeline,
 )
 from evalml.pipelines.regression_pipeline import RegressionPipeline
-from evalml.pipelines.utils import (
-    get_actions_from_option_defaults,
-    make_pipeline_from_data_check_output,
-)
+from evalml.pipelines.utils import make_pipeline_from_data_check_output
 
 
 def test_data_checks_with_healthy_data(X_y_binary):
