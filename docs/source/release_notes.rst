@@ -8,6 +8,7 @@
         * Allowed DateTime columns to pass through PerColumnImputer without breaking :pr:`3267`
     * Changes
         * Capped ``pandas`` at < 1.4.0 :pr:`3274`
+        * Added NullableBoolean and NullableInteger compatibility to ``roc_curve`` :pr:`3254`
     * Documentation Changes
     * Testing Changes
         * Bumped minimum ``IPython`` version to 7.16.3 in ``test-requirements.txt`` based on dependabot feedback :pr:`3269`

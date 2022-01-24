@@ -283,15 +283,9 @@ def roc_curve(y_true, y_pred_proba):
     y_true_ww = infer_feature_types(y_true)
     y_true_np = y_true_ww.to_numpy()
     if isinstance(y_true_ww.ww.logical_type, BooleanNullable):
-        if any(y_true.isna()):
-            y_true_np = y_true_np.astype("boolean")
-        else:
-            y_true_np = y_true_np.astype("bool")
+        y_true_np = y_true_np.astype("bool")
     if isinstance(y_true_ww.ww.logical_type, IntegerNullable):
-        if any(y_true.isna()):
-            y_true_np = y_true_np.astype("Int64")
-        else:
-            y_true_np = y_true_np.astype("int64")
+        y_true_np = y_true_np.astype("int64")
     y_pred_proba = infer_feature_types(y_pred_proba).to_numpy()
 
     if len(y_pred_proba.shape) == 1:
