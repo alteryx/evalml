@@ -3,6 +3,7 @@
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed categorical data leaking into non-categorical sub-pipelines in ``DefaultAlgorithm`` :pr:`3209`
         * Fixed Python 3.9 installation for prophet by updating ``pmdarima`` version in requirements :pr:`3268`
         * Allowed DateTime columns to pass through PerColumnImputer without breaking :pr:`3267`
     * Changes
@@ -27,7 +28,6 @@
         * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
         * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
         * Standardized names of featurization components :pr:`3192`
-        * Fully split numeric and categorical data for split pipelines in ``DefaultAlgorithm`` :pr:`3209`
         * Removed empty cell in text_input.ipynb :pr:`3234`
         * Removed potential prediction explanations failure when pipelines predicted a class with probability 1 :pr:`3221`
         * Dropped NaNs before partial dependence grid generation :pr:`3235`
