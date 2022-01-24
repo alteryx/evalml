@@ -159,9 +159,6 @@ class SelectByType(Transformer):
             random_seed=random_seed,
         )
 
-    def _check_input_for_columns(self, X):
-        pass
-
     def _modify_columns(self, cols, X, y=None):
         if self.parameters.get("exclude"):
             return X.ww.select(exclude=cols)
@@ -178,7 +175,6 @@ class SelectByType(Transformer):
             self
         """
         X = infer_feature_types(X)
-        self._check_input_for_columns(X)
         return self
 
     def transform(self, X, y=None):
@@ -192,7 +188,6 @@ class SelectByType(Transformer):
             pd.DataFrame: Transformed X.
         """
         X = infer_feature_types(X)
-        self._check_input_for_columns(X)
         cols = self.parameters.get("column_types") or []
         modified_cols = self._modify_columns(cols, X, y)
         return infer_feature_types(modified_cols)
