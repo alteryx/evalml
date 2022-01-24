@@ -141,7 +141,12 @@ def test_non_numeric_valid(non_numeric_df):
         }
     )
     # most frequent with all strings
-    strategies = {"C": {"impute_strategy": "most_frequent"}}
+    strategies = {
+        "A": {"impute_strategy": "most_frequent"},
+        "B": {"impute_strategy": "most_frequent"},
+        "C": {"impute_strategy": "most_frequent"},
+        "D": {"impute_strategy": "most_frequent"},
+    }
     transformer = PerColumnImputer(impute_strategies=strategies)
 
     X_expected = pd.DataFrame(
@@ -158,7 +163,11 @@ def test_non_numeric_valid(non_numeric_df):
 
     X = non_numeric_df.copy()
     # constant with all strings
-    strategies = {"D": {"impute_strategy": "constant", "fill_value": 100}}
+    strategies = {
+        "B": {"impute_strategy": "most_frequent"},
+        "C": {"impute_strategy": "most_frequent"},
+        "D": {"impute_strategy": "constant", "fill_value": 100},
+    }
     transformer = PerColumnImputer(impute_strategies=strategies)
 
     X.ww.init(
@@ -170,17 +179,8 @@ def test_non_numeric_valid(non_numeric_df):
         }
     )
     X_expected = pd.DataFrame(
-        [
-            ["a", "a", "a", "a"],
-            ["b", "b", "b", "b"],
-            ["a", "a", "a", "a"],
-            ["a", "a", "a", 100],
-        ]
-    )
-    X_expected.columns = ["A", "B", "C", "D"]
-    X_expected = pd.DataFrame(
         {
-            "A": pd.Series(["a", "b", "a", "a"], dtype="category"),
+            "A": pd.Series(["a", "b", "a", np.nan], dtype="category"),
             "B": pd.Series(["a", "b", "a", "a"], dtype="category"),
             "C": pd.Series(["a", "b", "a", "a"], dtype="category"),
             "D": pd.Series(["a", "b", "a", 100], dtype="category"),
@@ -188,6 +188,16 @@ def test_non_numeric_valid(non_numeric_df):
     )
     X_t = transformer.fit_transform(X)
     assert_frame_equal(X_expected, X_t)
+
+
+def test_datetime_does_not_error(fraud_100):
+    X, y = fraud_100
+    pci = PerColumnImputer(
+        impute_strategies={"country": {"impute_strategy": "most_frequent"}}
+    )
+    pci.fit(X, y)
+
+    assert pci._is_fitted
 
 
 def test_fit_transform_drop_all_nan_columns():
@@ -254,15 +264,13 @@ def test_transform_drop_all_nan_columns():
 
 def test_transform_drop_all_nan_columns_empty():
     X = pd.DataFrame([[np.nan, np.nan, np.nan]])
-    strategies = {
-        "0": {"impute_strategy": "most_frequent"},
-    }
+    strategies = {i: {"impute_strategy": "most_frequent"} for i in range(3)}
     X.ww.init(logical_types={0: "Double", 1: "Double", 2: "Double"})
     transformer = PerColumnImputer(impute_strategies=strategies)
     assert transformer.fit_transform(X).empty
     assert_frame_equal(X, pd.DataFrame([[np.nan, np.nan, np.nan]]))
 
-    strategies = {"0": {"impute_strategy": "most_frequent"}}
+    strategies = {i: {"impute_strategy": "most_frequent"} for i in range(3)}
     transformer = PerColumnImputer(impute_strategies=strategies)
     transformer.fit(X)
     assert transformer.transform(X).empty
@@ -311,7 +319,7 @@ def test_per_column_imputer_woodwork_custom_overrides_returned_by_components(
         }
 
 
-def test_per_column_imputer_impute_all_is_false():
+def test_per_column_imputer_column_subset():
     X = pd.DataFrame(
         {
             "all_nan_not_included": [np.nan, np.nan, np.nan],
@@ -324,7 +332,7 @@ def test_per_column_imputer_impute_all_is_false():
         "all_nan_included": {"impute_strategy": "most_frequent"},
         "column_with_nan_included": {"impute_strategy": "most_frequent"},
     }
-    transformer = PerColumnImputer(impute_strategies=strategies, impute_all=False)
+    transformer = PerColumnImputer(impute_strategies=strategies)
     X_expected = pd.DataFrame(
         {
             "all_nan_not_included": [np.nan, np.nan, np.nan],
@@ -357,7 +365,7 @@ def test_per_column_imputer_impute_all_is_false():
     )
 
 
-def test_per_column_imputer_impute_all_is_false_and_impute_strategies_is_None():
+def test_per_column_imputer_impute_strategies_is_None():
     X = pd.DataFrame(
         {
             "all_nan_not_included": [np.nan, np.nan, np.nan],
@@ -367,14 +375,13 @@ def test_per_column_imputer_impute_all_is_false_and_impute_strategies_is_None():
         }
     )
     X_expected = infer_feature_types(X)
-    transformer = PerColumnImputer(impute_strategies=None, impute_all=False)
+    transformer = PerColumnImputer(impute_strategies=None)
 
     X_t = None
     with warnings.catch_warnings(record=True) as w:
         X_t = transformer.fit_transform(X)
     assert len(w) == 1
-    assert (
-        "No columns to impute. Please check `impute_strategies` and `impute_all` parameters."
-        in str(w[-1].message)
+    assert "No columns to impute. Please check `impute_strategies` parameter." in str(
+        w[-1].message
     )
     assert_frame_equal(X_expected, X_t)
