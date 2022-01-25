@@ -17,7 +17,7 @@
         * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary :pr:`3244`
         * Capped ``pandas`` at < 1.4.0 :pr:`3274`
     * Documentation Changes
-        * Update documentation and docstring for `validate_holdout_datasets` for time series problems :pr:`3728`
+        * Update documentation and docstring for `validate_holdout_datasets` for time series problems :pr:`3278`
     * Testing Changes
         * Bumped minimum ``IPython`` version to 7.16.3 in ``test-requirements.txt`` based on dependabot feedback :pr:`3269`
 
