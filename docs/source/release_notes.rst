@@ -11,7 +11,7 @@
         * Allowed DateTime columns to pass through PerColumnImputer without breaking :pr:`3267`
     * Changes
         * Updated ``DataCheck`` ``validate()`` output to return a dictionary instead of list for actions :pr:`3142`
-        * Updated validate() API to use the new ``DataCheckActionOption`` class instead of ``DataCheckAction`` :pr:`3152`
+        * Updated ``DataCheck`` ``validate()`` API to use the new ``DataCheckActionOption`` class instead of ``DataCheckAction`` :pr:`3152`
         * Uncapped numba version and removed it from requirements :pr:`3263`
         * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
         * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary :pr:`3244`
@@ -58,7 +58,6 @@
 
     **Breaking Changes**
         * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
-
 
 
 **v0.41.0 Jan. 06, 2022**
