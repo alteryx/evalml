@@ -1467,7 +1467,7 @@ def test_describe_pipeline(return_dict, verbose, caplog, X_y_binary, AutoMLTestE
 
 
 @pytest.mark.parametrize("return_dict", [True, False])
-def test_describe_pipeline_with_ensembling(
+def test_describe_pipeline_with_ensembling_iterative(
     return_dict, X_y_binary, AutoMLTestEnv, caplog
 ):
     X, y = X_y_binary
@@ -1481,6 +1481,7 @@ def test_describe_pipeline_with_ensembling(
         ensembling=True,
         optimize_thresholds=False,
         error_callback=raise_error_callback,
+        _automl_algorithm='iterative'
     )
 
     score_side_effect = [
