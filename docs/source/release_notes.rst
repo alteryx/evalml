@@ -3,13 +3,20 @@
 **Future Releases**
     * Enhancements
     * Fixes
+        * Fixed categorical data leaking into non-categorical sub-pipelines in ``DefaultAlgorithm`` :pr:`3209`
+        * Fixed Python 3.9 installation for prophet by updating ``pmdarima`` version in requirements :pr:`3268`
+        * Allowed DateTime columns to pass through PerColumnImputer without breaking :pr:`3267`
     * Changes
+        * Capped ``pandas`` at < 1.4.0 :pr:`3274`
     * Documentation Changes
     * Testing Changes
+        * Bumped minimum ``IPython`` version to 7.16.3 in ``test-requirements.txt`` based on dependabot feedback :pr:`3269`
 
 .. warning::
 
     **Breaking Changes**
+        * Removed ``impute_all`` and ``default_impute_strategy`` parameters from the ``PerColumnImputer`` :pr:`3267`
+        * Updated ``PerColumnImputer`` such that columns not specified in ``impute_strategies`` dict will not be imputed anymore :pr:`3267`
 
 
 **v0.42.0 Jan. 18, 2022**
@@ -33,6 +40,7 @@
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
         * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
         * Checking the validity of holdout data for time series problems can be performed by calling ``pipelines.utils.validate_holdout_datasets`` prior to calling ``predict`` :pr:`3208`
+        * Uncapped numba version and removed it from requirements :pr:`3263`
     * Documentation Changes
     * Testing Changes
         * Update auto approve workflow trigger and delete branch after merge :pr:`3265`
