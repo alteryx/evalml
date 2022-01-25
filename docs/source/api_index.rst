@@ -407,7 +407,7 @@ Data Check Classes
 
     evalml.data_checks.DataCheck
     evalml.data_checks.InvalidTargetDataCheck
-    evalml.data_checks.HighlyNullDataCheck
+    evalml.data_checks.NullDataCheck
     evalml.data_checks.IDColumnsDataCheck
     evalml.data_checks.TargetLeakageDataCheck
     evalml.data_checks.OutliersDataCheck

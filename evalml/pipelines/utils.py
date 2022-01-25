@@ -33,6 +33,7 @@ from evalml.pipelines.components import (  # noqa: F401
     NaturalLanguageFeaturizer,
     OneHotEncoder,
     Oversampler,
+    PerColumnImputer,
     RandomForestClassifier,
     ReplaceNullableTypes,
     SelectColumns,
@@ -740,10 +741,14 @@ def _make_component_list_from_actions(actions):
             cols_to_drop.extend(action.metadata["columns"])
         elif action.action_code == DataCheckActionCode.IMPUTE_COL:
             metadata = action.metadata
+            parameters = metadata.get("parameters", {})
             if metadata["is_target"]:
                 components.append(
-                    TargetImputer(impute_strategy=metadata["impute_strategy"])
+                    TargetImputer(impute_strategy=parameters["impute_strategy"])
                 )
+            else:
+                impute_strategies = parameters["impute_strategies"]
+                components.append(PerColumnImputer(impute_strategies=impute_strategies))
         elif action.action_code == DataCheckActionCode.DROP_ROWS:
             indices_to_drop.extend(action.metadata["rows"])
     if cols_to_drop:
@@ -754,6 +759,21 @@ def _make_component_list_from_actions(actions):
         components.append(DropRowsTransformer(indices_to_drop=indices_to_drop))
 
     return components
+
+
+def get_actions_from_option_defaults(action_options):
+    """Returns a list of actions based on the defaults parameters of each option in the input DataCheckActionOption list.
+
+    Args:
+        action_options (list[DataCheckActionOption]): List of DataCheckActionOption objects
+
+    Returns:
+        list[DataCheckAction]: List of actions based on the defaults parameters of each option in the input list.
+    """
+    actions = []
+    for option in action_options:
+        actions.append(option.get_action_from_defaults())
+    return actions
 
 
 def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, time_index):
