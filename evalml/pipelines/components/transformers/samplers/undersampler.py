@@ -69,7 +69,6 @@ class Undersampler(BaseSampler):
         self.min_samples = min_samples
         self.min_percentage = min_percentage
         self.random_seed = random_seed
-        self.random_state = np.random.RandomState(self.random_seed)
         self.sampling_ratio_dict = sampling_ratio_dict or {}
 
         parameters.update(kwargs)
@@ -169,7 +168,7 @@ class Undersampler(BaseSampler):
             )
 
         y = infer_feature_types(y)
-
+        self.random_state = np.random.RandomState(self.random_seed)
         if len(self.sampling_ratio_dict):
             result = self._sampling_dict_to_remove_dict(y)
         else:
