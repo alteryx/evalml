@@ -44,16 +44,16 @@ def test_time_series_param_data_check(is_valid, problem_type):
             y = pd.Series([i % 3 for i in range(100)])
 
     data_check = TimeSeriesSplittingDataCheck("time series binary", 3)
-    results = data_check.validate(X, y)
+    messages = data_check.validate(X, y)
     code = DataCheckMessageCode.TIMESERIES_TARGET_NOT_COMPATIBLE_WITH_SPLIT.name
 
     if not is_valid:
-        assert len(results["errors"]) == 1
-        assert results["errors"][0]["details"] == {
+        assert len(messages) == 1
+        assert messages[0]["details"] == {
             "columns": None,
             "rows": None,
             "invalid_splits": invalid_splits,
         }
-        assert results["errors"][0]["code"] == code
+        assert messages[0]["code"] == code
     else:
-        assert results == {"warnings": [], "errors": [], "actions": []}
+        assert messages == []

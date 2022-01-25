@@ -65,18 +65,14 @@ def test_multicollinearity_returns_warning(use_nullable_types):
     message = str(msg_list)
 
     multi_check = MulticollinearityDataCheck(threshold=0.95)
-    assert multi_check.validate(X) == {
-        "warnings": [
-            DataCheckWarning(
-                message="Columns are likely to be correlated: %s" % message,
-                data_check_name=multi_data_check_name,
-                message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
-                details={"columns": msg_list},
-            ).to_dict()
-        ],
-        "errors": [],
-        "actions": [],
-    }
+    assert multi_check.validate(X) == [
+        DataCheckWarning(
+            message="Columns are likely to be correlated: %s" % message,
+            data_check_name=multi_data_check_name,
+            message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
+            details={"columns": msg_list},
+        ).to_dict()
+    ]
 
 
 @pytest.mark.parametrize("data_type", ["pd", "ww"])
@@ -102,35 +98,27 @@ def test_multicollinearity_nonnumeric_cols(data_type, make_data_type):
     )
 
     multi_check = MulticollinearityDataCheck(threshold=0.9)
-    assert multi_check.validate(X) == {
-        "warnings": [
-            DataCheckWarning(
-                message="Columns are likely to be correlated: [('col_1', 'col_4'), ('col_3', 'col_5'), ('col_3', 'col_6'), ('col_5', 'col_6'), ('col_1', 'col_2'), ('col_2', 'col_4')]",
-                data_check_name=multi_data_check_name,
-                message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
-                details={
-                    "columns": [
-                        ("col_1", "col_4"),
-                        ("col_3", "col_5"),
-                        ("col_3", "col_6"),
-                        ("col_5", "col_6"),
-                        ("col_1", "col_2"),
-                        ("col_2", "col_4"),
-                    ]
-                },
-            ).to_dict()
-        ],
-        "errors": [],
-        "actions": [],
-    }
+    assert multi_check.validate(X) == [
+        DataCheckWarning(
+            message="Columns are likely to be correlated: [('col_1', 'col_4'), ('col_3', 'col_5'), ('col_3', 'col_6'), ('col_5', 'col_6'), ('col_1', 'col_2'), ('col_2', 'col_4')]",
+            data_check_name=multi_data_check_name,
+            message_code=DataCheckMessageCode.IS_MULTICOLLINEAR,
+            details={
+                "columns": [
+                    ("col_1", "col_4"),
+                    ("col_3", "col_5"),
+                    ("col_3", "col_6"),
+                    ("col_5", "col_6"),
+                    ("col_1", "col_2"),
+                    ("col_2", "col_4"),
+                ]
+            },
+        ).to_dict()
+    ]
 
 
 def test_multicollinearity_data_check_input_formats():
     multi_check = MulticollinearityDataCheck(threshold=0.9)
 
     # test empty pd.DataFrame
-    assert multi_check.validate(pd.DataFrame()) == {
-        "warnings": [],
-        "errors": [],
-        "actions": [],
-    }
+    assert multi_check.validate(pd.DataFrame()) == []
