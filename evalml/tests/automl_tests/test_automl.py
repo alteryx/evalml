@@ -950,13 +950,10 @@ def test_data_splitter_shuffle():
     )
 
 
-def test_component_graph_with_incorrect_problem_type(
+def test_component_graph_with_incorrect_problem_type_iterative(
     dummy_classifier_estimator_class, X_y_binary
 ):
     X, y = X_y_binary
-    # checks that not setting component graphs does not error out
-    AutoMLSearch(X_train=X, y_train=y, problem_type="binary")
-
     with pytest.raises(ValueError, match="not valid for this component graph"):
         AutoMLSearch(
             X_train=X,
@@ -967,6 +964,7 @@ def test_component_graph_with_incorrect_problem_type(
                     dummy_classifier_estimator_class
                 ]
             },
+            _automl_algorithm="iterative"
         )
 
 
