@@ -620,7 +620,7 @@ def test_automl_tuner_exception(
             automl.search()
 
 
-@patch("evalml.automl.automl_algorithm.IterativeAlgorithm.next_batch")
+@patch("evalml.automl.automl_algorithm.DefaultAlgorithm.next_batch")
 def test_automl_algorithm(
     mock_algo_next_batch,
     AutoMLTestEnv,
@@ -628,7 +628,7 @@ def test_automl_algorithm(
 ):
     X, y = X_y_binary
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=5)
+    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=5, _automl_algorithm="default")
     mock_algo_next_batch.side_effect = StopIteration("that's all, folks")
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1.0, "F1": 0.5}):
