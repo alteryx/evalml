@@ -4027,49 +4027,25 @@ def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(
     AutoMLTestEnv, X_y_binary
 ):
     X, y = X_y_binary
-
-    component_graph = {
-        "Imputer": ["Imputer", "X", "y"],
-        "Imputer_1": ["Imputer", "Imputer.x", "y"],
-        "One Hot Encoder": ["One Hot Encoder", "Imputer_1.x", "y"],
-        "Random Forest Classifier": [
-            "Random Forest Classifier",
-            "One Hot Encoder.x",
-            "y",
-        ],
-    }
+    pipeline_parameters = {"Imputer": {"numeric_impute_strategy": "most_frequent"}}
+    custom_hyperparameters = {
+            "One Hot Encoder": {"top_n": Categorical([12, 10])},
+            "Imputer": {
+                "numeric_impute_strategy": Categorical(["median", "most_frequent"])
+            },
+        }
 
     automl = AutoMLSearch(
         X,
         y,
         problem_type="binary",
-        allowed_component_graphs={
-            "Pipeline One": component_graph,
-            "Pipeline Two": component_graph,
-            "Pipeline Three": component_graph,
-        },
         pipeline_parameters={"Imputer": {"numeric_impute_strategy": "most_frequent"}},
-        custom_hyperparameters={
-            "One Hot Encoder": {"top_n": Categorical([12, 10])},
-            "Imputer": {
-                "numeric_impute_strategy": Categorical(["median", "most_frequent"])
-            },
-        },
+        custom_hyperparameters=custom_hyperparameters,
         optimize_thresholds=False,
         max_batches=4,
     )
-    env = AutoMLTestEnv("binary")
-    with env.test_context(score_return_value={automl.objective.name: 1.767}):
-        automl.search()
-
-    for i, row in automl.full_rankings.iterrows():
-        if "Mode Baseline Binary" in row["pipeline_name"]:
-            continue
-        assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in [
-            "most_frequent",
-            "median",
-        ]
-        assert 10 <= row["parameters"]["One Hot Encoder"]["top_n"] <= 12
+    assert automl._automl_algorithm._custom_hyperparameters == custom_hyperparameters
+    assert automl._automl_algorithm._pipeline_params == pipeline_parameters
 
 
 def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
