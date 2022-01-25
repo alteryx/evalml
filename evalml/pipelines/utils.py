@@ -750,7 +750,7 @@ def _make_component_list_from_actions(actions):
                 impute_strategies = parameters["impute_strategies"]
                 components.append(
                     PerColumnImputer(
-                        impute_strategies=impute_strategies, impute_all=False
+                        impute_strategies=impute_strategies
                     )
                 )
         elif action.action_code == DataCheckActionCode.DROP_ROWS:
