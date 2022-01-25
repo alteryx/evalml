@@ -2327,7 +2327,7 @@ def test_time_series_regression_with_parameters(ts_data):
         problem_configuration=problem_configuration,
         max_batches=3,
     )
-    assert automl.allowed_pipelines[0].parameters["pipeline"] == problem_configuration
+    assert automl._automl_algorithm._pipeline_params["pipeline"] == problem_configuration
 
 
 @pytest.mark.parametrize("graph_type", ["dict", "cg"])
