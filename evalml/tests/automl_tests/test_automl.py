@@ -1757,7 +1757,7 @@ def test_catch_keyboard_interrupt(
     side_effect=KeyboardInterruptOnKthPipeline(k=4, starting_index=2),
 )
 @patch("evalml.automl.engine.sequential_engine.SequentialComputation.cancel")
-def test_jobs_cancelled_when_keyboard_interrupt(
+def test_jobs_cancelled_when_keyboard_interrupt_iterative(
     mock_cancel,
     mock_done,
     mock_input,
@@ -1772,6 +1772,7 @@ def test_jobs_cancelled_when_keyboard_interrupt(
         max_iterations=6,
         objective="f1",
         optimize_thresholds=False,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"F1": 1}):
