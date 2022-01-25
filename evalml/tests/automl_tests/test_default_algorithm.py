@@ -431,9 +431,7 @@ def test_default_algorithm_allow_long_running_models_next_batch(
         found_models |= any([m in pipeline.name for m in models_to_check])
 
     # the "best" score will be the 1st dummy pipeline
-    scores = np.arange(0, len(next_batch))
-    for score, pipeline in zip(scores, next_batch):
-        algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+    add_result(algo, next_batch)
 
     for i in range(1, 6):
         next_batch = algo.next_batch()
