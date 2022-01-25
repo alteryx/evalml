@@ -564,7 +564,9 @@ def test_automl_str_no_param_search(X_y_binary):
     assert "Search Results" not in str_rep
 
 
-def test_automl_feature_selection_with_allowed_component_graphs(AutoMLTestEnv, X_y_binary):
+def test_automl_feature_selection_with_allowed_component_graphs(
+    AutoMLTestEnv, X_y_binary
+):
     X, y = X_y_binary
 
     start_iteration_callback = MagicMock()
@@ -580,7 +582,7 @@ def test_automl_feature_selection_with_allowed_component_graphs(AutoMLTestEnv, X
                 "Logistic Regression Classifier",
             ]
         },
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1.0, "F1": 0.5}):
@@ -612,7 +614,7 @@ def test_automl_tuner_exception(
         tuner_class=RandomSearchTuner,
         max_batches=5,
         optimize_thresholds=False,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with pytest.raises(NoParamsException, match=error_text):
@@ -628,7 +630,13 @@ def test_automl_algorithm(
 ):
     X, y = X_y_binary
 
-    automl = AutoMLSearch(X_train=X, y_train=y, problem_type="binary", max_iterations=5, _automl_algorithm="default")
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        max_iterations=5,
+        _automl_algorithm="default",
+    )
     mock_algo_next_batch.side_effect = StopIteration("that's all, folks")
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1.0, "F1": 0.5}):
@@ -656,7 +664,7 @@ def test_automl_allowed_component_graphs_iterative_algorithm(
         problem_type="binary",
         allowed_component_graphs=allowed_component_graphs,
         max_iterations=10,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
 
     assert aml._automl_algorithm.allowed_component_graphs == allowed_component_graphs
@@ -964,7 +972,7 @@ def test_component_graph_with_incorrect_problem_type_iterative(
                     dummy_classifier_estimator_class
                 ]
             },
-            _automl_algorithm="iterative"
+            _automl_algorithm="iterative",
         )
 
 
@@ -1479,7 +1487,7 @@ def test_describe_pipeline_with_ensembling_iterative(
         ensembling=True,
         optimize_thresholds=False,
         error_callback=raise_error_callback,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
 
     score_side_effect = [
@@ -1772,7 +1780,7 @@ def test_jobs_cancelled_when_keyboard_interrupt_iterative(
         max_iterations=6,
         objective="f1",
         optimize_thresholds=False,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"F1": 1}):
@@ -2474,7 +2482,7 @@ def test_max_iteration_works_with_stacked_ensemble_iterative(
         optimize_thresholds=False,
         ensembling=use_ensembling,
         verbose=True,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.8}):
@@ -2499,7 +2507,7 @@ def test_max_iteration_works_with_stacked_ensemble_iterative(
 
 @pytest.mark.parametrize("max_batches", [1, 5, 10])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
-@pytest.mark.parametrize("_automl_algorithm", ['iterative', 'default'])
+@pytest.mark.parametrize("_automl_algorithm", ["iterative", "default"])
 def test_max_batches_works(
     max_batches,
     problem_type,
@@ -2507,7 +2515,7 @@ def test_max_batches_works(
     AutoMLTestEnv,
     X_y_binary,
     X_y_regression,
-):      
+):
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
 
@@ -2521,7 +2529,7 @@ def test_max_batches_works(
         max_iterations=None,
         max_batches=max_batches,
         optimize_thresholds=False,
-        _automl_algorithm=_automl_algorithm
+        _automl_algorithm=_automl_algorithm,
     )
     automl.max_iterations = None
     env = AutoMLTestEnv(problem_type)
@@ -2555,7 +2563,7 @@ def test_max_batches_num_pipelines_iterative(
         max_batches=max_batches,
         optimize_thresholds=False,
         ensembling=use_ensembling,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv(problem_type)
     with env.test_context(score_return_value={automl.objective.name: 0.3}):
