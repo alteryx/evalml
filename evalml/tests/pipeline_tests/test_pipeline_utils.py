@@ -357,7 +357,6 @@ def test_make_pipeline_from_actions(problem_type):
                 "columns": None,
                 "is_target": False,
                 "parameters": {
-                    "global_parameter_name": 0.0,
                     "impute_strategies": {
                         "some_column": {
                             "impute_strategy": "most_frequent",
