@@ -1,6 +1,6 @@
 """Base class for all binary classification objectives."""
 import numpy as np
-from scipy.optimize import minimize_scalar
+from scipy.optimize import minimize
 
 from .objective_base import ObjectiveBase
 
@@ -50,16 +50,14 @@ class BinaryClassificationObjective(ObjectiveBase):
 
         def cost(threshold):
             y_predicted = self.decision_function(
-                ypred_proba=ypred_proba, threshold=threshold, X=X
+                ypred_proba=ypred_proba, threshold=threshold[0], X=X
             )
             cost = self.objective_function(y_true, y_predicted, X=X)
             return -cost if self.greater_is_better else cost
 
-        optimal = minimize_scalar(
-            cost, bracket=(0, 1), method="Golden", options={"maxiter": 250}
-        )
+        optimal = minimize(cost, 0.5, method="nelder-mead", bounds=[(0, 1)])
 
-        return optimal.x
+        return optimal.x[0]
 
     def decision_function(self, ypred_proba, threshold=0.5, X=None):
         """Apply a learned threshold to predicted probabilities to get predicted classes.

@@ -4,6 +4,7 @@
 **Future Releases**
     * Enhancements
     * Fixes
+        * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:``
     * Changes
     * Documentation Changes
     * Testing Changes
