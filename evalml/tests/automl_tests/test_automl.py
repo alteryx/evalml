@@ -3899,7 +3899,7 @@ def test_automl_pipeline_params_multiple(AutoMLTestEnv, X_y_regression):
             ] == Categorical((0.01, 0.02, 0.03)).rvs(random_state=automl.random_seed)
 
 
-def test_automl_respects_pipeline_parameters_with_duplicate_components(
+def test_automl_respects_pipeline_parameters_with_duplicate_components_iterative(
     AutoMLTestEnv, X_y_binary
 ):
     X, y = X_y_binary
@@ -3921,6 +3921,7 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
         },
         optimize_thresholds=False,
         max_batches=1,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={automl.objective.name: 0.63}):
@@ -3952,6 +3953,7 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components(
         },
         optimize_thresholds=False,
         max_batches=1,
+        _automl_algorithm='iterative'
     )
     with env.test_context(score_return_value={automl.objective.name: 0.63}):
         automl.search()
