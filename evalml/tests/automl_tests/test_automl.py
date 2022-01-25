@@ -642,29 +642,24 @@ def test_automl_algorithm(
     assert pipeline_results[0].get("mean_cv_score") == 1.0
 
 
-@patch("evalml.automl.automl_algorithm.IterativeAlgorithm.__init__")
-def test_automl_allowed_component_graphs_algorithm(
-    mock_algo_init,
+def test_automl_allowed_component_graphs_iterative_algorithm(
     dummy_classifier_estimator_class,
     X_y_binary,
 ):
-    mock_algo_init.side_effect = Exception("mock algo init")
     X, y = X_y_binary
-
     allowed_component_graphs = {
         "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
     }
-    with pytest.raises(Exception, match="mock algo init"):
-        AutoMLSearch(
-            X_train=X,
-            y_train=y,
-            problem_type="binary",
-            allowed_component_graphs=allowed_component_graphs,
-            max_iterations=10,
-        )
-    assert mock_algo_init.call_count == 1
-    _, kwargs = mock_algo_init.call_args
-    assert kwargs["allowed_component_graphs"] == allowed_component_graphs
+    aml = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        allowed_component_graphs=allowed_component_graphs,
+        max_iterations=10,
+        _automl_algorithm='iterative'
+    )
+
+    assert aml._automl_algorithm.allowed_component_graphs == allowed_component_graphs
 
 
 @pytest.mark.parametrize("pickle_type", ["cloudpickle", "pickle", "invalid"])
