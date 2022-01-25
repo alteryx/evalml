@@ -2497,10 +2497,43 @@ def test_max_iteration_works_with_stacked_ensemble_iterative(
         assert not pipeline_names.str.contains("Ensemble").any()
 
 
+@pytest.mark.parametrize("max_batches", [1, 5, 10])
+@pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
+@pytest.mark.parametrize("_automl_algorithm", ['iterative', 'default'])
+def test_max_batches_works(
+    max_batches,
+    problem_type,
+    _automl_algorithm,
+    AutoMLTestEnv,
+    X_y_binary,
+    X_y_regression,
+):      
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=problem_type,
+        max_iterations=None,
+        max_batches=max_batches,
+        optimize_thresholds=False,
+        _automl_algorithm=_automl_algorithm
+    )
+    automl.max_iterations = None
+    env = AutoMLTestEnv(problem_type)
+    with env.test_context(score_return_value={automl.objective.name: 0.3}):
+        automl.search()
+    assert automl._get_batch_number() == max_batches + 1
+
+
 @pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12, 20])
 @pytest.mark.parametrize("use_ensembling", [True, False])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
-def test_max_batches_works(
+def test_max_batches_num_pipelines_iterative(
     max_batches,
     use_ensembling,
     problem_type,
@@ -2522,6 +2555,7 @@ def test_max_batches_works(
         max_batches=max_batches,
         optimize_thresholds=False,
         ensembling=use_ensembling,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv(problem_type)
     with env.test_context(score_return_value={automl.objective.name: 0.3}):
