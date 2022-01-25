@@ -302,6 +302,25 @@ def test_pipeline_limits(
         y_train=y,
         problem_type=automl_type,
         optimize_thresholds=False,
+        verbose=verbose,
+    )
+    with env.test_context(score_return_value=score_value):
+        automl.search()
+    out = caplog.text
+    if verbose:
+        assert "Using default limit of max_batches=1." in out
+        assert "Searching up to 1 batches for a total of" in out
+    else:
+        assert "Using default limit of max_batches=1." not in out
+        assert "Searching up to 1 batches for a total of" not in out
+    assert len(automl.results["pipeline_results"]) > 0
+
+    caplog.clear()
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type=automl_type,
+        optimize_thresholds=False,
         max_time=1e-16,
         verbose=verbose,
     )
