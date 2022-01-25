@@ -564,7 +564,7 @@ def test_automl_str_no_param_search(X_y_binary):
     assert "Search Results" not in str_rep
 
 
-def test_automl_feature_selection(AutoMLTestEnv, X_y_binary):
+def test_automl_feature_selection_with_allowed_component_graphs(AutoMLTestEnv, X_y_binary):
     X, y = X_y_binary
 
     start_iteration_callback = MagicMock()
@@ -580,6 +580,7 @@ def test_automl_feature_selection(AutoMLTestEnv, X_y_binary):
                 "Logistic Regression Classifier",
             ]
         },
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1.0, "F1": 0.5}):
