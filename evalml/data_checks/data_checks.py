@@ -94,7 +94,7 @@ class DataChecks:
         Returns:
             dict: Dictionary containing DataCheckMessage objects
         """
-        messages = {"warnings": [], "errors": [], "actions": []}
+        messages = []
         X = infer_feature_types(X)
         X = X.ww.drop(list(X.ww.select("index", return_schema=True).columns))
         if y is not None:
@@ -102,11 +102,5 @@ class DataChecks:
 
         for data_check in self.data_checks:
             messages_new = data_check.validate(X, y)
-            messages["warnings"].extend(messages_new["warnings"])
-            messages["errors"].extend(messages_new["errors"])
-
-            new_actions = messages_new["actions"]
-            for new_action in new_actions:
-                if new_action not in messages["actions"]:
-                    messages["actions"].append(new_action)
+            messages.extend(messages_new)
         return messages

@@ -2,8 +2,8 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks import (
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
     SparsityDataCheck,
@@ -118,28 +118,25 @@ def test_sparsity_data_check_warnings():
     sparsity_check = SparsityDataCheck(
         problem_type="multiclass", threshold=0.4, unique_count_threshold=3
     )
-    assert sparsity_check.validate(data) == {
-        "warnings": [
-            DataCheckWarning(
-                message="Input columns ('most_sparse', 'more_sparse', 'sparse') for multiclass problem type are too sparse.",
-                data_check_name=sparsity_data_check_name,
-                message_code=DataCheckMessageCode.TOO_SPARSE,
-                details={
-                    "columns": ["most_sparse", "more_sparse", "sparse"],
-                    "sparsity_score": {
-                        "most_sparse": 0,
-                        "more_sparse": 0,
-                        "sparse": 0.3333333333333333,
-                    },
+    assert sparsity_check.validate(data) == [
+        DataCheckWarning(
+            message="Input columns ('most_sparse', 'more_sparse', 'sparse') for multiclass problem type are too sparse.",
+            data_check_name=sparsity_data_check_name,
+            message_code=DataCheckMessageCode.TOO_SPARSE,
+            details={
+                "columns": ["most_sparse", "more_sparse", "sparse"],
+                "sparsity_score": {
+                    "most_sparse": 0,
+                    "more_sparse": 0,
+                    "sparse": 0.3333333333333333,
                 },
-            ).to_dict(),
-        ],
-        "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=sparsity_data_check_name,
-                metadata={"columns": ["most_sparse", "more_sparse", "sparse"]},
-            ).to_dict(),
-        ],
-    }
+            },
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=sparsity_data_check_name,
+                    metadata={"columns": ["most_sparse", "more_sparse", "sparse"]},
+                )
+            ],
+        ).to_dict(),
+    ]

@@ -5,6 +5,9 @@ from enum import Enum
 class DataCheckMessageCode(Enum):
     """Enum for data check message code."""
 
+    COLS_WITH_NULL = "cols_with_null"
+    """Message code for columns with null values."""
+
     HIGHLY_NULL_COLS = "highly_null_cols"
     """Message code for highly null columns."""
 
