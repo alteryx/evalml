@@ -1611,34 +1611,6 @@ def test_time_series_pipeline_parameter_warnings(
         assert w[1].message.components == set_values
 
 
-@pytest.mark.parametrize("allow_long_running_models", [True, False])
-@pytest.mark.parametrize("unique", [10, 200])
-def test_automl_passes_allow_long_running_models_iterative(
-    unique, allow_long_running_models, caplog, has_minimal_dependencies
-):
-    X = pd.DataFrame()
-    y = pd.Series([i for i in range(unique)] * 5)
-    automl = AutoMLSearch(
-        X_train=X,
-        y_train=y,
-        problem_type="multiclass",
-        allow_long_running_models=allow_long_running_models,
-        _automl_algorithm="iterative",
-        verbose=True,
-    )
-    assert (
-        automl._automl_algorithm.allow_long_running_models == allow_long_running_models
-    )
-    if allow_long_running_models or unique == 10:
-        assert "Dropping estimators" not in caplog.text
-        return
-    estimators = ["Elastic Net Classifier"]
-    if not has_minimal_dependencies:
-        estimators.extend(["CatBoost Classifier", "XGBoost Classifier"])
-
-    assert "Dropping estimators {}".format(", ".join(sorted(estimators))) in caplog.text
-
-
 @patch(
     "evalml.automl.automl_algorithm.default_algorithm.DefaultAlgorithm._create_ensemble",
     return_value=[],
@@ -1650,10 +1622,12 @@ def test_automl_passes_allow_long_running_models_iterative(
 )
 @pytest.mark.parametrize("allow_long_running_models", [True, False])
 @pytest.mark.parametrize("unique", [10, 200])
-def test_automl_passes_allow_long_running_models_default(
+@pytest.mark.parametrize("algo", ["iterative", "default"])
+def test_automl_passes_allow_long_running_models(
     mock_s_fit,
     mock_fit,
     mock_score,
+    algo,
     unique,
     allow_long_running_models,
     caplog,
@@ -1666,14 +1640,15 @@ def test_automl_passes_allow_long_running_models_default(
         y_train=y,
         problem_type="multiclass",
         allow_long_running_models=allow_long_running_models,
-        _automl_algorithm="default",
+        _automl_algorithm=algo,
         max_batches=2,
         verbose=True,
     )
     assert (
         automl._automl_algorithm.allow_long_running_models == allow_long_running_models
     )
-    automl.search()
+    if algo == "default":
+        automl.search()
     if allow_long_running_models or unique == 10:
         assert "Dropping estimators" not in caplog.text
         return
