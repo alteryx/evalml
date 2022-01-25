@@ -26,22 +26,18 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             Columns containing Natural Language data will raise an error if NaN values are present.
 
             >>> data = pd.DataFrame()
-            >>> data['A'] = [None, "string_that_is_long_enough_for_natural_language"]
-            >>> data['B'] = ['string_that_is_long_enough_for_natural_language', 'string_that_is_long_enough_for_natural_language']
-            >>> data['C'] = np.random.randint(0, 3, size=len(data))
-            >>> data.ww.init(logical_types={'A': 'NaturalLanguage', 'B': 'NaturalLanguage'})
+            >>> data["A"] = [None, "string_that_is_long_enough_for_natural_language"]
+            >>> data["B"] = ["string_that_is_long_enough_for_natural_language", "string_that_is_long_enough_for_natural_language"]
+            >>> data["C"] = np.random.randint(0, 3, size=len(data))
+            >>> data.ww.init(logical_types={"A": "NaturalLanguage", "B": "NaturalLanguage"})
             ...
             >>> nl_nan_check = NaturalLanguageNaNDataCheck()
-            >>> assert nl_nan_check.validate(data) == {
-            ...        "warnings": [],
-            ...        "actions": [],
-            ...        "errors": [DataCheckError(message='Input natural language column(s) (A) contains NaN values. Please impute NaN values or drop these rows or columns.',
+            >>> assert nl_nan_check.validate(data) == [DataCheckError(message="Input natural language column(s) (A) contains NaN values. Please impute NaN values or drop these rows or columns.",
             ...                      data_check_name=NaturalLanguageNaNDataCheck.name,
             ...                      message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-            ...                      details={"columns": ['A']}).to_dict()]
-            ...    }
+            ...                      details={"columns": ["A"]}).to_dict()]
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        messages = []
 
         X = infer_feature_types(X)
         X = X.ww.select("natural_language")
@@ -50,7 +46,7 @@ class NaturalLanguageNaNDataCheck(DataCheck):
             str(col) for col in X_describe if X_describe[col]["nan_count"] > 0
         ]
         if len(nan_columns) > 0:
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message=error_contains_nan.format(", ".join(nan_columns)),
                     data_check_name=self.name,
@@ -58,4 +54,4 @@ class NaturalLanguageNaNDataCheck(DataCheck):
                     details={"columns": nan_columns},
                 ).to_dict()
             )
-        return results
+        return messages

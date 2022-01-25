@@ -3,8 +3,8 @@ import pandas as pd
 import pytest
 
 from evalml.data_checks import (
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
     UniquenessDataCheck,
@@ -92,27 +92,24 @@ def test_uniqueness_data_check_warnings():
     )
 
     uniqueness_check = UniquenessDataCheck(problem_type="regression")
-    assert uniqueness_check.validate(data) == {
-        "warnings": [
-            DataCheckWarning(
-                message="Input columns 'regression_not_unique_enough' for regression problem type are not unique enough.",
-                data_check_name=uniqueness_data_check_name,
-                message_code=DataCheckMessageCode.NOT_UNIQUE_ENOUGH,
-                details={
-                    "columns": ["regression_not_unique_enough"],
-                    "uniqueness_score": {"regression_not_unique_enough": 0.0},
-                },
-            ).to_dict()
-        ],
-        "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=uniqueness_data_check_name,
-                metadata={"columns": ["regression_not_unique_enough"]},
-            ).to_dict()
-        ],
-    }
+    assert uniqueness_check.validate(data) == [
+        DataCheckWarning(
+            message="Input columns 'regression_not_unique_enough' for regression problem type are not unique enough.",
+            data_check_name=uniqueness_data_check_name,
+            message_code=DataCheckMessageCode.NOT_UNIQUE_ENOUGH,
+            details={
+                "columns": ["regression_not_unique_enough"],
+                "uniqueness_score": {"regression_not_unique_enough": 0.0},
+            },
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=uniqueness_data_check_name,
+                    metadata={"columns": ["regression_not_unique_enough"]},
+                )
+            ],
+        ).to_dict()
+    ]
 
     data = pd.DataFrame(
         {
@@ -121,24 +118,21 @@ def test_uniqueness_data_check_warnings():
         }
     )
     uniqueness_check = UniquenessDataCheck(problem_type="multiclass")
-    assert uniqueness_check.validate(data) == {
-        "warnings": [
-            DataCheckWarning(
-                message="Input columns 'multiclass_too_unique' for multiclass problem type are too unique.",
-                data_check_name=uniqueness_data_check_name,
-                message_code=DataCheckMessageCode.TOO_UNIQUE,
-                details={
-                    "columns": ["multiclass_too_unique"],
-                    "uniqueness_score": {"multiclass_too_unique": 0.7999999999999999},
-                },
-            ).to_dict()
-        ],
-        "errors": [],
-        "actions": [
-            DataCheckAction(
-                DataCheckActionCode.DROP_COL,
-                data_check_name=uniqueness_data_check_name,
-                metadata={"columns": ["multiclass_too_unique"]},
-            ).to_dict()
-        ],
-    }
+    assert uniqueness_check.validate(data) == [
+        DataCheckWarning(
+            message="Input columns 'multiclass_too_unique' for multiclass problem type are too unique.",
+            data_check_name=uniqueness_data_check_name,
+            message_code=DataCheckMessageCode.TOO_UNIQUE,
+            details={
+                "columns": ["multiclass_too_unique"],
+                "uniqueness_score": {"multiclass_too_unique": 0.7999999999999999},
+            },
+            action_options=[
+                DataCheckActionOption(
+                    DataCheckActionCode.DROP_COL,
+                    data_check_name=uniqueness_data_check_name,
+                    metadata={"columns": ["multiclass_too_unique"]},
+                )
+            ],
+        ).to_dict()
+    ]
