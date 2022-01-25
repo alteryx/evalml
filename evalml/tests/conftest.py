@@ -1205,14 +1205,6 @@ def make_data_type():
                     )
             else:
                 data.ww.init()
-                if nullable and isinstance(
-                    data.ww.logical_type, ww_logical_types.Integer
-                ):
-                    data.ww.init(data, logical_type=ww_logical_types.IntegerNullable)
-                elif nullable and isinstance(
-                    data.ww.logical_type, ww_logical_types.Boolean
-                ):
-                    data.ww.init(data, logical_type=ww_logical_types.BooleanNullable)
         return data
 
     return _make_data_type
