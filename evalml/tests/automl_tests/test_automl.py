@@ -609,8 +609,9 @@ def test_automl_tuner_exception(
         y_train=y,
         problem_type="binary",
         tuner_class=RandomSearchTuner,
-        max_iterations=10,
+        max_batches=5,
         optimize_thresholds=False,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("binary")
     with pytest.raises(NoParamsException, match=error_text):
