@@ -404,7 +404,6 @@ def test_make_pipeline_from_actions(problem_type):
                     },
                 },
                 "default_impute_strategy": "most_frequent",
-                "impute_all": False,
             },
         },
         random_seed=0,
