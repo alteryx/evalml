@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
     * Fixes
         * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:`3280`
     * Changes
