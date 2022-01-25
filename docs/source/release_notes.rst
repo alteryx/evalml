@@ -9,6 +9,7 @@
     * Changes
         * Capped ``pandas`` at < 1.4.0 :pr:`3274`
     * Documentation Changes
+        * Update documentation and docstring for `validate_holdout_datasets` for time series problems :pr:`3728`
     * Testing Changes
         * Bumped minimum ``IPython`` version to 7.16.3 in ``test-requirements.txt`` based on dependabot feedback :pr:`3269`
 
