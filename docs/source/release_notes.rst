@@ -4,7 +4,7 @@
 **Future Releases**
     * Enhancements
     * Fixes
-        * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:``
+        * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:`3280`
     * Changes
     * Documentation Changes
     * Testing Changes
