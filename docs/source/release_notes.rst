@@ -4,13 +4,20 @@
     * Enhancements
         * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
     * Fixes
+        * Fixed categorical data leaking into non-categorical sub-pipelines in ``DefaultAlgorithm`` :pr:`3209`
+        * Fixed Python 3.9 installation for prophet by updating ``pmdarima`` version in requirements :pr:`3268`
+        * Allowed DateTime columns to pass through PerColumnImputer without breaking :pr:`3267`
     * Changes
+        * Capped ``pandas`` at < 1.4.0 :pr:`3274`
     * Documentation Changes
     * Testing Changes
+        * Bumped minimum ``IPython`` version to 7.16.3 in ``test-requirements.txt`` based on dependabot feedback :pr:`3269`
 
 .. warning::
 
     **Breaking Changes**
+        * Removed ``impute_all`` and ``default_impute_strategy`` parameters from the ``PerColumnImputer`` :pr:`3267`
+        * Updated ``PerColumnImputer`` such that columns not specified in ``impute_strategies`` dict will not be imputed anymore :pr:`3267`
 
 
 **v0.42.0 Jan. 18, 2022**

@@ -119,9 +119,18 @@ class AutoMLAlgorithm(ABC):
                 "Select Columns Transformer"
                 in pipeline.component_graph.component_instances
             ):
-                pipeline_params.update(
-                    {"Select Columns Transformer": {"columns": self._selected_cols}}
-                )
+                if self._selected_cols:
+                    pipeline_params.update(
+                        {"Select Columns Transformer": {"columns": self._selected_cols}}
+                    )
+                elif self._selected_cat_cols:
+                    pipeline_params.update(
+                        {
+                            "Select Columns Transformer": {
+                                "columns": self._selected_cat_cols
+                            }
+                        }
+                    )
             input_pipelines.append(
                 pipeline.new(parameters=pipeline_params, random_seed=self.random_seed)
             )
