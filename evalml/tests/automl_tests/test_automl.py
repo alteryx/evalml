@@ -2460,7 +2460,7 @@ def _get_first_stacked_classifier_no(model_families=None):
     ],
 )
 @pytest.mark.parametrize("use_ensembling", [True, False])
-def test_max_iteration_works_with_stacked_ensemble(
+def test_max_iteration_works_with_stacked_ensemble_iterative(
     max_iterations, use_ensembling, AutoMLTestEnv, X_y_binary, caplog
 ):
     X, y = X_y_binary
@@ -2474,6 +2474,7 @@ def test_max_iteration_works_with_stacked_ensemble(
         optimize_thresholds=False,
         ensembling=use_ensembling,
         verbose=True,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.8}):
