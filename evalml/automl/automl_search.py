@@ -723,7 +723,7 @@ class AutoMLSearch:
                 pipeline_params=parameters,
                 custom_hyperparameters=self.custom_hyperparameters,
                 text_in_ensembling=text_in_ensembling,
-                verbose=self.verbose
+                verbose=self.verbose,
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")

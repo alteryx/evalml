@@ -2327,7 +2327,9 @@ def test_time_series_regression_with_parameters(ts_data):
         problem_configuration=problem_configuration,
         max_batches=3,
     )
-    assert automl._automl_algorithm._pipeline_params["pipeline"] == problem_configuration
+    assert (
+        automl._automl_algorithm._pipeline_params["pipeline"] == problem_configuration
+    )
 
 
 @pytest.mark.parametrize("graph_type", ["dict", "cg"])
@@ -2689,7 +2691,7 @@ def test_automl_one_allowed_component_graph_ensembling_disabled_iterative(
         optimize_thresholds=False,
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         ensembling=True,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
@@ -2720,7 +2722,7 @@ def test_automl_one_allowed_component_graph_ensembling_disabled_iterative(
         allowed_component_graphs=allowed_component_graph,
         optimize_thresholds=False,
         ensembling=True,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
         automl.search()
@@ -2764,7 +2766,7 @@ def test_automl_max_iterations_less_than_ensembling_disabled_iterative(
         optimize_thresholds=False,
         allowed_model_families=[ModelFamily.LINEAR_MODEL],
         ensembling=True,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
@@ -2790,7 +2792,7 @@ def test_automl_max_batches_less_than_ensembling_disabled_iterative(
         optimize_thresholds=False,
         allowed_model_families=[ModelFamily.LINEAR_MODEL],
         ensembling=True,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
@@ -3017,7 +3019,7 @@ def test_pipeline_hyperparameters_make_pipeline_other_errors_iterative(
         allowed_component_graphs=component_graphs,
         custom_hyperparameters=custom_hyperparameters,
         n_jobs=1,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("multiclass")
 
@@ -3079,7 +3081,7 @@ def test_pipeline_custom_hyperparameters_make_pipeline_iterative(
         pipeline_parameters=automl_parameters_,
         custom_hyperparameters=custom_hyperparameters_,
         max_batches=4,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("multiclass")
     with env.test_context(score_return_value={"Log Loss Multiclass": 1.0}):
@@ -3166,7 +3168,7 @@ def test_passes_njobs_to_pipelines_iterative(
             "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class],
         },
         optimize_thresholds=False,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.2}):
@@ -3192,7 +3194,7 @@ def test_automl_ensembling_false_iterative(AutoMLTestEnv, X_y_binary):
         max_batches=20,
         optimize_thresholds=False,
         ensembling=False,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.32}):
@@ -3297,7 +3299,7 @@ def test_search_with_text_and_ensembling_iterative(
         optimize_thresholds=False,
         max_batches=4,
         ensembling=True,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
 
     call_args = mock_iter.call_args[1]["text_in_ensembling"]
@@ -3322,7 +3324,7 @@ def test_pipelines_per_batch_iterative(AutoMLTestEnv, X_y_binary):
         problem_type="binary",
         max_batches=2,
         optimize_thresholds=False,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
@@ -3338,7 +3340,7 @@ def test_pipelines_per_batch_iterative(AutoMLTestEnv, X_y_binary):
         max_batches=1,
         optimize_thresholds=False,
         _pipelines_per_batch=2,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
         automl.search()
@@ -3353,7 +3355,7 @@ def test_pipelines_per_batch_iterative(AutoMLTestEnv, X_y_binary):
         max_batches=2,
         optimize_thresholds=False,
         _pipelines_per_batch=10,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
         automl.search()
@@ -3362,7 +3364,9 @@ def test_pipelines_per_batch_iterative(AutoMLTestEnv, X_y_binary):
     assert total_pipelines(automl, 2, 10) == len(automl.full_rankings)
 
 
-def test_automl_respects_random_seed_iterative(X_y_binary, dummy_classifier_estimator_class):
+def test_automl_respects_random_seed_iterative(
+    X_y_binary, dummy_classifier_estimator_class
+):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,
@@ -3372,7 +3376,7 @@ def test_automl_respects_random_seed_iterative(X_y_binary, dummy_classifier_esti
         optimize_thresholds=False,
         random_seed=42,
         max_iterations=10,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     pipelines = [
         BinaryClassificationPipeline(
@@ -3931,7 +3935,7 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components_iterative
         },
         optimize_thresholds=False,
         max_batches=1,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={automl.objective.name: 0.63}):
@@ -3963,7 +3967,7 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components_iterative
         },
         optimize_thresholds=False,
         max_batches=1,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
     with env.test_context(score_return_value={automl.objective.name: 0.63}):
         automl.search()
@@ -4039,11 +4043,11 @@ def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(
     X, y = X_y_binary
     pipeline_parameters = {"Imputer": {"numeric_impute_strategy": "most_frequent"}}
     custom_hyperparameters = {
-            "One Hot Encoder": {"top_n": Categorical([12, 10])},
-            "Imputer": {
-                "numeric_impute_strategy": Categorical(["median", "most_frequent"])
-            },
-        }
+        "One Hot Encoder": {"top_n": Categorical([12, 10])},
+        "Imputer": {
+            "numeric_impute_strategy": Categorical(["median", "most_frequent"])
+        },
+    }
 
     automl = AutoMLSearch(
         X,
@@ -5074,7 +5078,7 @@ def test_pipeline_parameter_warnings_component_graphs_iterative(
             n_jobs=1,
             allowed_component_graphs=allowed_component_graphs,
             pipeline_parameters=pipeline_parameters,
-            _automl_algorithm='iterative'
+            _automl_algorithm="iterative",
         )
         env = AutoMLTestEnv("binary")
         with env.test_context(score_return_value={automl.objective.name: 1.0}):
@@ -5110,14 +5114,14 @@ def test_component_and_pipeline_warnings_surface_in_search(
         env = AutoMLTestEnv("binary")
         with env.test_context(score_return_value={automl.objective.name: 1.0}):
             automl.search()
-    
+
     found_user = False
     found_parameter = False
     for warning in warnings_logged:
         if isinstance(warning.message, UserWarning):
             found_user = True
-        if isinstance(warning.message, ParameterNotUsedWarning):  
-            found_parameter = True 
+        if isinstance(warning.message, ParameterNotUsedWarning):
+            found_parameter = True
         if found_user and found_parameter:
             continue
 
@@ -5248,7 +5252,7 @@ def test_graph_automl_iterative(X_y_multi):
         allowed_component_graphs={"Name_0": ComponentGraph(component_graph)},
         pipeline_parameters=automl_parameters_,
         max_batches=2,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
 
     dag_str = automl.allowed_pipelines[0].graph_json()
@@ -5380,7 +5384,14 @@ def test_baseline_pipeline_properly_initalized(
 
 def test_automl_respects_pipeline_order_iterative(X_y_binary, AutoMLTestEnv):
     X, y = X_y_binary
-    automl = AutoMLSearch(X, y, "binary", engine="sequential", max_iterations=5, _automl_algorithm='iterative')
+    automl = AutoMLSearch(
+        X,
+        y,
+        "binary",
+        engine="sequential",
+        max_iterations=5,
+        _automl_algorithm="iterative",
+    )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={automl.objective.name: 0.2}):
         automl.search()
@@ -5404,7 +5415,7 @@ def test_get_ensembler_input_pipelines_iterative(X_y_binary, AutoMLTestEnv):
         max_iterations=_get_first_stacked_classifier_no(),
         objective="Log Loss Binary",
         ensembling=True,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
 
     score_side_effect = [
@@ -5439,7 +5450,7 @@ def test_get_ensembler_input_pipelines_iterative(X_y_binary, AutoMLTestEnv):
         max_batches=two_stacking_batches,
         objective="Log Loss Binary",
         ensembling=True,
-        _automl_algorithm='iterative'
+        _automl_algorithm="iterative",
     )
 
     test_env = AutoMLTestEnv("binary")
