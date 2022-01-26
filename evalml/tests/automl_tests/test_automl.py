@@ -2673,7 +2673,7 @@ def test_early_stopping(
     ) == verbose
 
 
-def test_automl_one_allowed_component_graph_ensembling_disabled(
+def test_automl_one_allowed_component_graph_ensembling_disabled_iterative(
     AutoMLTestEnv,
     X_y_binary,
     caplog,
@@ -2689,6 +2689,7 @@ def test_automl_one_allowed_component_graph_ensembling_disabled(
         optimize_thresholds=False,
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         ensembling=True,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
@@ -2719,6 +2720,7 @@ def test_automl_one_allowed_component_graph_ensembling_disabled(
         allowed_component_graphs=allowed_component_graph,
         optimize_thresholds=False,
         ensembling=True,
+        _automl_algorithm='iterative'
     )
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
         automl.search()
