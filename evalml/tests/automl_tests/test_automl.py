@@ -3307,7 +3307,7 @@ def test_search_with_text_and_ensembling_iterative(
         assert call_args is False
 
 
-def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
+def test_pipelines_per_batch_iterative(AutoMLTestEnv, X_y_binary):
     def total_pipelines(automl, num_batches, batch_size):
         total = 1 + len(automl.allowed_pipelines)
         total += (num_batches - 1) * batch_size
@@ -3322,6 +3322,7 @@ def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
         problem_type="binary",
         max_batches=2,
         optimize_thresholds=False,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
@@ -3337,6 +3338,7 @@ def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
         max_batches=1,
         optimize_thresholds=False,
         _pipelines_per_batch=2,
+        _automl_algorithm='iterative'
     )
     with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
         automl.search()
@@ -3351,6 +3353,7 @@ def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
         max_batches=2,
         optimize_thresholds=False,
         _pipelines_per_batch=10,
+        _automl_algorithm='iterative'
     )
     with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
         automl.search()
@@ -3359,7 +3362,7 @@ def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
     assert total_pipelines(automl, 2, 10) == len(automl.full_rankings)
 
 
-def test_automl_respects_random_seed(X_y_binary, dummy_classifier_estimator_class):
+def test_automl_respects_random_seed_iterative(X_y_binary, dummy_classifier_estimator_class):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,
@@ -3369,6 +3372,7 @@ def test_automl_respects_random_seed(X_y_binary, dummy_classifier_estimator_clas
         optimize_thresholds=False,
         random_seed=42,
         max_iterations=10,
+        _automl_algorithm='iterative'
     )
     pipelines = [
         BinaryClassificationPipeline(
