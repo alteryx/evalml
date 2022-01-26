@@ -407,7 +407,9 @@ class ComponentGraph:
 
         output_cache = {}
         for component_name in component_list:
-            component_instance = self._get_stacked_ensemble_component(hashes, component_name, fit)
+            component_instance = self._get_stacked_ensemble_component(
+                hashes, component_name, fit
+            )
             if not isinstance(component_instance, ComponentBase):
                 raise ValueError(
                     "All components must be instantiated before fitting or predicting"

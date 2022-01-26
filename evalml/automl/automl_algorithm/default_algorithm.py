@@ -398,7 +398,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self._batch_number += 1
         return next_batch
 
-    def add_result(self, score_to_minimize, pipeline, trained_pipeline_results, cached_data):
+    def add_result(
+        self, score_to_minimize, pipeline, trained_pipeline_results, cached_data
+    ):
         """Register results from evaluating a pipeline. In batch number 2, the selected column names from the feature selector are taken to be used in a column selector. Information regarding the best pipeline is updated here as well.
 
         Args:
