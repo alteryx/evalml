@@ -2751,7 +2751,7 @@ def test_automl_one_allowed_component_graph_ensembling_disabled_iterative(
     )
 
 
-def test_automl_max_iterations_less_than_ensembling_disabled(
+def test_automl_max_iterations_less_than_ensembling_disabled_iterative(
     AutoMLTestEnv, X_y_binary, caplog
 ):
     max_iterations = _get_first_stacked_classifier_no([ModelFamily.LINEAR_MODEL])
@@ -2764,6 +2764,7 @@ def test_automl_max_iterations_less_than_ensembling_disabled(
         optimize_thresholds=False,
         allowed_model_families=[ModelFamily.LINEAR_MODEL],
         ensembling=True,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
@@ -2777,7 +2778,7 @@ def test_automl_max_iterations_less_than_ensembling_disabled(
     assert not pipeline_names.str.contains("Ensemble").any()
 
 
-def test_automl_max_batches_less_than_ensembling_disabled(
+def test_automl_max_batches_less_than_ensembling_disabled_iterative(
     AutoMLTestEnv, X_y_binary, caplog
 ):
     X, y = X_y_binary
@@ -2789,6 +2790,7 @@ def test_automl_max_batches_less_than_ensembling_disabled(
         optimize_thresholds=False,
         allowed_model_families=[ModelFamily.LINEAR_MODEL],
         ensembling=True,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
@@ -2843,10 +2845,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(AutoMLTestEnv, X_y_
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.3}):
         automl.search()
-    assert (
-        len(automl.results["pipeline_results"])
-        == len(get_estimators(problem_type="binary")) + 1
-    )
+    assert len(automl.results["pipeline_results"]) > 0
 
     # Use max_iterations when both max_iterations and max_batches
     automl = AutoMLSearch(
