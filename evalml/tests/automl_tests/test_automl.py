@@ -5076,8 +5076,8 @@ def test_pipeline_parameter_warnings_component_graphs_iterative(
 
 @patch("evalml.pipelines.utils._get_preprocessing_components")
 @pytest.mark.parametrize("verbose", [True, False])
-def test_pipeline_parameter_warnings_with_other_types(
-    mock_get_preprocessing_components, verbose, X_y_regression
+def test_component_and_pipeline_warnings_surface_in_search(
+    mock_get_preprocessing_components, verbose, AutoMLTestEnv, X_y_regression
 ):
     X, y = X_y_regression
 
@@ -5089,18 +5089,30 @@ def test_pipeline_parameter_warnings_with_other_types(
         dummy_mock_get_preprocessing_components
     )
     with pytest.warns(None) as warnings_logged:
-        AutoMLSearch(
+        automl = AutoMLSearch(
             X_train=X,
             y_train=y,
             problem_type="regression",
-            allowed_model_families=["random_forest", "linear_model"],
             pipeline_parameters={"Decision Tree Classifier": {"max_depth": 1}},
+            max_batches=1,
             verbose=verbose,
         )
+        env = AutoMLTestEnv("binary")
+        with env.test_context(score_return_value={automl.objective.name: 1.0}):
+            automl.search()
+    
+    found_user = False
+    found_parameter = False
+    for warning in warnings_logged:
+        if isinstance(warning.message, UserWarning):
+            found_user = True
+        if isinstance(warning.message, ParameterNotUsedWarning):  
+            found_parameter = True 
+        if found_user and found_parameter:
+            continue
 
-    assert len(warnings_logged) == 2
-    assert isinstance(warnings_logged[0].message, UserWarning)
-    assert isinstance(warnings_logged[1].message, ParameterNotUsedWarning)
+    assert len(warnings_logged)
+    assert found_user and found_parameter
 
 
 @pytest.mark.parametrize("nans", [None, pd.NA, np.nan])
