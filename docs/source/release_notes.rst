@@ -1,6 +1,21 @@
 ﻿Release Notes
 -------------
+
 **Future Releases**
+    * Enhancements
+        * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+
+.. warning::
+
+    **Breaking Changes**
+
+
+**v0.43.0 Jan. 25, 2022**
     * Enhancements
         * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
         * Updated ``make_pipeline_from_actions`` to handle null column imputation :pr:`3237`
