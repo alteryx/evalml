@@ -6,6 +6,7 @@
         * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
     * Fixes
     * Changes
+        * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
     * Documentation Changes
     * Testing Changes
 
@@ -13,6 +14,7 @@
 .. warning::
 
     **Breaking Changes**
+        * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
 
 
 **v0.43.0 Jan. 25, 2022**
