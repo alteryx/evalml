@@ -4905,7 +4905,7 @@ def test_automl_drop_unknown_columns(columns, AutoMLTestEnv, X_y_binary, caplog)
         y_train=y,
         problem_type="binary",
         optimize_thresholds=False,
-        max_batches=2,
+        max_batches=3,
         verbose=True,
     )
     env = AutoMLTestEnv("binary")
