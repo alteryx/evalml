@@ -263,18 +263,6 @@ def get_expected_messages(problem_type):
                 )
             ],
         ).to_dict(),
-        DataCheckError(
-            message="Input natural language column(s) (natural_language_nan) contains NaN values. Please impute NaN values or drop these rows or columns.",
-            data_check_name="NaturalLanguageNaNDataCheck",
-            message_code=DataCheckMessageCode.NATURAL_LANGUAGE_HAS_NAN,
-            details={"columns": ["natural_language_nan"]},
-        ).to_dict(),
-        DataCheckError(
-            message="Input datetime column(s) (nan_dt_col) contains NaN values. Please impute NaN values or drop these rows or columns.",
-            data_check_name="DateTimeNaNDataCheck",
-            message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
-            details={"columns": ["nan_dt_col"]},
-        ).to_dict(),
     ]
     return messages
 

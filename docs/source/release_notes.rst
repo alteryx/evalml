@@ -7,6 +7,7 @@
         * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
     * Fixes
     * Changes
+        * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
     * Documentation Changes
     * Testing Changes
 
@@ -14,6 +15,7 @@
 .. warning::
 
     **Breaking Changes**
+        * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
 
 
 **v0.43.0 Jan. 25, 2022**
