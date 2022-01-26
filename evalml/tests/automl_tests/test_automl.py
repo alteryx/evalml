@@ -3181,7 +3181,7 @@ def test_passes_njobs_to_pipelines_iterative(
             )
 
 
-def test_automl_ensembling_false(AutoMLTestEnv, X_y_binary):
+def test_automl_ensembling_false_iterative(AutoMLTestEnv, X_y_binary):
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -3192,6 +3192,7 @@ def test_automl_ensembling_false(AutoMLTestEnv, X_y_binary):
         max_batches=20,
         optimize_thresholds=False,
         ensembling=False,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.32}):
