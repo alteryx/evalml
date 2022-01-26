@@ -4,6 +4,7 @@
 **Future Releases**
     * Enhancements
         * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
+        * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
     * Fixes
     * Changes
         * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
@@ -75,6 +76,7 @@
 
     **Breaking Changes**
         * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
+
 
 
 **v0.41.0 Jan. 06, 2022**
