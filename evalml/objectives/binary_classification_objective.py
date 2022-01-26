@@ -1,6 +1,6 @@
 """Base class for all binary classification objectives."""
 import numpy as np
-from scipy.optimize import minimize
+from scipy.optimize import differential_evolution
 
 from .objective_base import ObjectiveBase
 
@@ -55,7 +55,7 @@ class BinaryClassificationObjective(ObjectiveBase):
             cost = self.objective_function(y_true, y_predicted, X=X)
             return -cost if self.greater_is_better else cost
 
-        optimal = minimize(cost, 0.5, method="nelder-mead", bounds=[(0, 1)])
+        optimal = differential_evolution(cost, bounds=[(0, 1)], x0=[0.5])
 
         return optimal.x[0]
 
