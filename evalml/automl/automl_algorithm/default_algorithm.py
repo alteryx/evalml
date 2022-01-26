@@ -68,6 +68,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         top_n (int): top n number of pipelines to use for long mode.
         num_long_explore_pipelines (int): number of pipelines to explore for each top n pipeline at the start of long mode.
         num_long_pipelines_per_batch (int): number of pipelines per batch for each top n pipeline through long mode.
+        allow_long_running_models (bool): Whether or not to allow longer-running models for large multiclass problems. If False and no pipelines, component graphs, or model families are provided,
+            AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass targets and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
+        verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
     """
 
     def __init__(
@@ -85,6 +88,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         top_n=3,
         num_long_explore_pipelines=50,
         num_long_pipelines_per_batch=10,
+        allow_long_running_models=False,
         verbose=False,
     ):
         super().__init__(
@@ -111,6 +115,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.verbose = verbose
         self._selected_cat_cols = []
         self._split = False
+        self.allow_long_running_models = allow_long_running_models
         self._X_with_cat_cols = None
         self._X_without_cat_cols = None
         self._ensembling = True if not is_time_series(self.problem_type) else False
@@ -275,6 +280,14 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             for estimator in get_estimators(self.problem_type)
             if estimator not in self._naive_estimators()
         ]
+        estimators = self._filter_estimators(
+            estimators,
+            self.problem_type,
+            self.allow_long_running_models,
+            None,
+            self.y.nunique(),
+            self.logger,
+        )
         pipelines = self._make_pipelines_helper(estimators)
 
         if self._split:

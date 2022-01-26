@@ -723,6 +723,7 @@ class AutoMLSearch:
                 pipeline_params=parameters,
                 custom_hyperparameters=self.custom_hyperparameters,
                 text_in_ensembling=text_in_ensembling,
+                allow_long_running_models=allow_long_running_models,
                 verbose=self.verbose,
             )
         else:
