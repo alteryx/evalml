@@ -55,7 +55,7 @@ class BinaryClassificationObjective(ObjectiveBase):
             cost = self.objective_function(y_true, y_predicted, X=X)
             return -cost if self.greater_is_better else cost
 
-        optimal = differential_evolution(cost, bounds=[(0, 1)])
+        optimal = differential_evolution(cost, bounds=[(0, 1)], seed=0)
 
         return optimal.x[0]
 
