@@ -5209,7 +5209,7 @@ def test_automl_chooses_engine(engine_choice, X_y_binary):
             )
 
 
-def test_graph_automl(X_y_multi):
+def test_graph_automl_iterative(X_y_multi):
     X, y = X_y_multi
     X = pd.DataFrame(X, columns=[f"Column_{i}" for i in range(20)])
 
@@ -5238,6 +5238,7 @@ def test_graph_automl(X_y_multi):
         allowed_component_graphs={"Name_0": ComponentGraph(component_graph)},
         pipeline_parameters=automl_parameters_,
         max_batches=2,
+        _automl_algorithm='iterative'
     )
 
     dag_str = automl.allowed_pipelines[0].graph_json()
