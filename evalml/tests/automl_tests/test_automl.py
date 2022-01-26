@@ -5047,7 +5047,7 @@ def test_data_splitter_gives_pipelines_same_data(
         ),
     ],
 )
-def test_pipeline_parameter_warnings_component_graphs(
+def test_pipeline_parameter_warnings_component_graphs_iterative(
     pipeline_parameters, set_values, allowed_component_graphs, AutoMLTestEnv, X_y_binary
 ):
     X, y = X_y_binary
@@ -5064,6 +5064,7 @@ def test_pipeline_parameter_warnings_component_graphs(
             n_jobs=1,
             allowed_component_graphs=allowed_component_graphs,
             pipeline_parameters=pipeline_parameters,
+            _automl_algorithm='iterative'
         )
         env = AutoMLTestEnv("binary")
         with env.test_context(score_return_value={automl.objective.name: 1.0}):
