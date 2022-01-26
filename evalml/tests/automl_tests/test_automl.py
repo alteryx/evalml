@@ -3032,7 +3032,7 @@ def test_pipeline_hyperparameters_make_pipeline_other_errors_iterative(
 @pytest.mark.parametrize("component_graphs", [True, False])
 @pytest.mark.parametrize("automl_parameters", [True, False])
 @pytest.mark.parametrize("custom_hyperparameters", [True, False])
-def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(
+def test_pipeline_custom_hyperparameters_make_pipeline_iterative(
     custom_hyperparameters,
     automl_parameters,
     component_graphs,
@@ -3079,6 +3079,7 @@ def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(
         pipeline_parameters=automl_parameters_,
         custom_hyperparameters=custom_hyperparameters_,
         max_batches=4,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("multiclass")
     with env.test_context(score_return_value={"Log Loss Multiclass": 1.0}):
@@ -3135,7 +3136,7 @@ def test_iterative_algorithm_pipeline_custom_hyperparameters_make_pipeline(
                     )
 
 
-def test_iterative_algorithm_passes_njobs_to_pipelines(
+def test_passes_njobs_to_pipelines_iterative(
     dummy_classifier_estimator_class, X_y_binary, AutoMLTestEnv
 ):
     X, y = X_y_binary
@@ -3165,6 +3166,7 @@ def test_iterative_algorithm_passes_njobs_to_pipelines(
             "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class],
         },
         optimize_thresholds=False,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.2}):
