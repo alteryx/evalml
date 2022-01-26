@@ -5385,7 +5385,7 @@ def test_automl_respects_pipeline_order_iterative(X_y_binary, AutoMLTestEnv):
     )
 
 
-def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
+def test_get_ensembler_input_pipelines_iterative(X_y_binary, AutoMLTestEnv):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,
@@ -5394,6 +5394,7 @@ def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
         max_iterations=_get_first_stacked_classifier_no(),
         objective="Log Loss Binary",
         ensembling=True,
+        _automl_algorithm='iterative'
     )
 
     score_side_effect = [
@@ -5428,6 +5429,7 @@ def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
         max_batches=two_stacking_batches,
         objective="Log Loss Binary",
         ensembling=True,
+        _automl_algorithm='iterative'
     )
 
     test_env = AutoMLTestEnv("binary")
