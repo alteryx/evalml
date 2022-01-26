@@ -43,7 +43,7 @@ def test_init(X_y_binary):
     automl.search()
 
     assert automl.n_jobs == 1
-    assert isinstance(automl._automl_algorithm, IterativeAlgorithm)
+    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
     automl.best_pipeline.predict(X)
@@ -67,9 +67,9 @@ def test_init(X_y_binary):
         problem_type="binary",
         max_iterations=1,
         n_jobs=1,
-        _automl_algorithm="default",
+        _automl_algorithm="iterative",
     )
-    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
+    assert isinstance(automl._automl_algorithm, IterativeAlgorithm)
 
     with pytest.raises(ValueError, match="Please specify a valid automl algorithm."):
         AutoMLSearch(
@@ -302,7 +302,7 @@ def test_random_seed(X_y_binary):
     assert automl.rankings.equals(automl_1.rankings)
 
 
-def test_callback(X_y_binary):
+def test_callback_iterative(X_y_binary):
     X, y = X_y_binary
 
     counts = {
@@ -326,6 +326,7 @@ def test_callback(X_y_binary):
         start_iteration_callback=start_iteration_callback,
         add_result_callback=add_result_callback,
         n_jobs=1,
+        _automl_algorithm="iterative",
     )
     automl.search()
 
@@ -711,7 +712,7 @@ def test_max_time(X_y_binary):
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_automl_allowed_component_graphs_no_component_graphs(
+def test_automl_allowed_component_graphs_no_component_graphs_iterative(
     automl_type, X_y_binary, X_y_multi
 ):
     is_multiclass = automl_type == ProblemTypes.MULTICLASS
@@ -724,10 +725,11 @@ def test_automl_allowed_component_graphs_no_component_graphs(
             problem_type=problem_type,
             allowed_component_graphs=None,
             allowed_model_families=[],
+            _automl_algorithm="iterative",
         )
 
 
-def test_automl_component_graphs_specified_component_graphs_binary(
+def test_automl_component_graphs_specified_component_graphs_binary_iterative(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
     dummy_binary_pipeline,
@@ -743,6 +745,7 @@ def test_automl_component_graphs_specified_component_graphs_binary(
         },
         optimize_thresholds=False,
         allowed_model_families=None,
+        _automl_algorithm="iterative",
     )
     expected_component_graph = dummy_binary_pipeline.component_graph
     expected_name = dummy_binary_pipeline.name
@@ -763,7 +766,7 @@ def test_automl_component_graphs_specified_component_graphs_binary(
     assert automl.allowed_model_families == [ModelFamily.NONE]
 
 
-def test_automl_component_graphs_specified_component_graphs_multi(
+def test_automl_component_graphs_specified_component_graphs_multi_iterative(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
     dummy_multiclass_pipeline,
@@ -780,6 +783,7 @@ def test_automl_component_graphs_specified_component_graphs_multi(
             ]
         },
         allowed_model_families=None,
+        _automl_algorithm="iterative",
     )
     expected_pipeline = dummy_multiclass_pipeline
     expected_component_graph = expected_pipeline.component_graph
@@ -801,7 +805,7 @@ def test_automl_component_graphs_specified_component_graphs_multi(
     assert automl.allowed_model_families == [ModelFamily.NONE]
 
 
-def test_automl_component_graphs_specified_allowed_model_families_binary(
+def test_automl_component_graphs_specified_allowed_model_families_binary_iterative(
     AutoMLTestEnv, X_y_binary, assert_allowed_pipelines_equal_helper
 ):
     X, y = X_y_binary
@@ -812,6 +816,7 @@ def test_automl_component_graphs_specified_allowed_model_families_binary(
         allowed_component_graphs=None,
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         optimize_thresholds=False,
+        _automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.BINARY)
@@ -836,6 +841,7 @@ def test_automl_component_graphs_specified_allowed_model_families_binary(
         allowed_component_graphs=None,
         allowed_model_families=["random_forest"],
         optimize_thresholds=False,
+        _automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.BINARY)
@@ -852,7 +858,7 @@ def test_automl_component_graphs_specified_allowed_model_families_binary(
     env.mock_score.assert_called()
 
 
-def test_automl_component_graphs_specified_allowed_model_families_multi(
+def test_automl_component_graphs_specified_allowed_model_families_multi_iterative(
     AutoMLTestEnv, X_y_multi, assert_allowed_pipelines_equal_helper
 ):
     X, y = X_y_multi
@@ -862,6 +868,7 @@ def test_automl_component_graphs_specified_allowed_model_families_multi(
         problem_type="multiclass",
         allowed_component_graphs=None,
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
+        _automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS)
@@ -885,6 +892,7 @@ def test_automl_component_graphs_specified_allowed_model_families_multi(
         problem_type="multiclass",
         allowed_component_graphs=None,
         allowed_model_families=["random_forest"],
+        _automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS)
@@ -901,7 +909,7 @@ def test_automl_component_graphs_specified_allowed_model_families_multi(
     env.mock_score.assert_called()
 
 
-def test_automl_component_graphs_init_allowed_both_not_specified_binary(
+def test_automl_component_graphs_init_allowed_both_not_specified_binary_iterative(
     AutoMLTestEnv, X_y_binary, assert_allowed_pipelines_equal_helper
 ):
     X, y = X_y_binary
@@ -912,6 +920,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_binary(
         allowed_component_graphs=None,
         allowed_model_families=None,
         optimize_thresholds=False,
+        _automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.BINARY)
@@ -929,7 +938,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_binary(
     env.mock_score.assert_called()
 
 
-def test_automl_component_graphs_init_allowed_both_not_specified_multi(
+def test_automl_component_graphs_init_allowed_both_not_specified_multi_iterative(
     AutoMLTestEnv, X_y_multi, assert_allowed_pipelines_equal_helper
 ):
     X, y = X_y_multi
@@ -939,6 +948,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_multi(
         problem_type="multiclass",
         allowed_component_graphs=None,
         allowed_model_families=None,
+        _automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS)
@@ -956,7 +966,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_multi(
     env.mock_score.assert_called()
 
 
-def test_automl_component_graphs_init_allowed_both_specified_binary(
+def test_automl_component_graphs_init_allowed_both_specified_binary_iterative(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
     dummy_binary_pipeline,
@@ -972,6 +982,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
         },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         optimize_thresholds=False,
+        _automl_algorithm="iterative",
     )
     expected_component_graph = dummy_binary_pipeline.component_graph
     expected_name = dummy_binary_pipeline.name
@@ -991,7 +1002,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
     env.mock_score.assert_called()
 
 
-def test_automl_component_graphs_init_allowed_both_specified_multi(
+def test_automl_component_graphs_init_allowed_both_specified_multi_iterative(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
     dummy_multiclass_pipeline,
@@ -1008,6 +1019,7 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
             ]
         },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
+        _automl_algorithm="iterative",
     )
     expected_component_graph = dummy_multiclass_pipeline.component_graph
     expected_name = dummy_multiclass_pipeline.name
@@ -1028,7 +1040,7 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
-def test_automl_component_graphs_search(
+def test_automl_allowed_component_graphs_search_iterative(
     problem_type,
     example_graph,
     X_y_binary,
@@ -1054,6 +1066,7 @@ def test_automl_component_graphs_search(
         start_iteration_callback=start_iteration_callback,
         allowed_component_graphs=component_graph,
         optimize_thresholds=False,
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv(problem_type)
     with env.test_context(score_return_value=score_return_value):
@@ -1235,6 +1248,7 @@ def test_automl_search_sampler_ratio(
         problem_type=problem_type,
         sampler_method="auto",
         sampler_balanced_ratio=sampling_ratio,
+        _automl_algorithm="iterative",
     )
     pipelines = automl.allowed_pipelines
     if sampling_ratio <= 0.2:
@@ -1259,7 +1273,7 @@ def test_automl_search_sampler_ratio(
                 assert comp.parameters["sampling_ratio"] == sampling_ratio
 
 
-def test_automl_oversampler_selection():
+def test_automl_oversampler_selection_iterative():
     X = pd.DataFrame({"a": ["a"] * 50 + ["b"] * 25 + ["c"] * 25, "b": list(range(100))})
     y = pd.Series([1] * 90 + [0] * 10)
     X.ww.init(logical_types={"a": "Categorical"})
@@ -1281,6 +1295,7 @@ def test_automl_oversampler_selection():
         allowed_component_graphs={"pipeline": allowed_component_graph},
         pipeline_parameters={"DropCols": {"columns": ["a"]}},
         error_callback=raise_error_callback,
+        _automl_algorithm="iterative",
     )
     # This should run without error
     automl.search()
@@ -1597,17 +1612,19 @@ def test_time_series_pipeline_parameter_warnings(
             X_train=X,
             y_train=y,
             problem_type="time series binary",
-            max_batches=2,
+            max_batches=1,
             n_jobs=1,
             pipeline_parameters=pipeline_parameters,
             problem_configuration=configuration,
+            _automl_algorithm="iterative",
         )
         env = AutoMLTestEnv("time series binary")
         with env.test_context(score_return_value={automl.objective.name: 1.0}):
             automl.search()
+
     # We throw a warning about time series being in beta
-    assert len(w) == (2 if len(set_values) else 1)
-    if len(w) == 2:
+    assert w[0].category == UserWarning
+    if len(w) > 1:
         assert w[1].message.components == set_values
 
 
