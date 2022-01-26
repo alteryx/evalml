@@ -13,6 +13,7 @@ from evalml.pipelines.components import (
     RFRegressorSelectFromModel,
 )
 from evalml.pipelines.components.transformers.column_selectors import (
+    SelectByType,
     SelectColumns,
 )
 from evalml.pipelines.components.utils import (
@@ -67,6 +68,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         top_n (int): top n number of pipelines to use for long mode.
         num_long_explore_pipelines (int): number of pipelines to explore for each top n pipeline at the start of long mode.
         num_long_pipelines_per_batch (int): number of pipelines per batch for each top n pipeline through long mode.
+        allow_long_running_models (bool): Whether or not to allow longer-running models for large multiclass problems. If False and no pipelines, component graphs, or model families are provided,
+            AutoMLSearch will not use Elastic Net or XGBoost when there are more than 75 multiclass targets and will not use CatBoost when there are more than 150 multiclass targets. Defaults to False.
+        verbose (boolean): Whether or not to display logging information regarding pipeline building. Defaults to False.
     """
 
     def __init__(
@@ -84,6 +88,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         top_n=3,
         num_long_explore_pipelines=50,
         num_long_pipelines_per_batch=10,
+        allow_long_running_models=False,
         verbose=False,
     ):
         super().__init__(
@@ -110,6 +115,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         self.verbose = verbose
         self._selected_cat_cols = []
         self._split = False
+        self.allow_long_running_models = allow_long_running_models
+        self._X_with_cat_cols = None
+        self._X_without_cat_cols = None
         self._ensembling = True if not is_time_series(self.problem_type) else False
         if verbose:
             self.logger = get_logger(f"{__name__}.verbose")
@@ -192,8 +200,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 estimator=estimator,
                 problem_type=self.problem_type,
                 sampler_name=self.sampler_name,
-                extra_components=feature_selector,
-                extra_components_position="after_preprocessing",
+                extra_components_after=feature_selector,
                 parameters=self._pipeline_params,
                 known_in_advance=self._pipeline_params.get("pipeline", {}).get(
                     "known_in_advance", None
@@ -219,6 +226,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             "Categorical Pipeline - Select Columns Transformer": {
                 "columns": self._selected_cat_cols
             },
+            "Numeric Pipeline - Select Columns By Type Transformer": {
+                "column_types": ["category"],
+                "exclude": True,
+            },
             "Numeric Pipeline - Select Columns Transformer": {
                 "columns": self._selected_cols
             },
@@ -231,6 +242,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cols}
             }
+        elif self._selected_cat_cols:
+            parameters = {
+                "Select Columns Transformer": {"columns": self._selected_cat_cols}
+            }
+
         if self._split:
             parameters = self._create_split_select_parameters()
         return parameters
@@ -264,6 +280,14 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             for estimator in get_estimators(self.problem_type)
             if estimator not in self._naive_estimators()
         ]
+        estimators = self._filter_estimators(
+            estimators,
+            self.problem_type,
+            self.allow_long_running_models,
+            None,
+            self.y.nunique(),
+            self.logger,
+        )
         pipelines = self._make_pipelines_helper(estimators)
 
         if self._split:
@@ -486,37 +510,47 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return parameters
 
     def _make_split_pipeline(self, estimator, pipeline_name=None):
-        numeric_pipeline_parameters = {
-            "Select Columns Transformer": {"columns": self._selected_cols}
-        }
-        numeric_pipeline = make_pipeline(
-            self.X,
-            self.y,
-            estimator,
-            self.problem_type,
-            sampler_name=self.sampler_name,
-            parameters=numeric_pipeline_parameters,
-            extra_components=[SelectColumns],
-            extra_components_position="before_estimator",
-            use_estimator=False if self._selected_cat_cols else True,
-        )
+        if self._X_with_cat_cols is None or self._X_without_cat_cols is None:
+            self._X_without_cat_cols = self.X.ww.drop(self._selected_cat_cols)
+            self._X_with_cat_cols = self.X.ww[self._selected_cat_cols]
 
-        if self._selected_cat_cols:
+        if self._selected_cat_cols and self._selected_cols:
             self._split = True
+
             categorical_pipeline_parameters = {
                 "Select Columns Transformer": {"columns": self._selected_cat_cols}
             }
+            numeric_pipeline_parameters = {
+                "Select Columns Transformer": {"columns": self._selected_cols},
+                "Select Columns By Type Transformer": {
+                    "column_types": ["category"],
+                    "exclude": True,
+                },
+            }
+
             categorical_pipeline = make_pipeline(
-                self.X,
+                self._X_with_cat_cols,
                 self.y,
                 estimator,
                 self.problem_type,
                 sampler_name=self.sampler_name,
                 parameters=categorical_pipeline_parameters,
-                extra_components=[SelectColumns],
-                extra_components_position="before_preprocessing",
+                extra_components_before=[SelectColumns],
                 use_estimator=False,
             )
+
+            numeric_pipeline = make_pipeline(
+                self._X_without_cat_cols,
+                self.y,
+                estimator,
+                self.problem_type,
+                sampler_name=self.sampler_name,
+                parameters=numeric_pipeline_parameters,
+                extra_components_before=[SelectByType],
+                extra_components_after=[SelectColumns],
+                use_estimator=False,
+            )
+
             input_pipelines = [numeric_pipeline, categorical_pipeline]
             sub_pipeline_names = {
                 numeric_pipeline.name: "Numeric",
@@ -530,4 +564,31 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 random_seed=self.random_seed,
                 sub_pipeline_names=sub_pipeline_names,
             )
-        return numeric_pipeline
+        elif self._selected_cat_cols and not self._selected_cols:
+            categorical_pipeline_parameters = {
+                "Select Columns Transformer": {"columns": self._selected_cat_cols}
+            }
+            categorical_pipeline = make_pipeline(
+                self._X_with_cat_cols,
+                self.y,
+                estimator,
+                self.problem_type,
+                sampler_name=self.sampler_name,
+                parameters=categorical_pipeline_parameters,
+                extra_components_before=[SelectColumns],
+            )
+            return categorical_pipeline
+        else:
+            numeric_pipeline_parameters = {
+                "Select Columns Transformer": {"columns": self._selected_cols},
+            }
+            numeric_pipeline = make_pipeline(
+                self.X,
+                self.y,
+                estimator,
+                self.problem_type,
+                sampler_name=self.sampler_name,
+                parameters=numeric_pipeline_parameters,
+                extra_components_after=[SelectColumns],
+            )
+            return numeric_pipeline

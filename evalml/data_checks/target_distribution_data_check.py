@@ -5,8 +5,8 @@ from scipy.stats import jarque_bera, shapiro
 
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
@@ -34,37 +34,49 @@ class TargetDistributionDataCheck(DataCheck):
 
             >>> y = [0.946, 0.972, 1.154, 0.954, 0.969, 1.222, 1.038, 0.999, 0.973, 0.897]
             >>> target_check = TargetDistributionDataCheck()
-            >>> assert target_check.validate(None, y) == {
-            ...     "errors": [],
-            ...     "warnings": [{"message": "Target may have a lognormal distribution.",
-            ...                   "data_check_name": "TargetDistributionDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "TARGET_LOGNORMAL_DISTRIBUTION",
-            ...                   "details": {"normalization_method": "shapiro", "statistic": 0.8, "p-value": 0.045, "columns": None, "rows": None}}],
-            ...     "actions": [{'code': 'TRANSFORM_TARGET',
-            ...                  "data_check_name": "TargetDistributionDataCheck",
-            ...                  'metadata': {'transformation_strategy': 'lognormal',
-            ...                               'is_target': True,
-            ...                               "columns": None,
-            ...                               "rows": None}}]}
-
+            >>> assert target_check.validate(None, y) == [
+            ...     {
+            ...         "message": "Target may have a lognormal distribution.",
+            ...         "data_check_name": "TargetDistributionDataCheck",
+            ...         "level": "warning",
+            ...         "code": "TARGET_LOGNORMAL_DISTRIBUTION",
+            ...         "details": {"normalization_method": "shapiro", "statistic": 0.8, "p-value": 0.045, "columns": None, "rows": None},
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "TRANSFORM_TARGET",
+            ...                 "data_check_name": "TargetDistributionDataCheck",
+            ...                 "parameters": {},
+            ...                 "metadata": {
+            ...                     "transformation_strategy": "lognormal",
+            ...                     "is_target": True,
+            ...                     "columns": None,
+            ...                     "rows": None
+            ...                 }
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
+            ...
             >>> y = pd.Series([1, 1, 1, 2, 2, 3, 4, 4, 5, 5, 5])
-            >>> assert target_check.validate(None, y) == {'warnings': [], 'errors': [], 'actions': []}
-
-            >>> y = pd.Series(pd.date_range('1/1/21', periods=10))
-            >>> assert target_check.validate(None, y) == {
-            ...     'warnings': [],
-            ...     'errors': [{'message': 'Target is unsupported datetime type. Valid Woodwork logical types include: integer, double',
-            ...                 'data_check_name': 'TargetDistributionDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': None, 'rows': None, 'unsupported_type': 'datetime'},
-            ...                 'code': 'TARGET_UNSUPPORTED_TYPE'}],
-            ...     'actions': []}
+            >>> assert target_check.validate(None, y) == []
+            ...
+            ...
+            >>> y = pd.Series(pd.date_range("1/1/21", periods=10))
+            >>> assert target_check.validate(None, y) == [
+            ...     {
+            ...         "message": "Target is unsupported datetime type. Valid Woodwork logical types include: integer, double",
+            ...         "data_check_name": "TargetDistributionDataCheck",
+            ...         "level": "error",
+            ...         "details": {"columns": None, "rows": None, "unsupported_type": "datetime"},
+            ...         "code": "TARGET_UNSUPPORTED_TYPE",
+            ...         "action_options": []
+            ...     }
+            ... ]
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        messages = []
 
         if y is None:
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message="Target is None",
                     data_check_name=self.name,
@@ -72,7 +84,7 @@ class TargetDistributionDataCheck(DataCheck):
                     details={},
                 ).to_dict()
             )
-            return results
+            return messages
 
         y = infer_feature_types(y)
         allowed_types = [
@@ -82,7 +94,7 @@ class TargetDistributionDataCheck(DataCheck):
         is_supported_type = y.ww.logical_type.type_string in allowed_types
 
         if not is_supported_type:
-            results["errors"].append(
+            messages.append(
                 DataCheckError(
                     message="Target is unsupported {} type. Valid Woodwork logical types include: {}".format(
                         y.ww.logical_type.type_string,
@@ -93,7 +105,7 @@ class TargetDistributionDataCheck(DataCheck):
                     details={"unsupported_type": y.ww.logical_type.type_string},
                 ).to_dict()
             )
-            return results
+            return messages
 
         (
             is_log_distribution,
@@ -106,26 +118,25 @@ class TargetDistributionDataCheck(DataCheck):
                 "statistic": round(norm_test_og.statistic, 1),
                 "p-value": round(norm_test_og.pvalue, 3),
             }
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message="Target may have a lognormal distribution.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.TARGET_LOGNORMAL_DISTRIBUTION,
                     details=details,
+                    action_options=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.TRANSFORM_TARGET,
+                            data_check_name=self.name,
+                            metadata={
+                                "is_target": True,
+                                "transformation_strategy": "lognormal",
+                            },
+                        )
+                    ],
                 ).to_dict()
             )
-            results["actions"].append(
-                DataCheckAction(
-                    DataCheckActionCode.TRANSFORM_TARGET,
-                    data_check_name=self.name,
-                    metadata={
-                        "is_target": True,
-                        "transformation_strategy": "lognormal",
-                    },
-                ).to_dict()
-            )
-
-        return results
+        return messages
 
 
 def _detect_log_distribution_helper(y):

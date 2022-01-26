@@ -39,21 +39,23 @@ class MulticollinearityDataCheck(DataCheck):
             >>> y = pd.Series([1, 0, 0, 1, 0])
             ...
             >>> multicollinearity_check = MulticollinearityDataCheck(threshold=1.0)
-            >>> assert multicollinearity_check.validate(X, y) == {
-            ...     "errors": [],
-            ...     "warnings": [{'message': "Columns are likely to be correlated: [('col_1', 'col_2')]",
-            ...                   "data_check_name": "MulticollinearityDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "IS_MULTICOLLINEAR",
-            ...                   'details': {"columns": [('col_1', 'col_2')], "rows": None}}],
-            ...     "actions": []}
+            >>> assert multicollinearity_check.validate(X, y) == [
+            ...     {
+            ...         "message": "Columns are likely to be correlated: [('col_1', 'col_2')]",
+            ...         "data_check_name": "MulticollinearityDataCheck",
+            ...         "level": "warning",
+            ...         "code": "IS_MULTICOLLINEAR",
+            ...         "details": {"columns": [("col_1", "col_2")], "rows": None},
+            ...         "action_options": []
+            ...     }
+            ... ]
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        messages = []
 
         X = infer_feature_types(X)
         mutual_info_df = X.ww.mutual_information()
         if mutual_info_df.empty:
-            return results
+            return messages
         above_threshold = mutual_info_df.loc[
             mutual_info_df["mutual_info"] >= self.threshold
         ]
@@ -65,7 +67,7 @@ class MulticollinearityDataCheck(DataCheck):
         ]
         if correlated_cols:
             warning_msg = "Columns are likely to be correlated: {}"
-            results["warnings"].append(
+            messages.append(
                 DataCheckWarning(
                     message=warning_msg.format(correlated_cols),
                     data_check_name=self.name,
@@ -73,4 +75,4 @@ class MulticollinearityDataCheck(DataCheck):
                     details={"columns": correlated_cols},
                 ).to_dict()
             )
-        return results
+        return messages

@@ -70,61 +70,75 @@ class ClassImbalanceDataCheck(DataCheck):
             a severe class imbalance warning will be raised.
 
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.10)
-            >>> assert class_imb_dc.validate(X, y) == {
-            ...     "errors": [{"message": "The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]",
-            ...                 "data_check_name": "ClassImbalanceDataCheck",
-            ...                 "level": "error",
-            ...                 "code": "CLASS_IMBALANCE_BELOW_FOLDS",
-            ...                 "details": {"target_values": [0], "rows": None, "columns": None}}],
-            ...     "warnings": [{"message": "The following labels fall below 10% of the target: [0]",
-            ...                   "data_check_name": "ClassImbalanceDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "CLASS_IMBALANCE_BELOW_THRESHOLD",
-            ...                   "details": {"target_values": [0], "rows": None, "columns": None}},
-            ...                   {"message": "The following labels in the target have severe class imbalance because they fall under 10% of the target and have less than 100 samples: [0]",
-            ...                   "data_check_name": "ClassImbalanceDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "CLASS_IMBALANCE_SEVERE",
-            ...                   "details": {"target_values": [0], "rows": None, "columns": None}}],
-            ...      "actions": []}
+            >>> assert class_imb_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0]",
+            ...         "data_check_name": "ClassImbalanceDataCheck",
+            ...         "level": "error",
+            ...         "code": "CLASS_IMBALANCE_BELOW_FOLDS",
+            ...         "details": {"target_values": [0], "rows": None, "columns": None},
+            ...         "action_options": []
+            ...     },
+            ...     {
+            ...         "message": "The following labels fall below 10% of the target: [0]",
+            ...         "data_check_name": "ClassImbalanceDataCheck",
+            ...         "level": "warning",
+            ...         "code": "CLASS_IMBALANCE_BELOW_THRESHOLD",
+            ...         "details": {"target_values": [0], "rows": None, "columns": None},
+            ...         "action_options": []
+            ...     },
+            ...     {
+            ...         "message": "The following labels in the target have severe class imbalance because they fall under 10% of the target and have less than 100 samples: [0]",
+            ...         "data_check_name": "ClassImbalanceDataCheck",
+            ...         "level": "warning",
+            ...         "code": "CLASS_IMBALANCE_SEVERE",
+            ...         "details": {"target_values": [0], "rows": None, "columns": None},
+            ...         "action_options": []
+            ...     }
+            ... ]
+
 
             In this multiclass example, the target class 0 is present in fewer than 30% of observations, however with 1 cv fold, the minimum
             number of instances required is 2 * 1 = 2. Therefore a warning, but not an error, is raised.
 
             >>> y = pd.Series([0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 2])
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.30, min_samples=5, num_cv_folds=1)
-            >>> assert class_imb_dc.validate(X, y) == {
-            ...     'warnings': [{'message': 'The following labels fall below 30% of the target: [0]',
-            ...                    'data_check_name': 'ClassImbalanceDataCheck',
-            ...                    'level': 'warning',
-            ...                    'code': 'CLASS_IMBALANCE_BELOW_THRESHOLD',
-            ...                    'details': {'target_values': [0], "rows": None, "columns": None}},
-            ...                    {'message': 'The following labels in the target have severe class imbalance because they fall under 30% of the target and have less than 5 samples: [0]',
-            ...                     'data_check_name': 'ClassImbalanceDataCheck',
-            ...                     'level': 'warning',
-            ...                     'code': 'CLASS_IMBALANCE_SEVERE',
-            ...                     'details': {'target_values': [0], "rows": None, "columns": None}}],
-            ...     'errors': [],
-            ...     'actions': []}
-            ...
+            >>> assert class_imb_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "The following labels fall below 30% of the target: [0]",
+            ...         "data_check_name": "ClassImbalanceDataCheck",
+            ...         "level": "warning",
+            ...         "code": "CLASS_IMBALANCE_BELOW_THRESHOLD",
+            ...         "details": {"target_values": [0], "rows": None, "columns": None},
+            ...         "action_options": []
+            ...     },
+            ...     {
+            ...         "message": "The following labels in the target have severe class imbalance because they fall under 30% of the target and have less than 5 samples: [0]",
+            ...         "data_check_name": "ClassImbalanceDataCheck",
+            ...         "level": "warning",
+            ...         "code": "CLASS_IMBALANCE_SEVERE",
+            ...         "details": {"target_values": [0], "rows": None, "columns": None},
+            ...         "action_options": []
+            ...     }
+            ... ]
             ...
             >>> y = pd.Series([0, 0, 1, 1, 1, 1, 2, 2, 2, 2])
             >>> class_imb_dc = ClassImbalanceDataCheck(threshold=0.30, num_cv_folds=1)
-            >>> assert class_imb_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
+            >>> assert class_imb_dc.validate(X, y) == []
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        messages = []
 
         y = infer_feature_types(y)
 
         fold_counts = y.value_counts(normalize=False, sort=True)
         if len(fold_counts) == 0:
-            return results
+            return messages
         # search for targets that occur less than twice the number of cv folds first
         below_threshold_folds = fold_counts.where(fold_counts < self.cv_folds).dropna()
         if len(below_threshold_folds):
             below_threshold_values = below_threshold_folds.index.tolist()
             error_msg = "The number of instances of these targets is less than 2 * the number of cross folds = {} instances: {}"
-            DataCheck._add_message(
+            messages.append(
                 DataCheckError(
                     message=error_msg.format(
                         self.cv_folds, sorted(below_threshold_values)
@@ -132,16 +146,16 @@ class ClassImbalanceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_FOLDS,
                     details={"target_values": sorted(below_threshold_values)},
-                ),
-                results,
+                ).to_dict()
             )
+
         counts = fold_counts / (fold_counts + fold_counts.values[0])
         below_threshold = counts.where(counts < self.threshold).dropna()
         # if there are items that occur less than the threshold, add them to the list of results
         if len(below_threshold):
             below_threshold_values = below_threshold.index.tolist()
             warning_msg = "The following labels fall below {:.0f}% of the target: {}"
-            DataCheck._add_message(
+            messages.append(
                 DataCheckWarning(
                     message=warning_msg.format(
                         self.threshold * 100, below_threshold_values
@@ -149,15 +163,14 @@ class ClassImbalanceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_BELOW_THRESHOLD,
                     details={"target_values": below_threshold_values},
-                ),
-                results,
+                ).to_dict()
             )
         sample_counts = fold_counts.where(fold_counts < self.min_samples).dropna()
         if len(below_threshold) and len(sample_counts):
             sample_count_values = sample_counts.index.tolist()
             severe_imbalance = [v for v in sample_count_values if v in below_threshold]
             warning_msg = "The following labels in the target have severe class imbalance because they fall under {:.0f}% of the target and have less than {} samples: {}"
-            DataCheck._add_message(
+            messages.append(
                 DataCheckWarning(
                     message=warning_msg.format(
                         self.threshold * 100, self.min_samples, severe_imbalance
@@ -165,7 +178,6 @@ class ClassImbalanceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.CLASS_IMBALANCE_SEVERE,
                     details={"target_values": severe_imbalance},
-                ),
-                results,
+                ).to_dict()
             )
-        return results
+        return messages

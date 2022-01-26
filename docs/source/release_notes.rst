@@ -1,15 +1,50 @@
 ﻿Release Notes
 -------------
+
 **Future Releases**
     * Enhancements
+        * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
+        * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
     * Fixes
     * Changes
+        * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
     * Documentation Changes
     * Testing Changes
+
 
 .. warning::
 
     **Breaking Changes**
+        * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
+
+
+**v0.43.0 Jan. 25, 2022**
+    * Enhancements
+        * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
+        * Updated ``make_pipeline_from_actions`` to handle null column imputation :pr:`3237`
+        * Updated data check actions API to return options instead of actions and add functionality to suggest and take action on columns with null values :pr:`3182`
+    * Fixes
+        * Fixed categorical data leaking into non-categorical sub-pipelines in ``DefaultAlgorithm`` :pr:`3209`
+        * Fixed Python 3.9 installation for prophet by updating ``pmdarima`` version in requirements :pr:`3268`
+        * Allowed DateTime columns to pass through PerColumnImputer without breaking :pr:`3267`
+    * Changes
+        * Updated ``DataCheck`` ``validate()`` output to return a dictionary instead of list for actions :pr:`3142`
+        * Updated ``DataCheck`` ``validate()`` API to use the new ``DataCheckActionOption`` class instead of ``DataCheckAction`` :pr:`3152`
+        * Uncapped numba version and removed it from requirements :pr:`3263`
+        * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
+        * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary :pr:`3244`
+        * Capped ``pandas`` at < 1.4.0 :pr:`3274`
+    * Documentation Changes
+    * Testing Changes
+        * Bumped minimum ``IPython`` version to 7.16.3 in ``test-requirements.txt`` based on dependabot feedback :pr:`3269`
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
+        * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary. See the Data Check or Data Check Actions pages (under User Guide) for examples. :pr:`3244`
+        * Removed ``impute_all`` and ``default_impute_strategy`` parameters from the ``PerColumnImputer`` :pr:`3267`
+        * Updated ``PerColumnImputer`` such that columns not specified in ``impute_strategies`` dict will not be imputed anymore :pr:`3267`
 
 
 **v0.42.0 Jan. 18, 2022**
@@ -41,6 +76,7 @@
 
     **Breaking Changes**
         * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
+
 
 
 **v0.41.0 Jan. 06, 2022**
