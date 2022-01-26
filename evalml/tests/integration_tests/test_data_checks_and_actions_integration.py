@@ -90,7 +90,6 @@ def test_data_checks_suggests_drop_and_impute_cols():
                     "lots_of_null": {"impute_strategy": "mean"},
                 },
                 "default_impute_strategy": "most_frequent",
-                "impute_all": False,
             },
             "Drop Columns Transformer": {"columns": ["all_null"]},
         },
