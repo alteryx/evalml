@@ -4,6 +4,7 @@
 **Future Releases**
     * Enhancements
         * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
+        * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
     * Fixes
     * Changes
     * Documentation Changes
@@ -20,7 +21,6 @@
         * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
         * Updated ``make_pipeline_from_actions`` to handle null column imputation :pr:`3237`
         * Updated data check actions API to return options instead of actions and add functionality to suggest and take action on columns with null values :pr:`3182`
-        * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
     * Fixes
         * Fixed categorical data leaking into non-categorical sub-pipelines in ``DefaultAlgorithm`` :pr:`3209`
         * Fixed Python 3.9 installation for prophet by updating ``pmdarima`` version in requirements :pr:`3268`
