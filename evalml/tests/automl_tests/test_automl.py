@@ -5368,10 +5368,9 @@ def test_baseline_pipeline_properly_initalized(
     assert expected_pipeline == baseline_pipeline
 
 
-def test_automl_respects_iterative_pipeline_order(X_y_binary, AutoMLTestEnv):
-
+def test_automl_respects_pipeline_order_iterative(X_y_binary, AutoMLTestEnv):
     X, y = X_y_binary
-    automl = AutoMLSearch(X, y, "binary", engine="sequential", max_iterations=5)
+    automl = AutoMLSearch(X, y, "binary", engine="sequential", max_iterations=5, _automl_algorithm='iterative')
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={automl.objective.name: 0.2}):
         automl.search()
