@@ -420,7 +420,7 @@ class ComponentGraph:
             self.input_feature_names.update({component_name: list(x_inputs.columns)})
             if isinstance(component_instance, Transformer):
                 if fit:
-                    if not component_instance._is_fitted:
+                    if not component_instance._is_fitted or self.cached_data is None:
                         output = component_instance.fit_transform(x_inputs, y_input)
                     else:
                         output = component_instance.transform(x_inputs, y_input)
@@ -440,7 +440,9 @@ class ComponentGraph:
                 output_cache[f"{component_name}.x"] = output_x
                 output_cache[f"{component_name}.y"] = output_y
             else:
-                if fit and not component_instance._is_fitted:
+                if fit and (
+                    not component_instance._is_fitted or self.cached_data is None
+                ):
                     component_instance.fit(x_inputs, y_input)
                 if fit and component_name == self.compute_order[-1]:
                     # Don't call predict on the final component during fit

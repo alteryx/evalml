@@ -5,7 +5,7 @@
     * Enhancements
         * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
         * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
-        * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:``
+        * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
     * Fixes
     * Changes
         * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
