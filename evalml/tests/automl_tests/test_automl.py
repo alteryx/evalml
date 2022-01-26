@@ -3254,7 +3254,7 @@ def test_search_with_text(AutoMLTestEnv):
 )
 @pytest.mark.parametrize("df_text", [True, False])
 @patch("evalml.automl.automl_search.IterativeAlgorithm")
-def test_search_with_text_and_ensembling(
+def test_search_with_text_and_ensembling_iterative(
     mock_iter, df_text, problem_type, pipeline_name, ensemble_name
 ):
     X_with_text = pd.DataFrame(
@@ -3297,6 +3297,7 @@ def test_search_with_text_and_ensembling(
         optimize_thresholds=False,
         max_batches=4,
         ensembling=True,
+        _automl_algorithm='iterative'
     )
 
     call_args = mock_iter.call_args[1]["text_in_ensembling"]
