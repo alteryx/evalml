@@ -1327,7 +1327,7 @@ def test_automl_search_sampler_method(
     # 0.2 minority:majority class ratios
     X, y = mock_imbalanced_data_X_y(problem_type, categorical_features, "small")
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type=problem_type, sampler_method=sampler_method
+        X_train=X, y_train=y, problem_type=problem_type, sampler_method=sampler_method, _automl_algorithm='iterative'
     )
     # since our default sampler_balanced_ratio for AutoMLSearch is 0.25, we should be adding the samplers when we can
     pipelines = automl.allowed_pipelines
