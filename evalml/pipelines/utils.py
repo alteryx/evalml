@@ -517,7 +517,7 @@ def _make_stacked_ensemble_pipeline(
     final_components = []
     used_model_families = []
     parameters = {}
-
+    cached_data = cached_data or {}
     if is_classification(problem_type):
         parameters = {
             "Stacked Ensemble Classifier": {
@@ -557,12 +557,13 @@ def _make_stacked_ensemble_pipeline(
             new_component_name = _make_new_component_name(
                 model_family, name, model_family_idx
             )
-            for hashes, component_instances in cached_data[model_family].items():
-                if hashes not in list(cached_component_instances.keys()):
-                    cached_component_instances[hashes] = {}
-                cached_component_instances[hashes][new_component_name] = cached_data[
-                    model_family
-                ][hashes][name]
+            if len(cached_data) and model_family in list(cached_data.keys()):
+                for hashes, component_instances in cached_data[model_family].items():
+                    if hashes not in list(cached_component_instances.keys()):
+                        cached_component_instances[hashes] = {}
+                    cached_component_instances[hashes][
+                        new_component_name
+                    ] = cached_data[model_family][hashes][name]
             for i, item in enumerate(component_list):
                 if i == 0:
                     fitted_comp = handle_component_class(item)

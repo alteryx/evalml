@@ -399,7 +399,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
         return next_batch
 
     def add_result(
-        self, score_to_minimize, pipeline, trained_pipeline_results, cached_data
+        self, score_to_minimize, pipeline, trained_pipeline_results, cached_data=None
     ):
         """Register results from evaluating a pipeline. In batch number 2, the selected column names from the feature selector are taken to be used in a column selector. Information regarding the best pipeline is updated here as well.
 
@@ -407,8 +407,9 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
             trained_pipeline_results (dict): Results from training a pipeline.
-            cached_data (dict): The cached data
+            cached_data (dict): The cached data dictionary, keyed by model family. Defaults to None.
         """
+        cached_data = cached_data or {}
         if pipeline.model_family != ModelFamily.ENSEMBLE:
             if self.batch_number >= 3:
                 super().add_result(

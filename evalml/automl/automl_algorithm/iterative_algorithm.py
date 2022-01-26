@@ -331,7 +331,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
         return next_batch
 
     def add_result(
-        self, score_to_minimize, pipeline, trained_pipeline_results, cached_data
+        self, score_to_minimize, pipeline, trained_pipeline_results, cached_data=None
     ):
         """Register results from evaluating a pipeline.
 
@@ -339,10 +339,12 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
             trained_pipeline_results (dict): Results from training a pipeline.
+            cached_data (dict): A dictionary of cached data, where the keys are the model family. Defaults to None.
 
         Raises:
             ValueError: If default parameters are not in the acceptable hyperparameter ranges.
         """
+        cached_data = cached_data or {}
         if pipeline.model_family != ModelFamily.ENSEMBLE:
             if self.batch_number == 1:
                 try:
