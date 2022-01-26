@@ -2997,7 +2997,7 @@ def test_data_splitter_multi(AutoMLTestEnv, X_y_multi):
 
 
 @patch("evalml.tuners.skopt_tuner.SKOptTuner.add")
-def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors(
+def test_pipeline_hyperparameters_make_pipeline_other_errors_iterative(
     mock_add, AutoMLTestEnv, X_y_multi
 ):
     X, y = X_y_multi
@@ -3017,6 +3017,7 @@ def test_iterative_algorithm_pipeline_hyperparameters_make_pipeline_other_errors
         allowed_component_graphs=component_graphs,
         custom_hyperparameters=custom_hyperparameters,
         n_jobs=1,
+        _automl_algorithm='iterative'
     )
     env = AutoMLTestEnv("multiclass")
 
