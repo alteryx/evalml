@@ -564,7 +564,7 @@ def test_automl_str_no_param_search(X_y_binary):
     assert "Search Results" not in str_rep
 
 
-def test_automl_feature_selection_with_allowed_component_graphs(
+def test_automl_feature_selection_with_allowed_component_graphs_iterative(
     AutoMLTestEnv, X_y_binary
 ):
     X, y = X_y_binary
