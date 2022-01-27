@@ -1,4 +1,5 @@
 """Data check that checks if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order to be supported by time series estimators."""
+import numpy as np
 import pandas as pd
 
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
@@ -28,10 +29,10 @@ class DateTimeFormatDataCheck(DataCheck):
         Examples:
             >>> import pandas as pd
 
-            The column "dates" has the date 2021-01-31 appended to the end, which is inconsistent with the frequency of the previous
-            9 dates (1 day).
+            The column "dates" has the a set of dates with hourly frequency appended to the end of a series of days, which is inconsistent 
+            with the frequency of the previous 9 dates (1 day).
 
-            >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=9).append(pd.date_range("2021-01-31", periods=1)), columns=["dates"])
+            >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=6).append(pd.date_range("2021-01-07", periods=3, freq="H")), columns=["dates"])
             >>> y = pd.Series([0, 1, 0, 1, 1, 0, 0, 0, 1, 0])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
@@ -40,6 +41,38 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
             ...         "code": "DATETIME_HAS_UNEVEN_INTERVALS",
+            ...         "details": {"columns": None, "rows": None},
+            ...         "action_options": []
+            ...      }
+            ... ]
+
+            The column "dates" has the date 2021-01-31 appended to the end, which implies there are many dates missing.
+
+            >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=9).append(pd.date_range("2021-01-31", periods=1)), columns=["dates"])
+            >>> y = pd.Series([0, 1, 0, 1, 1, 0, 0, 0, 1, 0])
+            >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
+            >>> assert datetime_format_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "{col_name} has datetime values missing between start and end date around row(s) [9]",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "code": "DATETIME_IS_MISSING_VALUES",
+            ...         "details": {"columns": None, "rows": None},
+            ...         "action_options": []
+            ...      }
+            ... ]
+
+            The column "dates" has a repeat of the date 2021-01-09 appended to the end, which is considered redundant and will raise an error.
+
+            >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=9).append(pd.date_range("2021-01-09", periods=1)), columns=["dates"])
+            >>> y = pd.Series([0, 1, 0, 1, 1, 0, 0, 0, 1, 0])
+            >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
+            >>> assert datetime_format_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "dates has more than one row with the same datetime value",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "code": "DATETIME_HAS_REDUNDANT_ROW",
             ...         "details": {"columns": None, "rows": None},
             ...         "action_options": []
             ...      }
@@ -118,21 +151,52 @@ class DateTimeFormatDataCheck(DataCheck):
             )
             return messages
 
+        is_increasing = pd.DatetimeIndex(datetime_values).is_monotonic_increasing
         if not inferred_freq:
             col_name = (
                 self.datetime_column
                 if self.datetime_column != "index"
                 else "either index"
             )
-            messages.append(
-                DataCheckError(
-                    message=f"No frequency could be detected in {col_name}, possibly due to uneven intervals.",
-                    data_check_name=self.name,
-                    message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-                ).to_dict()
-            )
+            frequencies = []
+            missing = []
+            for i in range(len(datetime_values) - 2):
+                freq = pd.infer_freq(datetime_values[i : i + 3])
+                if freq is None and i not in missing:
+                    missing.append(i+1)
+                frequencies.append(freq)
 
-        if not (pd.DatetimeIndex(datetime_values).is_monotonic_increasing):
+            # Check for only one row per datetime
+            if len(np.unique(datetime_values)) < len(datetime_values):
+                messages.append(
+                    DataCheckError(
+                        message=f"{col_name} has more than one row with the same datetime value",
+                        data_check_name=self.name,
+                        message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
+                    ).to_dict()
+                )
+
+            # Check for no date missing in ordered dates
+            elif len(set(frequencies)) == 2 and is_increasing:
+                messages.append(
+                    DataCheckError(
+                        message=f"{col_name} has datetime values missing between start and end date around row(s) {missing}",
+                        data_check_name=self.name,
+                        message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+                    ).to_dict()
+                )
+
+            # Otherwise, give a more generic uneven interval error
+            else:
+                messages.append(
+                    DataCheckError(
+                        message=f"No frequency could be detected in {col_name}, possibly due to uneven intervals.",
+                        data_check_name=self.name,
+                        message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
+                    ).to_dict()
+                )
+
+        if not is_increasing:
             messages.append(
                 DataCheckError(
                     message="Datetime values must be sorted in ascending order.",
