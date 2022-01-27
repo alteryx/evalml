@@ -564,42 +564,6 @@ def test_automl_str_no_param_search(X_y_binary):
     assert "Search Results" not in str_rep
 
 
-def test_automl_feature_selection_with_allowed_component_graphs_iterative(
-    AutoMLTestEnv, X_y_binary
-):
-    X, y = X_y_binary
-
-    start_iteration_callback = MagicMock()
-    automl = AutoMLSearch(
-        X_train=X,
-        y_train=y,
-        problem_type="binary",
-        max_iterations=2,
-        start_iteration_callback=start_iteration_callback,
-        allowed_component_graphs={
-            "Name": [
-                "RF Classifier Select From Model",
-                "Logistic Regression Classifier",
-            ]
-        },
-        _automl_algorithm="iterative",
-    )
-    env = AutoMLTestEnv("binary")
-    with env.test_context(score_return_value={"Log Loss Binary": 1.0, "F1": 0.5}):
-        automl.search()
-
-    assert start_iteration_callback.call_count == 2
-    proposed_parameters = start_iteration_callback.call_args_list[1][0][0].parameters
-    assert proposed_parameters.keys() == {
-        "RF Classifier Select From Model",
-        "Logistic Regression Classifier",
-    }
-    assert (
-        proposed_parameters["RF Classifier Select From Model"]["number_features"]
-        == X.shape[1]
-    )
-
-
 @patch("evalml.tuners.random_search_tuner.RandomSearchTuner.is_search_space_exhausted")
 def test_automl_tuner_exception(
     mock_is_search_space_exhausted, AutoMLTestEnv, X_y_binary
@@ -648,26 +612,6 @@ def test_automl_algorithm(
     pipeline_results = automl.results.get("pipeline_results", {})
     assert len(pipeline_results) == 1
     assert pipeline_results[0].get("mean_cv_score") == 1.0
-
-
-def test_automl_allowed_component_graphs_iterative_algorithm(
-    dummy_classifier_estimator_class,
-    X_y_binary,
-):
-    X, y = X_y_binary
-    allowed_component_graphs = {
-        "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
-    }
-    aml = AutoMLSearch(
-        X_train=X,
-        y_train=y,
-        problem_type="binary",
-        allowed_component_graphs=allowed_component_graphs,
-        max_iterations=10,
-        _automl_algorithm="iterative",
-    )
-
-    assert aml._automl_algorithm.allowed_component_graphs == allowed_component_graphs
 
 
 @pytest.mark.parametrize("pickle_type", ["cloudpickle", "pickle", "invalid"])
@@ -956,24 +900,6 @@ def test_data_splitter_shuffle():
     np.testing.assert_almost_equal(
         automl.results["pipeline_results"][0]["validation_score"], 0.0, decimal=4
     )
-
-
-def test_component_graph_with_incorrect_problem_type_iterative(
-    dummy_classifier_estimator_class, X_y_binary
-):
-    X, y = X_y_binary
-    with pytest.raises(ValueError, match="not valid for this component graph"):
-        AutoMLSearch(
-            X_train=X,
-            y_train=y,
-            problem_type="regression",
-            allowed_component_graphs={
-                "Mock Binary Classification Pipeline": [
-                    dummy_classifier_estimator_class
-                ]
-            },
-            _automl_algorithm="iterative",
-        )
 
 
 def test_main_objective_problem_type_mismatch(X_y_binary):
@@ -1472,90 +1398,6 @@ def test_describe_pipeline(return_dict, verbose, caplog, X_y_binary, AutoMLTestE
         assert automl_dict is None
 
 
-@pytest.mark.parametrize("return_dict", [True, False])
-def test_describe_pipeline_with_ensembling_iterative(
-    return_dict, X_y_binary, AutoMLTestEnv, caplog
-):
-    X, y = X_y_binary
-    two_stacking_batches = 1 + 2 * (len(get_estimators(ProblemTypes.BINARY)) + 1)
-    automl = AutoMLSearch(
-        X_train=X,
-        y_train=y,
-        problem_type="binary",
-        max_batches=two_stacking_batches,
-        objective="Log Loss Binary",
-        ensembling=True,
-        optimize_thresholds=False,
-        error_callback=raise_error_callback,
-        _automl_algorithm="iterative",
-    )
-
-    score_side_effect = [
-        {"Log Loss Binary": score}
-        for score in np.arange(
-            0, -1 * automl.max_iterations * automl.data_splitter.get_n_splits(), -0.1
-        )
-    ]  # Dcreases with each call
-
-    test_env = AutoMLTestEnv("binary")
-    with test_env.test_context(mock_score_side_effect=score_side_effect):
-        automl.search()
-    pipeline_names = automl.rankings["pipeline_name"]
-    assert pipeline_names.str.contains("Ensemble").any()
-
-    ensemble_ids = [
-        _get_first_stacked_classifier_no() - 1,
-        len(automl.results["pipeline_results"]) - 1,
-    ]
-
-    for i, ensemble_id in enumerate(ensemble_ids):
-        caplog.clear()
-        automl_dict = automl.describe_pipeline(ensemble_id, return_dict=return_dict)
-        out = caplog.text
-        assert "Stacked Ensemble Classification Pipeline" in out
-        assert "* final_estimator : Elastic Net Classifier" in out
-        assert "Problem Type: binary" in out
-        assert "Model Family: Ensemble" in out
-        assert "Total training time (including CV): " in out
-        assert "Log Loss Binary # Training # Validation" in out
-        assert "Input for ensembler are pipelines with IDs:" in out
-
-        if return_dict:
-            assert automl_dict["id"] == ensemble_id
-            assert (
-                automl_dict["pipeline_name"]
-                == "Stacked Ensemble Classification Pipeline"
-            )
-            assert "Stacked Ensemble Classifier" in automl_dict["pipeline_summary"]
-            assert isinstance(automl_dict["mean_cv_score"], float)
-            assert not automl_dict["high_variance_cv"]
-            assert isinstance(automl_dict["training_time"], float)
-            assert isinstance(
-                automl_dict["percent_better_than_baseline_all_objectives"], dict
-            )
-            assert isinstance(automl_dict["percent_better_than_baseline"], float)
-            assert isinstance(automl_dict["validation_score"], float)
-            assert len(automl_dict["input_pipeline_ids"]) == len(
-                allowed_model_families("binary")
-            )
-            if i < 2:
-                assert all(
-                    input_id < ensemble_id
-                    for input_id in automl_dict["input_pipeline_ids"]
-                )
-            else:
-                assert all(
-                    input_id < ensemble_id
-                    for input_id in automl_dict["input_pipeline_ids"]
-                )
-                assert all(
-                    input_id > ensemble_ids[0]
-                    for input_id in automl_dict["input_pipeline_ids"]
-                )
-        else:
-            assert automl_dict is None
-
-
 def test_results_getter(AutoMLTestEnv, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(
@@ -1765,7 +1607,7 @@ def test_catch_keyboard_interrupt(
     side_effect=KeyboardInterruptOnKthPipeline(k=4, starting_index=2),
 )
 @patch("evalml.automl.engine.sequential_engine.SequentialComputation.cancel")
-def test_jobs_cancelled_when_keyboard_interrupt_iterative(
+def test_jobs_cancelled_when_keyboard_interrupt(
     mock_cancel,
     mock_done,
     mock_input,
