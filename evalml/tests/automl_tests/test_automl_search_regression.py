@@ -1,22 +1,12 @@
-from unittest.mock import MagicMock
-
 import pandas as pd
 import pytest
 
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.exceptions import ObjectiveNotFoundError
-from evalml.model_family import ModelFamily
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
-from evalml.pipelines import (
-    PipelineBase,
-    RegressionPipeline,
-    TimeSeriesRegressionPipeline,
-)
-from evalml.pipelines.components.utils import get_estimators
-from evalml.pipelines.utils import make_pipeline
+from evalml.pipelines import PipelineBase, TimeSeriesRegressionPipeline
 from evalml.preprocessing import TimeSeriesSplit
-from evalml.problem_types import ProblemTypes
 
 
 def test_init(X_y_regression):

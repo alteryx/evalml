@@ -1,4 +1,3 @@
-import json
 import os
 import warnings
 from collections import OrderedDict, defaultdict
@@ -16,9 +15,6 @@ from skopt.space import Categorical, Integer, Real
 
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
-from evalml.automl.automl_algorithm.iterative_algorithm import (
-    _ESTIMATOR_FAMILY_ORDER,
-)
 from evalml.automl.automl_search import build_engine_from_str
 from evalml.automl.callbacks import (
     log_error_callback,
@@ -55,15 +51,10 @@ from evalml.objectives.utils import (
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     ComponentGraph,
-    Estimator,
     MulticlassClassificationPipeline,
     PipelineBase,
     RegressionPipeline,
     StackedEnsembleClassifier,
-)
-from evalml.pipelines.components.utils import (
-    allowed_model_families,
-    get_estimators,
 )
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,

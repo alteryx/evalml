@@ -1,5 +1,5 @@
 import warnings
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
@@ -10,9 +10,7 @@ from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.automl.callbacks import raise_error_callback
 from evalml.automl.pipeline_search_plots import SearchIterationPlot
-from evalml.automl.utils import get_best_sampler_for_data
 from evalml.exceptions import ParameterNotUsedWarning, PipelineNotFoundError
-from evalml.model_family import ModelFamily
 from evalml.objectives import (
     FraudCost,
     Precision,
@@ -22,14 +20,11 @@ from evalml.objectives import (
     get_objective,
 )
 from evalml.pipelines import (
-    BinaryClassificationPipeline,
-    MulticlassClassificationPipeline,
     PipelineBase,
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
 )
 from evalml.pipelines.components.utils import get_estimators
-from evalml.pipelines.utils import make_pipeline
 from evalml.preprocessing import TimeSeriesSplit, split_data
 from evalml.problem_types import ProblemTypes
 

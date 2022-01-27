@@ -1,86 +1,31 @@
 import json
-import os
 import warnings
-from collections import OrderedDict, defaultdict
-from itertools import product
-from unittest.mock import MagicMock, PropertyMock, patch
+from unittest.mock import MagicMock, patch
 
-import cloudpickle
 import numpy as np
 import pandas as pd
 import pytest
-import woodwork as ww
-from joblib import hash as joblib_hash
-from sklearn.model_selection import KFold, StratifiedKFold
-from skopt.space import Categorical, Integer, Real
+from skopt.space import Categorical, Integer
 
 from evalml import AutoMLSearch
 from evalml.automl.automl_algorithm import IterativeAlgorithm
 from evalml.automl.automl_algorithm.iterative_algorithm import (
     _ESTIMATOR_FAMILY_ORDER,
 )
-from evalml.automl.automl_search import build_engine_from_str
-from evalml.automl.callbacks import (
-    log_error_callback,
-    raise_error_callback,
-    silent_error_callback,
-)
-from evalml.automl.engine import CFEngine, DaskEngine, SequentialEngine
-from evalml.automl.utils import (
-    _LARGE_DATA_PERCENT_VALIDATION,
-    _LARGE_DATA_ROW_THRESHOLD,
-    get_default_primary_search_objective,
-)
-from evalml.exceptions import (
-    AutoMLSearchException,
-    ParameterNotUsedWarning,
-    PipelineNotFoundError,
-    PipelineNotYetFittedError,
-    PipelineScoreError,
-)
+from evalml.automl.callbacks import raise_error_callback
+from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
-from evalml.objectives import (
-    F1,
-    BinaryClassificationObjective,
-    CostBenefitMatrix,
-    FraudCost,
-    RegressionObjective,
-)
-from evalml.objectives.utils import (
-    get_all_objective_names,
-    get_core_objectives,
-    get_non_core_objectives,
-    get_objective,
-)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     ComponentGraph,
     Estimator,
-    MulticlassClassificationPipeline,
-    PipelineBase,
-    RegressionPipeline,
-    StackedEnsembleClassifier,
 )
 from evalml.pipelines.components.utils import (
     allowed_model_families,
     get_estimators,
 )
-from evalml.pipelines.utils import (
-    _get_pipeline_base_class,
-    _make_stacked_ensemble_pipeline,
-)
-from evalml.preprocessing import TimeSeriesSplit, TrainingValidationSplit
-from evalml.problem_types import (
-    ProblemTypes,
-    handle_problem_types,
-    is_classification,
-    is_time_series,
-)
-from evalml.tests.automl_tests.parallel_tests.test_automl_dask import (
-    engine_strs,
-)
-from evalml.tests.conftest import CustomClassificationObjectiveRanges
-from evalml.tuners import NoParamsException, RandomSearchTuner, SKOptTuner
+from evalml.problem_types import ProblemTypes
+from evalml.tuners import SKOptTuner
 
 
 def test_automl_feature_selection_with_allowed_component_graphs_iterative(
