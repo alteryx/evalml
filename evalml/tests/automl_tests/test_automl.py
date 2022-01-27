@@ -567,7 +567,7 @@ def test_automl_tuner_exception(
         y_train=y,
         problem_type="binary",
         tuner_class=RandomSearchTuner,
-        max_batches=5,
+        max_iterations=10,
         optimize_thresholds=False,
         _automl_algorithm="iterative",
     )
