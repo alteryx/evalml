@@ -302,7 +302,7 @@ def test_random_seed(X_y_binary):
     assert automl.rankings.equals(automl_1.rankings)
 
 
-def test_callback_iterative(X_y_binary):
+def test_callback(X_y_binary):
     X, y = X_y_binary
 
     counts = {
