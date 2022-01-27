@@ -53,7 +53,7 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
-            ...         "message": "{col_name} has datetime values missing between start and end date around row(s) [8]",
+            ...         "message": "dates has datetime values missing between start and end date around row(s) [8]",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
             ...         "code": "DATETIME_IS_MISSING_VALUES",
