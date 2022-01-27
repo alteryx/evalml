@@ -1861,6 +1861,9 @@ def test_percent_better_than_baseline_in_rankings(
         def fit(self, *args, **kwargs):
             """Mocking fit"""
 
+        def predict(self, *args, **kwargs):
+            return [1]
+
     class Pipeline1(DummyPipeline):
         custom_name = "Pipeline1"
 
@@ -1993,9 +1996,11 @@ def test_percent_better_than_baseline_in_rankings(
 @patch("evalml.pipelines.MulticlassClassificationPipeline.fit")
 @patch("evalml.pipelines.RegressionPipeline.fit")
 @patch("evalml.pipelines.TimeSeriesRegressionPipeline.fit")
+@patch("evalml.pipelines.TimeSeriesRegressionPipeline.predict", return_value=[1])
 @patch("evalml.tuners.skopt_tuner.Optimizer.tell")
 def test_percent_better_than_baseline_computed_for_all_objectives(
     mock_tell,
+    mock_time_series_predict,
     mock_time_series_baseline_regression_fit,
     mock_regression_fit,
     mock_multiclass_fit,
@@ -2040,6 +2045,10 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
 
         def fit(self, *args, **kwargs):
             """Mocking fit"""
+
+        def predict(self, *args, **kwargs):
+            """Mocking predict"""
+            return [1]
 
     additional_objectives = None
     if custom_additional_objective:
@@ -2117,8 +2126,11 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
             }
         },
     )
-    automl.automl_algorithm._set_allowed_pipelines([DummyPipeline(parameters)])
-    with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
+    automl._automl_algorithm.allowed_pipelines = [DummyPipeline(parameters)]
+    automl._SLEEP_TIME = 0.00001
+    with patch(
+        baseline_pipeline_class + ".score", return_value=mock_baseline_scores
+    ) as _:
         automl.search()
         assert (
             len(automl.results["pipeline_results"]) == 2
@@ -4370,7 +4382,7 @@ def test_automl_passes_known_in_advance_pipeline_parameters_to_all_pipelines(
         problem_configuration={
             "time_index": "date",
             "max_delay": 3,
-            "forecast_horizon": 2,
+            "forecast_horizon": 3,
             "gap": 1,
             "known_in_advance": known_in_advance,
         },
@@ -4439,14 +4451,14 @@ def test_cv_validation_scores_time_series(
         "time_index": "date",
         "gap": 0,
         "max_delay": 0,
-        "forecast_horizon": 1,
+        "forecast_horizon": 2,
     }
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type="time series binary",
         max_iterations=3,
-        data_splitter=TimeSeriesSplit(n_splits=3),
+        data_splitter=TimeSeriesSplit(n_splits=3, forecast_horizon=2),
         problem_configuration=problem_configuration,
         n_jobs=1,
     )

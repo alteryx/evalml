@@ -2,6 +2,7 @@ import pandas as pd
 import pytest
 
 from evalml.automl import AutoMLSearch
+from evalml.preprocessing import TimeSeriesSplit
 from evalml.problem_types import ProblemTypes
 
 PERIODS = 500
@@ -50,10 +51,13 @@ def test_can_run_automl_for_time_series_with_categorical_and_boolean_features(
         problem_configuration={
             "max_delay": 5,
             "gap": 3,
-            "forecast_horizon": 2,
+            "forecast_horizon": 3,
             "time_index": "date",
         },
         optimize_thresholds=False,
+        data_splitter=TimeSeriesSplit(
+            forecast_horizon=3, gap=3, max_delay=3, n_splits=3
+        ),
     )
     automl.search()
     automl.best_pipeline.fit(X, y)
@@ -118,12 +122,15 @@ def test_can_run_automl_for_time_series_known_in_advance(
         problem_configuration={
             "max_delay": 5,
             "gap": 3,
-            "forecast_horizon": 2,
+            "forecast_horizon": 3,
             "time_index": "date",
             "known_in_advance": ["bool_feature", "cat_feature"],
         },
         optimize_thresholds=False,
         sampler_method=sampler,
+        data_splitter=TimeSeriesSplit(
+            forecast_horizon=3, gap=3, max_delay=3, n_splits=3
+        ),
     )
     automl.search()
     automl.best_pipeline.fit(X, y)

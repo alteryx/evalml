@@ -77,7 +77,6 @@ class TimeSeriesParametersDataCheck(DataCheck):
 
         """
         messages = []
-
         validation = are_ts_parameters_valid_for_split(
             gap=self.gap,
             max_delay=self.max_delay,
