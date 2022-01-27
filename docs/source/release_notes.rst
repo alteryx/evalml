@@ -1,6 +1,25 @@
 ﻿Release Notes
 -------------
+
 **Future Releases**
+    * Enhancements
+        * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
+        * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
+    * Fixes
+    * Changes
+        * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
+    * Documentation Changes
+        * Update documentation and docstring for `validate_holdout_datasets` for time series problems :pr:`3278`
+    * Testing Changes
+
+
+.. warning::
+
+    **Breaking Changes**
+        * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
+
+
+**v0.43.0 Jan. 25, 2022**
     * Enhancements
         * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
         * Updated ``make_pipeline_from_actions`` to handle null column imputation :pr:`3237`
@@ -58,6 +77,7 @@
 
     **Breaking Changes**
         * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
+
 
 
 **v0.41.0 Jan. 06, 2022**
