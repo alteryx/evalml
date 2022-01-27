@@ -744,12 +744,17 @@ def test_contains_all_ts_parameters():
 
 def test_are_ts_parameters_valid():
     result = are_ts_parameters_valid_for_split(
-        gap=1, max_delay=4, forecast_horizon=2, n_obs=20, n_splits=3
+        gap=1, max_delay=8, forecast_horizon=3, n_obs=20, n_splits=3
     )
     assert not result.is_valid and result.msg
 
     result = are_ts_parameters_valid_for_split(
-        gap=1, max_delay=4, forecast_horizon=2, n_obs=200, n_splits=3
+        gap=1, max_delay=6, forecast_horizon=3, n_obs=20, n_splits=3
+    )
+    assert result.is_valid and not result.msg
+
+    result = are_ts_parameters_valid_for_split(
+        gap=1, max_delay=8, forecast_horizon=3, n_obs=200, n_splits=3
     )
     assert result.is_valid and not result.msg
 

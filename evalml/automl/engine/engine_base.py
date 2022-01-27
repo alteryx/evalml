@@ -13,9 +13,10 @@ from evalml.automl.utils import tune_binary_threshold
 from evalml.exceptions import PipelineScoreError
 from evalml.preprocessing import split_data
 from evalml.problem_types import (
+    ProblemTypes,
+    handle_problem_types,
     is_binary,
     is_classification,
-    is_multiclass,
     is_time_series,
 )
 
@@ -199,15 +200,27 @@ def train_and_score_pipeline(
         full_y_train = ww.init_series(full_y_train.map(y_mapping))
     cv_pipeline = pipeline
     pipeline_cache = {}
+
+    forecast_horizon = None
+    preds = None
+    time_index = None
+    pred_size = None
+    if is_time_series(pipeline.problem_type):
+        forecast_horizon = cv_pipeline.parameters["pipeline"]["forecast_horizon"]
+        time_index = cv_pipeline.parameters["pipeline"]["time_index"]
+        pred_size = automl_config.data_splitter.get_n_splits() * forecast_horizon
+        preds = np.zeros((pred_size,))
+
     for i, (train, valid) in enumerate(
         automl_config.data_splitter.split(full_X_train, full_y_train)
     ):
         logger.debug(f"\t\tTraining and scoring on fold {i}")
         X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
         y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
-        if is_binary(automl_config.problem_type) or is_multiclass(
-            automl_config.problem_type
-        ):
+        if handle_problem_types(automl_config.problem_type) in [
+            ProblemTypes.BINARY,
+            ProblemTypes.MULTICLASS,
+        ]:
             diff_train = set(np.setdiff1d(full_y_train, y_train))
             diff_valid = set(np.setdiff1d(full_y_train, y_valid))
             diff_string = (
@@ -252,6 +265,12 @@ def train_and_score_pipeline(
                 X_train=X_train,
                 y_train=y_train,
             )
+            if is_time_series(cv_pipeline.problem_type):
+                fold_preds = cv_pipeline.predict(
+                    X_valid, objective=None, X_train=X_train, y_train=y_train
+                )
+                preds[i * forecast_horizon : (i + 1) * forecast_horizon] = fold_preds
+
             logger.debug(
                 f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
             )
@@ -266,6 +285,10 @@ def train_and_score_pipeline(
                     fold_num=i,
                     pipeline=pipeline,
                 )
+            if is_time_series(cv_pipeline.problem_type):
+                preds[i * forecast_horizon : (i + 1) * forecast_horizon] = [
+                    np.nan
+                ] * forecast_horizon
             if isinstance(e, PipelineScoreError):
                 nan_scores = {objective: np.nan for objective in e.exceptions}
                 scores = {**nan_scores, **e.scored_successfully}
@@ -304,20 +327,25 @@ def train_and_score_pipeline(
         ):
             evaluation_entry["binary_classification_threshold"] = cv_pipeline.threshold
         cv_data.append(evaluation_entry)
+
     training_time = time.time() - start
     cv_scores = pd.Series([fold["mean_cv_score"] for fold in cv_data])
     cv_score_mean = cv_scores.mean()
     logger.info(
         f"\tFinished cross validation - mean {automl_config.objective.name}: {cv_score_mean:.3f}"
     )
+    scores = {
+        "cv_data": cv_data,
+        "training_time": training_time,
+        "cv_scores": cv_scores,
+        "cv_score_mean": cv_score_mean,
+    }
+    if is_time_series(cv_pipeline.problem_type):
+        pred_df = {"dates": full_X_train.iloc[-pred_size:][time_index], "preds": preds}
+        scores.update({"pred_df": pred_df})
     return {
-        "scores": {
-            "cv_data": cv_data,
-            "training_time": training_time,
-            "cv_scores": cv_scores,
-            "cv_score_mean": cv_score_mean,
-        },
         "cached_data": pipeline_cache,
+        "scores": scores,
         "pipeline": cv_pipeline,
         "logger": logger,
     }

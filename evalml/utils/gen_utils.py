@@ -567,18 +567,19 @@ def are_ts_parameters_valid_for_split(
             smallest_split_size (int): Smallest split size given n_obs and n_splits.
             max_window_size (int): Max window size given gap, max_delay, forecast_horizon.
     """
-    split_size = n_obs // (n_splits + 1)
+    eval_size = forecast_horizon * n_splits
+    train_size = n_obs - eval_size
     window_size = gap + max_delay + forecast_horizon
     msg = ""
-    if split_size <= window_size:
+    if train_size <= window_size:
         msg = (
             f"Since the data has {n_obs} observations and n_splits={n_splits}, "
-            f"the smallest split would have {split_size} observations. "
-            f"Since {gap + max_delay + forecast_horizon} (gap + max_delay + forecast_horizon) >= {split_size}, "
+            f"the smallest split would have {train_size} observations. "
+            f"Since {gap + max_delay + forecast_horizon} (gap + max_delay + forecast_horizon) >= {train_size}, "
             "then at least one of the splits would be empty by the time it reaches the pipeline. "
             "Please use a smaller number of splits, reduce one or more these parameters, or collect more data."
         )
-    return _validation_result(not msg, msg, split_size, window_size, n_obs, n_splits)
+    return _validation_result(not msg, msg, train_size, window_size, n_obs, n_splits)
 
 
 def are_datasets_separated_by_gap_time_index(train, test, pipeline_params):

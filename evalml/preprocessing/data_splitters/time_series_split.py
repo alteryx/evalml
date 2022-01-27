@@ -60,7 +60,9 @@ class TimeSeriesSplit(BaseCrossValidator):
         self.forecast_horizon = forecast_horizon
         self.time_index = time_index
         self.n_splits = n_splits
-        self._splitter = SkTimeSeriesSplit(n_splits=n_splits)
+        self._splitter = SkTimeSeriesSplit(
+            n_splits=n_splits, test_size=forecast_horizon
+        )
 
     def get_n_splits(self, X=None, y=None, groups=None):
         """Get the number of data splits.

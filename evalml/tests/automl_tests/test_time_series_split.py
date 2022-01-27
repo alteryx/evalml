@@ -23,7 +23,7 @@ def test_time_series_split_init():
 
 @pytest.mark.parametrize(
     "gap,max_delay,forecast_horizon,n_splits",
-    [[7, 3, 1, 4], [0, 3, 2, 3], [1, 1, 1, 4]],
+    [[7, 3, 1, 5], [0, 8, 2, 3], [5, 4, 2, 4]],
 )
 def test_time_series_split_n_splits_too_big(gap, max_delay, forecast_horizon, n_splits):
     splitter = TimeSeriesSplit(
@@ -63,22 +63,22 @@ def test_time_series_split(max_delay, gap, forecast_horizon, time_index, y_none)
 
     answer = [
         (
-            pd.date_range("2020-10-01", f"2020-10-10"),
-            pd.date_range(f"2020-10-11", f"2020-10-17"),
+            pd.date_range("2020-10-01", f"2020-10-28"),
+            pd.date_range(f"2020-10-29", f"2020-10-29"),
         ),
         (
-            pd.date_range("2020-10-01", f"2020-10-17"),
-            pd.date_range(f"2020-10-18", f"2020-10-24"),
+            pd.date_range("2020-10-01", f"2020-10-29"),
+            pd.date_range(f"2020-10-30", f"2020-10-30"),
         ),
         (
-            pd.date_range("2020-10-01", f"2020-10-24"),
-            pd.date_range(f"2020-10-25", "2020-10-31"),
+            pd.date_range("2020-10-01", f"2020-10-30"),
+            pd.date_range(f"2020-10-31", "2020-10-31"),
         ),
     ]
     answer_dt = [
-        (pd.Index(range(10)), pd.Index(range(10, 17))),
-        (pd.Index(range(17)), pd.Index(range(17, 24))),
-        (pd.Index(range(24)), pd.Index(range(24, 31))),
+        (pd.Index(range(28)), pd.Index(range(28, 29))),
+        (pd.Index(range(29)), pd.Index(range(29, 30))),
+        (pd.Index(range(30)), pd.Index(range(30, 31))),
     ]
 
     if y_none:

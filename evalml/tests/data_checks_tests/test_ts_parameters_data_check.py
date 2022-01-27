@@ -40,11 +40,11 @@ def test_time_series_param_data_check_raises_value_error(
     "gap,max_delay,forecast_horizon,n_obs,n_splits,is_valid",
     [
         [0, 5, 2, 100, 3, True],
-        [0, 50, 1, 100, 3, False],
-        [0, 24, 1, 100, 3, False],
+        [0, 50, 15, 100, 3, False],
+        [0, 24, 20, 100, 3, False],
         [0, 24, 1, 100, 2, True],
-        [1, 23, 1, 100, 3, False],
-        [1, 8, 2, 100, 9, False],
+        [1, 23, 20, 100, 3, False],
+        [1, 50, 5, 100, 9, False],
     ],
 )
 def test_time_series_param_data_check(
@@ -65,7 +65,7 @@ def test_time_series_param_data_check(
         assert len(messages) == 1
         assert messages[0]["details"] == {
             "max_window_size": gap + max_delay + forecast_horizon,
-            "min_split_size": n_obs // (n_splits + 1),
+            "min_split_size": n_obs - (forecast_horizon * n_splits),
             "n_obs": n_obs,
             "n_splits": n_splits,
             "columns": None,

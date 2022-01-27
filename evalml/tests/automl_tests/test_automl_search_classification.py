@@ -124,7 +124,7 @@ def test_data_splitter(X_y_binary):
         X_train=X,
         y_train=y,
         problem_type="binary",
-        data_splitter=TimeSeriesSplit(n_splits=cv_folds),
+        data_splitter=TimeSeriesSplit(n_splits=cv_folds, forecast_horizon=5),
         max_iterations=1,
         n_jobs=1,
     )
@@ -724,13 +724,13 @@ def test_automl_supports_time_series_classification(
                     "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
-                    "forecast_horizon": 1,
+                    "forecast_horizon": 3,
                 },
                 "pipeline": {
                     "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
-                    "forecast_horizon": 1,
+                    "forecast_horizon": 3,
                 },
             },
         )
@@ -745,13 +745,13 @@ def test_automl_supports_time_series_classification(
                     "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
-                    "forecast_horizon": 1,
+                    "forecast_horizon": 3,
                 },
                 "pipeline": {
                     "time_index": "date",
                     "gap": 0,
                     "max_delay": 0,
-                    "forecast_horizon": 1,
+                    "forecast_horizon": 3,
                 },
             },
         )
@@ -762,7 +762,7 @@ def test_automl_supports_time_series_classification(
         "time_index": "date",
         "gap": 0,
         "max_delay": 0,
-        "forecast_horizon": 1,
+        "forecast_horizon": 3,
         "delay_target": False,
         "delay_features": True,
         "conf_level": 0.05,
@@ -775,6 +775,7 @@ def test_automl_supports_time_series_classification(
         problem_type=problem_type,
         optimize_thresholds=False,
         problem_configuration=configuration,
+        data_splitter=TimeSeriesSplit(forecast_horizon=3, n_splits=3),
         max_batches=2,
     )
     env = AutoMLTestEnv(problem_type)
@@ -807,7 +808,7 @@ def test_automl_time_series_classification_threshold(
     configuration = {
         "time_index": "date",
         "gap": 0,
-        "forecast_horizon": 1,
+        "forecast_horizon": 2,
         "max_delay": 0,
         "delay_target": False,
         "delay_features": True,
