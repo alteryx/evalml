@@ -9,37 +9,6 @@ from evalml.data_checks import (
 
 datetime_format_check_name = DateTimeFormatDataCheck.name
 
-@pytest.mark.parametrize("n_missing", [2, 5, 7])
-def test_datetime_format_data_check_multiple_missing(n_missing):
-    X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
-
-    dates = pd.date_range("2021-01-01", periods=15)
-    if n_missing == 2:
-        # Two missing dates in separate spots
-        dates = dates.append(pd.date_range("2021-01-17", periods=16)).drop("2021-01-22")
-        missing = [14, 19]
-    elif n_missing == 5:
-        # A chunk of 5 missing days in a row
-        dates = dates.append(pd.date_range("2021-01-21", periods=15))
-        missing = [14]
-    else:
-        # Some chunks missing and some alone missing
-        missing = [3, 13, 15, 19]
-        dates = dates.append(pd.date_range("2021-01-20", periods=18)).drop("2021-01-27")
-        dates = dates.drop("2021-01-22")
-        dates = dates.drop("2021-01-05")
-
-    X["dates"] = dates
-    datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
-
-    assert datetime_format_check.validate(X, y) == [
-        DataCheckError(
-            message=f"dates has datetime values missing between start and end date around row(s) {missing}",
-            data_check_name=datetime_format_check_name,
-            message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
-        ).to_dict()
-    ]
-
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize(
@@ -175,3 +144,35 @@ def test_datetime_format_data_check_monotonic(datetime_loc, sort_order):
             assert datetime_format_check.validate(X, y) == [mono_error]
         else:
             assert datetime_format_check.validate(X, y) == [freq_error, mono_error]
+
+
+@pytest.mark.parametrize("n_missing", [2, 5, 7])
+def test_datetime_format_data_check_multiple_missing(n_missing):
+    X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
+
+    dates = pd.date_range("2021-01-01", periods=15)
+    if n_missing == 2:
+        # Two missing dates in separate spots
+        dates = dates.append(pd.date_range("2021-01-17", periods=16)).drop("2021-01-22")
+        missing = [14, 19]
+    elif n_missing == 5:
+        # A chunk of 5 missing days in a row
+        dates = dates.append(pd.date_range("2021-01-21", periods=15))
+        missing = [14]
+    else:
+        # Some chunks missing and some alone missing
+        missing = [3, 13, 15, 19]
+        dates = dates.append(pd.date_range("2021-01-20", periods=18)).drop("2021-01-27")
+        dates = dates.drop("2021-01-22")
+        dates = dates.drop("2021-01-05")
+
+    X["dates"] = dates
+    datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
+
+    assert datetime_format_check.validate(X, y) == [
+        DataCheckError(
+            message=f"dates has datetime values missing between start and end date around row(s) {missing}",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+        ).to_dict()
+    ]

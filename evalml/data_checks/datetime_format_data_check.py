@@ -29,7 +29,7 @@ class DateTimeFormatDataCheck(DataCheck):
         Examples:
             >>> import pandas as pd
 
-            The column "dates" has the a set of dates with hourly frequency appended to the end of a series of days, which is inconsistent 
+            The column "dates" has a set of dates with hourly frequency appended to the end of a series of days, which is inconsistent
             with the frequency of the previous 9 dates (1 day).
 
             >>> X = pd.DataFrame(pd.date_range("2021-01-01", periods=6).append(pd.date_range("2021-01-07", periods=3, freq="H")), columns=["dates"])
@@ -163,7 +163,7 @@ class DateTimeFormatDataCheck(DataCheck):
             for i in range(len(datetime_values) - 2):
                 freq = pd.infer_freq(datetime_values[i : i + 3])
                 if freq is None and i not in missing:
-                    missing.append(i+1)
+                    missing.append(i + 1)
                 frequencies.append(freq)
 
             # Check for only one row per datetime
