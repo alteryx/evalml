@@ -1210,7 +1210,6 @@ def test_time_series_pipeline_parameter_warnings(
             n_jobs=1,
             pipeline_parameters=pipeline_parameters,
             problem_configuration=configuration,
-            _automl_algorithm="iterative",
         )
         env = AutoMLTestEnv("time series binary")
         with env.test_context(score_return_value={automl.objective.name: 1.0}):

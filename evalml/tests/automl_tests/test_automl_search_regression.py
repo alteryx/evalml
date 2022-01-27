@@ -6,6 +6,7 @@ from evalml.automl.automl_algorithm import DefaultAlgorithm, IterativeAlgorithm
 from evalml.exceptions import ObjectiveNotFoundError
 from evalml.objectives import MeanSquaredLogError, RootMeanSquaredLogError
 from evalml.pipelines import PipelineBase, TimeSeriesRegressionPipeline
+from evalml.pipelines.components.utils import get_estimators
 from evalml.preprocessing import TimeSeriesSplit
 
 
