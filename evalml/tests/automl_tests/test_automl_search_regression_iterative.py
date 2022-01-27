@@ -10,38 +10,6 @@ from evalml.pipelines.utils import make_pipeline
 from evalml.problem_types import ProblemTypes
 
 
-def test_callback_iterative(X_y_regression):
-    X, y = X_y_regression
-
-    counts = {
-        "start_iteration_callback": 0,
-        "add_result_callback": 0,
-    }
-
-    def start_iteration_callback(pipeline, automl_obj, counts=counts):
-        counts["start_iteration_callback"] += 1
-
-    def add_result_callback(results, trained_pipeline, automl_obj, counts=counts):
-        counts["add_result_callback"] += 1
-
-    max_iterations = 3
-    automl = AutoMLSearch(
-        X_train=X,
-        y_train=y,
-        problem_type="regression",
-        objective="R2",
-        max_iterations=max_iterations,
-        start_iteration_callback=start_iteration_callback,
-        add_result_callback=add_result_callback,
-        n_jobs=1,
-        _automl_algorithm="iterative",
-    )
-    automl.search()
-
-    assert counts["start_iteration_callback"] == len(get_estimators("regression")) + 1
-    assert counts["add_result_callback"] == max_iterations
-
-
 def test_automl_component_graphs_no_allowed_component_graphs_iterative(X_y_regression):
     X, y = X_y_regression
     with pytest.raises(ValueError, match="No allowed pipelines to search"):
