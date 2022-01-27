@@ -909,6 +909,7 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
         custom_hyperparameters=custom_hyperparameters,
         optimize_thresholds=False,
         max_batches=5,
+        _automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={automl.objective.name: 0.12}):
