@@ -9,6 +9,7 @@
         * Fixed ``OutliersDataCheck.get_boxplot_data`` docstring test to allow woodwork version 0.12.0 :pr:`3290`
     * Changes
         * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
+        * Drop support for Python 3.7 :pr:`3291`
     * Documentation Changes
         * Update documentation and docstring for `validate_holdout_datasets` for time series problems :pr:`3278`
     * Testing Changes
@@ -18,6 +19,7 @@
 
     **Breaking Changes**
         * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
+        * Dropped support for Python 3.7 :pr:`3291`
 
 
 **v0.43.0 Jan. 25, 2022**
