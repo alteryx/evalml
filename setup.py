@@ -18,6 +18,7 @@ setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/alteryx/evalml/',
+    python_requires='>=3.8, <4',
     install_requires=open('core-requirements.txt').readlines() + open('requirements.txt').readlines()[1:],
     extras_require=extras_require,
     tests_require=open('test-requirements.txt').readlines(),
