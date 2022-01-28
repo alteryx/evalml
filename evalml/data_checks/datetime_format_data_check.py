@@ -158,36 +158,38 @@ class DateTimeFormatDataCheck(DataCheck):
                 if self.datetime_column != "index"
                 else "either index"
             )
-            frequencies = []
-            missing = []
-            for i in range(len(datetime_values) - 2):
-                freq = pd.infer_freq(datetime_values[i : i + 3])
-                if freq is None and i not in missing:
-                    missing.append(i + 1)
-                frequencies.append(freq)
 
             # Check for only one row per datetime
-            if len(np.unique(datetime_values)) < len(datetime_values):
+            duplicate_dates = pd.Series(datetime_values).diff(1) == pd.Timedelta(0)
+            if duplicate_dates.any():
                 messages.append(
                     DataCheckError(
-                        message=f"{col_name} has more than one row with the same datetime value",
+                        message=f"{col_name} has more than one row with the same datetime value.",
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
                     ).to_dict()
                 )
+                # drop any duplicates before continuing
+                datetime_values = datetime_values[~duplicate_dates]
+
+            frequencies = []
+            for i in range(len(datetime_values) - 2):
+                freq = pd.infer_freq(datetime_values[i : i + 3])
+                frequencies.append(freq)
+            num_disruptions = len(set(frequencies))
 
             # Check for no date missing in ordered dates
-            elif len(set(frequencies)) == 2 and is_increasing:
+            if num_disruptions > 1 and is_increasing:
                 messages.append(
                     DataCheckError(
-                        message=f"{col_name} has datetime values missing between start and end date around row(s) {missing}",
+                        message=f"{col_name} has datetime values missing between start and end date.",
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
                     ).to_dict()
                 )
 
-            # Otherwise, give a more generic uneven interval error
-            else:
+            # Give a generic uneven interval error if two or more frequencies are detected
+            if num_disruptions > 2 or (num_disruptions > 0 and not is_increasing):
                 messages.append(
                     DataCheckError(
                         message=f"No frequency could be detected in {col_name}, possibly due to uneven intervals.",

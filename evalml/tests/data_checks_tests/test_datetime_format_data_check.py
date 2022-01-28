@@ -78,7 +78,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
         elif missing:
             assert datetime_format_check.validate(X, y) == [
                 DataCheckError(
-                    message=f"{col_name} has datetime values missing between start and end date around row(s) [28]",
+                    message=f"{col_name} has datetime values missing between start and end date.",
                     data_check_name=datetime_format_check_name,
                     message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
                 ).to_dict()
@@ -86,7 +86,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
         elif redundant:
             assert datetime_format_check.validate(X, y) == [
                 DataCheckError(
-                    message=f"{col_name} has more than one row with the same datetime value",
+                    message=f"{col_name} has more than one row with the same datetime value.",
                     data_check_name=datetime_format_check_name,
                     message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
                 ).to_dict()
@@ -95,10 +95,15 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
             col_name = datetime_loc if datetime_loc == 1 else "either index"
             assert datetime_format_check.validate(X, y) == [
                 DataCheckError(
+                    message=f"{col_name} has datetime values missing between start and end date.",
+                    data_check_name=datetime_format_check_name,
+                    message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+                ).to_dict(),
+                DataCheckError(
                     message=f"No frequency could be detected in {col_name}, possibly due to uneven intervals.",
                     data_check_name=datetime_format_check_name,
                     message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
-                ).to_dict()
+                ).to_dict(),
             ]
 
 
@@ -154,14 +159,11 @@ def test_datetime_format_data_check_multiple_missing(n_missing):
     if n_missing == 2:
         # Two missing dates in separate spots
         dates = dates.append(pd.date_range("2021-01-17", periods=16)).drop("2021-01-22")
-        missing = [14, 19]
     elif n_missing == 5:
         # A chunk of 5 missing days in a row
         dates = dates.append(pd.date_range("2021-01-21", periods=15))
-        missing = [14]
     else:
         # Some chunks missing and some alone missing
-        missing = [3, 13, 15, 19]
         dates = dates.append(pd.date_range("2021-01-20", periods=18)).drop("2021-01-27")
         dates = dates.drop("2021-01-22")
         dates = dates.drop("2021-01-05")
@@ -171,8 +173,77 @@ def test_datetime_format_data_check_multiple_missing(n_missing):
 
     assert datetime_format_check.validate(X, y) == [
         DataCheckError(
-            message=f"dates has datetime values missing between start and end date around row(s) {missing}",
+            message=f"dates has datetime values missing between start and end date.",
             data_check_name=datetime_format_check_name,
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict()
+    ]
+
+
+def test_datetime_format_data_check_multiple_errors():
+    dates = (
+        pd.date_range("2021-01-01", periods=9).tolist()
+        + ["2021-01-31", "2021-02-02", "2021-02-04"]
+        + pd.date_range("2021-02-05", periods=9).tolist()
+    )
+    X = pd.DataFrame({"dates": dates})
+    y = pd.Series(range(21))
+    datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
+
+    assert datetime_format_check.validate(X, y) == [
+        DataCheckError(
+            message=f"dates has datetime values missing between start and end date.",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+        ).to_dict(),
+        DataCheckError(
+            message=f"No frequency could be detected in dates, possibly due to uneven intervals.",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
+        ).to_dict(),
+    ]
+
+    dates = (
+        pd.date_range("2021-01-01", periods=9).tolist()
+        + ["2021-01-09", "2021-01-31", "2021-02-02", "2021-02-04"]
+        + pd.date_range("2021-02-05", periods=9).tolist()
+    )
+    X = pd.DataFrame({"dates": dates})
+
+    assert datetime_format_check.validate(X, y) == [
+        DataCheckError(
+            message=f"dates has more than one row with the same datetime value.",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
+        ).to_dict(),
+        DataCheckError(
+            message=f"dates has datetime values missing between start and end date.",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+        ).to_dict(),
+        DataCheckError(
+            message=f"No frequency could be detected in dates, possibly due to uneven intervals.",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
+        ).to_dict(),
+    ]
+
+    dates = (
+        pd.date_range("2021-01-01", periods=15)
+        .drop("2021-01-05")
+        .append(pd.date_range("2021-01-15", periods=16))
+    )
+    X = pd.DataFrame({"dates": dates})
+
+    assert datetime_format_check.validate(X, y) == [
+        DataCheckError(
+            message=f"dates has more than one row with the same datetime value.",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
+        ).to_dict(),
+        DataCheckError(
+            message=f"dates has datetime values missing between start and end date.",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+        ).to_dict(),
     ]
