@@ -6,10 +6,10 @@
         * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
         * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
     * Fixes
-        * Fixed ``OutliersDataCheck.get_boxplot_data`` docstring test to allow woodwork version 0.12.0 :pr:`3290`
     * Changes
         * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
         * Drop support for Python 3.7 :pr:`3291`
+        * Updated minimum version of ``woodwork`` to ``v0.12.0`` :pr:`3290`
     * Documentation Changes
         * Update documentation and docstring for `validate_holdout_datasets` for time series problems :pr:`3278`
     * Testing Changes

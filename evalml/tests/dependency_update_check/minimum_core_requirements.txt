@@ -11,7 +11,7 @@ requirements-parser==0.2.0
 shap==0.36.0
 statsmodels==0.12.2
 texttable==1.6.2
-woodwork==0.11.0
+woodwork==0.12.0
 dask==2021.10.0
 nlp-primitives==2.1.0
 featuretools==1.2.0
