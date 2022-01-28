@@ -140,7 +140,7 @@ class OutliersDataCheck(DataCheck):
             ...                "median": -3.0,
             ...                "q3": -2.0,
             ...                "low_bound": -7.0,
-            ...                "high_bound": 1.0,
+            ...                "high_bound": -1.0,
             ...                "low_values": [-1201],
             ...                "high_values": [],
             ...                "low_indices": [3],
