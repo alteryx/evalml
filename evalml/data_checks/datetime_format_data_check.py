@@ -1,5 +1,4 @@
 """Data check that checks if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order to be supported by time series estimators."""
-import numpy as np
 import pandas as pd
 
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
