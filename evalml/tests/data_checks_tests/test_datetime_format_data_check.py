@@ -1,3 +1,4 @@
+import numpy as np
 import pandas as pd
 import pytest
 
@@ -247,3 +248,36 @@ def test_datetime_format_data_check_multiple_errors():
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
     ]
+
+
+def test_datetime_format_nan_data_check_error(ts_data):
+    X, y = ts_data
+    X.at[0, "date"] = np.NaN
+    dt_nan_check = DateTimeFormatDataCheck(datetime_column="date")
+    assert dt_nan_check.validate(X, y) == [
+        DataCheckError(
+            message="Input datetime column (date) contains NaN values. Please impute NaN values or drop these rows.",
+            data_check_name=DateTimeFormatDataCheck.name,
+            message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
+        ).to_dict()
+    ]
+
+
+def test_datetime_nan_check_ww():
+    dt_nan_check = DateTimeFormatDataCheck(datetime_column="dates")
+    y = pd.Series()
+
+    expected = [
+        DataCheckError(
+            message="Input datetime column (dates) contains NaN values. Please impute NaN values or drop these rows.",
+            data_check_name=DateTimeFormatDataCheck.name,
+            message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
+        ).to_dict()
+    ]
+
+    dates = np.arange(np.datetime64("2017-01-01"), np.datetime64("2017-01-08"))
+    dates[0] = np.datetime64("NaT")
+
+    ww_input = pd.DataFrame(dates, columns=["dates"])
+    ww_input.ww.init()
+    assert dt_nan_check.validate(ww_input, y) == expected

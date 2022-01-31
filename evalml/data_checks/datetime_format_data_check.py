@@ -1,4 +1,5 @@
 """Data check that checks if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order to be supported by time series estimators."""
+import numpy as np
 import pandas as pd
 
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
@@ -126,6 +127,27 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         "action_options": []
             ...      }
             ... ]
+
+            The first value in the column "index" is replaced with NaT, which will raise an error in this data check.
+
+            >>> dates = [["2-1-21", "3-1-21"],
+            ...         ["2-2-21", "3-2-21"],
+            ...         ["2-3-21", "3-3-21"],
+            ...         ["2-4-21", "3-4-21"]]
+            >>> dates[0][0] = np.datetime64("NaT")
+            >>> df = pd.DataFrame(dates, columns=["days", "days2"])
+            >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="days")
+            >>> assert datetime_format_dc.validate(df, y) == [
+            ...     {
+            ...         "message": "Input datetime column (days) contains NaN values. Please impute NaN values or drop these rows.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "details": {"columns": None, "rows": None},
+            ...         "code": "DATETIME_HAS_NAN",
+            ...         "action_options": []
+            ...     }
+            ... ]
+            ...
         """
         messages = []
 
@@ -158,13 +180,25 @@ class DateTimeFormatDataCheck(DataCheck):
             )
             return messages
 
+        col_name = (
+            self.datetime_column if self.datetime_column != "index" else "either index"
+        )
+
         is_increasing = pd.DatetimeIndex(datetime_values).is_monotonic_increasing
-        if not inferred_freq:
-            col_name = (
-                self.datetime_column
-                if self.datetime_column != "index"
-                else "either index"
+
+        nan_columns = datetime_values.isna().any()
+        if nan_columns:
+            messages.append(
+                DataCheckError(
+                    message=f"Input datetime column ({col_name}) contains NaN values. Please impute NaN values or drop these rows.",
+                    data_check_name=self.name,
+                    message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
+                ).to_dict()
             )
+            # NaN values are a more significant error than missing values and will break the data check logic, so we return here
+            return messages
+
+        if not inferred_freq:
 
             # Check for only one row per datetime
             duplicate_dates = pd.Series(datetime_values).diff(1) == pd.Timedelta(0)
