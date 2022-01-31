@@ -1267,6 +1267,7 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                         VowpalWabbitBinaryClassifier,
                         VowpalWabbitMulticlassClassifier,
                         VowpalWabbitRegressor,
+                        TimeSeriesBaselineEstimator,
                     ),
                 )
             ):

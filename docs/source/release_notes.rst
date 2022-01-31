@@ -7,12 +7,14 @@
         * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
         * Added more specific data check errors to ``DatetimeFormatDataCheck`` :pr:`3288`
     * Fixes
+        * Fixed bug where feature importance on time series pipelines only showed 0 for time index :pr:`3285`
     * Changes
         * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
         * Drop support for Python 3.7 :pr:`3291`
         * Updated minimum version of ``woodwork`` to ``v0.12.0`` :pr:`3290`
     * Documentation Changes
         * Update documentation and docstring for `validate_holdout_datasets` for time series problems :pr:`3278`
+        * Fixed mistake in documentation where wrong objective was used for calculating percent-better-than-baseline :pr:`3285`
     * Testing Changes
 
 
