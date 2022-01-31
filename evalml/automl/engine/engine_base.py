@@ -208,8 +208,8 @@ def train_and_score_pipeline(
     if is_time_series(pipeline.problem_type):
         forecast_horizon = cv_pipeline.parameters["pipeline"]["forecast_horizon"]
         time_index = cv_pipeline.parameters["pipeline"]["time_index"]
-        pred_size = automl_config.data_splitter.get_n_splits() * forecast_horizon
-        preds = np.zeros((pred_size,))
+        #pred_size = automl_config.data_splitter.get_n_splits() * forecast_horizon
+        preds = [] #np.zeros((pred_size,))
 
     for i, (train, valid) in enumerate(
         automl_config.data_splitter.split(full_X_train, full_y_train)
@@ -269,7 +269,8 @@ def train_and_score_pipeline(
                 fold_preds = cv_pipeline.predict(
                     X_valid, objective=None, X_train=X_train, y_train=y_train
                 )
-                preds[i * forecast_horizon : (i + 1) * forecast_horizon] = fold_preds
+                #preds[i * forecast_horizon : (i + 1) * forecast_horizon] = fold_preds
+                preds.append(fold_preds)
 
             logger.debug(
                 f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
@@ -286,9 +287,10 @@ def train_and_score_pipeline(
                     pipeline=pipeline,
                 )
             if is_time_series(cv_pipeline.problem_type):
-                preds[i * forecast_horizon : (i + 1) * forecast_horizon] = [
-                    np.nan
-                ] * forecast_horizon
+                #preds[i * forecast_horizon : (i + 1) * forecast_horizon] = [
+                #    np.nan
+                #] * forecast_horizon
+                preds.append(pd.Series([np.nan] * forecast_horizon))
             if isinstance(e, PipelineScoreError):
                 nan_scores = {objective: np.nan for objective in e.exceptions}
                 scores = {**nan_scores, **e.scored_successfully}
@@ -341,7 +343,8 @@ def train_and_score_pipeline(
         "cv_score_mean": cv_score_mean,
     }
     if is_time_series(cv_pipeline.problem_type):
-        pred_df = {"dates": full_X_train.iloc[-pred_size:][time_index], "preds": preds}
+        preds = pd.concat(preds)
+        pred_df = {"dates": full_X_train.iloc[-len(preds):][time_index], "preds": preds}
         scores.update({"pred_df": pred_df})
     return {
         "cached_data": pipeline_cache,
