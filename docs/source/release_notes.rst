@@ -9,6 +9,8 @@
         * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:`3280`
     * Changes
         * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
+        * Drop support for Python 3.7 :pr:`3291`
+        * Updated minimum version of ``woodwork`` to ``v0.12.0`` :pr:`3290`
     * Documentation Changes
         * Update documentation and docstring for `validate_holdout_datasets` for time series problems :pr:`3278`
     * Testing Changes
@@ -18,6 +20,7 @@
 
     **Breaking Changes**
         * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
+        * Dropped support for Python 3.7 :pr:`3291`
 
 
 **v0.43.0 Jan. 25, 2022**
