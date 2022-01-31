@@ -1,5 +1,4 @@
 """Data check that checks if the datetime column has equally spaced intervals and is monotonically increasing or decreasing in order to be supported by time series estimators."""
-import numpy as np
 import pandas as pd
 
 from evalml.data_checks import DataCheck, DataCheckError, DataCheckMessageCode
@@ -134,7 +133,7 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         ["2-2-21", "3-2-21"],
             ...         ["2-3-21", "3-3-21"],
             ...         ["2-4-21", "3-4-21"]]
-            >>> dates[0][0] = np.datetime64("NaT")
+            >>> dates[0][0] = None
             >>> df = pd.DataFrame(dates, columns=["days", "days2"])
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="days")
             >>> assert datetime_format_dc.validate(df, y) == [
