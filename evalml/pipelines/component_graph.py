@@ -2,7 +2,8 @@
 import inspect
 import warnings
 
-import joblib
+# import joblib
+from pandas.util import hash_pandas_object
 import networkx as nx
 import pandas as pd
 import woodwork as ww
@@ -403,7 +404,8 @@ class ComponentGraph:
         if len(component_list) == 0:
             return X
 
-        hashes = joblib.hash(X)
+        # hashes = joblib.hash(X)
+        hashes = hash(tuple(hash_pandas_object(X)))
 
         output_cache = {}
         for component_name in component_list:
