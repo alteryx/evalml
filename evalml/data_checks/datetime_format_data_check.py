@@ -36,6 +36,14 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
+            ...         "message": "dates has datetime values missing between start and end date.",
+            ...         "data_check_name": "DateTimeFormatDataCheck",
+            ...         "level": "error",
+            ...         "code": "DATETIME_IS_MISSING_VALUES",
+            ...         "details": {"columns": None, "rows": None},
+            ...         "action_options": []
+            ...      },
+            ...     {
             ...         "message": "No frequency could be detected in dates, possibly due to uneven intervals.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
@@ -52,7 +60,7 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
-            ...         "message": "dates has datetime values missing between start and end date around row(s) [8]",
+            ...         "message": "dates has datetime values missing between start and end date.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
             ...         "code": "DATETIME_IS_MISSING_VALUES",
@@ -68,7 +76,7 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
-            ...         "message": "dates has more than one row with the same datetime value",
+            ...         "message": "dates has more than one row with the same datetime value.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
             ...         "code": "DATETIME_HAS_REDUNDANT_ROW",
