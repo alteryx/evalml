@@ -404,8 +404,9 @@ class ComponentGraph:
         if len(component_list) == 0:
             return X
 
-        # hashes = joblib.hash(X)
-        hashes = hash(tuple(hash_pandas_object(X)))
+        hashes = None
+        if self.cached_data is not None:
+            hashes = hash(tuple(hash_pandas_object(X)))
 
         output_cache = {}
         for component_name in component_list:

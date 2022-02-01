@@ -162,7 +162,6 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
     if not get_hashes:
         return cv_pipeline
 
-    # X_hash = joblib.hash(X)
     X_hash = hash(tuple(hash_pandas_object(X)))
     return (cv_pipeline, X_hash)
 
