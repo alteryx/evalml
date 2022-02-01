@@ -44,7 +44,7 @@ class DateTimeFormatDataCheck(DataCheck):
             ...         "action_options": []
             ...      },
             ...     {
-            ...         "message": "No frequency could be detected in dates, possibly due to uneven intervals.",
+            ...         "message": "No frequency could be detected in column 'dates', possibly due to uneven intervals.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
             ...         "code": "DATETIME_HAS_UNEVEN_INTERVALS",
@@ -138,7 +138,7 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="days")
             >>> assert datetime_format_dc.validate(df, y) == [
             ...     {
-            ...         "message": "Input datetime column (days) contains NaN values. Please impute NaN values or drop these rows.",
+            ...         "message": "Input datetime column 'days' contains NaN values. Please impute NaN values or drop these rows.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
             ...         "details": {"columns": None, "rows": None},
@@ -212,9 +212,10 @@ class DateTimeFormatDataCheck(DataCheck):
                 # drop any duplicates before continuing
                 datetime_values = datetime_values[~duplicate_dates]
 
+            interval_size = 3
             frequencies = []
-            for i in range(len(datetime_values) - 2):
-                freq = pd.infer_freq(datetime_values[i : i + 3])
+            for i in range(len(datetime_values) - (interval_size - 1)):
+                freq = pd.infer_freq(datetime_values[i : i + interval_size])
                 frequencies.append(freq)
             num_disruptions = len(set(frequencies))
 

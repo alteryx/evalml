@@ -13,38 +13,31 @@ datetime_format_check_name = DateTimeFormatDataCheck.name
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize(
-    "redundant,missing,uneven,type_errors",
-    [
-        (False, False, True, False),
-        (False, False, False, True),
-        (False, False, False, False),
-        (False, True, False, False),
-        (True, False, False, False),
-    ],
+    "issue", ["redundant", "missing", "uneven", "type_errors", None]
 )
 @pytest.mark.parametrize("datetime_loc", [1, "X_index", "y_index"])
 def test_datetime_format_data_check_typeerror_uneven_intervals(
-    redundant, missing, uneven, input_type, type_errors, datetime_loc
+    issue, input_type, datetime_loc
 ):
     X, y = pd.DataFrame({"features": range(30)}), pd.Series(range(30))
 
-    if type_errors:
+    if issue == "type_errors":
         dates = range(30)
     else:
         dates = pd.date_range("2021-01-01", periods=30)
 
-    if missing:
+    if issue == "missing":
         # Skips 2021-01-30 and appends 2021-01-31, skipping a date and triggering the error
         dates = pd.date_range("2021-01-01", periods=29).append(
             pd.date_range("2021-01-31", periods=1)
         )
-    if uneven:
+    if issue == "uneven":
         dates = pd.DatetimeIndex(
             pd.date_range("2021-01-01", periods=6).append(
                 pd.date_range("2021-01-07", periods=24, freq="H")
             )
         )
-    if redundant:
+    if issue == "redundant":
         dates = pd.date_range("2021-01-01", periods=29).append(
             pd.date_range("2021-01-29", periods=1)
         )
@@ -64,7 +57,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
 
     datetime_format_check = DateTimeFormatDataCheck(datetime_column=datetime_column)
 
-    if type_errors:
+    if issue == "type_errors":
         assert datetime_format_check.validate(X, y) == [
             DataCheckError(
                 message=f"Datetime information could not be found in the data, or was not in a supported datetime format.",
@@ -74,9 +67,9 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
         ]
     else:
         col_name = datetime_loc if datetime_loc == 1 else "either index"
-        if not (uneven or missing or redundant):
+        if issue is None:
             assert datetime_format_check.validate(X, y) == []
-        elif missing:
+        elif issue == "missing":
             assert datetime_format_check.validate(X, y) == [
                 DataCheckError(
                     message=f"Column '{col_name}' has datetime values missing between start and end date.",
@@ -84,7 +77,7 @@ def test_datetime_format_data_check_typeerror_uneven_intervals(
                     message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
                 ).to_dict()
             ]
-        elif redundant:
+        elif issue == "redundant":
             assert datetime_format_check.validate(X, y) == [
                 DataCheckError(
                     message=f"Column '{col_name}' has more than one row with the same datetime value.",
@@ -248,6 +241,42 @@ def test_datetime_format_data_check_multiple_errors():
             message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
         ).to_dict(),
     ]
+
+
+def test_datetime_format_unusual_interval():
+    dates = pd.date_range(start="2021-01-01", periods=20, freq="4D")
+    X = pd.DataFrame({"dates": dates})
+    y = pd.Series(range(20))
+
+    datetime_format_check = DateTimeFormatDataCheck(datetime_column="dates")
+    assert datetime_format_check.validate(X, y) == []
+
+    expected = [
+        DataCheckError(
+            message=f"Column 'dates' has datetime values missing between start and end date.",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+        ).to_dict()
+    ]
+    dates = dates.drop("2021-01-09")
+    X = pd.DataFrame({"dates": dates})
+    assert datetime_format_check.validate(X, y) == expected
+
+    expected = [
+        DataCheckError(
+            message=f"Column 'dates' has more than one row with the same datetime value.",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
+        ).to_dict(),
+        DataCheckError(
+            message=f"Column 'dates' has datetime values missing between start and end date.",
+            data_check_name=datetime_format_check_name,
+            message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
+        ).to_dict(),
+    ]
+    dates = dates.append(pd.date_range("2021-03-18", periods=2, freq="4D"))
+    X = pd.DataFrame({"dates": dates})
+    assert datetime_format_check.validate(X, y) == expected
 
 
 def test_datetime_format_nan_data_check_error(ts_data):
