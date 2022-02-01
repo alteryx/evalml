@@ -344,7 +344,9 @@ def train_and_score_pipeline(
     }
     if is_time_series(cv_pipeline.problem_type):
         preds = pd.concat(preds)
-        pred_df = {"dates": full_X_train.iloc[-len(preds):][time_index], "preds": preds}
+        pred_df = {"dates": full_X_train.iloc[-len(preds):][time_index].astype(str).tolist(),
+                   "preds": preds.tolist(),
+                   "target": full_y_train.iloc[-len(preds):].tolist()}
         scores.update({"pred_df": pred_df})
     return {
         "cached_data": pipeline_cache,
