@@ -266,8 +266,8 @@ def train_and_score_pipeline(
                 y_train=y_train,
             )
             if is_time_series(cv_pipeline.problem_type):
-                fold_preds = cv_pipeline.predict(
-                    X_valid, objective=None, X_train=X_train, y_train=y_train
+                fold_preds = cv_pipeline.predict_in_sample(
+                    X_valid, y_valid, objective=None, X_train=X_train, y_train=y_train
                 )
                 #preds[i * forecast_horizon : (i + 1) * forecast_horizon] = fold_preds
                 preds.append(fold_preds)
