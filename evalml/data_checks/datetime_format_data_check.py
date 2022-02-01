@@ -36,7 +36,7 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
-            ...         "message": "dates has datetime values missing between start and end date.",
+            ...         "message": "Column 'dates' has datetime values missing between start and end date.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
             ...         "code": "DATETIME_IS_MISSING_VALUES",
@@ -60,7 +60,7 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
-            ...         "message": "dates has datetime values missing between start and end date.",
+            ...         "message": "Column 'dates' has datetime values missing between start and end date.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
             ...         "code": "DATETIME_IS_MISSING_VALUES",
@@ -76,7 +76,7 @@ class DateTimeFormatDataCheck(DataCheck):
             >>> datetime_format_dc = DateTimeFormatDataCheck(datetime_column="dates")
             >>> assert datetime_format_dc.validate(X, y) == [
             ...     {
-            ...         "message": "dates has more than one row with the same datetime value.",
+            ...         "message": "Column 'dates' has more than one row with the same datetime value.",
             ...         "data_check_name": "DateTimeFormatDataCheck",
             ...         "level": "error",
             ...         "code": "DATETIME_HAS_REDUNDANT_ROW",
@@ -189,7 +189,7 @@ class DateTimeFormatDataCheck(DataCheck):
         if nan_columns:
             messages.append(
                 DataCheckError(
-                    message=f"Input datetime column ({col_name}) contains NaN values. Please impute NaN values or drop these rows.",
+                    message=f"Input datetime column '{col_name}' contains NaN values. Please impute NaN values or drop these rows.",
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
                 ).to_dict()
@@ -204,7 +204,7 @@ class DateTimeFormatDataCheck(DataCheck):
             if duplicate_dates.any():
                 messages.append(
                     DataCheckError(
-                        message=f"{col_name} has more than one row with the same datetime value.",
+                        message=f"Column '{col_name}' has more than one row with the same datetime value.",
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.DATETIME_HAS_REDUNDANT_ROW,
                     ).to_dict()
@@ -222,7 +222,7 @@ class DateTimeFormatDataCheck(DataCheck):
             if num_disruptions > 1 and is_increasing:
                 messages.append(
                     DataCheckError(
-                        message=f"{col_name} has datetime values missing between start and end date.",
+                        message=f"Column '{col_name}' has datetime values missing between start and end date.",
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.DATETIME_IS_MISSING_VALUES,
                     ).to_dict()
@@ -232,7 +232,7 @@ class DateTimeFormatDataCheck(DataCheck):
             if num_disruptions > 2 or (num_disruptions > 0 and not is_increasing):
                 messages.append(
                     DataCheckError(
-                        message=f"No frequency could be detected in {col_name}, possibly due to uneven intervals.",
+                        message=f"No frequency could be detected in column '{col_name}', possibly due to uneven intervals.",
                         data_check_name=self.name,
                         message_code=DataCheckMessageCode.DATETIME_HAS_UNEVEN_INTERVALS,
                     ).to_dict()
