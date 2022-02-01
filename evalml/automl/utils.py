@@ -97,11 +97,16 @@ def make_data_splitter(
             test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle
         )
     if problem_type == ProblemTypes.REGRESSION:
-        return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
+        kfold = KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
+        # can set this to true directly since k-fold requires >1 splits
+        kfold.is_cv = True
+        return kfold
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        return StratifiedKFold(
+        skfold = StratifiedKFold(
             n_splits=n_splits, random_state=random_seed, shuffle=shuffle
         )
+        skfold.is_cv = True
+        return skfold
 
 
 def tune_binary_threshold(

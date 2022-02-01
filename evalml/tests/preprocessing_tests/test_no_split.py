@@ -6,6 +6,7 @@ from evalml.preprocessing.data_splitters import NoSplit
 
 def test_nosplit_nsplits():
     assert NoSplit().get_n_splits() == 0
+    assert not NoSplit().is_cv
 
 
 def test_nosplit_default():
