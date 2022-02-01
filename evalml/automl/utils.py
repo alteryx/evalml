@@ -2,7 +2,6 @@
 from collections import namedtuple
 
 import pandas as pd
-from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
 from evalml.pipelines import (
@@ -14,6 +13,8 @@ from evalml.pipelines import (
     TimeSeriesRegressionPipeline,
 )
 from evalml.preprocessing.data_splitters import (
+    KFold,
+    StratifiedKFold,
     TimeSeriesSplit,
     TrainingValidationSplit,
 )
@@ -97,16 +98,11 @@ def make_data_splitter(
             test_size=_LARGE_DATA_PERCENT_VALIDATION, shuffle=shuffle
         )
     if problem_type == ProblemTypes.REGRESSION:
-        kfold = KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
-        # can set this to true directly since k-fold requires >1 splits
-        kfold.is_cv = True
-        return kfold
+        return KFold(n_splits=n_splits, random_state=random_seed, shuffle=shuffle)
     elif problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
-        skfold = StratifiedKFold(
+        return StratifiedKFold(
             n_splits=n_splits, random_state=random_seed, shuffle=shuffle
         )
-        skfold.is_cv = True
-        return skfold
 
 
 def tune_binary_threshold(
