@@ -70,4 +70,10 @@ def test_time_series_baseline(
         y[15 - forecast_horizon : 15],
         clf.predict(X_validation, None, X_train, y_train).values,
     )
-    np.testing.assert_allclose(clf.estimator.feature_importance, np.array([0.0]))
+    transformed = clf.transform_all_but_final(X_train, y_train)
+    delay_index = transformed.columns.tolist().index(
+        f"target_delay_{forecast_horizon + gap}"
+    )
+    importance = np.array([0] * transformed.shape[1])
+    importance[delay_index] = 1
+    np.testing.assert_allclose(clf.estimator.feature_importance, importance)

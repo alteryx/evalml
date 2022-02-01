@@ -39,6 +39,8 @@ class TimeSeriesBaselineEstimator(Estimator):
         self._prediction_value = None
         self.start_delay = forecast_horizon + gap
         self._classes = None
+        self._num_features = None
+        self._delay_index = None
 
         if gap < 0:
             raise ValueError(
@@ -64,10 +66,12 @@ class TimeSeriesBaselineEstimator(Estimator):
         Raises:
             ValueError: If input y is None.
         """
+        X = infer_feature_types(X)
         if y is None:
             raise ValueError("Cannot fit Time Series Baseline Classifier if y is None")
         vals, _ = np.unique(y, return_counts=True)
         self._classes = list(vals)
+
         return self
 
     def predict(self, X):
@@ -91,6 +95,8 @@ class TimeSeriesBaselineEstimator(Estimator):
                 "Time Series Baseline Estimator is meant to be used in a pipeline with "
                 "a Time Series Featurizer"
             )
+        self._num_features = X.shape[1]
+        self._delay_index = X.columns.tolist().index(feature_name)
         return X.ww[feature_name]
 
     def predict_proba(self, X):
@@ -119,4 +125,6 @@ class TimeSeriesBaselineEstimator(Estimator):
         Returns:
             np.ndarray (float): An array of zeroes.
         """
-        return np.zeros(1)
+        importance = np.array([0] * self._num_features)
+        importance[self._delay_index] = 1
+        return importance

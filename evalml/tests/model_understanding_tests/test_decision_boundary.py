@@ -15,6 +15,7 @@ from evalml.model_understanding.decision_boundary import (
     _precision,
     _recall,
 )
+from evalml.objectives import AccuracyBinary
 
 
 @pytest.mark.parametrize(
@@ -417,3 +418,22 @@ def test_find_confusion_matrix_pipeline_threshold(
     assert len(res_df) == expected_len
     if threshold is not None:
         assert threshold in res_df.index
+
+
+def test_find_confusion_matrix_pipeline_threshold_tester(
+    logistic_regression_binary_pipeline, X_y_binary
+):
+    bcp = logistic_regression_binary_pipeline
+    X, y = X_y_binary
+    y = pd.Series(y)
+    bcp.fit(X, y)
+    preds = bcp.predict_proba(X).iloc[:, 1]
+    bcp.optimize_threshold(X, y, preds, AccuracyBinary())
+    first_accuracy = bcp.score(X, y, [AccuracyBinary()])["Accuracy Binary"]
+    best_search = 0
+    for i in range(20):
+        bcp.threshold = i / 20
+        search = bcp.score(X, y, [AccuracyBinary()])["Accuracy Binary"]
+        if search > best_search:
+            best_search = search
+    assert first_accuracy >= best_search
