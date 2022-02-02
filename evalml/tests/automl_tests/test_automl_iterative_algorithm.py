@@ -28,7 +28,7 @@ from evalml.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 
 
-def test_automl_feature_selection_with_allowed_component_graphs_iterative(
+def test_automl_feature_selection_with_allowed_component_graphs(
     AutoMLTestEnv, X_y_binary
 ):
     X, y = X_y_binary
@@ -84,7 +84,7 @@ def test_automl_allowed_component_graphs_iterative_algorithm(
     assert aml._automl_algorithm.allowed_component_graphs == allowed_component_graphs
 
 
-def test_component_graph_with_incorrect_problem_type_iterative(
+def test_component_graph_with_incorrect_problem_type(
     dummy_classifier_estimator_class, X_y_binary
 ):
     X, y = X_y_binary
@@ -103,7 +103,7 @@ def test_component_graph_with_incorrect_problem_type_iterative(
 
 
 @pytest.mark.parametrize("return_dict", [True, False])
-def test_describe_pipeline_with_ensembling_iterative(
+def test_describe_pipeline_with_ensembling(
     return_dict, X_y_binary, AutoMLTestEnv, caplog
 ):
     X, y = X_y_binary
@@ -125,7 +125,7 @@ def test_describe_pipeline_with_ensembling_iterative(
         for score in np.arange(
             0, -1 * automl.max_iterations * automl.data_splitter.get_n_splits(), -0.1
         )
-    ]  # Dcreases with each call
+    ]  # Decreases with each call
 
     test_env = AutoMLTestEnv("binary")
     with test_env.test_context(mock_score_side_effect=score_side_effect):
@@ -207,7 +207,7 @@ def _get_first_stacked_classifier_no(model_families=None):
     ],
 )
 @pytest.mark.parametrize("use_ensembling", [True, False])
-def test_max_iteration_works_with_stacked_ensemble_iterative(
+def test_max_iteration_works_with_stacked_ensemble(
     max_iterations, use_ensembling, AutoMLTestEnv, X_y_binary, caplog
 ):
     X, y = X_y_binary
@@ -244,7 +244,7 @@ def test_max_iteration_works_with_stacked_ensemble_iterative(
         assert not pipeline_names.str.contains("Ensemble").any()
 
 
-def test_automl_one_allowed_component_graph_ensembling_disabled_iterative(
+def test_automl_one_allowed_component_graph_ensembling_disabled(
     AutoMLTestEnv,
     X_y_binary,
     caplog,
@@ -322,7 +322,7 @@ def test_automl_one_allowed_component_graph_ensembling_disabled_iterative(
     )
 
 
-def test_automl_max_iterations_less_than_ensembling_disabled_iterative(
+def test_automl_max_iterations_less_than_ensembling_disabled(
     AutoMLTestEnv, X_y_binary, caplog
 ):
     max_iterations = _get_first_stacked_classifier_no([ModelFamily.LINEAR_MODEL])
@@ -349,7 +349,7 @@ def test_automl_max_iterations_less_than_ensembling_disabled_iterative(
     assert not pipeline_names.str.contains("Ensemble").any()
 
 
-def test_automl_max_batches_less_than_ensembling_disabled_iterative(
+def test_automl_max_batches_less_than_ensembling_disabled(
     AutoMLTestEnv, X_y_binary, caplog
 ):
     X, y = X_y_binary
@@ -381,7 +381,7 @@ def test_automl_max_batches_less_than_ensembling_disabled_iterative(
 @pytest.mark.parametrize("max_batches", [None, 1, 5, 8, 9, 10, 12, 20])
 @pytest.mark.parametrize("use_ensembling", [True, False])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
-def test_max_batches_num_pipelines_iterative(
+def test_max_batches_num_pipelines(
     max_batches,
     use_ensembling,
     problem_type,
@@ -447,7 +447,7 @@ def test_max_batches_num_pipelines_iterative(
 
 
 @patch("evalml.tuners.skopt_tuner.SKOptTuner.add")
-def test_pipeline_hyperparameters_make_pipeline_other_errors_iterative(
+def test_pipeline_hyperparameters_make_pipeline_other_errors(
     mock_add, AutoMLTestEnv, X_y_multi
 ):
     X, y = X_y_multi
@@ -482,7 +482,7 @@ def test_pipeline_hyperparameters_make_pipeline_other_errors_iterative(
 @pytest.mark.parametrize("component_graphs", [True, False])
 @pytest.mark.parametrize("automl_parameters", [True, False])
 @pytest.mark.parametrize("custom_hyperparameters", [True, False])
-def test_pipeline_custom_hyperparameters_make_pipeline_iterative(
+def test_pipeline_custom_hyperparameters_make_pipeline(
     custom_hyperparameters,
     automl_parameters,
     component_graphs,
@@ -586,7 +586,7 @@ def test_pipeline_custom_hyperparameters_make_pipeline_iterative(
                     )
 
 
-def test_passes_njobs_to_pipelines_iterative(
+def test_passes_njobs_to_pipelines(
     dummy_classifier_estimator_class, X_y_binary, AutoMLTestEnv
 ):
     X, y = X_y_binary
@@ -631,7 +631,7 @@ def test_passes_njobs_to_pipelines_iterative(
             )
 
 
-def test_automl_ensembling_false_iterative(AutoMLTestEnv, X_y_binary):
+def test_automl_ensembling_false(AutoMLTestEnv, X_y_binary):
     X, y = X_y_binary
 
     automl = AutoMLSearch(
@@ -672,7 +672,7 @@ def test_automl_ensembling_false_iterative(AutoMLTestEnv, X_y_binary):
 )
 @pytest.mark.parametrize("df_text", [True, False])
 @patch("evalml.automl.automl_search.IterativeAlgorithm")
-def test_search_with_text_and_ensembling_iterative(
+def test_search_with_text_and_ensembling(
     mock_iter, df_text, problem_type, pipeline_name, ensemble_name
 ):
     X_with_text = pd.DataFrame(
@@ -725,7 +725,7 @@ def test_search_with_text_and_ensembling_iterative(
         assert call_args is False
 
 
-def test_pipelines_per_batch_iterative(AutoMLTestEnv, X_y_binary):
+def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
     def total_pipelines(automl, num_batches, batch_size):
         total = 1 + len(automl.allowed_pipelines)
         total += (num_batches - 1) * batch_size
@@ -780,7 +780,7 @@ def test_pipelines_per_batch_iterative(AutoMLTestEnv, X_y_binary):
     assert total_pipelines(automl, 2, 10) == len(automl.full_rankings)
 
 
-def test_automl_respects_random_seed_iterative(
+def test_automl_respects_random_seed(
     X_y_binary, dummy_classifier_estimator_class
 ):
     X, y = X_y_binary
@@ -817,7 +817,7 @@ def test_automl_respects_random_seed_iterative(
     assert automl.allowed_pipelines[0].random_seed == 42
 
 
-def test_automl_respects_pipeline_parameters_with_duplicate_components_iterative(
+def test_automl_respects_pipeline_parameters_with_duplicate_components(
     AutoMLTestEnv, X_y_binary
 ):
     X, y = X_y_binary
@@ -880,7 +880,7 @@ def test_automl_respects_pipeline_parameters_with_duplicate_components_iterative
         assert row["One Hot Encoder_1"]["top_n"] == 25
 
 
-def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_components_iterative(
+def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_components(
     AutoMLTestEnv, X_y_binary
 ):
     X, y = X_y_binary
@@ -973,7 +973,7 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
         ),
     ],
 )
-def test_pipeline_parameter_warnings_component_graphs_iterative(
+def test_pipeline_parameter_warnings_component_graphs(
     pipeline_parameters, set_values, allowed_component_graphs, AutoMLTestEnv, X_y_binary
 ):
     X, y = X_y_binary
@@ -1000,7 +1000,7 @@ def test_pipeline_parameter_warnings_component_graphs_iterative(
         assert w[0].message.components == set_values
 
 
-def test_graph_automl_iterative(X_y_multi):
+def test_graph_automl(X_y_multi):
     X, y = X_y_multi
     X = pd.DataFrame(X, columns=[f"Column_{i}" for i in range(20)])
 
@@ -1042,7 +1042,7 @@ def test_graph_automl_iterative(X_y_multi):
             )
 
 
-def test_automl_respects_pipeline_order_iterative(X_y_binary, AutoMLTestEnv):
+def test_automl_respects_pipeline_order(X_y_binary, AutoMLTestEnv):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X,
@@ -1066,7 +1066,7 @@ def test_automl_respects_pipeline_order_iterative(X_y_binary, AutoMLTestEnv):
     )
 
 
-def test_get_ensembler_input_pipelines_iterative(X_y_binary, AutoMLTestEnv):
+def test_get_ensembler_input_pipelines(X_y_binary, AutoMLTestEnv):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,

@@ -17,7 +17,7 @@ from evalml.problem_types import ProblemTypes
 
 
 @pytest.mark.parametrize("automl_type", [ProblemTypes.BINARY, ProblemTypes.MULTICLASS])
-def test_automl_allowed_component_graphs_no_component_graphs_iterative(
+def test_automl_allowed_component_graphs_no_component_graphs(
     automl_type, X_y_binary, X_y_multi
 ):
     is_multiclass = automl_type == ProblemTypes.MULTICLASS
@@ -34,7 +34,7 @@ def test_automl_allowed_component_graphs_no_component_graphs_iterative(
         )
 
 
-def test_automl_component_graphs_specified_component_graphs_binary_iterative(
+def test_automl_component_graphs_specified_component_graphs_binary(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
     dummy_binary_pipeline,
@@ -71,7 +71,7 @@ def test_automl_component_graphs_specified_component_graphs_binary_iterative(
     assert automl.allowed_model_families == [ModelFamily.NONE]
 
 
-def test_automl_component_graphs_specified_component_graphs_multi_iterative(
+def test_automl_component_graphs_specified_component_graphs_multi(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
     dummy_multiclass_pipeline,
@@ -110,7 +110,7 @@ def test_automl_component_graphs_specified_component_graphs_multi_iterative(
     assert automl.allowed_model_families == [ModelFamily.NONE]
 
 
-def test_automl_component_graphs_specified_allowed_model_families_binary_iterative(
+def test_automl_component_graphs_specified_allowed_model_families_binary(
     AutoMLTestEnv, X_y_binary, assert_allowed_pipelines_equal_helper
 ):
     X, y = X_y_binary
@@ -163,7 +163,7 @@ def test_automl_component_graphs_specified_allowed_model_families_binary_iterati
     env.mock_score.assert_called()
 
 
-def test_automl_component_graphs_specified_allowed_model_families_multi_iterative(
+def test_automl_component_graphs_specified_allowed_model_families_multi(
     AutoMLTestEnv, X_y_multi, assert_allowed_pipelines_equal_helper
 ):
     X, y = X_y_multi
@@ -214,7 +214,7 @@ def test_automl_component_graphs_specified_allowed_model_families_multi_iterativ
     env.mock_score.assert_called()
 
 
-def test_automl_component_graphs_init_allowed_both_not_specified_binary_iterative(
+def test_automl_component_graphs_init_allowed_both_not_specified_binary(
     AutoMLTestEnv, X_y_binary, assert_allowed_pipelines_equal_helper
 ):
     X, y = X_y_binary
@@ -243,7 +243,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_binary_iterativ
     env.mock_score.assert_called()
 
 
-def test_automl_component_graphs_init_allowed_both_not_specified_multi_iterative(
+def test_automl_component_graphs_init_allowed_both_not_specified_multi(
     AutoMLTestEnv, X_y_multi, assert_allowed_pipelines_equal_helper
 ):
     X, y = X_y_multi
@@ -271,7 +271,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_multi_iterative
     env.mock_score.assert_called()
 
 
-def test_automl_component_graphs_init_allowed_both_specified_binary_iterative(
+def test_automl_component_graphs_init_allowed_both_specified_binary(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
     dummy_binary_pipeline,
@@ -307,7 +307,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary_iterative(
     env.mock_score.assert_called()
 
 
-def test_automl_component_graphs_init_allowed_both_specified_multi_iterative(
+def test_automl_component_graphs_init_allowed_both_specified_multi(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
     dummy_multiclass_pipeline,
@@ -345,7 +345,7 @@ def test_automl_component_graphs_init_allowed_both_specified_multi_iterative(
 
 
 @pytest.mark.parametrize("problem_type", ["binary", "multiclass"])
-def test_automl_allowed_component_graphs_search_iterative(
+def test_automl_allowed_component_graphs_search(
     problem_type,
     example_graph,
     X_y_binary,
@@ -393,7 +393,7 @@ def test_automl_allowed_component_graphs_search_iterative(
             )
 
 
-def test_automl_oversampler_selection_iterative():
+def test_automl_oversampler_selection():
     X = pd.DataFrame({"a": ["a"] * 50 + ["b"] * 25 + ["c"] * 25, "b": list(range(100))})
     y = pd.Series([1] * 90 + [0] * 10)
     X.ww.init(logical_types={"a": "Categorical"})
