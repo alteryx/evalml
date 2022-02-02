@@ -911,16 +911,6 @@ def test_automl_respects_pipeline_custom_hyperparameters_with_duplicate_componen
     for i, row in automl.full_rankings.iterrows():
         if "Mode Baseline Binary" in row["pipeline_name"]:
             continue
-        if row["pipeline_name"] == "Name_linear":
-            assert row["parameters"]["Imputer"]["numeric_impute_strategy"] == "mean"
-            assert row["parameters"]["Imputer_1"]["numeric_impute_strategy"] in {
-                "most_frequent",
-                "mean",
-            }
-            assert row["parameters"]["Random Forest Classifier"]["n_estimators"] in {
-                100,
-                125,
-            }
         if row["pipeline_name"] == "Name_dict":
             assert row["parameters"]["Imputer"]["numeric_impute_strategy"] in {
                 "most_frequent",
