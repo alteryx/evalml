@@ -8,7 +8,7 @@
     * Fixes
         * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:`3280`
         * Fixed bug where feature importance on time series pipelines only showed 0 for time index :pr:`3285`
-        * Fixed ``PolynomialDetrender`` test for sktime upgrade :pr:``
+        * Fixed ``PolynomialDetrender`` test for sktime upgrade :pr:`3300`
     * Changes
         * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
         * Drop support for Python 3.7 :pr:`3291`
