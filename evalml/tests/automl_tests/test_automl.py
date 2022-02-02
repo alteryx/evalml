@@ -3903,7 +3903,10 @@ def test_automl_baseline_pipeline_predictions_and_scores_time_series(problem_typ
             expected_predictions_proba,
             baseline.predict_proba(X_validation, X_train, y_train),
         )
-    np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], np.array([0.0]))
+    transformed = baseline.transform_all_but_final(X_train, y_train)
+    importance = np.array([0] * transformed.shape[1])
+    importance[0] = 1
+    np.testing.assert_allclose(baseline.feature_importance.iloc[:, 1], importance)
 
 
 @pytest.mark.parametrize(
