@@ -108,7 +108,5 @@ def test_polynomial_detrender_needs_monotonic_index(ts_data):
         Exception,
         match="class 'pandas.core.indexes.base.Index'> is not supported",
     ):
-        y_string_index = pd.Series(
-            np.arange(31), index=[f"row_{i}" for i in range(31)]
-        )
+        y_string_index = pd.Series(np.arange(31), index=[f"row_{i}" for i in range(31)])
         detrender.fit_transform(X, y_string_index)
