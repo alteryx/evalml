@@ -528,10 +528,10 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
     env = AutoMLTestEnv("multiclass")
     with env.test_context(score_return_value={"Log Loss Multiclass": 1.0}):
         automl.search()
-
+    
     for i, row in automl.full_rankings.iterrows():
-        if "Random Forest Classifier" in row["pipeline_name"]:
-            if component_graph_ and automl_parameters:
+        if "Random Forest Classifier" in row["pipeline_name"] or "Name_0" in row["pipeline_name"]:
+            if component_graph_ and automl_parameters_:
                 assert row["parameters"]["Drop Columns Transformer"]["columns"] == [
                     "Column_0",
                     "Column_1",
@@ -545,7 +545,7 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
                 assert (
                     4 <= row["parameters"]["Random Forest Classifier"]["max_depth"] <= 7
                 )
-                if automl_parameters and row["id"] == 1:
+                if automl_parameters_ and row["id"] == 1:
                     assert (
                         row["parameters"]["Random Forest Classifier"]["n_estimators"]
                         == 201
@@ -567,7 +567,7 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
                     <= row["parameters"]["Random Forest Classifier"]["max_depth"]
                     <= 10
                 )
-                if automl_parameters and row["id"] == 1:
+                if automl_parameters_ and row["id"] == 1:
                     assert (
                         row["parameters"]["Random Forest Classifier"]["n_estimators"]
                         == 201
