@@ -121,10 +121,10 @@ class TimeSeriesSplit(BaseCrossValidator):
             split_kwargs = dict(X=X, y=y, groups=groups)
 
         result = are_ts_parameters_valid_for_split(
-           self.gap, self.max_delay, self.forecast_horizon, X.shape[0], self.n_splits
+            self.gap, self.max_delay, self.forecast_horizon, X.shape[0], self.n_splits
         )
         if not result.is_valid:
-           raise ValueError(result.msg)
+            raise ValueError(result.msg)
 
         for train, test in self._splitter.split(**split_kwargs):
             yield train, test

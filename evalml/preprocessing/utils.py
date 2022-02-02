@@ -47,7 +47,6 @@ def load_data(path, index, target, n_rows=None, drop=None, verbose=True, **kwarg
 
 
 class _ForecastHorizonSplitter:
-
     def __init__(self, forecast_horizon):
         self.forecast_horizon = forecast_horizon
 
@@ -105,7 +104,9 @@ def split_data(
 
     data_splitter = None
     if is_time_series(problem_type):
-        data_splitter = _ForecastHorizonSplitter(problem_configuration['forecast_horizon'])
+        data_splitter = TrainingValidationSplit(
+            test_size=test_size, shuffle=False, stratify=None, random_seed=random_seed
+        )
     elif is_regression(problem_type):
         data_splitter = ShuffleSplit(
             n_splits=1, test_size=test_size, random_state=random_seed
