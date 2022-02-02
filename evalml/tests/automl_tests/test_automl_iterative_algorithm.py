@@ -168,8 +168,7 @@ def test_describe_pipeline_with_ensembling(
                 allowed_model_families("binary")
             )
             assert all(
-                input_id < ensemble_id
-                for input_id in automl_dict["input_pipeline_ids"]
+                input_id < ensemble_id for input_id in automl_dict["input_pipeline_ids"]
             )
             if i > 0:
                 assert all(
@@ -528,9 +527,12 @@ def test_pipeline_custom_hyperparameters_make_pipeline(
     env = AutoMLTestEnv("multiclass")
     with env.test_context(score_return_value={"Log Loss Multiclass": 1.0}):
         automl.search()
-    
+
     for i, row in automl.full_rankings.iterrows():
-        if "Random Forest Classifier" in row["pipeline_name"] or "Name_0" in row["pipeline_name"]:
+        if (
+            "Random Forest Classifier" in row["pipeline_name"]
+            or "Name_0" in row["pipeline_name"]
+        ):
             if component_graph_ and automl_parameters_:
                 assert row["parameters"]["Drop Columns Transformer"]["columns"] == [
                     "Column_0",
@@ -774,9 +776,7 @@ def test_pipelines_per_batch(AutoMLTestEnv, X_y_binary):
     assert total_pipelines(automl, 2, 10) == len(automl.full_rankings)
 
 
-def test_automl_respects_random_seed(
-    X_y_binary, dummy_classifier_estimator_class
-):
+def test_automl_respects_random_seed(X_y_binary, dummy_classifier_estimator_class):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,
