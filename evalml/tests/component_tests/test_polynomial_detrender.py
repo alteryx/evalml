@@ -96,7 +96,7 @@ def test_polynomial_detrender_inverse_transform(degree, use_int_index, ts_data):
     pd.testing.assert_series_equal(y, output_inverse_y, check_dtype=False)
 
 
-def test_polynomial_detrender_needs_monotonic_index(ts_data):
+def test_polynomial_detrender_needs_monotonic_index(ts_data, has_minimal_dependencies):
     X, y = ts_data
     detrender = PolynomialDetrender(degree=2)
 
@@ -104,21 +104,10 @@ def test_polynomial_detrender_needs_monotonic_index(ts_data):
         y_shuffled = y.sample(frac=1, replace=False)
         detrender.fit_transform(X, y_shuffled)
     assert "monotonically" in str(exec_info.value)
-    try:
-        with pytest.raises(
-            ValueError,
-            match="class 'pandas.core.indexes.base.Index'> is not supported",
-        ):
-            y_string_index = pd.Series(
-                np.arange(31), index=[f"row_{i}" for i in range(31)]
-            )
-            detrender.fit_transform(X, y_string_index)
-    except Exception:
-        with pytest.raises(
-            NotImplementedError,
-            match="class 'pandas.core.indexes.base.Index'> is not supported",
-        ):
-            y_string_index = pd.Series(
-                np.arange(31), index=[f"row_{i}" for i in range(31)]
-            )
-            detrender.fit_transform(X, y_string_index)
+    error = ValueError if not has_minimal_dependencies else NotImplementedError
+    with pytest.raises(
+        error,
+        match="class 'pandas.core.indexes.base.Index'> is not supported",
+    ):
+        y_string_index = pd.Series(np.arange(31), index=[f"row_{i}" for i in range(31)])
+        detrender.fit_transform(X, y_string_index)
