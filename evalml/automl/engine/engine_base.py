@@ -5,7 +5,6 @@ import traceback
 from abc import ABC, abstractmethod
 from collections import OrderedDict
 
-from pandas.util import hash_pandas_object
 import numpy as np
 import pandas as pd
 import woodwork as ww
@@ -162,7 +161,7 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
     if not get_hashes:
         return cv_pipeline
 
-    X_hash = hash(tuple(hash_pandas_object(X)))
+    X_hash = hash(tuple(X.index.values))
     return (cv_pipeline, X_hash)
 
 

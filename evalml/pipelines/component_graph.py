@@ -2,8 +2,6 @@
 import inspect
 import warnings
 
-# import joblib
-from pandas.util import hash_pandas_object
 import networkx as nx
 import pandas as pd
 import woodwork as ww
@@ -406,7 +404,7 @@ class ComponentGraph:
 
         hashes = None
         if self.cached_data is not None:
-            hashes = hash(tuple(hash_pandas_object(X)))
+            hashes = hash(tuple(X.index.values))
 
         output_cache = {}
         for component_name in component_list:
