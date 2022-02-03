@@ -30,7 +30,7 @@ def test_automl_allowed_component_graphs_no_component_graphs(
             problem_type=problem_type,
             allowed_component_graphs=None,
             allowed_model_families=[],
-            _automl_algorithm="iterative",
+            automl_algorithm="iterative",
         )
 
 
@@ -50,7 +50,7 @@ def test_automl_component_graphs_specified_component_graphs_binary(
         },
         optimize_thresholds=False,
         allowed_model_families=None,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_component_graph = dummy_binary_pipeline.component_graph
     expected_name = dummy_binary_pipeline.name
@@ -88,7 +88,7 @@ def test_automl_component_graphs_specified_component_graphs_multi(
             ]
         },
         allowed_model_families=None,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_pipeline = dummy_multiclass_pipeline
     expected_component_graph = expected_pipeline.component_graph
@@ -121,7 +121,7 @@ def test_automl_component_graphs_specified_allowed_model_families_binary(
         allowed_component_graphs=None,
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         optimize_thresholds=False,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.BINARY)
@@ -146,7 +146,7 @@ def test_automl_component_graphs_specified_allowed_model_families_binary(
         allowed_component_graphs=None,
         allowed_model_families=["random_forest"],
         optimize_thresholds=False,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.BINARY)
@@ -173,7 +173,7 @@ def test_automl_component_graphs_specified_allowed_model_families_multi(
         problem_type="multiclass",
         allowed_component_graphs=None,
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS)
@@ -197,7 +197,7 @@ def test_automl_component_graphs_specified_allowed_model_families_multi(
         problem_type="multiclass",
         allowed_component_graphs=None,
         allowed_model_families=["random_forest"],
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS)
@@ -225,7 +225,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_binary(
         allowed_component_graphs=None,
         allowed_model_families=None,
         optimize_thresholds=False,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.BINARY)
@@ -253,7 +253,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_multi(
         problem_type="multiclass",
         allowed_component_graphs=None,
         allowed_model_families=None,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.MULTICLASS)
@@ -287,7 +287,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
         },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         optimize_thresholds=False,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_component_graph = dummy_binary_pipeline.component_graph
     expected_name = dummy_binary_pipeline.name
@@ -324,7 +324,7 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
             ]
         },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_component_graph = dummy_multiclass_pipeline.component_graph
     expected_name = dummy_multiclass_pipeline.name
@@ -371,7 +371,7 @@ def test_automl_allowed_component_graphs_search(
         start_iteration_callback=start_iteration_callback,
         allowed_component_graphs=component_graph,
         optimize_thresholds=False,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     env = AutoMLTestEnv(problem_type)
     with env.test_context(score_return_value=score_return_value):
@@ -415,7 +415,7 @@ def test_automl_oversampler_selection():
         allowed_component_graphs={"pipeline": allowed_component_graph},
         pipeline_parameters={"DropCols": {"columns": ["a"]}},
         error_callback=raise_error_callback,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     # This should run without error
     automl.search()
