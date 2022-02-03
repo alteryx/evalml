@@ -161,7 +161,7 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
     if not get_hashes:
         return cv_pipeline
 
-    X_hash = hash(tuple(X.index.values))
+    X_hash = hash(tuple(X.index))
     return (cv_pipeline, X_hash)
 
 

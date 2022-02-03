@@ -404,7 +404,7 @@ class ComponentGraph:
 
         hashes = None
         if self.cached_data is not None:
-            hashes = hash(tuple(X.index.values))
+            hashes = hash(tuple(X.index))
 
         output_cache = {}
         for component_name in component_list:
