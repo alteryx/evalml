@@ -23,6 +23,7 @@ from evalml.pipelines.components import (  # noqa: F401
     CatBoostRegressor,
     ComponentBase,
     DateTimeFeaturizer,
+    DFSTransformer,
     DropColumns,
     DropNullColumns,
     DropRowsTransformer,
@@ -387,6 +388,7 @@ def make_pipeline(
     extra_components_after=None,
     use_estimator=True,
     known_in_advance=None,
+    features=False,
 ):
     """Given input data, target data, an estimator class and the problem type, generates a pipeline class with a preprocessing chain which was recommended based on the inputs. The pipeline will be a subclass of the appropriate pipeline base class for the specified problem_type.
 
@@ -403,6 +405,8 @@ def make_pipeline(
          extra_components_after (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
          use_estimator (bool): Whether to add the provided estimator to the pipeline or not. Defaults to True.
          known_in_advance (list[str], None): List of features that are known in advance.
+         features (bool): Whether to add a DFSTransformer component to this pipeline.
+
 
     Returns:
          PipelineBase object: PipelineBase instance with dynamically generated preprocessing components and specified estimator.
@@ -434,9 +438,11 @@ def make_pipeline(
         )
         extra_components_before = extra_components_before or []
         extra_components_after = extra_components_after or []
+        dfs_transformer = [DFSTransformer] or []
         estimator_component = [estimator] if use_estimator else []
         complete_component_list = (
-            extra_components_before
+            dfs_transformer
+            + extra_components_before
             + preprocessing_components
             + extra_components_after
             + estimator_component

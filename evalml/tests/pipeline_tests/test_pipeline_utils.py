@@ -975,3 +975,19 @@ def test_make_pipeline_from_multiple_graphs_with_sampler(X_y_binary):
         combined_pipeline.component_graph.get_inputs("Random Forest Classifier")[2]
         == second_pipeline_sampler
     )
+
+
+def test_make_pipeline_features_and_dfs(X_y_binary):
+    X, y = X_y_binary
+    estimator = handle_component_class("Random Forest Classifier")
+    features = True
+    pipeline = make_pipeline(
+        X,
+        y,
+        estimator,
+        ProblemTypes.BINARY,
+        sampler_name="Undersampler",
+        features = features
+    )
+    
+    assert "DFS Transformer" == pipeline.component_graph.compute_order[0]
