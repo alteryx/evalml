@@ -14,6 +14,7 @@ from evalml.exceptions import ParameterNotUsedWarning
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.utils import get_estimators
 from evalml.pipelines.utils import make_pipeline
+from evalml.problem_types import is_time_series
 from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
@@ -426,6 +427,17 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 and self._batch_number > 0
             ):
                 component_parameters["columns"] = self._pipeline_params[name]["columns"]
+            # Check that Drop Row Transformer is before estimator
+            if (
+                is_time_series(self.problem_type)
+                and name == "Drop Rows Transformer"
+                and pipeline.component_graph.compute_order[-2] == name
+            ):
+                n_rows_to_drop = (
+                    self._pipeline_params["pipeline"]["max_delay"]
+                    + self._pipeline_params["pipeline"]["forecast_horizon"]
+                )
+                component_parameters["indices_to_drop"] = range(0, n_rows_to_drop)
             if "pipeline" in self._pipeline_params:
                 for param_name, value in self._pipeline_params["pipeline"].items():
                     if param_name in init_params:
