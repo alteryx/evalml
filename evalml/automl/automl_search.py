@@ -724,16 +724,16 @@ class AutoMLSearch:
         else:
             raise ValueError("Please specify a valid automl algorithm.")
 
+        self.allowed_pipelines = self.automl_algorithm.allowed_pipelines
+        self.allowed_model_families = [p.model_family for p in self.allowed_pipelines]
+        if automl_algorithm == "iterative":
+            self.max_iterations = self.automl_algorithm.max_iterations
+
         if not self.max_iterations and not self.max_time and not self.max_batches:
             self.max_batches = self.automl_algorithm.default_max_batches
             self.logger.info(
                 f"Using default limit of max_batches={self.max_batches}.\n"
             )
-
-        self.allowed_pipelines = self.automl_algorithm.allowed_pipelines
-        self.allowed_model_families = [p.model_family for p in self.allowed_pipelines]
-        if automl_algorithm == "iterative":
-            self.max_iterations = self.automl_algorithm.max_iterations
 
     def close_engine(self):
         """Function to explicitly close the engine, client, parallel resources."""
