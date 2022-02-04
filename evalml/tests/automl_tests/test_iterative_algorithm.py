@@ -1,4 +1,3 @@
-from re import I
 from unittest.mock import patch
 
 import numpy as np

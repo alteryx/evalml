@@ -4,7 +4,7 @@ import pytest
 from evalml.automl import AutoMLSearch
 from evalml.problem_types import ProblemTypes
 
-PERIODS = 100
+PERIODS = 50
 
 
 @pytest.mark.parametrize(
