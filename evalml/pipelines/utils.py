@@ -252,7 +252,7 @@ def _get_drop_nan_rows(X, y, problem_type, estimator_class, sampler_name=None):
     ]
     if (
         is_time_series(problem_type)
-        and estimator_class.model_family in needs_drop_n_rows
+        # and estimator_class.model_family in needs_drop_n_rows
     ):
         components.append(DropNaNRows)
     return components
