@@ -5,6 +5,7 @@ from evalml.exceptions import PipelineNotFoundError
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import is_multiclass
 from evalml.tuners import SKOptTuner
+from evalml.utils import classproperty
 
 
 class AutoMLAlgorithmException(Exception):
@@ -54,6 +55,7 @@ class AutoMLAlgorithm(ABC):
             )
         self._pipeline_number = 0
         self._batch_number = 0
+        self._default_max_batches = 1
 
     @abstractmethod
     def next_batch(self):
@@ -98,6 +100,11 @@ class AutoMLAlgorithm(ABC):
     def batch_number(self):
         """Returns the number of batches which have been recommended so far."""
         return self._batch_number
+
+    @classproperty
+    def default_max_batches(self):
+        """Returns the number of max batches AutoMLSearch should run by default."""
+        return 1
 
     def _create_ensemble(self):
         next_batch = []

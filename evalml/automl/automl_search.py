@@ -559,7 +559,12 @@ class AutoMLSearch:
         self.max_batches = max_batches
         self._pipelines_per_batch = _pipelines_per_batch
         if not self.max_iterations and not self.max_time and not self.max_batches:
-            self.max_batches = 4 if automl_algorithm == "default" else 1
+            _automl_klass = (
+                DefaultAlgorithm
+                if automl_algorithm == "default"
+                else IterativeAlgorithm
+            )
+            self.max_batches = _automl_klass.default_max_batches
             self.logger.info(
                 f"Using default limit of max_batches={self.max_batches}.\n"
             )
