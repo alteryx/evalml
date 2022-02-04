@@ -66,20 +66,22 @@ class OutliersDataCheck(DataCheck):
         if len(X.columns) == 0:
             return messages
 
-        has_outliers = []
-        outlier_row_indices = {}
-        for col in X.columns:
-            box_plot_dict = OutliersDataCheck.get_boxplot_data(X.ww[col])
-            box_plot_dict_values = box_plot_dict["values"]
+        # has_outliers = []
+        # outlier_row_indices = {}
+        # for col in X.columns:
+        #     box_plot_dict = OutliersDataCheck.get_boxplot_data(X.ww[col])
+        #     box_plot_dict_values = box_plot_dict["values"]
 
-            pct_outliers = box_plot_dict["pct_outliers"]
-            if pct_outliers > 0 and box_plot_dict["score"] <= 0.9:
-                has_outliers.append(col)
-                outlier_row_indices[col] = (
-                    box_plot_dict_values["low_indices"]
-                    + box_plot_dict_values["high_indices"]
-                )
+        #     pct_outliers = box_plot_dict["pct_outliers"]
+        #     if pct_outliers > 0 and box_plot_dict["score"] <= 0.9:
+        #         has_outliers.append(col)
+        #         outlier_row_indices[col] = (
+        #             box_plot_dict_values["low_indices"]
+        #             + box_plot_dict_values["high_indices"]
+        #         )
 
+        outlier_row_indices = OutliersDataCheck.get_outlier_rows(X)
+        has_outliers = list(outlier_row_indices.keys())
         if not len(has_outliers):
             return messages
 
@@ -112,6 +114,23 @@ class OutliersDataCheck(DataCheck):
             ).to_dict()
         )
         return messages
+
+
+
+    @staticmethod
+    def get_outlier_rows(X):
+        outlier_row_indices = {}
+        for col in X.columns:
+            box_plot_dict = OutliersDataCheck.get_boxplot_data(X.ww[col])
+            box_plot_dict_values = box_plot_dict["values"]
+
+            pct_outliers = box_plot_dict["pct_outliers"]
+            if pct_outliers > 0 and box_plot_dict["score"] <= 0.9:
+                outlier_row_indices[col] = (
+                    box_plot_dict_values["low_indices"]
+                    + box_plot_dict_values["high_indices"]
+                )
+        return outlier_row_indices
 
     @staticmethod
     def get_boxplot_data(data_):

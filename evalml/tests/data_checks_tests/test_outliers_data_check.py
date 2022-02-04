@@ -54,7 +54,7 @@ def test_outliers_data_check_warnings():
                 )
             ],
         ).to_dict()
-    ]
+    ] 
 
 
 def test_outliers_data_check_warnings_with_duplicate_outlier_indices():
