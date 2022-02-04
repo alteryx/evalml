@@ -359,3 +359,28 @@ def test_estimator_fit_predict_and_predict_proba_respect_custom_indices(
         )
     X_pred = estimator.predict(X)
     pd.testing.assert_index_equal(X_original_index, X_pred.index, check_names=True)
+
+
+@pytest.mark.parametrize("estimator_class", _all_estimators())
+@pytest.mark.parametrize(
+    "problem_type",
+    [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
+)
+def test_estimator_feature_importance(
+    problem_type, estimator_class, X_y_binary, X_y_multi, X_y_regression
+):
+    if estimator_class not in get_estimators(problem_type):
+        return
+    if problem_type == ProblemTypes.BINARY:
+        X, y = X_y_binary
+    elif problem_type == ProblemTypes.MULTICLASS:
+        X, y = X_y_multi
+    elif problem_type == ProblemTypes.REGRESSION:
+        X, y = X_y_regression
+
+    X = pd.DataFrame(X)
+    y = pd.Series(y)
+
+    estimator = estimator_class()
+    estimator.fit(X, y)
+    assert not estimator.feature_importance.isna().any()

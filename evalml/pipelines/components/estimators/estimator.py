@@ -1,6 +1,7 @@
 """A component that fits and predicts given data."""
 from abc import abstractmethod
 
+import pandas as pd
 from pandas.core.indexes import range
 
 from evalml.exceptions import MethodPropertyNotFoundError
@@ -136,7 +137,7 @@ class Estimator(ComponentBase):
             MethodPropertyNotFoundError: If estimator does not have a feature_importance method or a component_obj that implements feature_importance.
         """
         try:
-            return self._component_obj.feature_importances_
+            return pd.Series(self._component_obj.feature_importances_)
         except AttributeError:
             raise MethodPropertyNotFoundError(
                 "Estimator requires a feature_importance property or a component_obj that implements feature_importances_"

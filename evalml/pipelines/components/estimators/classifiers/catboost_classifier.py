@@ -3,6 +3,7 @@ import copy
 import warnings
 
 import numpy as np
+import pandas as pd
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -143,4 +144,4 @@ class CatBoostClassifier(Estimator):
     @property
     def feature_importance(self):
         """Feature importance of fitted CatBoost classifier."""
-        return self._component_obj.get_feature_importance()
+        return pd.Series(self._component_obj.get_feature_importance())

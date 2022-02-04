@@ -128,7 +128,7 @@ class BaselineClassifier(Estimator):
         Returns:
             np.ndarray (float): An array of zeroes
         """
-        return np.zeros(self._num_features)
+        return pd.Series(np.zeros(self._num_features))
 
     @property
     def classes_(self):
