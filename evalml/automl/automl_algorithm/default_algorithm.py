@@ -25,7 +25,7 @@ from evalml.pipelines.utils import (
     make_pipeline,
 )
 from evalml.problem_types import is_regression, is_time_series
-from evalml.utils import classproperty, infer_feature_types
+from evalml.utils import infer_feature_types
 from evalml.utils.logger import get_logger
 
 
@@ -144,10 +144,10 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                         " and Real!"
                     )
 
-    @classproperty
+    @property
     def default_max_batches(self):
         """Returns the number of max batches AutoMLSearch should run by default."""
-        return 4
+        return 4 if not is_time_series(self.problem_type) else 3
 
     def _naive_estimators(self):
         if is_regression(self.problem_type):

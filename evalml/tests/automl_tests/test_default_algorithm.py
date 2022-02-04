@@ -21,8 +21,6 @@ from evalml.problem_types import ProblemTypes
 
 
 def test_default_algorithm_init(X_y_binary):
-    assert DefaultAlgorithm.default_max_batches == 4
-
     X, y = X_y_binary
     problem_type = ProblemTypes.BINARY
     sampler_name = "Undersampler"
@@ -35,6 +33,12 @@ def test_default_algorithm_init(X_y_binary):
     assert algo.batch_number == 0
     assert algo.allowed_pipelines == []
     assert algo.verbose is True
+    assert algo.default_max_batches == 4
+
+    algo = DefaultAlgorithm(
+        X, y, ProblemTypes.TIME_SERIES_BINARY, sampler_name, verbose=True
+    )
+    assert algo.default_max_batches == 3
 
 
 def test_default_algorithm_custom_hyperparameters_error(X_y_binary):

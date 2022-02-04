@@ -558,16 +558,6 @@ class AutoMLSearch:
         self.max_iterations = max_iterations
         self.max_batches = max_batches
         self._pipelines_per_batch = _pipelines_per_batch
-        if not self.max_iterations and not self.max_time and not self.max_batches:
-            _automl_klass = (
-                DefaultAlgorithm
-                if automl_algorithm == "default"
-                else IterativeAlgorithm
-            )
-            self.max_batches = _automl_klass.default_max_batches
-            self.logger.info(
-                f"Using default limit of max_batches={self.max_batches}.\n"
-            )
 
         if patience and (not isinstance(patience, int) or patience < 0):
             raise ValueError(
@@ -733,6 +723,12 @@ class AutoMLSearch:
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")
+
+        if not self.max_iterations and not self.max_time and not self.max_batches:
+            self.max_batches = self.automl_algorithm.default_max_batches
+            self.logger.info(
+                f"Using default limit of max_batches={self.max_batches}.\n"
+            )
 
         self.allowed_pipelines = self.automl_algorithm.allowed_pipelines
         self.allowed_model_families = [p.model_family for p in self.allowed_pipelines]
