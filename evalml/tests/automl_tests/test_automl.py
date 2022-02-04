@@ -299,11 +299,11 @@ def test_pipeline_limits(
         automl.search()
     out = caplog.text
     if verbose:
-        assert "Using default limit of max_batches=1." in out
-        assert "Searching up to 1 batches for a total of" in out
+        assert "Using default limit of max_batches=4." in out
+        assert "Searching up to 4 batches for a total of" in out
     else:
-        assert "Using default limit of max_batches=1." not in out
-        assert "Searching up to 1 batches for a total of" not in out
+        assert "Using default limit of max_batches=4." not in out
+        assert "Searching up to 4 batches for a total of" not in out
     assert len(automl.results["pipeline_results"]) > 0
 
     caplog.clear()
@@ -578,7 +578,7 @@ def test_automl_tuner_exception(
 
 
 @patch("evalml.automl.automl_algorithm.DefaultAlgorithm.next_batch")
-def testautoml_algorithm(
+def test_automl_algorithm(
     mock_algo_next_batch,
     AutoMLTestEnv,
     X_y_binary,
@@ -2598,7 +2598,7 @@ def test_search_with_text(AutoMLTestEnv):
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
         automl.search()
-    assert automl.rankings["pipeline_name"][1:].str.contains("Natural Language").all()
+    assert automl.rankings["pipeline_name"][1:-1].str.contains("Natural Language").all()
 
 
 @pytest.mark.parametrize(
@@ -4166,7 +4166,11 @@ def test_search_with_text_nans(mock_score, mock_fit, nans):
     X.ww.init(logical_types={"b": "NaturalLanguage"})
     y = pd.Series([0] * 25 + [1] * 75)
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=False,
+        max_batches=1,
     )
     automl.search()
     for (x, _), _ in mock_fit.call_args_list:

@@ -279,7 +279,6 @@ def test_random_seed(X_y_binary):
         y_train=y,
         problem_type="binary",
         objective=Precision(),
-        max_batches=1,
         random_seed=0,
         n_jobs=1,
     )
@@ -1007,6 +1006,7 @@ def test_automl_search_dictionary_undersampler(
         optimize_thresholds=False,
         sampler_method="Undersampler",
         pipeline_parameters=pipeline_parameters,
+        max_batches=3,
     )
     # check that the sampling dict got set properly
     automl.search()
@@ -1062,6 +1062,7 @@ def test_automl_search_dictionary_oversampler(
         sampler_method="Oversampler",
         optimize_thresholds=False,
         pipeline_parameters=pipeline_parameters,
+        max_batches=3,
     )
     # check that the sampling dict got set properly
     pipelines = automl.allowed_pipelines
@@ -1109,6 +1110,7 @@ def test_automl_search_sampler_dictionary_keys(
         sampler_method=sampler,
         optimize_thresholds=False,
         pipeline_parameters=pipeline_parameters,
+        max_batches=3,
     )
     if errors:
         with pytest.raises(

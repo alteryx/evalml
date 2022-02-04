@@ -20,7 +20,7 @@ class DummyAlgorithm(AutoMLAlgorithm):
         pass
 
 
-def testautoml_algorithm_dummy():
+def test_automl_algorithm_dummy():
     algo = DummyAlgorithm()
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
@@ -41,7 +41,7 @@ def testautoml_algorithm_dummy():
         algo.next_batch()
 
 
-def testautoml_algorithm_invalid_pipeline_add(dummy_regression_pipeline):
+def test_automl_algorithm_invalid_pipeline_add(dummy_regression_pipeline):
     algo = DummyAlgorithm()
     with pytest.raises(
         PipelineNotFoundError,
