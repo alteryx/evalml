@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Standardized feature importance for estimators :pr:`3305`
     * Fixes
     * Changes
     * Documentation Changes
