@@ -714,6 +714,7 @@ class AutoMLSearch:
                 pipeline_params=parameters,
                 custom_hyperparameters=custom_hyperparameters,
                 allow_long_running_models=allow_long_running_models,
+                features=features,
                 verbose=self.verbose,
             )
         elif _automl_algorithm == "default":
@@ -728,6 +729,7 @@ class AutoMLSearch:
                 custom_hyperparameters=self.custom_hyperparameters,
                 text_in_ensembling=text_in_ensembling,
                 allow_long_running_models=allow_long_running_models,
+                features=features,
                 verbose=self.verbose,
             )
         else:

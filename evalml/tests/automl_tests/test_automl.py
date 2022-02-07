@@ -6,6 +6,8 @@ from itertools import product
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import cloudpickle
+from evalml.automl import automl_algorithm
+import featuretools as ft
 import numpy as np
 import pandas as pd
 import pytest
@@ -5556,3 +5558,47 @@ def test_cv_validation_scores_time_series(
     assert len(validation_vals) == 1
     assert validation_vals[0] == 0.5
     assert cv_vals[0] == validation_vals[0]
+
+
+@pytest.mark.parametrize(
+    "automl_algorithm",
+    [
+        "iterative"
+    ],
+)
+def test_automl_accepts_features(
+    automl_algorithm,
+    X_y_binary,
+    AutoMLTestEnv,
+):
+    X, y = X_y_binary
+    X_pd = pd.DataFrame(X)
+    X_pd.columns = X_pd.columns.astype(str)
+    X_transform = X_pd.iloc[len(X) // 3 :]
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X", dataframe=X_transform, index="index", make_index=True
+    )
+    _, features = ft.dfs(
+        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
+    )
+
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=False,
+        max_batches=3,
+        features=features,
+        _automl_algorithm=automl_algorithm,
+    )
+    assert automl._automl_algorithm.features == features
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={automl.objective.name: 1.0}):
+        automl.search()
+    assert all(
+        [p["DFS Transformer"]['features'] == features for p in automl.full_rankings["parameters"][1:]]
+    )
+
+
