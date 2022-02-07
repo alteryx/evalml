@@ -1,11 +1,11 @@
 """Transformer to drop rows specified by row indices."""
+from evalml.data_checks.outliers_data_check import OutliersDataCheck
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
 
-from evalml.data_checks.outliers_data_check import OutliersDataCheck
 
-class DropRowsTransformer(Transformer):
-    """Transformer to drop outliers
+class DropOutliersTransformer(Transformer):
+    """Transformer to drop outliers.
 
     Args:
         random_seed (int): Seed for the random number generator. Is not used by this component. Defaults to 0.

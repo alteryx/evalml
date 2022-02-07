@@ -115,8 +115,6 @@ class OutliersDataCheck(DataCheck):
         )
         return messages
 
-
-
     @staticmethod
     def get_outlier_rows(X):
         outlier_row_indices = {}
