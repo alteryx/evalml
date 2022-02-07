@@ -5,6 +5,7 @@
     * Enhancements
     * Fixes
     * Changes
+        * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
     * Documentation Changes
     * Testing Changes
 
