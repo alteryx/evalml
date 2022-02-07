@@ -119,7 +119,9 @@ def test_feature_importance(ts_data):
     regressor = ExponentialSmoothingRegressor()
     with patch.object(regressor, "_component_obj"):
         regressor.fit(X, y)
-        assert regressor.feature_importance == np.zeros(1)
+        pd.testing.assert_series_equal(
+            regressor.feature_importance, pd.Series(np.zeros(1))
+        )
 
 
 @pytest.mark.parametrize(
