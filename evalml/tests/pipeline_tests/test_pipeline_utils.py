@@ -987,7 +987,7 @@ def test_make_pipeline_features_and_dfs(X_y_binary):
         estimator,
         ProblemTypes.BINARY,
         sampler_name="Undersampler",
-        features = features
+        features=features,
     )
-    
+
     assert "DFS Transformer" == pipeline.component_graph.compute_order[0]

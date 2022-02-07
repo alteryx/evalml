@@ -185,6 +185,7 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                         known_in_advance=self._pipeline_params.get("pipeline", {}).get(
                             "known_in_advance", None
                         ),
+                        features=self.features,
                     )
                     for estimator in allowed_estimators
                 ]
@@ -418,6 +419,8 @@ class IterativeAlgorithm(AutoMLAlgorithm):
                 component_parameters["n_jobs"] = self.n_jobs
             if "number_features" in init_params:
                 component_parameters["number_features"] = self.number_features
+            if name == "DFS Transformer" and self.features:
+                component_parameters["features"] = self.features
             names_to_check = [
                 "Drop Columns Transformer",
                 "Known In Advance Pipeline - Select Columns Transformer",

@@ -21,7 +21,7 @@ class DFSTransformer(Transformer):
     """{}"""
 
     def __init__(self, index="index", features=None, random_seed=0, **kwargs):
-        parameters = {"index": index}
+        parameters = {"index": index, "features": features}
         if not isinstance(index, str):
             raise TypeError(f"Index provided must be string, got {type(index)}")
 
