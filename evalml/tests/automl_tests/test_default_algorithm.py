@@ -757,7 +757,7 @@ def test_evalml_algo_accept_features(mock_get_names, X_y_binary):
         sampler_name,
         num_long_explore_pipelines=1,
         num_long_pipelines_per_batch=1,
-        features=features
+        features=features,
     )
 
     for _ in range(6):
@@ -765,4 +765,4 @@ def test_evalml_algo_accept_features(mock_get_names, X_y_binary):
         add_result(algo, batch)
         for pipeline in batch:
             if not isinstance(pipeline.estimator, StackedEnsembleClassifier):
-                assert pipeline.parameters["DFS Transformer"]['features'] == features
+                assert pipeline.parameters["DFS Transformer"]["features"] == features

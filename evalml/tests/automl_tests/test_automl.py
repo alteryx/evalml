@@ -6,7 +6,6 @@ from itertools import product
 from unittest.mock import MagicMock, PropertyMock, patch
 
 import cloudpickle
-from evalml.automl import automl_algorithm
 import featuretools as ft
 import numpy as np
 import pandas as pd
@@ -5562,9 +5561,7 @@ def test_cv_validation_scores_time_series(
 
 @pytest.mark.parametrize(
     "automl_algorithm",
-    [
-        "iterative"
-    ],
+    ["iterative"],
 )
 def test_automl_accepts_features(
     automl_algorithm,
@@ -5598,7 +5595,8 @@ def test_automl_accepts_features(
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
         automl.search()
     assert all(
-        [p["DFS Transformer"]['features'] == features for p in automl.full_rankings["parameters"][1:]]
+        [
+            p["DFS Transformer"]["features"] == features
+            for p in automl.full_rankings["parameters"][1:]
+        ]
     )
-
-

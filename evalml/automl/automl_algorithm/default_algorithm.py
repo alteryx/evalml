@@ -210,7 +210,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 known_in_advance=self._pipeline_params.get("pipeline", {}).get(
                     "known_in_advance", None
                 ),
-                features=self.features
+                features=self.features,
             )
             for estimator in estimators
         ]
@@ -354,7 +354,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     known_in_advance=self._pipeline_params.get("pipeline", {}).get(
                         "known_in_advance", None
                     ),
-                    features=self.features
+                    features=self.features,
                 )
                 for estimator in estimators
             ]
@@ -583,7 +583,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 sampler_name=self.sampler_name,
                 parameters=categorical_pipeline_parameters,
                 extra_components_before=[SelectColumns],
-                features=self.features
+                features=self.features,
             )
             return categorical_pipeline
         else:
@@ -598,6 +598,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 sampler_name=self.sampler_name,
                 parameters=numeric_pipeline_parameters,
                 extra_components_after=[SelectColumns],
-                features=self.features
+                features=self.features,
             )
             return numeric_pipeline
