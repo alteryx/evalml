@@ -9,7 +9,6 @@ from .automl_algorithm import AutoMLAlgorithm
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
-    DFSTransformer,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
 )
