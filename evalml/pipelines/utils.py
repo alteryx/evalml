@@ -438,7 +438,7 @@ def make_pipeline(
         )
         extra_components_before = extra_components_before or []
         extra_components_after = extra_components_after or []
-        dfs_transformer = [DFSTransformer] or []
+        dfs_transformer = [DFSTransformer] if features else []
         estimator_component = [estimator] if use_estimator else []
         complete_component_list = (
             dfs_transformer

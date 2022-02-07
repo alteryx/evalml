@@ -5561,7 +5561,7 @@ def test_cv_validation_scores_time_series(
 
 @pytest.mark.parametrize(
     "automl_algorithm",
-    ["iterative"],
+    ["iterative", "default"],
 )
 def test_automl_accepts_features(
     automl_algorithm,

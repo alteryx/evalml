@@ -730,9 +730,23 @@ def test_default_algorithm_time_series_known_in_advance(
     assert len(long_estimators) == 3
 
 
+@pytest.mark.parametrize("split", ["numeric-only", "categorical-only"])
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
-def test_evalml_algo_accept_features(mock_get_names, X_y_binary):
+def test_default_algorithm_accept_features(mock_get_names, X_y_binary, split):
     X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X["A"] = "a"
+    X["B"] = "b"
+    X["C"] = "c"
+
+    non_categorical_columns = ["0", "1", "2"]
+    categorical_columns = ["A", "B", "C"]
+
+    if split == "split" or split == "numeric-only":
+        mock_get_names.return_value = non_categorical_columns
+    else:
+        mock_get_names.return_value = None
+
     X_pd = pd.DataFrame(X)
     X_pd.columns = X_pd.columns.astype(str)
     X_transform = X_pd.iloc[len(X) // 3 :]
@@ -744,8 +758,6 @@ def test_evalml_algo_accept_features(mock_get_names, X_y_binary):
     _, features = ft.dfs(
         entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
     )
-
-    mock_get_names.return_value = ["0", "1", "2"]
 
     problem_type = ProblemTypes.BINARY
     sampler_name = None
@@ -760,9 +772,25 @@ def test_evalml_algo_accept_features(mock_get_names, X_y_binary):
         features=features,
     )
 
-    for _ in range(6):
+    for _ in range(2):
         batch = algo.next_batch()
         add_result(algo, batch)
         for pipeline in batch:
             if not isinstance(pipeline.estimator, StackedEnsembleClassifier):
+                assert "DFS Transformer" in pipeline.component_graph.compute_order
+                assert pipeline.parameters["DFS Transformer"]["features"] == features
+
+    if split == "split" or split == "numeric-only":
+        assert algo._selected_cols == non_categorical_columns
+    if split == "split" or split == "categorical-only":
+        algo._selected_cat_cols = categorical_columns
+        assert algo._selected_cat_cols == categorical_columns
+
+    for _ in range(2):
+        batch = algo.next_batch()
+        add_result(algo, batch)
+        for pipeline in batch:
+            if not isinstance(pipeline.estimator, StackedEnsembleClassifier):
+                print(pipeline.component_graph.compute_order)
+                assert "DFS Transformer" in pipeline.component_graph.compute_order
                 assert pipeline.parameters["DFS Transformer"]["features"] == features
