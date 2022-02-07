@@ -6,6 +6,7 @@
         * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
         * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
         * Added more specific data check errors to ``DatetimeFormatDataCheck`` :pr:`3288`
+        * Added ``features`` as a parameter for ``AutoMLSearch`` and add ``DFSTransformer`` to pipelines when ``features`` are present :pr:`3309`
     * Fixes
         * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:`3280`
         * Fixed bug where feature importance on time series pipelines only showed 0 for time index :pr:`3285`
