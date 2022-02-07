@@ -289,7 +289,7 @@ def test_describe_component():
     }
     assert ft.describe(return_dict=True) == {
         "name": "DFS Transformer",
-        "parameters": {"index": "index"},
+        "parameters": {"index": "index", "features": None},
     }
     assert us.describe(return_dict=True) == {
         "name": "Undersampler",
