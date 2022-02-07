@@ -9,6 +9,7 @@ from .automl_algorithm import AutoMLAlgorithm
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
+    DFSTransformer,
     RFClassifierSelectFromModel,
     RFRegressorSelectFromModel,
 )
@@ -209,6 +210,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 known_in_advance=self._pipeline_params.get("pipeline", {}).get(
                     "known_in_advance", None
                 ),
+                features=self.features
             )
             for estimator in estimators
         ]
@@ -352,6 +354,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                     known_in_advance=self._pipeline_params.get("pipeline", {}).get(
                         "known_in_advance", None
                     ),
+                    features=self.features
                 )
                 for estimator in estimators
             ]
@@ -493,6 +496,8 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             # Inspects each component and adds the following parameters when needed
             if "n_jobs" in init_params:
                 component_parameters["n_jobs"] = self.n_jobs
+            if name == "DFS Transformer" and self.features:
+                component_parameters["features"] = self.features
             names_to_check = [
                 "Drop Columns Transformer",
                 "Known In Advance Pipeline - Select Columns Transformer",
@@ -578,6 +583,7 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 sampler_name=self.sampler_name,
                 parameters=categorical_pipeline_parameters,
                 extra_components_before=[SelectColumns],
+                features=self.features
             )
             return categorical_pipeline
         else:
@@ -592,5 +598,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 sampler_name=self.sampler_name,
                 parameters=numeric_pipeline_parameters,
                 extra_components_after=[SelectColumns],
+                features=self.features
             )
             return numeric_pipeline

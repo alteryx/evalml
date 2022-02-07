@@ -1,5 +1,6 @@
 from unittest.mock import patch
 
+import featuretools as ft
 import numpy as np
 import pandas as pd
 import pytest
@@ -727,3 +728,41 @@ def test_default_algorithm_time_series_known_in_advance(
     long_estimators = set([pipeline.estimator.name for pipeline in long_2])
     assert len(long_2) == 30
     assert len(long_estimators) == 3
+
+
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_evalml_algo_accept_features(mock_get_names, X_y_binary):
+    X, y = X_y_binary
+    X_pd = pd.DataFrame(X)
+    X_pd.columns = X_pd.columns.astype(str)
+    X_transform = X_pd.iloc[len(X) // 3 :]
+
+    es = ft.EntitySet()
+    es = es.add_dataframe(
+        dataframe_name="X", dataframe=X_transform, index="index", make_index=True
+    )
+    _, features = ft.dfs(
+        entityset=es, target_dataframe_name="X", trans_primitives=["absolute"]
+    )
+
+    mock_get_names.return_value = ["0", "1", "2"]
+
+    problem_type = ProblemTypes.BINARY
+    sampler_name = None
+
+    algo = DefaultAlgorithm(
+        X,
+        y,
+        problem_type,
+        sampler_name,
+        num_long_explore_pipelines=1,
+        num_long_pipelines_per_batch=1,
+        features=features
+    )
+
+    for _ in range(6):
+        batch = algo.next_batch()
+        add_result(algo, batch)
+        for pipeline in batch:
+            if not isinstance(pipeline.estimator, StackedEnsembleClassifier):
+                assert pipeline.parameters["DFS Transformer"]['features'] == features
