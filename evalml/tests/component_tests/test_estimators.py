@@ -383,4 +383,6 @@ def test_estimator_feature_importance(
 
     estimator = estimator_class()
     estimator.fit(X, y)
+
     assert not estimator.feature_importance.isna().any()
+    assert len(X.columns) == len(estimator.feature_importance)
