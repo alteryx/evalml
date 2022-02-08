@@ -24,7 +24,6 @@ from evalml.pipelines.components import (  # noqa: F401
     ComponentBase,
     DateTimeFeaturizer,
     DropColumns,
-    DropNaNRows,
     DropNullColumns,
     DropRowsTransformer,
     EmailFeaturizer,
