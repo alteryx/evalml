@@ -8,7 +8,7 @@
         * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
     * Documentation Changes
     * Testing Changes
-
+        * Add auto approve dependency workflow schedule for every 30 mins :pr:`3312`
 
 .. warning::
 
