@@ -2,7 +2,6 @@
 from collections import namedtuple
 
 import pandas as pd
-from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
 from evalml.pipelines import (
@@ -14,6 +13,8 @@ from evalml.pipelines import (
     TimeSeriesRegressionPipeline,
 )
 from evalml.preprocessing.data_splitters import (
+    KFold,
+    StratifiedKFold,
     TimeSeriesSplit,
     TrainingValidationSplit,
 )

@@ -2869,3 +2869,22 @@ def test_fit_predict_proba_types(problem_type, X_y_binary, X_y_multi):
         ValueError, match="Input X data types are different from the input types"
     ):
         pipeline.predict_proba(X2)
+
+
+def test_pipeline_cache_clone():
+    component_graph = {
+        "Imputer": ["Imputer", "X", "y"],
+        "Undersampler": ["Undersampler", "Imputer.x", "y"],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            "Undersampler.x",
+            "Undersampler.y",
+        ],
+    }
+    cache = {"some_hash": "some_value"}
+    cg = ComponentGraph(component_graph, cached_data=cache)
+    pipeline = BinaryClassificationPipeline(cg)
+
+    assert pipeline.component_graph.cached_data == cache
+    p2 = pipeline.clone()
+    assert p2.component_graph.cached_data == cache

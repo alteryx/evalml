@@ -106,7 +106,8 @@ class AutoMLAlgorithm(ABC):
         n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
         input_pipelines = []
         cached_data = {
-            mf: x["cached_data"] for mf, x in self._best_pipeline_info.items()
+            model_family: x["cached_data"]
+            for model_family, x in self._best_pipeline_info.items()
         }
         for pipeline_dict in best_pipelines:
             pipeline = pipeline_dict["pipeline"]

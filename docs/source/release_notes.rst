@@ -3,9 +3,23 @@
 
 **Future Releases**
     * Enhancements
+        * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
+    * Fixes
+    * Changes
+        * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
+    * Documentation Changes
+    * Testing Changes
+
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.44.0 Feb. 04, 2022**
+    * Enhancements
         * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
         * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
-        * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
+        * Added more specific data check errors to ``DatetimeFormatDataCheck`` :pr:`3288`
     * Fixes
         * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:`3280`
         * Fixed bug where feature importance on time series pipelines only showed 0 for time index :pr:`3285`

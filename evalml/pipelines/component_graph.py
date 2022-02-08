@@ -84,7 +84,6 @@ class ComponentGraph:
             )
         self._validate_component_dict()
         self.cached_data = cached_data
-        # self.cached_data = None
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
