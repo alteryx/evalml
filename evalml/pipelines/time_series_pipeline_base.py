@@ -4,7 +4,7 @@ import woodwork as ww
 
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
-from evalml.utils import drop_rows_with_nans, infer_feature_types
+from evalml.utils import infer_feature_types
 from evalml.utils.gen_utils import are_datasets_separated_by_gap_time_index
 
 
