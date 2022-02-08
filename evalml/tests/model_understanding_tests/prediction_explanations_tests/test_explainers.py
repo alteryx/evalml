@@ -972,6 +972,7 @@ def test_explain_predictions_time_series(ts_data):
             "Time Series Featurizer",
             "DateTime Featurizer",
             "Random Forest Regressor",
+            "Drop Rows Transformer",
         ],
         parameters={
             "pipeline": {
@@ -985,6 +986,9 @@ def test_explain_predictions_time_series(ts_data):
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
+            },
+            "Drop Rows Transformer": {
+                "indices_to_drop": range(0, 3),
             },
             "Random Forest Regressor": {"n_jobs": 1},
         },
@@ -1030,6 +1034,7 @@ def test_explain_predictions_best_worst_time_series(
         component_graph=[
             "Time Series Featurizer",
             "DateTime Featurizer",
+            "Drop Rows Transformer",
             estimator,
         ],
         parameters={
@@ -1044,6 +1049,9 @@ def test_explain_predictions_best_worst_time_series(
                 "max_delay": 2,
                 "forecast_horizon": 1,
                 "time_index": "date",
+            },
+            "Drop Rows Transformer": {
+                "indices_to_drop": range(0, 3),
             },
         },
     )
