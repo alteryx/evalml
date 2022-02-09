@@ -598,6 +598,7 @@ def _make_pipeline_from_multiple_graphs(
     parameters=None,
     pipeline_name=None,
     sub_pipeline_names=None,
+    prior_components=None,
     random_seed=0,
 ):
     """Creates a pipeline from multiple preprocessing pipelines and a final estimator. Final y input to the estimator will be chosen from the last of the input pipelines.
@@ -609,6 +610,7 @@ def _make_pipeline_from_multiple_graphs(
         parameters (Dict): Parameters to initialize pipeline with. Defaults to an empty dictionary.
         pipeline_name (str): Custom name for the final pipeline.
         sub_pipeline_names (Dict): Dictionary mapping original input pipeline names to new names. This will be used to rename components. Defaults to None.
+        prior_components (Dict): Component graph of components preceding the split of multiple graphs. Must be in component graph format, {"Label Encoder": ["Label Encoder", "X", "y"]} and currently restricted to components that only alter X input.
         random_seed (int): Random seed for the pipeline. Defaults to 0.
 
     Returns:
@@ -626,11 +628,13 @@ def _make_pipeline_from_multiple_graphs(
     parameters = copy.deepcopy(parameters) if parameters else {}
     final_components = []
     used_names = []
-    component_graph = (
-        {"Label Encoder": ["Label Encoder", "X", "y"]}
-        if is_classification(problem_type)
-        else {}
-    )
+
+    prior_components = {} if not prior_components else prior_components
+    last_prior_component = list(prior_components.keys())[-1]
+    component_graph = prior_components
+    if is_classification(problem_type):
+        component_graph.update({"Label Encoder": ["Label Encoder", "X", "y"]})
+
     for pipeline in input_pipelines:
         component_pipeline_name = pipeline.name
         name_idx = (
@@ -663,6 +667,11 @@ def _make_pipeline_from_multiple_graphs(
             new_component_name = _make_new_component_name(
                 component_pipeline_name, name, name_idx, sub_pipeline_name
             )
+            first_x_component = (
+                pipeline.component_graph.compute_order[0]
+                if pipeline.component_graph.compute_order[0] != "Label Encoder"
+                else pipeline.component_graph.compute_order[1]
+            )
             for i, item in enumerate(component_list):
                 if i == 0:
                     fitted_comp = handle_component_class(item)
@@ -683,6 +692,9 @@ def _make_pipeline_from_multiple_graphs(
                         new_component_list.append("Label Encoder.y")
                     else:
                         new_component_list.append("y")
+                elif name == first_x_component and last_prior_component:
+                    # if we have prior components, change the X input from the first component of each sub-pipeline to be the last prior components X output.
+                    new_component_list.append(f"{last_prior_component}.x")
                 else:
                     new_component_list.append(item)
             component_graph[new_component_name] = new_component_list
