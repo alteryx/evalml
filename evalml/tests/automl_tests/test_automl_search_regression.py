@@ -456,11 +456,10 @@ def test_automl_supports_time_series_regression(freq, AutoMLTestEnv, ts_data):
             dt_ = result["parameters"]["Time Series Featurizer"].pop("time_index")
         assert dt == dt_
         for param_key, param_val in configuration.items():
-            if "ARIMA Regressor" not in result["parameters"]:
-                assert (
+            assert (
                     result["parameters"]["Time Series Featurizer"][param_key]
                     == configuration[param_key]
-                )
+            )
             assert (
                 result["parameters"]["pipeline"][param_key] == configuration[param_key]
             )
