@@ -369,3 +369,179 @@ def test_ensembler_use_component_preds_multi(
         assert ensemble_input[
             f"Col {i} Random Forest Pipeline - Random Forest Classifier.x"
         ].equals(pd.Series(np.ones(len(y))))
+
+
+def test_stacked_ensemble_cache(X_y_binary):
+    X, y = X_y_binary
+    trained_imputer = Imputer()
+    trained_imputer.fit(X, y)
+    trained_rf = RandomForestClassifier()
+    trained_rf.fit(X, y)
+    cache = {
+        ModelFamily.RANDOM_FOREST: {
+            "random_hash": {
+                "Impute": trained_imputer,
+                "Random Forest Classifier": trained_rf,
+            }
+        }
+    }
+    input_pipelines = [
+        BinaryClassificationPipeline(
+            {
+                "Impute": [Imputer, "X", "y"],
+                "Random Forest Classifier": [RandomForestClassifier, "Impute.x", "y"],
+            },
+        ),
+        BinaryClassificationPipeline(
+            {"RFC": [RandomForestClassifier, "X", "y"]},
+        ),
+    ]
+
+    expected_cached_data = {
+        "random_hash": {
+            "Random Forest Pipeline - Impute": trained_imputer,
+            "Random Forest Pipeline - Random Forest Classifier": trained_rf,
+        }
+    }
+
+    pl = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines,
+        problem_type=ProblemTypes.BINARY,
+        cached_data=cache,
+    )
+    assert pl.component_graph.cached_data == expected_cached_data
+
+
+@patch(
+    "evalml.pipelines.component_graph.ComponentGraph._consolidate_inputs_for_component"
+)
+@patch(
+    "evalml.pipelines.components.transformers.encoders.label_encoder.LabelEncoder.transform"
+)
+@patch("evalml.pipelines.components.transformers.imputers.imputer.Imputer.fit")
+@patch("evalml.pipelines.components.estimators.Estimator.fit")
+@patch("evalml.pipelines.components.transformers.imputers.imputer.Imputer.transform")
+@patch("evalml.pipelines.components.estimators.Estimator.predict")
+@patch("evalml.pipelines.components.estimators.Estimator.predict_proba")
+def test_stacked_ensemble_cache_training(
+    mock_estimator_predict_proba,
+    mock_estimator_predict,
+    mock_transformer_transform,
+    mock_estimator_fit,
+    mock_transform_fit,
+    mock_label,
+    mock_consolidate,
+    X_y_binary,
+):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X.ww.init()
+    mock_estimator_predict.return_value = y
+    mock_transformer_transform.return_value = X
+    mock_label.return_value = y
+
+    trained_imputer = Imputer()
+    trained_rf = RandomForestClassifier()
+    # make the components 'trained'
+    trained_imputer._is_fitted = True
+    trained_rf._is_fitted = True
+    hashes = hash(tuple(X.index))
+    cache = {
+        ModelFamily.RANDOM_FOREST: {
+            hashes: {"Impute": trained_imputer, "Random Forest Classifier": trained_rf}
+        }
+    }
+
+    input_pipelines = [
+        BinaryClassificationPipeline(
+            {
+                "Impute": [Imputer, "X", "y"],
+                "Random Forest Classifier": [RandomForestClassifier, "Impute.x", "y"],
+            },
+        )
+    ]
+
+    mock_consolidate.return_value = (X, y)
+
+    pl_cache = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines,
+        problem_type=ProblemTypes.BINARY,
+        cached_data=cache,
+    )
+    pl_no_cache = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines,
+        problem_type=ProblemTypes.BINARY,
+        cached_data=None,
+    )
+
+    # ensure we are not calling transform or fit for the components we have in our cache
+    pl_cache.fit(X, y)
+    mock_transform_fit.assert_not_called()
+    mock_estimator_fit.assert_called_once()
+
+    mock_estimator_fit.reset_mock()
+    mock_transform_fit.reset_mock()
+
+    # ensure if we remove the cache, we do train the components appropriately
+    predicted = pd.DataFrame(
+        {
+            "0": [0.9 if i == 1 else 0.1 for i in y],
+            "1": [0.1 if i == 1 else 0.9 for i in y],
+        }
+    )
+    predicted.ww.init()
+    mock_estimator_predict_proba.return_value = predicted
+    pl_no_cache.fit(X, y)
+    mock_transform_fit.assert_called_once()
+    assert mock_estimator_fit.call_count == 2
+
+
+@pytest.mark.parametrize("indices", [0, 1])
+def test_stacked_ensemble_cache_train_predict(
+    indices,
+    X_y_binary,
+):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+    X2 = X.sample(frac=1)
+
+    trained_imputer = Imputer()
+    trained_rf = RandomForestClassifier()
+    # make the components 'trained'
+    trained_imputer.fit(X2, y)
+    trained_rf.fit(X2, y)
+    if indices == 0:
+        hashes = hash(tuple(X2.index))
+    else:
+        hashes = hash(tuple(X.index))
+    cache = {
+        ModelFamily.RANDOM_FOREST: {
+            hashes: {"Impute": trained_imputer, "Random Forest Classifier": trained_rf}
+        }
+    }
+
+    input_pipelines = [
+        BinaryClassificationPipeline(
+            {
+                "Impute": [Imputer, "X", "y"],
+                "Random Forest Classifier": [RandomForestClassifier, "Impute.x", "y"],
+            },
+        )
+    ]
+
+    pl_cache = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines,
+        problem_type=ProblemTypes.BINARY,
+        cached_data=cache,
+    )
+    pl_cache_copy = pl_cache.clone()
+    pl_cache.fit(X2, y)
+    pl_cache_copy.fit(X2, y)
+
+    try:
+        pd.testing.assert_frame_equal(
+            pl_cache.predict_proba(X2), pl_cache_copy.predict_proba(X2)
+        )
+        assert indices == 0
+    except AssertionError:
+        assert indices == 1
