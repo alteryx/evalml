@@ -600,7 +600,7 @@ def test_default_algorithm_time_series(
             assert pipeline.model_family not in naive_model_families
         assert algo._tuners[pipeline.name]
         assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
-        if not isinstance(pipeline.estimator, (ARIMARegressor, ProphetRegressor)):
+        if not isinstance(pipeline.estimator, (ProphetRegressor)):
             assert pipeline.parameters["DateTime Featurizer"]["time_index"]
     add_result(algo, final_batch)
 

@@ -109,7 +109,6 @@ def test_make_pipeline(
             delayed_features = (
                 [TimeSeriesFeaturizer]
                 if is_time_series(problem_type)
-                and estimator_class.model_family != ModelFamily.ARIMA
                 else []
             )
 
@@ -124,7 +123,7 @@ def test_make_pipeline(
             datetime = (
                 [DateTimeFeaturizer]
                 if estimator_class.model_family
-                not in [ModelFamily.ARIMA, ModelFamily.PROPHET]
+                not in [ModelFamily.PROPHET]
                 and "dates" in column_names
                 else []
             )
