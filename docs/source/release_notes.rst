@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Added `TimeSeriesFeaturizer` into ARIMA-based pipelines :pr:`3313`
     * Fixes
     * Changes
         * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
