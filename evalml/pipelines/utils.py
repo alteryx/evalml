@@ -126,6 +126,7 @@ def _get_datetime(X, y, problem_type, estimator_class, sampler_name=None):
 
     add_datetime_featurizer = len(datetime_cols) > 0
     if add_datetime_featurizer and estimator_class.model_family not in [
+        ModelFamily.ARIMA,
         ModelFamily.PROPHET,
     ]:
         components.append(DateTimeFeaturizer)
