@@ -556,7 +556,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                 extra_components_after=[SelectColumns],
                 use_estimator=False,
             )
-            prior_components = {"DFS Transformer": ["DFS Transformer", "X", "y"]}
+            prior_components = (
+                {"DFS Transformer": ["DFS Transformer", "X", "y"]}
+                if self.features
+                else {}
+            )
             input_pipelines = [numeric_pipeline, categorical_pipeline]
             sub_pipeline_names = {
                 numeric_pipeline.name: "Numeric",

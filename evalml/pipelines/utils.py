@@ -630,7 +630,9 @@ def _make_pipeline_from_multiple_graphs(
     used_names = []
 
     prior_components = {} if not prior_components else prior_components
-    last_prior_component = list(prior_components.keys())[-1] if prior_components else None
+    last_prior_component = (
+        list(prior_components.keys())[-1] if prior_components else None
+    )
     component_graph = prior_components
     if is_classification(problem_type):
         component_graph.update({"Label Encoder": ["Label Encoder", "X", "y"]})
