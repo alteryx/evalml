@@ -107,9 +107,7 @@ def test_make_pipeline(
             assert isinstance(pipeline, pipeline_class)
             label_encoder = [LabelEncoder] if is_classification(problem_type) else []
             delayed_features = (
-                [TimeSeriesFeaturizer]
-                if is_time_series(problem_type)
-                else []
+                [TimeSeriesFeaturizer] if is_time_series(problem_type) else []
             )
 
             if estimator_class.model_family != ModelFamily.CATBOOST and any(
@@ -123,7 +121,7 @@ def test_make_pipeline(
             datetime = (
                 [DateTimeFeaturizer]
                 if estimator_class.model_family
-                not in [ModelFamily.PROPHET]
+                not in [ModelFamily.ARIMA, ModelFamily.PROPHET]
                 and "dates" in column_names
                 else []
             )

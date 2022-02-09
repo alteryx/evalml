@@ -215,9 +215,7 @@ def _get_standard_scaler(X, y, problem_type, estimator_class, sampler_name=None)
 
 def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_name=None):
     components = []
-    if (
-        is_time_series(problem_type)
-    ):
+    if is_time_series(problem_type):
         components.append(TimeSeriesFeaturizer)
     return components
 
