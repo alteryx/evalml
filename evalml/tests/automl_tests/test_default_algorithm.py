@@ -730,7 +730,7 @@ def test_default_algorithm_time_series_known_in_advance(
     assert len(long_estimators) == 3
 
 
-@pytest.mark.parametrize("split", ["numeric-only", "categorical-only"])
+@pytest.mark.parametrize("split", ["split", "numeric-only", "categorical-only"])
 @patch("evalml.pipelines.components.FeatureSelector.get_names")
 def test_default_algorithm_accept_features(mock_get_names, X_y_binary, split):
     X, y = X_y_binary
@@ -791,6 +791,5 @@ def test_default_algorithm_accept_features(mock_get_names, X_y_binary, split):
         add_result(algo, batch)
         for pipeline in batch:
             if not isinstance(pipeline.estimator, StackedEnsembleClassifier):
-                print(pipeline.component_graph.compute_order)
                 assert "DFS Transformer" in pipeline.component_graph.compute_order
                 assert pipeline.parameters["DFS Transformer"]["features"] == features
