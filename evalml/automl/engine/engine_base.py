@@ -111,7 +111,7 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
         y (pd.Series): Target to train on.
         automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback.
         schema (bool): Whether to use the schemas for X and y. Defaults to True.
-        get_hashes (bool): Whether to return the hashes of the data used to train (and potentially threshold). Defualts to False
+        get_hashes (bool): Whether to return the hashes of the data used to train (and potentially threshold). Defaults to False
 
     Returns:
         pipeline (PipelineBase): A trained pipeline instance.
