@@ -488,9 +488,10 @@ def test_predict_and_predict_in_sample(
     if include_delayed_features:
         component_graph = {
             "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
+            "DateTime Featurizer": ["DateTime Featurizer", "Time Series Featurizer.x", "y"],
             "Drop Rows Transformer": [
                 "Drop Rows Transformer",
-                "Time Series Featurizer.x",
+                "DateTime Featurizer.x",
                 "y",
             ],
             estimator_name: [
