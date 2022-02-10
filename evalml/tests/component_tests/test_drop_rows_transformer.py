@@ -65,21 +65,25 @@ def test_drop_rows_transformer_fit_transform_first_rows_to_drop():
     X = pd.DataFrame({"a column": [1, 2, 3], "another col": [4, 5, 6]})
     X_expected = X.copy()
 
-    X_expected = pd.DataFrame({"a column": [3], "another col": [6]})
+    X_expected = pd.DataFrame(index=[2], data={"a column": [3], "another col": [6]})
     drop_rows_transformer = DropRowsTransformer(first_rows_to_drop=2)
     fit_transformed = drop_rows_transformer.fit_transform(X)
-    assert drop_rows_transformer.indices_to_drop == [0, 1]
+    assert pd.Index([0, 1]).equals(drop_rows_transformer.indices_to_drop)
     assert_frame_equal(X_expected, fit_transformed[0])
     assert fit_transformed[1] is None
 
     X['off index'] = ["Pos A", "Pos B", "Pos C"]
-    X.set_index('off index', inplace=True)
+    X = X.set_index('off index')
     X_expected = pd.DataFrame({"off index": ["Pos C"], "a column": [3], "another col": [6]})
+    X_expected = X_expected.set_index('off index')
     drop_rows_transformer = DropRowsTransformer(first_rows_to_drop=2)
     drop_rows_transformer.fit(X)
-    assert drop_rows_transformer.indices_to_drop == ["Pos A", "Pos B"]
+    assert pd.Index(["Pos A", "Pos B"]).equals(drop_rows_transformer.indices_to_drop)
     transformed = drop_rows_transformer.transform(X)
-    assert_frame_equal(transformed[0], fit_transformed[0])
+    print(X_expected)
+    print(transformed)
+    print(transformed[0])
+    assert_frame_equal(X_expected, transformed[0])
     assert transformed[1] is None
 
 
