@@ -79,6 +79,15 @@ class TimeSeriesSplit(BaseCrossValidator):
     def _check_if_empty(data):
         return data is None or data.empty
 
+    @property
+    def is_cv(self):
+        """Returns whether or not the data splitter is a cross-validation data splitter.
+
+        Returns:
+            bool: If the splitter is a cross-validation data splitter
+        """
+        return self._splitter.n_splits > 1
+
     def split(self, X, y=None, groups=None):
         """Get the time series splits.
 

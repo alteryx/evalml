@@ -3,6 +3,20 @@
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+        * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
+    * Documentation Changes
+        * Update README.md with Alteryx link (:pr:`3319`)
+    * Testing Changes
+        * Add auto approve dependency workflow schedule for every 30 mins :pr:`3312`
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.44.0 Feb. 04, 2022**
+    * Enhancements
         * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
         * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
         * Updated ``AutoMLSearch`` to use ``DefaultAlgorithm`` as the default automl algorithm :pr:`3261`, :pr:`3304`
