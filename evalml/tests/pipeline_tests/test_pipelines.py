@@ -19,12 +19,7 @@ from evalml.exceptions import (
     PipelineScoreError,
 )
 from evalml.model_family import ModelFamily
-from evalml.objectives import (
-    CostBenefitMatrix,
-    FraudCost,
-    Precision,
-    get_objective,
-)
+from evalml.objectives import CostBenefitMatrix, FraudCost, Precision, get_objective
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -53,12 +48,7 @@ from evalml.pipelines.components.utils import (
 )
 from evalml.pipelines.utils import _get_pipeline_base_class
 from evalml.preprocessing.utils import is_classification
-from evalml.problem_types import (
-    ProblemTypes,
-    is_binary,
-    is_multiclass,
-    is_time_series,
-)
+from evalml.problem_types import ProblemTypes, is_binary, is_multiclass, is_time_series
 from evalml.utils import infer_feature_types
 
 
@@ -1966,6 +1956,7 @@ def test_predict_has_input_target_name(
                     "forecast_horizon": 2,
                     "time_index": "date",
                 },
+                "Drop Rows Transformer": {"first_rows_to_drop": 2},
             }
         )
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
@@ -1987,6 +1978,7 @@ def test_predict_has_input_target_name(
                     "time_index": "date",
                     "forecast_horizon": 2,
                 },
+                "Drop Rows Transformer": {"first_rows_to_drop": 2},
             }
         )
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
@@ -2008,6 +2000,7 @@ def test_predict_has_input_target_name(
                     "time_index": "date",
                     "forecast_horizon": 2,
                 },
+                "Drop Rows Transformer": {"first_rows_to_drop": 2},
             }
         )
     y = pd.Series(y, name="test target name")
@@ -2207,6 +2200,7 @@ def test_binary_pipeline_string_target_thresholding(
                     "forecast_horizon": 3,
                 },
                 "Time Series Featurizer": {"time_index": "date"},
+                "Drop Rows Transformer": {"first_rows_to_drop": 4},
             }
         )
 

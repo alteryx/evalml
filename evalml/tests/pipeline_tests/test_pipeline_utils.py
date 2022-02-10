@@ -29,12 +29,11 @@ from evalml.pipelines.components import (
     Transformer,
     URLFeaturizer,
 )
-from evalml.pipelines.components.transformers.encoders.label_encoder import (
-    LabelEncoder,
-)
+from evalml.pipelines.components.transformers.encoders.label_encoder import LabelEncoder
 from evalml.pipelines.components.transformers.imputers.per_column_imputer import (
     PerColumnImputer,
 )
+from evalml.pipelines.components.transformers.preprocessing import drop_rows_transformer
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
@@ -150,6 +149,18 @@ def test_make_pipeline(
             email_featurizer = [EmailFeaturizer] if "email" in column_names else []
             url_featurizer = [URLFeaturizer] if "url" in column_names else []
             imputer = [] if (column_names in [["ip"], ["all_null"]]) else [Imputer]
+            drop_rows_transformer = (
+                [DropRowsTransformer]
+                if is_time_series(problem_type)
+                and estimator_class.model_family
+                in [
+                    ModelFamily.EXTRA_TREES,
+                    ModelFamily.RANDOM_FOREST,
+                    ModelFamily.LINEAR_MODEL,
+                    ModelFamily.DECISION_TREE,
+                ]
+                else []
+            )
 
             if is_time_series(problem_type):
                 expected_components = (
@@ -164,6 +175,7 @@ def test_make_pipeline(
                     + datetime
                     + ohe
                     + standard_scaler
+                    + drop_rows_transformer
                     + [estimator_class]
                 )
             else:

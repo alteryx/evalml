@@ -10,9 +10,7 @@ from . import (
     TimeSeriesRegressionPipeline,
 )
 from .binary_classification_pipeline import BinaryClassificationPipeline
-from .multiclass_classification_pipeline import (
-    MulticlassClassificationPipeline,
-)
+from .multiclass_classification_pipeline import MulticlassClassificationPipeline
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
@@ -45,13 +43,8 @@ from evalml.pipelines.components import (  # noqa: F401
     Undersampler,
     URLFeaturizer,
 )
-from evalml.pipelines.components.transformers.encoders.label_encoder import (
-    LabelEncoder,
-)
-from evalml.pipelines.components.utils import (
-    get_estimators,
-    handle_component_class,
-)
+from evalml.pipelines.components.transformers.encoders.label_encoder import LabelEncoder
+from evalml.pipelines.components.utils import get_estimators, handle_component_class
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,

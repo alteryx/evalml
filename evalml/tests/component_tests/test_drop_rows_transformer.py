@@ -2,9 +2,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from evalml.pipelines.components.transformers.preprocessing import (
-    DropRowsTransformer,
-)
+from evalml.pipelines.components.transformers.preprocessing import DropRowsTransformer
 
 
 def test_drop_rows_transformer_init():
@@ -13,7 +11,25 @@ def test_drop_rows_transformer_init():
 
     drop_rows_transformer = DropRowsTransformer(indices_to_drop=[0, 1])
     assert drop_rows_transformer.indices_to_drop == [0, 1]
-    assert drop_rows_transformer.parameters == {"indices_to_drop": [0, 1]}
+    assert drop_rows_transformer.parameters == {
+        "first_rows_to_drop": None,
+        "indices_to_drop": [0, 1],
+    }
+
+    drop_rows_transformer = DropRowsTransformer(first_rows_to_drop=5)
+    assert drop_rows_transformer.first_rows_to_drop == 5
+    assert drop_rows_transformer.parameters == {
+        "first_rows_to_drop": 5,
+        "indices_to_drop": None,
+    }
+
+    with pytest.raises(
+        ValueError,
+        match="Both `indicies_to_drop` and `first_rows_to_drop` cannot be set.",
+    ):
+        drop_rows_transformer = DropRowsTransformer(
+            first_rows_to_drop=5, indices_to_drop=[0, 1]
+        )
 
 
 def test_drop_rows_transformer_init_with_duplicate_indices():

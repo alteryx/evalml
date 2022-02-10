@@ -968,12 +968,24 @@ def test_explain_predictions_time_series(ts_data):
     X, y = ts_data
 
     ts_pipeline = TimeSeriesRegressionPipeline(
-        component_graph=[
-            "Time Series Featurizer",
-            "DateTime Featurizer",
-            "Random Forest Regressor",
-            "Drop Rows Transformer",
-        ],
+        component_graph={
+            "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
+                "Time Series Featurizer.x",
+                "y",
+            ],
+            "Drop Rows Transformer": [
+                "Drop Rows Transformer",
+                "DateTime Featurizer.x",
+                "y",
+            ],
+            "Estimator": [
+                "Random Forest Regressor",
+                "Drop Rows Transformer.x",
+                "Drop Rows Transformer.y",
+            ],
+        },
         parameters={
             "pipeline": {
                 "time_index": "date",
@@ -988,7 +1000,7 @@ def test_explain_predictions_time_series(ts_data):
                 "forecast_horizon": 1,
             },
             "Drop Rows Transformer": {
-                "indices_to_drop": range(0, 3),
+                "first_rows_to_drop": 3,
             },
             "Random Forest Regressor": {"n_jobs": 1},
         },
@@ -1031,12 +1043,24 @@ def test_explain_predictions_best_worst_time_series(
         X, y = ts_data_binary
 
     ts_pipeline = pipeline_class(
-        component_graph=[
-            "Time Series Featurizer",
-            "DateTime Featurizer",
-            "Drop Rows Transformer",
-            estimator,
-        ],
+        component_graph={
+            "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
+                "Time Series Featurizer.x",
+                "y",
+            ],
+            "Drop Rows Transformer": [
+                "Drop Rows Transformer",
+                "DateTime Featurizer.x",
+                "y",
+            ],
+            "Estimator": [
+                estimator,
+                "Drop Rows Transformer.x",
+                "Drop Rows Transformer.y",
+            ],
+        },
         parameters={
             "pipeline": {
                 "time_index": "date",
@@ -1051,7 +1075,7 @@ def test_explain_predictions_best_worst_time_series(
                 "time_index": "date",
             },
             "Drop Rows Transformer": {
-                "indices_to_drop": range(0, 3),
+                "first_rows_to_drop": 3,
             },
         },
     )

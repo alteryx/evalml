@@ -8,6 +8,7 @@ class DropRowsTransformer(Transformer):
 
     Args:
         indices_to_drop (list): List of indices to drop in the input data. Defaults to None.
+        first_rows_to_drop (int): Number of first rows to drop in the input data. Defaults to None.
         random_seed (int): Seed for the random number generator. Is not used by this component. Defaults to 0.
     """
 
@@ -17,13 +18,21 @@ class DropRowsTransformer(Transformer):
     hyperparameter_ranges = {}
     """{}"""
 
-    def __init__(self, indices_to_drop=None, random_seed=0):
+    def __init__(self, indices_to_drop=None, first_rows_to_drop=None, random_seed=0):
+        if first_rows_to_drop is not None and indices_to_drop is not None:
+            raise ValueError(
+                "Both `indicies_to_drop` and `first_rows_to_drop` cannot be set."
+            )
         if indices_to_drop is not None and len(set(indices_to_drop)) != len(
             indices_to_drop
         ):
             raise ValueError("All input indices must be unique.")
+        self.first_rows_to_drop = first_rows_to_drop
         self.indices_to_drop = indices_to_drop
-        parameters = {"indices_to_drop": self.indices_to_drop}
+        parameters = {
+            "indices_to_drop": self.indices_to_drop,
+            "first_rows_to_drop": self.first_rows_to_drop,
+        }
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
@@ -43,6 +52,8 @@ class DropRowsTransformer(Transformer):
         """
         X_t = infer_feature_types(X)
         y_t = infer_feature_types(y) if y is not None else None
+        if self.first_rows_to_drop is not None:
+            self.indices_to_drop = X_t.iloc[: self.first_rows_to_drop].index
         if self.indices_to_drop is not None:
             indices_to_drop_set = set(self.indices_to_drop)
             missing_X_indices = indices_to_drop_set.difference(set(X_t.index))
