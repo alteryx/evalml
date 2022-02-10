@@ -299,11 +299,11 @@ def test_pipeline_limits(
         automl.search()
     out = caplog.text
     if verbose:
-        assert "Using default limit of max_batches=1." in out
-        assert "Searching up to 1 batches for a total of" in out
+        assert "Using default limit of max_batches=4." in out
+        assert "Searching up to 4 batches for a total of" in out
     else:
-        assert "Using default limit of max_batches=1." not in out
-        assert "Searching up to 1 batches for a total of" not in out
+        assert "Using default limit of max_batches=4." not in out
+        assert "Searching up to 4 batches for a total of" not in out
     assert len(automl.results["pipeline_results"]) > 0
 
     caplog.clear()
@@ -569,7 +569,7 @@ def test_automl_tuner_exception(
         tuner_class=RandomSearchTuner,
         max_iterations=10,
         optimize_thresholds=False,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with pytest.raises(NoParamsException, match=error_text):
@@ -590,7 +590,7 @@ def test_automl_algorithm(
         y_train=y,
         problem_type="binary",
         max_iterations=5,
-        _automl_algorithm="default",
+        automl_algorithm="default",
     )
     mock_algo_next_batch.side_effect = StopIteration("that's all, folks")
     env = AutoMLTestEnv("binary")
@@ -1613,7 +1613,7 @@ def test_jobs_cancelled_when_keyboard_interrupt(
         max_iterations=6,
         objective="f1",
         optimize_thresholds=False,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"F1": 1}):
@@ -1924,7 +1924,7 @@ def test_percent_better_than_baseline_in_rankings(
             optimize_thresholds=False,
             n_jobs=1,
         )
-    automl._automl_algorithm = IterativeAlgorithm(
+    automl.automl_algorithm = IterativeAlgorithm(
         X=X,
         y=y,
         problem_type=problem_type_value,
@@ -1939,7 +1939,7 @@ def test_percent_better_than_baseline_in_rankings(
         pipeline_params=pipeline_parameters,
         custom_hyperparameters=None,
     )
-    automl._automl_algorithm.allowed_pipelines = allowed_pipelines
+    automl.automl_algorithm.allowed_pipelines = allowed_pipelines
     automl._SLEEP_TIME = 0.000001
     with patch(
         baseline_pipeline_class + ".score",
@@ -2098,7 +2098,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         optimize_thresholds=False,
         additional_objectives=additional_objectives,
     )
-    automl._automl_algorithm = IterativeAlgorithm(
+    automl.automl_algorithm = IterativeAlgorithm(
         X=X,
         y=y,
         problem_type=problem_type,
@@ -2119,7 +2119,7 @@ def test_percent_better_than_baseline_computed_for_all_objectives(
         },
         custom_hyperparameters=None,
     )
-    automl._automl_algorithm.allowed_pipelines = [DummyPipeline(parameters)]
+    automl.automl_algorithm.allowed_pipelines = [DummyPipeline(parameters)]
     automl._SLEEP_TIME = 0.00001
     with patch(baseline_pipeline_class + ".score", return_value=mock_baseline_scores):
         automl.search()
@@ -2160,9 +2160,7 @@ def test_time_series_regression_with_parameters(ts_data):
         problem_configuration=problem_configuration,
         max_batches=3,
     )
-    assert (
-        automl._automl_algorithm._pipeline_params["pipeline"] == problem_configuration
-    )
+    assert automl.automl_algorithm._pipeline_params["pipeline"] == problem_configuration
 
 
 @pytest.mark.parametrize("graph_type", ["dict", "cg"])
@@ -2253,7 +2251,7 @@ def test_percent_better_than_baseline_scores_different_folds(
         optimize_thresholds=False,
         additional_objectives=["f1"],
     )
-    automl._automl_algorithm = IterativeAlgorithm(
+    automl.automl_algorithm = IterativeAlgorithm(
         X=X,
         y=y,
         problem_type="binary",
@@ -2268,7 +2266,7 @@ def test_percent_better_than_baseline_scores_different_folds(
         pipeline_params={},
         custom_hyperparameters=None,
     )
-    automl._automl_algorithm.allowed_pipelines = [DummyPipeline({})]
+    automl.automl_algorithm.allowed_pipelines = [DummyPipeline({})]
 
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 1, "F1": 1}):
@@ -2284,11 +2282,11 @@ def test_percent_better_than_baseline_scores_different_folds(
 
 @pytest.mark.parametrize("max_batches", [1, 5, 10])
 @pytest.mark.parametrize("problem_type", [ProblemTypes.BINARY, ProblemTypes.REGRESSION])
-@pytest.mark.parametrize("_automl_algorithm", ["iterative", "default"])
+@pytest.mark.parametrize("automl_algorithm", ["iterative", "default"])
 def test_max_batches_works(
     max_batches,
     problem_type,
-    _automl_algorithm,
+    automl_algorithm,
     AutoMLTestEnv,
     X_y_binary,
     X_y_regression,
@@ -2306,7 +2304,7 @@ def test_max_batches_works(
         max_iterations=None,
         max_batches=max_batches,
         optimize_thresholds=False,
-        _automl_algorithm=_automl_algorithm,
+        automl_algorithm=automl_algorithm,
     )
     automl.max_iterations = None
     env = AutoMLTestEnv(problem_type)
@@ -2455,7 +2453,7 @@ def test_max_batches_plays_nice_with_other_stopping_criteria(AutoMLTestEnv, X_y_
         problem_type="binary",
         max_batches=1,
         optimize_thresholds=False,
-        _automl_algorithm="default",
+        automl_algorithm="default",
     )
     assert automl.max_batches == 1
     assert automl.max_iterations is None
@@ -2600,7 +2598,7 @@ def test_search_with_text(AutoMLTestEnv):
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={"Log Loss Binary": 0.30}):
         automl.search()
-    assert automl.rankings["pipeline_name"][1:].str.contains("Natural Language").all()
+    assert automl.rankings["pipeline_name"][1:-1].str.contains("Natural Language").all()
 
 
 @pytest.mark.parametrize(
@@ -3136,8 +3134,8 @@ def test_automl_adds_pipeline_parameters_to_custom_pipeline_hyperparams(
         optimize_thresholds=False,
         max_batches=4,
     )
-    assert automl._automl_algorithm._custom_hyperparameters == custom_hyperparameters
-    assert automl._automl_algorithm._pipeline_params == pipeline_parameters
+    assert automl.automl_algorithm._custom_hyperparameters == custom_hyperparameters
+    assert automl.automl_algorithm._pipeline_params == pipeline_parameters
 
 
 def test_automl_pipeline_params_kwargs(AutoMLTestEnv, X_y_multi):
@@ -4168,7 +4166,11 @@ def test_search_with_text_nans(mock_score, mock_fit, nans):
     X.ww.init(logical_types={"b": "NaturalLanguage"})
     y = pd.Series([0] * 25 + [1] * 75)
     automl = AutoMLSearch(
-        X_train=X, y_train=y, problem_type="binary", optimize_thresholds=False
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        optimize_thresholds=False,
+        max_batches=1,
     )
     automl.search()
     for (x, _), _ in mock_fit.call_args_list:

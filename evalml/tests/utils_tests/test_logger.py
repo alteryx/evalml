@@ -113,7 +113,7 @@ def test_pipeline_count(
             y_train=y,
             problem_type=type_,
             verbose=verbose,
-            _automl_algorithm="iterative",
+            automl_algorithm="iterative",
         )
     else:
         if allowed_families == 2:
@@ -123,7 +123,7 @@ def test_pipeline_count(
                 problem_type=type_,
                 allowed_model_families=["random_forest", "decision_tree"],
                 verbose=verbose,
-                _automl_algorithm="iterative",
+                automl_algorithm="iterative",
             )
         elif allowed_families == 3:
             _ = AutoMLSearch(
@@ -136,7 +136,7 @@ def test_pipeline_count(
                     "extra_trees",
                 ],
                 verbose=verbose,
-                _automl_algorithm="iterative",
+                automl_algorithm="iterative",
             )
     if has_minimal_dependencies:
         assert (

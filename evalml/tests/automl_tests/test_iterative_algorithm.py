@@ -64,11 +64,10 @@ def test_iterative_algorithm_init(
     X_y_binary,
 ):
     X, y = X_y_binary
-
     algo = IterativeAlgorithm(X=X, y=y, problem_type="binary")
     assert algo.pipeline_number == 0
     assert algo.batch_number == 0
-
+    assert algo.default_max_batches == 1
     estimators = get_estimators("binary")
     assert len(algo.allowed_pipelines) == len(
         [

@@ -38,7 +38,7 @@ def test_init(X_y_binary):
     automl.search()
 
     assert automl.n_jobs == 1
-    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
+    assert isinstance(automl.automl_algorithm, DefaultAlgorithm)
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
     automl.best_pipeline.predict(X)
@@ -62,9 +62,9 @@ def test_init(X_y_binary):
         problem_type="binary",
         max_iterations=1,
         n_jobs=1,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
-    assert isinstance(automl._automl_algorithm, IterativeAlgorithm)
+    assert isinstance(automl.automl_algorithm, IterativeAlgorithm)
 
     with pytest.raises(ValueError, match="Please specify a valid automl algorithm."):
         AutoMLSearch(
@@ -73,7 +73,7 @@ def test_init(X_y_binary):
             problem_type="binary",
             max_iterations=1,
             n_jobs=1,
-            _automl_algorithm="not_valid",
+            automl_algorithm="not_valid",
         )
 
 
@@ -279,7 +279,6 @@ def test_random_seed(X_y_binary):
         y_train=y,
         problem_type="binary",
         objective=Precision(),
-        max_batches=1,
         random_seed=0,
         n_jobs=1,
     )
@@ -321,7 +320,7 @@ def test_callback(X_y_binary):
         start_iteration_callback=start_iteration_callback,
         add_result_callback=add_result_callback,
         n_jobs=1,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     automl.search()
 
@@ -866,7 +865,7 @@ def test_automl_search_sampler_ratio(
         problem_type=problem_type,
         sampler_method="auto",
         sampler_balanced_ratio=sampling_ratio,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     pipelines = automl.allowed_pipelines
     if sampling_ratio <= 0.2:
@@ -921,7 +920,7 @@ def test_automl_search_sampler_method(
         y_train=y,
         problem_type=problem_type,
         sampler_method=sampler_method,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     # since our default sampler_balanced_ratio for AutoMLSearch is 0.25, we should be adding the samplers when we can
     pipelines = automl.allowed_pipelines
@@ -1007,6 +1006,7 @@ def test_automl_search_dictionary_undersampler(
         optimize_thresholds=False,
         sampler_method="Undersampler",
         pipeline_parameters=pipeline_parameters,
+        max_batches=3,
     )
     # check that the sampling dict got set properly
     automl.search()
@@ -1062,6 +1062,7 @@ def test_automl_search_dictionary_oversampler(
         sampler_method="Oversampler",
         optimize_thresholds=False,
         pipeline_parameters=pipeline_parameters,
+        max_batches=3,
     )
     # check that the sampling dict got set properly
     pipelines = automl.allowed_pipelines
@@ -1109,6 +1110,7 @@ def test_automl_search_sampler_dictionary_keys(
         sampler_method=sampler,
         optimize_thresholds=False,
         pipeline_parameters=pipeline_parameters,
+        max_batches=3,
     )
     if errors:
         with pytest.raises(
@@ -1210,7 +1212,7 @@ def test_time_series_pipeline_parameter_warnings(
             n_jobs=1,
             pipeline_parameters=pipeline_parameters,
             problem_configuration=configuration,
-            _automl_algorithm="iterative",
+            automl_algorithm="iterative",
         )
         env = AutoMLTestEnv("time series binary")
         with env.test_context(score_return_value={automl.objective.name: 1.0}):
@@ -1251,12 +1253,12 @@ def test_automl_passes_allow_long_running_models(
         y_train=y,
         problem_type="multiclass",
         allow_long_running_models=allow_long_running_models,
-        _automl_algorithm=algo,
+        automl_algorithm=algo,
         max_batches=2,
         verbose=True,
     )
     assert (
-        automl._automl_algorithm.allow_long_running_models == allow_long_running_models
+        automl.automl_algorithm.allow_long_running_models == allow_long_running_models
     )
     if algo == "default":
         automl.search()

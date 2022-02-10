@@ -23,7 +23,7 @@ def test_init(X_y_regression):
     )
     automl.search()
 
-    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
+    assert isinstance(automl.automl_algorithm, DefaultAlgorithm)
     assert automl.n_jobs == 1
     assert isinstance(automl.rankings, pd.DataFrame)
     assert isinstance(automl.best_pipeline, PipelineBase)
@@ -53,10 +53,10 @@ def test_init(X_y_regression):
         objective="R2",
         max_iterations=3,
         n_jobs=1,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
 
-    assert isinstance(automl._automl_algorithm, IterativeAlgorithm)
+    assert isinstance(automl.automl_algorithm, IterativeAlgorithm)
 
     with pytest.raises(ValueError, match="Please specify a valid automl algorithm."):
         AutoMLSearch(
@@ -66,7 +66,7 @@ def test_init(X_y_regression):
             objective="R2",
             max_iterations=3,
             n_jobs=1,
-            _automl_algorithm="not_valid",
+            automl_algorithm="not_valid",
         )
 
 
@@ -94,7 +94,7 @@ def test_callback(X_y_regression):
         start_iteration_callback=start_iteration_callback,
         add_result_callback=add_result_callback,
         n_jobs=1,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     automl.search()
 

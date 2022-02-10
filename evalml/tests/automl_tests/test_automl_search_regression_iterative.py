@@ -19,7 +19,7 @@ def test_automl_component_graphs_no_allowed_component_graphs_iterative(X_y_regre
             problem_type="regression",
             allowed_component_graphs=None,
             allowed_model_families=[],
-            _automl_algorithm="iterative",
+            automl_algorithm="iterative",
         )
 
 
@@ -39,7 +39,7 @@ def test_automl_allowed_component_graphs_specified_component_graphs_iterative(
             "Mock Regression Pipeline": [dummy_regressor_estimator_class]
         },
         allowed_model_families=None,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("regression")
     expected_component_graph = dummy_regression_pipeline.component_graph
@@ -70,7 +70,7 @@ def test_automl_allowed_component_graphs_specified_allowed_model_families_iterat
         problem_type="regression",
         allowed_component_graphs=None,
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.REGRESSION)
@@ -90,7 +90,7 @@ def test_automl_allowed_component_graphs_specified_allowed_model_families_iterat
         problem_type="regression",
         allowed_component_graphs=None,
         allowed_model_families=["random_forest"],
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.REGRESSION)
@@ -116,7 +116,7 @@ def test_automl_allowed_component_graphs_init_allowed_both_not_specified_iterati
         problem_type="regression",
         allowed_component_graphs=None,
         allowed_model_families=None,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_pipelines = [
         make_pipeline(X, y, estimator, ProblemTypes.REGRESSION)
@@ -149,7 +149,7 @@ def test_automl_allowed_component_graphs_init_allowed_both_specified_iterative(
             "Mock Regression Pipeline": [dummy_regressor_estimator_class]
         },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     expected_pipelines = [dummy_regression_pipeline]
     assert_allowed_pipelines_equal_helper(automl.allowed_pipelines, expected_pipelines)
@@ -179,7 +179,7 @@ def test_automl_allowed_component_graphs_search_iterative(
         max_iterations=2,
         start_iteration_callback=start_iteration_callback,
         allowed_component_graphs=component_graph,
-        _automl_algorithm="iterative",
+        automl_algorithm="iterative",
     )
     env = AutoMLTestEnv("regression")
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
