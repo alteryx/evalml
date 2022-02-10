@@ -2,7 +2,9 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from evalml.pipelines.components.transformers.preprocessing import DropRowsTransformer
+from evalml.pipelines.components.transformers.preprocessing import (
+    DropRowsTransformer,
+)
 
 
 def test_drop_rows_transformer_init():
@@ -72,10 +74,12 @@ def test_drop_rows_transformer_fit_transform_first_rows_to_drop():
     assert_frame_equal(X_expected, fit_transformed[0])
     assert fit_transformed[1] is None
 
-    X['off index'] = ["Pos A", "Pos B", "Pos C"]
-    X = X.set_index('off index')
-    X_expected = pd.DataFrame({"off index": ["Pos C"], "a column": [3], "another col": [6]})
-    X_expected = X_expected.set_index('off index')
+    X["off index"] = ["Pos A", "Pos B", "Pos C"]
+    X = X.set_index("off index")
+    X_expected = pd.DataFrame(
+        {"off index": ["Pos C"], "a column": [3], "another col": [6]}
+    )
+    X_expected = X_expected.set_index("off index")
     drop_rows_transformer = DropRowsTransformer(first_rows_to_drop=2)
     drop_rows_transformer.fit(X)
     assert pd.Index(["Pos A", "Pos B"]).equals(drop_rows_transformer.indices_to_drop)

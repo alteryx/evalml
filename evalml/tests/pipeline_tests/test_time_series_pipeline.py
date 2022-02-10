@@ -488,7 +488,11 @@ def test_predict_and_predict_in_sample(
     if include_delayed_features:
         component_graph = {
             "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
-            "DateTime Featurizer": ["DateTime Featurizer", "Time Series Featurizer.x", "y"],
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
+                "Time Series Featurizer.x",
+                "y",
+            ],
             "Drop Rows Transformer": [
                 "Drop Rows Transformer",
                 "DateTime Featurizer.x",
@@ -1359,7 +1363,7 @@ def test_time_series_pipeline_with_detrender(ts_data):
                 "forecast_horizon": 10,
                 "time_index": "date",
             },
-            "Drop Rows Transformer": {"first_rows_to_drop": 12},
+            "Drop Rows Transformer": {"first_rows_to_drop": 13},
         },
     )
     X_train, y_train = X[:23], y[:23]
