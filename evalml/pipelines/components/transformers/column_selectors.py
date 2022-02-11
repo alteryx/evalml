@@ -42,7 +42,7 @@ class ColumnSelector(Transformer):
 
         Args:
             X (pd.DataFrame): Data to check.
-            y (pd.Series, optional): Targets.
+            y (pd.Series, ignored): Targets.
 
         Returns:
             self
@@ -136,11 +136,12 @@ class SelectColumns(ColumnSelector):
         return X.ww[column_intersection]
 
 
-class SelectByType(ColumnSelector):
+class SelectByType(Transformer):
     """Selects columns by specified Woodwork logical type or semantic tag in input data.
 
     Args:
-        column_types (string, ww.LogicalType, list(string), list(ww.LogicalType)): List of Woodwork types or tags, used to determine which columns to select.
+        column_types (string, ww.LogicalType, list(string), list(ww.LogicalType)): List of Woodwork types or tags, used to determine which columns to select or exclude.
+        exclude (bool): If true, exclude the column_types instead of including them. Defaults to False.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -149,23 +150,32 @@ class SelectByType(ColumnSelector):
     """{}"""
     needs_fitting = False
 
-    def __init__(self, column_types=None, random_seed=0, **kwargs):
-        parameters = {"column_types": column_types}
+    def __init__(self, column_types=None, exclude=False, random_seed=0, **kwargs):
+        parameters = {"column_types": column_types, "exclude": exclude}
         parameters.update(kwargs)
-        Transformer.__init__(
-            Transformer,
+        super().__init__(
             parameters=parameters,
             component_obj=None,
             random_seed=random_seed,
         )
 
-    def _check_input_for_columns(self, X):
-        col_types = self.parameters.get("column_types")
-        if col_types and X.ww.select(col_types).empty:
-            raise ValueError("Columns of type {column_types} not found in input data.")
-
     def _modify_columns(self, cols, X, y=None):
-        return X.ww.select(cols)
+        if self.parameters.get("exclude"):
+            return X.ww.select(exclude=cols)
+        return X.ww.select(include=cols)
+
+    def fit(self, X, y=None):
+        """Fits the transformer by checking if column names are present in the dataset.
+
+        Args:
+            X (pd.DataFrame): Data to check.
+            y (pd.Series, ignored): Targets.
+
+        Returns:
+            self
+        """
+        X = infer_feature_types(X)
+        return self
 
     def transform(self, X, y=None):
         """Transforms data X by selecting columns.
@@ -178,7 +188,6 @@ class SelectByType(ColumnSelector):
             pd.DataFrame: Transformed X.
         """
         X = infer_feature_types(X)
-        self._check_input_for_columns(X)
         cols = self.parameters.get("column_types") or []
         modified_cols = self._modify_columns(cols, X, y)
         return infer_feature_types(modified_cols)

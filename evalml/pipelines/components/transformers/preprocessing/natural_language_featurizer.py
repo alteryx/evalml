@@ -25,7 +25,7 @@ class NaturalLanguageFeaturizer(TextTransformer):
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
-    name = "Natural Language Featurization Component"
+    name = "Natural Language Featurizer"
     hyperparameter_ranges = {}
     """{}"""
 

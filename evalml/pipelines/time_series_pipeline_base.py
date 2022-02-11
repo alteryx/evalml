@@ -5,6 +5,7 @@ import woodwork as ww
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.utils import drop_rows_with_nans, infer_feature_types
+from evalml.utils.gen_utils import are_datasets_separated_by_gap_time_index
 
 
 class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
@@ -36,11 +37,11 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
                 "time_index, gap, max_delay, and forecast_horizon parameters cannot be omitted from the parameters dict. "
                 "Please specify them as a dictionary with the key 'pipeline'."
             )
-        pipeline_params = parameters["pipeline"]
-        self.gap = pipeline_params["gap"]
-        self.max_delay = pipeline_params["max_delay"]
-        self.forecast_horizon = pipeline_params["forecast_horizon"]
-        self.time_index = pipeline_params["time_index"]
+        self.pipeline_params = parameters["pipeline"]
+        self.gap = self.pipeline_params["gap"]
+        self.max_delay = self.pipeline_params["max_delay"]
+        self.forecast_horizon = self.pipeline_params["forecast_horizon"]
+        self.time_index = self.pipeline_params["time_index"]
         if self.time_index is None:
             raise ValueError("Parameter time_index cannot be None!")
         super().__init__(
@@ -58,20 +59,6 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         y = infer_feature_types(y)
         return X, y
 
-    def fit(self, X, y):
-        """Fit a time series pipeline.
-
-        Args:
-            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
-            y (pd.Series, np.ndarray): The target training targets of length [n_samples].
-
-        Returns:
-            self
-        """
-        X, y = self._convert_to_woodwork(X, y)
-        self._fit(X, y)
-        return self
-
     @staticmethod
     def _move_index_forward(index, gap):
         """Fill in the index of the gap features and values with the right values."""
@@ -79,62 +66,6 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
             return index.shift(gap)
         else:
             return index + gap
-
-    def _are_datasets_separated_by_gap_time_index(self, train, test, gap):
-        """Determine if the train and test datasets are separated by gap number of units using the time_index.
-
-        This will be true when users are predicting on unseen data but not during cross
-        validation since the target is known.
-        """
-        gap_difference = gap + 1
-
-        train_copy = train.copy()
-        test_copy = test.copy()
-        train_copy.ww.init(time_index=self.time_index)
-        test_copy.ww.init(time_index=self.time_index)
-
-        X_frequency_dict = train_copy.ww.infer_temporal_frequencies(
-            temporal_columns=[train_copy.ww.time_index]
-        )
-        freq = X_frequency_dict[test_copy.ww.time_index]
-        if freq is None:
-            raise ValueError(
-                "The training data must have an inferrable interval frequency!"
-            )
-
-        first_testing_date = test_copy[test_copy.ww.time_index].iloc[0]
-        last_training_date = train_copy[train_copy.ww.time_index].iloc[-1]
-        dt_difference = first_testing_date - last_training_date
-
-        try:
-            units_difference = dt_difference / freq
-        except ValueError:
-            units_difference = dt_difference / ("1" + freq)
-        return units_difference == gap_difference
-
-    def _validate_holdout_datasets(self, X, X_train):
-        """Validate the holdout datasets match out expectations.
-
-        Args:
-            X (pd.DataFrame): Data of shape [n_samples, n_features].
-            X_train (pd.DataFrame): Training data.
-
-        Raises:
-            ValueError: If holdout data does not have forecast_horizon entries or if datasets
-                are not separated by gap.
-        """
-        right_length = len(X) <= self.forecast_horizon
-        X_separated_by_gap = self._are_datasets_separated_by_gap_time_index(
-            X_train, X, self.gap
-        )
-        if not (right_length and X_separated_by_gap):
-            raise ValueError(
-                f"Holdout data X must have {self.forecast_horizon} rows (value of forecast horizon) "
-                f"and the first value indicated by the column {self.time_index} needs to "
-                f"start {self.gap + 1} units ahead of the training data. "
-                f"Data received - Length X: {len(X)}, "
-                f"X value start: {X[self.time_index].iloc[0]}, X_train value end {X_train[self.time_index].iloc[-1]}."
-            )
 
     def _add_training_data_to_X_Y(self, X, y, X_train, y_train):
         """Append the training data to the holdout data.
@@ -145,7 +76,7 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         gap_features = pd.DataFrame()
         gap_target = pd.Series()
         if (
-            self._are_datasets_separated_by_gap_time_index(X_train, X, self.gap)
+            are_datasets_separated_by_gap_time_index(X_train, X, self.pipeline_params)
             and self.gap
         ):
             # The training data does not have the gap dates so don't need to include them
@@ -266,7 +197,6 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         X.index = self._move_index_forward(
             X_train.index[-X.shape[0] :], self.gap + X.shape[0]
         )
-        self._validate_holdout_datasets(X, X_train)
         y_holdout = self._create_empty_series(y_train, X.shape[0])
         y_holdout = infer_feature_types(y_holdout)
         y_holdout.index = X.index

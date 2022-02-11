@@ -15,7 +15,7 @@ from evalml.preprocessing import split_data
 def test_train_and_score_pipelines(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     X, y = X_y_binary
@@ -31,10 +31,9 @@ def test_train_and_score_pipelines(
         optimize_thresholds=False,
     )
     env = AutoMLTestEnv("binary")
-    pipeline = dummy_binary_pipeline_class({})
     with env.test_context(score_return_value={automl.objective.name: 0.42}):
         evaluation_result = evaluate_pipeline(
-            pipeline,
+            dummy_binary_pipeline,
             automl.automl_config,
             automl.X_train,
             automl.y_train,
@@ -57,7 +56,7 @@ def test_train_and_score_pipelines(
 def test_train_and_score_pipelines_error(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
     caplog,
 ):
@@ -74,12 +73,11 @@ def test_train_and_score_pipelines_error(
         optimize_thresholds=False,
     )
     env = AutoMLTestEnv("binary")
-    pipeline = dummy_binary_pipeline_class({})
 
     job_log = JobLogger()
     with env.test_context(mock_score_side_effect=Exception("yeet")):
         result = evaluate_pipeline(
-            pipeline,
+            dummy_binary_pipeline,
             automl.automl_config,
             automl.X_train,
             automl.y_train,
@@ -108,8 +106,7 @@ def test_train_pipeline_trains_and_tunes_threshold(
     mock_split_data,
     X_y_binary,
     AutoMLTestEnv,
-    dummy_binary_pipeline_class,
-    dummy_ts_binary_pipeline_class,
+    dummy_binary_pipeline,
 ):
     X, y = X_y_binary
     mock_split_data.return_value = split_data(
@@ -120,9 +117,7 @@ def test_train_pipeline_trains_and_tunes_threshold(
     )
     env = AutoMLTestEnv("binary")
     with env.test_context():
-        _ = train_pipeline(
-            dummy_binary_pipeline_class({}), X, y, automl_config=automl_config
-        )
+        _ = train_pipeline(dummy_binary_pipeline, X, y, automl_config=automl_config)
 
     env.mock_fit.assert_called_once()
     env.mock_optimize_threshold.assert_not_called()
@@ -132,9 +127,7 @@ def test_train_pipeline_trains_and_tunes_threshold(
         None, "binary", LogLossBinary(), [], F1(), True, None, 0, None, None
     )
     with env.test_context():
-        _ = train_pipeline(
-            dummy_binary_pipeline_class({}), X, y, automl_config=automl_config
-        )
+        _ = train_pipeline(dummy_binary_pipeline, X, y, automl_config=automl_config)
     env.mock_fit.assert_called_once()
     env.mock_optimize_threshold.assert_called_once()
     mock_split_data.assert_called_once()

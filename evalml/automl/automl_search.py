@@ -29,7 +29,7 @@ from evalml.automl.utils import (
     get_default_primary_search_objective,
     make_data_splitter,
 )
-from evalml.data_checks import DefaultDataChecks
+from evalml.data_checks import DataCheckMessageType, DefaultDataChecks
 from evalml.exceptions import (
     AutoMLSearchException,
     PipelineNotFoundError,
@@ -202,8 +202,10 @@ def search(
         problem_configuration=problem_configuration,
     )
     data_check_results = data_checks.validate(X_train, y=y_train)
-    if len(data_check_results.get("errors", [])):
-        return None, data_check_results
+
+    for data_check_result in data_check_results:
+        if data_check_result["level"] == DataCheckMessageType.ERROR.value:
+            return None, data_check_results
 
     automl = AutoMLSearch(_automl_algorithm="default", **automl_config)
     automl.search()
@@ -285,8 +287,9 @@ def search_iterative(
         problem_configuration=problem_configuration,
     )
     data_check_results = data_checks.validate(X_train, y=y_train)
-    if len(data_check_results.get("errors", [])):
-        return None, data_check_results
+    for data_check_result in data_check_results:
+        if data_check_result["level"] == DataCheckMessageType.ERROR.value:
+            return None, data_check_results
 
     automl = AutoMLSearch(**automl_config)
     automl.search()
@@ -722,6 +725,8 @@ class AutoMLSearch:
                 pipeline_params=parameters,
                 custom_hyperparameters=self.custom_hyperparameters,
                 text_in_ensembling=text_in_ensembling,
+                allow_long_running_models=allow_long_running_models,
+                verbose=self.verbose,
             )
         else:
             raise ValueError("Please specify a valid automl algorithm.")

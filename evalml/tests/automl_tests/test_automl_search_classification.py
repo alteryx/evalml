@@ -730,7 +730,7 @@ def test_automl_allowed_component_graphs_no_component_graphs(
 def test_automl_component_graphs_specified_component_graphs_binary(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     X, y = X_y_binary
@@ -744,10 +744,9 @@ def test_automl_component_graphs_specified_component_graphs_binary(
         optimize_thresholds=False,
         allowed_model_families=None,
     )
-    expected_pipeline = dummy_binary_pipeline_class({})
-    expected_component_graph = expected_pipeline.component_graph
-    expected_name = expected_pipeline.name
-    expected_parameters = expected_pipeline.parameters
+    expected_component_graph = dummy_binary_pipeline.component_graph
+    expected_name = dummy_binary_pipeline.name
+    expected_parameters = dummy_binary_pipeline.parameters
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
     assert automl.allowed_pipelines[0].name == expected_name
     assert automl.allowed_pipelines[0].parameters == expected_parameters
@@ -767,7 +766,7 @@ def test_automl_component_graphs_specified_component_graphs_binary(
 def test_automl_component_graphs_specified_component_graphs_multi(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_multiclass_pipeline_class,
+    dummy_multiclass_pipeline,
     X_y_multi,
 ):
     X, y = X_y_multi
@@ -782,7 +781,7 @@ def test_automl_component_graphs_specified_component_graphs_multi(
         },
         allowed_model_families=None,
     )
-    expected_pipeline = dummy_multiclass_pipeline_class({})
+    expected_pipeline = dummy_multiclass_pipeline
     expected_component_graph = expected_pipeline.component_graph
     expected_name = expected_pipeline.name
     expected_parameters = expected_pipeline.parameters
@@ -960,7 +959,7 @@ def test_automl_component_graphs_init_allowed_both_not_specified_multi(
 def test_automl_component_graphs_init_allowed_both_specified_binary(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     X, y = X_y_binary
@@ -974,10 +973,9 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
         optimize_thresholds=False,
     )
-    expected_pipeline = dummy_binary_pipeline_class({})
-    expected_component_graph = expected_pipeline.component_graph
-    expected_name = expected_pipeline.name
-    expected_parameters = expected_pipeline.parameters
+    expected_component_graph = dummy_binary_pipeline.component_graph
+    expected_name = dummy_binary_pipeline.name
+    expected_parameters = dummy_binary_pipeline.parameters
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
     assert automl.allowed_pipelines[0].name == expected_name
     assert automl.allowed_pipelines[0].parameters == expected_parameters
@@ -987,7 +985,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
     with env.test_context(score_return_value={automl.objective.name: 1}):
         automl.search()
     assert set(automl.allowed_model_families) == set(
-        [p.model_family for p in expected_pipeline]
+        [p.model_family for p in [dummy_binary_pipeline]]
     )
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
@@ -996,7 +994,7 @@ def test_automl_component_graphs_init_allowed_both_specified_binary(
 def test_automl_component_graphs_init_allowed_both_specified_multi(
     AutoMLTestEnv,
     dummy_classifier_estimator_class,
-    dummy_multiclass_pipeline_class,
+    dummy_multiclass_pipeline,
     X_y_multi,
 ):
     X, y = X_y_multi
@@ -1011,10 +1009,9 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
         },
         allowed_model_families=[ModelFamily.RANDOM_FOREST],
     )
-    expected_pipeline = dummy_multiclass_pipeline_class({})
-    expected_component_graph = expected_pipeline.component_graph
-    expected_name = expected_pipeline.name
-    expected_parameters = expected_pipeline.parameters
+    expected_component_graph = dummy_multiclass_pipeline.component_graph
+    expected_name = dummy_multiclass_pipeline.name
+    expected_parameters = dummy_multiclass_pipeline.parameters
     assert automl.allowed_pipelines[0].component_graph == expected_component_graph
     assert automl.allowed_pipelines[0].name == expected_name
     assert automl.allowed_pipelines[0].parameters == expected_parameters
@@ -1024,7 +1021,7 @@ def test_automl_component_graphs_init_allowed_both_specified_multi(
     with env.test_context(score_return_value={automl.objective.name: 1}):
         automl.search()
     assert set(automl.allowed_model_families) == set(
-        [p.model_family for p in expected_pipeline]
+        [p.model_family for p in [dummy_multiclass_pipeline]]
     )
     env.mock_fit.assert_called()
     env.mock_score.assert_called()
@@ -1614,24 +1611,44 @@ def test_time_series_pipeline_parameter_warnings(
         assert w[1].message.components == set_values
 
 
+@patch(
+    "evalml.automl.automl_algorithm.default_algorithm.DefaultAlgorithm._create_ensemble",
+    return_value=[],
+)
+@patch("evalml.pipelines.components.estimators.Estimator.fit")
+@patch(
+    "evalml.pipelines.MulticlassClassificationPipeline.score",
+    return_value={"Log Loss Multiclass": 0.5},
+)
 @pytest.mark.parametrize("allow_long_running_models", [True, False])
 @pytest.mark.parametrize("unique", [10, 200])
-def test_automl_passes_allow_long_running_models_iterative(
-    unique, allow_long_running_models, caplog, has_minimal_dependencies
+@pytest.mark.parametrize("algo", ["iterative", "default"])
+def test_automl_passes_allow_long_running_models(
+    mock_s_fit,
+    mock_fit,
+    mock_score,
+    algo,
+    unique,
+    allow_long_running_models,
+    caplog,
+    has_minimal_dependencies,
 ):
-    X = pd.DataFrame()
+    X = pd.DataFrame([i for i in range(unique)] * 5)
     y = pd.Series([i for i in range(unique)] * 5)
     automl = AutoMLSearch(
         X_train=X,
         y_train=y,
         problem_type="multiclass",
         allow_long_running_models=allow_long_running_models,
-        _automl_algorithm="iterative",
+        _automl_algorithm=algo,
+        max_batches=2,
         verbose=True,
     )
     assert (
         automl._automl_algorithm.allow_long_running_models == allow_long_running_models
     )
+    if algo == "default":
+        automl.search()
     if allow_long_running_models or unique == 10:
         assert "Dropping estimators" not in caplog.text
         return

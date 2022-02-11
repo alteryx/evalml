@@ -1,8 +1,8 @@
 """Data check that checks if the target or any of the features have no variance."""
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckError,
     DataCheckMessageCode,
     DataCheckWarning,
@@ -42,83 +42,116 @@ class NoVarianceDataCheck(DataCheck):
             >>> y = pd.Series([1, 1, 1, 1, 1, 1, 1, 1])
             ...
             >>> novar_dc = NoVarianceDataCheck()
-            >>> assert novar_dc.validate(X, y) == {
-            ...     'warnings': [],
-            ...     'errors': [{'message': "'First_Column' has 1 unique value.",
-            ...                 'data_check_name': 'NoVarianceDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': ['First_Column'], 'rows': None},
-            ...                 'code': 'NO_VARIANCE'},
-            ...                {'message': 'Y has 1 unique value.',
-            ...                 'data_check_name': 'NoVarianceDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': ['Y'], 'rows': None},
-            ...                 'code': 'NO_VARIANCE'}],
-            ...     'actions': [{'code': 'DROP_COL',
-            ...                  'data_check_name': 'NoVarianceDataCheck',
-            ...                  'metadata': {'columns': ["First_Column"], 'rows': None}}]}
+            >>> assert novar_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "'First_Column' has 1 unique value.",
+            ...         "data_check_name": "NoVarianceDataCheck",
+            ...         "level": "error",
+            ...         "details": {"columns": ["First_Column"], "rows": None},
+            ...         "code": "NO_VARIANCE",
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_COL",
+            ...                 "data_check_name": "NoVarianceDataCheck",
+            ...                 "parameters": {},
+            ...                 "metadata": {"columns": ["First_Column"], "rows": None}
+            ...             },
+            ...         ]
+            ...     },
+            ...     {
+            ...         "message": "Y has 1 unique value.",
+            ...         "data_check_name": "NoVarianceDataCheck",
+            ...         "level": "error",
+            ...         "details": {"columns": ["Y"], "rows": None},
+            ...         "code": "NO_VARIANCE",
+            ...         "action_options": []
+            ...     }
+            ... ]
 
             By default, NaNs will not be counted as distinct values. In the first example, there are still two distinct values
             besides None. In the second, there are no distinct values as the target is entirely null.
 
             >>> X["First_Column"] = [2, 2, 2, 3, 3, 3, None, None]
             >>> y = pd.Series([1, 1, 1, 2, 2, 2, None, None])
-            >>> assert novar_dc.validate(X, y) == {'warnings': [], 'errors': [], 'actions': []}
+            >>> assert novar_dc.validate(X, y) == []
             ...
             ...
             >>> y = pd.Series([None] * 7)
-            >>> assert novar_dc.validate(X, y) == {
-            ...     'warnings': [],
-            ...     'errors': [{'message': 'Y has 0 unique values.',
-            ...                 'data_check_name': 'NoVarianceDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': ['Y'], 'rows': None},
-            ...                 'code': 'NO_VARIANCE'}],
-            ...     'actions': []}
+            >>> assert novar_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "Y has 0 unique values.",
+            ...         "data_check_name": "NoVarianceDataCheck",
+            ...         "level": "error",
+            ...         "details": {"columns": ["Y"], "rows": None},
+            ...         "code": "NO_VARIANCE",
+            ...         "action_options":[]
+            ...     }
+            ... ]
 
             As None is not considered a distinct value by default, there is only one unique value in X and y.
 
             >>> X["First_Column"] = [2, 2, 2, 2, None, None, None, None]
             >>> y = pd.Series([1, 1, 1, 1, None, None, None, None])
-            >>> assert novar_dc.validate(X, y) == {
-            ...     'warnings': [],
-            ...     'errors': [{'message': "'First_Column' has 1 unique value.",
-            ...                 'data_check_name': 'NoVarianceDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': ['First_Column'], 'rows': None},
-            ...                 'code': 'NO_VARIANCE'},
-            ...                {'message': 'Y has 1 unique value.',
-            ...                 'data_check_name': 'NoVarianceDataCheck',
-            ...                 'level': 'error',
-            ...                 'details': {'columns': ['Y'], 'rows': None},
-            ...                 'code': 'NO_VARIANCE'}],
-            ...     'actions': [{'code': 'DROP_COL',
-            ...                  'data_check_name': 'NoVarianceDataCheck',
-            ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}]}
+            >>> assert novar_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "'First_Column' has 1 unique value.",
+            ...         "data_check_name": "NoVarianceDataCheck",
+            ...         "level": "error",
+            ...         "details": {"columns": ["First_Column"], "rows": None},
+            ...         "code": "NO_VARIANCE",
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_COL",
+            ...                  "data_check_name": "NoVarianceDataCheck",
+            ...                  "parameters": {},
+            ...                  "metadata": {"columns": ["First_Column"], "rows": None}
+            ...             },
+            ...         ]
+            ...     },
+            ...     {
+            ...         "message": "Y has 1 unique value.",
+            ...         "data_check_name": "NoVarianceDataCheck",
+            ...         "level": "error",
+            ...         "details": {"columns": ["Y"], "rows": None},
+            ...         "code": "NO_VARIANCE",
+            ...         "action_options": []
+            ...     }
+            ... ]
 
             If count_nan_as_value is set to True, then NaNs are counted as unique values. In the event that there is an
             adequate number of unique values only because count_nan_as_value is set to True, a warning will be raised so
             the user can encode these values.
 
             >>> novar_dc = NoVarianceDataCheck(count_nan_as_value=True)
-            >>> assert novar_dc.validate(X, y) == {
-            ...     'warnings': [{'message': "'First_Column' has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.",
-            ...                   'data_check_name': 'NoVarianceDataCheck',
-            ...                   'level': 'warning',
-            ...                   'details': {'columns': ['First_Column'], 'rows': None},
-            ...                   'code': 'NO_VARIANCE_WITH_NULL'},
-            ...                  {'message': 'Y has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.',
-            ...                   'data_check_name': 'NoVarianceDataCheck',
-            ...                   'level': 'warning',
-            ...                   'details': {'columns': ['Y'], 'rows': None},
-            ...                   'code': 'NO_VARIANCE_WITH_NULL'}],
-            ...     'errors': [],
-            ...     'actions': [{'code': 'DROP_COL',
-            ...                  'data_check_name': 'NoVarianceDataCheck',
-            ...                  'metadata': {'columns': ['First_Column'], 'rows': None}}]}
+            >>> assert novar_dc.validate(X, y) == [
+            ...     {
+            ...         "message": "'First_Column' has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.",
+            ...         "data_check_name": "NoVarianceDataCheck",
+            ...         "level": "warning",
+            ...         "details": {"columns": ["First_Column"], "rows": None},
+            ...         "code": "NO_VARIANCE_WITH_NULL",
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_COL",
+            ...                  "data_check_name": "NoVarianceDataCheck",
+            ...                  "parameters": {},
+            ...                  "metadata": {"columns": ["First_Column"], "rows": None}
+            ...             },
+            ...         ]
+            ...     },
+            ...     {
+            ...         "message": "Y has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning.",
+            ...         "data_check_name": "NoVarianceDataCheck",
+            ...         "level": "warning",
+            ...         "details": {"columns": ["Y"], "rows": None},
+            ...         "code": "NO_VARIANCE_WITH_NULL",
+            ...         "action_options": []
+            ...     }
+            ... ]
 
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        messages = []
+
         X = infer_feature_types(X)
         y = infer_feature_types(y)
 
@@ -141,7 +174,7 @@ class NoVarianceDataCheck(DataCheck):
         one_unique_message = "{} has 1 unique value."
         two_unique_with_null_message = "{} has two unique values including nulls. Consider encoding the nulls for this column to be useful for machine learning."
         if zero_unique:
-            DataCheck._add_message(
+            messages.append(
                 DataCheckError(
                     message=zero_unique_message.format(
                         (", ").join(["'{}'".format(str(col)) for col in zero_unique]),
@@ -149,11 +182,17 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": zero_unique},
-                ),
-                results,
+                    action_options=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": zero_unique},
+                        )
+                    ],
+                ).to_dict()
             )
         if one_unique:
-            DataCheck._add_message(
+            messages.append(
                 DataCheckError(
                     message=one_unique_message.format(
                         (", ").join(["'{}'".format(str(col)) for col in one_unique]),
@@ -161,11 +200,17 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": one_unique},
-                ),
-                results,
+                    action_options=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": one_unique},
+                        ),
+                    ],
+                ).to_dict()
             )
         if one_unique_with_null:
-            DataCheck._add_message(
+            messages.append(
                 DataCheckWarning(
                     message=two_unique_with_null_message.format(
                         (", ").join(
@@ -175,16 +220,13 @@ class NoVarianceDataCheck(DataCheck):
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                     details={"columns": one_unique_with_null},
-                ),
-                results,
-            )
-        all_cols = zero_unique + one_unique + one_unique_with_null
-        if all_cols:
-            results["actions"].append(
-                DataCheckAction(
-                    DataCheckActionCode.DROP_COL,
-                    data_check_name=self.name,
-                    metadata={"columns": all_cols},
+                    action_options=[
+                        DataCheckActionOption(
+                            DataCheckActionCode.DROP_COL,
+                            data_check_name=self.name,
+                            metadata={"columns": one_unique_with_null},
+                        ),
+                    ],
                 ).to_dict()
             )
 
@@ -197,36 +239,33 @@ class NoVarianceDataCheck(DataCheck):
         y_any_null = y.isnull().any()
 
         if y_unique_count == 0:
-            DataCheck._add_message(
+            messages.append(
                 DataCheckError(
                     message=zero_unique_message.format(y_name),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": [y_name]},
-                ),
-                results,
+                ).to_dict()
             )
 
         elif y_unique_count == 1:
-            DataCheck._add_message(
+            messages.append(
                 DataCheckError(
                     message=one_unique_message.format(y_name),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE,
                     details={"columns": [y_name]},
-                ),
-                results,
+                ).to_dict()
             )
 
         elif y_unique_count == 2 and not self._dropnan and y_any_null:
-            DataCheck._add_message(
+            messages.append(
                 DataCheckWarning(
                     message=two_unique_with_null_message.format(y_name),
                     data_check_name=self.name,
                     message_code=DataCheckMessageCode.NO_VARIANCE_WITH_NULL,
                     details={"columns": [y_name]},
-                ),
-                results,
+                ).to_dict()
             )
 
-        return results
+        return messages

@@ -25,64 +25,87 @@ from evalml.problem_types import ProblemTypes
 from evalml.utils import infer_feature_types
 
 
-@pytest.mark.parametrize(
-    "pipeline_class,estimator",
-    [
-        (TimeSeriesRegressionPipeline, "Linear Regressor"),
-        (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
-        (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier"),
-    ],
-)
-@pytest.mark.parametrize("gap", [0, 1, 5])
-@pytest.mark.parametrize("forecast_horizon", [1, 5, 10])
-@pytest.mark.parametrize("length_or_freq", ["length", "freq"])
-@patch("evalml.pipelines.components.LinearRegressor.fit")
-@patch("evalml.pipelines.components.LogisticRegressionClassifier.fit")
-def test_time_series_pipeline_validates_holdout_data(
-    mock_fit_lr,
-    mock_fit_linear,
-    length_or_freq,
-    forecast_horizon,
-    gap,
-    pipeline_class,
-    estimator,
-    ts_data,
+@pytest.mark.parametrize("num_unique", [1, 2, 3])
+@pytest.mark.parametrize("pipeline", ["ts_binary", "ts_multiclass"])
+def test_invalid_targets_time_series_classification_pipeline(
+    num_unique,
+    pipeline,
+    dummy_ts_binary_pipeline_class,
+    dummy_ts_multi_pipeline_class,
+    dummy_time_series_regression_pipeline_class,
 ):
-    pl = pipeline_class(
-        component_graph=[estimator],
-        parameters={
-            "pipeline": {
-                "time_index": "date",
-                "gap": gap,
-                "max_delay": 2,
-                "forecast_horizon": forecast_horizon,
-            }
-        },
+    X = pd.DataFrame(pd.date_range("1/1/21", periods=30), columns=["Date"])
+
+    if num_unique == 1:
+        y = pd.Series([1 for i in range(30)])
+    elif num_unique == 2:
+        y = pd.Series([i % 2 for i in range(30)])
+    elif num_unique == 3:
+        y = pd.Series([i % 3 for i in range(30)])
+
+    parameters = {
+        "pipeline": {
+            "max_delay": 0,
+            "gap": 2,
+            "forecast_horizon": 2,
+            "time_index": "Date",
+        }
+    }
+
+    if pipeline == "ts_binary":
+        mock_binary_pipeline = dummy_ts_binary_pipeline_class(parameters=parameters)
+        if num_unique in [1, 3]:
+            with pytest.raises(
+                ValueError,
+                match="Binary pipelines require y to have 2 unique classes!",
+            ):
+                mock_binary_pipeline.fit(X, y)
+        else:
+            assert mock_binary_pipeline.fit(X, y)
+    elif pipeline == "ts_multiclass":
+        mock_multi_pipeline = dummy_ts_multi_pipeline_class(parameters=parameters)
+        if num_unique in [1, 2]:
+            with pytest.raises(
+                ValueError,
+                match="Multiclass pipelines require y to have 3 or more unique classes!",
+            ):
+                mock_multi_pipeline.fit(X, y)
+        else:
+            assert mock_multi_pipeline.fit(X, y)
+
+
+@pytest.mark.parametrize("target_type", ["category", "string", "bool"])
+def test_invalid_targets_time_series_regression_pipeline(
+    wine_local, target_type, dummy_time_series_regression_pipeline_class
+):
+    X = pd.DataFrame(pd.date_range("1/1/21", periods=30), columns=["Date"])
+    _, y = wine_local
+    y = pd.Series(y).astype("string")
+
+    if target_type == "category":
+        y = pd.Series([1 % 3 for i in range(30)])
+        y = pd.Series(y).astype("category")
+    if target_type == "bool":
+        y = pd.Series([1 % 2 for i in range(30)])
+        y = y.map({0: False, 1: True})
+
+    parameters = {
+        "pipeline": {
+            "max_delay": 0,
+            "gap": 2,
+            "forecast_horizon": 2,
+            "time_index": "Date",
+        }
+    }
+
+    mock_regression_pipeline = dummy_time_series_regression_pipeline_class(
+        parameters=parameters
     )
-    X, y = ts_data
-
-    TRAIN_LENGTH = 15
-    X_train, y_train = X.iloc[:TRAIN_LENGTH], y.iloc[:TRAIN_LENGTH]
-
-    if length_or_freq == "length":
-        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon + 2]
-    elif length_or_freq == "freq":
-        dates = pd.date_range("2020-10-16", periods=16)
-        X = X.iloc[TRAIN_LENGTH + gap : TRAIN_LENGTH + gap + forecast_horizon]
-        X["date"] = dates[gap + 1 : gap + 1 + len(X)]
-
-    pl.fit(X_train, y_train)
-
     with pytest.raises(
-        ValueError, match=f"Holdout data X must have {forecast_horizon}"
+        ValueError,
+        match="Time Series Regression pipeline can only handle numeric target data!",
     ):
-        pl.predict(X, None, X_train, y_train)
-
-    if hasattr(pl, "predict_proba"):
-        with pytest.raises(
-            ValueError, match=f"Holdout data X must have {forecast_horizon}"
-        ):
-            pl.predict_proba(X, X_train, y_train)
+        mock_regression_pipeline.fit(X, y)
 
 
 @pytest.mark.parametrize(
@@ -192,19 +215,23 @@ def test_fit_drop_nans_before_estimator(
     max_delay,
     include_delayed_features,
     ts_data,
+    ts_data_binary,
 ):
 
     X, y = ts_data
+
+    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
+        X, y = ts_data_binary
 
     if include_delayed_features:
         train_index = pd.date_range(
             f"2020-10-{1 + forecast_horizon + gap + max_delay}", "2020-10-31"
         )
-        expected_target = np.arange(1 + gap + max_delay + forecast_horizon, 32)
+        expected_target = y[gap + max_delay + forecast_horizon : 32]
         component_graph = ["Time Series Featurizer", estimator_name]
     else:
         train_index = pd.date_range(f"2020-10-01", f"2020-10-31")
-        expected_target = np.arange(1, 32)
+        expected_target = y
         component_graph = [estimator_name]
 
     pl = pipeline_class(
@@ -270,7 +297,7 @@ def test_transform_all_but_final_for_time_series(
     pipeline = TimeSeriesRegressionPipeline(
         [
             "Time Series Featurizer",
-            "DateTime Featurization Component",
+            "DateTime Featurizer",
             "Random Forest Regressor",
         ],
         parameters={
@@ -377,7 +404,7 @@ def test_predict_and_predict_in_sample(
         mock_to_check = mock_regressor_predict
     mock_to_check.side_effect = lambda x: x.iloc[: x.shape[0], 0]
 
-    component_graph = ["DateTime Featurization Component", estimator_name]
+    component_graph = ["DateTime Featurizer", estimator_name]
 
     def predict_proba(X):
         X2 = X.iloc[: X.shape[0]]
@@ -493,7 +520,7 @@ def test_predict_and_predict_in_sample_with_time_index(
 
     component_graph = [
         "Time Series Featurizer",
-        "DateTime Featurization Component",
+        "DateTime Featurizer",
         estimator_name,
     ]
     delayer_params = {
@@ -518,7 +545,7 @@ def test_predict_and_predict_in_sample_with_time_index(
     }
 
     feature_pipeline = pipeline_class(
-        ["Time Series Featurizer", "DateTime Featurization Component"],
+        ["Time Series Featurizer", "DateTime Featurizer"],
         parameters=parameters,
     )
     feature_pipeline.fit(X, target)
@@ -594,6 +621,7 @@ def test_ts_score(
     include_delayed_features,
     only_use_y,
     ts_data,
+    ts_data_binary,
 ):
     if pipeline_class == TimeSeriesBinaryClassificationPipeline:
         mock_score = mock_binary_score
@@ -601,11 +629,15 @@ def test_ts_score(
         pytest.skip("This would result in an empty feature dataframe.")
 
     X, y = ts_data
+
+    if pipeline_class == TimeSeriesBinaryClassificationPipeline:
+        X, y = ts_data_binary
+
     last_train_date = X.shape[0] - forecast_horizon - gap
     X_train, y_train = X.iloc[:last_train_date], y.iloc[:last_train_date]
     X_holdout, y_holdout = X.iloc[last_train_date:], y.iloc[last_train_date:]
 
-    expected_target = np.arange(last_train_date + 1, 32)
+    expected_target = y[last_train_date:32]
     target_index = pd.date_range(f"2020-10-{last_train_date + 1}", f"2020-10-31")
 
     pl = pipeline_class(
@@ -673,16 +705,34 @@ def test_classification_pipeline_encodes_targets(
     mock_fit,
     pipeline_class,
     ts_data_binary,
+    ts_data_multi,
 ):
-    X, y = ts_data_binary
-    y_series = pd.Series(y)
-    df = pd.DataFrame({"negative": y_series, "positive": y_series})
+
+    if pipeline_class == TimeSeriesMulticlassClassificationPipeline:
+        X, y = ts_data_multi
+        y_series = pd.Series(y)
+        df = pd.DataFrame(
+            {"negative": y_series, "positive": y_series, "neither": y_series}
+        )
+        y_encoded = y_series.map(
+            lambda label: "positive"
+            if label == 1
+            else "neither"
+            if label == 2
+            else "negative"
+        ).astype("category")
+    else:
+        X, y = ts_data_binary
+        y_series = pd.Series(y)
+        df = pd.DataFrame({"negative": y_series, "positive": y_series})
+        y_encoded = y_series.map(
+            lambda label: "positive" if label == 1 else "negative"
+        ).astype("category")
+
     df.ww.init()
     mock_predict.side_effect = lambda data: ww.init_series(y_series[: data.shape[0]])
     mock_predict_proba.side_effect = lambda data: df.ww.iloc[: len(data)]
-    y_encoded = y_series.map(
-        lambda label: "positive" if label == 1 else "negative"
-    ).astype("category")
+
     X_train, y_encoded_train = X.iloc[:29], y_encoded.iloc[:29]
     X_holdout, y_encoded_holdout = X.iloc[29:], y_encoded.iloc[29:]
     pl = pipeline_class(
@@ -694,7 +744,7 @@ def test_classification_pipeline_encodes_targets(
                 "Label Encoder.y",
             ],
             "DT": [
-                "DateTime Featurization Component",
+                "DateTime Featurizer",
                 "Time Series Featurizer.x",
                 "Label Encoder.y",
             ],
@@ -732,23 +782,27 @@ def test_classification_pipeline_encodes_targets(
 
     # Check predict encodes target
     predictions = pl.predict(X_holdout.iloc[:1], None, X_train, y_encoded_train)
-    assert set(predictions.unique()).issubset({"positive", "negative"})
+
+    valid_set = (
+        {"positive", "negative", "neither"}
+        if pipeline_class == TimeSeriesMulticlassClassificationPipeline
+        else {"positive", "negative"}
+    )
+    assert set(predictions.unique()).issubset(valid_set)
 
     predictions_in_sample = pl.predict_in_sample(
         X_holdout, y_encoded_holdout, X_train, y_encoded_train, objective=None
     )
-    assert set(predictions_in_sample.unique()).issubset({"positive", "negative"})
+    assert set(predictions_in_sample.unique()).issubset(valid_set)
 
     # Check predict proba column names are correct
     predict_proba = pl.predict_proba(X_holdout.iloc[:1], X_train, y_encoded_train)
-    assert set(predict_proba.columns.unique()).issubset({"positive", "negative"})
+    assert set(predict_proba.columns.unique()).issubset(valid_set)
 
     predict_proba_in_sample = pl.predict_proba_in_sample(
         X_holdout, y_encoded_holdout, X_train, y_encoded_train
     )
-    assert set(predict_proba_in_sample.columns.unique()).issubset(
-        {"positive", "negative"}
-    )
+    assert set(predict_proba_in_sample.columns.unique()).issubset(valid_set)
 
 
 @pytest.mark.parametrize(
@@ -1152,7 +1206,8 @@ def test_time_series_pipeline_fit_with_transformed_target(
             return infer_feature_types(X), infer_feature_types(y) + 2
 
     X, y = ts_data
-    y = y % 2
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        y = y % 2
 
     if is_classification(problem_type):
         estimator = "Logistic Regression Classifier"
@@ -1187,7 +1242,7 @@ def test_time_series_pipeline_with_detrender(ts_data):
     component_graph = {
         "Polynomial Detrender": ["Polynomial Detrender", "X", "y"],
         "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
-        "Dt": ["DateTime Featurization Component", "Time Series Featurizer.x", "y"],
+        "Dt": ["DateTime Featurizer", "Time Series Featurizer.x", "y"],
         "Regressor": [
             "Linear Regressor",
             "Dt.x",
@@ -1235,9 +1290,13 @@ def test_time_series_pipeline_with_detrender(ts_data):
     ],
 )
 def test_ts_pipeline_predict_without_final_estimator(
-    problem_type, make_data_type, X_y_binary
+    problem_type, make_data_type, ts_data_binary, ts_data_multi
 ):
-    X, y = X_y_binary
+    X, y = ts_data_multi
+
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = ts_data_binary
+
     X = make_data_type("ww", X)
     y = make_data_type("ww", y)
     X.ww["date"] = pd.Series(pd.date_range("2010-01-01", periods=X.shape[0]))
@@ -1296,8 +1355,13 @@ def test_ts_pipeline_transform(
     problem_type,
     make_data_type,
     X_y_binary,
+    X_y_multi,
 ):
-    X, y = X_y_binary
+    X, y = X_y_multi
+
+    if problem_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = X_y_binary
+
     X = make_data_type("ww", X)
     X.ww["date"] = pd.Series(pd.date_range("2010-01-01", periods=X.shape[0]))
     y = make_data_type("ww", y)
@@ -1437,59 +1501,3 @@ def test_time_index_cannot_be_none(time_series_regression_pipeline_class):
                 }
             }
         )
-
-
-@pytest.mark.parametrize(
-    "gap,reset_index,freq",
-    [
-        (0, False, "1D"),
-        (0, True, "3D"),
-        (1, False, "1D"),
-        (1, True, "1D"),
-        (5, False, "1D"),
-        (5, True, "1D"),
-        (5, False, None),
-    ],
-)
-@pytest.mark.parametrize(
-    "pipeline_class,estimator_name",
-    [
-        (TimeSeriesRegressionPipeline, "Random Forest Regressor"),
-        (TimeSeriesBinaryClassificationPipeline, "Logistic Regression Classifier"),
-        (TimeSeriesMulticlassClassificationPipeline, "Logistic Regression Classifier"),
-    ],
-)
-def test_noninferrable_data(pipeline_class, estimator_name, gap, reset_index, freq):
-    date_range_ = pd.date_range("1/1/21", freq=freq, periods=100)
-    training_date_range = date_range_[:80]
-    if freq is None:
-        training_date_range = pd.DatetimeIndex(["12/12/1984"]).append(date_range_[1:])
-    testing_date_range = date_range_[80 + gap : 85 + gap]
-
-    X_train = pd.DataFrame(training_date_range, columns=["date"])
-    X = pd.DataFrame(testing_date_range, columns=["date"])
-
-    if not reset_index:
-        X.index = [i for i in range(80, 85)]
-
-    pl = pipeline_class(
-        component_graph=[estimator_name],
-        parameters={
-            "pipeline": {
-                "time_index": "date",
-                "gap": gap,
-                "max_delay": 1,
-                "forecast_horizon": 5,
-            },
-        },
-    )
-
-    if freq is None:
-        with pytest.raises(
-            ValueError,
-            match="The training data must have an inferrable interval frequency!",
-        ):
-            pl._are_datasets_separated_by_gap_time_index(X_train, X, gap)
-    else:
-        are_equal = pl._are_datasets_separated_by_gap_time_index(X_train, X, gap)
-        assert are_equal

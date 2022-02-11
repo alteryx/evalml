@@ -14,7 +14,6 @@ from evalml.pipelines import (
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
     DropColumns,
-    DropNullColumns,
     DropRowsTransformer,
     EmailFeaturizer,
     Estimator,
@@ -32,6 +31,9 @@ from evalml.pipelines.components import (
 )
 from evalml.pipelines.components.transformers.encoders.label_encoder import (
     LabelEncoder,
+)
+from evalml.pipelines.components.transformers.imputers.per_column_imputer import (
+    PerColumnImputer,
 )
 from evalml.pipelines.components.utils import handle_component_class
 from evalml.pipelines.utils import (
@@ -131,7 +133,7 @@ def test_make_pipeline(
                 if estimator_class.model_family == ModelFamily.LINEAR_MODEL
                 else []
             )
-            drop_null = [DropNullColumns] if "all_null" in column_names else []
+            drop_null = [DropColumns] if "all_null" in column_names else []
             replace_null = (
                 [ReplaceNullableTypes]
                 if (
@@ -147,7 +149,7 @@ def test_make_pipeline(
             )
             email_featurizer = [EmailFeaturizer] if "email" in column_names else []
             url_featurizer = [URLFeaturizer] if "url" in column_names else []
-            imputer = [] if (column_names in [["ip"]]) else [Imputer]
+            imputer = [] if (column_names in [["ip"], ["all_null"]]) else [Imputer]
 
             if is_time_series(problem_type):
                 expected_components = (
@@ -344,16 +346,41 @@ def test_make_pipeline_from_actions(problem_type):
             metadata={
                 "columns": None,
                 "is_target": True,
-                "impute_strategy": "most_frequent",
+                "parameters": {"impute_strategy": "most_frequent"},
             },
         ),
         DataCheckAction(DataCheckActionCode.DROP_ROWS, None, metadata={"rows": [1, 2]}),
+        DataCheckAction(
+            DataCheckActionCode.IMPUTE_COL,
+            None,
+            metadata={
+                "columns": None,
+                "is_target": False,
+                "parameters": {
+                    "impute_strategies": {
+                        "some_column": {
+                            "impute_strategy": "most_frequent",
+                            "fill_value": 0.0,
+                        },
+                        "some_other_column": {
+                            "impute_strategy": "mean",
+                            "fill_value": 1.0,
+                        },
+                    },
+                },
+            },
+        ),
     ]
 
     assert make_pipeline_from_actions(problem_type, actions) == pipeline_class(
         component_graph={
             "Target Imputer": [TargetImputer, "X", "y"],
-            "Drop Columns Transformer": [DropColumns, "X", "Target Imputer.y"],
+            "Per Column Imputer": [PerColumnImputer, "X", "Target Imputer.y"],
+            "Drop Columns Transformer": [
+                DropColumns,
+                "Per Column Imputer.x",
+                "Target Imputer.y",
+            ],
             "Drop Rows Transformer": [
                 DropRowsTransformer,
                 "Drop Columns Transformer.x",
@@ -364,6 +391,19 @@ def test_make_pipeline_from_actions(problem_type):
             "Target Imputer": {"impute_strategy": "most_frequent", "fill_value": None},
             "Drop Columns Transformer": {"columns": ["some col"]},
             "Drop Rows Transformer": {"indices_to_drop": [1, 2]},
+            "Per Column Imputer": {
+                "impute_strategies": {
+                    "some_column": {
+                        "impute_strategy": "most_frequent",
+                        "fill_value": 0.0,
+                    },
+                    "some_other_column": {
+                        "impute_strategy": "mean",
+                        "fill_value": 1.0,
+                    },
+                },
+                "default_impute_strategy": "most_frequent",
+            },
         },
         random_seed=0,
     )
@@ -628,7 +668,7 @@ def test_generate_code_nonlinear_pipeline():
         "OneHot_ElasticNet": ["One Hot Encoder", "Imputer.x", "y"],
         "Random Forest": ["Random Forest Classifier", "OneHot_RandomForest.x", "y"],
         "Elastic Net": ["Elastic Net Classifier", "OneHot_ElasticNet.x", "y"],
-        "Logistic Regression": [
+        "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
             "Random Forest.x",
             "Elastic Net.x",
@@ -646,13 +686,13 @@ def test_generate_code_nonlinear_pipeline():
         "'OneHot_ElasticNet': ['One Hot Encoder', 'Imputer.x', 'y'], "
         "'Random Forest': ['Random Forest Classifier', 'OneHot_RandomForest.x', 'y'], "
         "'Elastic Net': ['Elastic Net Classifier', 'OneHot_ElasticNet.x', 'y'], "
-        "'Logistic Regression': ['Logistic Regression Classifier', 'Random Forest.x', 'Elastic Net.x', 'y']}, "
+        "'Logistic Regression Classifier': ['Logistic Regression Classifier', 'Random Forest.x', 'Elastic Net.x', 'y']}, "
         "parameters={'Imputer':{'categorical_impute_strategy': 'most_frequent', 'numeric_impute_strategy': 'mean', 'categorical_fill_value': None, 'numeric_fill_value': None}, "
         "'OneHot_RandomForest':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'OneHot_ElasticNet':{'top_n': 10, 'features_to_encode': None, 'categories': None, 'drop': 'if_binary', 'handle_unknown': 'ignore', 'handle_missing': 'error'}, "
         "'Random Forest':{'n_estimators': 100, 'max_depth': 6, 'n_jobs': -1}, "
         "'Elastic Net':{'penalty': 'elasticnet', 'C': 1.0, 'l1_ratio': 0.15, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'saga'}, "
-        "'Logistic Regression':{'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}, "
+        "'Logistic Regression Classifier':{'penalty': 'l2', 'C': 1.0, 'n_jobs': -1, 'multi_class': 'auto', 'solver': 'lbfgs'}}, "
         "custom_name='Non Linear Binary Pipeline', random_seed=0)"
     )
     pipeline_code = generate_pipeline_code(pipeline)

@@ -41,11 +41,10 @@ def test_automl_algorithm_dummy():
         algo.next_batch()
 
 
-def test_automl_algorithm_invalid_pipeline_add(dummy_regression_pipeline_class):
+def test_automl_algorithm_invalid_pipeline_add(dummy_regression_pipeline):
     algo = DummyAlgorithm()
-    pipeline = dummy_regression_pipeline_class(parameters={})
     with pytest.raises(
         PipelineNotFoundError,
         match="No such pipeline allowed in this AutoML search: Mock Regression Pipeline",
     ):
-        algo.add_result(0.1234, pipeline, {})
+        algo.add_result(0.1234, dummy_regression_pipeline, {})

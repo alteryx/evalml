@@ -13,7 +13,13 @@ from evalml.automl.utils import (
     make_data_splitter,
     tune_binary_threshold,
 )
-from evalml.objectives import F1, R2, LogLossBinary, LogLossMulticlass
+from evalml.objectives import (
+    F1,
+    R2,
+    LogLossBinary,
+    LogLossMulticlass,
+    MedianAE,
+)
 from evalml.pipelines import (
     BinaryClassificationPipeline,
     MulticlassClassificationPipeline,
@@ -41,6 +47,13 @@ def test_get_default_primary_search_objective():
     )
     assert isinstance(get_default_primary_search_objective("regression"), R2)
     assert isinstance(get_default_primary_search_objective(ProblemTypes.REGRESSION), R2)
+    assert isinstance(
+        get_default_primary_search_objective("time series regression"), MedianAE
+    )
+    assert isinstance(
+        get_default_primary_search_objective(ProblemTypes.TIME_SERIES_REGRESSION),
+        MedianAE,
+    )
     assert isinstance(
         get_default_primary_search_objective("time series binary"), LogLossBinary
     )
@@ -97,6 +110,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.random_seed == 0
         assert data_splitter.shuffle
         assert data_splitter.test_size == _LARGE_DATA_PERCENT_VALIDATION
+        assert not data_splitter.is_cv
         return
 
     if problem_type == ProblemTypes.REGRESSION:
@@ -104,12 +118,14 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.n_splits == 3
         assert data_splitter.shuffle
         assert data_splitter.random_state == 0
+        assert data_splitter.is_cv
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         assert isinstance(data_splitter, StratifiedKFold)
         assert data_splitter.n_splits == 3
         assert data_splitter.shuffle
         assert data_splitter.random_state == 0
+        assert data_splitter.is_cv
 
     if problem_type in [
         ProblemTypes.TIME_SERIES_REGRESSION,
@@ -122,6 +138,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.max_delay == 7
         assert data_splitter.forecast_horizon == 4
         assert data_splitter.time_index == "foo"
+        assert data_splitter.is_cv
 
     if problem_type is ProblemTypes.CLUSTERING:
         assert isinstance(data_splitter, NoSplit)
@@ -149,6 +166,7 @@ def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     assert data_splitter.n_splits == 5
     assert data_splitter.shuffle
     assert data_splitter.random_state == random_seed
+    assert data_splitter.is_cv
 
 
 def test_make_data_splitter_parameters_time_series():
@@ -225,7 +243,7 @@ def test_tune_binary_threshold(
     mock_score,
     mock_predict_proba,
     mock_optimize_threshold,
-    dummy_binary_pipeline_class,
+    dummy_binary_pipeline,
     X_y_binary,
 ):
     mock_optimize_threshold.return_value = 0.42
@@ -234,15 +252,15 @@ def test_tune_binary_threshold(
     X = infer_feature_types(X)
     y = infer_feature_types(y)
 
-    pipeline = dummy_binary_pipeline_class({})
+    pipeline = dummy_binary_pipeline.new({})
     tune_binary_threshold(pipeline, F1(), "binary", X, y)
     assert pipeline.threshold == 0.42
 
-    pipeline = dummy_binary_pipeline_class({})
+    pipeline = dummy_binary_pipeline.new({})
     tune_binary_threshold(pipeline, F1(), "binary", None, None)
     assert pipeline.threshold == 0.5
 
-    pipeline = dummy_binary_pipeline_class({})
+    pipeline = dummy_binary_pipeline.new({})
     tune_binary_threshold(pipeline, F1(), "multiclass", X, y)
     assert pipeline.threshold is None
 

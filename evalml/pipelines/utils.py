@@ -16,7 +16,7 @@ from .multiclass_classification_pipeline import (
 from .pipeline_base import PipelineBase
 from .regression_pipeline import RegressionPipeline
 
-from evalml.data_checks import DataCheckActionCode
+from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
@@ -33,6 +33,7 @@ from evalml.pipelines.components import (  # noqa: F401
     NaturalLanguageFeaturizer,
     OneHotEncoder,
     Oversampler,
+    PerColumnImputer,
     RandomForestClassifier,
     ReplaceNullableTypes,
     SelectColumns,
@@ -72,7 +73,8 @@ def _get_label_encoder(X, y, problem_type, estimator_class, sampler_name=None):
 
 def _get_drop_all_null(X, y, problem_type, estimator_class, sampler_name=None):
     component = []
-    all_null_cols = X.columns[X.isnull().all()]
+    non_index_unknown = X.ww.select(exclude=["index", "unknown"])
+    all_null_cols = non_index_unknown.columns[non_index_unknown.isnull().all()]
     if len(all_null_cols) > 0:
         component.append(DropNullColumns)
     return component
@@ -382,8 +384,8 @@ def make_pipeline(
     problem_type,
     parameters=None,
     sampler_name=None,
-    extra_components=None,
-    extra_components_position="before_preprocessing",
+    extra_components_before=None,
+    extra_components_after=None,
     use_estimator=True,
     known_in_advance=None,
 ):
@@ -398,8 +400,8 @@ def make_pipeline(
              An empty dictionary or None implies using all default values for component parameters.
          sampler_name (str): The name of the sampler component to add to the pipeline. Only used in classification problems.
              Defaults to None
-         extra_components (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
-         extra_components_position (str): Where to put extra components. Defaults to "before_preprocessing" and any other value will put components after preprocessing components.
+         extra_components_before (list[ComponentBase]): List of extra components to be added before preprocessing components. Defaults to None.
+         extra_components_after (list[ComponentBase]): List of extra components to be added after preprocessing components. Defaults to None.
          use_estimator (bool): Whether to add the provided estimator to the pipeline or not. Defaults to True.
          known_in_advance (list[str], None): List of features that are known in advance.
 
@@ -435,17 +437,15 @@ def make_pipeline(
         preprocessing_components = _get_preprocessing_components(
             X, y, problem_type, estimator, sampler_name
         )
-        extra_components = extra_components or []
+        extra_components_before = extra_components_before or []
+        extra_components_after = extra_components_after or []
         estimator_component = [estimator] if use_estimator else []
-
-        if extra_components_position == "before_preprocessing":
-            complete_component_list = (
-                extra_components + preprocessing_components + estimator_component
-            )
-        else:
-            complete_component_list = (
-                preprocessing_components + extra_components + estimator_component
-            )
+        complete_component_list = (
+            extra_components_before
+            + preprocessing_components
+            + extra_components_after
+            + estimator_component
+        )
 
         component_graph = PipelineBase._make_component_dict_from_component_list(
             complete_component_list
@@ -746,10 +746,14 @@ def _make_component_list_from_actions(actions):
             cols_to_drop.extend(action.metadata["columns"])
         elif action.action_code == DataCheckActionCode.IMPUTE_COL:
             metadata = action.metadata
+            parameters = metadata.get("parameters", {})
             if metadata["is_target"]:
                 components.append(
-                    TargetImputer(impute_strategy=metadata["impute_strategy"])
+                    TargetImputer(impute_strategy=parameters["impute_strategy"])
                 )
+            else:
+                impute_strategies = parameters["impute_strategies"]
+                components.append(PerColumnImputer(impute_strategies=impute_strategies))
         elif action.action_code == DataCheckActionCode.DROP_ROWS:
             indices_to_drop.extend(action.metadata["rows"])
     if cols_to_drop:
@@ -760,6 +764,43 @@ def _make_component_list_from_actions(actions):
         components.append(DropRowsTransformer(indices_to_drop=indices_to_drop))
 
     return components
+
+
+def make_pipeline_from_data_check_output(problem_type, data_check_output):
+    """Creates a pipeline of components to address warnings and errors output from running data checks. Uses all default suggestions.
+
+    Args:
+        problem_type (str or ProblemType): The problem type.
+        data_check_output (dict): Output from calling ``DataCheck.validate()``.
+
+    Returns:
+        PipelineBase: Pipeline which can be used to address data check outputs.
+    """
+    action_options = []
+    for message in data_check_output:
+        action_options.extend([option for option in message["action_options"]])
+
+    actions = get_actions_from_option_defaults(
+        DataCheckActionOption.convert_dict_to_option(option)
+        for option in action_options
+    )
+
+    return make_pipeline_from_actions(problem_type, actions)
+
+
+def get_actions_from_option_defaults(action_options):
+    """Returns a list of actions based on the defaults parameters of each option in the input DataCheckActionOption list.
+
+    Args:
+        action_options (list[DataCheckActionOption]): List of DataCheckActionOption objects
+
+    Returns:
+        list[DataCheckAction]: List of actions based on the defaults parameters of each option in the input list.
+    """
+    actions = []
+    for option in action_options:
+        actions.append(option.get_action_from_defaults())
+    return actions
 
 
 def make_timeseries_baseline_pipeline(problem_type, gap, forecast_horizon, time_index):

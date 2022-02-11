@@ -8,9 +8,11 @@ from skopt.space import Categorical, Integer
 from evalml.automl.automl_algorithm import DefaultAlgorithm
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components import (
+    ARIMARegressor,
     ElasticNetClassifier,
     ElasticNetRegressor,
     LogisticRegressionClassifier,
+    ProphetRegressor,
     RandomForestClassifier,
     StackedEnsembleClassifier,
     StackedEnsembleRegressor,
@@ -103,17 +105,21 @@ def add_result(algo, batch):
     "automl_type",
     [ProblemTypes.BINARY, ProblemTypes.MULTICLASS, ProblemTypes.REGRESSION],
 )
+@pytest.mark.parametrize("split", ["split", "numeric-only", "categorical-only"])
 def test_default_algorithm(
     mock_get_names,
     automl_type,
+    split,
     X_y_categorical_classification,
     X_y_multi,
     X_y_regression,
 ):
-    pipeline_names = [
-        "Numeric Pipeline - Select Columns Transformer",
-        "Categorical Pipeline - Select Columns Transformer",
-    ]
+    if split == "split":
+        pipeline_names = [
+            "Numeric Pipeline - Select Columns Transformer",
+            "Categorical Pipeline - Select Columns Transformer",
+        ]
+
     if automl_type == ProblemTypes.BINARY:
         X, y = X_y_categorical_classification
         fs = "RF Classifier Select From Model"
@@ -124,7 +130,22 @@ def test_default_algorithm(
         X, y = X_y_regression
         fs = "RF Regressor Select From Model"
 
-    mock_get_names.return_value = ["0", "1", "2"]
+    X = pd.DataFrame(X)
+    X["1"] = 0
+    X["2"] = 0
+    X["3"] = 0
+    X["A"] = "a"
+    X["B"] = "b"
+    X["C"] = "c"
+
+    non_categorical_columns = ["0", "1", "2"]
+    categorical_columns = ["A", "B", "C"]
+
+    if split == "split" or split == "numeric-only":
+        mock_get_names.return_value = non_categorical_columns
+    else:
+        mock_get_names.return_value = None
+
     problem_type = automl_type
     sampler_name = None
     algo = DefaultAlgorithm(X, y, problem_type, sampler_name)
@@ -141,26 +162,37 @@ def test_default_algorithm(
     for pipeline in second_batch:
         assert pipeline.get_component(fs)
     add_result(algo, second_batch)
-    algo._selected_cat_cols = ["A", "B", "C"]
 
-    assert algo._selected_cols == ["0", "1", "2"]
-    assert algo._selected_cat_cols == ["A", "B", "C"]
+    if split == "split" or split == "numeric-only":
+        assert algo._selected_cols == non_categorical_columns
+    if split == "split" or split == "categorical-only":
+        algo._selected_cat_cols = categorical_columns
+        assert algo._selected_cat_cols == categorical_columns
+
     final_batch = algo.next_batch()
     for pipeline in final_batch:
         if not isinstance(
             pipeline.estimator, (ElasticNetClassifier, ElasticNetRegressor)
         ):
             assert pipeline.model_family not in naive_model_families
-        assert pipeline.parameters[pipeline_names[0]]["columns"] == [
-            "0",
-            "1",
-            "2",
-        ]
-        assert pipeline.parameters[pipeline_names[1]]["columns"] == [
-            "A",
-            "B",
-            "C",
-        ]
+        if split == "split":
+            assert (
+                pipeline.parameters[pipeline_names[0]]["columns"]
+                == non_categorical_columns
+            )
+            assert (
+                pipeline.parameters[pipeline_names[1]]["columns"] == categorical_columns
+            )
+        elif split == "numeric-only":
+            assert (
+                pipeline.parameters["Select Columns Transformer"]["columns"]
+                == non_categorical_columns
+            )
+        elif split == "categorical-only":
+            assert (
+                pipeline.parameters["Select Columns Transformer"]["columns"]
+                == categorical_columns
+            )
         assert algo._tuners[pipeline.name]
     add_result(algo, final_batch)
 
@@ -334,6 +366,15 @@ def test_default_algo_drop_columns(mock_get_names, columns, X_y_binary):
 
 def test_make_split_pipeline(X_y_binary):
     X, y = X_y_binary
+
+    X = pd.DataFrame(X)
+    X["1"] = 0
+    X["2"] = 0
+    X["3"] = 0
+    X["A"] = "a"
+    X["B"] = "b"
+    X["C"] = "c"
+
     algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
     algo._selected_cols = ["1", "2", "3"]
     algo._selected_cat_cols = ["A", "B", "C"]
@@ -343,6 +384,8 @@ def test_make_split_pipeline(X_y_binary):
         "Categorical Pipeline - Select Columns Transformer",
         "Categorical Pipeline - Label Encoder",
         "Categorical Pipeline - Imputer",
+        "Categorical Pipeline - One Hot Encoder",
+        "Numeric Pipeline - Select Columns By Type Transformer",
         "Numeric Pipeline - Label Encoder",
         "Numeric Pipeline - Imputer",
         "Numeric Pipeline - Select Columns Transformer",
@@ -350,12 +393,45 @@ def test_make_split_pipeline(X_y_binary):
     ]
     assert pipeline.component_graph.compute_order == compute_order
     assert pipeline.name == "test_pipeline"
+    assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
+        "column_types"
+    ] == ["category"]
+    assert pipeline.parameters["Numeric Pipeline - Select Columns By Type Transformer"][
+        "exclude"
+    ]
     assert pipeline.parameters["Numeric Pipeline - Select Columns Transformer"][
         "columns"
     ] == ["1", "2", "3"]
     assert pipeline.parameters["Categorical Pipeline - Select Columns Transformer"][
         "columns"
     ] == ["A", "B", "C"]
+    assert isinstance(pipeline.estimator, RandomForestClassifier)
+
+
+def test_make_split_pipeline_categorical_only(X_y_binary):
+    X, y = X_y_binary
+
+    X = pd.DataFrame(X)
+    X["A"] = "a"
+    X["B"] = "b"
+    X["C"] = "c"
+
+    algo = DefaultAlgorithm(X, y, ProblemTypes.BINARY, sampler_name=None)
+    algo._selected_cat_cols = ["A", "B", "C"]
+    pipeline = algo._make_split_pipeline(RandomForestClassifier)
+    compute_order = [
+        "Select Columns Transformer",
+        "Label Encoder",
+        "Imputer",
+        "One Hot Encoder",
+        "Random Forest Classifier",
+    ]
+    assert pipeline.component_graph.compute_order == compute_order
+    assert pipeline.parameters["Select Columns Transformer"]["columns"] == [
+        "A",
+        "B",
+        "C",
+    ]
     assert isinstance(pipeline.estimator, RandomForestClassifier)
 
 
@@ -386,11 +462,281 @@ def test_select_cat_cols(
 
     batch = algo.next_batch()
     add_result(algo, batch)
+    for component, value in batch[0].parameters.items():
+        if "Numeric Pipeline - Select Columns Transformer" in component:
+            assert value["columns"] == algo._selected_cols
+        elif "Numeric Pipeline - Select Columns By Type Transformer" in component:
+            assert value["column_types"] == ["category"]
+            assert value["exclude"]
+        elif "Categorical Pipeline - Select Columns Transformer" in component:
+            assert value["columns"] == algo._selected_cat_cols
 
     batch = algo.next_batch()
     add_result(algo, batch)
     for component, value in batch[0].parameters.items():
         if "Numeric Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cols
+        elif "Numeric Pipeline - Select Columns By Type Transformer" in component:
+            assert value["column_types"] == ["category"]
+            assert value["exclude"]
         elif "Categorical Pipeline - Select Columns Transformer" in component:
             assert value["columns"] == algo._selected_cat_cols
+
+
+@pytest.mark.parametrize(
+    "problem_type,n_unique",
+    [
+        ("binary", 2),
+        ("multiclass", 10),
+        ("multiclass", 200),
+        ("regression", 80),
+        ("regression", 200),
+    ],
+)
+@pytest.mark.parametrize("allow_long_running_models", [True, False])
+def test_default_algorithm_allow_long_running_models_next_batch(
+    allow_long_running_models,
+    problem_type,
+    n_unique,
+    has_minimal_dependencies,
+):
+    if allow_long_running_models and problem_type != "multiclass":
+        pytest.skip("Skipping to shorten tests")
+
+    models_to_check = [
+        "Elastic Net",
+        "XGBoost",
+        "CatBoost",
+    ]
+    if has_minimal_dependencies:
+        models_to_check = ["Elastic Net"]
+
+    X = pd.DataFrame()
+    y = pd.Series([i for i in range(n_unique)] * 5)
+
+    algo = DefaultAlgorithm(
+        X=X,
+        y=y,
+        sampler_name=None,
+        problem_type=problem_type,
+        random_seed=0,
+        allow_long_running_models=allow_long_running_models,
+    )
+    algo._selected_cols = []
+    next_batch = algo.next_batch()
+    found_models = False
+    for pipeline in next_batch:
+        found_models |= any([m in pipeline.name for m in models_to_check])
+
+    # the "best" score will be the 1st dummy pipeline
+    add_result(algo, next_batch)
+
+    for i in range(1, 6):
+        next_batch = algo.next_batch()
+        for pipeline in next_batch:
+            found_models |= any([m in pipeline.name for m in models_to_check])
+        # if found_models becomes true, we already have our needed results
+        if found_models:
+            break
+        scores = -np.arange(0, len(next_batch))
+        for score, pipeline in zip(scores, next_batch):
+            algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
+    if (
+        problem_type == "multiclass"
+        and not allow_long_running_models
+        and n_unique == 200
+    ):
+        assert not found_models
+    else:
+        assert found_models
+
+
+@pytest.mark.parametrize(
+    "automl_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_default_algorithm_time_series(
+    mock_get_names, automl_type, ts_data, ts_data_binary, ts_data_multi
+):
+    if automl_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = ts_data_binary
+    elif automl_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = ts_data_multi
+    elif automl_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        X, y = ts_data
+
+    mock_get_names.return_value = ["0", "1", "2"]
+    problem_type = ProblemTypes.TIME_SERIES_REGRESSION
+    sampler_name = None
+    pipeline_params = {
+        "pipeline": {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 3,
+            "delay_features": False,
+            "forecast_horizon": 10,
+        }
+    }
+
+    algo = DefaultAlgorithm(
+        X, y, problem_type, sampler_name, pipeline_params=pipeline_params
+    )
+    naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
+
+    first_batch = algo.next_batch()
+    assert len(first_batch) == 2
+    assert {p.model_family for p in first_batch} == naive_model_families
+    for pipeline in first_batch:
+        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert pipeline.parameters["DateTime Featurizer"]["time_index"]
+    add_result(algo, first_batch)
+
+    second_batch = algo.next_batch()
+    assert len(second_batch) == 2
+    assert {p.model_family for p in second_batch} == naive_model_families
+    for pipeline in second_batch:
+        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert pipeline.parameters["DateTime Featurizer"]["time_index"]
+    add_result(algo, second_batch)
+
+    final_batch = algo.next_batch()
+    for pipeline in final_batch:
+        if not isinstance(
+            pipeline.estimator, (ElasticNetClassifier, ElasticNetRegressor)
+        ):
+            assert pipeline.model_family not in naive_model_families
+        assert algo._tuners[pipeline.name]
+        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        if not isinstance(pipeline.estimator, (ARIMARegressor, ProphetRegressor)):
+            assert pipeline.parameters["DateTime Featurizer"]["time_index"]
+    add_result(algo, final_batch)
+
+    long_explore = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
+    assert len(long_explore) == 150
+    assert len(long_estimators) == 3
+
+    long = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long])
+    assert len(long) == 30
+    assert len(long_estimators) == 3
+
+    long_2 = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long_2])
+    assert len(long_2) == 30
+    assert len(long_estimators) == 3
+
+
+@pytest.mark.parametrize(
+    "automl_type",
+    [
+        ProblemTypes.TIME_SERIES_BINARY,
+        ProblemTypes.TIME_SERIES_MULTICLASS,
+        ProblemTypes.TIME_SERIES_REGRESSION,
+    ],
+)
+@patch("evalml.pipelines.components.FeatureSelector.get_names")
+def test_default_algorithm_time_series_known_in_advance(
+    mock_get_names, automl_type, ts_data, ts_data_binary, ts_data_multi
+):
+    if automl_type == ProblemTypes.TIME_SERIES_BINARY:
+        X, y = ts_data_binary
+    elif automl_type == ProblemTypes.TIME_SERIES_MULTICLASS:
+        X, y = ts_data_multi
+    elif automl_type == ProblemTypes.TIME_SERIES_REGRESSION:
+        X, y = ts_data
+
+    X.ww.init()
+    X.ww["email"] = pd.Series(["foo@foo.com"] * X.shape[0], index=X.index)
+    X.ww["category"] = pd.Series(["a"] * X.shape[0], index=X.index)
+    X.ww.set_types({"email": "EmailAddress", "category": "Categorical"})
+    known_in_advance = ["email", "category"]
+
+    mock_get_names.return_value = ["0", "1", "2"]
+    problem_type = ProblemTypes.TIME_SERIES_REGRESSION
+    sampler_name = None
+    pipeline_params = {
+        "pipeline": {
+            "time_index": "date",
+            "gap": 1,
+            "max_delay": 3,
+            "delay_features": False,
+            "forecast_horizon": 10,
+            "known_in_advance": known_in_advance,
+        }
+    }
+
+    algo = DefaultAlgorithm(
+        X, y, problem_type, sampler_name, pipeline_params=pipeline_params
+    )
+    naive_model_families = set([ModelFamily.LINEAR_MODEL, ModelFamily.RANDOM_FOREST])
+
+    first_batch = algo.next_batch()
+    assert len(first_batch) == 2
+    assert {p.model_family for p in first_batch} == naive_model_families
+    for pipeline in first_batch:
+        assert (
+            pipeline.parameters[
+                "Known In Advance Pipeline - Select Columns Transformer"
+            ]["columns"]
+            == known_in_advance
+        )
+        assert pipeline.parameters[
+            "Not Known In Advance Pipeline - Select Columns Transformer"
+        ]["columns"] == ["features", "date"]
+    add_result(algo, first_batch)
+
+    second_batch = algo.next_batch()
+    assert len(second_batch) == 2
+    assert {p.model_family for p in second_batch} == naive_model_families
+    for pipeline in second_batch:
+        assert (
+            pipeline.parameters[
+                "Known In Advance Pipeline - Select Columns Transformer"
+            ]["columns"]
+            == known_in_advance
+        )
+        assert pipeline.parameters[
+            "Not Known In Advance Pipeline - Select Columns Transformer"
+        ]["columns"] == ["features", "date"]
+    add_result(algo, second_batch)
+
+    final_batch = algo.next_batch()
+    for pipeline in final_batch:
+        if not isinstance(
+            pipeline.estimator, (ElasticNetClassifier, ElasticNetRegressor)
+        ):
+            assert pipeline.model_family not in naive_model_families
+        assert algo._tuners[pipeline.name]
+        assert pipeline.parameters["pipeline"] == pipeline_params["pipeline"]
+        assert (
+            pipeline.parameters[
+                "Known In Advance Pipeline - Select Columns Transformer"
+            ]["columns"]
+            == known_in_advance
+        )
+        assert pipeline.parameters[
+            "Not Known In Advance Pipeline - Select Columns Transformer"
+        ]["columns"] == ["features", "date"]
+    add_result(algo, final_batch)
+
+    long_explore = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long_explore])
+    assert len(long_explore) == 150
+    assert len(long_estimators) == 3
+
+    long = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long])
+    assert len(long) == 30
+    assert len(long_estimators) == 3
+
+    long_2 = algo.next_batch()
+    long_estimators = set([pipeline.estimator.name for pipeline in long_2])
+    assert len(long_2) == 30
+    assert len(long_estimators) == 3

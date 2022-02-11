@@ -63,7 +63,7 @@ jobs:
         run: |
           printf "${{ steps.min_dep_gen_core.outputs.min_reqs }}" > evalml/tests/dependency_update_check/minimum_core_requirements.txt
       - name: Create Pull Request
-        uses: FeatureLabs/create-pull-request@v3
+        uses: peter-evans/create-pull-request@v3
         with:
           token: ${{ secrets.MACHINEFL_DEPENDENCY_CHECKER_TOKEN }}
           commit-message: Update minimum dependencies
@@ -74,4 +74,5 @@ jobs:
           branch: min-dep-update
           branch-suffix: short-commit-hash
           base: main
-          reviewers: angela97lin, dsherry, jeremyliweishih, freddyaboulton, bchen1116, chukarsten, ParthivNaresh
+          assignees: machineFL
+          reviewers: machineAYX, angela97lin, dsherry, jeremyliweishih, freddyaboulton, bchen1116, chukarsten, ParthivNaresh, eccabay, christopherbunn

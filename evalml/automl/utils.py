@@ -2,7 +2,6 @@
 from collections import namedtuple
 
 import pandas as pd
-from sklearn.model_selection import KFold, StratifiedKFold
 
 from evalml.objectives import get_objective
 from evalml.pipelines import (
@@ -14,7 +13,9 @@ from evalml.pipelines import (
     TimeSeriesRegressionPipeline,
 )
 from evalml.preprocessing.data_splitters import (
+    KFold,
     NoSplit,
+    StratifiedKFold,
     TimeSeriesSplit,
     TrainingValidationSplit,
 )
@@ -53,7 +54,7 @@ def get_default_primary_search_objective(problem_type):
         "binary": "Log Loss Binary",
         "multiclass": "Log Loss Multiclass",
         "regression": "R2",
-        "time series regression": "R2",
+        "time series regression": "MedianAE",
         "time series binary": "Log Loss Binary",
         "time series multiclass": "Log Loss Multiclass",
         "clustering": None,

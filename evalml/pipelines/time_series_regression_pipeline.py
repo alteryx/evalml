@@ -40,6 +40,29 @@ class TimeSeriesRegressionPipeline(TimeSeriesPipelineBase):
     problem_type = ProblemTypes.TIME_SERIES_REGRESSION
     """ProblemTypes.TIME_SERIES_REGRESSION"""
 
+    def fit(self, X, y):
+        """Fit a time series pipeline.
+
+        Args:
+            X (pd.DataFrame or np.ndarray): The input training data of shape [n_samples, n_features].
+            y (pd.Series, np.ndarray): The target training targets of length [n_samples].
+
+        Returns:
+            self
+
+        Raises:
+            ValueError: If the target is not numeric.
+        """
+        X, y = self._convert_to_woodwork(X, y)
+
+        if "numeric" not in y.ww.semantic_tags:
+            raise ValueError(
+                "Time Series Regression pipeline can only handle numeric target data!"
+            )
+
+        self._fit(X, y)
+        return self
+
     def score(self, X, y, objectives, X_train=None, y_train=None):
         """Evaluate model performance on current and additional objectives.
 

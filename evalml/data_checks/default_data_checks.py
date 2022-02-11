@@ -2,12 +2,10 @@
 from .class_imbalance_data_check import ClassImbalanceDataCheck
 from .data_checks import DataChecks
 from .datetime_format_data_check import DateTimeFormatDataCheck
-from .datetime_nan_data_check import DateTimeNaNDataCheck
-from .highly_null_data_check import HighlyNullDataCheck
 from .id_columns_data_check import IDColumnsDataCheck
 from .invalid_target_data_check import InvalidTargetDataCheck
-from .natural_language_nan_data_check import NaturalLanguageNaNDataCheck
 from .no_variance_data_check import NoVarianceDataCheck
+from .null_data_check import NullDataCheck
 from .target_distribution_data_check import TargetDistributionDataCheck
 from .target_leakage_data_check import TargetLeakageDataCheck
 from .ts_parameters_data_check import TimeSeriesParametersDataCheck
@@ -26,15 +24,13 @@ class DefaultDataChecks(DataChecks):
 
     Includes:
 
-        - `HighlyNullDataCheck`
+        - `NullDataCheck`
         - `HighlyNullRowsDataCheck`
         - `IDColumnsDataCheck`
         - `TargetLeakageDataCheck`
         - `InvalidTargetDataCheck`
         - `NoVarianceDataCheck`
         - `ClassImbalanceDataCheck` (for classification problem types)
-        - `DateTimeNaNDataCheck`
-        - `NaturalLanguageNaNDataCheck`
         - `TargetDistributionDataCheck` (for regression problem types)
         - `DateTimeFormatDataCheck` (for time series problem types)
         - 'TimeSeriesParametersDataCheck' (for time series problem types)
@@ -49,13 +45,11 @@ class DefaultDataChecks(DataChecks):
     """
 
     _DEFAULT_DATA_CHECK_CLASSES = [
-        HighlyNullDataCheck,
+        NullDataCheck,
         IDColumnsDataCheck,
         TargetLeakageDataCheck,
         InvalidTargetDataCheck,
         NoVarianceDataCheck,
-        NaturalLanguageNaNDataCheck,
-        DateTimeNaNDataCheck,
     ]
 
     def __init__(self, problem_type, objective, n_splits=3, problem_configuration=None):

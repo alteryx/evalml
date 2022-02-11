@@ -1,18 +1,123 @@
-Release Notes
+﻿Release Notes
 -------------
+
 **Future Releases**
+    * Enhancements
+        * Added clustering as a problem type and removed requirement of ``y_train`` for clustering problem types :pr:`3022`
+    * Fixes
+    * Changes
+        * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
+    * Documentation Changes
+        * Update README.md with Alteryx link (:pr:`3319`)
+    * Testing Changes
+        * Add auto approve dependency workflow schedule for every 30 mins :pr:`3312`
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.44.0 Feb. 04, 2022**
+    * Enhancements
+        * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
+        * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
+        * Added more specific data check errors to ``DatetimeFormatDataCheck`` :pr:`3288`
+    * Fixes
+        * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:`3280`
+        * Fixed bug where feature importance on time series pipelines only showed 0 for time index :pr:`3285`
+    * Changes
+        * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
+        * Drop support for Python 3.7 :pr:`3291`
+        * Updated minimum version of ``woodwork`` to ``v0.12.0`` :pr:`3290`
+    * Documentation Changes
+        * Update documentation and docstring for `validate_holdout_datasets` for time series problems :pr:`3278`
+        * Fixed mistake in documentation where wrong objective was used for calculating percent-better-than-baseline :pr:`3285`
+    * Testing Changes
+
+
+.. warning::
+
+    **Breaking Changes**
+        * Removed ``DateTimeNaNDataCheck`` and ``NaturalLanguageNaNDataCheck`` in favor of ``NullDataCheck`` :pr:`3260`
+        * Dropped support for Python 3.7 :pr:`3291`
+
+
+**v0.43.0 Jan. 25, 2022**
+    * Enhancements
+        * Updated new ``NullDataCheck`` to return a warning and suggest an action to impute columns with null values :pr:`3197`
+        * Updated ``make_pipeline_from_actions`` to handle null column imputation :pr:`3237`
+        * Updated data check actions API to return options instead of actions and add functionality to suggest and take action on columns with null values :pr:`3182`
+    * Fixes
+        * Fixed categorical data leaking into non-categorical sub-pipelines in ``DefaultAlgorithm`` :pr:`3209`
+        * Fixed Python 3.9 installation for prophet by updating ``pmdarima`` version in requirements :pr:`3268`
+        * Allowed DateTime columns to pass through PerColumnImputer without breaking :pr:`3267`
+    * Changes
+        * Updated ``DataCheck`` ``validate()`` output to return a dictionary instead of list for actions :pr:`3142`
+        * Updated ``DataCheck`` ``validate()`` API to use the new ``DataCheckActionOption`` class instead of ``DataCheckAction`` :pr:`3152`
+        * Uncapped numba version and removed it from requirements :pr:`3263`
+        * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
+        * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary :pr:`3244`
+        * Capped ``pandas`` at < 1.4.0 :pr:`3274`
+    * Documentation Changes
+    * Testing Changes
+        * Bumped minimum ``IPython`` version to 7.16.3 in ``test-requirements.txt`` based on dependabot feedback :pr:`3269`
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
+        * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary. See the Data Check or Data Check Actions pages (under User Guide) for examples. :pr:`3244`
+        * Removed ``impute_all`` and ``default_impute_strategy`` parameters from the ``PerColumnImputer`` :pr:`3267`
+        * Updated ``PerColumnImputer`` such that columns not specified in ``impute_strategies`` dict will not be imputed anymore :pr:`3267`
+
+
+**v0.42.0 Jan. 18, 2022**
+    * Enhancements
+        * Required the separation of training and test data by ``gap`` + 1 units to be verified by ``time_index`` for time series problems :pr:`3208`
+        * Added support for boolean features for ``ARIMARegressor`` :pr:`3187`
+        * Updated dependency bot workflow to remove outdated description and add new configuration to delete branches automatically :pr:`3212`
+        * Added ``n_obs`` and ``n_splits`` to ``TimeSeriesParametersDataCheck`` error details :pr:`3246`
+    * Fixes
+        * Fixed classification pipelines to only accept target data with the appropriate number of classes :pr:`3185`
+        * Added support for time series in ``DefaultAlgorithm`` :pr:`3177`
+        * Standardized names of featurization components :pr:`3192`
+        * Removed empty cell in text_input.ipynb :pr:`3234`
+        * Removed potential prediction explanations failure when pipelines predicted a class with probability 1 :pr:`3221`
+        * Dropped NaNs before partial dependence grid generation :pr:`3235`
+        * Allowed prediction explanations to be json-serializable :pr:`3262`
+        * Fixed bug where ``InvalidTargetDataCheck`` would not check time series regression targets :pr:`3251`
+        * Fixed bug in ``are_datasets_separated_by_gap_time_index`` :pr:`3256`
+    * Changes
+        * Raised lowest compatible numpy version to 1.21.0 to address security concerns :pr:`3207`
+        * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
+        * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
+        * Checking the validity of holdout data for time series problems can be performed by calling ``pipelines.utils.validate_holdout_datasets`` prior to calling ``predict`` :pr:`3208`
+    * Documentation Changes
+    * Testing Changes
+        * Update auto approve workflow trigger and delete branch after merge :pr:`3265`
+
+.. warning::
+
+    **Breaking Changes**
+        * Renamed ``DateTime Featurizer Component`` to ``DateTime Featurizer`` and ``Natural Language Featurization Component`` to ``Natural Language Featurizer`` :pr:`3192`
+
+
+
+**v0.41.0 Jan. 06, 2022**
     * Enhancements
         * Added string support for DataCheckActionCode :pr:`3167`
         * Added ``DataCheckActionOption`` class :pr:`3134`
-        * Added clustering as a problem type and removed requirement of ``y_train`` for clustering problem types :pr:`3022`
+        * Add issue templates for bugs, feature requests and documentation improvements for GitHub :pr:`3199`
     * Fixes
         * Fix bug where prediction explanations ``class_name`` was shown as float for boolean targets :pr:`3179`
+        * Fixed bug in nightly linux tests :pr:`3189`
     * Changes
         * Removed usage of scikit-learn's ``LabelEncoder`` in favor of ours :pr:`3161`
+        * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
         * Fixed ``mean_cv_data`` and ``validation_score`` values in AutoMLSearch.rankings to reflect cv score or ``NaN`` when appropriate :pr:`3162`
     * Documentation Changes
     * Testing Changes
-
+        * Updated tests to use new pipeline API instead of defining custom pipeline classes :pr:`3172`
+        * Add workflow to auto-merge dependency PRs if status checks pass :pr:`3184`
 
 **v0.40.0 Dec. 22, 2021**
     * Enhancements
@@ -26,15 +131,13 @@ Release Notes
     * Changes
         * ``TimeSeriesParametersDataCheck`` was added to ``DefaultDataChecks`` for time series problems :pr:`3139`
         * Renamed ``date_index`` to ``time_index`` in ``problem_configuration`` for time series problems :pr:`3137`
-        * Removed nullable types checking from ``infer_feature_types`` :pr:`3156`
         * Updated ``nlp-primitives`` minimum version to 2.1.0 :pr:`3166`
         * Updated minimum version of ``woodwork`` to v0.11.0 :pr:`3171`
+        * Revert `3160` until uninferrable frequency can be addressed earlier in the process :pr:`3198`
     * Documentation Changes
         * Added comments to provide clarity on doctests :pr:`3155`
     * Testing Changes
         * Parameterized tests in ``test_datasets.py`` :pr:`3145`
-
-
 
 .. warning::
 
