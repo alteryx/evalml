@@ -5586,12 +5586,12 @@ def test_train_pipeline_hash_cache(
         (pipeline, "hash1"),
         (pipeline, "hash2"),
         (pipeline, "hash3"),
-        (pipeline),
-        (pipeline),
-        (pipeline),
-        (pipeline),
-        (pipeline),
-        (pipeline),
+        pipeline,
+        pipeline,
+        pipeline,
+        pipeline,
+        pipeline,
+        pipeline,
     ]
     train_pipeline.side_effect = ret
     env = AutoMLTestEnv("binary")
