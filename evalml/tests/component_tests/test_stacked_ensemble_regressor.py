@@ -10,6 +10,7 @@ from evalml.pipelines.components import (
     ElasticNetRegressor,
     Imputer,
     LogTransformer,
+    OneHotEncoder,
     RandomForestRegressor,
 )
 from evalml.pipelines.components.ensemble import StackedEnsembleRegressor
@@ -269,3 +270,46 @@ def test_ensembler_use_component_preds(
     assert ensemble_input["Random Forest Pipeline - Random Forest Regressor.x"].equals(
         pd.Series(np.ones(len(y)))
     )
+
+
+def test_stacked_ensemble_cache_train_predict(
+    X_y_binary,
+):
+    X, y = X_y_binary
+    X = pd.DataFrame(X)
+
+    trained_imputer = Imputer()
+    trained_rf = RandomForestRegressor()
+    trained_imputer.fit(X, y)
+    trained_rf.fit(X, y)
+    hashes = hash(tuple(X.index))
+    cache = {
+        ModelFamily.RANDOM_FOREST: {
+            hashes: {"Impute": trained_imputer, "Random Forest Regressor": trained_rf}
+        }
+    }
+
+    input_pipelines = [
+        RegressionPipeline(
+            {
+                "Impute": [Imputer, "X", "y"],
+                "OHE": [OneHotEncoder, "Impute.x", "y"],
+                "Random Forest Regressor": [RandomForestRegressor, "OHE.x", "y"],
+            },
+        )
+    ]
+
+    pl_cache = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines,
+        problem_type=ProblemTypes.REGRESSION,
+        cached_data=cache,
+    )
+    pl_no_cache = _make_stacked_ensemble_pipeline(
+        input_pipelines=input_pipelines,
+        problem_type=ProblemTypes.REGRESSION,
+        cached_data=None,
+    )
+    pl_cache.fit(X, y)
+    pl_no_cache.fit(X, y)
+
+    pd.testing.assert_series_equal(pl_cache.predict(X), pl_no_cache.predict(X))
