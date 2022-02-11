@@ -39,6 +39,7 @@ from .components import (
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
     VowpalWabbitRegressor,
+    DropNaNRows,
 )
 
 from .component_graph import ComponentGraph
