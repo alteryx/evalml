@@ -115,4 +115,5 @@ class DFSTransformer(Transformer):
         )
         typed_columns = set(X_ww.columns).intersection(set(feature_matrix.columns))
         feature_matrix.ww.init(schema=X_ww.ww.schema._get_subset_schema(typed_columns))
+        feature_matrix.ww.metadata = {}
         return feature_matrix
