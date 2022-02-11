@@ -3,7 +3,7 @@ import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
 from evalml.pipelines.components.transformers.preprocessing import (
-    DropOutliersTransformer,
+    DropRowsTransformer,
 )
 
 
@@ -21,30 +21,6 @@ def test_drop_rows_transformer_init_with_duplicate_indices():
         DropRowsTransformer(indices_to_drop=[0, 0])
 
 
-def test_drop_rows_transformer_fit_transform():
-    X = pd.DataFrame({"a column": [1, 2, 3], "another col": [4, 5, 6]})
-    X_expected = X.copy()
-
-    drop_rows_transformer_none = DropRowsTransformer()
-    drop_rows_transformer_none.fit(X)
-    transformed = drop_rows_transformer_none.transform(X)
-    assert_frame_equal(X, transformed[0])
-    assert transformed[1] is None
-
-    indices_to_drop = [1, 2]
-    X_expected = pd.DataFrame({"a column": [1], "another col": [4]})
-    drop_rows_transformer = DropRowsTransformer(indices_to_drop=indices_to_drop)
-    drop_rows_transformer.fit(X)
-    transformed = drop_rows_transformer.transform(X)
-    assert_frame_equal(X_expected, transformed[0])
-    assert transformed[1] is None
-
-    drop_rows_transformer = DropRowsTransformer(indices_to_drop=indices_to_drop)
-    fit_transformed = drop_rows_transformer.fit_transform(X)
-    assert_frame_equal(fit_transformed[0], transformed[0])
-    assert fit_transformed[1] is None
-
-
 def test_drop_rows_transformer_fit_transform_with_empty_indices_to_drop():
     X = pd.DataFrame({"a column": [1, 2, 3], "another col": [4, 5, 6]})
     y = pd.Series([1, 0, 1])
@@ -59,29 +35,43 @@ def test_drop_rows_transformer_fit_transform_with_empty_indices_to_drop():
     assert_series_equal(y, fit_transformed[1])
 
 
-def test_drop_rows_transformer_fit_transform_with_target():
+@pytest.mark.parametrize("use_target", [True, False])
+def test_drop_rows_transformer_fit_transform(use_target):
     X = pd.DataFrame({"a column": [1, 2, 3], "another col": [4, 5, 6]})
-    y = pd.Series([1, 0, 1])
     X_expected = pd.DataFrame({"a column": [1], "another col": [4]})
-    y_expected = pd.Series([1])
+    if use_target:
+        y = pd.Series([1, 0, 1])
+        y_expected = pd.Series([1])
+    else:
+        y = None
+        y_expected = None
 
     drop_rows_transformer_none = DropRowsTransformer()
     drop_rows_transformer_none.fit(X, y)
     transformed = drop_rows_transformer_none.transform(X, y)
     assert_frame_equal(X, transformed[0])
-    assert_series_equal(y, transformed[1])
+    if use_target:
+        assert_series_equal(y, transformed[1])
+    else:
+        assert transformed[1] is None
 
     indices_to_drop = [1, 2]
     drop_rows_transformer = DropRowsTransformer(indices_to_drop=indices_to_drop)
     drop_rows_transformer.fit(X, y)
     transformed = drop_rows_transformer.transform(X, y)
     assert_frame_equal(X_expected, transformed[0])
-    assert_series_equal(y_expected, transformed[1])
+    if use_target:
+        assert_series_equal(y_expected, transformed[1])
+    else:
+        assert transformed[1] is None
 
     drop_rows_transformer = DropRowsTransformer(indices_to_drop=indices_to_drop)
     fit_transformed = drop_rows_transformer.fit_transform(X, y)
     assert_frame_equal(fit_transformed[0], transformed[0])
-    assert_series_equal(y_expected, fit_transformed[1])
+    if use_target:
+        assert_series_equal(y_expected, transformed[1])
+    else:
+        assert fit_transformed[1] is None
 
 
 def test_drop_rows_transformer_index_not_in_input():

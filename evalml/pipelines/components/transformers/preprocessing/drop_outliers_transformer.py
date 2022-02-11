@@ -19,13 +19,16 @@ class DropOutliersTransformer(Transformer):
 
     def __init__(self, random_seed=0):
         parameters = {}
+        self.outlier_rows_dict = None
+        self.outlier_indices = None
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
 
     def fit(self, X, y=None):
-        X_t = infer_feature_types(X)
-        self.outlier_rows = OutliersDataCheck.get_outlier_rows(X_t)
+        X = infer_feature_types(X)
+        X = X.ww.select("numeric")
+        self.outlier_rows_dict = OutliersDataCheck.get_outlier_rows(X)
         return self
 
     def transform(self, X, y=None):
@@ -33,17 +36,17 @@ class DropOutliersTransformer(Transformer):
         y_t = infer_feature_types(y) if y is not None else None
 
         all_rows_with_indices_set = set()
-        for row_indices in self.outlier_rows.values():
+        for row_indices in self.outlier_rows_dict.values():
             all_rows_with_indices_set.update(row_indices)
 
         all_rows_with_indices = list(all_rows_with_indices_set)
         all_rows_with_indices.sort()
         self.outlier_indices = all_rows_with_indices
 
-        X_t = X_t.drop(self.all_rows_with_indices, axis=0)
+        X_t = X_t.drop(self.outlier_indices, axis=0)
         X_t.ww.init()
 
         if y_t is not None:
-            y_t = y_t.drop(self.all_rows_with_indices)
+            y_t = y_t.drop(self.outlier_indices)
             y_t.ww.init()
         return X_t, y_t
