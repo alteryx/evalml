@@ -119,6 +119,7 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
 
     Returns:
         pipeline (PipelineBase): A trained pipeline instance.
+        hash (optional): The hash of the input data indices, only returned when get_hashes is True.
     """
     X_threshold_tuning = None
     y_threshold_tuning = None
@@ -163,7 +164,7 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
         y,
     )
     if not get_hashes:
-        return (cv_pipeline, None)
+        return cv_pipeline
 
     X_hash = hash(tuple(X.index))
     return (cv_pipeline, X_hash)
@@ -232,7 +233,7 @@ def train_and_score_pipeline(
             logger.debug(f"\t\t\tFold {i}: starting training")
             global hash_dict
             if i in hash_dict:
-                cv_pipeline, _ = train_pipeline(
+                cv_pipeline = train_pipeline(
                     pipeline,
                     X_train,
                     y_train,
