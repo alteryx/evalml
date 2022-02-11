@@ -5,11 +5,7 @@ import numpy as np
 import pandas as pd
 
 from evalml.automl.automl_search import AutoMLSearch
-from evalml.automl.engine import (
-    evaluate_pipeline,
-    train_and_score_pipeline,
-    train_pipeline,
-)
+from evalml.automl.engine import evaluate_pipeline, train_pipeline
 from evalml.automl.engine.engine_base import JobLogger
 from evalml.automl.utils import AutoMLConfig
 from evalml.objectives import F1, LogLossBinary
