@@ -5,7 +5,11 @@ import numpy as np
 import pandas as pd
 
 from evalml.automl.automl_search import AutoMLSearch
-from evalml.automl.engine import evaluate_pipeline, train_pipeline
+from evalml.automl.engine import (
+    evaluate_pipeline,
+    train_and_score_pipeline,
+    train_pipeline,
+)
 from evalml.automl.engine.engine_base import JobLogger
 from evalml.automl.utils import AutoMLConfig
 from evalml.objectives import F1, LogLossBinary
@@ -149,7 +153,7 @@ def test_train_pipeline_trains_and_tunes_threshold_ts(
     automl_config = AutoMLConfig(
         None, "time series binary", LogLossBinary(), [], F1(), True, None, 0, None, None
     )
-    cv_pipeline = train_pipeline(ts_binary, X, y, automl_config=automl_config)
+    cv_pipeline, _ = train_pipeline(ts_binary, X, y, automl_config=automl_config)
     assert cv_pipeline.threshold is not None
 
 
@@ -181,7 +185,8 @@ def test_train_pipelines_cache(
         res = train_pipeline(
             dummy_binary_pipeline, X, y, automl_config=automl_config, get_hashes=False
         )
-    assert not isinstance(res, tuple)
+    assert isinstance(res, tuple)
+    assert res[1] is None
 
     with env.test_context():
         res = train_pipeline(
@@ -222,3 +227,45 @@ def test_train_and_score_pipelines_cache(
         ).get("scores")
     assert "cached_data" in evaluation_result
     assert len(evaluation_result["cached_data"]) == automl.data_splitter.n_splits
+
+
+# @patch('evalml.automl.engine.engine_base.train_pipeline')
+# def test_train_and_score_pipelines_hash_dict(
+#     mock_train,
+#     AutoMLTestEnv,
+#     dummy_classifier_estimator_class,
+#     dummy_binary_pipeline,
+#     X_y_binary,
+#     caplog,
+# ):
+#     X, y = X_y_binary
+#     X = pd.DataFrame(X)
+#     automl = AutoMLSearch(
+#         X_train=X,
+#         y_train=y,
+#         problem_type="binary",
+#         max_time=1,
+#         max_batches=1,
+#         allowed_component_graphs={
+#             "Mock Binary Classification Pipeline": [dummy_classifier_estimator_class]
+#         },
+#         optimize_thresholds=False,
+#     )
+#     env = AutoMLTestEnv("binary")
+#     # with env.test_context(score_return_value={automl.objective.name: 0.42}):
+#     for i in range(3):
+#         train_and_score_pipeline(
+#             dummy_binary_pipeline,
+#             automl.automl_config,
+#             automl.X_train,
+#             automl.y_train,
+#             logger=MagicMock(),
+#         )
+#         for calls in mock_train.call_args_list:
+#             print(calls[1]['get_hashes'])
+#             # for en, c in enumerate(calls[1]):
+#                 # print(c)
+#             # if i == 0:
+#             #     assert calls[0]['get_hashes']
+#             # else:
+#             #     assert not calls[0]['get_hashes']

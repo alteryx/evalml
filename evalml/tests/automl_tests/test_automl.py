@@ -5556,3 +5556,49 @@ def test_cv_validation_scores_time_series(
     assert len(validation_vals) == 1
     assert validation_vals[0] == 0.5
     assert cv_vals[0] == validation_vals[0]
+
+
+@patch("evalml.automl.engine.engine_base.train_pipeline")
+def test_train_pipeline_hash_cache(
+    train_pipeline,
+    X_y_binary,
+    AutoMLTestEnv,
+):
+    X, y = X_y_binary
+    cg = {
+        "Imputer": ["Imputer", "X", "y"],
+        "LogisticRegressionClassifier": [
+            "Logistic Regression Classifier",
+            "Imputer.x",
+            "y",
+        ],
+    }
+    pipeline = BinaryClassificationPipeline(cg)
+    pipeline.fit(X, y)
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="binary",
+        allowed_component_graphs={"pipeline1": cg},
+        max_iterations=2,
+    )
+    ret = [
+        (pipeline, "hash1"),
+        (pipeline, "hash2"),
+        (pipeline, "hash3"),
+        (pipeline, None),
+        (pipeline, None),
+        (pipeline, None),
+        (pipeline, None),
+        (pipeline, None),
+        (pipeline, None),
+    ]
+    train_pipeline.side_effect = ret
+    env = AutoMLTestEnv("binary")
+    with env.test_context(score_return_value={"Log Loss Binary": 0.5}):
+        automl.search()
+    for i, calls in enumerate(train_pipeline.call_args_list):
+        if i < 3:
+            assert calls[1]["get_hashes"]
+        else:
+            assert not calls[1]["get_hashes"]

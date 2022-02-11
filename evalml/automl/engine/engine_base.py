@@ -102,6 +102,10 @@ class EngineBase(ABC):
         """Submit job for pipeline scoring."""
 
 
+# global hash dictionary to allow minimal calculation of hashes on data splits
+hash_dict = {}
+
+
 def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False):
     """Train a pipeline and tune the threshold if necessary.
 
@@ -159,7 +163,7 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
         y,
     )
     if not get_hashes:
-        return cv_pipeline
+        return (cv_pipeline, None)
 
     X_hash = hash(tuple(X.index))
     return (cv_pipeline, X_hash)
@@ -226,9 +230,27 @@ def train_and_score_pipeline(
         ] + automl_config.additional_objectives
         try:
             logger.debug(f"\t\t\tFold {i}: starting training")
-            cv_pipeline, hashes = train_pipeline(
-                pipeline, X_train, y_train, automl_config, schema=False, get_hashes=True
-            )
+            global hash_dict
+            if i in hash_dict:
+                cv_pipeline, _ = train_pipeline(
+                    pipeline,
+                    X_train,
+                    y_train,
+                    automl_config,
+                    schema=False,
+                    get_hashes=False,
+                )
+                hashes = hash_dict[i]
+            else:
+                cv_pipeline, hashes = train_pipeline(
+                    pipeline,
+                    X_train,
+                    y_train,
+                    automl_config,
+                    schema=False,
+                    get_hashes=True,
+                )
+                hash_dict[i] = hashes
             logger.debug(f"\t\t\tFold {i}: finished training")
             if (
                 automl_config.optimize_thresholds
