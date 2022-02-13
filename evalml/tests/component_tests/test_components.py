@@ -29,6 +29,7 @@ from evalml.pipelines.components import (
     DFSTransformer,
     DropColumns,
     DropNullColumns,
+    DropOutliersTransformer,
     DropRowsTransformer,
     ElasticNetClassifier,
     ElasticNetRegressor,
@@ -842,7 +843,12 @@ def test_transformer_transform_output_type(component_class, X_y_binary):
         (X_df_with_col_names, y_series_with_name, X_df_with_col_names.columns),
     ]
 
-    if component_class in [PolynomialDetrender, LogTransformer, LabelEncoder]:
+    if component_class in [
+        PolynomialDetrender,
+        LogTransformer,
+        LabelEncoder,
+        DropOutliersTransformer,
+    ]:
         pytest.skip(
             "Skipping because these tests are handled in their respective test files"
         )
@@ -1534,10 +1540,13 @@ def test_transformer_fit_and_transform_respect_custom_indices(
         check_names = False
         if use_custom_index:
             pytest.skip("The DFSTransformer changes the index so we skip it.")
-    if transformer_class == PolynomialDetrender:
+    if (
+        transformer_class == PolynomialDetrender
+        or transformer_class == DropOutliersTransformer
+    ):
         pytest.skip(
-            "Skipping PolynomialDetrender because we test that it respects custom indices in "
-            "test_polynomial_detrender.py"
+            "Skipping PolynomialDetrender and DropOutliersTransformer because we test that it respects custom indices in "
+            "test_polynomial_detrender.py and test_outliers_data_check.py respectively."
         )
 
     X, y = X_y_binary
@@ -1640,7 +1649,12 @@ def test_component_modifies_feature_or_target():
             issubclass(component_class, BaseSampler)
             or hasattr(component_class, "inverse_transform")
             or component_class
-            in [TargetImputer, DropRowsTransformer, ReplaceNullableTypes]
+            in [
+                TargetImputer,
+                DropRowsTransformer,
+                ReplaceNullableTypes,
+                DropOutliersTransformer,
+            ]
         ):
             assert component_class.modifies_target
         else:
@@ -1659,7 +1673,12 @@ def test_component_parameters_supported_by_list_API():
             issubclass(component_class, BaseSampler)
             or hasattr(component_class, "inverse_transform")
             or component_class
-            in [TargetImputer, DropRowsTransformer, ReplaceNullableTypes]
+            in [
+                TargetImputer,
+                DropRowsTransformer,
+                ReplaceNullableTypes,
+                DropOutliersTransformer,
+            ]
         ):
             assert not component_class._supported_by_list_API
         else:
