@@ -107,6 +107,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.random_seed == 0
         assert data_splitter.shuffle
         assert data_splitter.test_size == _LARGE_DATA_PERCENT_VALIDATION
+        assert not data_splitter.is_cv
         return
 
     if problem_type == ProblemTypes.REGRESSION:
@@ -114,12 +115,14 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.n_splits == 3
         assert data_splitter.shuffle
         assert data_splitter.random_state == 0
+        assert data_splitter.is_cv
 
     if problem_type in [ProblemTypes.BINARY, ProblemTypes.MULTICLASS]:
         assert isinstance(data_splitter, StratifiedKFold)
         assert data_splitter.n_splits == 3
         assert data_splitter.shuffle
         assert data_splitter.random_state == 0
+        assert data_splitter.is_cv
 
     if problem_type in [
         ProblemTypes.TIME_SERIES_REGRESSION,
@@ -132,6 +135,7 @@ def test_make_data_splitter_default(problem_type, large_data):
         assert data_splitter.max_delay == 7
         assert data_splitter.forecast_horizon == 4
         assert data_splitter.time_index == "foo"
+        assert data_splitter.is_cv
 
 
 @pytest.mark.parametrize(
@@ -155,6 +159,7 @@ def test_make_data_splitter_parameters(problem_type, expected_data_splitter):
     assert data_splitter.n_splits == 5
     assert data_splitter.shuffle
     assert data_splitter.random_state == random_seed
+    assert data_splitter.is_cv
 
 
 def test_make_data_splitter_parameters_time_series():

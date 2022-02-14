@@ -7,6 +7,7 @@ from evalml.preprocessing.data_splitters import TrainingValidationSplit
 
 def test_tvsplit_nsplits():
     assert TrainingValidationSplit().get_n_splits() == 1
+    assert not TrainingValidationSplit().is_cv
 
 
 def test_tvsplit_default():
