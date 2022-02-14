@@ -688,7 +688,7 @@ class AutoMLSearch:
             > 0
         )
         self.features = features
-        
+
         if automl_algorithm == "iterative":
             self.automl_algorithm = IterativeAlgorithm(
                 X=self.X_train,
