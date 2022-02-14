@@ -121,7 +121,7 @@ def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
     assert automl.patience == 3
     assert automl.tolerance == 0.5
     assert automl.max_batches == 4
-    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
+    assert isinstance(automl.automl_algorithm, DefaultAlgorithm)
 
     automl, _ = search(
         X_train=X,
@@ -136,7 +136,7 @@ def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
     assert automl.patience == 3
     assert automl.tolerance == 0.5
     assert automl.max_batches == 999
-    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
+    assert isinstance(automl.automl_algorithm, DefaultAlgorithm)
 
     automl, _ = search(
         X_train=X,
@@ -146,7 +146,7 @@ def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
     )
 
     assert automl.max_batches == 6
-    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
+    assert isinstance(automl.automl_algorithm, DefaultAlgorithm)
 
     with pytest.raises(ValueError):
         search(

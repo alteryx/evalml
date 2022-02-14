@@ -194,7 +194,7 @@ def test_automl_immediate_quit(
         error_callback=raise_error_callback,
         optimize_thresholds=False,
     )
-    automl._automl_algorithm = IterativeAlgorithm(
+    automl.automl_algorithm = IterativeAlgorithm(
         X=X,
         y=y,
         problem_type="binary",
@@ -208,7 +208,7 @@ def test_automl_immediate_quit(
         pipeline_params={},
         custom_hyperparameters=None,
     )
-    automl._automl_algorithm.allowed_pipelines = pipelines
+    automl.automl_algorithm.allowed_pipelines = pipelines
 
     # Ensure the broken pipeline raises the error
     with pytest.raises(Exception, match="Yikes"):
