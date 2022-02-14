@@ -418,7 +418,7 @@ Data Check Classes
     evalml.data_checks.DateTimeFormatDataCheck
     evalml.data_checks.TimeSeriesParametersDataCheck
     evalml.data_checks.TimeSeriesSplittingDataCheck
-    evalml.data_checks.OutliersDataCheck
+    evalml.data_checks.outliers_data_check.OutliersDataCheck
 
     evalml.data_checks.DataChecks
     evalml.data_checks.DefaultDataChecks
