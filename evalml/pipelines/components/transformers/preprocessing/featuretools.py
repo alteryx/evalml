@@ -114,5 +114,5 @@ class DFSTransformer(Transformer):
             features=features_to_use, entityset=es
         )
         typed_columns = set(X_ww.columns).intersection(set(feature_matrix.columns))
-        feature_matrix.ww.init(schema=X_ww.ww.schema._get_subset_schema(typed_columns))
+        feature_matrix.ww.init(schema=X_ww.ww.schema.get_subset_schema(typed_columns))
         return feature_matrix

@@ -96,5 +96,5 @@ class PerColumnImputer(Transformer):
             else:
                 X_ww.ww[column] = transformed[column]
         X_t = X_ww.ww.drop(cols_to_drop)
-        X_t.ww.init(schema=original_schema._get_subset_schema(X_t.columns))
+        X_t.ww.init(schema=original_schema.get_subset_schema(X_t.columns))
         return X_t
