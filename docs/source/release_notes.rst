@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Replaced usage of private method with Woodwork's public ``get_subset_schema`` method :pr:`3325`
     * Fixes
     * Changes
         * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
@@ -19,6 +20,7 @@
     * Enhancements
         * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
         * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
+        * Updated ``AutoMLSearch`` to use ``DefaultAlgorithm`` as the default automl algorithm :pr:`3261`, :pr:`3304`
         * Added more specific data check errors to ``DatetimeFormatDataCheck`` :pr:`3288`
         * Added ``features`` as a parameter for ``AutoMLSearch`` and add ``DFSTransformer`` to pipelines when ``features`` are present :pr:`3309`
     * Fixes

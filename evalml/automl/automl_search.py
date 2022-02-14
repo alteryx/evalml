@@ -206,7 +206,7 @@ def search(
         if data_check_result["level"] == DataCheckMessageType.ERROR.value:
             return None, data_check_results
 
-    automl = AutoMLSearch(_automl_algorithm="default", **automl_config)
+    automl = AutoMLSearch(automl_algorithm="default", **automl_config)
     automl.search()
     return automl, data_check_results
 
@@ -404,7 +404,7 @@ class AutoMLSearch:
         _pipelines_per_batch (int): The number of pipelines to train for every batch after the first one.
             The first batch will train a baseline pipline + one of each pipeline family allowed in the search.
 
-        _automl_algorithm (str): The automl algorithm to use. Currently the two choices are 'iterative' and 'default'. Defaults to `iterative`.
+        automl_algorithm (str): The automl algorithm to use. Currently the two choices are 'iterative' and 'default'. Defaults to `default`.
 
         engine (EngineBase or str): The engine instance used to evaluate pipelines. Dask or concurrent.futures engines can also
             be chosen by providing a string from the list ["sequential", "cf_threaded", "cf_process", "dask_threaded", "dask_process"].
@@ -449,7 +449,7 @@ class AutoMLSearch:
         allow_long_running_models=False,
         _ensembling_split_size=0.2,
         _pipelines_per_batch=5,
-        _automl_algorithm="iterative",
+        automl_algorithm="default",
         engine="sequential",
         verbose=False,
     ):
@@ -561,11 +561,6 @@ class AutoMLSearch:
         self.max_iterations = max_iterations
         self.max_batches = max_batches
         self._pipelines_per_batch = _pipelines_per_batch
-        if not self.max_iterations and not self.max_time and not self.max_batches:
-            self.max_batches = 1
-            self.logger.info(
-                f"Using default limit of max_batches={self.max_batches}.\n"
-            )
 
         if patience and (not isinstance(patience, int) or patience < 0):
             raise ValueError(
@@ -692,10 +687,10 @@ class AutoMLSearch:
             len(self.X_train.ww.select("natural_language", return_schema=True).columns)
             > 0
         )
-
         self.features = features
-        if _automl_algorithm == "iterative":
-            self._automl_algorithm = IterativeAlgorithm(
+        
+        if automl_algorithm == "iterative":
+            self.automl_algorithm = IterativeAlgorithm(
                 X=self.X_train,
                 y=self.y_train,
                 problem_type=self.problem_type,
@@ -717,8 +712,8 @@ class AutoMLSearch:
                 features=features,
                 verbose=self.verbose,
             )
-        elif _automl_algorithm == "default":
-            self._automl_algorithm = DefaultAlgorithm(
+        elif automl_algorithm == "default":
+            self.automl_algorithm = DefaultAlgorithm(
                 X=self.X_train,
                 y=self.y_train,
                 problem_type=self.problem_type,
@@ -735,10 +730,16 @@ class AutoMLSearch:
         else:
             raise ValueError("Please specify a valid automl algorithm.")
 
-        self.allowed_pipelines = self._automl_algorithm.allowed_pipelines
+        self.allowed_pipelines = self.automl_algorithm.allowed_pipelines
         self.allowed_model_families = [p.model_family for p in self.allowed_pipelines]
-        if _automl_algorithm == "iterative":
-            self.max_iterations = self._automl_algorithm.max_iterations
+        if automl_algorithm == "iterative":
+            self.max_iterations = self.automl_algorithm.max_iterations
+
+        if not self.max_iterations and not self.max_time and not self.max_batches:
+            self.max_batches = self.automl_algorithm.default_max_batches
+            self.logger.info(
+                f"Using default limit of max_batches={self.max_batches}.\n"
+            )
 
     def close_engine(self):
         """Function to explicitly close the engine, client, parallel resources."""
@@ -746,11 +747,8 @@ class AutoMLSearch:
 
     def _get_batch_number(self):
         batch_number = 1
-        if (
-            self._automl_algorithm is not None
-            and self._automl_algorithm.batch_number > 0
-        ):
-            batch_number = self._automl_algorithm.batch_number
+        if self.automl_algorithm is not None and self.automl_algorithm.batch_number > 0:
+            batch_number = self.automl_algorithm.batch_number
         return batch_number
 
     def _pre_evaluation_callback(self, pipeline):
@@ -914,7 +912,7 @@ class AutoMLSearch:
             computations = []
             try:
                 if not loop_interrupted:
-                    current_batch_pipelines = self._automl_algorithm.next_batch()
+                    current_batch_pipelines = self.automl_algorithm.next_batch()
             except StopIteration:
                 self.logger.info("AutoML Algorithm out of recommendations, ending")
                 break
@@ -1204,8 +1202,8 @@ class AutoMLSearch:
 
         if pipeline.model_family == ModelFamily.ENSEMBLE:
             input_pipeline_ids = [
-                self._automl_algorithm._best_pipeline_info[model_family]["id"]
-                for model_family in self._automl_algorithm._best_pipeline_info
+                self.automl_algorithm._best_pipeline_info[model_family]["id"]
+                for model_family in self.automl_algorithm._best_pipeline_info
             ]
             self._results["pipeline_results"][pipeline_id][
                 "input_pipeline_ids"
@@ -1220,7 +1218,7 @@ class AutoMLSearch:
                 else validation_score
             )
             try:
-                self._automl_algorithm.add_result(
+                self.automl_algorithm.add_result(
                     score_to_minimize,
                     pipeline,
                     self._results["pipeline_results"][pipeline_id],
