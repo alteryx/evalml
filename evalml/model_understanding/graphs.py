@@ -1526,7 +1526,7 @@ def get_linear_coefficients(estimator, features=None):
             "before using this estimator."
         )
     coef_ = estimator.feature_importance
-    coef_ = pd.Series(coef_, name="Coefficients")
+    coef_.name = "Coefficients"
     coef_.index = features
     coef_ = coef_.sort_values()
     coef_ = pd.Series(estimator._component_obj.intercept_, index=["Intercept"]).append(
