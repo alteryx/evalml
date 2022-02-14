@@ -411,7 +411,6 @@ Data Check Classes
     evalml.data_checks.NullDataCheck
     evalml.data_checks.IDColumnsDataCheck
     evalml.data_checks.TargetLeakageDataCheck
-    evalml.data_checks.OutliersDataCheck
     evalml.data_checks.NoVarianceDataCheck
     evalml.data_checks.ClassImbalanceDataCheck
     evalml.data_checks.MulticollinearityDataCheck
