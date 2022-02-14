@@ -6,7 +6,11 @@ import pandas as pd
 
 from evalml.automl.automl_search import AutoMLSearch
 from evalml.automl.engine import evaluate_pipeline, train_pipeline
-from evalml.automl.engine.engine_base import JobLogger
+from evalml.automl.engine.engine_base import (
+    JobLogger,
+    _get_hash_dict,
+    _reset_hash_dict,
+)
 from evalml.automl.utils import AutoMLConfig
 from evalml.objectives import F1, LogLossBinary
 from evalml.preprocessing import split_data
@@ -222,3 +226,6 @@ def test_train_and_score_pipelines_cache(
         ).get("scores")
     assert "cached_data" in evaluation_result
     assert len(evaluation_result["cached_data"]) == automl.data_splitter.n_splits
+    assert len(_get_hash_dict()) > 1
+    _reset_hash_dict()
+    assert not len(_get_hash_dict())

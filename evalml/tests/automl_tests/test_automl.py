@@ -5528,36 +5528,6 @@ def test_cv_validation_scores(
         assert cv_vals[0] == validation_vals[0]
 
 
-def test_cv_validation_scores_time_series(
-    ts_data_binary,
-    AutoMLTestEnv,
-):
-    X, y = ts_data_binary
-    problem_configuration = {
-        "time_index": "date",
-        "gap": 0,
-        "max_delay": 0,
-        "forecast_horizon": 1,
-    }
-    automl = AutoMLSearch(
-        X_train=X,
-        y_train=y,
-        problem_type="time series binary",
-        max_iterations=3,
-        data_splitter=TimeSeriesSplit(n_splits=3),
-        problem_configuration=problem_configuration,
-        n_jobs=1,
-    )
-    env = AutoMLTestEnv("time series binary")
-    with env.test_context(score_return_value={"Log Loss Binary": 0.5}):
-        automl.search()
-    cv_vals = list(set(automl.full_rankings["mean_cv_score"].values))
-    validation_vals = list(set(automl.full_rankings["validation_score"].values))
-    assert len(validation_vals) == 1
-    assert validation_vals[0] == 0.5
-    assert cv_vals[0] == validation_vals[0]
-
-
 @patch("evalml.automl.engine.engine_base.train_pipeline")
 def test_train_pipeline_hash_cache(
     train_pipeline,
@@ -5602,3 +5572,33 @@ def test_train_pipeline_hash_cache(
             assert calls[1]["get_hashes"]
         else:
             assert not calls[1]["get_hashes"]
+
+
+def test_cv_validation_scores_time_series(
+    ts_data_binary,
+    AutoMLTestEnv,
+):
+    X, y = ts_data_binary
+    problem_configuration = {
+        "time_index": "date",
+        "gap": 0,
+        "max_delay": 0,
+        "forecast_horizon": 1,
+    }
+    automl = AutoMLSearch(
+        X_train=X,
+        y_train=y,
+        problem_type="time series binary",
+        max_iterations=3,
+        data_splitter=TimeSeriesSplit(n_splits=3),
+        problem_configuration=problem_configuration,
+        n_jobs=1,
+    )
+    env = AutoMLTestEnv("time series binary")
+    with env.test_context(score_return_value={"Log Loss Binary": 0.5}):
+        automl.search()
+    cv_vals = list(set(automl.full_rankings["mean_cv_score"].values))
+    validation_vals = list(set(automl.full_rankings["validation_score"].values))
+    assert len(validation_vals) == 1
+    assert validation_vals[0] == 0.5
+    assert cv_vals[0] == validation_vals[0]

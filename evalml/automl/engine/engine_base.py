@@ -106,6 +106,18 @@ class EngineBase(ABC):
 hash_dict = {}
 
 
+def _get_hash_dict():
+    """Gets the internal hash dictionary."""
+    global hash_dict
+    return hash_dict
+
+
+def _reset_hash_dict():
+    """Resets the internal hash dictionary."""
+    global hash_dict
+    hash_dict = {}
+
+
 def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False):
     """Train a pipeline and tune the threshold if necessary.
 
