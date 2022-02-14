@@ -99,7 +99,7 @@ class SimpleImputer(Transformer):
         X_t = pd.DataFrame(X_t, columns=not_all_null_cols)
         if not_all_null_cols:
             X_t.index = original_index
-        X_t.ww.init(schema=original_schema._get_subset_schema(X_t.columns))
+        X_t.ww.init(schema=original_schema.get_subset_schema(X_t.columns))
 
         return X_t
 
