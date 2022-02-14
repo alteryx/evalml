@@ -16,6 +16,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
+    DropNaNRowsTransformer,
     TimeSeriesFeaturizer,
     Transformer,
 )
@@ -230,15 +231,15 @@ def test_fit_drop_nans_before_estimator(
         expected_target = y[gap + max_delay + forecast_horizon : 32]
         component_graph = {
             "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
-            "Drop Rows Transformer": [
-                "Drop Rows Transformer",
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
                 "Time Series Featurizer.x",
                 "y",
             ],
             estimator_name: [
                 estimator_name,
-                "Drop Rows Transformer.x",
-                "Drop Rows Transformer.y",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
             ],
         }
     else:
@@ -264,9 +265,6 @@ def test_fit_drop_nans_before_estimator(
                 "gap": gap,
                 "max_delay": max_delay,
                 "forecast_horizon": forecast_horizon,
-            },
-            "Drop Rows Transformer": {
-                "first_rows_to_drop": gap + max_delay + forecast_horizon
             },
         },
     )
@@ -321,15 +319,15 @@ def test_transform_all_but_final_for_time_series(
                 "Time Series Featurizer.x",
                 "y",
             ],
-            "Drop Rows Transformer": [
-                "Drop Rows Transformer",
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
                 "DateTime Featurizer.x",
                 "y",
             ],
             "Random Forest Regressor": [
                 "Random Forest Regressor",
-                "Drop Rows Transformer.x",
-                "Drop Rows Transformer.y",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
             ],
         },
         parameters={
@@ -348,9 +346,6 @@ def test_transform_all_but_final_for_time_series(
                 "rolling_window_size": 1.0,
                 "time_index": "date",
             },
-            "Drop Rows Transformer": {
-                "first_rows_to_drop": forecast_horizon + gap + max_delay
-            },
         },
     )
     X_train, y_train = X[:15], y[:15]
@@ -366,9 +361,10 @@ def test_transform_all_but_final_for_time_series(
         time_index="date",
     )
     date_featurizer = DateTimeFeaturizer()
-    expected_features = date_featurizer.fit_transform(
-        delayer.fit_transform(X_validation, y_validation)
-    )
+    drop_nan_rows_transformer = DropNaNRowsTransformer()
+    expected_features = drop_nan_rows_transformer.fit_transform(
+        date_featurizer.fit_transform(delayer.fit_transform(X_validation, y_validation))
+    )[0]
     assert_frame_equal(features, expected_features)
     features_with_training = pipeline.transform_all_but_final(
         X_validation, y_validation, X_train, y_train
@@ -441,15 +437,15 @@ def test_predict_and_predict_in_sample(
 
     component_graph = {
         "DateTime Featurizer": ["DateTime Featurizer", "X", "y"],
-        "Drop Rows Transformer": [
-            "Drop Rows Transformer",
+        "Drop NaN Rows Transformer": [
+            "Drop NaN Rows Transformer",
             "DateTime Featurizer.x",
             "y",
         ],
         estimator_name: [
             estimator_name,
-            "Drop Rows Transformer.x",
-            "Drop Rows Transformer.y",
+            "Drop NaN Rows Transformer.x",
+            "Drop NaN Rows Transformer.y",
         ],
     }
 
@@ -466,9 +462,6 @@ def test_predict_and_predict_in_sample(
             "gap": gap,
             "max_delay": max_delay,
             "forecast_horizon": forecast_horizon,
-        },
-        "Drop Rows Transformer": {
-            "first_rows_to_drop": gap + max_delay + forecast_horizon
         },
         estimator_name: {"n_jobs": 1},
     }
@@ -493,15 +486,15 @@ def test_predict_and_predict_in_sample(
                 "Time Series Featurizer.x",
                 "y",
             ],
-            "Drop Rows Transformer": [
-                "Drop Rows Transformer",
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
                 "DateTime Featurizer.x",
                 "y",
             ],
             estimator_name: [
                 estimator_name,
-                "Drop Rows Transformer.x",
-                "Drop Rows Transformer.y",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
             ],
         }
         delayer_params = {
@@ -595,15 +588,15 @@ def test_predict_and_predict_in_sample_with_time_index(
             "Time Series Featurizer.x",
             "y",
         ],
-        "Drop Rows Transformer": [
-            "Drop Rows Transformer",
+        "Drop NaN Rows Transformer": [
+            "Drop NaN Rows Transformer",
             "DateTime Featurizer.x",
             "y",
         ],
         estimator_name: [
             estimator_name,
-            "Drop Rows Transformer.x",
-            "Drop Rows Transformer.y",
+            "Drop NaN Rows Transformer.x",
+            "Drop NaN Rows Transformer.y",
         ],
     }
     delayer_params = {
@@ -625,7 +618,6 @@ def test_predict_and_predict_in_sample_with_time_index(
         },
         "Time Series Featurizer": delayer_params,
         estimator_name: {"n_jobs": 1},
-        "Drop Rows Transformer": {"first_rows_to_drop": 5},
     }
 
     feature_pipeline = pipeline_class(
@@ -832,7 +824,7 @@ def test_classification_pipeline_encodes_targets(
                 "Time Series Featurizer.x",
                 "Label Encoder.y",
             ],
-            "DRT": ["Drop Rows Transformer", "DT.x", "Label Encoder.y"],
+            "DRT": ["Drop NaN Rows Transformer", "DT.x", "Label Encoder.y"],
             "Logistic Regression Classifier": [
                 "Logistic Regression Classifier",
                 "DRT.x",
@@ -948,7 +940,6 @@ def test_ts_score_works(
                 "delay_features": False,
                 "forecast_horizon": 10,
             },
-            "Drop Rows Transformer": {"first_rows_to_drop": 14},
             estimator: {"n_jobs": 1},
         },
     )
@@ -1059,7 +1050,6 @@ def test_binary_predict_pipeline_objective_mismatch(
                 "time_index": "date",
                 "forecast_horizon": 2,
             },
-            "Drop Rows Transformer": {"first_rows_to_drop": 2},
         }
     )
     binary_pipeline.fit(X[:30], y[:30])
@@ -1104,7 +1094,6 @@ def test_time_series_pipeline_not_fitted_error(
                     "time_index": "date",
                     "forecast_horizon": 10,
                 },
-                "Drop Rows Transformer": {"first_rows_to_drop": 10},
             }
         )
 
@@ -1125,7 +1114,6 @@ def test_time_series_pipeline_not_fitted_error(
                     "time_index": "date",
                     "forecast_horizon": 10,
                 },
-                "Drop Rows Transformer": {"first_rows_to_drop": 10},
             }
         )
     else:
@@ -1145,7 +1133,6 @@ def test_time_series_pipeline_not_fitted_error(
                     "time_index": "date",
                     "forecast_horizon": 10,
                 },
-                "Drop Rows Transformer": {"first_rows_to_drop": 10},
             }
         )
 
@@ -1217,7 +1204,6 @@ def test_ts_binary_pipeline_target_thresholding(
                 "max_delay": 0,
                 "forecast_horizon": 10,
             },
-            "Drop Rows Transformer": {"first_rows_to_drop": 10},
         }
     )
     X_train, y_train = X.ww.iloc[:21], y.ww.iloc[:21]
@@ -1252,7 +1238,6 @@ def test_binary_predict_pipeline_use_objective(
                 "time_index": "date",
                 "forecast_horizon": 5,
             },
-            "Drop Rows Transformer": {"first_rows_to_drop": 8},
         }
     )
     X_train, y_train = X[:50], y[:50]
@@ -1322,7 +1307,6 @@ def test_time_series_pipeline_fit_with_transformed_target(
                 "time_index": "date",
                 "forecast_horizon": 3,
             },
-            "Drop Rows Transformer": {"first_rows_to_drop": 5},
         },
     )
     pipeline.fit(X, y)
@@ -1337,15 +1321,15 @@ def test_time_series_pipeline_with_detrender(ts_data):
         "Polynomial Detrender": ["Polynomial Detrender", "X", "y"],
         "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
         "Dt": ["DateTime Featurizer", "Time Series Featurizer.x", "y"],
-        "Drop Rows Transformer": [
-            "Drop Rows Transformer",
+        "Drop NaN Rows Transformer": [
+            "Drop NaN Rows Transformer",
             "Dt.x",
             "Polynomial Detrender.y",
         ],
         "Regressor": [
             "Linear Regressor",
-            "Drop Rows Transformer.x",
-            "Drop Rows Transformer.y",
+            "Drop NaN Rows Transformer.x",
+            "Drop NaN Rows Transformer.y",
         ],
     }
     pipeline = TimeSeriesRegressionPipeline(
@@ -1363,7 +1347,6 @@ def test_time_series_pipeline_with_detrender(ts_data):
                 "forecast_horizon": 10,
                 "time_index": "date",
             },
-            "Drop Rows Transformer": {"first_rows_to_drop": 13},
         },
     )
     X_train, y_train = X[:23], y[:23]
@@ -1534,7 +1517,6 @@ def test_ts_pipeline_transform_with_final_estimator(
                     "time_index": "date",
                     "forecast_horizon": 5,
                 },
-                "Drop Rows Transformer": {"first_rows_to_drop": 5},
             }
         )
 
@@ -1556,7 +1538,6 @@ def test_ts_pipeline_transform_with_final_estimator(
                     "time_index": "date",
                     "forecast_horizon": 5,
                 },
-                "Drop Rows Transformer": {"first_rows_to_drop": 5},
             }
         )
     elif problem_type == ProblemTypes.TIME_SERIES_REGRESSION:
@@ -1577,7 +1558,6 @@ def test_ts_pipeline_transform_with_final_estimator(
                     "time_index": "date",
                     "forecast_horizon": 5,
                 },
-                "Drop Rows Transformer": {"first_rows_to_drop": 5},
             }
         )
 

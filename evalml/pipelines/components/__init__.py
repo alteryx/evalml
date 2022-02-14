@@ -63,7 +63,7 @@ from .transformers import (
     DropRowsTransformer,
     LabelEncoder,
     ReplaceNullableTypes,
-    DropNaNRows,
+    DropNaNRowsTransformer,
 )
 from .ensemble import (
     StackedEnsembleClassifier,

@@ -33,6 +33,7 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.component_graph import ComponentGraph
 from evalml.pipelines.components import (
+    DropNaNRowsTransformer,
     DropNullColumns,
     DropRowsTransformer,
     ElasticNetClassifier,
@@ -1966,7 +1967,6 @@ def test_predict_has_input_target_name(
                     "forecast_horizon": 2,
                     "time_index": "date",
                 },
-                "Drop Rows Transformer": {"first_rows_to_drop": 2},
             }
         )
     elif problem_type == ProblemTypes.TIME_SERIES_BINARY:
@@ -1988,7 +1988,6 @@ def test_predict_has_input_target_name(
                     "time_index": "date",
                     "forecast_horizon": 2,
                 },
-                "Drop Rows Transformer": {"first_rows_to_drop": 2},
             }
         )
     elif problem_type == ProblemTypes.TIME_SERIES_MULTICLASS:
@@ -2010,7 +2009,6 @@ def test_predict_has_input_target_name(
                     "time_index": "date",
                     "forecast_horizon": 2,
                 },
-                "Drop Rows Transformer": {"first_rows_to_drop": 2},
             }
         )
     y = pd.Series(y, name="test target name")
@@ -2210,7 +2208,6 @@ def test_binary_pipeline_string_target_thresholding(
                     "forecast_horizon": 3,
                 },
                 "Time Series Featurizer": {"time_index": "date"},
-                "Drop Rows Transformer": {"first_rows_to_drop": 4},
             }
         )
 
@@ -2746,7 +2743,6 @@ def test_training_only_component_in_pipeline_predict_and_transform_all_but_final
                 "Drop Rows Transformer.y",
             ],
         },
-        parameters={"Drop Rows Transformer": {"indices_to_drop": [9]}},
     )
     pipeline.fit(X, y)
     preds = pipeline.predict(X)

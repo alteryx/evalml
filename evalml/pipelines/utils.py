@@ -4,8 +4,6 @@ import logging
 
 from woodwork import logical_types
 
-from evalml.pipelines.components.transformers.preprocessing.drop_nan_rows_transformer import DropNaNRows
-
 from . import (
     TimeSeriesBinaryClassificationPipeline,
     TimeSeriesMulticlassClassificationPipeline,
@@ -26,6 +24,7 @@ from evalml.pipelines.components import (  # noqa: F401
     ComponentBase,
     DateTimeFeaturizer,
     DropColumns,
+    DropNaNRowsTransformer,
     DropNullColumns,
     DropRowsTransformer,
     EmailFeaturizer,
@@ -225,24 +224,6 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
     return components
 
 
-def _get_drop_first_n_rows_time_series(
-    X, y, problem_type, estimator_class, sampler_name=None
-):
-    components = []
-    needs_drop_n_rows = [
-        ModelFamily.EXTRA_TREES,
-        ModelFamily.RANDOM_FOREST,
-        ModelFamily.LINEAR_MODEL,
-        ModelFamily.DECISION_TREE,
-    ]
-    if (
-        is_time_series(problem_type)
-        and estimator_class.model_family in needs_drop_n_rows
-    ):
-        components.append(DropRowsTransformer)
-    return components
-
-
 def _get_drop_nan_rows_transformer(
     X, y, problem_type, estimator_class, sampler_name=None
 ):
@@ -257,7 +238,7 @@ def _get_drop_nan_rows_transformer(
         is_time_series(problem_type)
         and estimator_class.model_family in needs_drop_n_rows
     ):
-        components.append(DropNaNRows)
+        components.append(DropNaNRowsTransformer)
     return components
 
 

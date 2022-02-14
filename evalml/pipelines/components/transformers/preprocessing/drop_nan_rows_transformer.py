@@ -3,8 +3,8 @@ from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import drop_rows_with_nans, infer_feature_types
 
 
-class DropNaNRows(Transformer):
-    """Transformer to drop rows specified by row indices.
+class DropNaNRowsTransformer(Transformer):
+    """Transformer to drop rows with NaN values.
 
     Args:
         random_seed (int): Seed for the random number generator. Is not used by this component. Defaults to 0.

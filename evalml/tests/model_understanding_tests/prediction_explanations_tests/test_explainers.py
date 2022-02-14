@@ -975,15 +975,15 @@ def test_explain_predictions_time_series(ts_data):
                 "Time Series Featurizer.x",
                 "y",
             ],
-            "Drop Rows Transformer": [
-                "Drop Rows Transformer",
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
                 "DateTime Featurizer.x",
                 "y",
             ],
             "Estimator": [
                 "Random Forest Regressor",
-                "Drop Rows Transformer.x",
-                "Drop Rows Transformer.y",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
             ],
         },
         parameters={
@@ -998,9 +998,6 @@ def test_explain_predictions_time_series(ts_data):
                 "gap": 0,
                 "max_delay": 2,
                 "forecast_horizon": 1,
-            },
-            "Drop Rows Transformer": {
-                "first_rows_to_drop": 3,
             },
             "Random Forest Regressor": {"n_jobs": 1},
         },
@@ -1050,15 +1047,15 @@ def test_explain_predictions_best_worst_time_series(
                 "Time Series Featurizer.x",
                 "y",
             ],
-            "Drop Rows Transformer": [
-                "Drop Rows Transformer",
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
                 "DateTime Featurizer.x",
                 "y",
             ],
             "Estimator": [
                 estimator,
-                "Drop Rows Transformer.x",
-                "Drop Rows Transformer.y",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
             ],
         },
         parameters={
@@ -1073,9 +1070,6 @@ def test_explain_predictions_best_worst_time_series(
                 "max_delay": 2,
                 "forecast_horizon": 1,
                 "time_index": "date",
-            },
-            "Drop Rows Transformer": {
-                "first_rows_to_drop": 3,
             },
         },
     )

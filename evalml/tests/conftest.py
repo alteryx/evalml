@@ -932,15 +932,15 @@ def time_series_regression_pipeline_class():
                 "Time Series Featurizer.x",
                 "y",
             ],
-            "Drop Rows Transformer": [
-                "Drop Rows Transformer",
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
                 "DateTime Featurizer.x",
                 "y",
             ],
             "Random Forest Regressor": [
                 "Random Forest Regressor",
-                "Drop Rows Transformer.x",
-                "Drop Rows Transformer.y",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
             ],
         }
 
@@ -966,15 +966,15 @@ def time_series_classification_component_graph():
             "Time Series Featurizer.x",
             "Label Encoder.y",
         ],
-        "Drop Rows Transformer": [
-            "Drop Rows Transformer",
+        "Drop NaN Rows Transformer": [
+            "Drop NaN Rows Transformer",
             "DateTime Featurizer.x",
             "Label Encoder.y",
         ],
         "Logistic Regression Classifier": [
             "Logistic Regression Classifier",
-            "Drop Rows Transformer.x",
-            "Drop Rows Transformer.y",
+            "Drop NaN Rows Transformer.x",
+            "Drop NaN Rows Transformer.y",
         ],
     }
     return component_graph
