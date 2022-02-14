@@ -5,6 +5,9 @@ from enum import Enum
 class DataCheckMessageCode(Enum):
     """Enum for data check message code."""
 
+    COLS_WITH_NULL = "cols_with_null"
+    """Message code for columns with null values."""
+
     HIGHLY_NULL_COLS = "highly_null_cols"
     """Message code for highly null columns."""
 
@@ -105,6 +108,12 @@ class DataCheckMessageCode(Enum):
 
     DATETIME_HAS_UNEVEN_INTERVALS = "datetime_has_uneven_intervals"
     """Message code for when the datetime values have uneven intervals."""
+
+    DATETIME_HAS_REDUNDANT_ROW = "datetime_has_redundant_row"
+    """Message code for when datetime information has more than one row per datetime"""
+
+    DATETIME_IS_MISSING_VALUES = "datetime_is_missing_values"
+    """Message code for when datetime feature has values missing between the start and end dates"""
 
     DATETIME_IS_NOT_MONOTONIC = "datetime_is_not_monotonic"
     """Message code for when the datetime values are not monotonically increasing."""

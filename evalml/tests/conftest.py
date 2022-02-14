@@ -1663,3 +1663,45 @@ def daily_temp_local():
 @pytest.fixture
 def dummy_data_check_name():
     return "dummy_data_check_name"
+
+
+@pytest.fixture
+def dummy_data_check_validate_output_warnings():
+
+    return [
+        {
+            "message": "Data check dummy message",
+            "data_check_name": "DataCheck",
+            "level": "warning",
+            "details": {"columns": None, "rows": None},
+            "code": "DATA_CHECK_CODE",
+        },
+        {
+            "message": "Data check dummy message",
+            "data_check_name": "DataCheck",
+            "level": "warning",
+            "details": {"columns": None, "rows": None},
+            "code": "DATA_CHECK_CODE",
+        },
+    ]
+
+
+@pytest.fixture
+def dummy_data_check_validate_output_errors():
+
+    return [
+        {
+            "message": "Data check dummy message",
+            "data_check_name": "DataCheck",
+            "level": "error",
+            "details": {"columns": None, "rows": None},
+            "code": "DATA_CHECK_CODE",
+        },
+        {
+            "message": "Data check dummy message",
+            "data_check_name": "DataCheck",
+            "level": "error",
+            "details": {"columns": None, "rows": None},
+            "code": "DATA_CHECK_CODE",
+        },
+    ]

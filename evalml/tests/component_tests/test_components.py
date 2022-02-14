@@ -227,8 +227,6 @@ def test_describe_component():
         "name": "Per Column Imputer",
         "parameters": {
             "impute_strategies": {"a": "mean", "b": ("constant", 100)},
-            "default_impute_strategy": "most_frequent",
-            "impute_all": True,
         },
     }
     assert scaler.describe(return_dict=True) == {
@@ -1269,6 +1267,7 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                         VowpalWabbitBinaryClassifier,
                         VowpalWabbitMulticlassClassifier,
                         VowpalWabbitRegressor,
+                        TimeSeriesBaselineEstimator,
                     ),
                 )
             ):

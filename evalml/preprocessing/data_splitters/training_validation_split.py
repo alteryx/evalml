@@ -72,6 +72,15 @@ class TrainingValidationSplit(BaseCrossValidator):
         """
         return 1
 
+    @property
+    def is_cv(self):
+        """Returns whether or not the data splitter is a cross-validation data splitter.
+
+        Returns:
+            bool: If the splitter is a cross-validation data splitter
+        """
+        return False
+
     def split(self, X, y=None):
         """Divide the data into training and testing sets.
 

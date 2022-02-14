@@ -11,13 +11,14 @@ extras_require['complete'] = sorted(set(sum(extras_require.values(), [])))
 
 setup(
     name='evalml',
-    version='0.42.0',
+    version='0.44.0',
     author='Alteryx, Inc.',
-    author_email='support@featurelabs.com',
+    author_email='open_source_support@alteryx.com',
     description='EvalML is an AutoML library that builds, optimizes, and evaluates machine learning pipelines using domain-specific objective functions.',
     long_description=long_description,
     long_description_content_type="text/markdown",
     url='https://github.com/alteryx/evalml/',
+    python_requires='>=3.8, <4',
     install_requires=open('core-requirements.txt').readlines() + open('requirements.txt').readlines()[1:],
     extras_require=extras_require,
     tests_require=open('test-requirements.txt').readlines(),

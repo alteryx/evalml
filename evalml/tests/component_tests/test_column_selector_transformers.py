@@ -45,10 +45,6 @@ def test_select_by_type_empty_X():
     transformer = SelectByType(columns=[])
     assert_frame_equal(X, transformer.fit_transform(X))
 
-    transformer = SelectByType(column_types=["not in data"])
-    with pytest.raises(ValueError, match="not found in input data"):
-        transformer.fit(X)
-
     transformer = SelectByType(columns=list(X.columns))
     assert transformer.transform(X).empty
 
@@ -233,12 +229,6 @@ def test_typeortag_column_transformer_ww_logical_and_semantic_types():
     )
     X.ww.init(logical_types={"one": "categorical"})
 
-    transformer = SelectByType(column_types=[ww.logical_types.Age])
-    with pytest.raises(ValueError, match="not found in input data"):
-        transformer.transform(X)
-    with pytest.raises(ValueError, match="not found in input data"):
-        transformer.fit_transform(X)
-
     X_t = SelectByType(column_types=[ww.logical_types.Integer]).fit_transform(X)
     assert X_t.equals(X[["three"]].astype("int64"))
 
@@ -265,3 +255,18 @@ def test_column_selector_missing_columns():
 
     X_t = selector.fit_transform(X)
     assert (X_t.columns == ["A", "C"]).all()
+
+
+def test_select_by_type_exclude():
+    selector = SelectByType(column_types="category", exclude=True)
+    X = pd.DataFrame(
+        {
+            "one": ["1", "2", "3", "4"],
+            "two": [1, 2, 3, 4],
+            "three": [4.0, 2.3, 6.5, 2.6],
+        }
+    )
+    X.ww.init(logical_types={"one": "categorical"})
+
+    X_t = selector.fit_transform(X)
+    assert list(X_t.columns) == ["two", "three"]

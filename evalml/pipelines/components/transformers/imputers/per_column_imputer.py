@@ -17,13 +17,6 @@ class PerColumnImputer(Transformer):
             and "most_frequent", "constant" for object data types. Defaults to None, which uses "most_frequent" for all columns.
             When impute_strategy == "constant", fill_value is used to replace missing data.
             When None, uses 0 when imputing numerical data and "missing_value" for strings or object data types.
-        default_impute_strategy (str): Impute strategy to fall back on when none is provided for a certain column.
-            Valid values include "mean", "median", "most_frequent", "constant" for numerical data,
-            and "most_frequent", "constant" for object data types. Defaults to "most_frequent".
-        impute_all (bool): Whether or not to impute all columns or just the columns that are specified in `impute_strategies`. If True,
-            columns will be imputed using the strategy in the `impute_strategies` dictionary if specified or using the `default_impute_strategy`.
-            If False, only columns specified as keys in the `impute_strategies` dictionary are imputed. If False and `impute_strategies` is None,
-            no columns will be imputed. Defaults to True.
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
 
@@ -34,15 +27,11 @@ class PerColumnImputer(Transformer):
     def __init__(
         self,
         impute_strategies=None,
-        default_impute_strategy="most_frequent",
-        impute_all=True,
         random_seed=0,
         **kwargs,
     ):
         parameters = {
             "impute_strategies": impute_strategies,
-            "default_impute_strategy": default_impute_strategy,
-            "impute_all": impute_all,
         }
         self.imputers = None
         self.impute_strategies = impute_strategies or dict()
@@ -50,8 +39,6 @@ class PerColumnImputer(Transformer):
             raise ValueError(
                 "`impute_strategies` is not a dictionary. Please provide in Column and {`impute_strategy`: strategy, `fill_value`:value} pairs. "
             )
-        self.default_impute_strategy = default_impute_strategy
-        self.impute_all = impute_all
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
@@ -69,19 +56,15 @@ class PerColumnImputer(Transformer):
         X = infer_feature_types(X)
         self.imputers = dict()
 
-        columns_to_impute = (
-            X.columns if self.impute_all else self.impute_strategies.keys()
-        )
+        columns_to_impute = self.impute_strategies.keys()
         if len(columns_to_impute) == 0:
             warnings.warn(
-                "No columns to impute. Please check `impute_strategies` and `impute_all` parameters."
+                "No columns to impute. Please check `impute_strategies` parameter."
             )
 
         for column in columns_to_impute:
             strategy_dict = self.impute_strategies.get(column, dict())
-            strategy = strategy_dict.get(
-                "impute_strategy", self.default_impute_strategy
-            )
+            strategy = strategy_dict["impute_strategy"]
             fill_value = strategy_dict.get("fill_value", None)
             self.imputers[column] = SimpleImputer(
                 impute_strategy=strategy, fill_value=fill_value
@@ -113,5 +96,5 @@ class PerColumnImputer(Transformer):
             else:
                 X_ww.ww[column] = transformed[column]
         X_t = X_ww.ww.drop(cols_to_drop)
-        X_t.ww.init(schema=original_schema._get_subset_schema(X_t.columns))
+        X_t.ww.init(schema=original_schema.get_subset_schema(X_t.columns))
         return X_t

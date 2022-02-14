@@ -11,7 +11,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        python_version: ['3.7', '3.8', '3.9']
+        python_version: ['3.8', '3.9']
         command: ['git-test-automl', 'git-test-modelunderstanding', 'git-test-other', 'git-test-parallel']
     steps:
       - name: Download Miniconda
@@ -55,7 +55,7 @@ jobs:
           . $env:USERPROFILE\Miniconda3\shell\condabin\conda-hook.ps1
           conda config --add channels conda-forge
           conda activate curr_py
-          conda install numba==0.53 -q -y
+          conda install numba -q -y
       - name: Install EvalML with test requirements
         shell: pwsh
         run: |

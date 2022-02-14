@@ -97,7 +97,18 @@ Read more about EvalML on our [documentation page](https://evalml.alteryx.com/):
 * [User guide](https://evalml.alteryx.com/en/stable/user_guide.html) which describes EvalML's features.
 * Full [API reference](https://evalml.alteryx.com/en/stable/api_reference.html)
 
+## Support
+
+The EvalML community is happy to provide support to users of EvalML. Project support can be found in four places depending on the type of question:
+1. For usage questions, use [Stack Overflow](https://stackoverflow.com/questions/tagged/evalml) with the `evalml` tag.
+2. For bugs, issues, or feature requests start a [Github issue](https://github.com/alteryx/evalml/issues).
+3. For discussion regarding development on the core library, use [Slack](https://join.slack.com/t/featuretools/shared_invite/enQtNTEwODEzOTEwMjg4LTQ1MjZlOWFmZDk2YzAwMjEzNTkwZTZkN2NmOGFjOGI4YzE5OGMyMGM5NGIxNTE4NjkzYWI3OWEwZjkyZGExYmQ).
+4. For everything else, the core developers can be reached by email at open_source_support@alteryx.com
+
 ## Built at Alteryx Innovation Labs
+
+**EvalML** is an open source project built by [Alteryx](https://www.alteryx.com). To see the other open source projects we’re working on visit [Alteryx Open Source](https://www.alteryx.com/open-source). If building impactful data science pipelines is important to you or your business, please get in touch.
+
 <a href="https://www.alteryx.com/innovation-labs">
     <img src="https://evalml-web-images.s3.amazonaws.com/alteryx_innovation_labs.png" alt="Alteryx Innovation Labs" />
 </a>

@@ -10,14 +10,17 @@ from evalml.utils import infer_feature_types
 
 @patch("evalml.data_checks.default_data_checks.DefaultDataChecks.validate")
 @patch("evalml.automl.AutoMLSearch.search")
-def test_search(mock_automl_search, mock_data_checks_validate, X_y_binary):
+def test_search(
+    mock_automl_search,
+    mock_data_checks_validate,
+    X_y_binary,
+    dummy_data_check_validate_output_warnings,
+):
     X, y = X_y_binary
-    # this doesn't exactly match the data check results schema but its enough to trigger the error in search()
-    data_check_results_expected = {"warnings": ["Warning 1", "Warning 2"]}
-    mock_data_checks_validate.return_value = data_check_results_expected
+    mock_data_checks_validate.return_value = dummy_data_check_validate_output_warnings
     automl, data_check_results = search(X_train=X, y_train=y, problem_type="binary")
     assert isinstance(automl, AutoMLSearch)
-    assert data_check_results is data_check_results_expected
+    assert data_check_results is dummy_data_check_validate_output_warnings
     mock_data_checks_validate.assert_called_once()
     data, target = (
         mock_data_checks_validate.call_args[0][0],
@@ -31,15 +34,16 @@ def test_search(mock_automl_search, mock_data_checks_validate, X_y_binary):
 @patch("evalml.data_checks.default_data_checks.DefaultDataChecks.validate")
 @patch("evalml.automl.AutoMLSearch.search")
 def test_search_data_check_error(
-    mock_automl_search, mock_data_checks_validate, X_y_binary
+    mock_automl_search,
+    mock_data_checks_validate,
+    X_y_binary,
+    dummy_data_check_validate_output_errors,
 ):
     X, y = X_y_binary
-    # this doesn't exactly match the data check results schema but its enough to trigger the error in search()
-    data_check_results_expected = {"errors": ["Error 1", "Error 2"]}
-    mock_data_checks_validate.return_value = data_check_results_expected
+    mock_data_checks_validate.return_value = dummy_data_check_validate_output_errors
     automl, data_check_results = search(X_train=X, y_train=y, problem_type="binary")
     assert automl is None
-    assert data_check_results == data_check_results_expected
+    assert data_check_results == dummy_data_check_validate_output_errors
     mock_data_checks_validate.assert_called_once()
     data, target = (
         mock_data_checks_validate.call_args[0][0],
@@ -49,7 +53,7 @@ def test_search_data_check_error(
     pd.testing.assert_series_equal(target, infer_feature_types(y))
 
 
-def test_n_splits_passed_to_ts_splitting_data_check(ts_data):
+def test_n_splits_passed_to_ts_splitting_data_check():
     X = pd.DataFrame(pd.date_range("1/1/21", periods=100), columns=["date"])
     y = pd.Series(0 if i < 40 else 1 for i in range(100))
 
@@ -66,7 +70,7 @@ def test_n_splits_passed_to_ts_splitting_data_check(ts_data):
         problem_type="time series binary",
         n_splits=4,
     )
-    assert len(data_checks["errors"][0]["details"]["invalid_splits"]) == 4
+    assert len(data_checks[0]["details"]["invalid_splits"]) == 4
 
 
 @pytest.mark.parametrize(
@@ -117,7 +121,7 @@ def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
     assert automl.patience == 3
     assert automl.tolerance == 0.5
     assert automl.max_batches == 4
-    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
+    assert isinstance(automl.automl_algorithm, DefaultAlgorithm)
 
     automl, _ = search(
         X_train=X,
@@ -132,7 +136,7 @@ def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
     assert automl.patience == 3
     assert automl.tolerance == 0.5
     assert automl.max_batches == 999
-    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
+    assert isinstance(automl.automl_algorithm, DefaultAlgorithm)
 
     automl, _ = search(
         X_train=X,
@@ -142,7 +146,7 @@ def test_search_args(mock_automl_search, mock_data_checks_validate, X_y_binary):
     )
 
     assert automl.max_batches == 6
-    assert isinstance(automl._automl_algorithm, DefaultAlgorithm)
+    assert isinstance(automl.automl_algorithm, DefaultAlgorithm)
 
     with pytest.raises(ValueError):
         search(

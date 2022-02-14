@@ -4,8 +4,8 @@ from scipy.stats import gamma
 
 from evalml.data_checks import (
     DataCheck,
-    DataCheckAction,
     DataCheckActionCode,
+    DataCheckActionOption,
     DataCheckMessageCode,
     DataCheckWarning,
 )
@@ -34,30 +34,37 @@ class OutliersDataCheck(DataCheck):
             The column "z" has an outlier so a warning is added to alert the user of its location.
 
             >>> df = pd.DataFrame({
-            ...     'x': [1, 2, 3, 4, 5],
-            ...     'y': [6, 7, 8, 9, 10],
-            ...     'z': [-1, -2, -3, -1201, -4]
+            ...     "x": [1, 2, 3, 4, 5],
+            ...     "y": [6, 7, 8, 9, 10],
+            ...     "z": [-1, -2, -3, -1201, -4]
             ... })
             ...
             >>> outliers_check = OutliersDataCheck()
-            >>> assert outliers_check.validate(df) == {
-            ...     "warnings": [{"message": "Column(s) 'z' are likely to have outlier data.",
-            ...                   "data_check_name": "OutliersDataCheck",
-            ...                   "level": "warning",
-            ...                   "code": "HAS_OUTLIERS",
-            ...                   "details": {"columns": ["z"], "rows": [3], "column_indices": {"z": [3]}}}],
-            ...     "errors": [],
-            ...     "actions": [{"code": "DROP_ROWS",
+            >>> assert outliers_check.validate(df) == [
+            ...     {
+            ...         "message": "Column(s) 'z' are likely to have outlier data.",
+            ...         "data_check_name": "OutliersDataCheck",
+            ...         "level": "warning",
+            ...         "code": "HAS_OUTLIERS",
+            ...         "details": {"columns": ["z"], "rows": [3], "column_indices": {"z": [3]}},
+            ...         "action_options": [
+            ...             {
+            ...                 "code": "DROP_ROWS",
             ...                  "data_check_name": "OutliersDataCheck",
-            ...                  "metadata": {"rows": [3], "columns": None}}]}
+            ...                  "parameters": {},
+            ...                  "metadata": {"rows": [3], "columns": None}
+            ...             }
+            ...         ]
+            ...     }
+            ... ]
         """
-        results = {"warnings": [], "errors": [], "actions": []}
+        messages = []
 
         X = infer_feature_types(X)
         X = X.ww.select("numeric")
 
         if len(X.columns) == 0:
-            return results
+            return messages
 
         has_outliers = []
         outlier_row_indices = {}
@@ -74,7 +81,7 @@ class OutliersDataCheck(DataCheck):
                 )
 
         if not len(has_outliers):
-            return results
+            return messages
 
         warning_msg = "Column(s) {} are likely to have outlier data.".format(
             ", ".join([f"'{col}'" for col in has_outliers])
@@ -85,7 +92,7 @@ class OutliersDataCheck(DataCheck):
 
         all_rows_with_indices = list(all_rows_with_indices_set)
         all_rows_with_indices.sort()
-        results["warnings"].append(
+        messages.append(
             DataCheckWarning(
                 message=warning_msg,
                 data_check_name=self.name,
@@ -95,17 +102,16 @@ class OutliersDataCheck(DataCheck):
                     "rows": all_rows_with_indices,
                     "column_indices": outlier_row_indices,
                 },
+                action_options=[
+                    DataCheckActionOption(
+                        DataCheckActionCode.DROP_ROWS,
+                        data_check_name=self.name,
+                        metadata={"rows": all_rows_with_indices},
+                    )
+                ],
             ).to_dict()
         )
-
-        results["actions"].append(
-            DataCheckAction(
-                DataCheckActionCode.DROP_ROWS,
-                data_check_name=self.name,
-                metadata={"rows": all_rows_with_indices},
-            ).to_dict()
-        )
-        return results
+        return messages
 
     @staticmethod
     def get_boxplot_data(data_):
@@ -121,24 +127,24 @@ class OutliersDataCheck(DataCheck):
             >>> import pandas as pd
             ...
             >>> df = pd.DataFrame({
-            ...     'x': [1, 2, 3, 4, 5],
-            ...     'y': [6, 7, 8, 9, 10],
-            ...     'z': [-1, -2, -3, -1201, -4]
+            ...     "x": [1, 2, 3, 4, 5],
+            ...     "y": [6, 7, 8, 9, 10],
+            ...     "z": [-1, -2, -3, -1201, -4]
             ... })
-            >>> box_plot_data = OutliersDataCheck.get_boxplot_data(df['z'])
+            >>> box_plot_data = OutliersDataCheck.get_boxplot_data(df["z"])
             >>> box_plot_data["score"] = round(box_plot_data["score"], 2)
             >>> assert box_plot_data == {
-            ...     'score': 0.89,
-            ...     'pct_outliers': 0.2,
-            ...     'values': {'q1': -4.0,
-            ...                'median': -3.0,
-            ...                'q3': -2.0,
-            ...                'low_bound': -7.0,
-            ...                'high_bound': 1.0,
-            ...                'low_values': [-1201],
-            ...                'high_values': [],
-            ...                'low_indices': [3],
-            ...                'high_indices': []}
+            ...     "score": 0.89,
+            ...     "pct_outliers": 0.2,
+            ...     "values": {"q1": -4.0,
+            ...                "median": -3.0,
+            ...                "q3": -2.0,
+            ...                "low_bound": -7.0,
+            ...                "high_bound": -1.0,
+            ...                "low_values": [-1201],
+            ...                "high_values": [],
+            ...                "low_indices": [3],
+            ...                "high_indices": []}
             ...     }
         """
         data_ = infer_feature_types(data_)

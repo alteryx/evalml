@@ -3,6 +3,7 @@ from abc import ABC, abstractmethod
 
 from evalml.exceptions import PipelineNotFoundError
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
+from evalml.problem_types import is_multiclass
 from evalml.tuners import SKOptTuner
 
 
@@ -53,6 +54,7 @@ class AutoMLAlgorithm(ABC):
             )
         self._pipeline_number = 0
         self._batch_number = 0
+        self._default_max_batches = 1
 
     @abstractmethod
     def next_batch(self):
@@ -98,6 +100,11 @@ class AutoMLAlgorithm(ABC):
         """Returns the number of batches which have been recommended so far."""
         return self._batch_number
 
+    @property
+    def default_max_batches(self):
+        """Returns the number of max batches AutoMLSearch should run by default."""
+        return 1
+
     def _create_ensemble(self):
         next_batch = []
         best_pipelines = list(self._best_pipeline_info.values())
@@ -118,9 +125,18 @@ class AutoMLAlgorithm(ABC):
                 "Select Columns Transformer"
                 in pipeline.component_graph.component_instances
             ):
-                pipeline_params.update(
-                    {"Select Columns Transformer": {"columns": self._selected_cols}}
-                )
+                if self._selected_cols:
+                    pipeline_params.update(
+                        {"Select Columns Transformer": {"columns": self._selected_cols}}
+                    )
+                elif self._selected_cat_cols:
+                    pipeline_params.update(
+                        {
+                            "Select Columns Transformer": {
+                                "columns": self._selected_cat_cols
+                            }
+                        }
+                    )
             input_pipelines.append(
                 pipeline.new(parameters=pipeline_params, random_seed=self.random_seed)
             )
@@ -161,3 +177,36 @@ class AutoMLAlgorithm(ABC):
             no_kin_name = "Not Known In Advance Pipeline - Select Columns Transformer"
             self._pipeline_params[kin_name] = {"columns": kina_columns}
             self._pipeline_params[no_kin_name] = {"columns": no_kin_columns}
+
+    def _filter_estimators(
+        self,
+        estimators,
+        problem_type,
+        allow_long_running_models,
+        allowed_model_families,
+        y_unique,
+        logger,
+    ):
+        """Function to remove computationally expensive and long-running estimators from datasets with large numbers of unique classes. Thresholds were determined empirically."""
+        estimators_to_drop = []
+        if (
+            not is_multiclass(problem_type)
+            or allow_long_running_models
+            or allowed_model_families is not None
+        ):
+            return estimators
+        if y_unique > 75:
+            estimators_to_drop.extend(["Elastic Net Classifier", "XGBoost Classifier"])
+        if y_unique > 150:
+            estimators_to_drop.append("CatBoost Classifier")
+        dropped_estimators = [e for e in estimators if e.name in estimators_to_drop]
+        if len(dropped_estimators):
+            logger.info(
+                "Dropping estimators {} because the number of unique targets is {} and `allow_long_running_models` is set to {}".format(
+                    ", ".join(sorted([e.name for e in dropped_estimators])),
+                    y_unique,
+                    allow_long_running_models,
+                )
+            )
+        estimators = [e for e in estimators if e not in dropped_estimators]
+        return estimators

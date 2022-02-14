@@ -624,10 +624,13 @@ _holdout_validation_result = namedtuple(
 def validate_holdout_datasets(X, X_train, pipeline_params):
     """Validate the holdout datasets match our expectations.
 
+    This function is run before calling predict in a time series pipeline. It verifies that X (the holdout set)
+    is gap units away from the training set and is less than or equal to the forecast_horizon.
+
     Args:
         X (pd.DataFrame): Data of shape [n_samples, n_features].
         X_train (pd.DataFrame): Training data.
-        pipeline_params (dict): Dictionary of time series parameters.
+        pipeline_params (dict): Dictionary of time series parameters with gap, forecast_horizon, and time_index being required.
 
     Returns:
         TSHoldoutValidationResult - named tuple with three fields
