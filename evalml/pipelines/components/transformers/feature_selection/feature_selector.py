@@ -55,7 +55,7 @@ class FeatureSelector(Transformer):
 
         selected_col_names = self.get_names()
         features = pd.DataFrame(X_t, columns=selected_col_names, index=X_ww.index)
-        features.ww.init(schema=X_ww.ww.schema._get_subset_schema(selected_col_names))
+        features.ww.init(schema=X_ww.ww.schema.get_subset_schema(selected_col_names))
         return features
 
     def fit_transform(self, X, y=None):
