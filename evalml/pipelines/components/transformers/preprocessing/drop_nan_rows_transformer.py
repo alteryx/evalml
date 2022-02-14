@@ -40,7 +40,6 @@ class DropNaNRowsTransformer(Transformer):
         Returns:
             (pd.DataFrame, pd.Series): Data with NaN rows dropped.
         """
-
         X_t = infer_feature_types(X)
         y_t = infer_feature_types(y) if y is not None else None
 
