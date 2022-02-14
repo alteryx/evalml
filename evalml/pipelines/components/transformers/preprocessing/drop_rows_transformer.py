@@ -23,9 +23,7 @@ class DropRowsTransformer(Transformer):
         ):
             raise ValueError("All input indices must be unique.")
         self.indices_to_drop = indices_to_drop
-        parameters = {
-            "indices_to_drop": self.indices_to_drop,
-        }
+        parameters = {"indices_to_drop": self.indices_to_drop}
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )

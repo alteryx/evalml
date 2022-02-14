@@ -13,9 +13,7 @@ def test_drop_rows_transformer_init():
 
     drop_rows_transformer = DropRowsTransformer(indices_to_drop=[0, 1])
     assert drop_rows_transformer.indices_to_drop == [0, 1]
-    assert drop_rows_transformer.parameters == {
-        "indices_to_drop": [0, 1],
-    }
+    assert drop_rows_transformer.parameters == {"indices_to_drop": [0, 1]}
 
 
 def test_drop_rows_transformer_init_with_duplicate_indices():

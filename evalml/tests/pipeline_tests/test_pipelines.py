@@ -33,7 +33,6 @@ from evalml.pipelines import (
 )
 from evalml.pipelines.component_graph import ComponentGraph
 from evalml.pipelines.components import (
-    DropNaNRowsTransformer,
     DropNullColumns,
     DropRowsTransformer,
     ElasticNetClassifier,
@@ -2743,6 +2742,7 @@ def test_training_only_component_in_pipeline_predict_and_transform_all_but_final
                 "Drop Rows Transformer.y",
             ],
         },
+        parameters={"Drop Rows Transformer": {"indices_to_drop": [9]}},
     )
     pipeline.fit(X, y)
     preds = pipeline.predict(X)

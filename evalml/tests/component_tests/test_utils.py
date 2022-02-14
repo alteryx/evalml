@@ -37,6 +37,7 @@ minimum_dependencies_set = set(
         "Drop Columns Transformer",
         "Drop Null Columns Transformer",
         "Drop Rows Transformer",
+        "Drop NaN Rows Transformer",
         "Elastic Net Classifier",
         "Elastic Net Regressor",
         "Email Featurizer",
