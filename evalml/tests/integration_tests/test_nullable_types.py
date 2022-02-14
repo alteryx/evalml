@@ -51,14 +51,14 @@ def test_nullable_types_builds_pipelines(
         y_train=y,
         problem_type=problem_type,
         problem_configuration=parameters,
-        _automl_algorithm=automl_algorithm,
+        automl_algorithm=automl_algorithm,
     )
     if automl_algorithm == "iterative":
         pipelines = [pl.name for pl in automl.allowed_pipelines]
     elif automl_algorithm == "default":
         # TODO: Upon resolution of GH Issue #3186, increase the num of batches.
         for _ in range(2):
-            pipelines = [pl.name for pl in automl._automl_algorithm.next_batch()]
+            pipelines = [pl.name for pl in automl.automl_algorithm.next_batch()]
 
     # A check to make sure we actually retrieve constructed pipelines from the algo.
     assert len(pipelines) > 0
