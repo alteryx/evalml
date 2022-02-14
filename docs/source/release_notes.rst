@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Added ``DropOutliersTransformer``, a transformer to drop outliers :pr:`3307`
     * Fixes
     * Changes
     * Documentation Changes

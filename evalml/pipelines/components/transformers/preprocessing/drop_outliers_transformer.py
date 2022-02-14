@@ -26,12 +26,30 @@ class DropOutliersTransformer(Transformer):
         )
 
     def fit(self, X, y=None):
+        """Fits component to data.
+
+        Args:
+            X (pd.DataFrame): The input training data of shape [n_samples, n_features].
+            y (pd.Series): The target training data of length [n_samples]. Optional. Defaults to None.
+
+        Returns:
+            self
+        """
         X = infer_feature_types(X)
         X = X.ww.select("numeric")
         self.outlier_rows_dict = OutliersDataCheck.get_outlier_rows(X)
         return self
 
     def transform(self, X, y=None):
+        """Transforms data using fitted component.
+
+        Args:
+            X (pd.DataFrame): Features.
+            y (pd.Series): Target data. Optional. Defaults to None.
+
+        Returns:
+            (pd.DataFrame, pd.Series): Data with outlier rows dropped.
+        """
         X_t = infer_feature_types(X)
         y_t = infer_feature_types(y) if y is not None else None
 

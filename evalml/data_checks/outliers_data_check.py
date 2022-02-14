@@ -103,6 +103,14 @@ class OutliersDataCheck(DataCheck):
 
     @staticmethod
     def get_outlier_rows(X):
+        """Get the outlers in the input data.
+
+        Args:
+            X (pd.DataFrame): The input dataframe.
+
+        Returns:
+            dict: A dictionary with key value pairs corresponding to each column that has an outlier and the rows that are outliers in that column.
+        """
         outlier_row_indices = {}
         for col in X.columns:
             box_plot_dict = OutliersDataCheck.get_boxplot_data(X.ww[col])

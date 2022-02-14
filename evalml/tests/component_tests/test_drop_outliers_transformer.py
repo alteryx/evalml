@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from evalml.data_checks import OutliersDataCheck
 from evalml.pipelines.components.transformers.preprocessing import (
     DropOutliersTransformer,
 )
