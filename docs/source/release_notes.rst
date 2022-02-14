@@ -9,6 +9,7 @@
         * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
     * Documentation Changes
         * Update README.md with Alteryx link (:pr:`3319`)
+        * Added scrollbar to the AutoML user guide to shorten result outputs :pr:`3328`
     * Testing Changes
         * Add auto approve dependency workflow schedule for every 30 mins :pr:`3312`
 
