@@ -521,53 +521,87 @@ def test_imputer_does_not_erase_ww_info():
     mock_transform.call_args[0][0].ww.schema == df_holdout.ww[["b"]].ww.schema
 
 
+def get_int_df():
+    return pd.DataFrame(pd.Series([1, 2, 3], dtype="int64"))
+
+
+def get_float_df():
+    return pd.DataFrame(pd.Series([1.0, 2.0, 4.0], dtype="float"))
+
+
+def get_category_df():
+    return pd.DataFrame(pd.Series(["a", "b", "a"], dtype="category"))
+
+
+def get_bool_df():
+    return pd.DataFrame(pd.Series([True, False, True], dtype=bool))
+
+
+def get_string_df():
+    return pd.DataFrame(
+        pd.Series(
+            ["this will be a natural language column because length", "yay", "hay"],
+            dtype="string",
+        )
+    )
+
+
 @pytest.mark.parametrize(
     "X_df",
     [
-        pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
-        pd.DataFrame(pd.Series([1.0, 2.0, 4.0], dtype="float")),
-        pd.DataFrame(pd.Series(["a", "b", "a"], dtype="category")),
-        pd.DataFrame(pd.Series([True, False, True], dtype=bool)),
-        pd.DataFrame(
-            pd.Series(
-                ["this will be a natural language column because length", "yay", "hay"],
-                dtype="string",
-            )
-        ),
+        "integer_data",
+        "float_data",
+        "categorical_data",
+        "boolean_data",
     ],
 )
-@pytest.mark.parametrize("has_nan", [True, False])
+@pytest.mark.parametrize(
+    "logical_type", ["Integer", "Double", "Categorical", "NaturalLanguage", "Boolean"]
+)
+@pytest.mark.parametrize("has_nan", ["has_nan", "no_nans"])
 @pytest.mark.parametrize("numeric_impute_strategy", ["mean", "median", "most_frequent"])
 def test_imputer_woodwork_custom_overrides_returned_by_components(
-    X_df, has_nan, numeric_impute_strategy
+    X_df, logical_type, has_nan, numeric_impute_strategy
 ):
+    X_df = {
+        "integer_data": get_int_df,
+        "float_data": get_float_df,
+        "categorical_data": get_category_df,
+        "boolean_data": get_bool_df,
+    }[X_df]()
+    logical_type = {
+        "Integer": Integer,
+        "Double": Double,
+        "Categorical": Categorical,
+        "NaturalLanguage": NaturalLanguage,
+        "Boolean": Boolean,
+    }[logical_type]
     y = pd.Series([1, 2, 1])
-    override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
-    for logical_type in override_types:
-        # Column with Nans to boolean used to fail. Now it doesn't but it should.
-        if has_nan and logical_type == Boolean:
-            continue
-        try:
-            X = X_df.copy()
-            if has_nan:
-                X.iloc[len(X_df) - 1, 0] = np.nan
-            X.ww.init(logical_types={0: logical_type})
-        except ww.exceptions.TypeConversionError:
-            continue
 
-        imputer = Imputer(numeric_impute_strategy=numeric_impute_strategy)
-        imputer.fit(X, y)
-        transformed = imputer.transform(X, y)
-        assert isinstance(transformed, pd.DataFrame)
-        if numeric_impute_strategy == "most_frequent":
-            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-                0: logical_type
-            }
-        elif logical_type in [Categorical, NaturalLanguage] or not has_nan:
-            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-                0: logical_type
-            }
-        else:
-            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-                0: Double
-            }
+    # Column with Nans to boolean used to fail. Now it doesn't but it should.
+    if has_nan == "has_nan" and logical_type == Boolean:
+        return
+    try:
+        X = X_df.copy()
+        if has_nan == "has_nan":
+            X.iloc[len(X_df) - 1, 0] = np.nan
+        X.ww.init(logical_types={0: logical_type})
+    except ww.exceptions.TypeConversionError:
+        return
+
+    imputer = Imputer(numeric_impute_strategy=numeric_impute_strategy)
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    assert isinstance(transformed, pd.DataFrame)
+    if numeric_impute_strategy == "most_frequent":
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+            0: logical_type
+        }
+    elif logical_type in [Categorical, NaturalLanguage] or has_nan == "no_nans":
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+            0: logical_type
+        }
+    else:
+        assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+            0: Double
+        }

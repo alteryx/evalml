@@ -1,7 +1,7 @@
 """Component that imputes missing data according to a specified imputation strategy."""
 import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
-from woodwork.logical_types import NaturalLanguage
+from woodwork.logical_types import NaturalLanguage, BooleanNullable, Boolean
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
@@ -27,6 +27,7 @@ class SimpleImputer(Transformer):
     def __init__(
         self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs
     ):
+        self.impute_strategy=impute_strategy
         parameters = {"impute_strategy": impute_strategy, "fill_value": fill_value}
         parameters.update(kwargs)
         imputer = SkImputer(strategy=impute_strategy, fill_value=fill_value, **kwargs)
@@ -34,6 +35,31 @@ class SimpleImputer(Transformer):
         super().__init__(
             parameters=parameters, component_obj=imputer, random_seed=random_seed
         )
+
+    def _get_columns_of_type(self, X, ww_dtype):
+        return  [
+            col
+            for col, ltype in X.ww.logical_types.items()
+            if type(ltype) == ww_dtype
+        ]
+
+    def _drop_natural_language_columns(self, X):
+        # Not using select because we just need column names, not a new dataframe
+        natural_language_columns = self._get_columns_of_type(X, NaturalLanguage)
+        if natural_language_columns:
+            X = X.ww.copy()
+            X = X.ww.drop(columns=natural_language_columns)
+        return X
+
+    def _set_boolean_columns_to_categorical(self, X):
+        boolean_null_columns = self._get_columns_of_type(X, BooleanNullable)
+        boolean_columns = self._get_columns_of_type(X, Boolean)
+        boolean_columns += boolean_null_columns
+        if boolean_columns:
+            X = X.ww.copy()
+            X.ww.set_types({col: "Categorical" for col in boolean_columns})
+        return X
+
 
     def fit(self, X, y=None):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are treated as the same.
@@ -46,22 +72,25 @@ class SimpleImputer(Transformer):
             self
         """
         X = infer_feature_types(X)
+
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
-        # Not using select because we just need column names, not a new dataframe
-        natural_language_columns = [
-            col
-            for col, ltype in X.ww.logical_types.items()
-            if type(ltype) == NaturalLanguage
-        ]
-        if natural_language_columns:
-            X = X.ww.copy()
-            X.ww.set_types({col: "Categorical" for col in natural_language_columns})
+        # # Convert all bool dtypes to category for fitting
+        # if (X.dtypes == bool).all():
+        #     X = X.astype("category")
 
-        # Convert all bool dtypes to category for fitting
-        if (X.dtypes == bool).all():
-            X = X.astype("category")
+        # Determine if imputer is being used with incompatible imputation strategies
+        boolean_columns = self._get_columns_of_type(X, BooleanNullable)
+        if self.impute_strategy in ["median", "mean"] and len(boolean_columns) > 0:
+            raise ValueError(f"Cannot use {self.impute_strategy} strategy with non-numeric data: {boolean_columns} contain boolean values and cannot be imputed with the 'median' or 'mode' strategy.")
+
+        X = self._drop_natural_language_columns(X)
+        X = self._set_boolean_columns_to_categorical(X)
+
+        # If the Dataframe only had one natural language column, do nothing.
+        if X.shape[1] == 0:
+            return self
 
         self._component_obj.fit(X, y)
         return self
@@ -86,14 +115,9 @@ class SimpleImputer(Transformer):
         not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         original_index = X.index
 
-        # Not using select because we just need column names, not a new dataframe
-        X.ww.set_types(
-            {
-                col: "Categorical"
-                for col, ltype in X.ww.logical_types.items()
-                if isinstance(ltype, NaturalLanguage)
-            }
-        )
+        X_t = self._drop_natural_language_columns(X)
+        if X_t.shape[-1] == 0:
+            return X
 
         X_t = self._component_obj.transform(X)
         X_t = pd.DataFrame(X_t, columns=not_all_null_cols)
