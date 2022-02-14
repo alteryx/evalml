@@ -4517,7 +4517,7 @@ def test_automl_accepts_features(
         optimize_thresholds=False,
         max_batches=3,
         features=features,
-        _automl_algorithm=automl_algorithm,
+        automl_algorithm=automl_algorithm,
     )
     assert automl._automl_algorithm.features == features
     env = AutoMLTestEnv("binary")
