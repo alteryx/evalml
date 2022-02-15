@@ -134,4 +134,4 @@ class ExponentialSmoothingRegressor(Estimator):
     @property
     def feature_importance(self):
         """Returns array of 0's with a length of 1 as feature_importance is not defined for Exponential Smoothing regressor."""
-        return np.zeros(1)
+        return pd.Series(np.zeros(1))
