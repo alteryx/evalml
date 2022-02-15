@@ -67,15 +67,14 @@ class SimpleImputer(Transformer):
 
         Returns:
             self
+
+        Raises:
+            ValueError if non-numeric data is given to an imputer with "median" or "mean" strategies.
         """
         X = infer_feature_types(X)
 
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
-
-        # # Convert all bool dtypes to category for fitting
-        # if (X.dtypes == bool).all():
-        #     X = X.astype("category")
 
         # Determine if imputer is being used with incompatible imputation strategies
         boolean_columns = self._get_columns_of_type(X, BooleanNullable)

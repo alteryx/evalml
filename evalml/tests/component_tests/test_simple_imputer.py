@@ -361,15 +361,12 @@ def test_simple_imputer_with_none():
     assert_frame_equal(expected, transformed, check_dtype=False)
 
 
-import numpy
-
-
 @pytest.mark.parametrize("na_type", ["python_none", "numpy_nan", "pandas_na"])
 @pytest.mark.parametrize("data_type", ["Categorical", "NaturalLanguage"])
 def test_simple_imputer_supports_natural_language_and_categorical_constant(
     na_type, data_type
 ):
-    na_type = {"python_none": None, "numpy_nan": numpy.nan, "pandas_na": pandas.NA}[
+    na_type = {"python_none": None, "numpy_nan": np.nan, "pandas_na": pandas.NA}[
         na_type
     ]
     X = pd.DataFrame(

@@ -97,6 +97,7 @@ def test_xgboost_predict_all_boolean_columns():
     assert not preds.isna().any()
 
 
+@pytest.mark.xfail
 @pytest.mark.parametrize(
     "y,label_encoder",
     [
