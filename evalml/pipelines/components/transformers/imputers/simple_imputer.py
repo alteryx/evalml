@@ -1,7 +1,7 @@
 """Component that imputes missing data according to a specified imputation strategy."""
 import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
-from woodwork.logical_types import NaturalLanguage, BooleanNullable, Boolean
+from woodwork.logical_types import Boolean, BooleanNullable, NaturalLanguage
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
@@ -27,7 +27,7 @@ class SimpleImputer(Transformer):
     def __init__(
         self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs
     ):
-        self.impute_strategy=impute_strategy
+        self.impute_strategy = impute_strategy
         parameters = {"impute_strategy": impute_strategy, "fill_value": fill_value}
         parameters.update(kwargs)
         imputer = SkImputer(strategy=impute_strategy, fill_value=fill_value, **kwargs)
@@ -37,10 +37,8 @@ class SimpleImputer(Transformer):
         )
 
     def _get_columns_of_type(self, X, ww_dtype):
-        return  [
-            col
-            for col, ltype in X.ww.logical_types.items()
-            if type(ltype) == ww_dtype
+        return [
+            col for col, ltype in X.ww.logical_types.items() if type(ltype) == ww_dtype
         ]
 
     def _drop_natural_language_columns(self, X):
@@ -49,7 +47,7 @@ class SimpleImputer(Transformer):
         if natural_language_columns:
             X = X.ww.copy()
             X = X.ww.drop(columns=natural_language_columns)
-        return X
+        return X, natural_language_columns
 
     def _set_boolean_columns_to_categorical(self, X):
         boolean_null_columns = self._get_columns_of_type(X, BooleanNullable)
@@ -59,7 +57,6 @@ class SimpleImputer(Transformer):
             X = X.ww.copy()
             X.ww.set_types({col: "Categorical" for col in boolean_columns})
         return X
-
 
     def fit(self, X, y=None):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are treated as the same.
@@ -83,9 +80,11 @@ class SimpleImputer(Transformer):
         # Determine if imputer is being used with incompatible imputation strategies
         boolean_columns = self._get_columns_of_type(X, BooleanNullable)
         if self.impute_strategy in ["median", "mean"] and len(boolean_columns) > 0:
-            raise ValueError(f"Cannot use {self.impute_strategy} strategy with non-numeric data: {boolean_columns} contain boolean values and cannot be imputed with the 'median' or 'mode' strategy.")
+            raise ValueError(
+                f"Cannot use {self.impute_strategy} strategy with non-numeric data: {boolean_columns} contain boolean values and cannot be imputed with the 'median' or 'mode' strategy."
+            )
 
-        X = self._drop_natural_language_columns(X)
+        X, _ = self._drop_natural_language_columns(X)
         X = self._set_boolean_columns_to_categorical(X)
 
         # If the Dataframe only had one natural language column, do nothing.
@@ -115,12 +114,20 @@ class SimpleImputer(Transformer):
         not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         original_index = X.index
 
-        X_t = self._drop_natural_language_columns(X)
+        X_t, natural_language_columns = self._drop_natural_language_columns(X)
         if X_t.shape[-1] == 0:
             return X
 
-        X_t = self._component_obj.transform(X)
-        X_t = pd.DataFrame(X_t, columns=not_all_null_cols)
+        not_all_null_or_nat_lang_cols = [
+            col for col in not_all_null_cols if col not in natural_language_columns
+        ]
+
+        X_t = self._component_obj.transform(X_t)
+        X_t = pd.DataFrame(X_t, columns=not_all_null_or_nat_lang_cols)
+        if natural_language_columns:
+            X_t = pd.merge(
+                X_t, X[natural_language_columns], left_index=True, right_index=True
+            )
         if not_all_null_cols:
             X_t.index = original_index
         X_t.ww.init(schema=original_schema.get_subset_schema(X_t.columns))

@@ -547,7 +547,7 @@ def get_string_df():
 
 
 @pytest.mark.parametrize(
-    "X_df",
+    "data",
     [
         "integer_data",
         "float_data",
@@ -561,14 +561,14 @@ def get_string_df():
 @pytest.mark.parametrize("has_nan", ["has_nan", "no_nans"])
 @pytest.mark.parametrize("numeric_impute_strategy", ["mean", "median", "most_frequent"])
 def test_imputer_woodwork_custom_overrides_returned_by_components(
-    X_df, logical_type, has_nan, numeric_impute_strategy
+    data, logical_type, has_nan, numeric_impute_strategy
 ):
     X_df = {
         "integer_data": get_int_df,
         "float_data": get_float_df,
         "categorical_data": get_category_df,
         "boolean_data": get_bool_df,
-    }[X_df]()
+    }[data]()
     logical_type = {
         "Integer": Integer,
         "Double": Double,

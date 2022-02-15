@@ -239,7 +239,7 @@ def test_simple_imputer_fill_value(data_type):
         )
         fill_value = -1
         expected = pd.DataFrame(
-            {"some numeric": [-1, 1, 0], "another numeric": [0, -1, 2]}
+            {"some numeric": [fill_value, 1, 0], "another numeric": [0, fill_value, 2]}
         )
     else:
         X = pd.DataFrame(
@@ -382,130 +382,68 @@ def test_simple_imputer_supports_natural_language_and_categorical_constant(
         {
             "Categorical": pd.Series(["a", "b", "a", "placeholder"], dtype="category"),
             "NaturalLanguage": pd.Series(
-                ["free-form text", "will", "be imputed", "placeholder"], dtype="string"
+                ["free-form text", "will", "be imputed", pd.NA], dtype="string"
             ),
         }
     )[[data_type]]
     assert_frame_equal(expected, transformed, check_dtype=False)
 
 
-@pytest.mark.parametrize("na_type", ["python_none", "numpy_nan", "pandas_na"])
-@pytest.mark.parametrize("data_type", ["Categorical", "NaturalLanguage"])
-@pytest.mark.parametrize("imputation_mode", ["constant", "most_frequent"])
-def test_simple_imputer_support_for_natural_language_and_categorical(
-    na_type, data_type, imputation_mode
-):
-    """The intent of this test is to capture the behavior of Natural Language and
-    Categorical data passing through the SimpleImputer, specifically the supported
-    modes of 'constant' and 'most_frequent'.  The desire is to surface any errors
-    resulting from pandas introducing the pandas.NA type which fails to be
-    properly recognized and masked in sklearn."""
-
-    na_type = {"python_none": None, "numpy_nan": numpy.nan, "pandas_na": pandas.NA}[
-        na_type
-    ]
-    X = pd.DataFrame(
-        {
-            "Categorical": ["a", "b", "a", na_type],
-            "NaturalLanguage": ["free-form text", "will", "be imputed", na_type],
-        }
-    )
-    X = X[[data_type]]
-    y = pd.Series([0, 0, 1, 0, 1])
-
-    X.ww.init(logical_types={data_type: data_type})
-
-    # Verify that pandas.NA made it into the dataframe
-    if data_type == "NaturalLanguage":
-        assert isinstance(X.iloc[3][0], pd._libs.missing.NAType)
-
-    if imputation_mode == "constant":
-        imputer = SimpleImputer(impute_strategy="constant", fill_value="placeholder")
-    elif imputation_mode == "most_frequent":
-        imputer = SimpleImputer(impute_strategy="most_frequent")
-
-    imputer.fit(X, y)
-    transformed = imputer.transform(X, y)
-
-    imputation_value = {
-        "Categorical": {"constant": "placeholder", "most_frequent": "a"},
-        "NaturalLanguage": {"constant": "placeholder", "most_frequent": "a"},
-    }
-    expected = pd.DataFrame(
-        {
-            "Categorical": pd.Series(
-                ["a", "b", "a", imputation_value[data_type][imputation_mode]],
-                dtype="category",
-            ),
-            "NaturalLanguage": pd.Series(
-                [
-                    "free-form text",
-                    "will",
-                    "be imputed",
-                    imputation_value[data_type][imputation_mode],
-                ],
-                dtype="string",
-            ),
-        }
-    )[[data_type]]
-
-    # The SimpleImputer should impute categorical columns, but not NaturalLanguage.
-    if data_type == "Categorical":
-        assert_frame_equal(expected, transformed, check_dtype=False)
-    elif data_type == "NaturalLanguage":
-        assert_frame_equal(X, transformed, check_dtype=False)
-
-
 @pytest.mark.parametrize(
-    "X_df",
+    "data",
     [
-        pd.DataFrame(pd.Series([1, 2, 3], dtype="Int64")),
-        pd.DataFrame(pd.Series([1.0, 2.0, 3.0], dtype="float")),
-        pd.DataFrame(pd.Series(["a", "b", "a"], dtype="category")),
-        pd.DataFrame(pd.Series([True, False, True], dtype=bool)),
-        pd.DataFrame(
-            pd.Series(
-                ["this will be a natural language column because length", "yay", "hay"],
-                dtype="string",
-            )
-        ),
+        "integer_data",
+        "float_data",
+        "categorical_data",
+        "boolean_data",
     ],
 )
-@pytest.mark.parametrize("has_nan", [True, False])
+@pytest.mark.parametrize(
+    "logical_type", ["Integer", "Double", "Categorical", "NaturalLanguage", "Boolean"]
+)
+@pytest.mark.parametrize("has_nan", ["has_nan", "no_nans"])
 @pytest.mark.parametrize("impute_strategy", ["mean", "median"])
 def test_simple_imputer_woodwork_custom_overrides_returned_by_components(
-    X_df, has_nan, impute_strategy
+    data, logical_type, has_nan, impute_strategy
 ):
+    X_df = {
+        "integer_data": get_int_df,
+        "float_data": get_float_df,
+        "categorical_data": get_category_df,
+        "boolean_data": get_bool_df,
+    }[data]()
+    logical_type = {
+        "Integer": Integer,
+        "Double": Double,
+        "Categorical": Categorical,
+        "NaturalLanguage": NaturalLanguage,
+        "Boolean": Boolean,
+    }[logical_type]
     y = pd.Series([1, 2, 1])
-    override_types = [Integer, Double, Categorical, NaturalLanguage, Boolean]
-    for logical_type in override_types:
-        # Column with Nans to boolean used to fail. Now it doesn't
-        if has_nan and logical_type == Boolean:
-            continue
-        try:
-            X = X_df.copy()
-            if has_nan:
-                X.iloc[len(X_df) - 1, 0] = np.nan
-            X.ww.init(logical_types={0: logical_type})
-        except ww.exceptions.TypeConversionError:
-            continue
 
-        impute_strategy_to_use = impute_strategy
-        if logical_type in [NaturalLanguage, Categorical]:
-            impute_strategy_to_use = "most_frequent"
+    # Categorical -> Boolean fails in infer_feature_types
+    if data == "categorical_data" and logical_type == Boolean:
+        return
+    try:
+        X = X_df.copy()
+        if has_nan:
+            X.iloc[len(X_df) - 1, 0] = np.nan
+        X.ww.init(logical_types={0: logical_type})
+    except ww.exceptions.TypeConversionError:
+        return
 
-        imputer = SimpleImputer(impute_strategy=impute_strategy_to_use)
-        imputer.fit(X, y)
-        transformed = imputer.transform(X, y)
-        assert isinstance(transformed, pd.DataFrame)
-        if impute_strategy_to_use == "most_frequent" or not has_nan:
-            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-                0: logical_type
-            }
-        else:
-            assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-                0: Double
-            }
+    impute_strategy_to_use = impute_strategy
+    if logical_type in [NaturalLanguage, Categorical]:
+        impute_strategy_to_use = "most_frequent"
+
+    imputer = SimpleImputer(impute_strategy=impute_strategy_to_use)
+    imputer.fit(X, y)
+    transformed = imputer.transform(X, y)
+    assert isinstance(transformed, pd.DataFrame)
+
+    assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
+        0: logical_type
+    }
 
 
 def test_component_handles_pre_init_ww():
@@ -539,52 +477,30 @@ from .test_imputer import (
 )
 
 
-@pytest.mark.parametrize(
-    "data_type",
-    [
-        "IntegerNullable",
-        "Double",
-        "Categorical",
-        "BooleanNullable",
-        "NaturalLanguage",
-    ],
-)
 @pytest.mark.parametrize("has_nan", ["has_nan", "no_nans"])
 @pytest.mark.parametrize(
     "numeric_impute_strategy", ["mean", "median", "most_frequent", "constant"]
 )
-def test_simple_imputer_ignores_natural_language(
-    data_type, has_nan, numeric_impute_strategy
-):
-    X_df = {
-        "IntegerNullable": get_int_df,
-        "Double": get_float_df,
-        "Categorical": get_category_df,
-        "BooleanNullable": get_bool_df,
-        "NaturalLanguage": get_string_df,
-    }[data_type]()
+def test_simple_imputer_ignores_natural_language(has_nan, numeric_impute_strategy):
+    X_df = pd.DataFrame(
+        {
+            "NaturalLanguage": ["cats", "are", "great"],
+        }
+    )
+
+    X_df.ww.init(logical_types={"NaturalLanguage": "NaturalLanguage"})
 
     if has_nan == "has_nan":
-        X_df.iloc[-1] = None
+        X_df.iloc[-1, :] = None
+    y = pd.Series([x for x in range(X_df.shape[1])])
 
-    X_df.ww.init(logical_types={0: data_type})
-
-    y = pd.Series([0, 1, 2, 3])
-
-    imputer = SimpleImputer(impute_strategy=numeric_impute_strategy)
-
-    if numeric_impute_strategy in ["mean", "median"] and data_type in [
-        "Categorical",
-        "BooleanNullable",
-    ]:
-        with pytest.raises(ValueError, match="strategy with non-numeric data"):
-            imputer.fit(X_df, y)
+    if numeric_impute_strategy == "constant":
+        imputer = SimpleImputer(
+            impute_strategy=numeric_impute_strategy, fill_value="terrible"
+        )
     else:
-        imputer.fit(X_df, y)
-        result = imputer.transform(X_df, y)
+        imputer = SimpleImputer(impute_strategy=numeric_impute_strategy)
 
-    if data_type == "natural_language_data":
-        assert_frame_equal(result, X_df)
-
-
-
+    imputer.fit(X_df, y)
+    result = imputer.transform(X_df, y)
+    assert_frame_equal(result, X_df)
