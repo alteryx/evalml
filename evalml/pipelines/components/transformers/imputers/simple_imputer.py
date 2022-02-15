@@ -108,16 +108,9 @@ class SimpleImputer(Transformer):
         if X_t.shape[-1] == 0:
             return X
 
-        not_all_null_or_nat_lang_cols = [
-            col for col in not_all_null_cols if col not in natural_language_columns
-        ]
-
         X_t = self._component_obj.transform(X_t)
-        X_t = pd.DataFrame(X_t, columns=not_all_null_or_nat_lang_cols)
-        if natural_language_columns:
-            X_t = pd.merge(
-                X_t, X[natural_language_columns], left_index=True, right_index=True
-            )
+        X_t = pd.DataFrame(X_t, columns=not_all_null_cols)
+
         if not_all_null_cols:
             X_t.index = original_index
         X_t.ww.init(schema=original_schema.get_subset_schema(X_t.columns))

@@ -17,6 +17,7 @@ from .test_imputer import (
     get_category_df,
     get_float_df,
     get_int_df,
+    get_string_df,
 )
 
 from evalml.pipelines.components import SimpleImputer
@@ -470,13 +471,11 @@ def test_component_handles_pre_init_ww():
     "numeric_impute_strategy", ["mean", "median", "most_frequent", "constant"]
 )
 def test_simple_imputer_ignores_natural_language(has_nan, numeric_impute_strategy):
-    X_df = pd.DataFrame(
-        {
-            "NaturalLanguage": ["cats", "are", "great"],
-        }
-    )
+    """Test to ensure that the simple imputer just passes through
+    natural language columns, unchanged."""
+    X_df = get_string_df()
 
-    X_df.ww.init(logical_types={"NaturalLanguage": "NaturalLanguage"})
+    X_df.ww.init()
 
     if has_nan == "has_nan":
         X_df.iloc[-1, :] = None
