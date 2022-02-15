@@ -354,6 +354,8 @@ def _make_pipeline_time_series(
 
     if known_in_advance:
         preprocessing_components = [SelectColumns] + preprocessing_components
+        if DropNaNRowsTransformer in preprocessing_components:
+            preprocessing_components.remove(DropNaNRowsTransformer)
     else:
         preprocessing_components += [estimator]
 
@@ -376,6 +378,9 @@ def _make_pipeline_time_series(
         kina_component_graph = PipelineBase._make_component_dict_from_component_list(
             kina_preprocessing
         )
+        need_drop_nan = (
+            _get_drop_nan_rows_transformer(X, y, problem_type, estimator) != []
+        )
         # Give the known-in-advance pipeline a different name to ensure that it does not have the
         # same name as the other pipeline. Otherwise there could be a clash in the sub_pipeline_names
         # dict below for some estimators that don't have a lot of preprocessing steps, e.g ARIMA
@@ -384,7 +389,7 @@ def _make_pipeline_time_series(
         )
         pipeline = _make_pipeline_from_multiple_graphs(
             [pipeline, kina_pipeline],
-            estimator,
+            DropNaNRowsTransformer if need_drop_nan else estimator,
             problem_type,
             parameters=parameters,
             sub_pipeline_names={
@@ -392,6 +397,13 @@ def _make_pipeline_time_series(
                 pipeline.name: "Not Known In Advance",
             },
         )
+        if need_drop_nan:
+            last_component_name = pipeline.component_graph.get_last_component().name
+            pipeline.component_graph.component_dict[estimator.name] = [
+                estimator,
+                last_component_name + ".x",
+                last_component_name + ".y",
+            ]
         pipeline = pipeline.new(parameters)
     return pipeline
 
