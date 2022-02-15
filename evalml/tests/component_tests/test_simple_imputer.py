@@ -12,6 +12,13 @@ from woodwork.logical_types import (
     NaturalLanguage,
 )
 
+from .test_imputer import (
+    get_bool_df,
+    get_category_df,
+    get_float_df,
+    get_int_df,
+)
+
 from evalml.pipelines.components import SimpleImputer
 
 
@@ -459,22 +466,6 @@ def test_component_handles_pre_init_ww():
 
     assert "all_null" not in imputed.columns
     assert [x for x in imputed["part_null"]] == [0, 1, 2, 0]
-
-
-def test_sklearn_date():
-    needs_to_pass = np.array([["hello"], ["this"], ["sucks"], [pd.NA]])
-
-    missing_mask = needs_to_pass != needs_to_pass
-    print("hi")
-
-
-from .test_imputer import (
-    get_bool_df,
-    get_category_df,
-    get_float_df,
-    get_int_df,
-    get_string_df,
-)
 
 
 @pytest.mark.parametrize("has_nan", ["has_nan", "no_nans"])
