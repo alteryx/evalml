@@ -1,5 +1,6 @@
 """Logistic Regression Classifier."""
 import numpy as np
+import pandas as pd
 from sklearn.linear_model import LogisticRegression as SKLogisticRegression
 from skopt.space import Real
 
@@ -85,7 +86,7 @@ class LogisticRegressionClassifier(Estimator):
         coef_ = self._component_obj.coef_
         # binary classification case
         if len(coef_) <= 2:
-            return coef_[0]
+            return pd.Series(coef_[0])
         else:
             # multiclass classification case
-            return np.linalg.norm(coef_, axis=0, ord=2)
+            return pd.Series(np.linalg.norm(coef_, axis=0, ord=2))

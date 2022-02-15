@@ -157,4 +157,4 @@ class XGBoostClassifier(Estimator):
     @property
     def feature_importance(self):
         """Feature importance of fitted XGBoost classifier."""
-        return self._component_obj.feature_importances_
+        return pd.Series(self._component_obj.feature_importances_)
