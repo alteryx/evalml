@@ -1,4 +1,5 @@
 """Elastic Net Regressor."""
+import pandas as pd
 from sklearn.linear_model import ElasticNet as SKElasticNet
 from skopt.space import Real
 
@@ -64,4 +65,4 @@ class ElasticNetRegressor(Estimator):
     @property
     def feature_importance(self):
         """Feature importance for fitted ElasticNet regressor."""
-        return self._component_obj.coef_
+        return pd.Series(self._component_obj.coef_)
