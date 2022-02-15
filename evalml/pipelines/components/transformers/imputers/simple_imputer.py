@@ -68,20 +68,11 @@ class SimpleImputer(Transformer):
         Returns:
             self
 
-        Raises:
-            ValueError if non-numeric data is given to an imputer with "median" or "mean" strategies.
         """
         X = infer_feature_types(X)
 
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
-
-        # Determine if imputer is being used with incompatible imputation strategies
-        boolean_columns = self._get_columns_of_type(X, BooleanNullable)
-        if self.impute_strategy in ["median", "mean"] and len(boolean_columns) > 0:
-            raise ValueError(
-                f"Cannot use {self.impute_strategy} strategy with non-numeric data: {boolean_columns} contain boolean values and cannot be imputed with the 'median' or 'mode' strategy."
-            )
 
         X, _ = self._drop_natural_language_columns(X)
         X = self._set_boolean_columns_to_categorical(X)
