@@ -26,9 +26,7 @@ def test_has_minimal_deps(
     extra_deps = [_get_req_name(req.name) for req in reqs]
     extra_deps += ["plotly.graph_objects"]
     for module in extra_deps:
-        if (
-            ((module == "pmdarima" or module == "vowpalwabbit") and is_using_conda)
-        ):
+        if (module == "pmdarima" or module == "vowpalwabbit") and is_using_conda:
             with pytest.raises(ModuleNotFoundError):
                 import_module(module)
             continue
