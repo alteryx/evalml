@@ -262,6 +262,6 @@ def test_estimator_unable_to_handle_nans():
 
     with pytest.raises(
         ValueError,
-        match="`estimator_class` must be an estimator class, received <class 'str'>",
+        match="`estimator_class` must have a `model_family` attribute.",
     ):
         estimator_unable_to_handle_nans("error")

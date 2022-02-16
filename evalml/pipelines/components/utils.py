@@ -110,10 +110,8 @@ def estimator_unable_to_handle_nans(estimator_class):
     Returns:
         bool: True if estimator class is unable to process NaN values, False otherwise.
     """
-    if not isinstance(estimator_class, Estimator):
-        raise ValueError(
-            f"`estimator_class` must be an estimator class, received {type(estimator_class)}"
-        )
+    if not hasattr(estimator_class, "model_family"):
+        raise ValueError("`estimator_class` must have a `model_family` attribute.")
     return estimator_class.model_family in [
         ModelFamily.EXTRA_TREES,
         ModelFamily.RANDOM_FOREST,
