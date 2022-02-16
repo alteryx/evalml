@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 from woodwork import init_series
 
@@ -25,25 +26,29 @@ def test_drop_rows_transformer():
     assert_frame_equal(fit_transformed_X, X_expected)
 
 
-def test_drop_rows_transformer_retain_ww_schema():
+@pytest.mark.parametrize("null_value", [pd.NA, np.NaN])
+def test_drop_rows_transformer_retain_ww_schema(null_value):
     # Expecting float because of np.NaN values
     X = pd.DataFrame(
-        {"a column": [np.NaN, 2, 3, 4], "another col": ["a", np.NaN, "c", "d"]}
+        {"a column": [null_value, 2, 3, 4], "another col": ["a", null_value, "c", "d"]}
     )
     X.ww.init()
     X.ww.set_types(
-        logical_types={"another col": "PersonFullName"},
+        logical_types={"a column": "IntegerNullable", "another col": "PersonFullName"},
         semantic_tags={"a column": "custom_tag"},
     )
 
     X_expected = pd.DataFrame({"a column": [3], "another col": ["c"]}, index=[2])
-    X_expected = X_expected.astype({"a column": "float", "another col": "string"})
+    X_expected.ww.init_with_partial_schema(
+        logical_types={"a column": "IntegerNullable", "another col": "PersonFullName"},
+        semantic_tags={"a column": "custom_tag"},
+    )
     X_expected_schema = X.ww.schema
 
-    y = pd.Series([3, 2, 1, np.NaN])
+    y = pd.Series([3, 2, 1, null_value])
     y = init_series(y, logical_type="IntegerNullable", semantic_tags="y_custom_tag")
 
-    y_expected = pd.Series([True], index=[2])
+    y_expected = pd.Series([1], index=[2])
     y_expected = init_series(
         y_expected, logical_type="IntegerNullable", semantic_tags="y_custom_tag"
     )

@@ -50,6 +50,7 @@ from evalml.pipelines.components.transformers.encoders.label_encoder import (
     LabelEncoder,
 )
 from evalml.pipelines.components.utils import (
+    estimator_unable_to_handle_nans,
     get_estimators,
     handle_component_class,
 )
@@ -228,15 +229,8 @@ def _get_drop_nan_rows_transformer(
     X, y, problem_type, estimator_class, sampler_name=None
 ):
     components = []
-    needs_drop_n_rows = [
-        ModelFamily.EXTRA_TREES,
-        ModelFamily.RANDOM_FOREST,
-        ModelFamily.LINEAR_MODEL,
-        ModelFamily.DECISION_TREE,
-    ]
-    if (
-        is_time_series(problem_type)
-        and estimator_class.model_family in needs_drop_n_rows
+    if is_time_series(problem_type) and estimator_unable_to_handle_nans(
+        estimator_class
     ):
         components.append(DropNaNRowsTransformer)
     return components
@@ -378,9 +372,7 @@ def _make_pipeline_time_series(
         kina_component_graph = PipelineBase._make_component_dict_from_component_list(
             kina_preprocessing
         )
-        need_drop_nan = (
-            _get_drop_nan_rows_transformer(X, y, problem_type, estimator) != []
-        )
+        need_drop_nan = estimator_unable_to_handle_nans(estimator)
         # Give the known-in-advance pipeline a different name to ensure that it does not have the
         # same name as the other pipeline. Otherwise there could be a clash in the sub_pipeline_names
         # dict below for some estimators that don't have a lot of preprocessing steps, e.g ARIMA

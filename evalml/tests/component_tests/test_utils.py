@@ -15,6 +15,7 @@ from evalml.pipelines.components import ComponentBase, RandomForestClassifier
 from evalml.pipelines.components.utils import (
     _all_estimators,
     all_components,
+    estimator_unable_to_handle_nans,
     handle_component_class,
     make_balancing_dictionary,
     scikit_learn_wrapped_estimator,
@@ -253,3 +254,14 @@ def test_make_balancing_dictionary_errors():
 def test_make_balancing_dictionary(y, sampling_ratio, result):
     dic = make_balancing_dictionary(y, sampling_ratio)
     assert dic == result
+
+
+def test_estimator_unable_to_handle_nans():
+    test_estimator = RandomForestClassifier()
+    assert estimator_unable_to_handle_nans(test_estimator) is True
+
+    with pytest.raises(
+        ValueError,
+        match="`estimator_class` must be an estimator class, received <class 'str'>",
+    ):
+        estimator_unable_to_handle_nans("error")

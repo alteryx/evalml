@@ -26,9 +26,6 @@ class DropNaNRowsTransformer(Transformer):
 
         Returns:
             self
-
-        Raises:
-            ValueError: If indices to drop do not exist in input features or target.
         """
         return self
 

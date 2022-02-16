@@ -36,7 +36,10 @@ from evalml.pipelines.components.transformers.encoders.label_encoder import (
 from evalml.pipelines.components.transformers.imputers.per_column_imputer import (
     PerColumnImputer,
 )
-from evalml.pipelines.components.utils import handle_component_class
+from evalml.pipelines.components.utils import (
+    estimator_unable_to_handle_nans,
+    handle_component_class,
+)
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _get_preprocessing_components,
@@ -154,13 +157,7 @@ def test_make_pipeline(
             drop_nan_rows_transformer = (
                 [DropNaNRowsTransformer]
                 if is_time_series(problem_type)
-                and estimator_class.model_family
-                in [
-                    ModelFamily.EXTRA_TREES,
-                    ModelFamily.RANDOM_FOREST,
-                    ModelFamily.LINEAR_MODEL,
-                    ModelFamily.DECISION_TREE,
-                ]
+                and estimator_unable_to_handle_nans(estimator_class)
                 else []
             )
 
