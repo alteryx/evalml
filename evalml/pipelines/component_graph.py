@@ -366,6 +366,14 @@ class ComponentGraph:
         )
         return infer_feature_types(outputs.get(f"{final_component}.x"))
 
+    def _return_non_engineered_features(self, X):
+        base_features = [
+            c
+            for c in X.ww.columns
+            if X.ww[c].ww.origin == "base" or X.ww[c].ww.origin == None
+        ]
+        return X.ww[base_features]
+
     def _transform_features(
         self,
         component_list,
@@ -388,12 +396,13 @@ class ComponentGraph:
         """
         X = infer_feature_types(X)
         if not fit:
+            X = self._return_non_engineered_features(X)
             if not _schema_is_equal(X.ww.schema, self._input_types):
                 raise ValueError(
                     "Input X data types are different from the input types the pipeline was fitted on."
                 )
         else:
-            self._input_types = X.ww.schema
+            self._input_types = self._return_non_engineered_features(X).ww.schema
 
         if y is not None:
             y = infer_feature_types(y)
