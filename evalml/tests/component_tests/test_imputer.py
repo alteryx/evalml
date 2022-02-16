@@ -16,34 +16,6 @@ from woodwork.logical_types import (
 from evalml.pipelines.components import Imputer
 
 
-@pytest.fixture
-def imputer_test_data():
-    return pd.DataFrame(
-        {
-            "categorical col": pd.Series(
-                ["zero", "one", "two", "zero", "two"] * 4, dtype="category"
-            ),
-            "int col": [0, 1, 2, 0, 3] * 4,
-            "object col": ["b", "b", "a", "c", "d"] * 4,
-            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
-            "bool col": [True, False, False, True, True] * 4,
-            "categorical with nan": pd.Series(
-                [np.nan, "1", "0", "0", "3"] * 4, dtype="category"
-            ),
-            "int with nan": [np.nan, 1, 0, 0, 1] * 4,
-            "float with nan": [0.0, 1.0, np.nan, -1.0, 0.0] * 4,
-            "object with nan": ["b", "b", np.nan, "c", np.nan] * 4,
-            "bool col with nan": pd.Series(
-                [True, np.nan, False, np.nan, True] * 4, dtype="category"
-            ),
-            "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan] * 4,
-            "all nan cat": pd.Series(
-                [np.nan, np.nan, np.nan, np.nan, np.nan] * 4, dtype="category"
-            ),
-        }
-    )
-
-
 def test_invalid_strategy_parameters():
     with pytest.raises(ValueError, match="Valid impute strategies are"):
         Imputer(numeric_impute_strategy="not a valid strategy")
@@ -176,6 +148,10 @@ def test_categorical_and_numeric_input(imputer_test_data):
             ),
             "bool col with nan": pd.Series(
                 [True, True, False, True, True] * 4, dtype="category"
+            ),
+            "natural language col": pd.Series(
+                ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
+                dtype="string",
             ),
         }
     )
@@ -521,38 +497,13 @@ def test_imputer_does_not_erase_ww_info():
     mock_transform.call_args[0][0].ww.schema == df_holdout.ww[["b"]].ww.schema
 
 
-def get_int_df():
-    return pd.DataFrame(pd.Series([1, 2, 3], dtype="int64"))
-
-
-def get_float_df():
-    return pd.DataFrame(pd.Series([1.0, 2.0, 4.0], dtype="float"))
-
-
-def get_category_df():
-    return pd.DataFrame(pd.Series(["a", "b", "a"], dtype="category"))
-
-
-def get_bool_df():
-    return pd.DataFrame(pd.Series([True, False, True], dtype=bool))
-
-
-def get_string_df():
-    return pd.DataFrame(
-        pd.Series(
-            ["this will be a natural language column because length", "yay", "hay"],
-            dtype="string",
-        )
-    )
-
-
 @pytest.mark.parametrize(
     "data",
     [
-        "integer_data",
-        "float_data",
-        "categorical_data",
-        "boolean_data",
+        "int col",
+        "float col",
+        "categorical col",
+        "bool col",
     ],
 )
 @pytest.mark.parametrize(
@@ -561,14 +512,14 @@ def get_string_df():
 @pytest.mark.parametrize("has_nan", ["has_nan", "no_nans"])
 @pytest.mark.parametrize("numeric_impute_strategy", ["mean", "median", "most_frequent"])
 def test_imputer_woodwork_custom_overrides_returned_by_components(
-    data, logical_type, has_nan, numeric_impute_strategy
+    data, logical_type, has_nan, numeric_impute_strategy, imputer_test_data
 ):
     X_df = {
-        "integer_data": get_int_df,
-        "float_data": get_float_df,
-        "categorical_data": get_category_df,
-        "boolean_data": get_bool_df,
-    }[data]()
+        "int col": imputer_test_data[["int col"]],
+        "float col": imputer_test_data[["float col"]],
+        "categorical col": imputer_test_data[["categorical col"]],
+        "bool col": imputer_test_data[["bool col"]],
+    }[data]
     logical_type = {
         "Integer": Integer,
         "Double": Double,
@@ -585,7 +536,7 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
         X = X_df.copy()
         if has_nan == "has_nan":
             X.iloc[len(X_df) - 1, 0] = np.nan
-        X.ww.init(logical_types={0: logical_type})
+        X.ww.init(logical_types={data: logical_type})
     except ww.exceptions.TypeConversionError:
         return
 
@@ -595,13 +546,13 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
     assert isinstance(transformed, pd.DataFrame)
     if numeric_impute_strategy == "most_frequent":
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            0: logical_type
+            data: logical_type
         }
     elif logical_type in [Categorical, NaturalLanguage] or has_nan == "no_nans":
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            0: logical_type
+            data: logical_type
         }
     else:
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-            0: Double
+            data: Double
         }

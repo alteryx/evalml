@@ -12,14 +12,6 @@ from woodwork.logical_types import (
     NaturalLanguage,
 )
 
-from .test_imputer import (
-    get_bool_df,
-    get_category_df,
-    get_float_df,
-    get_int_df,
-    get_string_df,
-)
-
 from evalml.pipelines.components import SimpleImputer
 
 
@@ -397,10 +389,10 @@ def test_simple_imputer_supports_natural_language_and_categorical_constant(
 @pytest.mark.parametrize(
     "data",
     [
-        "integer_data",
-        "float_data",
-        "categorical_data",
-        "boolean_data",
+        "int col",
+        "float col",
+        "categorical col",
+        "bool col",
     ],
 )
 @pytest.mark.parametrize(
@@ -409,14 +401,14 @@ def test_simple_imputer_supports_natural_language_and_categorical_constant(
 @pytest.mark.parametrize("has_nan", ["has_nan", "no_nans"])
 @pytest.mark.parametrize("impute_strategy", ["mean", "median"])
 def test_simple_imputer_woodwork_custom_overrides_returned_by_components(
-    data, logical_type, has_nan, impute_strategy
+    data, logical_type, has_nan, impute_strategy, imputer_test_data
 ):
     X_df = {
-        "integer_data": get_int_df,
-        "float_data": get_float_df,
-        "categorical_data": get_category_df,
-        "boolean_data": get_bool_df,
-    }[data]()
+        "int col": imputer_test_data[["int col"]],
+        "float col": imputer_test_data[["float col"]],
+        "categorical col": imputer_test_data[["categorical col"]],
+        "bool col": imputer_test_data[["bool col"]],
+    }[data]
     logical_type = {
         "Integer": Integer,
         "Double": Double,
@@ -427,13 +419,13 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(
     y = pd.Series([1, 2, 1])
 
     # Categorical -> Boolean fails in infer_feature_types
-    if data == "categorical_data" and logical_type == Boolean:
+    if data == "categorical col" and logical_type == Boolean:
         return
     try:
         X = X_df.copy()
-        if has_nan:
+        if has_nan == "has_nan":
             X.iloc[len(X_df) - 1, 0] = np.nan
-        X.ww.init(logical_types={0: logical_type})
+        X.ww.init(logical_types={data: logical_type})
     except ww.exceptions.TypeConversionError:
         return
 
@@ -447,7 +439,7 @@ def test_simple_imputer_woodwork_custom_overrides_returned_by_components(
     assert isinstance(transformed, pd.DataFrame)
 
     assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
-        0: logical_type
+        data: logical_type
     }
 
 
@@ -470,10 +462,12 @@ def test_component_handles_pre_init_ww():
 @pytest.mark.parametrize(
     "numeric_impute_strategy", ["mean", "median", "most_frequent", "constant"]
 )
-def test_simple_imputer_ignores_natural_language(has_nan, numeric_impute_strategy):
+def test_simple_imputer_ignores_natural_language(
+    has_nan, numeric_impute_strategy, imputer_test_data
+):
     """Test to ensure that the simple imputer just passes through
     natural language columns, unchanged."""
-    X_df = get_string_df()
+    X_df = imputer_test_data[["natural language col"]]
 
     X_df.ww.init()
 
