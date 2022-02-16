@@ -1,4 +1,5 @@
 """Linear Regressor."""
+import pandas as pd
 from sklearn.linear_model import LinearRegression as SKLinearRegression
 
 from evalml.model_family import ModelFamily
@@ -56,4 +57,4 @@ class LinearRegressor(Estimator):
     @property
     def feature_importance(self):
         """Feature importance for fitted linear regressor."""
-        return self._component_obj.coef_
+        return pd.Series(self._component_obj.coef_)

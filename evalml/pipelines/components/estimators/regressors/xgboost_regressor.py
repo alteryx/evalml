@@ -1,4 +1,5 @@
 """XGBoost Regressor."""
+import pandas as pd
 from skopt.space import Integer, Real
 
 from evalml.model_family import ModelFamily
@@ -119,4 +120,4 @@ class XGBoostRegressor(Estimator):
     @property
     def feature_importance(self):
         """Feature importance of fitted XGBoost regressor."""
-        return self._component_obj.feature_importances_
+        return pd.Series(self._component_obj.feature_importances_)
