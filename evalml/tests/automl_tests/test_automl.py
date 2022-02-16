@@ -4519,7 +4519,7 @@ def test_automl_accepts_features(
         features=features,
         automl_algorithm=automl_algorithm,
     )
-    assert automl._automl_algorithm.features == features
+    assert automl.automl_algorithm.features == features
     env = AutoMLTestEnv("binary")
     with env.test_context(score_return_value={automl.objective.name: 1.0}):
         automl.search()
