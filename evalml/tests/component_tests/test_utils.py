@@ -111,14 +111,10 @@ not_supported_in_windows = set(
 )
 not_supported_in_windows_py39 = set(
     [
-        "ARIMA Regressor",
-        "Polynomial Detrender",
         "Prophet Regressor",
     ]
 )
-not_supported_in_linux_py39 = set(
-    ["ARIMA Regressor", "Polynomial Detrender", "Exponential Smoothing Regressor"]
-)
+not_supported_in_linux_py39 = set()
 
 
 def test_all_components(

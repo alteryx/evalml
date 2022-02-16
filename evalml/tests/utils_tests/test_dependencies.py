@@ -15,9 +15,7 @@ def _get_req_name(name):
 
 def test_has_minimal_deps(
     has_minimal_dependencies,
-    is_running_py_39_or_above,
     is_using_conda,
-    is_using_windows,
 ):
     reqs_path = (
         pathlib.Path(__file__).absolute().parents[3].joinpath("requirements.txt")
@@ -28,8 +26,7 @@ def test_has_minimal_deps(
     extra_deps = [_get_req_name(req.name) for req in reqs]
     extra_deps += ["plotly.graph_objects"]
     for module in extra_deps:
-        # We don't expect to install sktime in python 3.9. Let's verify it's not present:
-        if (module == "sktime" and is_running_py_39_or_above) or (
+        if (
             ((module == "pmdarima" or module == "vowpalwabbit") and is_using_conda)
         ):
             with pytest.raises(ModuleNotFoundError):
