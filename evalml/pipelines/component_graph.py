@@ -370,7 +370,7 @@ class ComponentGraph:
         base_features = [
             c
             for c in X.ww.columns
-            if X.ww[c].ww.origin == "base" or X.ww[c].ww.origin == None
+            if X.ww[c].ww.origin == "base" or X.ww[c].ww.origin is None
         ]
         return X.ww[base_features]
 
