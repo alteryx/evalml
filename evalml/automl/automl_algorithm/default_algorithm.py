@@ -97,7 +97,6 @@ class DefaultAlgorithm(AutoMLAlgorithm):
             tuner_class=None,
             random_seed=random_seed,
         )
-
         self.X = infer_feature_types(X)
         self.y = infer_feature_types(y)
         self.problem_type = problem_type
@@ -144,6 +143,11 @@ class DefaultAlgorithm(AutoMLAlgorithm):
                         "Custom hyperparameters should only contain skopt.Space variables such as Categorical, Integer,"
                         " and Real!"
                     )
+
+    @property
+    def default_max_batches(self):
+        """Returns the number of max batches AutoMLSearch should run by default."""
+        return 4 if not is_time_series(self.problem_type) else 3
 
     def _naive_estimators(self):
         if is_regression(self.problem_type):

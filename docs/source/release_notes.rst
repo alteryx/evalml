@@ -4,11 +4,14 @@
 **Future Releases**
     * Enhancements
         * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
+        * Standardized feature importance for estimators :pr:`3305`
+        * Replaced usage of private method with Woodwork's public ``get_subset_schema`` method :pr:`3325`
     * Fixes
     * Changes
         * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
     * Documentation Changes
         * Update README.md with Alteryx link (:pr:`3319`)
+        * Added formatting to the AutoML user guide to shorten result outputs :pr:`3328`
     * Testing Changes
         * Add auto approve dependency workflow schedule for every 30 mins :pr:`3312`
 
@@ -20,6 +23,7 @@
     * Enhancements
         * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
         * Added ``make_pipeline_from_data_check_output()`` utility method :pr:`3277`
+        * Updated ``AutoMLSearch`` to use ``DefaultAlgorithm`` as the default automl algorithm :pr:`3261`, :pr:`3304`
         * Added more specific data check errors to ``DatetimeFormatDataCheck`` :pr:`3288`
     * Fixes
         * Updated the binary classification pipeline's ``optimize_thresholds`` method to use Nelder-Mead :pr:`3280`
