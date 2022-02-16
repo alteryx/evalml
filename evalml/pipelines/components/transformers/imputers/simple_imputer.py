@@ -46,7 +46,7 @@ class SimpleImputer(Transformer):
         if natural_language_columns:
             X = X.ww.copy()
             X = X.ww.drop(columns=natural_language_columns)
-        return X, natural_language_columns
+        return X
 
     def _set_boolean_columns_to_categorical(self, X):
         boolean_null_columns = self._get_columns_of_type(X, BooleanNullable)
@@ -73,10 +73,10 @@ class SimpleImputer(Transformer):
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
-        X, _ = self._drop_natural_language_columns(X)
+        X = self._drop_natural_language_columns(X)
         X = self._set_boolean_columns_to_categorical(X)
 
-        # If the Dataframe only had one natural language column, do nothing.
+        # If the Dataframe only had natural language columns, do nothing.
         if X.shape[1] == 0:
             return self
 
@@ -103,7 +103,7 @@ class SimpleImputer(Transformer):
         not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         original_index = X.index
 
-        X_t, natural_language_columns = self._drop_natural_language_columns(X)
+        X_t = self._drop_natural_language_columns(X)
         if X_t.shape[-1] == 0:
             return X
 

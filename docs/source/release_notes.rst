@@ -9,6 +9,7 @@
     * Fixes
     * Changes
         * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
+        * Changed SimpleImputer to ignore Natural Language columns :pr:`3324`
         * Added drop NaN component to some time series pipelines :pr:`3310`
     * Documentation Changes
         * Update README.md with Alteryx link (:pr:`3319`)
