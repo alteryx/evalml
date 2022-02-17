@@ -58,21 +58,6 @@ class SimpleImputer(Transformer):
             X.ww.set_types({col: "Categorical" for col in boolean_columns})
         return X
 
-    def _raise_with_nat_lang_and_other_imputable_types(self, X):
-        """Function to detect the presence of natural language features with other imputable features
-        in data when a 'constant' strategy is requested, as it is currently ambiguous to specify a single
-        fill value for multiply typed columns, e.g. natural language & integer."""
-        unique_logical_types = set(
-            [x.type_string for x in list(X.ww.logical_types.values())]
-        )
-        if (
-            len(unique_logical_types) > 1
-            and self.impute_strategy == "constant"
-            and "naturallanguage" in unique_logical_types
-        ):
-            raise ValueError(
-                "SimpleImputer received data with multiple logical types, but 'constant' imputation strategy."
-            )
 
     def fit(self, X, y=None):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are treated as the same.
@@ -95,8 +80,6 @@ class SimpleImputer(Transformer):
 
         X, _ = self._drop_natural_language_columns(X)
         X = self._set_boolean_columns_to_categorical(X)
-
-        # self._raise_with_nat_lang_and_other_imputable_types(X)
 
         # If the Dataframe only had natural language columns, do nothing.
         if X.shape[1] == 0:
