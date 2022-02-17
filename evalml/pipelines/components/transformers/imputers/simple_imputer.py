@@ -1,5 +1,6 @@
 """Component that imputes missing data according to a specified imputation strategy."""
 import pandas as pd
+import woodwork
 from sklearn.impute import SimpleImputer as SkImputer
 
 from evalml.pipelines.components.transformers import Transformer
@@ -109,16 +110,14 @@ class SimpleImputer(Transformer):
 
         X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
+        X_t.ww.init(schema=original_schema.get_subset_schema(X_t.columns))
 
         # Add back in natural language columns, unchanged
         if len(natural_language_cols) > 0:
-            X_t = pd.merge(
-                X_t, X[natural_language_cols], left_index=True, right_index=True
-            )
+            X_t = woodwork.concat_columns([X_t, X[natural_language_cols]])
 
         if not_all_null_or_natural_language_cols:
             X_t.index = original_index
-        X_t.ww.init(schema=original_schema.get_subset_schema(X_t.columns))
 
         return X_t
 
