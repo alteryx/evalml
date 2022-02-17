@@ -476,7 +476,6 @@ def test_simple_imputer_ignores_natural_language(
         X_df = imputer_test_data[["int col", "float col", "natural language col"]]
         X_df.ww.init()
 
-
     if has_nan == "has_nan":
         X_df.iloc[-1, :] = None
         X_df.ww.init()
@@ -497,7 +496,11 @@ def test_simple_imputer_ignores_natural_language(
             return
         else:
             raise ve
-            raise(Exception("Multiple logical types provided to SimpleImputer, but no Exception was raised."))
+            raise (
+                Exception(
+                    "Multiple logical types provided to SimpleImputer, but no Exception was raised."
+                )
+            )
 
     result = imputer.transform(X_df, y)
 
@@ -514,10 +517,9 @@ def test_simple_imputer_ignores_natural_language(
         elif numeric_impute_strategy == "constant" and has_nan == "has_nan":
             X_df.iloc[-1, 0:2] = fill_value
         elif numeric_impute_strategy == "most_frequent" and has_nan == "has_nan":
-            ans = X_df.mode().iloc[0,:]
+            ans = X_df.mode().iloc[0, :]
             ans["natural language col"] = pd.NA
             X_df.iloc[-1, :] = ans
         assert_frame_equal(result, X_df)
     elif df_composition == "single_column":
         assert_frame_equal(result, X_df)
-

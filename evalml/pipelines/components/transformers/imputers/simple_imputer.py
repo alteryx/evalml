@@ -77,13 +77,20 @@ class SimpleImputer(Transformer):
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
-        X, _  = self._drop_natural_language_columns(X)
-        X= self._set_boolean_columns_to_categorical(X)
+        X, _ = self._drop_natural_language_columns(X)
+        X = self._set_boolean_columns_to_categorical(X)
 
-        unique_logical_types = set([x.type_string for x in list(X.ww.logical_types.values())])
-        if len(unique_logical_types) > 1 and self.impute_strategy == "constant":
+        unique_logical_types = set(
+            [x.type_string for x in list(X.ww.logical_types.values())]
+        )
+        if (
+            len(unique_logical_types) > 1
+            and self.impute_strategy == "constant"
+            and "naturallanguage" in unique_logical_types
+        ):
             raise ValueError(
-                "SimpleImputer received data with multiple logical types, but 'constant' imputation strategy.")
+                "SimpleImputer received data with multiple logical types, but 'constant' imputation strategy."
+            )
 
         # If the Dataframe only had natural language columns, do nothing.
         if X.shape[1] == 0:
@@ -116,14 +123,18 @@ class SimpleImputer(Transformer):
         X_t, natural_language_cols = self._drop_natural_language_columns(X)
         if X_t.shape[-1] == 0:
             return X
-        not_all_null_or_natural_language_cols = [col for col in not_all_null_cols if col not in natural_language_cols]
+        not_all_null_or_natural_language_cols = [
+            col for col in not_all_null_cols if col not in natural_language_cols
+        ]
 
         X_t = self._component_obj.transform(X_t)
         X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
 
-        #Add back in natural language columns, unchanged
+        # Add back in natural language columns, unchanged
         if len(natural_language_cols) > 0:
-            X_t = pd.merge(X_t, X[natural_language_cols], left_index=True, right_index=True)
+            X_t = pd.merge(
+                X_t, X[natural_language_cols], left_index=True, right_index=True
+            )
 
         if not_all_null_or_natural_language_cols:
             X_t.index = original_index
