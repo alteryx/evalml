@@ -1,7 +1,6 @@
 """Component that imputes missing data according to a specified imputation strategy."""
 import pandas as pd
 from sklearn.impute import SimpleImputer as SkImputer
-from woodwork.logical_types import Boolean, BooleanNullable, NaturalLanguage
 
 from evalml.pipelines.components.transformers import Transformer
 from evalml.utils import infer_feature_types
