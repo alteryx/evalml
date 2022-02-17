@@ -58,7 +58,6 @@ class SimpleImputer(Transformer):
             X.ww.set_types({col: "Categorical" for col in boolean_columns})
         return X
 
-
     def fit(self, X, y=None):
         """Fits imputer to data. 'None' values are converted to np.nan before imputation and are treated as the same.
 
