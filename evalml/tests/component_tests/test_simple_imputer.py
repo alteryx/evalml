@@ -489,23 +489,11 @@ def test_simple_imputer_ignores_natural_language(
     else:
         imputer = SimpleImputer(impute_strategy=numeric_impute_strategy)
 
-    try:
-        imputer.fit(X_df, y)
-    except ValueError as ve:
-        if "received data with multiple logical types" in str(ve):
-            return
-        else:
-            raise ve
-            raise (
-                Exception(
-                    "Multiple logical types provided to SimpleImputer, but no Exception was raised."
-                )
-            )
+    imputer.fit(X_df, y)
 
     result = imputer.transform(X_df, y)
 
     if df_composition == "full_df":
-        # assert_frame_equal(result[:-1], X_df[:-1])
         if numeric_impute_strategy == "mean" and has_nan == "has_nan":
             ans = X_df.mean()
             ans["natural language col"] = pd.NA
