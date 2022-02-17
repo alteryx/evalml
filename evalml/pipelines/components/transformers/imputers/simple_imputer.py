@@ -26,7 +26,6 @@ class SimpleImputer(Transformer):
     def __init__(
         self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs
     ):
-        self.impute_strategy = impute_strategy
         parameters = {"impute_strategy": impute_strategy, "fill_value": fill_value}
         parameters.update(kwargs)
         imputer = SkImputer(strategy=impute_strategy, fill_value=fill_value, **kwargs)
@@ -64,10 +63,6 @@ class SimpleImputer(Transformer):
 
         Returns:
             self
-
-        Raises:
-            ValueError: if data to impute has numeric and categorical data within and a constant
-                imputation strategy is requested.
         """
         X = infer_feature_types(X)
 
