@@ -1,4 +1,6 @@
 """Data check that checks if the target or any of the features have no variance."""
+import pandas as pd
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckActionCode,
@@ -23,12 +25,12 @@ class NoVarianceDataCheck(DataCheck):
     def __init__(self, count_nan_as_value=False):
         self._dropnan = not count_nan_as_value
 
-    def validate(self, X, y):
+    def validate(self, X, y=None):
         """Check if the target or any of the features have no variance (1 unique value).
 
         Args:
             X (pd.DataFrame, np.ndarray): The input features.
-            y (pd.Series, np.ndarray): The target data.
+            y (pd.Series, np.ndarray): Optional, the target data.
 
         Returns:
             dict: A dict of warnings/errors corresponding to features or target with no variance.
@@ -153,7 +155,10 @@ class NoVarianceDataCheck(DataCheck):
         messages = []
 
         X = infer_feature_types(X)
-        y = infer_feature_types(y)
+        if y is not None:
+            y = infer_feature_types(y)
+        else:
+            y = infer_feature_types(pd.Series([1, 2]))
 
         unique_counts = X.nunique(dropna=self._dropnan).to_dict()
         any_nulls = (X.isnull().any()).to_dict()
