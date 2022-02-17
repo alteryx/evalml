@@ -292,6 +292,7 @@ def train_and_score_pipeline(
             evaluation_entry["binary_classification_threshold"] = cv_pipeline.threshold
         cv_data.append(evaluation_entry)
     training_time = time.time() - start
+    print("training time is {}".format(training_time))
     cv_scores = pd.Series([fold["mean_cv_score"] for fold in cv_data])
     cv_score_mean = cv_scores.mean()
     logger.info(
