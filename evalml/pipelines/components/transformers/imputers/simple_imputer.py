@@ -36,23 +36,21 @@ class SimpleImputer(Transformer):
             parameters=parameters, component_obj=imputer, random_seed=random_seed
         )
 
-    def _get_columns_of_type(self, X, ww_dtype):
-        return [
-            col for col, ltype in X.ww.logical_types.items() if type(ltype) == ww_dtype
-        ]
-
     def _drop_natural_language_columns(self, X):
-        # Not using select because we just need column names, not a new dataframe
-        natural_language_columns = self._get_columns_of_type(X, NaturalLanguage)
+        natural_language_columns = list(
+            X.ww.select(["NaturalLanguage"], return_schema=True).columns.keys()
+        )
         if natural_language_columns:
             X = X.ww.copy()
             X = X.ww.drop(columns=natural_language_columns)
         return X, natural_language_columns
 
     def _set_boolean_columns_to_categorical(self, X):
-        boolean_null_columns = self._get_columns_of_type(X, BooleanNullable)
-        boolean_columns = self._get_columns_of_type(X, Boolean)
-        boolean_columns += boolean_null_columns
+        boolean_columns = list(
+            X.ww.select(
+                ["Boolean", "BooleanNullable"], return_schema=True
+            ).columns.keys()
+        )
         if boolean_columns:
             X = X.ww.copy()
             X.ww.set_types({col: "Categorical" for col in boolean_columns})
