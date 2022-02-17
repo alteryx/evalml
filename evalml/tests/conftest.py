@@ -921,11 +921,28 @@ def time_series_regression_pipeline_class():
     class TSRegressionPipeline(TimeSeriesRegressionPipeline):
         """Random Forest Regression Pipeline for time series regression problems."""
 
-        component_graph = [
-            "Time Series Featurizer",
-            "DateTime Featurizer",
-            "Random Forest Regressor",
-        ]
+        component_graph = {
+            "Time Series Featurizer": [
+                "Time Series Featurizer",
+                "X",
+                "y",
+            ],
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
+                "Time Series Featurizer.x",
+                "y",
+            ],
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
+                "DateTime Featurizer.x",
+                "y",
+            ],
+            "Random Forest Regressor": [
+                "Random Forest Regressor",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
+            ],
+        }
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
@@ -949,10 +966,15 @@ def time_series_classification_component_graph():
             "Time Series Featurizer.x",
             "Label Encoder.y",
         ],
-        "Logistic Regression Classifier": [
-            "Logistic Regression Classifier",
+        "Drop NaN Rows Transformer": [
+            "Drop NaN Rows Transformer",
             "DateTime Featurizer.x",
             "Label Encoder.y",
+        ],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            "Drop NaN Rows Transformer.x",
+            "Drop NaN Rows Transformer.y",
         ],
     }
     return component_graph

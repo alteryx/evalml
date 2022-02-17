@@ -24,6 +24,7 @@ from evalml.pipelines.components import (  # noqa: F401
     ComponentBase,
     DateTimeFeaturizer,
     DropColumns,
+    DropNaNRowsTransformer,
     DropNullColumns,
     DropRowsTransformer,
     EmailFeaturizer,
@@ -49,6 +50,7 @@ from evalml.pipelines.components.transformers.encoders.label_encoder import (
     LabelEncoder,
 )
 from evalml.pipelines.components.utils import (
+    estimator_unable_to_handle_nans,
     get_estimators,
     handle_component_class,
 )
@@ -223,6 +225,17 @@ def _get_time_series_featurizer(X, y, problem_type, estimator_class, sampler_nam
     return components
 
 
+def _get_drop_nan_rows_transformer(
+    X, y, problem_type, estimator_class, sampler_name=None
+):
+    components = []
+    if is_time_series(problem_type) and estimator_unable_to_handle_nans(
+        estimator_class
+    ):
+        components.append(DropNaNRowsTransformer)
+    return components
+
+
 def _get_preprocessing_components(
     X, y, problem_type, estimator_class, sampler_name=None
 ):
@@ -252,6 +265,7 @@ def _get_preprocessing_components(
             _get_ohe,
             _get_sampler,
             _get_standard_scaler,
+            _get_drop_nan_rows_transformer,
         ]
     else:
         components_functions = [
@@ -334,6 +348,8 @@ def _make_pipeline_time_series(
 
     if known_in_advance:
         preprocessing_components = [SelectColumns] + preprocessing_components
+        if DropNaNRowsTransformer in preprocessing_components:
+            preprocessing_components.remove(DropNaNRowsTransformer)
     else:
         preprocessing_components += [estimator]
 
@@ -356,6 +372,7 @@ def _make_pipeline_time_series(
         kina_component_graph = PipelineBase._make_component_dict_from_component_list(
             kina_preprocessing
         )
+        need_drop_nan = estimator_unable_to_handle_nans(estimator)
         # Give the known-in-advance pipeline a different name to ensure that it does not have the
         # same name as the other pipeline. Otherwise there could be a clash in the sub_pipeline_names
         # dict below for some estimators that don't have a lot of preprocessing steps, e.g ARIMA
@@ -364,7 +381,7 @@ def _make_pipeline_time_series(
         )
         pipeline = _make_pipeline_from_multiple_graphs(
             [pipeline, kina_pipeline],
-            estimator,
+            DropNaNRowsTransformer if need_drop_nan else estimator,
             problem_type,
             parameters=parameters,
             sub_pipeline_names={
@@ -372,6 +389,13 @@ def _make_pipeline_time_series(
                 pipeline.name: "Not Known In Advance",
             },
         )
+        if need_drop_nan:
+            last_component_name = pipeline.component_graph.get_last_component().name
+            pipeline.component_graph.component_dict[estimator.name] = [
+                estimator,
+                last_component_name + ".x",
+                last_component_name + ".y",
+            ]
         pipeline = pipeline.new(parameters)
     return pipeline
 
