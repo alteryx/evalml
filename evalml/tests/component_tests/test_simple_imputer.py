@@ -3,6 +3,7 @@ import pandas
 import pandas as pd
 import pytest
 import woodwork as ww
+import woodwork.exceptions
 from pandas.testing import assert_frame_equal
 from woodwork.logical_types import (
     Boolean,
@@ -458,30 +459,65 @@ def test_component_handles_pre_init_ww():
     assert [x for x in imputed["part_null"]] == [0, 1, 2, 0]
 
 
+@pytest.mark.parametrize("df_composition", ["full_df", "single_column"])
 @pytest.mark.parametrize("has_nan", ["has_nan", "no_nans"])
 @pytest.mark.parametrize(
     "numeric_impute_strategy", ["mean", "median", "most_frequent", "constant"]
 )
 def test_simple_imputer_ignores_natural_language(
-    has_nan, numeric_impute_strategy, imputer_test_data
+    has_nan, numeric_impute_strategy, imputer_test_data, df_composition
 ):
     """Test to ensure that the simple imputer just passes through
     natural language columns, unchanged."""
-    X_df = imputer_test_data[["natural language col"]]
+    if df_composition == "single_column":
+        X_df = imputer_test_data[["natural language col"]]
+        X_df.ww.init()
+    elif df_composition == "full_df":
+        X_df = imputer_test_data[["int col", "float col", "natural language col"]]
+        X_df.ww.init()
 
-    X_df.ww.init()
 
     if has_nan == "has_nan":
         X_df.iloc[-1, :] = None
+        X_df.ww.init()
     y = pd.Series([x for x in range(X_df.shape[1])])
 
     if numeric_impute_strategy == "constant":
+        fill_value = 1
         imputer = SimpleImputer(
-            impute_strategy=numeric_impute_strategy, fill_value="terrible"
+            impute_strategy=numeric_impute_strategy, fill_value=fill_value
         )
     else:
         imputer = SimpleImputer(impute_strategy=numeric_impute_strategy)
 
-    imputer.fit(X_df, y)
+    try:
+        imputer.fit(X_df, y)
+    except ValueError as ve:
+        if "received data with multiple logical types" in str(ve):
+            return
+        else:
+            raise ve
+            raise(Exception("Multiple logical types provided to SimpleImputer, but no Exception was raised."))
+
     result = imputer.transform(X_df, y)
-    assert_frame_equal(result, X_df)
+
+    if df_composition == "full_df":
+        # assert_frame_equal(result[:-1], X_df[:-1])
+        if numeric_impute_strategy == "mean" and has_nan == "has_nan":
+            ans = X_df.mean()
+            ans["natural language col"] = pd.NA
+            X_df.iloc[-1, :] = ans
+        elif numeric_impute_strategy == "median" and has_nan == "has_nan":
+            ans = X_df.median()
+            ans["natural language col"] = pd.NA
+            X_df.iloc[-1, :] = ans
+        elif numeric_impute_strategy == "constant" and has_nan == "has_nan":
+            X_df.iloc[-1, 0:2] = fill_value
+        elif numeric_impute_strategy == "most_frequent" and has_nan == "has_nan":
+            ans = X_df.mode().iloc[0,:]
+            ans["natural language col"] = pd.NA
+            X_df.iloc[-1, :] = ans
+        assert_frame_equal(result, X_df)
+    elif df_composition == "single_column":
+        assert_frame_equal(result, X_df)
+

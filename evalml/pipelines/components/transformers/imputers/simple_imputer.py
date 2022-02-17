@@ -27,6 +27,7 @@ class SimpleImputer(Transformer):
     def __init__(
         self, impute_strategy="most_frequent", fill_value=None, random_seed=0, **kwargs
     ):
+        self.impute_strategy = impute_strategy
         parameters = {"impute_strategy": impute_strategy, "fill_value": fill_value}
         parameters.update(kwargs)
         imputer = SkImputer(strategy=impute_strategy, fill_value=fill_value, **kwargs)
@@ -46,7 +47,7 @@ class SimpleImputer(Transformer):
         if natural_language_columns:
             X = X.ww.copy()
             X = X.ww.drop(columns=natural_language_columns)
-        return X
+        return X, natural_language_columns
 
     def _set_boolean_columns_to_categorical(self, X):
         boolean_null_columns = self._get_columns_of_type(X, BooleanNullable)
@@ -67,14 +68,22 @@ class SimpleImputer(Transformer):
         Returns:
             self
 
+        Raises:
+            ValueError: if data to impute has numeric and categorical data within and a constant
+                imputation strategy is requested.
         """
         X = infer_feature_types(X)
 
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
 
-        X = self._drop_natural_language_columns(X)
-        X = self._set_boolean_columns_to_categorical(X)
+        X, _  = self._drop_natural_language_columns(X)
+        X= self._set_boolean_columns_to_categorical(X)
+
+        unique_logical_types = set([x.type_string for x in list(X.ww.logical_types.values())])
+        if len(unique_logical_types) > 1 and self.impute_strategy == "constant":
+            raise ValueError(
+                "SimpleImputer received data with multiple logical types, but 'constant' imputation strategy.")
 
         # If the Dataframe only had natural language columns, do nothing.
         if X.shape[1] == 0:
@@ -103,14 +112,20 @@ class SimpleImputer(Transformer):
         not_all_null_cols = [col for col in X.columns if col not in self._all_null_cols]
         original_index = X.index
 
-        X_t = self._drop_natural_language_columns(X)
+        # Drop natural language columns and transform the other columns
+        X_t, natural_language_cols = self._drop_natural_language_columns(X)
         if X_t.shape[-1] == 0:
             return X
+        not_all_null_or_natural_language_cols = [col for col in not_all_null_cols if col not in natural_language_cols]
 
         X_t = self._component_obj.transform(X_t)
-        X_t = pd.DataFrame(X_t, columns=not_all_null_cols)
+        X_t = pd.DataFrame(X_t, columns=not_all_null_or_natural_language_cols)
 
-        if not_all_null_cols:
+        #Add back in natural language columns, unchanged
+        if len(natural_language_cols) > 0:
+            X_t = pd.merge(X_t, X[natural_language_cols], left_index=True, right_index=True)
+
+        if not_all_null_or_natural_language_cols:
             X_t.index = original_index
         X_t.ww.init(schema=original_schema.get_subset_schema(X_t.columns))
 
