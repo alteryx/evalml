@@ -28,10 +28,6 @@
     * Testing Changes
         * Add auto approve dependency workflow schedule for every 30 mins :pr:`3312`
 
-.. warning::
-
-    **Breaking Changes**
-
 **v0.44.0 Feb. 04, 2022**
     * Enhancements
         * Updated ``DefaultAlgorithm`` to also limit estimator usage for long-running multiclass problems :pr:`3099`
