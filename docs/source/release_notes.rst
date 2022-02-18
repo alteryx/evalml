@@ -3,6 +3,17 @@
 
 **Future Releases**
     * Enhancements
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.45.0 Feb. 17, 2022**
+    * Enhancements
         * Added support for pandas >= 1.4.0 :pr:`3324`
         * Standardized feature importance for estimators :pr:`3305`
         * Replaced usage of private method with Woodwork's public ``get_subset_schema`` method :pr:`3325`
@@ -16,10 +27,6 @@
         * Added formatting to the AutoML user guide to shorten result outputs :pr:`3328`
     * Testing Changes
         * Add auto approve dependency workflow schedule for every 30 mins :pr:`3312`
-
-.. warning::
-
-    **Breaking Changes**
 
 **v0.44.0 Feb. 04, 2022**
     * Enhancements
