@@ -4,11 +4,14 @@
 **Future Releases**
     * Enhancements
         * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
+        * Added support for pandas >= 1.4.0 :pr:`3324`
         * Standardized feature importance for estimators :pr:`3305`
         * Replaced usage of private method with Woodwork's public ``get_subset_schema`` method :pr:`3325`
     * Fixes
     * Changes
         * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
+        * Changed SimpleImputer to ignore Natural Language columns :pr:`3324`
+        * Added drop NaN component to some time series pipelines :pr:`3310`
     * Documentation Changes
         * Update README.md with Alteryx link (:pr:`3319`)
         * Added formatting to the AutoML user guide to shorten result outputs :pr:`3328`

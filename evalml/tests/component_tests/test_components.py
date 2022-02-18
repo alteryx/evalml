@@ -28,6 +28,7 @@ from evalml.pipelines.components import (
     DateTimeFeaturizer,
     DFSTransformer,
     DropColumns,
+    DropNaNRowsTransformer,
     DropNullColumns,
     DropRowsTransformer,
     ElasticNetClassifier,
@@ -1640,7 +1641,12 @@ def test_component_modifies_feature_or_target():
             issubclass(component_class, BaseSampler)
             or hasattr(component_class, "inverse_transform")
             or component_class
-            in [TargetImputer, DropRowsTransformer, ReplaceNullableTypes]
+            in [
+                TargetImputer,
+                DropRowsTransformer,
+                DropNaNRowsTransformer,
+                ReplaceNullableTypes,
+            ]
         ):
             assert component_class.modifies_target
         else:
@@ -1659,7 +1665,12 @@ def test_component_parameters_supported_by_list_API():
             issubclass(component_class, BaseSampler)
             or hasattr(component_class, "inverse_transform")
             or component_class
-            in [TargetImputer, DropRowsTransformer, ReplaceNullableTypes]
+            in [
+                TargetImputer,
+                DropRowsTransformer,
+                DropNaNRowsTransformer,
+                ReplaceNullableTypes,
+            ]
         ):
             assert not component_class._supported_by_list_API
         else:
