@@ -2,7 +2,7 @@
 import woodwork as ww
 
 import evalml
-from evalml.preprocessing import load_data
+from evalml.utils.file_utils import load_data
 
 
 def load_breast_cancer():

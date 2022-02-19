@@ -1,6 +1,6 @@
 """Load the credit card fraud dataset, which can be used for binary classification problems."""
 import evalml
-from evalml.preprocessing import load_data
+from evalml.utils.file_utils import load_data
 
 
 def load_fraud(n_rows=None, verbose=True):

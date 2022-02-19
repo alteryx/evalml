@@ -35,7 +35,7 @@ from evalml.pipelines.components.ensemble.stacked_ensemble_base import (
     _nonstackable_model_families,
 )
 from evalml.pipelines.components.utils import _all_estimators
-from evalml.preprocessing import load_data
+from evalml.utils.file_utils import load_data
 from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
