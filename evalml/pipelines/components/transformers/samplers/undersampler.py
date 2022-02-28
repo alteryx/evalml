@@ -168,7 +168,7 @@ class Undersampler(BaseSampler):
             )
 
         y = infer_feature_types(y)
-        self.random_state = np.random.RandomState(self.random_seed)
+        random_state = np.random.RandomState(self.random_seed)
         if len(self.sampling_ratio_dict):
             result = self._sampling_dict_to_remove_dict(y)
         else:
@@ -178,7 +178,7 @@ class Undersampler(BaseSampler):
             # iterate through the classes we need to undersample and remove the number of samples we need to remove
             for key, value in result.items():
                 indices = y.index[y == key].values
-                indices_to_remove = self.random_state.choice(
+                indices_to_remove = random_state.choice(
                     indices, value, replace=False
                 )
                 indices_to_drop.extend(indices_to_remove)
