@@ -30,6 +30,7 @@ class ComponentGraph:
 
     Args:
         component_dict (dict): A dictionary which specifies the components and edges between components that should be used to create the component graph. Defaults to None.
+        cached_data (dict): A dictionary of cached data, where the keys are the model family. Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Examples:
@@ -407,7 +408,7 @@ class ComponentGraph:
 
         output_cache = {}
         for component_name in component_list:
-            component_instance = self._get_stacked_ensemble_component(
+            component_instance = self._get_relevant_component(
                 hashes, component_name, fit
             )
             if not isinstance(component_instance, ComponentBase):
@@ -420,10 +421,10 @@ class ComponentGraph:
             self.input_feature_names.update({component_name: list(x_inputs.columns)})
             if isinstance(component_instance, Transformer):
                 if fit:
-                    if not component_instance._is_fitted or self.cached_data is None:
-                        output = component_instance.fit_transform(x_inputs, y_input)
-                    else:
+                    if component_instance._is_fitted and self.cached_data is not None:
                         output = component_instance.transform(x_inputs, y_input)
+                    else:
+                        output = component_instance.fit_transform(x_inputs, y_input)
                 elif (
                     component_instance.training_only
                     and evaluate_training_only_components is False
@@ -470,7 +471,8 @@ class ComponentGraph:
 
         return output_cache
 
-    def _get_stacked_ensemble_component(self, hashes, component_name, fit):
+    def _get_relevant_component(self, hashes, component_name, fit):
+        """Gets either the stacked ensemble component or the component from component_instances."""
         component_instance = self.get_component(component_name)
         if self.cached_data is not None and fit:
             try:

@@ -200,7 +200,6 @@ def test_train_and_score_pipelines_cache(
     dummy_classifier_estimator_class,
     dummy_binary_pipeline,
     X_y_binary,
-    caplog,
 ):
     X, y = X_y_binary
     X = pd.DataFrame(X)

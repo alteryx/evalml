@@ -253,7 +253,6 @@ def train_and_score_pipeline(
                     schema=False,
                     get_hashes=False,
                 )
-                hashes = hash_dict[i]
             else:
                 cv_pipeline, hashes = train_pipeline(
                     pipeline,
@@ -285,7 +284,9 @@ def train_and_score_pipeline(
                 f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
             )
             score = scores[automl_config.objective.name]
-            pipeline_cache[hashes] = cv_pipeline.component_graph.component_instances
+            pipeline_cache[
+                hash_dict[i]
+            ] = cv_pipeline.component_graph.component_instances
         except Exception as e:
             if automl_config.error_callback is not None:
                 automl_config.error_callback(
