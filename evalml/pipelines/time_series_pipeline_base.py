@@ -4,7 +4,7 @@ import woodwork as ww
 
 from evalml.pipelines import PipelineBase
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
-from evalml.utils import drop_rows_with_nans, infer_feature_types
+from evalml.utils import infer_feature_types
 from evalml.utils.gen_utils import are_datasets_separated_by_gap_time_index
 
 
@@ -203,18 +203,6 @@ class TimeSeriesPipelineBase(PipelineBase, metaclass=PipelineBaseMeta):
         return self.predict_in_sample(
             X, y_holdout, X_train, y_train, objective=objective
         )
-
-    def _fit(self, X, y):
-        self.input_target_name = y.name
-        X_t, y_t = self.component_graph.fit_and_transform_all_but_final(X, y)
-        X_t, y_shifted = drop_rows_with_nans(X_t, y_t)
-
-        if self.estimator is not None:
-            self.estimator.fit(X_t, y_shifted)
-        else:
-            self.component_graph.get_last_component().fit(X_t, y_shifted)
-
-        self.input_feature_names = self.component_graph.input_feature_names
 
     def _estimator_predict(self, features):
         """Get estimator predictions.
