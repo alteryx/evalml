@@ -178,9 +178,7 @@ class Undersampler(BaseSampler):
             # iterate through the classes we need to undersample and remove the number of samples we need to remove
             for key, value in result.items():
                 indices = y.index[y == key].values
-                indices_to_remove = random_state.choice(
-                    indices, value, replace=False
-                )
+                indices_to_remove = random_state.choice(indices, value, replace=False)
                 indices_to_drop.extend(indices_to_remove)
         # indices of the y series
         original_indices = list(set(y.index.values).difference(set(indices_to_drop)))
