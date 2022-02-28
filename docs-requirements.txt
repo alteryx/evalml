@@ -5,3 +5,7 @@ Sphinx>=2.0.1,<4.0.0
 nbconvert>=5.5.0
 nbsphinx>=0.8.5
 sphinx-autoapi
+sphinx-inline-tabs==2021.3.28b7; python_version == '3.7'
+sphinx-inline-tabs==2022.1.2b11; python_version >= '3.8'
+sphinx-copybutton==0.4.0
+myst-parser==0.16.1
