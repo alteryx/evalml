@@ -30,32 +30,58 @@ $ conda install -c conda-forge evalml
 ````
 
 
-## Pip with core dependencies
+## EvalML with core dependencies only
 
 EvalML includes several optional dependencies. The `xgboost` and `catboost` packages support pipelines built around those modeling libraries. The `plotly` and `ipywidgets` packages support plotting functionality in automl searches. These dependencies are recommended, and are included with EvalML by default but are not required in order to install and use EvalML.
 
 EvalML's core dependencies are listed in `core-requirements.txt` in the source code, and optional requirements are isted in `requirements.txt`.
 
-To install EvalML with only the core required dependencies, download the EvalML source [from pypi](https://pypi.org/project/evalml/#files) to access the requirements files. Then run the following:
+To install EvalML with only the core-required dependencies with pypi, first download the EvalML source [from pypi](https://pypi.org/project/evalml/#files) to access the requirements files before running the following command. For conda-forge, just run the following command:
 
-```bash
-pip install evalml --no-dependencies
-pip install -r core-requirements.txt
+````{tab} PyPI
+```console
+$ pip install evalml --no-dependencies
+$ pip install -r core-requirements.txt
 ```
+````
 
-### Add-ons
-You can install add-ons individually or all at once by running:
-```bash
-pip install evalml[complete]
+````{tab} Conda
+```console
+$ conda install -c conda-forge evalml-core
 ```
+````
 
-## Conda with core dependencies 
 
-To install evalml with only core dependencies run the following command:
+## Add-ons
 
-```bash
-conda install -c conda-forge evalml-core
+EvalML allows users to install add-ons individually or all at once:
+
+
+````{tab} PyPI
+```{tab} All Add-ons
+```console
+$ pip install evalml[complete]
 ```
+```{tab} Time Series Support
+```console
+$ pip install evalml[prophet]
+```
+```{tab} Update Checker
+```console
+$ pip install evalml[update_checker]
+```
+````
+````{tab} Conda
+```{tab} Update Checker
+```console
+$ conda install -c conda-forge alteryx-open-src-update-checker
+```
+````
+
+
+- **Update Checker**: Receive automatic notifications of new EvalML releases
+- **Time Series**: Use EvalML with Facebook's Prophet library for time series support.
+
 
 
 ## Time Series support with Facebook's Prophet 
@@ -77,23 +103,24 @@ If the `site-packages` path is incorrect or you'd like to specify a different on
 
 If you'd like to have more fine-tuned control over the installation steps for Prophet, such as specifying the backend, follow these steps:
 
-For CmdStanPy as a backend:
-1. `pip install cmdstanpy==0.9.68`
-2. `python <path_to_installed_cmdstanpy>/install_cmdstan.py --dir <path_to_build_cmdstan> -v <version_to_use>`
-3. `CMDSTAN=<path_to_build_cmdstan>/cmdstan-<version_to_use> STAN_BACKEND=CMDSTANPY pip install prophet==1.0.1`
-
-For PyStan as a backend (PyStan is used by default):
-1. `pip install prophet==1.0.1`
 
 
+````{tab} CmdStanPy backend
+```console
+$ pip install cmdstanpy==0.9.68
+$ python <path_to_installed_cmdstanpy>/install_cmdstan.py --dir <path_to_build_cmdstan> -v <version_to_use>
+$ CMDSTAN=<path_to_build_cmdstan>/cmdstan-<version_to_use> STAN_BACKEND=CMDSTANPY pip install prophet==1.0.1
 
-**Time Series Support** <br>
-
-Add time series support with Facebook's Prophet
-```bash
-pip install evalml[prophet]
 ```
-Please note that this may take a few minutes. Prophet is currently only supported via pip installation in EvalML.
+````
+
+````{tab} PyStan (default)
+```console
+$ pip install prophet==1.0.1
+```
+````
+
+
 
 **Update checker** <br>
 
@@ -127,20 +154,3 @@ brew install graphviz
 
 
 +++
-
- 
-````{tab} Python
-```python
-print("Hello World!")
-```
-````
-
-````{tab} C++
-```c++
-#include <iostream>
-
-int main() {
-  std::cout << "Hello World!" << std::endl;
-}
-```
-````
