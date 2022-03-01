@@ -123,7 +123,6 @@ def test_allowed_model_families(has_minimal_dependencies):
 
 def test_all_estimators(
     has_minimal_dependencies,
-    is_running_py_39_or_above,
     is_using_conda,
     is_using_windows,
 ):
@@ -133,7 +132,10 @@ def test_all_estimators(
         if is_using_conda:
             n_estimators = 16
         else:
-            n_estimators = 16 if is_running_py_39_or_above or is_using_windows else 18
+            # This is wrong because only prophet is missing in windows
+            # but we don't run this test in windows.
+            # TODO: Change when https://github.com/alteryx/evalml/issues/3190 is addressed
+            n_estimators = 16 if is_using_windows else 18
         assert len(_all_estimators_used_in_search()) == n_estimators
 
 
