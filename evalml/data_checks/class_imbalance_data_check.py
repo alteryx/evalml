@@ -26,6 +26,12 @@ class ClassImbalanceDataCheck(DataCheck):
         num_cv_folds (int): The number of cross-validation folds. Must be positive. Choose 0 to ignore this warning. Defaults to 3.
         test_size (None, float, int): Percentage of test set size. Used to calculate class imbalance prior to splitting the
             data into training and validation/test sets.
+
+    Raises:
+        ValueError: If threshold is not within 0 and 0.5
+        ValueError: If min_samples is not greater than 0
+        ValueError: If number of cv folds is negative
+        ValueError: If test_size is not between 0 and 1
     """
 
     def __init__(self, threshold=0.1, min_samples=100, num_cv_folds=3, test_size=None):
