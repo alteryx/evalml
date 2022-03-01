@@ -83,7 +83,6 @@ $ conda install -c conda-forge alteryx-open-src-update-checker
 - **Time Series**: Use EvalML with Facebook's Prophet library for time series support.
 
 
-
 ## Time Series support with Facebook's Prophet 
 
 To support the `Prophet` time series estimator, be sure to install it as an extra requirement. Please note that this may take a few minutes.
@@ -121,24 +120,15 @@ $ pip install prophet==1.0.1
 ````
 
 
+## Windows Additional Requirements & Troubleshooting
 
-**Update checker** <br>
-
-Receive automatic notifications of new EvalML releases
-```bash
-pip install evalml[update_checker]
-```
-
-
-## Windows
-
-Additionally, if you are using `pip` to install EvalML, it is recommended you first install the following packages using conda:
+If you are using `pip` to install EvalML on Windows, it is recommended you first install the following packages using conda:
 * `numba` (needed for `shap` and prediction explanations). Install with `conda install -c conda-forge numba`
 * `graphviz` if you're using EvalML's plotting utilities. Install with `conda install -c conda-forge python-graphviz`
 
 The [XGBoost](https://pypi.org/project/xgboost/) library may not be pip-installable in some Windows environments. If you are encountering installation issues, please try installing XGBoost from [Github](https://xgboost.readthedocs.io/en/latest/build.html) before installing EvalML or install evalml with conda.
 
-## Mac
+## Mac Additional Requirements & Troubleshooting
 
 In order to run on Mac, [LightGBM](https://pypi.org/project/lightgbm/) requires the `OpenMP` library to be installed, which can be done with [HomeBrew](https://brew.sh/) by running 
 

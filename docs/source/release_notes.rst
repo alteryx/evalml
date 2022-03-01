@@ -7,6 +7,7 @@
     * Changes
         * Removed ``python_version<3.9`` environment marker from sktime dependency :pr:`3332`
     * Documentation Changes
+        * Added in-line tabs and copy-paste functionality to documentation, overhauled Install page :pr:`3353`
     * Testing Changes
 
 .. warning::
