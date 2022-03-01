@@ -114,6 +114,7 @@ not_supported_in_windows_py39 = set(
         "Prophet Regressor",
     ]
 )
+# Keeping here in case we need to add to it when a new component is added
 not_supported_in_linux_py39 = set()
 
 
