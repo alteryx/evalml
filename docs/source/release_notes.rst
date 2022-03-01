@@ -4,6 +4,7 @@
 **Future Releases**
     * Enhancements
         * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
+        * Added ``test_size`` parameter to ``ClassImbalanceDataCheck`` :pr:`3341`
     * Fixes
     * Changes
         * Removed ``python_version<3.9`` environment marker from sktime dependency :pr:`3332`
