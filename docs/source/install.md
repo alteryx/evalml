@@ -64,7 +64,7 @@ pip install evalml --no-dependencies
 pip install -r core-requirements.txt
 ```
 
-#### Add-ons
+### Add-ons
 You can install add-ons individually or all at once by running:
 ```bash
 pip install evalml[complete]
