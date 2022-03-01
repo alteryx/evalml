@@ -326,7 +326,7 @@ def test_submit_scoring_jobs_multiple(
                         objectives=[automl_data.objective],
                     )
                 )
-            results = [f.get_result()[0] for f in futures]
+            results = [f.get_result() for f in futures]
             return results
 
         par_eval_results = score_pipelines(pipelines, CFEngine(client=client))

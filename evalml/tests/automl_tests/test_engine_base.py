@@ -219,6 +219,6 @@ def test_train_and_score_pipelines_cache(
             automl.X_train,
             automl.y_train,
             logger=MagicMock(),
-        ).get("scores")
-    assert "cached_data" in evaluation_result
-    assert len(evaluation_result["cached_data"]) == automl.data_splitter.n_splits
+        ).get("cached_data")
+    assert evaluation_result
+    assert len(evaluation_result) == automl.data_splitter.n_splits
