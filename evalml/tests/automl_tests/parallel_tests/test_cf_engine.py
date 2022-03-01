@@ -74,13 +74,13 @@ def test_submit_training_job_single(
         pipeline_future = engine.submit_training_job(
             X=X, y=y, automl_config=automl_data, pipeline=pipeline
         )
-        dask_pipeline_fitted = pipeline_future.get_result()
+        dask_pipeline_fitted = pipeline_future.get_result()[0]
         assert dask_pipeline_fitted._is_fitted
 
         # Verify parallelization has no effect on output of function
         original_pipeline_fitted = train_pipeline(
             pipeline, X, y, automl_config=automl_data
-        )
+        )[0]
         assert dask_pipeline_fitted == original_pipeline_fitted
         pd.testing.assert_series_equal(
             dask_pipeline_fitted.predict(X), original_pipeline_fitted.predict(X)
@@ -113,7 +113,7 @@ def test_submit_training_jobs_multiple(
                         X=X, y=y, automl_config=automl_data, pipeline=pipeline
                     )
                 )
-            results = [f.get_result() for f in futures]
+            results = [f.get_result()[0] for f in futures]
             return results
 
         # Verify all pipelines are trained and fitted.
@@ -267,7 +267,7 @@ def test_submit_scoring_job_single(
         pipeline_future = engine.submit_training_job(
             X=X, y=y, automl_config=automl_data, pipeline=pipeline
         )
-        pipeline = pipeline_future.get_result()
+        pipeline = pipeline_future.get_result()[0]
         pipeline_score_future = engine.submit_scoring_job(
             X=X,
             y=y,
@@ -326,7 +326,7 @@ def test_submit_scoring_jobs_multiple(
                         objectives=[automl_data.objective],
                     )
                 )
-            results = [f.get_result() for f in futures]
+            results = [f.get_result()[0] for f in futures]
             return results
 
         par_eval_results = score_pipelines(pipelines, CFEngine(client=client))
@@ -401,7 +401,7 @@ def test_cfengine_sends_woodwork_schema(
         future = engine.submit_training_job(
             X=X, y=y, automl_config=new_config, pipeline=pipeline
         )
-        fitted_pipeline = future.get_result()
+        fitted_pipeline = future.get_result()[0]
 
         future = engine.submit_scoring_job(
             X=X,

@@ -145,7 +145,7 @@ class CFEngine(EngineBase):
         future = self.client.submit(
             train_pipeline, pipeline=pipeline, X=X, y=y, automl_config=automl_config
         )
-        return CFComputation(future[0])
+        return CFComputation(future)
 
     def submit_scoring_job(
         self, automl_config, pipeline, X, y, objectives, X_train=None, y_train=None

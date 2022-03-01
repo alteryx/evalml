@@ -139,7 +139,7 @@ class DaskEngine(EngineBase):
         dask_future = self.client.submit(
             train_pipeline, pipeline=pipeline, X=X, y=y, automl_config=automl_config
         )
-        return DaskComputation(dask_future[0])
+        return DaskComputation(dask_future)
 
     def submit_scoring_job(
         self, automl_config, pipeline, X, y, objectives, X_train=None, y_train=None

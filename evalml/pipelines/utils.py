@@ -523,7 +523,9 @@ def _make_stacked_ensemble_pipeline(
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             Defaults to -1.
-        cached_data (dict): A dictionary of cached data, where the keys are the model family. Defaults to None.
+        cached_data (dict): A dictionary of cached data, where the keys are the model family. Expected to be of format
+            {model_family: {hash1: trained_component_graph, hash2: trained_component_graph...}...}.
+            Defaults to None.
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
@@ -532,6 +534,21 @@ def _make_stacked_ensemble_pipeline(
     def _make_new_component_name(model_type, component_name, idx=None):
         idx = " " + str(idx) if idx is not None else ""
         return f"{str(model_type)} Pipeline{idx} - {component_name}"
+
+    def _set_cache_data(
+        cached_data, model_family, cached_component_instances, new_component_name, name
+    ):
+        # sets the new cached component dictionary using the cached data and model family information
+        if len(cached_data) and model_family in list(cached_data.keys()):
+            for hashes, component_instances in cached_data[model_family].items():
+                if hashes not in list(cached_component_instances.keys()):
+                    cached_component_instances[hashes] = {}
+                try:
+                    cached_component_instances[hashes][
+                        new_component_name
+                    ] = cached_data[model_family][hashes][name]
+                except KeyError:
+                    continue
 
     component_graph = (
         {"Label Encoder": ["Label Encoder", "X", "y"]}
@@ -581,16 +598,15 @@ def _make_stacked_ensemble_pipeline(
             new_component_name = _make_new_component_name(
                 model_family, name, model_family_idx
             )
-            if len(cached_data) and model_family in list(cached_data.keys()):
-                for hashes, component_instances in cached_data[model_family].items():
-                    if hashes not in list(cached_component_instances.keys()):
-                        cached_component_instances[hashes] = {}
-                    try:
-                        cached_component_instances[hashes][
-                            new_component_name
-                        ] = cached_data[model_family][hashes][name]
-                    except KeyError:
-                        continue
+
+            _get_cache_data(
+                cached_data,
+                model_family,
+                cached_component_instances,
+                new_component_name,
+                name,
+            )
+
             for i, item in enumerate(component_list):
                 if i == 0:
                     fitted_comp = handle_component_class(item)

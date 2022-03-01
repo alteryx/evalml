@@ -339,7 +339,9 @@ class IterativeAlgorithm(AutoMLAlgorithm):
             score_to_minimize (float): The score obtained by this pipeline on the primary objective, converted so that lower values indicate better pipelines.
             pipeline (PipelineBase): The trained pipeline object which was used to compute the score.
             trained_pipeline_results (dict): Results from training a pipeline.
-            cached_data (dict): A dictionary of cached data, where the keys are the model family. Defaults to None.
+            cached_data (dict): A dictionary of cached data, where the keys are the model family. Expected to be of format
+                {model_family: {hash1: trained_component_graph, hash2: trained_component_graph...}...}.
+                Defaults to None.
 
         Raises:
             ValueError: If default parameters are not in the acceptable hyperparameter ranges.

@@ -30,7 +30,9 @@ class ComponentGraph:
 
     Args:
         component_dict (dict): A dictionary which specifies the components and edges between components that should be used to create the component graph. Defaults to None.
-        cached_data (dict): A dictionary of cached data, where the keys are the model family. Defaults to None.
+        cached_data (dict): A dictionary of nested cached data. If the hashes and components are in this cache, we skip fitting for these components. Expected to be of format
+            {hash1: {component_name: trained_component, ...}, hash2: {...}, ...}.
+            Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Examples:

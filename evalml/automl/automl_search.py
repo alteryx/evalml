@@ -1000,7 +1000,7 @@ class AutoMLSearch:
                 y_train = self.y_train
                 best_pipeline = self._engine.submit_training_job(
                     self.automl_config, best_pipeline, X_train, y_train
-                ).get_result()
+                ).get_result()[0]
 
             self._best_pipeline = best_pipeline
 
@@ -1527,7 +1527,7 @@ class AutoMLSearch:
             computation = computations.pop(0)
             if computation.done():
                 try:
-                    fitted_pipeline = computation.get_result()
+                    fitted_pipeline = computation.get_result()[0]
                     fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
                 except Exception as e:
                     self.logger.error(f"Train error for {pipeline.name}: {str(e)}")
