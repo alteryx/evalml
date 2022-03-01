@@ -56,6 +56,9 @@ $ conda install -c conda-forge evalml-core
 
 EvalML allows users to install add-ons individually or all at once:
 
+- **Update Checker**: Receive automatic notifications of new EvalML releases
+- **Time Series**: Use EvalML with Facebook's Prophet library for time series support.
+
 
 ````{tab} PyPI
 ```{tab} All Add-ons
@@ -77,11 +80,6 @@ $ pip install evalml[update_checker]
 $ conda install -c conda-forge alteryx-open-src-update-checker
 ```
 ````
-
-
-- **Update Checker**: Receive automatic notifications of new EvalML releases
-- **Time Series**: Use EvalML with Facebook's Prophet library for time series support.
-
 
 ## Time Series support with Facebook's Prophet 
 
