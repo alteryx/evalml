@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Added ``test_size`` parameter to ``ClassImbalanceDataCheck`` :pr:`3341`
     * Fixes
     * Changes
     * Documentation Changes
@@ -17,7 +18,6 @@
         * Added support for pandas >= 1.4.0 :pr:`3324`
         * Standardized feature importance for estimators :pr:`3305`
         * Replaced usage of private method with Woodwork's public ``get_subset_schema`` method :pr:`3325`
-        * Added ``test_size`` parameter to ``ClassImbalanceDataCheck`` :pr:`3341`
     * Fixes
     * Changes
         * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
