@@ -2306,6 +2306,7 @@ def test_oversampler_component_in_pipeline_fit(mock_fit):
     assert all(mock_fit.call_args[0][1].value_counts().values == [900, 225])
 
     # balance the data
+    pipeline = pipeline.clone()
     y_balanced = pd.Series([0] * 400 + [1] * 600)
     pipeline.fit(X, y_balanced)
     assert len(mock_fit.call_args[0][0]) == 1000

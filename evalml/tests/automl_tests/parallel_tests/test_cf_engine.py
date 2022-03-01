@@ -165,7 +165,7 @@ def test_submit_evaluate_job_single(
         )
 
         # Ensure we get back the same output as the parallelized function.
-        assert len(par_eval_results) == 3
+        assert len(par_eval_results) == 4
 
         par_scores = par_eval_results.get("scores")
         original_eval_scores = original_eval_results.get("scores")
@@ -314,7 +314,7 @@ def test_submit_scoring_jobs_multiple(
                         X=X, y=y, automl_config=automl_data, pipeline=pipeline
                     )
                 )
-            pipelines = [f.get_result() for f in futures]
+            pipelines = [f.get_result()[0] for f in futures]
             futures = []
             for pipeline in pipelines:
                 futures.append(

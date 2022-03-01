@@ -117,7 +117,7 @@ def test_submit_evaluate_job_single(X_y_binary_cls):
         )
 
         # Ensure we get back the same output as the parallelized function.
-        assert len(par_eval_results) == 3
+        assert len(par_eval_results) == 4
 
         par_scores = par_eval_results.get("scores")
         original_eval_scores = original_eval_results.get("scores")
