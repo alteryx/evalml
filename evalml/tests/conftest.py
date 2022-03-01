@@ -921,11 +921,28 @@ def time_series_regression_pipeline_class():
     class TSRegressionPipeline(TimeSeriesRegressionPipeline):
         """Random Forest Regression Pipeline for time series regression problems."""
 
-        component_graph = [
-            "Time Series Featurizer",
-            "DateTime Featurizer",
-            "Random Forest Regressor",
-        ]
+        component_graph = {
+            "Time Series Featurizer": [
+                "Time Series Featurizer",
+                "X",
+                "y",
+            ],
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
+                "Time Series Featurizer.x",
+                "y",
+            ],
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
+                "DateTime Featurizer.x",
+                "y",
+            ],
+            "Random Forest Regressor": [
+                "Random Forest Regressor",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
+            ],
+        }
 
         def __init__(self, parameters, random_seed=0):
             super().__init__(
@@ -949,10 +966,15 @@ def time_series_classification_component_graph():
             "Time Series Featurizer.x",
             "Label Encoder.y",
         ],
-        "Logistic Regression Classifier": [
-            "Logistic Regression Classifier",
+        "Drop NaN Rows Transformer": [
+            "Drop NaN Rows Transformer",
             "DateTime Featurizer.x",
             "Label Encoder.y",
+        ],
+        "Logistic Regression Classifier": [
+            "Logistic Regression Classifier",
+            "Drop NaN Rows Transformer.x",
+            "Drop NaN Rows Transformer.y",
         ],
     }
     return component_graph
@@ -1705,3 +1727,35 @@ def dummy_data_check_validate_output_errors():
             "code": "DATA_CHECK_CODE",
         },
     ]
+
+
+@pytest.fixture
+def imputer_test_data():
+    return pd.DataFrame(
+        {
+            "categorical col": pd.Series(
+                ["zero", "one", "two", "zero", "two"] * 4, dtype="category"
+            ),
+            "int col": [0, 1, 2, 0, 3] * 4,
+            "object col": ["b", "b", "a", "c", "d"] * 4,
+            "float col": [0.0, 1.0, 0.0, -2.0, 5.0] * 4,
+            "bool col": [True, False, False, True, True] * 4,
+            "categorical with nan": pd.Series(
+                [np.nan, "1", "0", "0", "3"] * 4, dtype="category"
+            ),
+            "int with nan": [np.nan, 1, 0, 0, 1] * 4,
+            "float with nan": [0.0, 1.0, np.nan, -1.0, 0.0] * 4,
+            "object with nan": ["b", "b", np.nan, "c", np.nan] * 4,
+            "bool col with nan": pd.Series(
+                [True, np.nan, False, np.nan, True] * 4, dtype="category"
+            ),
+            "all nan": [np.nan, np.nan, np.nan, np.nan, np.nan] * 4,
+            "all nan cat": pd.Series(
+                [np.nan, np.nan, np.nan, np.nan, np.nan] * 4, dtype="category"
+            ),
+            "natural language col": pd.Series(
+                ["cats are really great", "don't", "believe", "me?", "well..."] * 4,
+                dtype="string",
+            ),
+        }
+    )

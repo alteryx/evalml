@@ -968,11 +968,24 @@ def test_explain_predictions_time_series(ts_data):
     X, y = ts_data
 
     ts_pipeline = TimeSeriesRegressionPipeline(
-        component_graph=[
-            "Time Series Featurizer",
-            "DateTime Featurizer",
-            "Random Forest Regressor",
-        ],
+        component_graph={
+            "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
+                "Time Series Featurizer.x",
+                "y",
+            ],
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
+                "DateTime Featurizer.x",
+                "y",
+            ],
+            "Estimator": [
+                "Random Forest Regressor",
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
+            ],
+        },
         parameters={
             "pipeline": {
                 "time_index": "date",
@@ -1027,11 +1040,24 @@ def test_explain_predictions_best_worst_time_series(
         X, y = ts_data_binary
 
     ts_pipeline = pipeline_class(
-        component_graph=[
-            "Time Series Featurizer",
-            "DateTime Featurizer",
-            estimator,
-        ],
+        component_graph={
+            "Time Series Featurizer": ["Time Series Featurizer", "X", "y"],
+            "DateTime Featurizer": [
+                "DateTime Featurizer",
+                "Time Series Featurizer.x",
+                "y",
+            ],
+            "Drop NaN Rows Transformer": [
+                "Drop NaN Rows Transformer",
+                "DateTime Featurizer.x",
+                "y",
+            ],
+            "Estimator": [
+                estimator,
+                "Drop NaN Rows Transformer.x",
+                "Drop NaN Rows Transformer.y",
+            ],
+        },
         parameters={
             "pipeline": {
                 "time_index": "date",

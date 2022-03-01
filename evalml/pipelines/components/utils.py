@@ -6,7 +6,7 @@ from sklearn.utils.multiclass import unique_labels
 from sklearn.utils.validation import check_is_fitted
 
 from evalml.exceptions import MissingComponentError
-from evalml.model_family.utils import handle_model_family
+from evalml.model_family.utils import ModelFamily, handle_model_family
 from evalml.pipelines.components.component_base import ComponentBase
 from evalml.pipelines.components.estimators.estimator import Estimator
 from evalml.pipelines.components.transformers.transformer import Transformer
@@ -96,6 +96,28 @@ def get_estimators(problem_type, model_families=None):
             continue
         estimator_classes.append(estimator_class)
     return estimator_classes
+
+
+def estimator_unable_to_handle_nans(estimator_class):
+    """If True, provided estimator class is unable to handle NaN values as an input.
+
+    Args:
+        estimator_class (Estimator): Estimator class
+
+    Raises:
+        ValueError: If estimator is not a valid estimator class.
+
+    Returns:
+        bool: True if estimator class is unable to process NaN values, False otherwise.
+    """
+    if not hasattr(estimator_class, "model_family"):
+        raise ValueError("`estimator_class` must have a `model_family` attribute.")
+    return estimator_class.model_family in [
+        ModelFamily.EXTRA_TREES,
+        ModelFamily.RANDOM_FOREST,
+        ModelFamily.LINEAR_MODEL,
+        ModelFamily.DECISION_TREE,
+    ]
 
 
 def handle_component_class(component_class):

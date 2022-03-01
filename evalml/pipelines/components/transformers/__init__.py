@@ -31,4 +31,5 @@ from .preprocessing import (
     URLFeaturizer,
     DropRowsTransformer,
     ReplaceNullableTypes,
+    DropNaNRowsTransformer,
 )

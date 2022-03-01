@@ -4,20 +4,30 @@
 **Future Releases**
     * Enhancements
         * Added `TimeSeriesFeaturizer` into ARIMA-based pipelines :pr:`3313`
+    * Fixes
+    * Changes
+    * Documentation Changes
+    * Testing Changes
+
+.. warning::
+
+    **Breaking Changes**
+
+**v0.45.0 Feb. 17, 2022**
+    * Enhancements
+        * Added support for pandas >= 1.4.0 :pr:`3324`
         * Standardized feature importance for estimators :pr:`3305`
         * Replaced usage of private method with Woodwork's public ``get_subset_schema`` method :pr:`3325`
     * Fixes
     * Changes
         * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
+        * Changed SimpleImputer to ignore Natural Language columns :pr:`3324`
+        * Added drop NaN component to some time series pipelines :pr:`3310`
     * Documentation Changes
         * Update README.md with Alteryx link (:pr:`3319`)
         * Added formatting to the AutoML user guide to shorten result outputs :pr:`3328`
     * Testing Changes
         * Add auto approve dependency workflow schedule for every 30 mins :pr:`3312`
-
-.. warning::
-
-    **Breaking Changes**
 
 **v0.44.0 Feb. 04, 2022**
     * Enhancements

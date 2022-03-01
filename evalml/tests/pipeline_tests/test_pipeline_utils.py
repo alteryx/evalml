@@ -14,6 +14,7 @@ from evalml.pipelines import (
 from evalml.pipelines.components import (
     DateTimeFeaturizer,
     DropColumns,
+    DropNaNRowsTransformer,
     DropRowsTransformer,
     EmailFeaturizer,
     Estimator,
@@ -35,7 +36,10 @@ from evalml.pipelines.components.transformers.encoders.label_encoder import (
 from evalml.pipelines.components.transformers.imputers.per_column_imputer import (
     PerColumnImputer,
 )
-from evalml.pipelines.components.utils import handle_component_class
+from evalml.pipelines.components.utils import (
+    estimator_unable_to_handle_nans,
+    handle_component_class,
+)
 from evalml.pipelines.utils import (
     _get_pipeline_base_class,
     _get_preprocessing_components,
@@ -147,6 +151,12 @@ def test_make_pipeline(
             email_featurizer = [EmailFeaturizer] if "email" in column_names else []
             url_featurizer = [URLFeaturizer] if "url" in column_names else []
             imputer = [] if (column_names in [["ip"], ["all_null"]]) else [Imputer]
+            drop_nan_rows_transformer = (
+                [DropNaNRowsTransformer]
+                if is_time_series(problem_type)
+                and estimator_unable_to_handle_nans(estimator_class)
+                else []
+            )
 
             if is_time_series(problem_type):
                 expected_components = (
@@ -161,6 +171,7 @@ def test_make_pipeline(
                     + datetime
                     + ohe
                     + standard_scaler
+                    + drop_nan_rows_transformer
                     + [estimator_class]
                 )
             else:
