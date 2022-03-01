@@ -13,7 +13,50 @@ kernelspec:
 
 # Install
 
-EvalML is available for Python 3.8 with experimental support 3.9. It can be installed with pip or conda.
+EvalML is available for Python 3.7, 3.8, and 3.9. It can be installed from [pypi](https://pypi.org/project/evalml/), [conda-forge](https://anaconda.org/conda-forge/evalml), or from [source](https://github.com/alteryx/evalml).
+
+To install EvalML with all dependencies, run the following command:
+
+````{tab} PyPI
+```console
+$ pip install evalml
+```
+````
+
+````{tab} Conda
+```console
+$ conda install -c conda-forge evalml
+```
+````
+
+
+## Pip with core dependencies
+
+EvalML includes several optional dependencies. The `xgboost` and `catboost` packages support pipelines built around those modeling libraries. The `plotly` and `ipywidgets` packages support plotting functionality in automl searches. These dependencies are recommended, and are included with EvalML by default but are not required in order to install and use EvalML.
+
+EvalML's core dependencies are listed in `core-requirements.txt` in the source code, and optional requirements are isted in `requirements.txt`.
+
+To install EvalML with only the core required dependencies, download the EvalML source [from pypi](https://pypi.org/project/evalml/#files) to access the requirements files. Then run the following:
+
+```bash
+pip install evalml --no-dependencies
+pip install -r core-requirements.txt
+```
+
+### Add-ons
+You can install add-ons individually or all at once by running:
+```bash
+pip install evalml[complete]
+```
+
+## Conda with core dependencies 
+
+To install evalml with only core dependencies run the following command:
+
+```bash
+conda install -c conda-forge evalml-core
+```
+
 
 ## Time Series support with Facebook's Prophet 
 
@@ -43,32 +86,6 @@ For PyStan as a backend (PyStan is used by default):
 1. `pip install prophet==1.0.1`
 
 
-## Pip with all dependencies
-
-To install evalml with pip, run the following command:
-
-```bash
-pip install evalml
-```
-
-## Pip with core dependencies
-
-EvalML includes several optional dependencies. The `xgboost` and `catboost` packages support pipelines built around those modeling libraries. The `plotly` and `ipywidgets` packages support plotting functionality in automl searches. These dependencies are recommended, and are included with EvalML by default but are not required in order to install and use EvalML.
-
-EvalML's core dependencies are listed in `core-requirements.txt` in the source code, and optional requirements are isted in `requirements.txt`.
-
-To install EvalML with only the core required dependencies, download the EvalML source [from pypi](https://pypi.org/project/evalml/#files) to access the requirements files. Then run the following:
-
-```bash
-pip install evalml --no-dependencies
-pip install -r core-requirements.txt
-```
-
-### Add-ons
-You can install add-ons individually or all at once by running:
-```bash
-pip install evalml[complete]
-```
 
 **Time Series Support** <br>
 
@@ -85,21 +102,6 @@ Receive automatic notifications of new EvalML releases
 pip install evalml[update_checker]
 ```
 
-## Conda with all dependencies
-
-To install evalml with conda run the following command:
-
-```bash
-conda install -c conda-forge evalml
-```
-
-## Conda with core dependencies 
-
-To install evalml with only core dependencies run the following command:
-
-```bash
-conda install -c conda-forge evalml-core
-```
 
 ## Windows
 
@@ -123,9 +125,6 @@ Additionally, `graphviz` can be installed by running
 brew install graphviz
 ```
 
-## Python 3.9 support
-
-Evalml can still be installed with pip in python 3.9 but note that `sktime`, one of our dependencies, will not be installed because that library does not yet support python 3.9. This means the ``PolynomialDetrending`` component will not be usable in python 3.9. You can try to install `sktime` [from source](https://www.sktime.org/en/latest/installation.html#building-from-source) in python 3.9 to use the ``PolynomialDetrending`` component but be warned that we only test it in python 3.8.
 
 +++
 
