@@ -22,7 +22,6 @@ from evalml.automl.callbacks import log_error_callback
 from evalml.automl.engine import SequentialEngine
 from evalml.automl.engine.cf_engine import CFClient, CFEngine
 from evalml.automl.engine.dask_engine import DaskEngine
-from evalml.automl.engine.engine_base import _reset_hash_dict
 from evalml.automl.utils import (
     AutoMLConfig,
     check_all_pipeline_names_unique,
@@ -974,8 +973,6 @@ class AutoMLSearch:
         desc = f"\nSearch finished after {elapsed_time}"
         desc = desc.ljust(self._MAX_NAME_LEN)
         self.logger.info(desc)
-
-        _reset_hash_dict()
 
         self._find_best_pipeline()
         if self._best_pipeline is not None:

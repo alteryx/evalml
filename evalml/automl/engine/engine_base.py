@@ -102,22 +102,6 @@ class EngineBase(ABC):
         """Submit job for pipeline scoring."""
 
 
-# global hash dictionary to allow minimal calculation of hashes on data splits
-hash_dict = {}
-
-
-def _get_hash_dict():
-    """Gets the internal hash dictionary."""
-    global hash_dict
-    return hash_dict
-
-
-def _reset_hash_dict():
-    """Resets the internal hash dictionary."""
-    global hash_dict
-    hash_dict = {}
-
-
 def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False):
     """Train a pipeline and tune the threshold if necessary.
 
@@ -243,26 +227,14 @@ def train_and_score_pipeline(
         ] + automl_config.additional_objectives
         try:
             logger.debug(f"\t\t\tFold {i}: starting training")
-            global hash_dict
-            if i in hash_dict:
-                cv_pipeline = train_pipeline(
-                    pipeline,
-                    X_train,
-                    y_train,
-                    automl_config,
-                    schema=False,
-                    get_hashes=False,
-                )
-            else:
-                cv_pipeline, hashes = train_pipeline(
-                    pipeline,
-                    X_train,
-                    y_train,
-                    automl_config,
-                    schema=False,
-                    get_hashes=True,
-                )
-                hash_dict[i] = hashes
+            cv_pipeline, hashes = train_pipeline(
+                pipeline,
+                X_train,
+                y_train,
+                automl_config,
+                schema=False,
+                get_hashes=True,
+            )
             logger.debug(f"\t\t\tFold {i}: finished training")
             if (
                 automl_config.optimize_thresholds
@@ -284,9 +256,7 @@ def train_and_score_pipeline(
                 f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
             )
             score = scores[automl_config.objective.name]
-            pipeline_cache[
-                hash_dict[i]
-            ] = cv_pipeline.component_graph.component_instances
+            pipeline_cache[hashes] = cv_pipeline.component_graph.component_instances
         except Exception as e:
             if automl_config.error_callback is not None:
                 automl_config.error_callback(
