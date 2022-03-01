@@ -149,7 +149,7 @@ def test_train_pipeline_trains_and_tunes_threshold_ts(
     automl_config = AutoMLConfig(
         None, "time series binary", LogLossBinary(), [], F1(), True, None, 0, None, None
     )
-    cv_pipeline = train_pipeline(ts_binary, X, y, automl_config=automl_config)
+    cv_pipeline, _ = train_pipeline(ts_binary, X, y, automl_config=automl_config)
     assert cv_pipeline.threshold is not None
 
 
@@ -181,7 +181,8 @@ def test_train_pipelines_cache(
         res = train_pipeline(
             dummy_binary_pipeline, X, y, automl_config=automl_config, get_hashes=False
         )
-    assert not isinstance(res, tuple)
+    assert isinstance(res, tuple)
+    assert res[1] is None
 
     with env.test_context():
         res = train_pipeline(

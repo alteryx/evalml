@@ -160,7 +160,7 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
         y,
     )
     if not get_hashes:
-        return cv_pipeline
+        return (cv_pipeline, None)
 
     X_hash = hash(tuple(X.index))
     return (cv_pipeline, X_hash)
@@ -316,8 +316,8 @@ def train_and_score_pipeline(
             "training_time": training_time,
             "cv_scores": cv_scores,
             "cv_score_mean": cv_score_mean,
-            "cached_data": pipeline_cache,
         },
+        "cached_data": pipeline_cache,
         "pipeline": cv_pipeline,
         "logger": logger,
     }

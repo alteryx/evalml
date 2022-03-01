@@ -97,7 +97,7 @@ class SequentialEngine(EngineBase):
             y=y,
             automl_config=automl_config,
             schema=False,
-        )
+        )[0]
 
     def submit_scoring_job(
         self, automl_config, pipeline, X, y, objectives, X_train=None, y_train=None

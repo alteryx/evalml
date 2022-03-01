@@ -931,13 +931,14 @@ class AutoMLSearch:
                     ]
                     if computation.done() and not has_been_processed:
                         evaluation = computation.get_result()
-                        data, pipeline, job_log = (
+                        data, cached_data, pipeline, job_log = (
                             evaluation.get("scores"),
+                            evaluation.get("cached_data"),
                             evaluation.get("pipeline"),
                             evaluation.get("logger"),
                         )
                         pipeline_id = self._post_evaluation_callback(
-                            pipeline, data, job_log
+                            pipeline, data, cached_data, job_log
                         )
                         new_pipeline_ids.append(pipeline_id)
                         computations[current_computation_index] = (computation, True)
@@ -1120,12 +1121,13 @@ class AutoMLSearch:
             self.automl_config, baseline, self.X_train, self.y_train
         )
         evaluation = computation.get_result()
-        data, pipeline, job_log = (
+        data, cached_data, pipeline, job_log = (
             evaluation.get("scores"),
+            evaluation.get("cached_data"),
             evaluation.get("pipeline"),
             evaluation.get("logger"),
         )
-        self._post_evaluation_callback(pipeline, data, job_log)
+        self._post_evaluation_callback(pipeline, data, cached_data, job_log)
 
     @staticmethod
     def _get_mean_cv_scores_for_all_objectives(cv_data, objective_name_to_class):
@@ -1142,12 +1144,13 @@ class AutoMLSearch:
             objective: float(score) / n_folds for objective, score in scores.items()
         }
 
-    def _post_evaluation_callback(self, pipeline, evaluation_results, job_log):
+    def _post_evaluation_callback(
+        self, pipeline, evaluation_results, cached_data, job_log
+    ):
         job_log.write_to_logger(self.logger)
         training_time = evaluation_results["training_time"]
         cv_data = evaluation_results["cv_data"]
         cv_scores = evaluation_results["cv_scores"]
-        cached_data = evaluation_results["cached_data"]
         is_baseline = pipeline.model_family == ModelFamily.BASELINE
         if len(cv_scores) == 1:
             validation_score = cv_scores[0]
@@ -1373,12 +1376,13 @@ class AutoMLSearch:
             self.automl_config, pipeline, self.X_train, self.y_train
         )
         evaluation = computation.get_result()
-        data, pipeline, job_log = (
+        data, cached_data, pipeline, job_log = (
             evaluation.get("scores"),
+            evaluation.get("cached_data"),
             evaluation.get("pipeline"),
             evaluation.get("logger"),
         )
-        self._post_evaluation_callback(pipeline, data, job_log)
+        self._post_evaluation_callback(pipeline, data, cached_data, job_log)
         self._find_best_pipeline()
 
     @property
