@@ -410,7 +410,7 @@ class ComponentGraph:
 
         output_cache = {}
         for component_name in component_list:
-            component_instance = self._get_relevant_component(
+            component_instance = self._get_component_from_cache(
                 hashes, component_name, fit
             )
             if not isinstance(component_instance, ComponentBase):
@@ -423,7 +423,7 @@ class ComponentGraph:
             self.input_feature_names.update({component_name: list(x_inputs.columns)})
             if isinstance(component_instance, Transformer):
                 if fit:
-                    if component_instance._is_fitted and self.cached_data is not None:
+                    if component_instance._is_fitted:
                         output = component_instance.transform(x_inputs, y_input)
                     else:
                         output = component_instance.fit_transform(x_inputs, y_input)
@@ -443,9 +443,7 @@ class ComponentGraph:
                 output_cache[f"{component_name}.x"] = output_x
                 output_cache[f"{component_name}.y"] = output_y
             else:
-                if fit and (
-                    not component_instance._is_fitted or self.cached_data is None
-                ):
+                if fit and not component_instance._is_fitted:
                     component_instance.fit(x_inputs, y_input)
                 if fit and component_name == self.compute_order[-1]:
                     # Don't call predict on the final component during fit
@@ -473,7 +471,7 @@ class ComponentGraph:
 
         return output_cache
 
-    def _get_relevant_component(self, hashes, component_name, fit):
+    def _get_component_from_cache(self, hashes, component_name, fit):
         """Gets either the stacked ensemble component or the component from component_instances."""
         component_instance = self.get_component(component_name)
         if self.cached_data is not None and fit:

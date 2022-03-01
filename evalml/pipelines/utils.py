@@ -599,7 +599,7 @@ def _make_stacked_ensemble_pipeline(
                 model_family, name, model_family_idx
             )
 
-            _get_cache_data(
+            _set_cache_data(
                 cached_data,
                 model_family,
                 cached_component_instances,
