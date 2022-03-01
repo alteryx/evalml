@@ -6,6 +6,7 @@
         * Added `TimeSeriesFeaturizer` into ARIMA-based pipelines :pr:`3313`
     * Fixes
     * Changes
+        * Removed ``python_version<3.9`` environment marker from sktime dependency :pr:`3332`
     * Documentation Changes
     * Testing Changes
 
