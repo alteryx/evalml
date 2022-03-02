@@ -29,7 +29,6 @@ $ conda install -c conda-forge evalml
 ```
 ````
 
-
 ## EvalML with core dependencies only
 
 EvalML includes several optional dependencies. The `xgboost` and `catboost` packages support pipelines built around those modeling libraries. The `plotly` and `ipywidgets` packages support plotting functionality in automl searches. These dependencies are recommended, and are included with EvalML by default but are not required in order to install and use EvalML.
@@ -51,14 +50,12 @@ $ conda install -c conda-forge evalml-core
 ```
 ````
 
-
 ## Add-ons
 
 EvalML allows users to install add-ons individually or all at once:
 
 - **Update Checker**: Receive automatic notifications of new EvalML releases
 - **Time Series**: Use EvalML with Facebook's Prophet library for time series support.
-
 
 ````{tab} PyPI
 ```{tab} All Add-ons
@@ -100,8 +97,11 @@ If the `site-packages` path is incorrect or you'd like to specify a different on
 
 If you'd like to have more fine-tuned control over the installation steps for Prophet, such as specifying the backend, follow these steps:
 
-
-
+````{tab} PyStan (default)
+```console
+$ pip install prophet==1.0.1
+```
+````
 ````{tab} CmdStanPy backend
 ```console
 $ pip install cmdstanpy==0.9.68
@@ -110,13 +110,6 @@ $ CMDSTAN=<path_to_build_cmdstan>/cmdstan-<version_to_use> STAN_BACKEND=CMDSTANP
 
 ```
 ````
-
-````{tab} PyStan (default)
-```console
-$ pip install prophet==1.0.1
-```
-````
-
 
 ## Windows Additional Requirements & Troubleshooting
 
@@ -128,17 +121,16 @@ The [XGBoost](https://pypi.org/project/xgboost/) library may not be pip-installa
 
 ## Mac Additional Requirements & Troubleshooting
 
-In order to run on Mac, [LightGBM](https://pypi.org/project/lightgbm/) requires the `OpenMP` library to be installed, which can be done with [HomeBrew](https://brew.sh/) by running 
+In order to run on Mac, [LightGBM](https://pypi.org/project/lightgbm/) requires the `OpenMP` library to be installed, which can be done with [HomeBrew](https://brew.sh/) by running:
 
 ```bash
 brew install libomp
 ```
 
-Additionally, `graphviz` can be installed by running
+Additionally, `graphviz` can be installed by running:
 
 ```bash
 brew install graphviz
 ```
-
 
 +++
