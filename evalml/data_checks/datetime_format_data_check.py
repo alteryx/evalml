@@ -183,8 +183,6 @@ class DateTimeFormatDataCheck(DataCheck):
             self.datetime_column if self.datetime_column != "index" else "either index"
         )
 
-        is_increasing = pd.DatetimeIndex(datetime_values).is_monotonic_increasing
-
         nan_columns = datetime_values.isna().any()
         if nan_columns:
             messages.append(
@@ -194,8 +192,9 @@ class DateTimeFormatDataCheck(DataCheck):
                     message_code=DataCheckMessageCode.DATETIME_HAS_NAN,
                 ).to_dict()
             )
-            # NaN values are a more significant error than missing values and will break the data check logic, so we return here
-            return messages
+            datetime_values = datetime_values.dropna()
+
+        is_increasing = pd.DatetimeIndex(datetime_values).is_monotonic_increasing
 
         if not inferred_freq:
 
