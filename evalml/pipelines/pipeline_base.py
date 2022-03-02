@@ -119,6 +119,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
             self._pipeline_params = parameters.get("pipeline", {})
 
         self._custom_name = custom_name
+        self._is_stacked_ensemble = False
 
     @property
     def custom_name(self):
