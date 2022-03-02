@@ -14,11 +14,18 @@ class BaseMeta(ABCMeta):
     def set_fit(cls, method):
         """Wrapper for the fit method."""
 
-        @wraps(method)
-        def _set_fit(self, X, y=None):
-            return_value = method(self, X, y)
-            self._is_fitted = True
-            return return_value
+        if 'data_splitter' in method.__code__.co_varnames:
+            @wraps(method)
+            def _set_fit(self, X, y=None, data_splitter=None):
+                return_value = method(self, X, y, data_splitter)
+                self._is_fitted = True
+                return return_value
+        else:
+            @wraps(method)
+            def _set_fit(self, X, y=None):
+                return_value = method(self, X, y)
+                self._is_fitted = True
+                return return_value
 
         return _set_fit
 

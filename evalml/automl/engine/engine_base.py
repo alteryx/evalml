@@ -173,7 +173,10 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False)
             random_seed=pipeline.random_seed,
         )
     cv_pipeline = pipeline.clone()
-    cv_pipeline.fit(X, y)
+    if cv_pipeline._is_stacked_ensemble:
+        cv_pipeline.fit(X, y, data_splitter=automl_config.data_splitter)
+    else:
+        cv_pipeline.fit(X, y)
     tune_binary_threshold(
         cv_pipeline,
         threshold_tuning_objective,
