@@ -4,6 +4,7 @@
 **Future Releases**
     * Enhancements
         * Added ``test_size`` parameter to ``ClassImbalanceDataCheck`` :pr:`3341`
+        * Make target optional for ``NoVarianceDataCheck`` :pr:`3339`
     * Fixes
     * Changes
         * Removed ``python_version<3.9`` environment marker from sktime dependency :pr:`3332`

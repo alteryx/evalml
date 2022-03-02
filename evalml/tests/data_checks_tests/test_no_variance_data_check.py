@@ -183,6 +183,12 @@ cases = [
         False,
         [feature_1_unique, labels_1_unique],
     ),
+    (
+        two_distinct_with_nulls_X,
+        None,
+        False,
+        [feature_1_unique],
+    ),
 ]
 
 
