@@ -1,6 +1,4 @@
 """Data check that checks if the target or any of the features have no variance."""
-import pandas as pd
-
 from evalml.data_checks import (
     DataCheck,
     DataCheckActionCode,
