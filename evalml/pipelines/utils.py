@@ -543,12 +543,9 @@ def _make_stacked_ensemble_pipeline(
             for hashes, component_instances in cached_data[model_family].items():
                 if hashes not in list(cached_component_instances.keys()):
                     cached_component_instances[hashes] = {}
-                try:
-                    cached_component_instances[hashes][
-                        new_component_name
-                    ] = cached_data[model_family][hashes][name]
-                except KeyError:
-                    continue
+                cached_component_instances[hashes][new_component_name] = cached_data[
+                    model_family
+                ][hashes][name]
 
     component_graph = (
         {"Label Encoder": ["Label Encoder", "X", "y"]}

@@ -477,6 +477,7 @@ def test_stacked_ensemble_cache_training(
     # ensure we are not calling transform or fit for the components we have in our cache
     pl_cache.fit(X, y)
     mock_transform_fit.assert_not_called()
+    # ensure the only estimator fit call that happens is the final metalearner estimator
     mock_estimator_fit.assert_called_once()
 
     mock_estimator_fit.reset_mock()
@@ -507,7 +508,6 @@ def test_stacked_ensemble_cache_train_predict(
 
     trained_imputer = Imputer()
     trained_rf = RandomForestClassifier()
-    # make the components 'trained'
     trained_imputer.fit(X2, y)
     trained_rf.fit(X2, y)
     if indices == 0:
