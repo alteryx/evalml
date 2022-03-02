@@ -377,13 +377,18 @@ def test_stacked_ensemble_cache(X_y_binary):
     trained_imputer.fit(X, y)
     trained_rf = RandomForestClassifier()
     trained_rf.fit(X, y)
+    trained_en = ElasticNetClassifier()
+    trained_en.fit(X, y)
     cache = {
         ModelFamily.RANDOM_FOREST: {
             "random_hash": {
                 "Impute": trained_imputer,
                 "Random Forest Classifier": trained_rf,
             }
-        }
+        },
+        ModelFamily.LINEAR_MODEL: {
+            "random_hash": {"Elastic Net Classifier": trained_en}
+        },
     }
     input_pipelines = [
         BinaryClassificationPipeline(
@@ -393,7 +398,7 @@ def test_stacked_ensemble_cache(X_y_binary):
             },
         ),
         BinaryClassificationPipeline(
-            {"RFC": [RandomForestClassifier, "X", "y"]},
+            {"Elastic Net Classifier": [ElasticNetClassifier, "X", "y"]},
         ),
     ]
 
@@ -401,6 +406,7 @@ def test_stacked_ensemble_cache(X_y_binary):
         "random_hash": {
             "Random Forest Pipeline - Impute": trained_imputer,
             "Random Forest Pipeline - Random Forest Classifier": trained_rf,
+            "Linear Pipeline - Elastic Net Classifier": trained_en,
         }
     }
 

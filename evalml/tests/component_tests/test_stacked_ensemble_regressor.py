@@ -293,8 +293,7 @@ def test_stacked_ensemble_cache_train_predict(
         RegressionPipeline(
             {
                 "Impute": [Imputer, "X", "y"],
-                "OHE": [OneHotEncoder, "Impute.x", "y"],
-                "Random Forest Regressor": [RandomForestRegressor, "OHE.x", "y"],
+                "Random Forest Regressor": [RandomForestRegressor, "Impute.x", "y"],
             },
         )
     ]
