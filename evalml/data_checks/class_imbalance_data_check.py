@@ -2,6 +2,8 @@
 
 Use for classification problems.
 """
+import numpy as np
+
 from evalml.data_checks import (
     DataCheck,
     DataCheckError,
@@ -22,9 +24,17 @@ class ClassImbalanceDataCheck(DataCheck):
         min_samples (int): The minimum number of samples per accepted class. If the minority class is both below the threshold and min_samples,
             then we consider this severely imbalanced. Must be greater than 0. Defaults to 100.
         num_cv_folds (int): The number of cross-validation folds. Must be positive. Choose 0 to ignore this warning. Defaults to 3.
+        test_size (None, float, int): Percentage of test set size. Used to calculate class imbalance prior to splitting the
+            data into training and validation/test sets.
+
+    Raises:
+        ValueError: If threshold is not within 0 and 0.5
+        ValueError: If min_samples is not greater than 0
+        ValueError: If number of cv folds is negative
+        ValueError: If test_size is not between 0 and 1
     """
 
-    def __init__(self, threshold=0.1, min_samples=100, num_cv_folds=3):
+    def __init__(self, threshold=0.1, min_samples=100, num_cv_folds=3, test_size=None):
         if threshold <= 0 or threshold > 0.5:
             raise ValueError(
                 "Provided threshold {} is not within the range (0, 0.5]".format(
@@ -44,6 +54,14 @@ class ClassImbalanceDataCheck(DataCheck):
                 "Provided number of CV folds {} is less than 0".format(num_cv_folds)
             )
         self.cv_folds = num_cv_folds * 2
+        if test_size is not None:
+            if not (isinstance(test_size, (int, float)) and 0 < test_size <= 1):
+                raise ValueError(
+                    "Parameter test_size must be a number between 0 and less than or equal to 1"
+                )
+            self.test_size = test_size
+        else:
+            self.test_size = 1
 
     def validate(self, X, y):
         """Check if any target labels are imbalanced beyond a threshold for binary and multiclass problems.
@@ -131,6 +149,7 @@ class ClassImbalanceDataCheck(DataCheck):
         y = infer_feature_types(y)
 
         fold_counts = y.value_counts(normalize=False, sort=True)
+        fold_counts = np.floor(fold_counts * self.test_size).astype(int)
         if len(fold_counts) == 0:
             return messages
         # search for targets that occur less than twice the number of cv folds first
