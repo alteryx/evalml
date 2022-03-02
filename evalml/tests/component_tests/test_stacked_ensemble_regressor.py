@@ -10,7 +10,6 @@ from evalml.pipelines.components import (
     ElasticNetRegressor,
     Imputer,
     LogTransformer,
-    OneHotEncoder,
     RandomForestRegressor,
 )
 from evalml.pipelines.components.ensemble import StackedEnsembleRegressor
