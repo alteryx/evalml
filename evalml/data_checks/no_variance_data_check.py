@@ -157,8 +157,6 @@ class NoVarianceDataCheck(DataCheck):
         X = infer_feature_types(X)
         if y is not None:
             y = infer_feature_types(y)
-        else:
-            y = infer_feature_types(pd.Series([1, 2]))
 
         unique_counts = X.nunique(dropna=self._dropnan).to_dict()
         any_nulls = (X.isnull().any()).to_dict()
@@ -234,6 +232,9 @@ class NoVarianceDataCheck(DataCheck):
                     ],
                 ).to_dict()
             )
+
+        if y is None:
+            return messages
 
         # Check target for variance
         y_name = getattr(y, "name")
