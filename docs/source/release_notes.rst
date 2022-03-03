@@ -10,6 +10,7 @@
         * Removed ``python_version<3.9`` environment marker from sktime dependency :pr:`3332`
         * Updated ``DatetimeFormatDataCheck`` to return all messages and not return early if NaNs are detected :pr:`3354`
     * Documentation Changes
+        * Fixed documentation links :pr:`3358`
     * Testing Changes
 
 .. warning::
