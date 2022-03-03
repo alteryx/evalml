@@ -4,26 +4,30 @@
 **Future Releases**
     * Enhancements
         * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
-        * Added ``test_size`` parameter to ``ClassImbalanceDataCheck`` :pr:`3341`
-        * Make target optional for ``NoVarianceDataCheck`` :pr:`3339`
     * Fixes
     * Changes
-        * Removed ``python_version<3.9`` environment marker from sktime dependency :pr:`3332`
-        * Updated ``DatetimeFormatDataCheck`` to return all messages and not return early if NaNs are detected :pr:`3354`
     * Documentation Changes
-        * Added in-line tabs and copy-paste functionality to documentation, overhauled Install page :pr:`3353`
     * Testing Changes
 
 .. warning::
 
     **Breaking Changes**
 
+**v0.46.0 Mar. 03, 2022**
+    * Enhancements
+        * Added ``test_size`` parameter to ``ClassImbalanceDataCheck`` :pr:`3341`
+        * Make target optional for ``NoVarianceDataCheck`` :pr:`3339`
+    * Changes
+        * Removed ``python_version<3.9`` environment marker from sktime dependency :pr:`3332`
+        * Updated ``DatetimeFormatDataCheck`` to return all messages and not return early if NaNs are detected :pr:`3354`
+    * Documentation Changes
+        * Added in-line tabs and copy-paste functionality to documentation, overhauled Install page :pr:`3353`
+
 **v0.45.0 Feb. 17, 2022**
     * Enhancements
         * Added support for pandas >= 1.4.0 :pr:`3324`
         * Standardized feature importance for estimators :pr:`3305`
         * Replaced usage of private method with Woodwork's public ``get_subset_schema`` method :pr:`3325`
-    * Fixes
     * Changes
         * Added an ``is_cv`` property to the datasplitters used :pr:`3297`
         * Changed SimpleImputer to ignore Natural Language columns :pr:`3324`
@@ -50,7 +54,6 @@
     * Documentation Changes
         * Update documentation and docstring for `validate_holdout_datasets` for time series problems :pr:`3278`
         * Fixed mistake in documentation where wrong objective was used for calculating percent-better-than-baseline :pr:`3285`
-    * Testing Changes
 
 
 .. warning::
@@ -76,7 +79,6 @@
         * Renamed ``HighlyNullDataCheck`` to ``NullDataCheck`` :pr:`3197`
         * Updated data check ``validate()`` output to return a list of warnings and errors instead of a dictionary :pr:`3244`
         * Capped ``pandas`` at < 1.4.0 :pr:`3274`
-    * Documentation Changes
     * Testing Changes
         * Bumped minimum ``IPython`` version to 7.16.3 in ``test-requirements.txt`` based on dependabot feedback :pr:`3269`
 
@@ -110,7 +112,6 @@
         * Changed the default objective to ``MedianAE`` from ``R2`` for time series regression :pr:`3205`
         * Removed all-nan Unknown to Double logical conversion in ``infer_feature_types`` :pr:`3196`
         * Checking the validity of holdout data for time series problems can be performed by calling ``pipelines.utils.validate_holdout_datasets`` prior to calling ``predict`` :pr:`3208`
-    * Documentation Changes
     * Testing Changes
         * Update auto approve workflow trigger and delete branch after merge :pr:`3265`
 
