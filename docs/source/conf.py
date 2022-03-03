@@ -56,6 +56,9 @@ extensions = [
     "sphinx.ext.extlinks",
     "sphinx.ext.graphviz",
     "sphinx.ext.inheritance_diagram",
+    "sphinx_inline_tabs",
+    "sphinx_copybutton",
+    "myst_parser",
 ]
 
 autoapi_dirs = ['../../evalml']
