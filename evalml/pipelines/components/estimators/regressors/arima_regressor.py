@@ -136,7 +136,7 @@ class ARIMARegressor(Estimator):
         Raises:
             ValueError: If X was passed to `fit` but not passed in `predict`.
         """
-        X = X.fillna(X.mode())
+        X = X.fillna(X.mean())
         X, y = self._manage_woodwork(X, y)
         if y is None:
             raise ValueError("ARIMA Regressor requires y as input.")
