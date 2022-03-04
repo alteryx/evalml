@@ -1054,3 +1054,40 @@ def test_iterative_algorithm_allow_long_running_models_next_batch(
         scores = -np.arange(0, len(next_batch))
         for score, pipeline in zip(scores, next_batch):
             algo.add_result(score, pipeline, {"id": algo.pipeline_number})
+
+
+def test_iterative_algorithm_add_result_cache(
+    X_y_binary,
+    dummy_binary_pipeline_classes,
+    logistic_regression_component_graph,
+):
+    X, y = X_y_binary
+    (
+        dummy_binary_pipeline_classes,
+        allowed_component_graphs,
+    ) = dummy_binary_pipeline_classes()
+    allowed_component_graphs = {
+        "graph_1": allowed_component_graphs["graph_1"],
+        "graph_2": logistic_regression_component_graph,
+    }
+    algo = IterativeAlgorithm(
+        X=X,
+        y=y,
+        problem_type="binary",
+        allowed_component_graphs=allowed_component_graphs,
+    )
+
+    cache = {"some_cache_key": "some_cache_value"}
+    # initial batch contains one of each pipeline, with default parameters
+    next_batch = algo.next_batch()
+    scores = np.arange(0, len(next_batch))
+    for pipeline_num, (score, pipeline) in enumerate(zip(scores, next_batch)):
+        algo.add_result(
+            score,
+            pipeline,
+            {"id": algo.pipeline_number + pipeline_num},
+            cached_data=cache,
+        )
+
+    for values in algo._best_pipeline_info.values():
+        assert values["cached_data"] == cache

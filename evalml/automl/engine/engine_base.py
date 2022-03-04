@@ -102,7 +102,7 @@ class EngineBase(ABC):
         """Submit job for pipeline scoring."""
 
 
-def train_pipeline(pipeline, X, y, automl_config, schema=True):
+def train_pipeline(pipeline, X, y, automl_config, schema=True, get_hashes=False):
     """Train a pipeline and tune the threshold if necessary.
 
     Args:
@@ -111,9 +111,11 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True):
         y (pd.Series): Target to train on.
         automl_config (AutoMLSearch): The AutoMLSearch object, used to access config and the error callback.
         schema (bool): Whether to use the schemas for X and y. Defaults to True.
+        get_hashes (bool): Whether to return the hashes of the data used to train (and potentially threshold). Defaults to False
 
     Returns:
         pipeline (PipelineBase): A trained pipeline instance.
+        hash (optional): The hash of the input data indices, only returned when get_hashes is True.
     """
     X_threshold_tuning = None
     y_threshold_tuning = None
@@ -157,7 +159,11 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True):
         X,
         y,
     )
-    return cv_pipeline
+    if not get_hashes:
+        return (cv_pipeline, None)
+
+    X_hash = hash(tuple(X.index))
+    return (cv_pipeline, X_hash)
 
 
 def train_and_score_pipeline(
@@ -192,6 +198,7 @@ def train_and_score_pipeline(
         }
         full_y_train = ww.init_series(full_y_train.map(y_mapping))
     cv_pipeline = pipeline
+    pipeline_cache = {}
     for i, (train, valid) in enumerate(
         automl_config.data_splitter.split(full_X_train, full_y_train)
     ):
@@ -220,8 +227,13 @@ def train_and_score_pipeline(
         ] + automl_config.additional_objectives
         try:
             logger.debug(f"\t\t\tFold {i}: starting training")
-            cv_pipeline = train_pipeline(
-                pipeline, X_train, y_train, automl_config, schema=False
+            cv_pipeline, hashes = train_pipeline(
+                pipeline,
+                X_train,
+                y_train,
+                automl_config,
+                schema=False,
+                get_hashes=True,
             )
             logger.debug(f"\t\t\tFold {i}: finished training")
             if (
@@ -244,6 +256,7 @@ def train_and_score_pipeline(
                 f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
             )
             score = scores[automl_config.objective.name]
+            pipeline_cache[hashes] = cv_pipeline.component_graph.component_instances
         except Exception as e:
             if automl_config.error_callback is not None:
                 automl_config.error_callback(
@@ -304,6 +317,7 @@ def train_and_score_pipeline(
             "cv_scores": cv_scores,
             "cv_score_mean": cv_score_mean,
         },
+        "cached_data": pipeline_cache,
         "pipeline": cv_pipeline,
         "logger": logger,
     }
