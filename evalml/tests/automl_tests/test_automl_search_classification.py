@@ -479,7 +479,7 @@ def test_non_optimizable_threshold(AutoMLTestEnv, X_y_binary):
     )
 
 
-def test_optimize_threshold_maintained(AutoMLTestEnv, X_y_binary):
+def test_optimize_threshold_get_pipeline_reset(AutoMLTestEnv, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,
@@ -502,7 +502,7 @@ def test_optimize_threshold_maintained(AutoMLTestEnv, X_y_binary):
 
     best_pipeline_id = automl.rankings["id"][0]
     best_get = automl.get_pipeline(best_pipeline_id)
-    assert best_get.threshold == 0.8
+    assert best_get.threshold is None
 
 
 def test_describe_pipeline_objective_ordered(X_y_binary, caplog):
