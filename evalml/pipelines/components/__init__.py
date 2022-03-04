@@ -30,6 +30,7 @@ from .estimators import (
     VowpalWabbitBinaryClassifier,
     VowpalWabbitMulticlassClassifier,
     VowpalWabbitRegressor,
+    DBSCANClusterer,
 )
 from .transformers import (
     Transformer,

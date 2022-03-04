@@ -65,6 +65,7 @@ from evalml.problem_types import (
     ProblemTypes,
     handle_problem_types,
     is_classification,
+    is_clustering,
     is_time_series,
 )
 from evalml.tests.automl_tests.parallel_tests.test_automl_dask import (
@@ -3804,7 +3805,7 @@ def test_automl_validates_data_passed_in_to_allowed_component_graphs(
     [
         problem_type
         for problem_type in ProblemTypes.all_problem_types
-        if not is_time_series(problem_type)
+        if (not is_time_series(problem_type) and not is_clustering(problem_type))
     ],
 )
 def test_automl_baseline_pipeline_predictions_and_scores(problem_type):

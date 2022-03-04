@@ -21,16 +21,12 @@ class DBSCANClusterer(Estimator):
     """{}"""
     model_family = ModelFamily.DENSITY
     """ModelFamily.DENSITY"""
-    supported_problem_types = [
-        ProblemTypes.CLUSTERING
-    ]
+    supported_problem_types = [ProblemTypes.CLUSTERING]
     """[
         ProblemTypes.CLUSTERING
     ]"""
 
-    def __init__(
-        self, eps=0.5, min_samples=5, n_jobs=-1, random_seed=0, **kwargs
-    ):
+    def __init__(self, eps=0.5, min_samples=5, n_jobs=-1, random_seed=0, **kwargs):
         parameters = {
             "eps": eps,
             "min_samples": min_samples,
@@ -39,7 +35,9 @@ class DBSCANClusterer(Estimator):
         parameters.update(kwargs)
         dbscan_clusterer = SKDBSCAN(**parameters)
         super().__init__(
-            parameters=parameters, component_obj=dbscan_clusterer, random_seed=random_seed
+            parameters=parameters,
+            component_obj=dbscan_clusterer,
+            random_seed=random_seed,
         )
 
     def predict(self, X=None):

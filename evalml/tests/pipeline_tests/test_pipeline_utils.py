@@ -51,7 +51,7 @@ from evalml.pipelines.utils import (
     make_pipeline_from_actions,
     rows_of_interest,
 )
-from evalml.problem_types import ProblemTypes, is_time_series
+from evalml.problem_types import ProblemTypes, is_clustering, is_time_series
 
 
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
@@ -86,6 +86,10 @@ def test_make_pipeline(
     column_names,
     get_test_data_from_configuration,
 ):
+    if is_clustering(problem_type):
+        pytest.skip(
+            "Skipping because make_pipeline does not support clustering problems"
+        )
 
     X, y = get_test_data_from_configuration(
         input_type,

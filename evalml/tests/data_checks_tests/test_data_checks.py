@@ -26,6 +26,7 @@ from evalml.exceptions import DataCheckInitError
 from evalml.problem_types import (
     ProblemTypes,
     is_classification,
+    is_clustering,
     is_regression,
     is_time_series,
 )
@@ -547,6 +548,8 @@ def test_default_data_checks_null_rows():
 def test_default_data_checks_across_problem_types(problem_type):
     default_data_check_list = DefaultDataChecks._DEFAULT_DATA_CHECK_CLASSES
 
+    if is_clustering(problem_type):
+        pytest.skip("Skipping because clustering problems do not have data checks yet")
     if is_time_series(problem_type):
         if is_classification(problem_type):
             default_data_check_list = default_data_check_list + [

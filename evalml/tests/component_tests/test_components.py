@@ -26,6 +26,7 @@ from evalml.pipelines.components import (
     CatBoostRegressor,
     ComponentBase,
     DateTimeFeaturizer,
+    DBSCANClusterer,
     DFSTransformer,
     DropColumns,
     DropNaNRowsTransformer,
@@ -1269,6 +1270,7 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                         VowpalWabbitMulticlassClassifier,
                         VowpalWabbitRegressor,
                         TimeSeriesBaselineEstimator,
+                        DBSCANClusterer,
                     ),
                 )
             ):
