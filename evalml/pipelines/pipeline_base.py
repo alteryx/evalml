@@ -88,6 +88,7 @@ class PipelineBase(ABC, metaclass=PipelineBaseMeta):
         elif isinstance(component_graph, ComponentGraph):
             self.component_graph = ComponentGraph(
                 component_dict=component_graph.component_dict,
+                cached_data=component_graph.cached_data,
                 random_seed=self.random_seed,
             )
         else:

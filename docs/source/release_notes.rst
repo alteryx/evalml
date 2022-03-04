@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
     * Fixes
     * Changes
     * Documentation Changes
