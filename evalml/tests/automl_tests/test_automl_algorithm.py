@@ -2,6 +2,12 @@ import pytest
 
 from evalml.automl.automl_algorithm import AutoMLAlgorithm
 from evalml.exceptions import PipelineNotFoundError
+from evalml.model_family import ModelFamily
+from evalml.pipelines import BinaryClassificationPipeline
+from evalml.pipelines.components import (
+    DecisionTreeClassifier,
+    LogisticRegressionClassifier,
+)
 
 
 class DummyAlgorithm(AutoMLAlgorithm):
@@ -48,3 +54,38 @@ def test_automl_algorithm_invalid_pipeline_add(dummy_regression_pipeline):
         match="No such pipeline allowed in this AutoML search: Mock Regression Pipeline",
     ):
         algo.add_result(0.1234, dummy_regression_pipeline, {})
+
+
+def test_automl_algorithm_create_ensemble_cache():
+    algo = DummyAlgorithm()
+    lrc = LogisticRegressionClassifier()
+    dtc = DecisionTreeClassifier()
+    bcp_linear = BinaryClassificationPipeline([lrc])
+    bcp_trees = BinaryClassificationPipeline([dtc])
+    bpi = {
+        ModelFamily.LINEAR_MODEL: {
+            "mean_cv_score": 0.5,
+            "pipeline": bcp_linear,
+            "parameters": bcp_linear.parameters,
+            "id": 1,
+            "cached_data": {"hash1": {"Logistic Regression Classifier": lrc}},
+        },
+        ModelFamily.DECISION_TREE: {
+            "mean_cv_score": 0.5,
+            "pipeline": bcp_trees,
+            "parameters": bcp_trees.parameters,
+            "id": 1,
+            "cached_data": {"hash1": {"Decision Tree Classifier": dtc}},
+        },
+    }
+    algo._best_pipeline_info = bpi
+    pipelines = algo._create_ensemble()[0]
+
+    # check component graph expected cache
+    expected_comp_graph = {
+        "hash1": {
+            "Linear Pipeline - Logistic Regression Classifier": lrc,
+            "Decision Tree Pipeline - Decision Tree Classifier": dtc,
+        }
+    }
+    assert pipelines.component_graph.cached_data == expected_comp_graph

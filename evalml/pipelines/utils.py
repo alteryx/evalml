@@ -18,6 +18,7 @@ from .regression_pipeline import RegressionPipeline
 
 from evalml.data_checks import DataCheckActionCode, DataCheckActionOption
 from evalml.model_family import ModelFamily
+from evalml.pipelines import ComponentGraph
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
@@ -512,7 +513,12 @@ def generate_pipeline_code(element):
 
 
 def _make_stacked_ensemble_pipeline(
-    input_pipelines, problem_type, final_estimator=None, n_jobs=-1, random_seed=0
+    input_pipelines,
+    problem_type,
+    final_estimator=None,
+    n_jobs=-1,
+    random_seed=0,
+    cached_data=None,
 ):
     """Creates a pipeline with a stacked ensemble estimator.
 
@@ -523,6 +529,9 @@ def _make_stacked_ensemble_pipeline(
         n_jobs (int or None): Integer describing level of parallelism used for pipelines.
             None and 1 are equivalent. If set to -1, all CPUs are used. For n_jobs below -1, (n_cpus + 1 + n_jobs) are used.
             Defaults to -1.
+        cached_data (dict): A dictionary of cached data, where the keys are the model family. Expected to be of format
+            {model_family: {hash1: trained_component_graph, hash2: trained_component_graph...}...}.
+            Defaults to None.
 
     Returns:
         Pipeline with appropriate stacked ensemble estimator.
@@ -532,6 +541,18 @@ def _make_stacked_ensemble_pipeline(
         idx = " " + str(idx) if idx is not None else ""
         return f"{str(model_type)} Pipeline{idx} - {component_name}"
 
+    def _set_cache_data(
+        cached_data, model_family, cached_component_instances, new_component_name, name
+    ):
+        # sets the new cached component dictionary using the cached data and model family information
+        if len(cached_data) and model_family in list(cached_data.keys()):
+            for hashes, component_instances in cached_data[model_family].items():
+                if hashes not in list(cached_component_instances.keys()):
+                    cached_component_instances[hashes] = {}
+                cached_component_instances[hashes][new_component_name] = cached_data[
+                    model_family
+                ][hashes][name]
+
     component_graph = (
         {"Label Encoder": ["Label Encoder", "X", "y"]}
         if is_classification(problem_type)
@@ -540,7 +561,7 @@ def _make_stacked_ensemble_pipeline(
     final_components = []
     used_model_families = []
     parameters = {}
-
+    cached_data = cached_data or {}
     if is_classification(problem_type):
         parameters = {
             "Stacked Ensemble Classifier": {
@@ -564,6 +585,7 @@ def _make_stacked_ensemble_pipeline(
         ProblemTypes.REGRESSION: RegressionPipeline,
     }[problem_type]
 
+    cached_component_instances = {}
     for pipeline in input_pipelines:
         model_family = pipeline.component_graph[-1].model_family
         model_family_idx = (
@@ -579,6 +601,15 @@ def _make_stacked_ensemble_pipeline(
             new_component_name = _make_new_component_name(
                 model_family, name, model_family_idx
             )
+
+            _set_cache_data(
+                cached_data,
+                model_family,
+                cached_component_instances,
+                new_component_name,
+                name,
+            )
+
             for i, item in enumerate(component_list):
                 if i == 0:
                     fitted_comp = handle_component_class(item)
@@ -606,9 +637,14 @@ def _make_stacked_ensemble_pipeline(
     component_graph[estimator.name] = (
         [estimator] + [comp + ".x" for comp in final_components] + [ensemble_y]
     )
+    cg = ComponentGraph(
+        component_dict=component_graph,
+        cached_data=cached_component_instances,
+        random_seed=random_seed,
+    )
 
     return pipeline_class(
-        component_graph,
+        cg,
         parameters=parameters,
         custom_name=pipeline_name,
         random_seed=random_seed,

@@ -937,13 +937,14 @@ class AutoMLSearch:
                     ]
                     if computation.done() and not has_been_processed:
                         evaluation = computation.get_result()
-                        data, pipeline, job_log = (
+                        data, cached_data, pipeline, job_log = (
                             evaluation.get("scores"),
+                            evaluation.get("cached_data"),
                             evaluation.get("pipeline"),
                             evaluation.get("logger"),
                         )
                         pipeline_id = self._post_evaluation_callback(
-                            pipeline, data, job_log
+                            pipeline, data, cached_data, job_log
                         )
                         new_pipeline_ids.append(pipeline_id)
                         computations[current_computation_index] = (computation, True)
@@ -1005,7 +1006,7 @@ class AutoMLSearch:
                 y_train = self.y_train
                 best_pipeline = self._engine.submit_training_job(
                     self.automl_config, best_pipeline, X_train, y_train
-                ).get_result()
+                ).get_result()[0]
 
             self._best_pipeline = best_pipeline
 
@@ -1126,12 +1127,13 @@ class AutoMLSearch:
             self.automl_config, baseline, self.X_train, self.y_train
         )
         evaluation = computation.get_result()
-        data, pipeline, job_log = (
+        data, cached_data, pipeline, job_log = (
             evaluation.get("scores"),
+            evaluation.get("cached_data"),
             evaluation.get("pipeline"),
             evaluation.get("logger"),
         )
-        self._post_evaluation_callback(pipeline, data, job_log)
+        self._post_evaluation_callback(pipeline, data, cached_data, job_log)
 
     @staticmethod
     def _get_mean_cv_scores_for_all_objectives(cv_data, objective_name_to_class):
@@ -1148,7 +1150,9 @@ class AutoMLSearch:
             objective: float(score) / n_folds for objective, score in scores.items()
         }
 
-    def _post_evaluation_callback(self, pipeline, evaluation_results, job_log):
+    def _post_evaluation_callback(
+        self, pipeline, evaluation_results, cached_data, job_log
+    ):
         job_log.write_to_logger(self.logger)
         training_time = evaluation_results["training_time"]
         cv_data = evaluation_results["cv_data"]
@@ -1222,6 +1226,7 @@ class AutoMLSearch:
                     score_to_minimize,
                     pipeline,
                     self._results["pipeline_results"][pipeline_id],
+                    cached_data,
                 )
             except PipelineNotFoundError:
                 pass
@@ -1377,12 +1382,13 @@ class AutoMLSearch:
             self.automl_config, pipeline, self.X_train, self.y_train
         )
         evaluation = computation.get_result()
-        data, pipeline, job_log = (
+        data, cached_data, pipeline, job_log = (
             evaluation.get("scores"),
+            evaluation.get("cached_data"),
             evaluation.get("pipeline"),
             evaluation.get("logger"),
         )
-        self._post_evaluation_callback(pipeline, data, job_log)
+        self._post_evaluation_callback(pipeline, data, cached_data, job_log)
         self._find_best_pipeline()
 
     @property
@@ -1527,7 +1533,7 @@ class AutoMLSearch:
             computation = computations.pop(0)
             if computation.done():
                 try:
-                    fitted_pipeline = computation.get_result()
+                    fitted_pipeline = computation.get_result()[0]
                     fitted_pipelines[fitted_pipeline.name] = fitted_pipeline
                 except Exception as e:
                     self.logger.error(f"Train error for {pipeline.name}: {str(e)}")

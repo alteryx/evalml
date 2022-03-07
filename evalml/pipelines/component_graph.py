@@ -30,6 +30,9 @@ class ComponentGraph:
 
     Args:
         component_dict (dict): A dictionary which specifies the components and edges between components that should be used to create the component graph. Defaults to None.
+        cached_data (dict): A dictionary of nested cached data. If the hashes and components are in this cache, we skip fitting for these components. Expected to be of format
+            {hash1: {component_name: trained_component, ...}, hash2: {...}, ...}.
+            Defaults to None.
         random_seed (int): Seed for the random number generator. Defaults to 0.
 
     Examples:
@@ -75,7 +78,7 @@ class ComponentGraph:
 
     """
 
-    def __init__(self, component_dict=None, random_seed=0):
+    def __init__(self, component_dict=None, cached_data=None, random_seed=0):
         self.random_seed = random_seed
         self.component_dict = component_dict or {}
         if not isinstance(self.component_dict, dict):
@@ -83,7 +86,7 @@ class ComponentGraph:
                 "component_dict must be a dictionary which specifies the components and edges between components"
             )
         self._validate_component_dict()
-
+        self.cached_data = cached_data
         self.component_instances = {}
         self._is_instantiated = False
         for component_name, component_info in self.component_dict.items():
@@ -410,9 +413,15 @@ class ComponentGraph:
         if len(component_list) == 0:
             return X
 
+        hashes = None
+        if self.cached_data is not None:
+            hashes = hash(tuple(X.index))
+
         output_cache = {}
         for component_name in component_list:
-            component_instance = self.get_component(component_name)
+            component_instance = self._get_component_from_cache(
+                hashes, component_name, fit
+            )
             if not isinstance(component_instance, ComponentBase):
                 raise ValueError(
                     "All components must be instantiated before fitting or predicting"
@@ -423,7 +432,10 @@ class ComponentGraph:
             self.input_feature_names.update({component_name: list(x_inputs.columns)})
             if isinstance(component_instance, Transformer):
                 if fit:
-                    output = component_instance.fit_transform(x_inputs, y_input)
+                    if component_instance._is_fitted:
+                        output = component_instance.transform(x_inputs, y_input)
+                    else:
+                        output = component_instance.fit_transform(x_inputs, y_input)
                 elif (
                     component_instance.training_only
                     and evaluate_training_only_components is False
@@ -440,9 +452,8 @@ class ComponentGraph:
                 output_cache[f"{component_name}.x"] = output_x
                 output_cache[f"{component_name}.y"] = output_y
             else:
-                if fit:
+                if fit and not component_instance._is_fitted:
                     component_instance.fit(x_inputs, y_input)
-
                 if fit and component_name == self.compute_order[-1]:
                     # Don't call predict on the final component during fit
                     output = None
@@ -464,7 +475,20 @@ class ComponentGraph:
                 else:
                     output = component_instance.predict(x_inputs)
                 output_cache[f"{component_name}.x"] = output
+            if self.cached_data is not None and fit:
+                self.component_instances[component_name] = component_instance
+
         return output_cache
+
+    def _get_component_from_cache(self, hashes, component_name, fit):
+        """Gets either the stacked ensemble component or the component from component_instances."""
+        component_instance = self.get_component(component_name)
+        if self.cached_data is not None and fit:
+            try:
+                component_instance = self.cached_data[hashes][component_name]
+            except KeyError:
+                pass
+        return component_instance
 
     def _get_feature_provenance(self, input_feature_names):
         """Get the feature provenance for each feature in the input_feature_names.
