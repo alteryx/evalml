@@ -1270,3 +1270,29 @@ def test_automl_passes_allow_long_running_models(
         estimators.extend(["CatBoost Classifier", "XGBoost Classifier"])
 
     assert "Dropping estimators {}".format(", ".join(sorted(estimators))) in caplog.text
+
+
+def test_automl_threshold_score(fraud_100):
+    X, y = fraud_100
+    X_train, X_valid, y_train, y_valid = split_data(X, y, "binary")
+
+    automl = AutoMLSearch(
+        X_train,
+        y_train,
+        "binary",
+        max_batches=4,
+        ensembling=True,
+        verbose=False,
+        automl_algorithm="default",
+        train_best_pipeline=True,
+    )
+    automl.search()
+
+    bp = automl.best_pipeline
+    best_pipeline_score = bp.score(X_valid, y_valid, objectives=["F1"])
+    bp_ranking_id = automl.rankings.iloc[0].id
+    pl = automl.get_pipeline(bp_ranking_id)
+    pl = automl.train_pipelines([pl])[pl.name]
+    manual_score = pl.score(X_valid, y_valid, objectives=["F1"])
+    assert bp.name == pl.name
+    assert best_pipeline_score == manual_score
