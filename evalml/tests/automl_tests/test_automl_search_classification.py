@@ -479,7 +479,7 @@ def test_non_optimizable_threshold(AutoMLTestEnv, X_y_binary):
     )
 
 
-def test_optimize_threshold_maintained(AutoMLTestEnv, X_y_binary):
+def test_optimize_threshold_get_pipeline_reset(AutoMLTestEnv, X_y_binary):
     X, y = X_y_binary
     automl = AutoMLSearch(
         X_train=X,
@@ -502,7 +502,7 @@ def test_optimize_threshold_maintained(AutoMLTestEnv, X_y_binary):
 
     best_pipeline_id = automl.rankings["id"][0]
     best_get = automl.get_pipeline(best_pipeline_id)
-    assert best_get.threshold == 0.8
+    assert best_get.threshold is None
 
 
 def test_describe_pipeline_objective_ordered(X_y_binary, caplog):
@@ -1270,3 +1270,29 @@ def test_automl_passes_allow_long_running_models(
         estimators.extend(["CatBoost Classifier", "XGBoost Classifier"])
 
     assert "Dropping estimators {}".format(", ".join(sorted(estimators))) in caplog.text
+
+
+def test_automl_threshold_score(fraud_100):
+    X, y = fraud_100
+    X_train, X_valid, y_train, y_valid = split_data(X, y, "binary")
+
+    automl = AutoMLSearch(
+        X_train,
+        y_train,
+        "binary",
+        max_batches=4,
+        ensembling=True,
+        verbose=False,
+        automl_algorithm="default",
+        train_best_pipeline=True,
+    )
+    automl.search()
+
+    bp = automl.best_pipeline
+    best_pipeline_score = bp.score(X_valid, y_valid, objectives=["F1"])
+    bp_ranking_id = automl.rankings.iloc[0].id
+    pl = automl.get_pipeline(bp_ranking_id)
+    pl = automl.train_pipelines([pl])[pl.name]
+    manual_score = pl.score(X_valid, y_valid, objectives=["F1"])
+    assert bp.name == pl.name
+    assert best_pipeline_score == manual_score

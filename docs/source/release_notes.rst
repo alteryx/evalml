@@ -5,6 +5,7 @@
     * Enhancements
         * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
     * Fixes
+        * Fixed ``get_pipelines`` to reset pipeline threshold for binary cases :pr:`3360`
     * Changes
     * Documentation Changes
     * Testing Changes
