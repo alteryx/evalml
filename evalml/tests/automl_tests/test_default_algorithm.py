@@ -800,7 +800,7 @@ def test_default_algorithm_accept_features(mock_get_names, X_y_binary, split):
                 assert "DFS Transformer" in pipeline.component_graph.compute_order
                 assert pipeline.parameters["DFS Transformer"]["features"] == features
 
-                
+
 def test_default_algorithm_add_result_cache(X_y_binary):
     X, y = X_y_binary
     algo = DefaultAlgorithm(

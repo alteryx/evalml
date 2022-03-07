@@ -1105,7 +1105,7 @@ def test_iterative_algorithm_passes_features(
         for score, pipeline in zip(scores, next_batch):
             algo.add_result(score, pipeline, {"id": algo.pipeline_number})
 
-            
+
 def test_iterative_algorithm_add_result_cache(
     X_y_binary,
     dummy_binary_pipeline_classes,
