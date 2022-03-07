@@ -32,6 +32,8 @@ def test_estimators_feature_name_with_random_ascii(
             "ARIMARegressor",
             "ExponentialSmoothingRegressor",
             "ProphetRegressor",
+            "DBSCANClusterer",
+            "KMeansClusterer",
         ]:
             continue
         supported_problem_types = [

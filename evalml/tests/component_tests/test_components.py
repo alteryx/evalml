@@ -38,6 +38,7 @@ from evalml.pipelines.components import (
     ExtraTreesClassifier,
     ExtraTreesRegressor,
     Imputer,
+    KMeansClusterer,
     LightGBMClassifier,
     LightGBMRegressor,
     LinearDiscriminantAnalysis,
@@ -1271,6 +1272,7 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
                         VowpalWabbitRegressor,
                         TimeSeriesBaselineEstimator,
                         DBSCANClusterer,
+                        KMeansClusterer,
                     ),
                 )
             ):

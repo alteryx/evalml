@@ -30,6 +30,7 @@ minimum_dependencies_set = set(
     [
         "Baseline Classifier",
         "Baseline Regressor",
+        "DBSCAN Clusterer",
         "DFS Transformer",
         "DateTime Featurizer",
         "Decision Tree Classifier",
@@ -45,6 +46,7 @@ minimum_dependencies_set = set(
         "Extra Trees Classifier",
         "Extra Trees Regressor",
         "Imputer",
+        "KMeans Clusterer",
         "KNN Classifier",
         "LSA Transformer",
         "Label Encoder",
@@ -205,6 +207,7 @@ def test_scikit_learn_wrapper(X_y_binary, X_y_multi, X_y_regression, ts_data):
                 ProblemTypes.TIME_SERIES_REGRESSION,
                 ProblemTypes.TIME_SERIES_MULTICLASS,
                 ProblemTypes.TIME_SERIES_BINARY,
+                ProblemTypes.CLUSTERING,
             ]:
                 continue
 
