@@ -8,6 +8,7 @@
         * Fixed ``get_pipelines`` to reset pipeline threshold for binary cases :pr:`3360`
     * Changes
     * Documentation Changes
+        * Fixed documentation links to point to correct pages :pr:`3358`
     * Testing Changes
 
 .. warning::
