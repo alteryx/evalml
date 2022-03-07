@@ -31,6 +31,7 @@ from .estimators import (
     VowpalWabbitMulticlassClassifier,
     VowpalWabbitRegressor,
     DBSCANClusterer,
+    KMeansClusterer,
 )
 from .transformers import (
     Transformer,

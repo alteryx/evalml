@@ -178,8 +178,8 @@ def is_clustering(problem_type):
         bool: Whether or not the provided problem_type is a clustering problem type.
 
     Examples:
-        >>> assert is_time_series("clustering")
-        >>> assert is_time_series(ProblemTypes.CLUSTERING)
-        >>> assert not is_time_series(ProblemTypes.REGRESSION)
+        >>> assert is_clustering("clustering")
+        >>> assert is_clustering(ProblemTypes.CLUSTERING)
+        >>> assert not is_clustering(ProblemTypes.REGRESSION)
     """
     return handle_problem_types(problem_type) == ProblemTypes.CLUSTERING

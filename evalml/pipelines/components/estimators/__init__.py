@@ -32,4 +32,4 @@ from .regressors import (
     ProphetRegressor,
     VowpalWabbitRegressor,
 )
-from .clusterers import DBSCANClusterer
+from .clusterers import DBSCANClusterer, KMeansClusterer

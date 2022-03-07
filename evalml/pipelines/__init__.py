@@ -41,6 +41,7 @@ from .components import (
     VowpalWabbitRegressor,
     DropNaNRowsTransformer,
     DBSCANClusterer,
+    KMeansClusterer,
 )
 
 from .component_graph import ComponentGraph

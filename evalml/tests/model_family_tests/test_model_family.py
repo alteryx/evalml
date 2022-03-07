@@ -22,6 +22,7 @@ def correct_model_families():
         ModelFamily.PROPHET,
         ModelFamily.VOWPAL_WABBIT,
         ModelFamily.DENSITY,
+        ModelFamily.CENTROID,
         ModelFamily.NONE,
     ]
     yield correct_model_families
@@ -45,6 +46,7 @@ def test_handle_string(correct_model_families):
         "prophet",
         "vowpal_wabbit",
         "density",
+        "centroid",
         "none",
     ]
     for model_family in zip(model_families, correct_model_families):
