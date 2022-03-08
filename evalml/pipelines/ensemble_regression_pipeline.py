@@ -61,7 +61,12 @@ class EnsembleRegressionPipeline(RegressionPipeline):
         custom_name=None,
         random_seed=0,
     ):
-        self.input_pipelines = input_pipelines
+        if isinstance(input_pipelines, dict):
+            self.input_pipelines = input_pipelines
+        else:
+            self.input_pipelines = {}
+            for pipeline in input_pipelines:
+                self.input_pipelines[pipeline.model_family] = pipeline
         if component_graph is None:
             component_graph = {
                 "Stacked Ensembler": ["Stacked Ensemble Regressor", "X", "y"]
@@ -93,15 +98,16 @@ class EnsembleRegressionPipeline(RegressionPipeline):
 
     @property
     def _all_input_pipelines_fitted(self):
-        for pipeline in self.input_pipelines:
+        for pipeline in self.input_pipelines.values():
             if not pipeline._is_fitted:
                 return False
         return True
 
     def _fit_input_pipelines(self, X, y):
         fitted_pipelines = []
-        for pipeline in self.input_pipelines:
-            fitted_pipelines.append(pipeline.fit(X, y))
+        for model_family, pipeline in self.input_pipelines.items():
+            pl = pipeline.clone()
+            fitted_pipelines[model_family] = pl.fit(X, y)
         self.input_pipelines = fitted_pipelines
         
     def fit(self, X, y, data_splitter=None, force_retrain=False):
@@ -124,11 +130,11 @@ class EnsembleRegressionPipeline(RegressionPipeline):
         if "numeric" not in y.ww.semantic_tags:
             raise ValueError(f"Regression pipeline can only handle numeric target data")
 
-        if not self._all_input_pipelines_fitted or force_retrain is True:
-            self._fit_input_pipelines(X, y)
+        # if not self._all_input_pipelines_fitted or force_retrain is True:
+        #     self._fit_input_pipelines(X, y)
 
         if data_splitter is None:
-            data_splitter = make_data_splitter(X, y, problem_type=ProblemTypes.BINARY)
+            data_splitter = make_data_splitter(X, y, problem_type=ProblemTypes.REGRESSION)
 
         splits = data_splitter.split(X, y)
 
@@ -140,7 +146,8 @@ class EnsembleRegressionPipeline(RegressionPipeline):
             X_train, X_valid = X.ww.iloc[train], X.ww.iloc[valid]
             y_train, y_valid = y.ww.iloc[train], y.ww.iloc[valid]
 
-            for pipeline in self.input_pipelines:
+            for model_family, pipeline in self.input_pipelines.items():
+                # self.input_pipelines[model_family] = pipeline.fit(X_train, y_train)
                 pl_preds = pipeline.predict(X_valid)
                 fold_X[pipeline.name] = pl_preds
             
@@ -149,9 +156,6 @@ class EnsembleRegressionPipeline(RegressionPipeline):
 
         metalearner_X = pd.concat(metalearner_X)
         metalearner_y = pd.concat(metalearner_y)
-
-        metalearner_X.sort_index(inplace=True)
-        metalearner_y.sort_index(inplace=True)
 
         self.component_graph.fit(metalearner_X, metalearner_y)        
         return self
@@ -163,7 +167,7 @@ class EnsembleRegressionPipeline(RegressionPipeline):
         if not self._all_input_pipelines_fitted:
             raise ValueError("Input pipelines needs to be fitted before transform")
         input_pipeline_preds = {}
-        for pipeline in self.input_pipelines:
+        for pipeline in self.input_pipelines.values():
             pl_preds = pipeline.predict(X)
             input_pipeline_preds[pipeline.name] = pl_preds
         

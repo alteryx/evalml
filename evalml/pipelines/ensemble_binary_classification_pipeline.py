@@ -61,7 +61,12 @@ class EnsembleBinaryClassificationPipeline(BinaryClassificationPipeline):
         custom_name=None,
         random_seed=0,
     ):
-        self.input_pipelines = input_pipelines
+        if isinstance(input_pipelines, dict):
+            self.input_pipelines = input_pipelines
+        else:
+            self.input_pipelines = {}
+            for pipeline in input_pipelines:
+                self.input_pipelines[pipeline.model_family] = pipeline
         if component_graph is None:
             component_graph = {
                 "Label Encoder": ["Label Encoder", "X", "y"],
@@ -115,14 +120,14 @@ class EnsembleBinaryClassificationPipeline(BinaryClassificationPipeline):
 
     @property
     def _all_input_pipelines_fitted(self):
-        for pipeline in self.input_pipelines:
+        for pipeline in self.input_pipelines.values():
             if not pipeline._is_fitted:
                 return False
         return True
 
     def _fit_input_pipelines(self, X, y):
         fitted_pipelines = []
-        for pipeline in self.input_pipelines:
+        for pipeline in self.input_pipelines.vales():
             fitted_pipelines.append(pipeline.fit(X, y))
         self.input_pipelines = fitted_pipelines
         
@@ -150,8 +155,8 @@ class EnsembleBinaryClassificationPipeline(BinaryClassificationPipeline):
                 "Multiclass pipelines require y to have 3 or more unique classes!"
             )
 
-        if not self._all_input_pipelines_fitted or force_retrain is True:
-            self._fit_input_pipelines(X, y)
+        # if not self._all_input_pipelines_fitted or force_retrain is True:
+        #     self._fit_input_pipelines(X, y)
 
         if data_splitter is None:
             data_splitter = make_data_splitter(X, y, problem_type=ProblemTypes.BINARY)
@@ -162,22 +167,32 @@ class EnsembleBinaryClassificationPipeline(BinaryClassificationPipeline):
         metalearner_y = []
 
         for i, (train, valid) in enumerate(splits):
-            fold_X = {}
+            fold_X = []
             X_train, X_valid = X.ww.iloc[train], X.ww.iloc[valid]
             y_train, y_valid = y.ww.iloc[train], y.ww.iloc[valid]
 
-            for pipeline in self.input_pipelines:
-                pl_preds = pipeline.predict(X_valid)
-                fold_X[pipeline.name] = pl_preds
+            # for pipeline in self.input_pipelines:
+            #     self._fit_input_pipelines(X_train, y_train)
+            for model_family, pipeline in self.input_pipelines.items():
+                # self.input_pipelines[model_family] = pipeline.fit(X_train, y_train)
+                pl_preds = pipeline.predict_proba(X_valid)
+                if isinstance(pl_preds, pd.DataFrame):
+                    if len(pl_preds.columns) == 2:
+                        # If it is a binary problem, drop the first column since both columns are colinear
+                        pl_preds = pl_preds.ww.drop(pl_preds.columns[0])
+                    pl_preds = pl_preds.ww.rename(
+                        {
+                            col: f"Col {str(col)} {pipeline.name}.x"
+                            for col in pl_preds.columns
+                        }
+                    )
+                fold_X.append(pl_preds)
             
-            metalearner_X.append(pd.DataFrame(fold_X))
+            metalearner_X.append(ww.concat_columns(fold_X))
             metalearner_y.append(y_valid)
 
         metalearner_X = pd.concat(metalearner_X)
         metalearner_y = pd.concat(metalearner_y)
-
-        metalearner_X.sort_index(inplace=True)
-        metalearner_y.sort_index(inplace=True)
 
         self.component_graph.fit(metalearner_X, metalearner_y)        
 
@@ -190,12 +205,22 @@ class EnsembleBinaryClassificationPipeline(BinaryClassificationPipeline):
 
         if not self._all_input_pipelines_fitted:
             raise ValueError("Input pipelines needs to be fitted before transform")
-        input_pipeline_preds = {}
-        for pipeline in self.input_pipelines:
-            pl_preds = pipeline.predict(X)
-            input_pipeline_preds[pipeline.name] = pl_preds
+        input_pipeline_preds = []
+        for pipeline in self.input_pipelines.values():
+            pl_preds = pipeline.predict_proba(X)
+            if isinstance(pl_preds, pd.DataFrame):
+                if len(pl_preds.columns) == 2:
+                    # If it is a binary problem, drop the first column since both columns are colinear
+                    pl_preds = pl_preds.ww.drop(pl_preds.columns[0])
+                pl_preds = pl_preds.ww.rename(
+                    {
+                        col: f"Col {str(col)} {pipeline.name}.x"
+                        for col in pl_preds.columns
+                    }
+                )
+            input_pipeline_preds.append(pl_preds)
         
-        return pd.DataFrame(input_pipeline_preds)
+        return ww.concat_columns(input_pipeline_preds)
 
     def clone(self):
         """Constructs a new pipeline with the same components, parameters, and random seed.
