@@ -556,3 +556,14 @@ def test_imputer_woodwork_custom_overrides_returned_by_components(
         assert {k: type(v) for k, v in transformed.ww.logical_types.items()} == {
             data: Double
         }
+
+
+def test_imputer_mixed_none_types(imputer_test_data):
+    """ Test that a properly Woodwork initialized dataframe with mixed nullable types can be handled by imputer."""
+    X_df = imputer_test_data[["int col", "int with nan", "int with pd_NA"]]
+    X_df.ww.init(logical_types={"int with pd_NA": "IntegerNullable"})
+    y = pd.Series([1, 2, 1])
+    imputer = Imputer()
+    imputer.fit(X_df, y)
+    res = imputer.transform(X_df, y)
+    print("HI")

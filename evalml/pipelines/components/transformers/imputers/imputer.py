@@ -66,9 +66,16 @@ class Imputer(Transformer):
             fill_value=numeric_fill_value,
             **kwargs,
         )
+        self._nullable_types_imputer = SimpleImputer(
+            impute_strategy=numeric_impute_strategy,
+            fill_value=numeric_fill_value,
+            missing_values=pd.NA,
+            **kwargs,
+        )
         self._all_null_cols = None
         self._numeric_cols = None
         self._categorical_cols = None
+        self._nullable_types_cols = None
         super().__init__(
             parameters=parameters, component_obj=None, random_seed=random_seed
         )
@@ -84,10 +91,13 @@ class Imputer(Transformer):
             self
         """
         X = infer_feature_types(X)
+        nullable_cols = list(X.ww.select(["IntegerNullable"], return_schema=True).columns)
         cat_cols = list(
             X.ww.select(["category", "boolean"], return_schema=True).columns
         )
+        cat_cols = [x for x in cat_cols if x not in nullable_cols]
         numeric_cols = list(X.ww.select(["numeric"], return_schema=True).columns)
+        numeric_cols = [x for x in numeric_cols if x not in nullable_cols]
 
         nan_ratio = X.ww.describe().loc["nan_count"] / X.shape[0]
         self._all_null_cols = nan_ratio[nan_ratio == 1].index.tolist()
@@ -101,6 +111,12 @@ class Imputer(Transformer):
         if len(X_categorical.columns) > 0:
             self._categorical_imputer.fit(X_categorical, y)
             self._categorical_cols = X_categorical.columns
+            
+        X_nullable = X[[col for col in nullable_cols if col not in self._all_null_cols]]
+        if len(X_nullable.columns) > 0:
+            self._nullable_types_imputer.fit(X_nullable, y)
+            self._nullable_cols = X_nullable.columns
+            
         return self
 
     def transform(self, X, y=None):
@@ -130,5 +146,10 @@ class Imputer(Transformer):
             X_categorical = X.ww[self._categorical_cols.tolist()]
             imputed = self._categorical_imputer.transform(X_categorical)
             X_no_all_null[X_categorical.columns] = imputed
+            
+        if self._nullable_cols is not None and len(self._nullable_cols) > 0:
+            X_nullable = X.ww[self._nullable_cols.tolist()]
+            imputed = self._nullable_types_imputer.transform(X_nullable)
+            X_no_all_null[X_nullable.columns] = imputed
 
         return X_no_all_null

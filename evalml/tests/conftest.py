@@ -1744,6 +1744,7 @@ def imputer_test_data():
                 [np.nan, "1", "0", "0", "3"] * 4, dtype="category"
             ),
             "int with nan": [np.nan, 1, 0, 0, 1] * 4,
+            "int with pd_NA": [0, 1, pd.NA, 2, 3] * 4,
             "float with nan": [0.0, 1.0, np.nan, -1.0, 0.0] * 4,
             "object with nan": ["b", "b", np.nan, "c", np.nan] * 4,
             "bool col with nan": pd.Series(
