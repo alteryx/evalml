@@ -7,7 +7,8 @@
     * Fixes
         * Fixed ``get_pipelines`` to reset pipeline threshold for binary cases :pr:`3360`
     * Changes
-        * Update maintainers :pr:`3365`
+        * Update maintainers to remove Angela :pr:`3365`
+        * Update maintainers to add Frank :pr:`3367`
     * Documentation Changes
         * Fixed documentation links to point to correct pages :pr:`3358`
     * Testing Changes
