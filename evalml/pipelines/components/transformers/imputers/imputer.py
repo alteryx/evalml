@@ -59,11 +59,13 @@ class Imputer(Transformer):
         self._categorical_imputer = SimpleImputer(
             impute_strategy=categorical_impute_strategy,
             fill_value=categorical_fill_value,
+            missing_values=pd.NA,
             **kwargs,
         )
         self._numeric_imputer = SimpleImputer(
             impute_strategy=numeric_impute_strategy,
             fill_value=numeric_fill_value,
+            missing_values=pd.NA,
             **kwargs,
         )
         self._all_null_cols = None
