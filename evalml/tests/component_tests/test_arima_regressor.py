@@ -5,7 +5,6 @@ import pandas as pd
 import pytest
 
 from evalml.model_family import ModelFamily
-from evalml.pipelines import TimeSeriesFeaturizer
 from evalml.pipelines.components import ARIMARegressor
 from evalml.problem_types import ProblemTypes
 
@@ -41,31 +40,9 @@ def test_problem_types():
 
 
 def test_model_instance(ts_data):
-    import time
     X, y = ts_data
-    print()
-    for i in range(3):
-        X = pd.DataFrame()
-        X["dates"] = pd.date_range("1/1/21", periods=300)
-        X["bools"] = np.random.choice([True, False, None], 300)
-        X["cats"] = np.random.choice(["First", "Second", "Third", None], 300)
-        X["ints"] = np.random.choice([1, 2, 3, 4, 5], 300)
-        y = pd.Series([i for i in range(300)])
-
-        start_time = time.time()
-
-        tsf = TimeSeriesFeaturizer(time_index="dates")
-        X = tsf.fit(X, y).transform(X, y)
-
-        #print(X.iloc[:, :5])
-        #print(X.iloc[:, 5:10])
-        #print(X.iloc[:, 10:15])
-
-        start_time = time.time()
-
-        clf = ARIMARegressor()
-        fitted = clf.fit(X, y)
-        print("time elapsed ARIMA: {:.2f}s".format(time.time() - start_time))
+    clf = ARIMARegressor()
+    fitted = clf.fit(X, y)
     assert isinstance(fitted, ARIMARegressor)
 
 
