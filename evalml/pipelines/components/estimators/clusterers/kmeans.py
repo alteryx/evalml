@@ -1,6 +1,5 @@
 """K Means Clusterer."""
 from sklearn.cluster import KMeans as SKKMeans
-from skopt.space import Integer
 
 from evalml.model_family import ModelFamily
 from evalml.pipelines.components.estimators import Estimator
@@ -22,16 +21,12 @@ class KMeansClusterer(Estimator):
     """{}"""
     model_family = ModelFamily.CENTROID
     """ModelFamily.CENTROID"""
-    supported_problem_types = [
-        ProblemTypes.CLUSTERING
-    ]
+    supported_problem_types = [ProblemTypes.CLUSTERING]
     """[
         ProblemTypes.CLUSTERING
     ]"""
 
-    def __init__(
-        self, n_clusters=8, max_iter=300, n_jobs=-1, random_seed=0, **kwargs
-    ):
+    def __init__(self, n_clusters=8, max_iter=300, n_jobs=-1, random_seed=0, **kwargs):
         parameters = {
             "n_clusters": n_clusters,
             "max_iter": max_iter,
@@ -40,7 +35,9 @@ class KMeansClusterer(Estimator):
         parameters.update(kwargs)
         kmeans_clusterer = SKKMeans(**parameters, random_state=random_seed)
         super().__init__(
-            parameters=parameters, component_obj=kmeans_clusterer, random_seed=random_seed
+            parameters=parameters,
+            component_obj=kmeans_clusterer,
+            random_seed=random_seed,
         )
 
     def predict(self, X=None):

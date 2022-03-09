@@ -187,6 +187,4 @@ def test_type_checks(problem_type):
             ProblemTypes.TIME_SERIES_REGRESSION,
         ]
     )
-    assert is_clustering(problem_type) == (
-        problem_type in [ProblemTypes.CLUSTERING]
-    )
+    assert is_clustering(problem_type) == (problem_type in [ProblemTypes.CLUSTERING])

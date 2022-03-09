@@ -936,6 +936,11 @@ def test_init_problem_type_error(X_y_binary):
     with pytest.raises(KeyError, match=r"does not exist"):
         AutoMLSearch(X_train=X, y_train=y, problem_type="multi")
 
+    with pytest.raises(
+        ValueError, match="AutoMLSearch cannot be run for clustering problems"
+    ):
+        AutoMLSearch(X_train=X, y_train=y, problem_type="clustering")
+
 
 def test_init_objective(X_y_binary):
     X, y = X_y_binary
