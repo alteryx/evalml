@@ -1282,7 +1282,7 @@ class AutoMLSearch:
             )
         new_pipeline = pipeline.new(parameters, random_seed=self.random_seed)
         if is_binary(self.problem_type):
-            new_pipeline.threshold = pipeline.threshold
+            new_pipeline.threshold = None
         return new_pipeline
 
     def describe_pipeline(self, pipeline_id, return_dict=False):
