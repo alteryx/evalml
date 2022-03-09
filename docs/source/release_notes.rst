@@ -3,7 +3,7 @@
 
 **Future Releases**
     * Enhancements
-        * Added `TimeSeriesFeaturizer` into ARIMA-based pipelines :pr:`3313
+        * Added `TimeSeriesFeaturizer` into ARIMA-based pipelines :pr:`3313`
         * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
     * Fixes
         * Fixed ``get_pipelines`` to reset pipeline threshold for binary cases :pr:`3360`
