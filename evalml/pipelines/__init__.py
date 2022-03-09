@@ -43,6 +43,7 @@ from .components import (
     DBSCANClusterer,
     KMeansClusterer,
     KModesClusterer,
+    KPrototypesClusterer,
 )
 
 from .component_graph import ComponentGraph

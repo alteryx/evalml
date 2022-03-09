@@ -36,4 +36,5 @@ from .clusterers import (
     DBSCANClusterer,
     KMeansClusterer,
     KModesClusterer,
+    KPrototypesClusterer,
 )

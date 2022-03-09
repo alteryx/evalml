@@ -33,6 +33,7 @@ from .estimators import (
     DBSCANClusterer,
     KMeansClusterer,
     KModesClusterer,
+    KPrototypesClusterer,
 )
 from .transformers import (
     Transformer,
