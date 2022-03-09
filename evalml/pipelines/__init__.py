@@ -42,6 +42,7 @@ from .components import (
     DropNaNRowsTransformer,
     DBSCANClusterer,
     KMeansClusterer,
+    KModesClusterer,
 )
 
 from .component_graph import ComponentGraph

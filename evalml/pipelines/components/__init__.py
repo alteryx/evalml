@@ -32,6 +32,7 @@ from .estimators import (
     VowpalWabbitRegressor,
     DBSCANClusterer,
     KMeansClusterer,
+    KModesClusterer,
 )
 from .transformers import (
     Transformer,
