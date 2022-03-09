@@ -67,6 +67,7 @@ class ARIMARegressor(Estimator):
         seasonal=True,
         n_jobs=-1,
         random_seed=0,
+        maxiter=25,
         **kwargs,
     ):
         parameters = {
@@ -78,6 +79,7 @@ class ARIMARegressor(Estimator):
             "max_d": max_d,
             "max_q": max_q,
             "seasonal": seasonal,
+            "maxiter": maxiter,
             "n_jobs": n_jobs,
             "time_index": time_index,
         }
