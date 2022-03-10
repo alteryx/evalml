@@ -108,7 +108,7 @@ def split_data(
     elif is_classification(problem_type):
         data_splitter = StratifiedShuffleSplit(
             n_splits=1, test_size=test_size, random_state=random_seed
-        )    
+        )
     elif is_clustering(problem_type):
         raise ValueError("Cannot split data for clustering problems")
 

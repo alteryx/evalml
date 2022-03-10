@@ -1938,6 +1938,8 @@ def test_predict_has_input_target_name(
     time_series_binary_classification_pipeline_class,
     time_series_multiclass_classification_pipeline_class,
 ):
+    if problem_type == ProblemTypes.CLUSTERING:
+        pytest.skip("Skipping because clustering problems do not use y")
     if problem_type == ProblemTypes.BINARY:
         X, y = X_y_binary
         clf = logistic_regression_binary_pipeline
