@@ -170,10 +170,13 @@ def is_time_series(problem_type):
 
 def is_clustering(problem_type):
     """Determines if the provided problem_type is a clustering problem type.
+
     Args:
         problem_type (str or ProblemTypes): type of supervised or unsupervised learning problem. See evalml.problem_types.ProblemType.all_problem_types for a full list.
+
     Returns:
         bool: Whether or not the provided problem_type is a clustering problem type.
+
     Examples:
         >>> assert is_clustering("clustering")
         >>> assert is_clustering(ProblemTypes.CLUSTERING)
