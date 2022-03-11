@@ -247,7 +247,7 @@ class NoVarianceDataCheck(DataCheck):
                 DataCheckError(
                     message=zero_unique_message.format(y_name),
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE,
+                    message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
                     details={"columns": [y_name]},
                 ).to_dict()
             )
