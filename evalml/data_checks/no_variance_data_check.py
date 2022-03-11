@@ -83,7 +83,7 @@ class NoVarianceDataCheck(DataCheck):
             ...         "data_check_name": "NoVarianceDataCheck",
             ...         "level": "error",
             ...         "details": {"columns": ["Y"], "rows": None},
-            ...         "code": "NO_VARIANCE",
+            ...         "code": "NO_VARIANCE_ZERO_UNIQUE",
             ...         "action_options":[]
             ...     }
             ... ]
