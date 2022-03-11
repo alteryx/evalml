@@ -181,7 +181,7 @@ class NoVarianceDataCheck(DataCheck):
                         (", ").join(["'{}'".format(str(col)) for col in zero_unique]),
                     ),
                     data_check_name=self.name,
-                    message_code=DataCheckMessageCode.NO_VARIANCE,
+                    message_code=DataCheckMessageCode.NO_VARIANCE_ZERO_UNIQUE,
                     details={"columns": zero_unique},
                     action_options=[
                         DataCheckActionOption(
