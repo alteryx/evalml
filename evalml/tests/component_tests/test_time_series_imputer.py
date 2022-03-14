@@ -53,7 +53,7 @@ def test_imputer_init(categorical_impute_strategy, numeric_impute_strategy):
     assert imputer.name == "Time Series Imputer"
     assert imputer.parameters == expected_parameters
     assert imputer.hyperparameter_ranges == expected_hyperparameters
-    assert imputer.training_only == True
+    assert imputer.training_only is True
 
 
 def test_numeric_only_input(imputer_test_data):
