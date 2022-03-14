@@ -3,6 +3,7 @@
 
 **Future Releases**
     * Enhancements
+        * Added ``TimeSeriesImputer`` component :pr:`3374`
         * Added ``TimeSeriesFeaturizer`` into ARIMA-based pipelines :pr:`3313`
         * Added caching capability for ensemble training during ``AutoMLSearch`` :pr:`3257`
     * Fixes
