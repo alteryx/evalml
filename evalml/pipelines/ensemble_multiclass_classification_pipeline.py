@@ -61,12 +61,7 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
         custom_name=None,
         random_seed=0,
     ):
-        if isinstance(input_pipelines, dict):
-            self.input_pipelines = input_pipelines
-        else:
-            self.input_pipelines = {}
-            for pipeline in input_pipelines:
-                self.input_pipelines[pipeline.model_family] = pipeline
+        self.input_pipelines = input_pipelines
         if component_graph is None:
             component_graph = {
                 "Label Encoder": ["Label Encoder", "X", "y"],
@@ -109,15 +104,22 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
 
     @property
     def _all_input_pipelines_fitted(self):
-        for pipeline in self.input_pipelines.values():
+        for pipeline in self.input_pipelines:
             if not pipeline._is_fitted:
                 return False
         return True
 
-    def _fit_input_pipelines(self, X, y):
+    def _fit_input_pipelines(self, X, y, force_retrain=False):
         fitted_pipelines = []
         for pipeline in self.input_pipelines:
-            fitted_pipelines.append(pipeline.fit(X, y))
+            if pipeline._is_fitted and not force_retrain:
+                fitted_pipelines.append(pipeline)
+            else:
+                if force_retrain:
+                    new_pl = pipeline.clone()
+                else:
+                    new_pl = pipeline
+                fitted_pipelines.append(new_pl.fit(X, y))
         self.input_pipelines = fitted_pipelines
         
     def fit(self, X, y, data_splitter=None, force_retrain=False):
@@ -144,8 +146,8 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
                 "Multiclass pipelines require y to have 3 or more unique classes!"
             )
 
-        # if not self._all_input_pipelines_fitted or force_retrain is True:
-        #     self._fit_input_pipelines(X, y)
+        if not self._all_input_pipelines_fitted or force_retrain is True:
+            self._fit_input_pipelines(X, y, force_retrain=True)
 
         if data_splitter is None:
             data_splitter = make_data_splitter(X, y, problem_type=ProblemTypes.BINARY)
@@ -154,18 +156,25 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
 
         metalearner_X = []
         metalearner_y = []
+        
+        pred_pls = []
+        for pipeline in self.input_pipelines:
+            pred_pls.append(pipeline.clone())
 
+        # Split off pipelines for CV 
         for i, (train, valid) in enumerate(splits):
             fold_X = []
             X_train, X_valid = X.ww.iloc[train], X.ww.iloc[valid]
             y_train, y_valid = y.ww.iloc[train], y.ww.iloc[valid]
 
-            # for pipeline in self.input_pipelines:
-            #     self._fit_input_pipelines(X_train, y_train)
-            for model_family, pipeline in self.input_pipelines.items():
-                # self.input_pipelines[model_family] = pipeline.fit(X_train, y_train)
+            for pipeline in pred_pls:
+                pipeline.fit(X_train, y_train)
                 pl_preds = pipeline.predict_proba(X_valid)
                 if isinstance(pl_preds, pd.DataFrame):
+                    new_columns = {}
+                    for i, column in enumerate(pl_preds.columns):
+                        new_columns[column] = i
+                    pl_preds.ww.rename(new_columns, inplace=True)
                     if len(pl_preds.columns) == 2:
                         # If it is a binary problem, drop the first column since both columns are colinear
                         pl_preds = pl_preds.ww.drop(pl_preds.columns[0])
@@ -190,14 +199,15 @@ class EnsembleMulticlassClassificationPipeline(MulticlassClassificationPipeline)
 
     def transform(self, X, y=None):
         if not self._all_input_pipelines_fitted:
-            self._fit_input_pipelines(X, y)
-
-        if not self._all_input_pipelines_fitted:
             raise ValueError("Input pipelines needs to be fitted before transform")
         input_pipeline_preds = []
-        for pipeline in self.input_pipelines.values():
+        for pipeline in self.input_pipelines:
             pl_preds = pipeline.predict_proba(X)
             if isinstance(pl_preds, pd.DataFrame):
+                new_columns = {}
+                for i, column in enumerate(pl_preds.columns):
+                    new_columns[column] = i
+                pl_preds.ww.rename(new_columns, inplace=True)
                 if len(pl_preds.columns) == 2:
                     # If it is a binary problem, drop the first column since both columns are colinear
                     pl_preds = pl_preds.ww.drop(pl_preds.columns[0])
