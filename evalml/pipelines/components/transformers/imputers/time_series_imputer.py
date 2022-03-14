@@ -13,6 +13,7 @@ class TimeSeriesImputer(Transformer):
         numeric_impute_strategy (string): Impute strategy to use for numeric columns. Valid values include "backwards_fill", "forwards_fill", and "interpolate".
         random_seed (int): Seed for the random number generator. Defaults to 0.
     """
+
     training_only = True
 
     name = "Time Series Imputer"
