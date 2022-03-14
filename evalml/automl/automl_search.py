@@ -477,7 +477,7 @@ class AutoMLSearch:
                 "its core features. Please be mindful of that when running search()."
             )
         if is_clustering(self.problem_type):
-            raise ValueError("AutoMLSearch cannot be run for clustering problems")
+            raise ValueError("AutoMLSearch cannot be run for clustering problems.")
         self._SLEEP_TIME = 0.1
         self.tuner_class = tuner_class or SKOptTuner
         self.start_iteration_callback = start_iteration_callback

@@ -937,7 +937,7 @@ def test_init_problem_type_error(X_y_binary):
         AutoMLSearch(X_train=X, y_train=y, problem_type="multi")
 
     with pytest.raises(
-        ValueError, match="AutoMLSearch cannot be run for clustering problems"
+        ValueError, match="AutoMLSearch cannot be run for clustering problems."
     ):
         AutoMLSearch(X_train=X, y_train=y, problem_type="clustering")
 
